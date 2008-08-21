@@ -63,6 +63,7 @@ import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
@@ -102,7 +103,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private LocalWorkspace localWorkspace = null;
 	private JTabbedPane jTabbedPane = null;
 	private FRAPParametersPanel frapParametersPanel = null;
-	private JPanel fitSpatialModelPanel = null;
+//	private JPanel fitSpatialModelPanel = null;
+	private FRAPSimDataViewerPanel frapSimDataViewerPanel = null;
 	
 	private PDEDataViewer pdeDataViewer = null;
 	private PDEDataViewer flourDataViewer = null;
@@ -453,7 +455,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_IMAGES, null, getFRAPDataPanel(), null);
 			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE, null, getFRAPParametersPanel(), null);
 			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_REPORT, null, getResultsSummaryPanel(), null);
-			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS, null, getFitSpatialModelPanel(), null);
+			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS, null, getFRAPSimDataViewerPanel(), null);
 			jTabbedPane.setModel(
 				new DefaultSingleSelectionModel(){
 					@Override
@@ -479,6 +481,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return jTabbedPane;
 	}
 
+	private FRAPSimDataViewerPanel getFRAPSimDataViewerPanel(){
+		if(frapSimDataViewerPanel == null){
+			frapSimDataViewerPanel = new FRAPSimDataViewerPanel();
+		}
+		return frapSimDataViewerPanel;
+	}
+	
 	private boolean checkROIConstraints() throws Exception{
 		short[] cellPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).getPixelsXYZ();
 		short[] bleachPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).getPixelsXYZ();
@@ -640,19 +649,19 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return frapParametersPanel;
 	}
 
-	/**
-	 * This method initializes fitSpatialModelPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getFitSpatialModelPanel() {
-		if (fitSpatialModelPanel == null) {
-			fitSpatialModelPanel = new JPanel();
-			fitSpatialModelPanel.setLayout(new BorderLayout());
-			fitSpatialModelPanel.add(getSplitDataViewers(), BorderLayout.CENTER);
-		}
-		return fitSpatialModelPanel;
-	}
+//	/**
+//	 * This method initializes fitSpatialModelPanel	
+//	 * 	
+//	 * @return javax.swing.JPanel	
+//	 */
+//	private JPanel getFitSpatialModelPanel() {
+//		if (fitSpatialModelPanel == null) {
+//			fitSpatialModelPanel = new JPanel();
+//			fitSpatialModelPanel.setLayout(new BorderLayout());
+//			fitSpatialModelPanel.add(getSplitDataViewers(), BorderLayout.CENTER);
+//		}
+//		return fitSpatialModelPanel;
+//	}
 	
 	private ResultsSummaryPanel getResultsSummaryPanel(){
 		if(resultsSummaryPanel == null){
@@ -1182,7 +1191,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public static String convertDoubletoString(double doubleValue){
 		String doubleString = doubleValue+"";
-		System.out.println(doubleString);
 		return doubleString;
 	}
 
@@ -1412,6 +1420,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						private String NORM_FLUOR = "Normalized Fluor.";
 						private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,NORM_FLUOR};
 						public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+							if(dataidentifier.getName().endsWith(MathMapping.FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION)){
+								//Temporary fix for bug that occurs with FieldFunctions in DatasetcontrollerImpl because
+								//DSCI requires a database to deal with fieldfunctions.
+								//VirtualFRAP has no database connection.
+								//Remove _initConc variables saved by solver because they are functions of FieldData
+								return false;
+							}
 							if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
 								return true;
 							}else if(filterSetName.equals(NORM_FLUOR)){
@@ -1429,7 +1444,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							return filterSetNames;
 						}
 						public boolean isAcceptAll(String filterSetName){
-							return filterSetName.equals(ALL_DATAIDENTIFIERS);
+							return false;//return filterSetName.equals(ALL_DATAIDENTIFIERS);
 						}
 					}
 				);
@@ -1666,70 +1681,72 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	 * @return cbit.vcell.client.data.PDEDataViewer	
 	 */
 	private PDEDataViewer getPDEDataViewer() {
-		if (pdeDataViewer == null) {
-			pdeDataViewer = new VFrapPDEDataViewer();
-			VirtualFrapWindowManager dataViewerManager = new VirtualFrapWindowManager();
-			try {
-				pdeDataViewer.setDataViewerManager(dataViewerManager);
-				dataViewerManager.addDataJobListener(pdeDataViewer);
-			} catch (PropertyVetoException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return pdeDataViewer;
+		return getFRAPSimDataViewerPanel().getSimulationDataViewer();
+//		if (pdeDataViewer == null) {
+//			pdeDataViewer = new VFrapPDEDataViewer();
+//			VirtualFrapWindowManager dataViewerManager = new VirtualFrapWindowManager();
+//			try {
+//				pdeDataViewer.setDataViewerManager(dataViewerManager);
+//				dataViewerManager.addDataJobListener(pdeDataViewer);
+//			} catch (PropertyVetoException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		return pdeDataViewer;
 	}
 
 	private PDEDataViewer getFlourDataViewer() {
-		if (flourDataViewer == null) {
-			flourDataViewer = new VFrapPDEDataViewer();
-			VirtualFrapWindowManager dataViewerManager = new VirtualFrapWindowManager();
-			try {
-				flourDataViewer.setDataViewerManager(dataViewerManager);
-				dataViewerManager.addDataJobListener(flourDataViewer);
-			} catch (PropertyVetoException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}	
-		return flourDataViewer;
+		return getFRAPSimDataViewerPanel().getOriginalDataViewer();
+//		if (flourDataViewer == null) {
+//			flourDataViewer = new VFrapPDEDataViewer();
+//			VirtualFrapWindowManager dataViewerManager = new VirtualFrapWindowManager();
+//			try {
+//				flourDataViewer.setDataViewerManager(dataViewerManager);
+//				dataViewerManager.addDataJobListener(flourDataViewer);
+//			} catch (PropertyVetoException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}	
+//		return flourDataViewer;
 	}
-	//Added Feb, 2008.
-	private JSplitPane getSplitDataViewers()
-	{
-		//Added margins in both viewers to make it look nicer
-		JPanel upPanel = new JPanel();
-		PDEDataViewer pdeViewer = getPDEDataViewer();
-		pdeViewer.setPreferredSize(new Dimension(700,450));
-		JScrollPane upScroll = new JScrollPane(pdeViewer);
-		upScroll.setAutoscrolls(true);
-		upPanel.setLayout(new BorderLayout());
-		upPanel.add(upScroll, BorderLayout.CENTER);
-		upPanel.add(new JLabel("  "), BorderLayout.WEST);
-		upPanel.add(new JLabel("  "), BorderLayout.EAST);
-		upPanel.add(new JLabel(" "), BorderLayout.NORTH);
-		upPanel.add(new JLabel(" "), BorderLayout.SOUTH);
-		upPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Simulation Results and Masks", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
-		
-		
-		JPanel botPanel = new JPanel();		
-		PDEDataViewer fluorViewer = getFlourDataViewer();
-		fluorViewer.setPreferredSize(new Dimension(700,450));
-		JScrollPane botScroll = new JScrollPane(fluorViewer);
-		botPanel.setAutoscrolls(true);
-		botPanel.setLayout(new BorderLayout());
-		botPanel.add(botScroll, BorderLayout.CENTER);
-		botPanel.add(new JLabel("  "), BorderLayout.WEST);
-		botPanel.add(new JLabel("  "), BorderLayout.EAST);
-		botPanel.add(new JLabel(" "), BorderLayout.NORTH);
-		botPanel.add(new JLabel(" "), BorderLayout.SOUTH);
-		botPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Original Virtual Microscopy Data and Masks", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
-		
-		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upPanel, botPanel);
-	    split.setDividerLocation(((int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2))-90);
-	    split.setDividerSize(4);
-	    return split;
-	}
+//	//Added Feb, 2008.
+//	private JSplitPane getSplitDataViewers()
+//	{
+//		//Added margins in both viewers to make it look nicer
+//		JPanel upPanel = new JPanel();
+//		PDEDataViewer pdeViewer = getPDEDataViewer();
+//		pdeViewer.setPreferredSize(new Dimension(700,450));
+//		JScrollPane upScroll = new JScrollPane(pdeViewer);
+//		upScroll.setAutoscrolls(true);
+//		upPanel.setLayout(new BorderLayout());
+//		upPanel.add(upScroll, BorderLayout.CENTER);
+//		upPanel.add(new JLabel("  "), BorderLayout.WEST);
+//		upPanel.add(new JLabel("  "), BorderLayout.EAST);
+//		upPanel.add(new JLabel(" "), BorderLayout.NORTH);
+//		upPanel.add(new JLabel(" "), BorderLayout.SOUTH);
+//		upPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Simulation Results and Masks", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
+//		
+//		
+//		JPanel botPanel = new JPanel();		
+//		PDEDataViewer fluorViewer = getFlourDataViewer();
+//		fluorViewer.setPreferredSize(new Dimension(700,450));
+//		JScrollPane botScroll = new JScrollPane(fluorViewer);
+//		botPanel.setAutoscrolls(true);
+//		botPanel.setLayout(new BorderLayout());
+//		botPanel.add(botScroll, BorderLayout.CENTER);
+//		botPanel.add(new JLabel("  "), BorderLayout.WEST);
+//		botPanel.add(new JLabel("  "), BorderLayout.EAST);
+//		botPanel.add(new JLabel(" "), BorderLayout.NORTH);
+//		botPanel.add(new JLabel(" "), BorderLayout.SOUTH);
+//		botPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Original Virtual Microscopy Data and Masks", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
+//		
+//		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upPanel, botPanel);
+//	    split.setDividerLocation(((int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2))-90);
+//	    split.setDividerSize(4);
+//	    return split;
+//	}
 	
 	private DataManager getDataManager(Simulation sim) throws Exception{
 		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
