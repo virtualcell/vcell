@@ -678,8 +678,8 @@ public void convertParameterType(Parameter param, boolean bConvertToGlobal) thro
 		} else {
 			// first check if kinetic param is the 'authoritative' kinetic parame; if so, cannot remove it.
 			// else remove kinetic param - should have already been checked in parameterTableModel
-			if ((KineticsParameter)param == getAuthoritativeParameter()) {
-				throw new RuntimeException("Cannot convert reaction rate : \'" + getAuthoritativeParameter().getName() + "\' to global parameter.");
+			if (((KineticsParameter)param).getRole() != Kinetics.ROLE_UserDefined) {
+				throw new RuntimeException("Cannot convert pre-defined kinetic parameter : \'" + param.getName() + "\' to global parameter.");
 			}
 			// First add param as a model parameter, if it is not already present
 			ModelParameter mp = getReactionStep().getModel().getModelParameter(param.getName());

@@ -15,6 +15,7 @@ import cbit.vcell.model.Model.ModelParameter;
 
 import java.awt.Component;
 import java.util.*;
+
 import javax.swing.JButton;
 /**
  * Insert the type's description here.
@@ -960,7 +961,7 @@ private javax.swing.JButton getShowGlobalParamsButton() {
 		try {
 			ivjShowGlobalParamsButton = new javax.swing.JButton();
 			ivjShowGlobalParamsButton.setName("ShowGlobalParamsButton");
-			ivjShowGlobalParamsButton.setText("Show Global Parameters");
+			ivjShowGlobalParamsButton.setText("List of All Global Parameters");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1098,14 +1099,21 @@ private void renameFluxReaction() {
 private void showGlobalParameters() {
 	// pop-up a list of global parameters for user to refer to while deciding kinetic parameters
 	ModelParameter[] mps = getKinetics().getReactionStep().getModel().getModelParameters();
-	// get list of names of the model params (as 'name [ val ]')
-	String[] mpNameAndVals = new String[mps.length + 1];
-	mpNameAndVals[0] = "Name    [ value ]    [ units ]";
+	// set it up as a 2-d array of data
+	String[] colNames = new String[] {"Name","Value","Units"};
+	Vector<String[]> rowsV = new Vector<String[]>();
 	for (int i = 0; i < mps.length; i++) {
-		mpNameAndVals[i+1] = mps[i].getName() + "    [ " + mps[i].getExpression().infix() + " ]    [ " + mps[i].getUnitDefinition().getSymbol() + " ]";   
+		String[] rows = new String[colNames.length];
+		rows[0] = mps[i].getName();
+		rows[1] = mps[i].getExpression().infix();
+		rows[2] = mps[i].getUnitDefinition().getSymbol();
+		rowsV.add(rows);
 	}
-	PopupGenerator.showListDialog(this, mpNameAndVals, "List of Global Parameters in Model");
+	String[][] rows = new String[rowsV.size()][];
+	rowsV.copyInto(rows);
 	
+	int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(this, "List of Global Parameters in Model",
+			colNames, rows, ListSelectionModel.SINGLE_SELECTION);
 }
 
 

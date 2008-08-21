@@ -33,12 +33,17 @@ public class ParameterTableCellRenderer extends DefaultTableCellRenderer {
 			tcr = this;
 		}
 		//  set cell color to gray if the cell is not editable
-		if (!table.getModel().isCellEditable(row, column)) {
+		if (!table.getModel().isCellEditable(row, column) && !isSelected) {
 			setBackground(Color.WHITE);
 			setForeground(new Color(128,128,128));
 		} else {
-			setBackground(table.getBackground());
-			setForeground(table.getForeground());
+			if (isSelected) {
+				setBackground(table.getSelectionBackground());
+				setForeground(table.getSelectionForeground());
+			} else {
+				setBackground(table.getBackground());
+				setForeground(table.getForeground());
+			}
 		}
 		
 		return tcr;
