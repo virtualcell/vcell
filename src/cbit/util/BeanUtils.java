@@ -417,7 +417,9 @@ public final static int coordinateToIndex(int[] coordinates, int[] bounds) {
 }
 
 public static void dispose(Component disposableChild){
-	if(BeanUtils.findTypeParentOfComponent(disposableChild, JInternalFrame.class) != null){
+	if(BeanUtils.findTypeParentOfComponent(disposableChild, JDialog.class) != null){
+		((JDialog)BeanUtils.findTypeParentOfComponent(disposableChild, JDialog.class)).dispose();
+	}else if(BeanUtils.findTypeParentOfComponent(disposableChild, JInternalFrame.class) != null){
 		((JInternalFrame)BeanUtils.findTypeParentOfComponent(disposableChild, JInternalFrame.class)).dispose();
 	}else if(BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class) != null){
 		((JFrame)BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class)).dispose();
