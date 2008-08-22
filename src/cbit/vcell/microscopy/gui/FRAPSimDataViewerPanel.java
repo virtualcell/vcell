@@ -13,8 +13,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 public class FRAPSimDataViewerPanel extends JPanel {
-	private final VFrapPDEDataViewer simulationDataViewer;
-	private final VFrapPDEDataViewer originalDataViewer;
+	private final PDEDataViewer simulationDataViewer;
+	private final PDEDataViewer originalDataViewer;
 
 
 	public FRAPSimDataViewerPanel() {
@@ -35,7 +35,7 @@ public class FRAPSimDataViewerPanel extends JPanel {
 		final JScrollPane scrollPane = new JScrollPane();
 		tabbedPane.addTab("Simulation Data", null, scrollPane, null);
 
-		simulationDataViewer = new VFrapPDEDataViewer();
+		simulationDataViewer = new PDEDataViewer();
 		simulationDataViewer.setPreferredSize(new Dimension(0, 500));
 		simulationDataViewer.setMaximumSize(new Dimension(0, 500));
 		simulationDataViewer.setBorder(new EmptyBorder(8, 0, 0, 0));
@@ -44,7 +44,7 @@ public class FRAPSimDataViewerPanel extends JPanel {
 		final JScrollPane scrollPane_1 = new JScrollPane();
 		tabbedPane.addTab("Experimental Data", null, scrollPane_1, null);
 
-		originalDataViewer = new VFrapPDEDataViewer();
+		originalDataViewer = new PDEDataViewer();
 		originalDataViewer.setPreferredSize(new Dimension(0, 500));
 		originalDataViewer.setMaximumSize(new Dimension(0, 500));
 		originalDataViewer.setBorder(new EmptyBorder(8, 0, 0, 0));
@@ -70,10 +70,10 @@ public class FRAPSimDataViewerPanel extends JPanel {
 		}
 	}
 	
-	public VFrapPDEDataViewer getOriginalDataViewer(){
+	public PDEDataViewer getOriginalDataViewer(){
 		return originalDataViewer;
 	}
-	public VFrapPDEDataViewer getSimulationDataViewer(){
+	public PDEDataViewer getSimulationDataViewer(){
 		return simulationDataViewer;
 	}
 }
