@@ -8,17 +8,12 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.*;
 
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
 import cbit.image.DisplayAdapterService;
-import cbit.image.SourceDataInfo;
 import cbit.plot.*;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.MessageEvent;
@@ -2515,14 +2510,31 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  * Insert the method's description here.
  * Creation date: (2/26/2006 2:24:21 PM)
  */
-protected void showComponentInFrame(Component comp,String title) {
-	
-	final JInternalFrame frame =
-		new JInternalFrame(title, true, true, true, true);
-	frame.getContentPane().add(comp);
-	frame.pack();
-	cbit.util.BeanUtils.centerOnComponent(frame,this);
-	SwingUtilities.invokeLater(new Runnable(){public void run(){getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});}});
+protected void showComponentInFrame(final Component comp,final String title) {
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			final JDesktopPane jDesktopPane = (JDesktopPane)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPane.class);
+			if(jDesktopPane != null){
+				final JInternalFrame frame =
+					new JInternalFrame(title, true, true, true, true);
+				frame.getContentPane().add(comp);
+				frame.pack();
+				cbit.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+				DocumentWindowManager.showFrame(frame,jDesktopPane);		
+			}else{
+				final Frame dialogOwner = (Frame)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, Frame.class);
+				final JDialog frame =
+					new JDialog(dialogOwner,title);
+
+				frame.getContentPane().add(comp);
+				frame.pack();
+				cbit.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+				frame.setVisible(true);
+			}
+			return null;
+		}
+	}.runEventDispatchThreadSafelyConsumeException();
+
 	
 }
 
@@ -2667,20 +2679,25 @@ private void showSpatialPlot() {
 							AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving spatial series for variable '" + getPdeDataContext().getVariableName(), false, false);
 							try{
 								pp.start();
-								String varName = getPdeDataContext().getVariableName();
+								final String varName = getPdeDataContext().getVariableName();
 								double timePoint = getPdeDataContext().getTimePoint();
-								PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[finalI]);
-								PlotPane plotPane = new PlotPane();
-								plotPane.setPlot2D(
-										new Plot2D(
-											symbolTableEntries,
-											new String[] { varName },new PlotData[] { plotData },
-											new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"}));
-								String title = "Line Plot: ("+varName+")";
-								if (getSimulationModelInfo()!=null){
-									title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-								}
-								showComponentInFrame(plotPane, title);
+								final PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[finalI]);
+								new EventDispatchRunWithException (){
+									public Object runWithException() throws Exception{
+										PlotPane plotPane = new PlotPane();
+										plotPane.setPlot2D(
+												new Plot2D(
+													symbolTableEntries,
+													new String[] { varName },new PlotData[] { plotData },
+													new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"}));
+										String title = "Line Plot: ("+varName+")";
+										if (getSimulationModelInfo()!=null){
+											title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+										}
+										showComponentInFrame(plotPane, title);
+										return null;
+									}
+								}.runEventDispatchThreadSafelyWithException();
 							}catch(Exception e){
 								pp.stop();
 								PopupGenerator.showErrorDialog("Show Spatial Plot error:\n"+e.getMessage());
@@ -2781,19 +2798,25 @@ private void showTimePlot() {
 							if(timeSeriesJobFailed != null){
 								PopupGenerator.showErrorDialog("showTimePlot failed:\n"+timeSeriesJobFailed.getMessage());
 							}else{
-								PlotPane plotPane = new PlotPane();
-								plotPane.setPlot2D(
-										new SingleXPlot2D(
-												symbolTableEntries,
-												"Time",
-												plotNames,
-												tsJobResultsNoStats.getTimesAndValuesForVariable(tsJobResultsNoStats.getVariableNames()[0]),
-												new String[] {"Time series for " + getPdeDataContext().getVariableName(), "Time (s)", "[" + tsJobResultsNoStats.getVariableNames()[0] + "]"}));
-								String title = "Timeplot: ("+tsJobResultsNoStats.getVariableNames()[0]+")";
-								if (getSimulationModelInfo()!=null){
-									title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-								}
-								showComponentInFrame(plotPane, title);							
+								new EventDispatchRunWithException (){
+									public Object runWithException() throws Exception{
+										PlotPane plotPane = new PlotPane();
+										plotPane.setPlot2D(
+												new SingleXPlot2D(
+														symbolTableEntries,
+														"Time",
+														plotNames,
+														tsJobResultsNoStats.getTimesAndValuesForVariable(tsJobResultsNoStats.getVariableNames()[0]),
+														new String[] {"Time series for " + getPdeDataContext().getVariableName(), "Time (s)", "[" + tsJobResultsNoStats.getVariableNames()[0] + "]"}));
+										String title = "Timeplot: ("+tsJobResultsNoStats.getVariableNames()[0]+")";
+										if (getSimulationModelInfo()!=null){
+											title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+										}
+										showComponentInFrame(plotPane, title);							
+										return null;
+									}
+								}.runEventDispatchThreadSafelyConsumeException();
+
 							}
 						}
 					},false);
