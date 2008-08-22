@@ -32,7 +32,7 @@ public class MathMapping implements ScopedSymbolTable {
 	public static final String FUNC_NAME_SUFFIX_VAR_COUNT = "_Count";
 	public static final String FUNC_NAME_SUFFIX_VAR_CONCENTRATION = "_Conc";
 	public static final String FUNC_NAME_SUFFIX_VAR_INIT_COUNT = "_initCount";
-	public static final String FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION = "_initConc";
+	public static final String FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION = "_init";
 	
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
