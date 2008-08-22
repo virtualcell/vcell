@@ -1,11 +1,17 @@
 package cbit.vcell.geometry.surface;
+import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverFactory;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.sql.ConnectionFactory;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.User;
+import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 
 /**
  * Insert the type's description here.
@@ -149,37 +155,7 @@ public void compareMesh(String startKey) {
  * @param meshfile java.io.File
  */
 public static cbit.vcell.solvers.CartesianMesh loadMesh(File meshFile, File meshmetricsFile) throws Exception {
-	cbit.vcell.solvers.CartesianMesh mesh = null;
-	//
-	// read meshFile and parse into 'mesh' object
-	//
-	java.io.FileInputStream is = null;
-	java.io.InputStreamReader reader = null;
-	try {
-		is = new java.io.FileInputStream(meshFile);
-		reader = new java.io.InputStreamReader(is);
-		int meshSize = (int)meshFile.length();
-		char meshBuffer[] = new char[meshSize];
-		reader.read(meshBuffer,0,meshSize);
-		String meshString = new String(meshBuffer,0,meshSize);
-		is.close();
-		
-		is = new java.io.FileInputStream(meshmetricsFile);
-		reader = new java.io.InputStreamReader(is);
-		int meshmetricsSize = (int)meshmetricsFile.length();
-		char meshmetricsBuffer[] = new char[meshmetricsSize];
-		reader.read(meshmetricsBuffer,0,meshmetricsSize);
-		String meshmetricsString = new String(meshmetricsBuffer,0,meshmetricsSize);
-
-		cbit.vcell.math.CommentStringTokenizer meshST = new cbit.vcell.math.CommentStringTokenizer(meshString);
-		cbit.vcell.math.CommentStringTokenizer meshmetricsST = new cbit.vcell.math.CommentStringTokenizer(meshmetricsString);
-		mesh = cbit.vcell.solvers.CartesianMesh.fromTokens(meshST, meshmetricsST);
-	}finally{
-		if (is != null){
-			is.close();
-		}
-	}
-	
+	CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile,meshmetricsFile);
 	return mesh;	
 }
 

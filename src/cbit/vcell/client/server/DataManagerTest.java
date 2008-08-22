@@ -1,6 +1,12 @@
 package cbit.vcell.client.server;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.Vector;
+
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.ReservedVariable;
 /**
  * Insert the type's description here.
@@ -179,7 +185,7 @@ public boolean getParticleDataExists() throws cbit.vcell.server.DataAccessExcept
  */
 public static DataManagerTest getPDEExample1() {
 	try {
-		java.util.Vector functionList = new java.util.Vector();
+		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
 		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME,false));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
@@ -194,14 +200,7 @@ public static DataManagerTest getPDEExample1() {
 
 		// read the mesh file into this string .... DO A FILE READ
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size10241024.mesh");
-		byte[] data = new byte[(int)meshFile.length()];
-		java.io.FileInputStream fip = new java.io.FileInputStream(meshFile);
-		fip.read(data);
-		fip.close();
-		String meshString = new String(data);
-
-		cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(meshString);
-		cbit.vcell.solvers.CartesianMesh mesh = cbit.vcell.solvers.CartesianMesh.fromTokens(tokens, null);
+		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
 		cbit.vcell.server.VCDataIdentifier vcDataIdentifier = new cbit.vcell.server.VCDataIdentifier() {
 										public cbit.vcell.server.User getOwner() {
 											return new cbit.vcell.server.User("anu",new cbit.sql.KeyValue("123"));
@@ -223,7 +222,7 @@ public static DataManagerTest getPDEExample1() {
  */
 public static DataManagerTest getPDEExample2() {
 	try {
-		java.util.Vector functionList = new java.util.Vector();
+		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
 		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME,false));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
@@ -238,14 +237,7 @@ public static DataManagerTest getPDEExample2() {
 
 		// read the mesh file into this string .... DO A FILE READ
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size44.mesh");
-		byte[] data = new byte[(int)meshFile.length()];
-		java.io.FileInputStream fip = new java.io.FileInputStream(meshFile);
-		fip.read(data);
-		fip.close();
-		String meshString = new String(data);
-
-		cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(meshString);
-		cbit.vcell.solvers.CartesianMesh mesh = cbit.vcell.solvers.CartesianMesh.fromTokens(tokens, null);
+		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
 		cbit.vcell.server.VCDataIdentifier vcDataIdentifier = new cbit.vcell.server.VCDataIdentifier() {
 										public cbit.vcell.server.User getOwner() {
 											return new cbit.vcell.server.User("anu",new cbit.sql.KeyValue("123"));

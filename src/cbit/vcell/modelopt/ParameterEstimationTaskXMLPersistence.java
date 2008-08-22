@@ -1,4 +1,7 @@
 package cbit.vcell.modelopt;
+import java.util.List;
+import java.util.Vector;
+
 import org.jdom.Element;
 import org.jdom.Namespace;
 /**
@@ -57,9 +60,9 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	// read ParameterMappingSpecs
 	//
 	Element parameterMappingSpecListElement = parameterEstimationTaskElement.getChild(ParameterMappingSpecListTag, ns);
-	java.util.List parameterMappingSpecElementList = parameterMappingSpecListElement.getChildren(ParameterMappingSpecTag, ns);
+	List<Element> parameterMappingSpecElementList = parameterMappingSpecListElement.getChildren(ParameterMappingSpecTag, ns);
 	for (int i = 0; i < parameterMappingSpecElementList.size(); i++){
-		Element parameterMappingSpecElement = (Element)parameterMappingSpecElementList.get(i);
+		Element parameterMappingSpecElement = parameterMappingSpecElementList.get(i);
 		String parameterName = parameterMappingSpecElement.getAttributeValue(ParameterReferenceAttribute);
 		cbit.vcell.parser.SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
 	
@@ -95,7 +98,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	if (referenceDataElement!=null){
 		String numRowsText = referenceDataElement.getAttributeValue(NumRowsAttribute);
 		String numColsText = referenceDataElement.getAttributeValue(NumColumnsAttribute);
-		int numRows = Integer.parseInt(numRowsText);
+		//int numRows = Integer.parseInt(numRowsText);
 		int numCols = Integer.parseInt(numColsText);
 
 		//
@@ -105,9 +108,9 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 		double[] columnWeights = new double[numCols];
 
 		Element dataColumnListElement = referenceDataElement.getChild(DataColumnListTag, ns);
-		java.util.List dataColumnList = dataColumnListElement.getChildren(DataColumnTag, ns);
+		List<Element> dataColumnList = dataColumnListElement.getChildren(DataColumnTag, ns);
 		for (int i = 0; i < dataColumnList.size(); i++){
-			Element dataColumnElement = (Element)dataColumnList.get(i);
+			Element dataColumnElement = dataColumnList.get(i);
 			columnNames[i] = dataColumnElement.getAttributeValue(NameAttribute);
 			columnWeights[i] = Double.parseDouble(dataColumnElement.getAttributeValue(WeightAttribute));
 		}
@@ -115,16 +118,16 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 		//
 		// read rows
 		//
-		java.util.Vector rowDataVector = new java.util.Vector();
+		Vector<double[]> rowDataVector = new Vector<double[]>();
 		Element dataRowListElement = referenceDataElement.getChild(DataRowListTag, ns);
-		java.util.List dataRowList = dataRowListElement.getChildren(DataRowTag, ns);
+		List<Element> dataRowList = dataRowListElement.getChildren(DataRowTag, ns);
 		for (int i = 0; i < dataRowList.size(); i++){
-			Element dataRowElement = (Element)dataRowList.get(i);
+			Element dataRowElement = dataRowList.get(i);
 			String rowText = dataRowElement.getText();
 			cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(rowText);
 			double[] rowData = new double[numCols];
 			for (int j = 0; j < numCols; j++){
-				if (tokens.hasMoreElements()){
+				if (tokens.hasMoreTokens()){
 					String token = tokens.nextToken();
 					rowData[j] = Double.parseDouble(token);
 				}else{
@@ -145,9 +148,9 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	//
 	Element referenceDataMappingSpecListElement = parameterEstimationTaskElement.getChild(ReferenceDataMappingSpecListTag, ns);
 	if (referenceDataMappingSpecListElement!=null){
-		java.util.List referenceDataMappingSpecList = referenceDataMappingSpecListElement.getChildren(ReferenceDataMappingSpecTag, ns);
+		List<Element> referenceDataMappingSpecList = referenceDataMappingSpecListElement.getChildren(ReferenceDataMappingSpecTag, ns);
 		for (int i = 0; i < referenceDataMappingSpecList.size(); i++){
-			Element referenceDataMappingSpecElement = (Element)referenceDataMappingSpecList.get(i);
+			Element referenceDataMappingSpecElement = referenceDataMappingSpecList.get(i);
 			String referenceDataColumnName = referenceDataMappingSpecElement.getAttributeValue(ReferenceDataColumnNameAttribute);
 			String referenceDataModelSymbolName = referenceDataMappingSpecElement.getAttributeValue(ReferenceDataModelSymbolAttribute);
 

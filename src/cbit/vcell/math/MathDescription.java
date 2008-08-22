@@ -2708,7 +2708,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 		}		
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
-		throw new MathException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
+		throw new MathException("line #" + tokens.lineIndex() + " Exception: "+e.getMessage());
 	}	
 	fireStateChanged();
 }

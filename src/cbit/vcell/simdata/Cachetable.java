@@ -38,7 +38,7 @@ public Cachetable(long expireTime) {
  * This method was created in VisualAge.
  * @param expireTime long
  */
-public Cachetable(long expireTime, long maxMemSize) {
+private Cachetable(long expireTime, long maxMemSize) {
 	//
 	// if not specified, use half of memory
 	//

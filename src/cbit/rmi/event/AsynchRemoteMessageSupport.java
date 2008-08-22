@@ -154,6 +154,7 @@ private void dispatch() {
 		}
 	}		
 	System.out.println("AsynchRemoteMessageSupport@"+Integer.toHexString(hashCode())+".dispatch(): <<<CLOSING>>>");
+	listeners.clear();
 }
 /**
  * Insert the method's description here.

@@ -6,6 +6,7 @@ package cbit.vcell.modeldb;
 import java.math.BigDecimal;
 import cbit.sql.*;
 import cbit.vcell.server.User;
+import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.MathDescription;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -129,25 +130,9 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 	//
 	//mathDescription.setGeometry(geom);
 	
-	cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(mathDescriptionDataString);
+	CommentStringTokenizer tokens = new CommentStringTokenizer(mathDescriptionDataString);
 	try {
 		mathDescription.read_database(tokens);
-	} catch (cbit.vcell.math.MathException e) {
-		e.printStackTrace(System.out);
-		//
-		// failed reading VCML first time, maybe VCML has out-of-order variables ... try to fix it.
-		//
-		log.print("MathException '"+e.getMessage()+"' while reading VCML for MathDescription, trying to reorder variables in VCML and reread VCML");
-		try {
-			//String newVCML = MathDescription.getVCML_withReorderedVariables(version,mathDescriptionDataString);
-			String newVCML = mathDescriptionDataString;
-			tokens = new cbit.vcell.math.CommentStringTokenizer(newVCML);
-			mathDescription = new MathDescription(version);
-			mathDescription.read_database(tokens);
-		}catch (Exception e2){
-			e2.printStackTrace(System.out);
-			throw new cbit.vcell.server.DataAccessException(e2.getMessage());
-		}
 	} catch (Exception e){
 		e.printStackTrace(System.out);
 		throw new cbit.vcell.server.DataAccessException(e.getMessage());

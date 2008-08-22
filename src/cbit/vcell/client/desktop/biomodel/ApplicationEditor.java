@@ -1966,7 +1966,7 @@ private void refreshAnalysisTab()
 		{
 			if(getSimulationContext().getGeometryContext().getGeometry().getDimension() != 0)//pde
 			{
-				ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, true);
+				ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, false);
 			}
 			else //ode
 			{
