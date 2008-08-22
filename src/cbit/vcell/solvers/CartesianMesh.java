@@ -135,15 +135,15 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
 			pw.println("# of volume regions is different!");
 			return false;
 		}
-		Vector vrmsv1 = meshRegionInfo1.getVolumeRegionMapSubvolume();
-		Vector vrmsv2 = meshRegionInfo2.getVolumeRegionMapSubvolume();
+		Vector<MeshRegionInfo.VolumeRegionMapSubvolume> vrmsv1 = meshRegionInfo1.getVolumeRegionMapSubvolume();
+		Vector<MeshRegionInfo.VolumeRegionMapSubvolume> vrmsv2 = meshRegionInfo2.getVolumeRegionMapSubvolume();
 		
 		double precision = 1.1e-15;
 		double MAX_REL_ERROR = 1.1e-15;		
 		
 		for (int i = 0; i < meshRegionInfo1.getNumVolumeRegions(); i ++) {
-			MeshRegionInfo.VolumeRegionMapSubvolume region1 = (MeshRegionInfo.VolumeRegionMapSubvolume)vrmsv1.elementAt(i);
-			MeshRegionInfo.VolumeRegionMapSubvolume region2 = (MeshRegionInfo.VolumeRegionMapSubvolume)vrmsv2.elementAt(i);
+			MeshRegionInfo.VolumeRegionMapSubvolume region1 = vrmsv1.elementAt(i);
+			MeshRegionInfo.VolumeRegionMapSubvolume region2 = vrmsv2.elementAt(i);
 			double region1Volume = region1.volumeRegionVolume;
 			double region2Volume = region2.volumeRegionVolume;			
 			
@@ -163,12 +163,12 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
 			return false;
 		}
 
-		Vector mrmsv1 = meshRegionInfo1.getMembraneRegionMapVolumeRegion();
-		Vector mrmsv2 = meshRegionInfo2.getMembraneRegionMapVolumeRegion();
+		Vector<MeshRegionInfo.MembraneRegionMapVolumeRegion> mrmsv1 = meshRegionInfo1.getMembraneRegionMapVolumeRegion();
+		Vector<MeshRegionInfo.MembraneRegionMapVolumeRegion> mrmsv2 = meshRegionInfo2.getMembraneRegionMapVolumeRegion();
 
 		for (int i = 0; i < meshRegionInfo2.getNumMembraneRegions(); i ++) {	
-			MeshRegionInfo.MembraneRegionMapVolumeRegion region1 = (MeshRegionInfo.MembraneRegionMapVolumeRegion)mrmsv1.elementAt(i);
-			MeshRegionInfo.MembraneRegionMapVolumeRegion region2 = (MeshRegionInfo.MembraneRegionMapVolumeRegion)mrmsv2.elementAt(i);
+			MeshRegionInfo.MembraneRegionMapVolumeRegion region1 = mrmsv1.elementAt(i);
+			MeshRegionInfo.MembraneRegionMapVolumeRegion region2 = mrmsv2.elementAt(i);
 
 			double region1Surface = region1.membraneRegionSurface;
 			double region2Surface = region2.membraneRegionSurface;
@@ -338,23 +338,6 @@ public static boolean isSpatialDomainSame(CartesianMesh mesh1,CartesianMesh mesh
 	
 	return true;
 }
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public static CartesianMesh fromTokens(cbit.vcell.math.CommentStringTokenizer meshTokens,cbit.vcell.math.CommentStringTokenizer membraneMeshMetricsTokens) throws MathException {
-	CartesianMesh mesh = new CartesianMesh();
-
-	MembraneMeshMetrics membraneMeshMetrics = null;
-	if(membraneMeshMetricsTokens != null){
-		membraneMeshMetrics = mesh.readMembraneMeshMetrics(membraneMeshMetricsTokens);
-	}
-	mesh.read(meshTokens,membraneMeshMetrics);
-	return mesh;
-}
-
 
 /**
  * Insert the method's description here.
@@ -1013,7 +996,7 @@ public boolean isMembraneConnectivityOK() {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-private void read(cbit.vcell.math.CommentStringTokenizer tokens,MembraneMeshMetrics membraneMeshMetrics) throws MathException {
+private void read(CommentStringTokenizer tokens, MembraneMeshMetrics membraneMeshMetrics) throws MathException {
 	//
 	// clear previous contents
 	//
@@ -1455,7 +1438,7 @@ private void read(cbit.vcell.math.CommentStringTokenizer tokens,MembraneMeshMetr
  * Insert the method's description here.
  * Creation date: (2/15/2006 2:06:21 PM)
  */
-public MembraneMeshMetrics readMembraneMeshMetrics(cbit.vcell.math.CommentStringTokenizer tokens) throws MathException{
+public MembraneMeshMetrics readMembraneMeshMetrics(CommentStringTokenizer tokens) throws MathException{
 
 	MembraneMeshMetrics membraneMeshMetrics = new MembraneMeshMetrics();
 	
@@ -1757,43 +1740,44 @@ private void writeMembraneElements_Connectivity_Region(PrintStream out)
 //	}
 //}
 
-	public static void test() {
+public static cbit.vcell.solvers.CartesianMesh readFromFiles(File meshFile, File meshmetricsFile) throws IOException, MathException {	
+	//
+	// read meshFile and parse into 'mesh' object
+	//
+	BufferedReader meshReader = null;
+	BufferedReader meshMetricsReader = null;
+
+	meshReader = new BufferedReader(new FileReader(meshFile));
+	CommentStringTokenizer meshST = new CommentStringTokenizer(meshReader);
+
+	CommentStringTokenizer membraneMeshMetricsST = null;
+	if(meshmetricsFile != null){
+		meshMetricsReader = new BufferedReader(new FileReader(meshmetricsFile));
+		membraneMeshMetricsST = new CommentStringTokenizer(meshMetricsReader);
+	}
+
+	CartesianMesh mesh = new CartesianMesh();
+	MembraneMeshMetrics membraneMeshMetrics = null;
+	if(membraneMeshMetricsST != null){
+		membraneMeshMetrics = mesh.readMembraneMeshMetrics(membraneMeshMetricsST);
+	}
+	mesh.read(meshST,membraneMeshMetrics);
+
+	meshReader.close();
+	meshMetricsReader.close();
+	
+	return mesh;	
+} 
+	
+public static void test() {
 		try {
 			cbit.vcell.solvers.CartesianMesh mesh = null;
 	
-			File meshFile = new File("\\\\san1\\RAID\\vcell\\users\\frm\\SimID_20587997_0_.mesh");
-			File membraneMeshMetricsFile = new File("\\\\san1\\RAID\\vcell\\users\\frm\\SimID_20587997_0_.meshmetrics");
+			File meshFile = new File("\\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\fgao\\SimID_28389873_0_.mesh");
+			File membraneMeshMetricsFile = new File("\\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\fgao\\SimID_28389873_0_.meshmetrics");
 			// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
 			//
-			InputStreamReader reader = null;
-			try {
-				FileInputStream is = new FileInputStream(meshFile);
-				reader = new InputStreamReader(is);
-				char buffer[] = new char[(int)meshFile.length()];
-				int length = reader.read(buffer,0,buffer.length);
-				String meshString = new String(buffer,0,length);
-System.out.println("-------------------- original file ----------------");
-System.out.println(meshString);
-				reader.close();
-				CommentStringTokenizer meshST = new CommentStringTokenizer(meshString);
-
-				CommentStringTokenizer membraneMeshMetricsST = null;
-				if(membraneMeshMetricsFile != null){
-					is = new FileInputStream(membraneMeshMetricsFile);
-					reader = new InputStreamReader(is);
-					buffer = new char[(int)membraneMeshMetricsFile.length()];
-					length = reader.read(buffer,0,buffer.length);
-					String mmmString = new String(buffer,0,length);
-					reader.close();
-					membraneMeshMetricsST = new CommentStringTokenizer(mmmString);
-				}
-
-				mesh = CartesianMesh.fromTokens(meshST,membraneMeshMetricsST);
-			} finally {
-				if (reader != null) {
-					reader.close();
-				}
-			}
+			mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile);
 			System.out.println("-------------------- generated file ----------------");
 			mesh.write(System.out);
 		}catch (Exception e){

@@ -9,6 +9,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.math.*;
+
 import java.io.*;
 import java.util.*;
 import cbit.vcell.server.*;
@@ -1367,7 +1368,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		String odeDataFormat = lineTokenizer.nextToken(); // br.readLine();
 		dataFilenames = new String[] { lineTokenizer.nextToken() }; // {br.readLine()};
 	} else {
-		CommentStringTokenizer st = new CommentStringTokenizer(stringBuffer.toString());
+		StringTokenizer st = new StringTokenizer(stringBuffer.toString());
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays
 		isODEData = false;
 		if (!( (bZipFormat2 && st.countTokens()%4 == 0) || (!bZipFormat2 && st.countTokens()%3 == 0))) {
@@ -1421,7 +1422,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
  * This method was created in VisualAge.
  * @param logFile java.io.File
  */
-private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) throws FileNotFoundException, IOException, cbit.vcell.math.MathException {
+private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) throws FileNotFoundException, IOException, MathException {
 	if (meshFile.exists()){
 		long lastModified = meshFile.lastModified();
 		if (lastModified == meshFileLastModified){
@@ -1437,33 +1438,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	//
 	// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
 	//
-	InputStreamReader reader = null;
-	try {
-		FileInputStream is = new FileInputStream(meshFile);
-		reader = new InputStreamReader(is);
-		char buffer[] = new char[(int)meshFile.length()];
-		int length = reader.read(buffer,0,buffer.length);
-		String meshString = new String(buffer,0,length);
-		reader.close();
-		CommentStringTokenizer meshST = new CommentStringTokenizer(meshString);
-
-		CommentStringTokenizer membraneMeshMetricsST = null;
-		if(membraneMeshMetricsFile != null){
-			is = new FileInputStream(membraneMeshMetricsFile);
-			reader = new InputStreamReader(is);
-			buffer = new char[(int)membraneMeshMetricsFile.length()];
-			length = reader.read(buffer,0,buffer.length);
-			String mmmString = new String(buffer,0,length);
-			reader.close();
-			membraneMeshMetricsST = new CommentStringTokenizer(mmmString);
-		}
-
-		mesh = CartesianMesh.fromTokens(meshST,membraneMeshMetricsST);
-	}finally{
-		if (reader != null){
-			reader.close();
-		}
-	}
+	mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile);
 }
 
 

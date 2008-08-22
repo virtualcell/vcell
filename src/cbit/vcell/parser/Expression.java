@@ -2,6 +2,7 @@ package cbit.vcell.parser;
 
 import cbit.util.Matchable;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.MathException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
@@ -88,7 +89,7 @@ public Expression ( String expString ) throws ExpressionException {
 	}
 	parseExpression(expString);
 }
-public Expression(StringTokenizer tokens) throws ExpressionException {
+public Expression(CommentStringTokenizer tokens) throws ExpressionException {
 	read(tokens);
 }  
 
@@ -840,7 +841,7 @@ public static void printNode(org.w3c.dom.Node nodeArg, String pad){
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-private void read(StringTokenizer tokens) throws ExpressionException {
+private void read(CommentStringTokenizer tokens) throws ExpressionException {
 	String expressionString = new String();
 	String token = null;
 	while (tokens.hasMoreTokens()){

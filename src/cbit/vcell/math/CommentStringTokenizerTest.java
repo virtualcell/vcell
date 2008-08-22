@@ -18,8 +18,8 @@ public static void main(java.lang.String[] args) {
 	System.out.println(testString);
 	System.out.println("\ntokens:\n");
 	CommentStringTokenizer commentTokenizer = new CommentStringTokenizer(testString);
-	while (commentTokenizer.hasMoreElements()){
-		System.out.println("line("+(commentTokenizer.lineIndex()+1)+") '"+commentTokenizer.nextElement()+"'");
+	while (commentTokenizer.hasMoreTokens()){
+		System.out.println("line("+(commentTokenizer.lineIndex()+1)+") '"+commentTokenizer.nextToken()+"'");
 	}	
 }
 }
