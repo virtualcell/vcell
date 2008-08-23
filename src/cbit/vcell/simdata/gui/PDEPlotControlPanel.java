@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
 import cbit.util.*;
 
@@ -766,6 +767,7 @@ private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 
 private void filterVariableNames(){
 	if ((getpdeDataContext1() != null)) {
+		Object oldselection = getJList1().getSelectedValue();
 		if(dataIdentifierFilter == null || dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
 			getDefaultListModelCivilized1().setContents(getpdeDataContext1().getVariableNames());
 		}else{
@@ -787,8 +789,32 @@ private void filterVariableNames(){
 					}
 				}
 			}
+			if(displayVarNames.size() == 0){
+				Object emptyFilter = filterComboBox.getSelectedItem();
+				filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
+				DialogUtils.showInfoDialog("No Variables matching filter '"+emptyFilter+"' found");
+				return;
+			}
 			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
 			getDefaultListModelCivilized1().setContents((displayNames.length == 0?null:displayNames));
+		}
+		if(getJList1().getModel().getSize() > 0){
+			if(oldselection == null){
+				getJList1().setSelectedIndex(0);
+			}else{
+				boolean bFound = false;
+				for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+					if(oldselection.equals(getJList1().getModel().getElementAt(i))){
+						getJList1().setSelectedIndex(i);
+						bFound = true;
+						break;
+					}
+				}
+				if(!bFound){
+					getJList1().setSelectedIndex(0);
+				}
+			}
+			
 		}
 	}
 }
@@ -1849,6 +1875,13 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 				}
 			} finally {
 				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+		}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+			for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+				if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+					getJList1().setSelectedIndex(i);
+					break;
+				}
 			}
 		}
 	}
