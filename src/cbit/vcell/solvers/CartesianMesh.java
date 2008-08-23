@@ -1746,7 +1746,7 @@ public static cbit.vcell.solvers.CartesianMesh readFromFiles(File meshFile, File
 	//
 	BufferedReader meshReader = null;
 	BufferedReader meshMetricsReader = null;
-
+	try{
 	meshReader = new BufferedReader(new FileReader(meshFile));
 	CommentStringTokenizer meshST = new CommentStringTokenizer(meshReader);
 
@@ -1762,11 +1762,11 @@ public static cbit.vcell.solvers.CartesianMesh readFromFiles(File meshFile, File
 		membraneMeshMetrics = mesh.readMembraneMeshMetrics(membraneMeshMetricsST);
 	}
 	mesh.read(meshST,membraneMeshMetrics);
-
-	meshReader.close();
-	meshMetricsReader.close();
-	
-	return mesh;	
+	return mesh;
+	}finally{
+		if(meshReader != null){try{meshReader.close();}catch(Exception e){e.printStackTrace();}}
+		if(meshMetricsReader != null){try{meshMetricsReader.close();}catch(Exception e){e.printStackTrace();}}
+	}
 } 
 	
 public static void test() {
