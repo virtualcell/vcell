@@ -97,6 +97,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String FRAPSTUDYPANEL_TABNAME_REPORT = "Adjust Parameters";
 	public static final String FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS = "2D Results";
 	
+	public static final LineBorder TAB_LINE_BORDER = new LineBorder(new Color(153, 186,243), 3);
+	
 	private FRAPStudy frapStudy = null; 
 	private FRAPDataPanel frapDataPanel = null;
 	private LocalWorkspace localWorkspace = null;
@@ -1182,7 +1184,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public static String convertDoubletoString(double doubleValue){
 		String doubleString = doubleValue+"";
-		System.out.println(doubleString);
 		return doubleString;
 	}
 

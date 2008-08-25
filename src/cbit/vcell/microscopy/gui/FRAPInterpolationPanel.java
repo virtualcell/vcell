@@ -200,7 +200,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		final JButton createOptimalButton = new JButton();
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_8.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_8.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_8.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_8.gridwidth = 3;
 		gridBagConstraints_8.gridy = 0;
@@ -242,11 +242,11 @@ public class FRAPInterpolationPanel extends JPanel {
 		final JButton runSimbutton = new JButton();
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_13.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_13.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_13.gridy = 0;
 		gridBagConstraints_13.gridx = 3;
 		add(runSimbutton, gridBagConstraints_13);
-		runSimbutton.setFont(new Font("", Font.BOLD, 14));
+//		runSimbutton.setFont(new Font("", Font.BOLD, 14));
 		runSimbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				firePropertyChange(PROPERTY_CHANGE_RUNSIM, null,null);
@@ -255,10 +255,10 @@ public class FRAPInterpolationPanel extends JPanel {
 		runSimbutton.setText("Create New FRAP Document using Current Parameter Settings...");
 
 		final JLabel diffusionRateLabel = new JLabel();
-		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
+//		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
 		diffusionRateLabel.setText("Diffusion Rate:");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-		gridBagConstraints_9.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_9.gridy = 1;
 		gridBagConstraints_9.gridx = 0;
@@ -271,18 +271,18 @@ public class FRAPInterpolationPanel extends JPanel {
 		diffusionRateTextField.setMinimumSize(new Dimension(125, 20));
 //		diffusionRateTextField.setText("DiffusionRate");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(4, 4, 4, 0);
+		gridBagConstraints.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.gridx = 1;
 		add(diffusionRateTextField, gridBagConstraints);
 
 		diffusionRateSetButton = new JButton();
+		diffusionRateSetButton.setMargin(new Insets(0, 2, 0, 2));
 		diffusionRateSetButton.addActionListener(SET_ACTION_LISTENER);
-		diffusionRateSetButton.setMargin(new Insets(2, 2, 2, 2));
 		diffusionRateSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-		gridBagConstraints_1.insets = new Insets(4, 0, 4, 4);
+		gridBagConstraints_1.insets = new Insets(2, 0, 2, 2);
 		gridBagConstraints_1.gridy = 1;
 		gridBagConstraints_1.gridx = 2;
 		add(diffusionRateSetButton, gridBagConstraints_1);
@@ -291,7 +291,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		diffusionRateSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		diffusionRateSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_4.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_4.weightx = 1;
 		gridBagConstraints_4.gridy = 1;
@@ -299,10 +299,10 @@ public class FRAPInterpolationPanel extends JPanel {
 		add(diffusionRateSlider, gridBagConstraints_4);
 
 		final JLabel mobileFractionLabel = new JLabel();
-		mobileFractionLabel.setFont(new Font("", Font.BOLD, 14));
+//		mobileFractionLabel.setFont(new Font("", Font.BOLD, 14));
 		mobileFractionLabel.setText("Mobile Fraction:");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
-		gridBagConstraints_11.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_11.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_11.gridy = 2;
 		gridBagConstraints_11.gridx = 0;
@@ -315,7 +315,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		mobileFractionTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 //		mobileFractionTextField.setText("mobileFraction");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-		gridBagConstraints_2.insets = new Insets(4, 4, 4, 0);
+		gridBagConstraints_2.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_2.gridy = 2;
 		gridBagConstraints_2.gridx = 1;
@@ -323,10 +323,10 @@ public class FRAPInterpolationPanel extends JPanel {
 
 		mobileFractionSetButton = new JButton();
 		mobileFractionSetButton.addActionListener(SET_ACTION_LISTENER);
-		mobileFractionSetButton.setMargin(new Insets(2, 2, 2, 2));
+		mobileFractionSetButton.setMargin(new Insets(0, 2, 0, 2));
 		mobileFractionSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-		gridBagConstraints_5.insets = new Insets(4, 0, 4, 4);
+		gridBagConstraints_5.insets = new Insets(2, 0, 2, 2);
 		gridBagConstraints_5.gridy = 2;
 		gridBagConstraints_5.gridx = 2;
 		add(mobileFractionSetButton, gridBagConstraints_5);
@@ -335,7 +335,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		mobileFractionSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		mobileFractionSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-		gridBagConstraints_6.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_6.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_6.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_6.weightx = 1;
 		gridBagConstraints_6.gridy = 2;
@@ -343,10 +343,10 @@ public class FRAPInterpolationPanel extends JPanel {
 		add(mobileFractionSlider, gridBagConstraints_6);
 
 		final JLabel bleachWhileMonitorLabel = new JLabel();
-		bleachWhileMonitorLabel.setFont(new Font("", Font.BOLD, 14));
+//		bleachWhileMonitorLabel.setFont(new Font("", Font.BOLD, 14));
 		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate:");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
-		gridBagConstraints_12.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_12.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_12.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_12.gridy = 3;
 		gridBagConstraints_12.gridx = 0;
@@ -359,7 +359,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		bleachWhileMonitorRateTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 //		bleachWhileMonitorRateTextField.setText("bleachWhileMonitorRate");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.insets = new Insets(4, 4, 4, 0);
+		gridBagConstraints_3.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_3.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_3.gridy = 3;
 		gridBagConstraints_3.gridx = 1;
@@ -367,10 +367,10 @@ public class FRAPInterpolationPanel extends JPanel {
 
 		bleachWhileMonitorSetButton = new JButton();
 		bleachWhileMonitorSetButton.addActionListener(SET_ACTION_LISTENER);
-		bleachWhileMonitorSetButton.setMargin(new Insets(2, 2, 2, 2));
+		bleachWhileMonitorSetButton.setMargin(new Insets(0, 2, 0, 2));
 		bleachWhileMonitorSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
-		gridBagConstraints_10.insets = new Insets(4, 0, 4, 4);
+		gridBagConstraints_10.insets = new Insets(2, 0, 2, 2);
 		gridBagConstraints_10.gridy = 3;
 		gridBagConstraints_10.gridx = 2;
 		add(bleachWhileMonitorSetButton, gridBagConstraints_10);
@@ -379,7 +379,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		bleachWhileMonitorSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		bleachWhileMonitorSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
-		gridBagConstraints_7.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_7.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_7.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_7.weightx = 1;
 		gridBagConstraints_7.gridy = 3;
