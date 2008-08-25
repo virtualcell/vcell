@@ -766,7 +766,7 @@ private cbit.vcell.model.ReactionStep[] getCollapsedReactionSteps(cbit.vcell.mod
 				cbit.vcell.model.MassActionKinetics fwdMAKinetics = (cbit.vcell.model.MassActionKinetics)fwdRStep.getKinetics();  // outer 'for' loop
 				try {
 					fwdMAKinetics.setParameterValue(fwdMAKinetics.getReverseRateParameter().getName(), revMAKinetics.getForwardRateParameter().getExpression().infix());
-					cbit.vcell.model.Parameter param = revMAKinetics.getParameter(revMAKinetics.getForwardRateParameter().getExpression().infix());
+					cbit.vcell.model.Parameter param = revMAKinetics.getKineticsParameter(revMAKinetics.getForwardRateParameter().getExpression().infix());
 					fwdMAKinetics.setParameterValue(param.getName(), param.getExpression().infix());
 				} catch (Exception e) {
 					e.printStackTrace(System.out);

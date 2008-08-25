@@ -614,8 +614,14 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @param parameterName java.lang.String
  */
 public void addUnresolvedParameter(String parameterName) {
-	if (getParameter(parameterName)!=null){
-		throw new RuntimeException("parameter '"+parameterName+"' already exists");
+	if (getKineticsParameter(parameterName)!=null){
+		throw new RuntimeException("local parameter '"+parameterName+"' already exists");
+	}
+	if (getProxyParameter(parameterName)!=null){
+		throw new RuntimeException("referenced external symbol '"+parameterName+"' already exists");
+	}
+	if (getUnresolvedParameter(parameterName)!=null){
+		throw new RuntimeException("unresolved parameter '"+parameterName+"' already exists");
 	}
 	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.addElement(fieldUnresolvedParameters,new UnresolvedParameter(parameterName));
 	setUnresolvedParameters(newUnresolvedParameters);
@@ -628,8 +634,14 @@ public void addUnresolvedParameter(String parameterName) {
  * @param parameterName java.lang.String
  */
 public KineticsProxyParameter addProxyParameter(SymbolTableEntry symbolTableEntry) {
-	if (getParameter(symbolTableEntry.getName())!=null || getProxyParameter(symbolTableEntry.getName())!=null){
-		throw new RuntimeException("parameter '"+symbolTableEntry.getName()+"' already exists");
+	if (getKineticsParameter(symbolTableEntry.getName())!=null){
+		throw new RuntimeException("local parameter '"+symbolTableEntry.getName()+"' already exists");
+	}
+	if (getProxyParameter(symbolTableEntry.getName())!=null){
+		throw new RuntimeException("referenced external symbol '"+symbolTableEntry.getName()+"' already exists");
+	}
+	if (getUnresolvedParameter(symbolTableEntry.getName())!=null){
+		removeUnresolvedParameter(getUnresolvedParameter(symbolTableEntry.getName()));
 	}
 	KineticsProxyParameter newProxyParameter = new KineticsProxyParameter(symbolTableEntry);
 	KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])BeanUtils.addElement(fieldProxyParameters,newProxyParameter);
@@ -644,8 +656,14 @@ public KineticsProxyParameter addProxyParameter(SymbolTableEntry symbolTableEntr
  * @param parameterName java.lang.String
  */
 public KineticsParameter addUserDefinedKineticsParameter(String parameterName, Expression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
-	if (getParameter(parameterName)!=null){
+	if (getKineticsParameter(parameterName)!=null){
 		throw new RuntimeException("parameter '"+parameterName+"' already exists");
+	}
+	if (getUnresolvedParameter(parameterName)!=null){
+		removeUnresolvedParameter(getUnresolvedParameter(parameterName));
+	}
+	if (getProxyParameter(parameterName)!=null){
+		removeProxyParameter(getProxyParameter(parameterName));
 	}
 	KineticsParameter newKineticsParameter = new KineticsParameter(parameterName,expression,ROLE_UserDefined, unit);
 	KineticsParameter newKineticsParameters[] = (KineticsParameter[])BeanUtils.addElement(fieldKineticsParameters,newKineticsParameter);
@@ -900,7 +918,13 @@ public final void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) thro
 					}
 				}
 				exp.bindExpression(reactionStep);
-				Parameter parm = getParameter(token);
+				Parameter parm = getKineticsParameter(token);
+				if (parm==null){
+					parm = getProxyParameter(token);
+				}
+				if (parm==null){
+					parm = getUnresolvedParameter(token);
+				}
 				String unitsString = tokens.nextToken();
 				cbit.vcell.units.VCUnitDefinition unitDef = cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
 				if (unitsString.startsWith("[")){
@@ -1025,7 +1049,13 @@ public final void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) thro
 							// if already using the default name, don't change anything
 							//
 							KineticsParameter parmFromRole = getKineticsParameterFromRole(role);
-							Parameter parmFromName = getParameter(parmName);
+							Parameter parmFromName = getKineticsParameter(parmName);
+							if (parmFromName==null){
+								parmFromName = getProxyParameter(parmName);
+							}
+							if (parmFromName==null){
+								parmFromName = getUnresolvedParameter(parmName);
+							}
 							if (parmFromRole == null){
 								throw new RuntimeException("parameter for role '"+Kinetics.RoleTags+"' not defined");
 								////
@@ -1316,29 +1346,6 @@ public KineticsParameter getKineticsParameters(int index) {
    { 
 	  return name; 
    }   
-
-
-   public Parameter getParameter(String pName){
-		KineticsParameter kineticsParameter = getKineticsParameter(pName);
-		UnresolvedParameter unresolvedParameter = getUnresolvedParameter(pName);
-		KineticsProxyParameter proxyParameter = getProxyParameter(pName);
-		if (kineticsParameter==null && unresolvedParameter==null && proxyParameter==null){
-			return null;
-		}else if (kineticsParameter!=null && unresolvedParameter!=null){
-			throw new RuntimeException("parameter '"+pName+"' exists both as kineticsParameter and unresolvedParameter");
-		}else if (kineticsParameter!=null && proxyParameter!=null){
-			throw new RuntimeException("parameter '"+pName+"' exists both as kineticsParameter and proxyParameter");
-		}else if (proxyParameter!=null && unresolvedParameter!=null){
-			throw new RuntimeException("parameter '"+pName+"' exists both as proxyParameter and unresolvedParameter");
-		}else if (kineticsParameter!=null){
-			return kineticsParameter;
-		}else if (proxyParameter!=null){
-			return proxyParameter;
-		}else{
-			return unresolvedParameter;
-		}
-	}   
-
 
 	public static int getParamRoleFromDesc(String paramDesc) {
 
