@@ -98,6 +98,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String FRAPSTUDYPANEL_TABNAME_REPORT = "Adjust Parameters";
 	public static final String FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS = "2D Results";
 	
+	public static final LineBorder TAB_LINE_BORDER = new LineBorder(new Color(153, 186,243), 3);
+	
 	private FRAPStudy frapStudy = null; 
 	private FRAPDataPanel frapDataPanel = null;
 	private LocalWorkspace localWorkspace = null;
@@ -439,6 +441,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private FRAPDataPanel getFRAPDataPanel() {
 		if (frapDataPanel == null) {
 			frapDataPanel = new FRAPDataPanel();
+			frapDataPanel.setBorder(TAB_LINE_BORDER);
 			frapDataPanel.getOverlayEditorPanelJAI().addPropertyChangeListener(this);
 		}
 		return frapDataPanel;
@@ -484,6 +487,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private FRAPSimDataViewerPanel getFRAPSimDataViewerPanel(){
 		if(frapSimDataViewerPanel == null){
 			frapSimDataViewerPanel = new FRAPSimDataViewerPanel();
+			frapSimDataViewerPanel.setBorder(TAB_LINE_BORDER);
 		}
 		return frapSimDataViewerPanel;
 	}
@@ -645,6 +649,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private FRAPParametersPanel getFRAPParametersPanel() {
 		if (frapParametersPanel == null) {
 			frapParametersPanel = new FRAPParametersPanel();
+//			frapParametersPanel.setBorder(TAB_LINE_BORDER);
 		}
 		return frapParametersPanel;
 	}
@@ -666,6 +671,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private ResultsSummaryPanel getResultsSummaryPanel(){
 		if(resultsSummaryPanel == null){
 			resultsSummaryPanel = new ResultsSummaryPanel();
+//			resultsSummaryPanel.setBorder(TAB_LINE_BORDER);
 		}
 		return resultsSummaryPanel;
 	}

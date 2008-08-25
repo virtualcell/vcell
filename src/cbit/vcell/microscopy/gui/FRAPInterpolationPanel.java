@@ -246,7 +246,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		gridBagConstraints_13.gridy = 0;
 		gridBagConstraints_13.gridx = 3;
 		add(runSimbutton, gridBagConstraints_13);
-		runSimbutton.setFont(new Font("", Font.BOLD, 14));
+//		runSimbutton.setFont(new Font("", Font.BOLD, 14));
 		runSimbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				firePropertyChange(PROPERTY_CHANGE_RUNSIM, null,null);
@@ -255,7 +255,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		runSimbutton.setText("Create New FRAP Document using Current Parameter Settings...");
 
 		final JLabel diffusionRateLabel = new JLabel();
-		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
+//		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
 		diffusionRateLabel.setText("Diffusion Rate:");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
@@ -299,7 +299,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		add(diffusionRateSlider, gridBagConstraints_4);
 
 		final JLabel mobileFractionLabel = new JLabel();
-		mobileFractionLabel.setFont(new Font("", Font.BOLD, 14));
+//		mobileFractionLabel.setFont(new Font("", Font.BOLD, 14));
 		mobileFractionLabel.setText("Mobile Fraction:");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.insets = new Insets(2, 2, 2, 2);
@@ -343,7 +343,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		add(mobileFractionSlider, gridBagConstraints_6);
 
 		final JLabel bleachWhileMonitorLabel = new JLabel();
-		bleachWhileMonitorLabel.setFont(new Font("", Font.BOLD, 14));
+//		bleachWhileMonitorLabel.setFont(new Font("", Font.BOLD, 14));
 		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate:");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
 		gridBagConstraints_12.insets = new Insets(2, 2, 2, 2);

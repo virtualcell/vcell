@@ -19,7 +19,6 @@ public class FRAPSimDataViewerPanel extends JPanel {
 
 	public FRAPSimDataViewerPanel() {
 		super();
-		setBorder(new LineBorder(Color.black, 4, false));
 		setLayout(new GridBagLayout());
 
 		final JTabbedPane tabbedPane = new JTabbedPane();
