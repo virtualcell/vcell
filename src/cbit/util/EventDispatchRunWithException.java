@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.SwingUtilities;
 
+import cbit.vcell.client.task.UserCancelException;
+
 /**
  * Ensures that abstract method runWithException is run on the eventDispatchThread.
  * <p>Ensures that SwingUtilities.invokeAndWait returns the correct exception if necessary.
@@ -71,7 +73,7 @@ public abstract class EventDispatchRunWithException {
 			try{
 				return runEventDispatchThreadSafely();
 			}catch(Throwable throwable){
-				throwable.printStackTrace();
+				printStack(throwable);
 				throw handleThrowableAsException(throwable);
 			}
 		}
@@ -79,7 +81,7 @@ public abstract class EventDispatchRunWithException {
 			try{
 				return runEventDispatchThreadSafely();
 			}catch(Throwable throwable){
-				throwable.printStackTrace();
+				printStack(throwable);
 				throw handleThrowableAsRuntimeException(throwable);
 			}
 		}
@@ -87,9 +89,13 @@ public abstract class EventDispatchRunWithException {
 			try{
 				return runEventDispatchThreadSafely();
 			}catch(Throwable throwable){
-				throwable.printStackTrace();
+				printStack(throwable);
 				return null;
 			}
 		}
-
+		private void printStack(Throwable throwable){
+			if(!(throwable instanceof UserCancelException)){
+				throwable.printStackTrace();
+			}
+		}
 }

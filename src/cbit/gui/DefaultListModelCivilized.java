@@ -6,6 +6,12 @@ package cbit.gui;
 ©*/
 import javax.swing.AbstractListModel;
 
+import java.util.Vector;
+import java.util.Enumeration;
+
+import cbit.util.EventDispatchRunWithException;
+
+
 /**
  * Two enhancements to javax.swing.DefaultListModel:
  * - ability to construct the list directly from an object array:
@@ -31,12 +37,6 @@ import javax.swing.AbstractListModel;
  * @(#)DefaultListModel.java	1.21 98/10/06
  *
  */
-
-import java.util.Vector;
-import java.util.Enumeration;
-
-import javax.swing.event.*;
-
 
 /**
  * This class implements the java.util.Vector API and notifies
@@ -442,16 +442,23 @@ public void addNewElement(Object obj) {
  * Creation date: (1/22/2001 12:43:35 AM)
  * @param newList java.lang.Object[]
  */
-public void setContents(Object[] newList) {
-	clear();
-	synchronized (this) {
-		if (newList != null) {
-			for (int i=0;i<newList.length;i++) {
-				delegate.addElement(newList[i]);
+public void setContents(final Object[] newList) {
+
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			clear();
+			synchronized (DefaultListModelCivilized.this) {
+				if (newList != null) {
+					for (int i=0;i<newList.length;i++) {
+						delegate.addElement(newList[i]);
+					}
+					fireIntervalAdded(DefaultListModelCivilized.this, 0, delegate.size() - 1);
+				}
 			}
-			fireIntervalAdded(this, 0, delegate.size() - 1);
+			return null;
 		}
-	}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+
 }
 	/**
 	 * Sets the component at the specified <code>index</code> of this 

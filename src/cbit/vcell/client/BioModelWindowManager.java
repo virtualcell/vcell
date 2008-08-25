@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.sql.KeyValue;
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
@@ -70,14 +71,19 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
  * @param documentWindow cbit.vcell.client.desktop.DocumentWindow
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public BioModelWindowManager(JPanel panel, RequestManager requestManager, BioModel bioModel, int newlyCreatedDesktops) {
+public BioModelWindowManager(JPanel panel, RequestManager requestManager, final BioModel bioModel, int newlyCreatedDesktops) {
 	super(panel, requestManager, bioModel, newlyCreatedDesktops);
-	setJDesktopPane(new JDesktopPane());
-	getJPanel().setLayout(new BorderLayout());
-	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-	setBioModel(bioModel);
-	setBioModelEditor(new BioModelEditor());
-	createBioModelFrame();
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			setJDesktopPane(new JDesktopPane());
+			getJPanel().setLayout(new BorderLayout());
+			getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+			setBioModel(bioModel);
+			setBioModelEditor(new BioModelEditor());
+			createBioModelFrame();
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
@@ -143,24 +149,30 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * Creation date: (6/11/2004 7:32:07 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindow simWindow) {
-	if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
-		// it shouldn't happen, but check anyway...
-		try {
-			throw new RuntimeException("we are asked to show results but we don't have the simOwner");
-		} catch (Exception exc) {
-			exc.printStackTrace(System.out);
+public void addResultsFrame(final SimulationWindow simWindow) {
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
+				// it shouldn't happen, but check anyway...
+				try {
+					throw new RuntimeException("we are asked to show results but we don't have the simOwner");
+				} catch (Exception exc) {
+					exc.printStackTrace(System.out);
+				}
+				return null;
+			}
+			ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(simWindow.getSimOwner());
+			appComponents.addDataViewer(simWindow);
+			if (appComponents.getAppEditorFrame().isShowing()) {
+				// should be showing, but you never know...
+				int count = appComponents.getDataViewerFrames().length;
+				simWindow.getFrame().setLocation(appComponents.getAppEditorFrame().getLocation().x + 100 + count * 20, appComponents.getAppEditorFrame().getLocation().y + 100 + count * 15);
+				showFrame(simWindow.getFrame());
+			}
+			return null;
 		}
-		return;
-	}
-	ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(simWindow.getSimOwner());
-	appComponents.addDataViewer(simWindow);
-	if (appComponents.getAppEditorFrame().isShowing()) {
-		// should be showing, but you never know...
-		int count = appComponents.getDataViewerFrames().length;
-		simWindow.getFrame().setLocation(appComponents.getAppEditorFrame().getLocation().x + 100 + count * 20, appComponents.getAppEditorFrame().getLocation().y + 100 + count * 15);
-		showFrame(simWindow.getFrame());
-	}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+
 }
 
 

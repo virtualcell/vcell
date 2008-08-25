@@ -1,7 +1,6 @@
 package cbit.vcell.client.server;
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.client.data.*;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -35,9 +34,22 @@ public SimulationDataManager(VCDataManager vcDataManager, Simulation simulation)
  * Creation date: (10/16/2005 2:42:43 PM)
  * @return javax.swing.JPanel
  */
-public cbit.vcell.client.data.DataViewer createViewer(boolean expectODEData) throws cbit.vcell.server.DataAccessException {
-	simDataViewer = new SimDataViewer(simulation, vcDataManager, expectODEData);
-	return simDataViewer;
+public cbit.vcell.client.data.DataViewer createViewer(final boolean expectODEData) throws DataAccessException {
+	try{
+		return (SimDataViewer)
+		new EventDispatchRunWithException (){
+			public Object runWithException() throws Exception{
+				simDataViewer = new SimDataViewer(simulation, vcDataManager, expectODEData);
+				return simDataViewer;
+			}
+		}.runEventDispatchThreadSafelyWithException();
+	}catch(Exception e){
+		if(e instanceof DataAccessException){
+			throw (DataAccessException)e;
+		}
+		throw new DataAccessException(e.getMessage(),e);
+	}
+
 }
 
 

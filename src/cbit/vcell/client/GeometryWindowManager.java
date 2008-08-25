@@ -1,14 +1,12 @@
 package cbit.vcell.client;
-import cbit.vcell.geometry.surface.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.server.VCDataIdentifier;
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.gui.JInternalFrameEnhanced;
+
 import java.awt.*;
 import javax.swing.*;
+
 import cbit.vcell.geometry.Geometry;
-import java.util.Hashtable;
 import cbit.vcell.client.desktop.geometry.*;
 
 /**
@@ -21,8 +19,8 @@ public class GeometryWindowManager extends DocumentWindowManager implements java
 	private JDesktopPane jDesktopPane = null;
 	private GeometryEditor geometryEditor = null;
 
-	private SurfaceViewerPanel surfaceViewer = new SurfaceViewerPanel();
-	private GeometryDisplayPanel geoViewer = new GeometryDisplayPanel();
+	private SurfaceViewerPanel surfaceViewer;
+	private GeometryDisplayPanel geoViewer;
 
 	JInternalFrameEnhanced geometryViewerEditorFrame = null;		
 	JInternalFrameEnhanced surfaceViewerEditorFrame = null;
@@ -34,18 +32,27 @@ public class GeometryWindowManager extends DocumentWindowManager implements java
  * @param vcDocument cbit.vcell.document.VCDocument
  * @param newlyCreatedDesktops int
  */
-public GeometryWindowManager(JPanel panel, cbit.vcell.client.RequestManager requestManager, Geometry aGeometry, int newlyCreatedDesktops) {
+public GeometryWindowManager(JPanel panel, cbit.vcell.client.RequestManager requestManager, final Geometry aGeometry, int newlyCreatedDesktops) {
 	super(panel, requestManager, aGeometry, newlyCreatedDesktops);
-	setGeometry(aGeometry);
-	setJDesktopPane(new JDesktopPane());
-	getJPanel().setLayout(new BorderLayout());
-	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-	createGeometryEditor();
-	initializeInternalFrames();
-	getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);
-	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-		showGeometryViewer(true);
-	}
+
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			surfaceViewer = new SurfaceViewerPanel();
+			geoViewer = new GeometryDisplayPanel();
+			setGeometry(aGeometry);
+			setJDesktopPane(new JDesktopPane());
+			getJPanel().setLayout(new BorderLayout());
+			getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+			createGeometryEditor();
+			initializeInternalFrames();
+			getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);
+			if (System.getProperty("java.version").compareTo("1.3") >= 0) {
+				showGeometryViewer(true);
+			}
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+
 }
 
 

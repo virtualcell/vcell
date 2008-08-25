@@ -2,7 +2,6 @@ package cbit.vcell.client;
 import cbit.vcell.document.*;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.field.FieldDataWindow;
-import cbit.gui.DialogUtils;
 import cbit.util.*;
 import cbit.vcell.client.server.*;
 import java.awt.*;
@@ -168,30 +167,36 @@ private DocumentWindow createDocumentWindow() {
  * Creation date: (5/24/2004 11:20:58 AM)
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public void createNewDocumentWindow(DocumentWindowManager windowManager) {
+public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 
-	// used for opening new document windows
-	// assumes caller checked for having this document already open
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
 
-	// make the window
-	DocumentWindow documentWindow = createDocumentWindow();
-	documentWindow.setWorkArea(windowManager.getComponent());
-	// keep track of things
-	String windowID = windowManager.getManagerID();
-	getWindowsHash().put(windowID, documentWindow);
-	getManagersHash().put(windowID, windowManager);
-	// wire manager to events
-	getRequestManager().getAsynchMessageManager().addSimStatusListener(windowManager);
-	getRequestManager().getAsynchMessageManager().addExportListener(windowManager);
-	getRequestManager().getAsynchMessageManager().addDataJobListener(windowManager);
-	// get the window ready
-	setCanonicalTitle(windowID);
-	documentWindow.setWindowManager(windowManager);
-	documentWindow.addWindowListener(windowListener); // listen for event when user clicks window close button and send request to manager
-	setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
-	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
-	// done
-	documentWindow.show();
+			// used for opening new document windows
+			// assumes caller checked for having this document already open
+
+			// make the window
+			DocumentWindow documentWindow = createDocumentWindow();
+			documentWindow.setWorkArea(windowManager.getComponent());
+			// keep track of things
+			String windowID = windowManager.getManagerID();
+			getWindowsHash().put(windowID, documentWindow);
+			getManagersHash().put(windowID, windowManager);
+			// wire manager to events
+			getRequestManager().getAsynchMessageManager().addSimStatusListener(windowManager);
+			getRequestManager().getAsynchMessageManager().addExportListener(windowManager);
+			getRequestManager().getAsynchMessageManager().addDataJobListener(windowManager);
+			// get the window ready
+			setCanonicalTitle(windowID);
+			documentWindow.setWindowManager(windowManager);
+			documentWindow.addWindowListener(windowListener); // listen for event when user clicks window close button and send request to manager
+			setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
+			getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
+			// done
+			documentWindow.show();
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 

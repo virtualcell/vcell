@@ -159,10 +159,10 @@ private static void dispatchFollowUp(Hashtable hash) {
  * @param exc java.lang.Exception
  */
 public static void recordException(Throwable exc, Hashtable hash) {
-	exc.printStackTrace(System.out);
 	if (exc instanceof UserCancelException) {
 		hash.put(TASK_ABORTED_BY_USER, exc);
 	} else {
+		exc.printStackTrace(System.out);
 		hash.put(TASK_ABORTED_BY_ERROR, exc);
 	}
 }
