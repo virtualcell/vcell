@@ -127,20 +127,20 @@ public void run() {
 		}
 		
 		//
+		// sleep for a while
+		//
+		try {
+			Thread.sleep(sleepTimeMS);
+		}catch (InterruptedException e){
+		}
+		
+		//
 		// re-read the property file
 		//
 		try {
 			PropertyLoader.loadProperties();
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
-		}
-
-		//
-		// sleep for a while
-		//
-		try {
-			Thread.sleep(sleepTimeMS);
-		}catch (InterruptedException e){
 		}
 	}	
 }
