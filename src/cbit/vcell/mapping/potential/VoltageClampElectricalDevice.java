@@ -1,6 +1,7 @@
 package cbit.vcell.mapping.potential;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.mapping.ElectricalStimulus;
 /**
  * Insert the type's description here.
@@ -79,8 +80,8 @@ public boolean getResolved() {
  * Creation date: (4/7/2004 2:51:28 PM)
  * @return java.lang.String
  */
-public java.lang.String getVName() {
-	return mathMapping.getNameScope().getSymbolName(getParameterFromRole(ROLE_Voltage));
+public SymbolTableEntry getVoltageSymbol() {
+	return getParameterFromRole(ROLE_Voltage);
 }
 
 

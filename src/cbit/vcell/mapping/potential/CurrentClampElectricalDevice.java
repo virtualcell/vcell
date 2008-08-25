@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.potential;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.mapping.CurrentClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 
@@ -83,8 +84,8 @@ public boolean getResolved() {
  * Creation date: (4/7/2004 2:51:28 PM)
  * @return java.lang.String
  */
-public java.lang.String getVName() {
-	return mathMapping.getNameScope().getSymbolName(currentClampStimulus.getVoltageParameter());
+public SymbolTableEntry getVoltageSymbol() {
+	return currentClampStimulus.getVoltageParameter();
 }
 
 

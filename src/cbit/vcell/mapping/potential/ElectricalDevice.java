@@ -209,8 +209,8 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * Creation date: (2/12/2002 2:15:22 PM)
  * @return java.lang.String
  */
-public final String getIName() {
-	return mathMapping.getNameScope().getSymbolName(getParameterFromRole(ROLE_TotalCurrentDensity));
+public final SymbolTableEntry getCurrentSymbol() {
+	return getParameterFromRole(ROLE_TotalCurrentDensity);
 }
 
 
@@ -321,8 +321,8 @@ public abstract boolean getResolved();
  * Creation date: (4/7/2004 3:00:30 PM)
  * @return java.lang.String
  */
-public final String getSourceName() {
-	return mathMapping.getNameScope().getSymbolName(getParameterFromRole(ROLE_TransmembraneCurrentDensity));
+public final SymbolTableEntry getSourceSymbol() {
+	return getParameterFromRole(ROLE_TransmembraneCurrentDensity);
 }
 
 
@@ -331,7 +331,7 @@ public final String getSourceName() {
  * Creation date: (4/7/2004 2:48:20 PM)
  * @return java.lang.String
  */
-public abstract String getVName();
+public abstract SymbolTableEntry getVoltageSymbol();
 
 
 /**

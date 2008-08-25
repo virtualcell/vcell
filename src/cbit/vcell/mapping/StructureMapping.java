@@ -31,7 +31,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 			return children;
 		}
 		public String getName() {
-			return TokenMangler.fixTokenStrict(StructureMapping.this.getStructure().getName());
+			return TokenMangler.fixTokenStrict(StructureMapping.this.getStructure().getName()+"_mapping");
 		}
 		public cbit.vcell.parser.NameScope getParent() {
 			if (StructureMapping.this.simulationContext != null){

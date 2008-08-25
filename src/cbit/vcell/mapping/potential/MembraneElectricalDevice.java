@@ -1,6 +1,7 @@
 package cbit.vcell.mapping.potential;
 
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.parser.SymbolTableEntry;
 
 /**
  * Insert the type's description here.
@@ -46,8 +47,8 @@ public boolean getCalculateVoltage() {
  * Creation date: (4/7/2004 2:57:26 PM)
  * @return java.lang.String
  */
-public String getCapName() {
-	return mathMapping.getNameScope().getSymbolName(membraneMapping.getSpecificCapacitanceParameter());
+public SymbolTableEntry getCapacitanceSymbol() {
+	return membraneMapping.getSpecificCapacitanceParameter();
 }
 /**
  * Insert the method's description here.
@@ -70,8 +71,8 @@ public boolean getResolved() {
  * Creation date: (4/7/2004 2:55:34 PM)
  * @return java.lang.String
  */
-public java.lang.String getVName() {
-	return mathMapping.getNameScope().getSymbolName(membraneMapping.getMembrane().getMembraneVoltage());
+public SymbolTableEntry getVoltageSymbol() {
+	return membraneMapping.getMembrane().getMembraneVoltage();
 }
 /**
  * Insert the method's description here.
