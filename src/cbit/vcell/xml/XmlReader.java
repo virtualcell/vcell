@@ -1891,12 +1891,12 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 			// custom name for "special" parameter
 			//
 			if (!tempParam.getName().equals(paramName)) {
-				Kinetics.KineticsParameter multNameParam = (Kinetics.KineticsParameter)newKinetics.getParameter(paramName);
+				Kinetics.KineticsParameter multNameParam = newKinetics.getKineticsParameter(paramName);
 				int n = 0;
 				while (multNameParam != null) {
 					String tempName = paramName + "_" + n++;
 					newKinetics.renameParameter(paramName, tempName);
-					multNameParam = (Kinetics.KineticsParameter)newKinetics.getParameter(tempName);
+					multNameParam = newKinetics.getKineticsParameter(tempName);
 				}
 				newKinetics.renameParameter(tempParam.getName(), paramName);
 			}
