@@ -1,8 +1,11 @@
 package cbit.vcell.microscopy.gui;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -56,8 +59,11 @@ import cbit.vcell.microscopy.gui.FRAPInterpolationPanel;
 
 public class ResultsSummaryPanel extends JPanel {
 	
+	private static final String SIM_RESULTS = "Plot FRAP Simulation Results";
+	private static final String DERIVED_RESULTS = "Plot Derived FRAP Simulation Results";
+		
 	private FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters;
-	
+	private final JPanel cardPanel = new JPanel(new CardLayout());
 	private final JLabel standardErrorseLabel;
 	private final JLabel interactiveAnalysisUsingLabel_1;
 	
@@ -85,6 +91,7 @@ public class ResultsSummaryPanel extends JPanel {
 	
 	private ActionListener plotButtonActionListener = new ActionListener(){
 		public void actionPerformed(ActionEvent e) {
+			CardLayout cl = ((CardLayout)(cardPanel.getLayout()));
 			if(plotFRAPSimResultsRadioButton.isSelected()){
 				B_TABLE_DISABLED = false;
 				BeanUtils.enableComponents(interpolationPanel, false);
@@ -92,6 +99,7 @@ public class ResultsSummaryPanel extends JPanel {
 				standardErrorseLabel.setEnabled(true);
 				interactiveAnalysisUsingLabel_1.setEnabled(false);
 				processTableSelection();
+				cl.show(cardPanel, SIM_RESULTS);
 			}else if(plotDerivedSimResultsRadioButton.isSelected()){
 				B_TABLE_DISABLED = true;
 				interpolationPanel.enableAllButSetButtons();
@@ -99,12 +107,16 @@ public class ResultsSummaryPanel extends JPanel {
 				interactiveAnalysisUsingLabel_1.setEnabled(true);
 				standardErrorseLabel.setEnabled(false);
 				plotDerivedSimulationResults();
+				cl.show(cardPanel, DERIVED_RESULTS);
 			}
 		}
 	};
 	
 	public ResultsSummaryPanel() {
 		super();
+		JPanel topPanel = new JPanel(new BorderLayout());
+		JPanel buttonPanel = new JPanel(new FlowLayout());
+				
 		JMenuItem copyReportJMenuItem = new JMenuItem("Copy Summary Report");
 		copyReportJMenuItem.addActionListener(
 			new ActionListener(){
@@ -166,43 +178,36 @@ public class ResultsSummaryPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new LineBorder(Color.black, 2, false));
+		panel_1.setBorder(new LineBorder(Color.gray, 2, false));
 		panel_1.setLayout(new GridBagLayout());
-		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_3.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_3.gridy = 0;
-		gridBagConstraints_3.gridx = 0;
-		add(panel_1, gridBagConstraints_3);
+		cardPanel.add(panel_1, SIM_RESULTS);
 
 		plotFRAPSimResultsRadioButton = new JRadioButton();
 		plotFRAPSimResultsRadioButton.setFont(new Font("", Font.BOLD, 14));
-		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.weightx = 1;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.gridx = 0;
-		panel_1.add(plotFRAPSimResultsRadioButton, gridBagConstraints);
-		plotFRAPSimResultsRadioButton.setText("Plot FRAP SImulation Results");
+		buttonPanel.add(plotFRAPSimResultsRadioButton);
+		plotFRAPSimResultsRadioButton.setText(SIM_RESULTS);
 		plotFRAPSimResultsRadioButton.addActionListener(plotButtonActionListener);
 
 		standardErrorseLabel = new JLabel();
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-		gridBagConstraints_6.insets = new Insets(4, 4, 0, 0);
-		gridBagConstraints_6.gridy = 1;
+		gridBagConstraints_6.insets = new Insets(0, 0, 0, 0);
+		gridBagConstraints_6.gridy = 0;
 		gridBagConstraints_6.gridx = 0;
 		panel_1.add(standardErrorseLabel, gridBagConstraints_6);
 		standardErrorseLabel.setFont(new Font("", Font.PLAIN, 14));
 		standardErrorseLabel.setText("FRAP Simulation Summary: Standard Error (se) including all Times of Normalized ROI Average  (Experimental vs. Simulation Data)");
 
 		scrollPane = new JScrollPane();
+		scrollPane.setPreferredSize(new Dimension(0, 80));
+		scrollPane.setMinimumSize(new Dimension(0, 80));
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
-		gridBagConstraints_7.insets = new Insets(4, 4, 4, 4);
+//		gridBagConstraints_7.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_7.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_7.gridy = 2;
+		gridBagConstraints_7.weightx = 1.5;
+		gridBagConstraints_7.gridy = 1;
 		gridBagConstraints_7.gridx = 0;
 		panel_1.add(scrollPane, gridBagConstraints_7);
-		scrollPane.setMinimumSize(new Dimension(0, 100));
+
 
 //		table = new JTable();
 
@@ -291,29 +296,19 @@ public class ResultsSummaryPanel extends JPanel {
 		table.setModel(getTableModel(summaryReportColumnNames,new Object[][] {{"diffTest","summaryTest"}}));
 		
 		final JPanel panel_2 = new JPanel();
-		panel_2.setBorder(new LineBorder(Color.black, 2, false));
+		panel_2.setBorder(new LineBorder(Color.gray, 2, false));
 		panel_2.setLayout(new GridBagLayout());
-		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_9.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_9.gridy = 1;
-		gridBagConstraints_9.gridx = 0;
-		add(panel_2, gridBagConstraints_9);
-
+		cardPanel.add(panel_2,DERIVED_RESULTS);
+				
 		plotDerivedSimResultsRadioButton = new JRadioButton();
 		plotDerivedSimResultsRadioButton.setFont(new Font("", Font.BOLD, 14));
-		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-		gridBagConstraints_5.weightx = 1;
-		gridBagConstraints_5.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_5.gridy = 0;
-		gridBagConstraints_5.gridx = 0;
-		panel_2.add(plotDerivedSimResultsRadioButton, gridBagConstraints_5);
-		plotDerivedSimResultsRadioButton.setText("Plot Derived FRAP Simulation Results");
+		buttonPanel.add(plotDerivedSimResultsRadioButton);
+		plotDerivedSimResultsRadioButton.setText(DERIVED_RESULTS);
 		plotDerivedSimResultsRadioButton.addActionListener(plotButtonActionListener);
 
 		interactiveAnalysisUsingLabel_1 = new JLabel();
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-		gridBagConstraints_8.gridy = 1;
+		gridBagConstraints_8.gridy = 0;
 		gridBagConstraints_8.gridx = 0;
 		panel_2.add(interactiveAnalysisUsingLabel_1, gridBagConstraints_8);
 		interactiveAnalysisUsingLabel_1.setFont(new Font("", Font.PLAIN, 14));
@@ -322,8 +317,9 @@ public class ResultsSummaryPanel extends JPanel {
 		interpolationPanel = new FRAPInterpolationPanel();
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_10.gridy = 2;
+		gridBagConstraints_10.gridy = 1;
 		gridBagConstraints_10.gridx = 0;
+		gridBagConstraints_10.weightx = 1.5;
 		panel_2.add(interpolationPanel, gridBagConstraints_10);
 		interpolationPanel.addPropertyChangeListener(
 				new PropertyChangeListener(){
@@ -339,12 +335,22 @@ public class ResultsSummaryPanel extends JPanel {
 				}
 		);
 
+		topPanel.add(buttonPanel, BorderLayout.NORTH);
+		topPanel.add(cardPanel, BorderLayout.CENTER);
+		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
+		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_9.gridy = 0;
+		gridBagConstraints_9.gridx = 0;
+		add(topPanel, gridBagConstraints_9);
+		
+		
 		final JPanel panel_3 = new JPanel();
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.columnWidths = new int[] {0,7};
 		panel_3.setLayout(gridBagLayout_1);
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
-		gridBagConstraints_11.gridy = 2;
+		gridBagConstraints_11.gridy = 1;
 		gridBagConstraints_11.gridx = 0;
 		add(panel_3, gridBagConstraints_11);
 
@@ -352,7 +358,7 @@ public class ResultsSummaryPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.gridx = 0;
 		gridBagConstraints_4.gridy = 0;
-		gridBagConstraints_4.insets = new Insets(5, 5, 5, 5);
+		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 14));
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
@@ -385,6 +391,7 @@ public class ResultsSummaryPanel extends JPanel {
 		});
 		showROIbutton.setText("Show ROIs...");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
+		gridBagConstraints_12.insets = new Insets(4, 0, 0, 0);
 		gridBagConstraints_12.gridy = 0;
 		gridBagConstraints_12.gridx = 1;
 		panel_3.add(showROIbutton, gridBagConstraints_12);
@@ -394,11 +401,11 @@ public class ResultsSummaryPanel extends JPanel {
 		panel.setLayout(new GridBagLayout());
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.gridwidth = 0;
-		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_1.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_1.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_1.weighty = 1;
 		gridBagConstraints_1.weightx = 1;
-		gridBagConstraints_1.gridy = 3;
+		gridBagConstraints_1.gridy = 2;
 		gridBagConstraints_1.gridx = 0;
 		add(panel, gridBagConstraints_1);
 
@@ -654,7 +661,7 @@ public class ResultsSummaryPanel extends JPanel {
 				interpolationPanel.init(frapOptData);
 				table.setModel(getTableModel(summaryReportColumnNames,tableData));				
 				sortColumn(FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE,false);
-				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1));
+				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1.1));
 				if(modelDiffusionRate != null){
 					int matchingRow = -1;
 					for (int i = 0; i < summaryData.length; i++) {
