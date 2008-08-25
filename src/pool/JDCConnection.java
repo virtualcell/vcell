@@ -278,18 +278,18 @@ public class JDCConnection implements Connection {
 
 	public boolean validate() {
 		try {
-			System.out.println("testing metadata...");
+			//System.out.println("testing metadata...");
 			DatabaseMetaData dmd = conn.getMetaData();
-			System.out.println("testing metadata...OK");
+			//System.out.println("testing metadata...OK");
 		} catch (Exception e) {
 			System.out.println("testing metadata...failed");
 			e.printStackTrace(System.out);
 			return false;
 		}			
 		try {
-			System.out.println("testing autocommit...");
+			//System.out.println("testing autocommit...");
 			conn.getAutoCommit();
-			System.out.println("testing autocommit...OK");
+			//System.out.println("testing autocommit...OK");
 		} catch (Exception e) {
 			System.out.println("testing autocommit...failed");
 			e.printStackTrace(System.out);
@@ -297,7 +297,7 @@ public class JDCConnection implements Connection {
 		}			
 			
 		try {
-			System.out.println("query user table...");
+			//System.out.println("query user table...");
 			String sql = "SELECT * from " + UserTable.table.getTableName() + 
 					" WHERE " + UserTable.table.id + "=0";
 
@@ -311,7 +311,7 @@ public class JDCConnection implements Connection {
 				stmt.close();
 			}
 					
-			System.out.println("query user table...OK");
+			//System.out.println("query user table...OK");
 		} catch (Exception e) {
 			System.out.println("query user table...failed");
 			e.printStackTrace(System.out);

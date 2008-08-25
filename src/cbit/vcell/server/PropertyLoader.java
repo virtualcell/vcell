@@ -390,7 +390,7 @@ public static void loadAnonymizerProperties() {
  * This method was created in VisualAge.
  */
 public final static void loadProperties() throws java.io.IOException {
-	java.util.Properties p = new java.util.Properties(System.getProperties());
+	java.util.Properties p = System.getProperties();
 	//
 	// set up new properties object from file in propertyFilePath
 	//
