@@ -1878,7 +1878,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				if (!membraneMapping.getResolved(simContext) && membraneMapping.getCalculateVoltage()){
 					MembraneElectricalDevice capacitiveDevice = potentialMapping.getCapacitiveDevice(membrane);
 					if (capacitiveDevice.getDependentVoltageExpression()==null){
-						VolVariable vVar = (VolVariable)mathDesc.getVariable(capacitiveDevice.getVName());
+						VolVariable vVar = (VolVariable)mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping));
 						Expression initExp = new Expression(getMathSymbol(capacitiveDevice.getMembraneMapping().getInitialVoltageParameter(),membraneMapping));
 						subDomain.addEquation(new OdeEquation(vVar,initExp,getIdentifierSubstitutions(potentialMapping.getOdeRHS(capacitiveDevice,this),VCUnitDefinition.UNIT_mV_per_s,membraneMapping)));
 					}else{
@@ -2104,8 +2104,8 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			if (numCapacitiveDevices!=1){
 				throw new MappingException("expecting 1 capacitive electrical device on graph edge for membrane "+membrane.getName()+", found '"+numCapacitiveDevices+"'");
 			}
-			if (mathDesc.getVariable(capacitiveDevice.getVName()) instanceof MembraneRegionVariable){
-				MembraneRegionVariable vVar = (MembraneRegionVariable)mathDesc.getVariable(capacitiveDevice.getVName());
+			if (mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping)) instanceof MembraneRegionVariable){
+				MembraneRegionVariable vVar = (MembraneRegionVariable)mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping));
 				Parameter initialVoltageParm = capacitiveDevice.getMembraneMapping().getInitialVoltageParameter();
 				Expression initExp = getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),capacitiveDevice.getMembraneMapping());
 				MembraneRegionEquation vEquation = new MembraneRegionEquation(vVar,initExp);
