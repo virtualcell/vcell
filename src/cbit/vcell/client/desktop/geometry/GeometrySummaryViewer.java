@@ -2,6 +2,9 @@ package cbit.vcell.client.desktop.geometry;
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+
+import cbit.gui.SimpleUserMessage;
+import cbit.util.EventDispatchRunWithException;
 /**
  * Insert the type's description here.
  * Creation date: (6/3/2004 11:48:54 PM)
@@ -341,11 +344,17 @@ private void initialize() {
  * Comment
  */
 private void initSurfaceButton() {
-	boolean bSpatial =
-		getGeometry() != null &&
-		getGeometry().getDimension() > 0;
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			boolean bSpatial =
+				getGeometry() != null &&
+				getGeometry().getDimension() > 0;
 
-	getJButtonViewSurfaces().setEnabled(bSpatial);
+			getJButtonViewSurfaces().setEnabled(bSpatial);
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+
 }
 
 

@@ -1,5 +1,6 @@
 package cbit.vcell.desktop;
 
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.geometry.Geometry;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -11,6 +12,8 @@ import cbit.vcell.biomodel.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.mapping.SimulationContext;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -294,6 +297,37 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 	}
+}
+@Override
+public void nodeChanged(final TreeNode node) {
+	// TODO Auto-generated method stub
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			BioModelTreeModel.super.nodeChanged(node);
+			return null;
+		}
+	}.runEventDispatchThreadSafelyConsumeException();
+}
+@Override
+public void nodeStructureChanged(final TreeNode node) {
+	// TODO Auto-generated method stub
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			BioModelTreeModel.super.nodeStructureChanged(node);
+			return null;
+		}
+	}.runEventDispatchThreadSafelyConsumeException();
+}
+@Override
+public void removeNodeFromParent(final MutableTreeNode node) {
+	// TODO Auto-generated method stub
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			BioModelTreeModel.super.removeNodeFromParent(node);
+			return null;
+		}
+	}.runEventDispatchThreadSafelyConsumeException();
+
 }
 /**
  * Insert the method's description here.

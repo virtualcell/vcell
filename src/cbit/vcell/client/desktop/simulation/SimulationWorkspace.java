@@ -1,4 +1,6 @@
 package cbit.vcell.client.desktop.simulation;
+import cbit.gui.DialogUtils;
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.ode.gui.*;
 
@@ -632,18 +634,24 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
  * @param simulations The new value for the property.
  * @see #getSimulations
  */
-public void setSimulations(cbit.vcell.solver.Simulation[] simulations) {
+public void setSimulations(final cbit.vcell.solver.Simulation[] simulations) {
 	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
 	fieldSimulations = simulations;
 	if (simulations == null) {
 		setStatusBars(null);
 	} else {
-		setStatusBars(new JProgressBar[simulations.length]);
-		for (int i = 0; i < getStatusBars().length; i++){
-			JProgressBar bar = new JProgressBar();
-			bar.setStringPainted(true);
-			getStatusBars()[i] = bar;
-		}
+		new EventDispatchRunWithException (){
+			public Object runWithException() throws Exception{
+				setStatusBars(new JProgressBar[simulations.length]);
+				for (int i = 0; i < getStatusBars().length; i++){
+					JProgressBar bar = new JProgressBar();
+					bar.setStringPainted(true);
+					getStatusBars()[i] = bar;
+				}
+				return null;
+			}
+		}.runEventDispatchThreadSafelyWrapRuntime();
+
 	}
 	firePropertyChange("simulations", oldValue, simulations);
 }

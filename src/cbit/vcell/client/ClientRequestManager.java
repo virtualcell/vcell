@@ -24,7 +24,6 @@ import cbit.sql.VersionableType;
 import cbit.util.*;
 import swingthreads.*;
 import java.awt.*;
-import java.awt.List;
 
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
@@ -573,7 +572,8 @@ public void createMathModelFromApplication(final String name, final SimulationCo
 				newMathModel.setName(name);
 				newMathModel.setMathDescription(newMathDesc);
 				
-				windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, newMathModel, getMdiManager().getNewlyCreatedDesktops());
+				windowManager = createDocumentWindowManager(newMathModel);
+				//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, newMathModel, getMdiManager().getNewlyCreatedDesktops());
 				if(simContext.getBioModel().getVersion() != null){
 					((MathModelWindowManager)windowManager).
 						setCopyFromBioModelAppVersionableTypeVersion(
@@ -609,7 +609,7 @@ public void createMathModelFromApplication(final String name, final SimulationCo
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
  */
-private VCDocument createNewDocument(VCDocument.DocumentCreationInfo documentCreationInfo,AsynchProgressPopup pp) throws UserCancelException, DataAccessException, java.io.FileNotFoundException, java.io.IOException, ImageException {
+private VCDocument createNewDocument(VCDocument.DocumentCreationInfo documentCreationInfo,AsynchProgressPopup pp) throws UserCancelException, Exception {
 	switch (documentCreationInfo.getDocumentType()) {
 		case VCDocument.BIOMODEL_DOC: {
 			// blank
@@ -925,15 +925,25 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 			    }
 			    fileChooser.setSelectedFile(file);
 				fileChooser.setDialogTitle("Save exported dataset...");
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {
+				new EventDispatchRunWithException (){
+					public Object runWithException() throws Exception{
 						int approve = fileChooser.showSaveDialog((Component)null);
 						if (approve != JFileChooser.APPROVE_OPTION) {
 							fileChooser.setSelectedFile(null);
-							return;
 						}
+						return null;
 					}
-				});
+				}.runEventDispatchThreadSafelyWithException();
+
+//				SwingUtilities.invokeAndWait(new Runnable() {
+//					public void run() {
+//						int approve = fileChooser.showSaveDialog((Component)null);
+//						if (approve != JFileChooser.APPROVE_OPTION) {
+//							fileChooser.setSelectedFile(null);
+//							return;
+//						}
+//					}
+//				});
 				java.io.File selectedFile = fileChooser.getSelectedFile();
 				if (selectedFile != null) {
 			        String newPath = selectedFile.getParent();
@@ -1169,7 +1179,7 @@ public DynamicDataManager getDynamicDataManager(Simulation simulation) throws Da
  * Insert the method's description here.
  * Creation date: (5/21/2004 4:21:50 AM)
  */
-private Geometry getMathModelGeometry(int option) throws DataAccessException, UserCancelException, java.io.FileNotFoundException, java.io.IOException {
+private Geometry getMathModelGeometry(int option) throws Exception {
 
 	if (option == 0) {
 		// non-spatial geometry
@@ -1256,52 +1266,23 @@ public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
  */
 public void newDocument(final VCDocument.DocumentCreationInfo documentCreationInfo) {
 	/* asynchronous and not blocking any window */
-		
-	// start a thread that makes it and updates the GUI by creating a new document desktop
-	SwingWorker worker = new SwingWorker() {
-		private VCDocument doc = null;
-		private AsynchProgressPopup pp = new AsynchProgressPopup(null, "Creating new document", "", false, false);
-		private Throwable exc = null;
-		private DocumentWindowManager windowManager = null;
-		public Object construct() {
+
+	new Thread(new Runnable(){public void run(){
+		AsynchProgressPopup pp = null;
+		try{
+			pp = new AsynchProgressPopup(null, "Creating new document", "", true, false);
 			pp.start();
-			try {
-				VCDocument doc = createNewDocument(documentCreationInfo,pp);
-				switch (doc.getDocumentType()) {
-					case VCDocument.BIOMODEL_DOC: {
-						windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						break;
-					}
-					case VCDocument.MATHMODEL_DOC: {
-						windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						break;
-					}
-					case VCDocument.GEOMETRY_DOC: {
-						windowManager = new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
-						break;
-					}
-				}
-			} catch (Throwable e) {
-				exc = e;
-			}
-			return doc;
+			VCDocument doc = createNewDocument(documentCreationInfo,pp);
+			DocumentWindowManager windowManager = createDocumentWindowManager(doc);
+			getMdiManager().createNewDocumentWindow(windowManager);
+		}catch(Throwable e){
+			if(pp != null){pp.stop();}
+			e.printStackTrace(System.out);
+			PopupGenerator.showErrorDialog("Creating new document failed:\n\n" + e.getMessage());
+		}finally{
+			if(pp != null){pp.stop();}
 		}
-		public void finished() {
-			if (exc != null) {
-				pp.stop();
-				if (exc instanceof UserCancelException) {
-					System.out.println(exc);
-				} else {
-					exc.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("Creating new document failed:\n\n" + exc.getMessage());
-				}
-			} else {
-				getMdiManager().createNewDocumentWindow(windowManager);
-				pp.stop();
-			}
-		}
-	};
-	worker.start();
+	}}).start();
 }
 
 
@@ -1310,11 +1291,7 @@ public void newDocument(final VCDocument.DocumentCreationInfo documentCreationIn
  */
 public void onVCellMessageEvent(final cbit.rmi.event.VCellMessageEvent event) {
 	if (event.getEventTypeID() == cbit.rmi.event.VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
-		SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-			    PopupGenerator.showErrorDialog(event.getMessageData().getData().toString());
-		    }
-		});
+	    PopupGenerator.showErrorDialog(event.getMessageData().getData().toString());
 	}
 }
 
@@ -1328,12 +1305,12 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 	/* asynchronous and not blocking any window */
 		
 	// start a thread that gets it and updates the GUI by creating a new document desktop
-	SwingWorker worker = new SwingWorker() {
-		private VCDocument doc = null;
-		private AsynchProgressPopup pp = new AsynchProgressPopup(requester.getComponent(), "Loading from "+(documentInfo instanceof XMLInfo?"XML":"database"), "Document: '" + documentInfo.getVersion().getName() + "'", false, false);
-		private Throwable exc = null;
-		private DocumentWindowManager windowManager = null;
-		public Object construct() {
+	Thread openThread = new Thread(new Runnable(){public void run(){
+		AsynchProgressPopup pp =
+			new AsynchProgressPopup(requester.getComponent(), "Loading from "+(documentInfo instanceof XMLInfo?"XML":"database"), "Document: '" + documentInfo.getVersion().getName() + "'", false, false);
+		try{
+			DocumentWindowManager windowManager = null;
+			VCDocument doc = null;
 			pp.start();
 			if (! inNewWindow) {
 				// request was to replace the document in an existing window
@@ -1341,38 +1318,48 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 			}
 			if (documentInfo instanceof BioModelInfo) {
 				BioModelInfo bmi = (BioModelInfo)documentInfo;
-				try {
+	//			try {
 					doc = getDocumentManager().getBioModel(bmi);
 					if (inNewWindow) {
-						windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						((BioModelWindowManager)windowManager).preloadApps();
+						windowManager = createDocumentWindowManager((BioModel)doc);
+						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+						//((BioModelWindowManager)windowManager).preloadApps();
+						final DocumentWindowManager finalDWM = windowManager;
+						new EventDispatchRunWithException (){
+							public Object runWithException() throws Exception{
+								((BioModelWindowManager)finalDWM).preloadApps();
+								return null;
+							}
+						}.runEventDispatchThreadSafelyWithException();
 					}
-				} catch (Throwable e) {
-					exc = e;
-				}
+	//			} catch (Throwable e) {
+	//				exc = e;
+	//			}
 			} else if (documentInfo instanceof MathModelInfo) {
 				MathModelInfo mmi = (MathModelInfo)documentInfo;
-				try {
+	//			try {
 					doc = getDocumentManager().getMathModel(mmi);
 					if (inNewWindow) {
-						windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+						windowManager = createDocumentWindowManager((MathModel)doc);
+						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
 					}
-				} catch (Throwable e) {
-					exc = e;
-				}
+	//			} catch (Throwable e) {
+	//				exc = e;
+	//			}
 			} else if (documentInfo instanceof GeometryInfo) {
 				GeometryInfo gmi = (GeometryInfo)documentInfo;
-				try {
+	//			try {
 					doc = getDocumentManager().getGeometry(gmi);
 					if (inNewWindow) {
-						windowManager = new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
+						windowManager = createDocumentWindowManager((Geometry)doc);
+						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
 					}
-				} catch (Throwable e) {
-					exc = e;
-				}
+	//			} catch (Throwable e) {
+	//				exc = e;
+	//			}
 			} else if (documentInfo instanceof XMLInfo) {
 				String xmlStr = ((XMLInfo)documentInfo).getXmlString();
-				try {
+	//			try {
 					org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);         //some overhead.
 					String xmlType = rootElement.getName();
 					String modelXmlType = null;
@@ -1385,8 +1372,16 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					}
 					if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
 						doc = XmlHelper.XMLToBioModel(xmlStr);
-						windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						((BioModelWindowManager)windowManager).preloadApps();
+						windowManager = createDocumentWindowManager((BioModel)doc);
+						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+						//((BioModelWindowManager)windowManager).preloadApps();
+						final DocumentWindowManager finalDWM = windowManager;
+						new EventDispatchRunWithException (){
+							public Object runWithException() throws Exception{
+								((BioModelWindowManager)finalDWM).preloadApps();
+								return null;
+							}
+						}.runEventDispatchThreadSafelyWithException();
 					} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
 						doc = XmlHelper.XMLToMathModel(xmlStr);
 						MathModel mathModel = (MathModel)doc;
@@ -1394,70 +1389,235 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
 							geometry.getGeometrySurfaceDescription().updateAll();
 						}
-						windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+						windowManager = createDocumentWindowManager((MathModel)doc);
+						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
 					} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
 						doc = XmlHelper.XMLToGeometry(xmlStr);
 						Geometry geometry = (Geometry)doc;
 						if (geometry.getDimension()>0){
 							geometry.getGeometrySurfaceDescription().updateAll();
 						}
-						windowManager = new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
+						windowManager = createDocumentWindowManager((Geometry)doc);
+						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
 					} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
 						TranslationLogger transLogger = new TranslationLogger(requester);
 						doc = XmlHelper.importSBML(transLogger, xmlStr);
-						windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+						windowManager = createDocumentWindowManager((BioModel)doc);
+						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
 					} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
 						if (requester instanceof BioModelWindowManager){
 							TranslationLogger transLogger = new TranslationLogger(requester);
 							doc = XmlHelper.importBioCellML(transLogger, xmlStr);
-							windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+							windowManager = createDocumentWindowManager((BioModel)doc);
+							//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
 						}else{
 							TranslationLogger transLogger = new TranslationLogger(requester);
 							doc = XmlHelper.importMathCellML(transLogger, xmlStr);
-							windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+							windowManager = createDocumentWindowManager((MathModel)doc);
+							//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
 						}
 					} else { // unknown XML format
 						throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 					}
-				} catch (Throwable e) {
-					exc = e;
-				}
+	//			} catch (Throwable e) {
+	//				exc = e;
+	//			}
 			}
-			return doc;
-		}
-		public void finished() {
-
-			try {
-				if (exc != null) {
-					exc.printStackTrace(System.out);
-					if (!(exc instanceof UserCancelException)) {                      //allow 
-						PopupGenerator.showErrorDialog(requester, "Loading document failed:\n\n" + exc.getMessage());
-					}
-					if (!inNewWindow) {
-						getMdiManager().unBlockWindow(requester.getManagerID());
-					}
-				} else {
-					if (inNewWindow) {
-						// request was to create a new top-level window with this doc
-						getMdiManager().createNewDocumentWindow(windowManager);
-					} else {
-						// request was to replace the document in an existing window
-						((DocumentWindowManager)requester).resetDocument(doc);
-						getMdiManager().setCanonicalTitle(requester.getManagerID());
-						getMdiManager().unBlockWindow(requester.getManagerID());
-					}
-				}
-			} finally {
-				pp.stop();
-				bOpening = false;
+			if (inNewWindow) {
+				// request was to create a new top-level window with this doc
+				getMdiManager().createNewDocumentWindow(windowManager);
+			} else {
+				// request was to replace the document in an existing window
+				((DocumentWindowManager)requester).resetDocument(doc);
+				getMdiManager().setCanonicalTitle(requester.getManagerID());
+				getMdiManager().unBlockWindow(requester.getManagerID());
 			}
+		}catch(Throwable exc){
+			exc.printStackTrace(System.out);
+			if (!(exc instanceof UserCancelException)) {                      //allow 
+				PopupGenerator.showErrorDialog(requester, "Loading document failed:\n\n" + exc.getMessage());
+			}
+			if (!inNewWindow) {
+				getMdiManager().unBlockWindow(requester.getManagerID());
+			}
+		}finally {
+			bOpening = false;
+			pp.stop();
 		}
-	};
+	}});
+	
 	bOpening = true;
-	worker.start();
+	openThread.start();
+	
+//	SwingWorker worker = new SwingWorker() {
+//		private VCDocument doc = null;
+//		private AsynchProgressPopup pp = new AsynchProgressPopup(requester.getComponent(), "Loading from "+(documentInfo instanceof XMLInfo?"XML":"database"), "Document: '" + documentInfo.getVersion().getName() + "'", false, false);
+//		private Throwable exc = null;
+//		private DocumentWindowManager windowManager = null;
+//		public Object construct() {
+////			pp.start();
+////			if (! inNewWindow) {
+////				// request was to replace the document in an existing window
+////				getMdiManager().blockWindow(requester.getManagerID());
+////			}
+////			if (documentInfo instanceof BioModelInfo) {
+////				BioModelInfo bmi = (BioModelInfo)documentInfo;
+////				try {
+////					doc = getDocumentManager().getBioModel(bmi);
+////					if (inNewWindow) {
+////						windowManager = createDocumentWindowManager((BioModel)doc);
+////						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+////						//((BioModelWindowManager)windowManager).preloadApps();
+////						new EventDispatchRunWithException (){
+////							public Object runWithException() throws Exception{
+////								((BioModelWindowManager)windowManager).preloadApps();
+////								return null;
+////							}
+////						}.runEventDispatchThreadSafelyWithException();
+////					}
+////				} catch (Throwable e) {
+////					exc = e;
+////				}
+////			} else if (documentInfo instanceof MathModelInfo) {
+////				MathModelInfo mmi = (MathModelInfo)documentInfo;
+////				try {
+////					doc = getDocumentManager().getMathModel(mmi);
+////					if (inNewWindow) {
+////						windowManager = createDocumentWindowManager((MathModel)doc);
+////						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+////					}
+////				} catch (Throwable e) {
+////					exc = e;
+////				}
+////			} else if (documentInfo instanceof GeometryInfo) {
+////				GeometryInfo gmi = (GeometryInfo)documentInfo;
+////				try {
+////					doc = getDocumentManager().getGeometry(gmi);
+////					if (inNewWindow) {
+////						windowManager = createDocumentWindowManager((Geometry)doc);
+////						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
+////					}
+////				} catch (Throwable e) {
+////					exc = e;
+////				}
+////			} else if (documentInfo instanceof XMLInfo) {
+////				String xmlStr = ((XMLInfo)documentInfo).getXmlString();
+////				try {
+////					org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);         //some overhead.
+////					String xmlType = rootElement.getName();
+////					String modelXmlType = null;
+////					if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
+////						// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
+////						// Will deal with multiple children of <vcml> Element when we get to model composition.
+////						java.util.List childElementList = rootElement.getChildren();
+////						Element modelElement = (Element)childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
+////						modelXmlType = modelElement.getName();
+////					}
+////					if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
+////						doc = XmlHelper.XMLToBioModel(xmlStr);
+////						windowManager = createDocumentWindowManager((BioModel)doc);
+////						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+////						//((BioModelWindowManager)windowManager).preloadApps();
+////						new EventDispatchRunWithException (){
+////							public Object runWithException() throws Exception{
+////								((BioModelWindowManager)windowManager).preloadApps();
+////								return null;
+////							}
+////						}.runEventDispatchThreadSafelyWithException();
+////					} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
+////						doc = XmlHelper.XMLToMathModel(xmlStr);
+////						MathModel mathModel = (MathModel)doc;
+////						Geometry geometry = mathModel.getMathDescription().getGeometry();
+////						if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
+////							geometry.getGeometrySurfaceDescription().updateAll();
+////						}
+////						windowManager = createDocumentWindowManager((MathModel)doc);
+////						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+////					} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
+////						doc = XmlHelper.XMLToGeometry(xmlStr);
+////						Geometry geometry = (Geometry)doc;
+////						if (geometry.getDimension()>0){
+////							geometry.getGeometrySurfaceDescription().updateAll();
+////						}
+////						windowManager = createDocumentWindowManager((Geometry)doc);
+////						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
+////					} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+////						TranslationLogger transLogger = new TranslationLogger(requester);
+////						doc = XmlHelper.importSBML(transLogger, xmlStr);
+////						windowManager = createDocumentWindowManager((BioModel)doc);
+////						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+////					} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
+////						if (requester instanceof BioModelWindowManager){
+////							TranslationLogger transLogger = new TranslationLogger(requester);
+////							doc = XmlHelper.importBioCellML(transLogger, xmlStr);
+////							windowManager = createDocumentWindowManager((BioModel)doc);
+////							//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+////						}else{
+////							TranslationLogger transLogger = new TranslationLogger(requester);
+////							doc = XmlHelper.importMathCellML(transLogger, xmlStr);
+////							windowManager = createDocumentWindowManager((MathModel)doc);
+////							//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+////						}
+////					} else { // unknown XML format
+////						throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
+////					}
+////				} catch (Throwable e) {
+////					exc = e;
+////				}
+////			}
+////			return doc;
+//		}
+//		public void finished() {
+//			SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
+//			try {
+//				if (exc != null) {
+////					exc.printStackTrace(System.out);
+////					if (!(exc instanceof UserCancelException)) {                      //allow 
+////						PopupGenerator.showErrorDialog(requester, "Loading document failed:\n\n" + exc.getMessage());
+////					}
+////					if (!inNewWindow) {
+////						getMdiManager().unBlockWindow(requester.getManagerID());
+////					}
+//				} else {
+////					if (inNewWindow) {
+////						// request was to create a new top-level window with this doc
+////						getMdiManager().createNewDocumentWindow(windowManager);
+////					} else {
+////						// request was to replace the document in an existing window
+////						((DocumentWindowManager)requester).resetDocument(doc);
+////						getMdiManager().setCanonicalTitle(requester.getManagerID());
+////						getMdiManager().unBlockWindow(requester.getManagerID());
+////					}
+//				}
+//			} finally {
+//				pp.stop();
+//				bOpening = false;
+//			}
+//			}});
+//		}
+//	};
+//	bOpening = true;
+//	worker.start();
 }
 
+private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
+	JPanel newJPanel =
+		(JPanel)
+		new EventDispatchRunWithException (){
+			public Object runWithException() throws Exception{
+				return new JPanel();
+			}
+		}.runEventDispatchThreadSafelyWrapRuntime();
 
+	if(doc instanceof BioModel){
+		return new BioModelWindowManager(newJPanel, ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+	}else if(doc instanceof MathModel){
+		return new MathModelWindowManager(newJPanel, ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+	}else if(doc instanceof Geometry){
+		return new GeometryWindowManager(newJPanel, ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
+	}
+	throw new RuntimeException("Unknown VCDocument type "+doc);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 8:53:05 PM)

@@ -3,6 +3,8 @@ import cbit.xml.merge.*;
 import java.util.*;
 import java.io.*;
 
+import cbit.gui.DialogUtils;
+import cbit.gui.SimpleUserMessage;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
@@ -20,6 +22,7 @@ import java.awt.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.document.*;
 import javax.swing.*;
+
 import cbit.vcell.desktop.*;
 import swingthreads.*;
 import cbit.vcell.client.desktop.geometry.ImageBrowser;
@@ -676,81 +679,86 @@ public void deleteSelected() {
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public static VCImage editImageAttributes(VCImage image,AsynchProgressPopup pp,RequestManager theRequestManager) throws UserCancelException,cbit.image.ImageException,DataAccessException{
-
-	VCImage editedImage = null;
-	if (image == null) {
-		PopupGenerator.showErrorDialog("No image!");
-		return null;
-	}
-
-	//Set image on panel and see if there are any error before proceeding
-	ImageAttributePanel imageAttributePanel = new cbit.vcell.geometry.gui.ImageAttributePanel();
-
-	try{
-		imageAttributePanel.setImage(image);
-	}catch(Throwable e){
-		throw new cbit.image.ImageException("Failed to setup ImageAttributes\n"+(e.getMessage() != null?e.getMessage():null));
-	}
-
-	Object choice = showImagePropertiesDialog(imageAttributePanel);
-	
-	if (choice != null && choice.equals("Import")) {
-		VCImageInfo imageInfos[] = null;
-		pp.setMessage("Getting existing Image names");
-		try {
-			imageInfos = theRequestManager.getDocumentManager().getImageInfos();
-		}catch (DataAccessException e){
-			e.printStackTrace(System.out);
-		}
-		pp.setMessage("found "+(imageInfos != null?imageInfos.length:0)+" existing image names");
-		String newName = null;
-		boolean bNameIsGood = false;
-		while (!bNameIsGood){
-			newName = PopupGenerator.showInputDialog((Component)null,
-					"type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
-			if (newName == null || newName.length() == 0){
-				bNameIsGood = false;
-				continue;
+public static VCImage editImageAttributes(final VCImage image,final AsynchProgressPopup pp,final RequestManager theRequestManager) throws Exception{
+	return (VCImage)
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			VCImage editedImage = null;
+			if (image == null) {
+				PopupGenerator.showErrorDialog("No image!");
+				return null;
 			}
-			if (imageInfos==null){
-				bNameIsGood = true; // if no image information assume image name is good
-			}else{	
-				boolean bNameExists = false;
-				for (int i = 0; i < imageInfos.length; i++){
-					if (imageInfos[i].getVersion().getName().equals(newName)){
-						bNameExists = true;
-						break;
+
+			//Set image on panel and see if there are any error before proceeding
+			ImageAttributePanel imageAttributePanel = new cbit.vcell.geometry.gui.ImageAttributePanel();
+
+			try{
+				imageAttributePanel.setImage(image);
+			}catch(Throwable e){
+				throw new cbit.image.ImageException("Failed to setup ImageAttributes\n"+(e.getMessage() != null?e.getMessage():null));
+			}
+
+			Object choice = showImagePropertiesDialog(imageAttributePanel);
+			
+			if (choice != null && choice.equals("Import")) {
+				VCImageInfo imageInfos[] = null;
+				pp.setMessage("Getting existing Image names");
+				try {
+					imageInfos = theRequestManager.getDocumentManager().getImageInfos();
+				}catch (DataAccessException e){
+					e.printStackTrace(System.out);
+				}
+				pp.setMessage("found "+(imageInfos != null?imageInfos.length:0)+" existing image names");
+				String newName = null;
+				boolean bNameIsGood = false;
+				while (!bNameIsGood){
+					newName = PopupGenerator.showInputDialog((Component)null,
+							"type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
+					if (newName == null || newName.length() == 0){
+						bNameIsGood = false;
+						continue;
+					}
+					if (imageInfos==null){
+						bNameIsGood = true; // if no image information assume image name is good
+					}else{	
+						boolean bNameExists = false;
+						for (int i = 0; i < imageInfos.length; i++){
+							if (imageInfos[i].getVersion().getName().equals(newName)){
+								bNameExists = true;
+								break;
+							}
+						}
+						if (bNameExists){
+							PopupGenerator.showErrorDialog("IMAGE name '"+newName+"' already exists, please enter new name");
+						}else{
+							bNameIsGood = true;
+						}
 					}
 				}
-				if (bNameExists){
-					PopupGenerator.showErrorDialog("IMAGE name '"+newName+"' already exists, please enter new name");
-				}else{
-					bNameIsGood = true;
+				pp.setMessage("Saving new Image "+newName);
+				try {
+					editedImage = theRequestManager.getDocumentManager().saveAsNew(image,newName);
+				} catch (DataAccessException e) {
+					throw new DataAccessException((e.getMessage() != null?e.getMessage():null));
 				}
+				pp.setMessage("Save finished for "+newName);
+				//
+				// check that save actually occured (it should have since an insert should be new)
+				//
+				Version newVersion = editedImage.getVersion();
+				Version oldVersion = image.getVersion();
+				if ((oldVersion != null) && newVersion.getVersionKey().compareEqual(oldVersion.getVersionKey())){
+					throw new DataAccessException("Save New Image failed, Old version has same id as New");
+				}	
+			}else{
+				throw cbit.vcell.client.task.UserCancelException.CANCEL_EDIT_IMG_ATTR;
 			}
+			
+			
+			return editedImage;
 		}
-		pp.setMessage("Saving new Image "+newName);
-		try {
-			editedImage = theRequestManager.getDocumentManager().saveAsNew(image,newName);
-		} catch (DataAccessException e) {
-			throw new DataAccessException((e.getMessage() != null?e.getMessage():null));
-		}
-		pp.setMessage("Save finished for "+newName);
-		//
-		// check that save actually occured (it should have since an insert should be new)
-		//
-		Version newVersion = editedImage.getVersion();
-		Version oldVersion = image.getVersion();
-		if ((oldVersion != null) && newVersion.getVersionKey().compareEqual(oldVersion.getVersionKey())){
-			throw new DataAccessException("Save New Image failed, Old version has same id as New");
-		}	
-	}else{
-		throw cbit.vcell.client.task.UserCancelException.CANCEL_EDIT_IMG_ATTR;
-	}
-	
-	
-	return editedImage;
+	}.runEventDispatchThreadSafelyWithException();
+
 }
 
 
@@ -1141,7 +1149,7 @@ public void publish() {
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager requester) throws UserCancelException, FileNotFoundException, IOException {
+public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager requester) throws Exception {
 
 	// Set doubleClickValue to null.
 	// if doubleClickValue is not null when dialog returns, use doubleClickValue value
@@ -1246,10 +1254,9 @@ public static ImageHelper readFromImageFile(AsynchProgressPopup pp,File imageFil
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public VCImage selectImageFromFile(AsynchProgressPopup pp)
-			throws UserCancelException, cbit.image.ImageException, FileNotFoundException,IOException,DataAccessException{
+public VCImage selectImageFromFile(final AsynchProgressPopup pp) throws Exception{
 
-	VCImage vcImage = null;
+	VCImage vcImage;
 	
 	// Choose image from File
 	File imageFile = showFileChooserDialog(FileFilters.FILE_FILTER_GEOMIMAGES);
@@ -1394,17 +1401,21 @@ public void setLatestOnly(boolean latestOnly) {
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private Object showAccessPermissionDialog(JComponent aclEditor, Component requester) {
-	JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-	aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
-	accessPermissionDialog.setMessage("");
-	accessPermissionDialog.setMessage(aclEditor);
-	accessPermissionDialog.setValue(null);
-	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
-	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-	return accessPermissionDialog.getValue();
-	
+private Object showAccessPermissionDialog(final JComponent aclEditor,final Component requester) {
+	return new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
+			aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
+			accessPermissionDialog.setMessage("");
+			accessPermissionDialog.setMessage(aclEditor);
+			accessPermissionDialog.setValue(null);
+			JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
+			d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+			return accessPermissionDialog.getValue();
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+
 }
 
 
@@ -1412,7 +1423,7 @@ private Object showAccessPermissionDialog(JComponent aclEditor, Component reques
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private File showFileChooserDialog(FileFilter fileFilter) throws UserCancelException {
+private File showFileChooserDialog(FileFilter fileFilter) throws Exception {
 
 	return showFileChooserDialog(fileFilter,getUserPreferences());
 }
@@ -1422,33 +1433,119 @@ private File showFileChooserDialog(FileFilter fileFilter) throws UserCancelExcep
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-public static File showFileChooserDialog(FileFilter fileFilter, UserPreferences currentUserPreferences) throws UserCancelException {
-	// the boolean isXMLNotImage is true if we are trying to choose an XML file
-	// It is false if we are trying to choose an image file
-	// This is used to set the appropriate File filters.
+public static File showFileChooserDialog(final FileFilter fileFilter, final UserPreferences currentUserPreferences) throws Exception{
+	return (File)
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			// the boolean isXMLNotImage is true if we are trying to choose an XML file
+			// It is false if we are trying to choose an image file
+			// This is used to set the appropriate File filters.
 
-	String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
-	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+			String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
+			cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+			fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
-	// setting fileFilter for xml files
-	fileChooser.setFileFilter(fileFilter);
-	
-    int returnval = fileChooser.showOpenDialog(null);
-    if (returnval == JFileChooser.APPROVE_OPTION) {
-        File selectedFile = fileChooser.getSelectedFile();
-        //reset the user preference for the default path, if needed.
-        String newPath = selectedFile.getParent();
-        if (!newPath.equals(defaultPath)) {
-			if(currentUserPreferences != null){
-				currentUserPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+			// setting fileFilter for xml files
+			fileChooser.setFileFilter(fileFilter);
+			
+		    int returnval = fileChooser.showOpenDialog(null);
+		    if (returnval == JFileChooser.APPROVE_OPTION) {
+		        File selectedFile = fileChooser.getSelectedFile();
+		        //reset the user preference for the default path, if needed.
+		        String newPath = selectedFile.getParent();
+		        if (!newPath.equals(defaultPath)) {
+					if(currentUserPreferences != null){
+						currentUserPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+					}
+		        }
+		        //System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
+		        return selectedFile;
+		    }else{ // user didn't select a file
+			    throw UserCancelException.CANCEL_FILE_SELECTION;
+		    }
+		}
+	}.runEventDispatchThreadSafelyWithException();
+
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/14/2004 6:11:35 PM)
+ */
+private static Object showImagePropertiesDialog(final ImageAttributePanel imageAttributePanel) {
+	return new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			// Cannot use JOptionPane because it will not allow some children to resize
+			JDialog d = new JDialog();
+			d.setModal(true);
+			d.getContentPane().add(imageAttributePanel);
+			imageAttributePanel.setDialogParent(d);
+			d.setSize(400,600);
+			d.setLocation(300,200);
+			BeanUtils.centerOnComponent(d,null);
+			cbit.gui.ZEnforcer.showModalDialogOnTop(d,null);
+			return imageAttributePanel.getStatus();
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/14/2004 6:11:35 PM)
+ */
+private Object showImageSelectorDialog(final JComponent imageBrowser, final Component requester) {
+	return new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
+			imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
+			imageSelectDialog.setMessage("");
+			imageSelectDialog.setMessage(imageBrowser);
+			JDialog d = imageSelectDialog.createDialog(requester, "Select Image:");
+			d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+			return imageSelectDialog.getValue();
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/14/2004 6:11:35 PM)
+ */
+private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager requester) {
+	return new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
+			tree.setPreferredSize(new java.awt.Dimension(300, 600));
+			openDialog.setMessage("");
+			openDialog.setMessage(tree);
+			final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select document:");
+			theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			
+			DoubleClickListener doubleClickListener = new DoubleClickListener(theJDialog);
+			
+
+			getBioModelDbTreePanel().addActionListener(doubleClickListener);
+			getMathModelDbTreePanel().addActionListener(doubleClickListener);
+			getGeometryTreePanel().addActionListener(doubleClickListener);
+
+			cbit.gui.ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
+			
+			getBioModelDbTreePanel().removeActionListener(doubleClickListener);
+			getMathModelDbTreePanel().removeActionListener(doubleClickListener);
+			getGeometryTreePanel().removeActionListener(doubleClickListener);
+			
+			if (doubleClickListener.wasDoubleClicked()) {
+				return "Open";
 			}
-        }
-        //System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
-        return selectedFile;
-    }else{ // user didn't select a file
-	    throw UserCancelException.CANCEL_FILE_SELECTION;
-    }
+
+			return openDialog.getValue();
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+
 }
 
 
@@ -1456,109 +1553,47 @@ public static File showFileChooserDialog(FileFilter fileFilter, UserPreferences 
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private static Object showImagePropertiesDialog(ImageAttributePanel imageAttributePanel) {
-
-	// Cannot use JOptionPane because it will not allow some children to resize
-	JDialog d = new JDialog();
-	d.setModal(true);
-	d.getContentPane().add(imageAttributePanel);
-	imageAttributePanel.setDialogParent(d);
-	d.setSize(400,600);
-	d.setLocation(300,200);
-	BeanUtils.centerOnComponent(d,null);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,null);
-	return imageAttributePanel.getStatus();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:11:35 PM)
- */
-private Object showImageSelectorDialog(JComponent imageBrowser, Component requester) {
-	JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-	imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
-	imageSelectDialog.setMessage("");
-	imageSelectDialog.setMessage(imageBrowser);
-	JDialog d = imageSelectDialog.createDialog(requester, "Select Image:");
-	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-	return imageSelectDialog.getValue();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:11:35 PM)
- */
-private Object showOpenDialog(JComponent tree, TopLevelWindowManager requester) {
-	JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
-	tree.setPreferredSize(new java.awt.Dimension(300, 600));
-	openDialog.setMessage("");
-	openDialog.setMessage(tree);
-	final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select document:");
-	theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	
-	DoubleClickListener doubleClickListener = new DoubleClickListener(theJDialog);
-	
-
-	getBioModelDbTreePanel().addActionListener(doubleClickListener);
-	getMathModelDbTreePanel().addActionListener(doubleClickListener);
-	getGeometryTreePanel().addActionListener(doubleClickListener);
-
-	cbit.gui.ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
-	
-	getBioModelDbTreePanel().removeActionListener(doubleClickListener);
-	getMathModelDbTreePanel().removeActionListener(doubleClickListener);
-	getGeometryTreePanel().removeActionListener(doubleClickListener);
-	
-	if (doubleClickListener.wasDoubleClicked()) {
-		return "Open";
-	}
-
-	return openDialog.getValue();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:11:35 PM)
- */
-public String showSaveDialog(int documentType, Component requester) throws UserCancelException {
-	JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
-	saveDialog.setWantsInput(true);
-	JPanel panel = new JPanel(new BorderLayout());
-	JComponent tree = null;
-	switch (documentType) {
-		case VCDocument.BIOMODEL_DOC: {
-			tree = getBioModelDbTreePanel();
-			break;
+public String showSaveDialog(final int documentType, final Component requester) throws Exception {
+	return (String)
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
+			saveDialog.setWantsInput(true);
+			JPanel panel = new JPanel(new BorderLayout());
+			JComponent tree = null;
+			switch (documentType) {
+				case VCDocument.BIOMODEL_DOC: {
+					tree = getBioModelDbTreePanel();
+					break;
+				}
+				case VCDocument.MATHMODEL_DOC: {
+					tree = getMathModelDbTreePanel();
+					break;
+				}
+				case VCDocument.GEOMETRY_DOC: {
+					tree = getGeometryTreePanel();
+					break;
+				}
+				default: {
+					throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
+				}
+			}
+			tree.setPreferredSize(new java.awt.Dimension(300, 600));
+			panel.add(tree, BorderLayout.CENTER);
+			panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
+			saveDialog.setMessage("");
+			saveDialog.setMessage(panel);
+			JDialog d = saveDialog.createDialog(requester, "Save document:");
+			d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+			if ("Save".equals(saveDialog.getValue())) {
+				return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
+			} else {
+				// user cancelled
+				throw UserCancelException.CANCEL_NEW_NAME;
+			}
 		}
-		case VCDocument.MATHMODEL_DOC: {
-			tree = getMathModelDbTreePanel();
-			break;
-		}
-		case VCDocument.GEOMETRY_DOC: {
-			tree = getGeometryTreePanel();
-			break;
-		}
-		default: {
-			throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
-		}
-	}
-	tree.setPreferredSize(new java.awt.Dimension(300, 600));
-	panel.add(tree, BorderLayout.CENTER);
-	panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
-	saveDialog.setMessage("");
-	saveDialog.setMessage(panel);
-	JDialog d = saveDialog.createDialog(requester, "Save document:");
-	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-	if ("Save".equals(saveDialog.getValue())) {
-		return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
-	} else {
-		// user cancelled
-		throw UserCancelException.CANCEL_NEW_NAME;
-	}
+	}.runEventDispatchThreadSafelyWithException();
+
 }
 }

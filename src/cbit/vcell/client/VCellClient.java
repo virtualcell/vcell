@@ -1,35 +1,19 @@
 package cbit.vcell.client;
 import java.awt.event.*;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.ZEnforcer;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.KeyValue;
 import cbit.sql.UserInfo;
-import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.server.*;
-import cbit.vcell.clientdb.*;
-import swingthreads.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.UserCancelException;
-import cbit.vcell.client.test.ClientTester;
 import cbit.vcell.document.*;
 import cbit.vcell.client.desktop.*;
-import java.awt.*;
 import javax.swing.*;
-import cbit.vcell.biomodel.*;
 
-import java.net.MalformedURLException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.*;
+import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:24:03 PM)
@@ -41,6 +25,53 @@ public class VCellClient {
 	private RequestManager requestManager = null;
 	private MDIManager mdiManager = null;
 	private boolean isApplet = false;
+	
+	private static class CheckThreadViolationRepaintManager extends RepaintManager {
+	    // it is recommended to pass the complete check  
+	    private boolean completeCheck = true;
+
+	    public boolean isCompleteCheck() {
+	        return completeCheck;
+	    }
+
+	    public void setCompleteCheck(boolean completeCheck) {
+	        this.completeCheck = completeCheck;
+	    }
+
+	    public synchronized void addInvalidComponent(JComponent component) {
+	        checkThreadViolations(component);
+	        super.addInvalidComponent(component);
+	    }
+
+	    public void addDirtyRegion(JComponent component, int x, int y, int w, int h) {
+	        checkThreadViolations(component);
+	        super.addDirtyRegion(component, x, y, w, h);
+	    }
+
+	    private void checkThreadViolations(JComponent c) {
+	        if (!SwingUtilities.isEventDispatchThread() && (completeCheck || c.isShowing())) {
+	            Exception exception = new Exception();
+	            boolean repaint = false;
+	            boolean fromSwing = false;
+	            StackTraceElement[] stackTrace = exception.getStackTrace();
+	            for (StackTraceElement st : stackTrace) {
+	                if (repaint && st.getClassName().startsWith("javax.swing.")) {
+	                    fromSwing = true;
+	                }
+	                if ("repaint".equals(st.getMethodName())) {
+	                    repaint = true;
+	                }
+	            }
+	            if (repaint && !fromSwing) {
+	                //no problems here, since repaint() is thread safe
+	                return;
+	            }
+	            exception.printStackTrace();
+	            throw new RuntimeException("Swing Thread Violation");
+	        }
+	    }
+	}
+
 
 /**
  * Insert the method's description here.
@@ -220,6 +251,9 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
     } else {
 		new Thread(new Runnable(){public void run(){vcellClient.getRequestManager().connectToServer(clientServerInfo);}}).start();
     }
+    
+	RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
+
 	return vcellClient;
 }
 
@@ -248,7 +282,10 @@ public static void login(final RequestManager requestManager,final ClientServerI
 						}finally{
 							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
 							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-								new Thread(new Runnable(){public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
+								SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
+									VCellClient.login(requestManager,clientServerInfo);
+								}});
+								//new Thread(new Runnable(){public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
 							}
 						}
 					}
@@ -275,7 +312,10 @@ public static void login(final RequestManager requestManager,final ClientServerI
 						}finally{
 							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
 							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-								new Thread(new Runnable() {public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
+									SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
+										VCellClient.login(requestManager,clientServerInfo);
+									}});
+								//new Thread(new Runnable() {public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
 							}
 						}
 					}

@@ -3,9 +3,11 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.EventDispatchRunWithException;
 import cbit.util.Origin;
 import cbit.util.Extent;
 import java.awt.image.MemoryImageSource;
+
 import cbit.vcell.geometry.*;
 import cbit.image.*;
 /**
@@ -1000,10 +1002,16 @@ private void initConnections() throws java.lang.Exception {
  * Comment
  */
 private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
-	boolean bSpatial = getGeometry() != null && getGeometry().getDimension() > 0;
-	getImagePlaneManagerPanel1().setVisible(bSpatial);
-	getJPanelOrigin().setVisible(bSpatial);
-	getJPanelSize().setVisible(bSpatial);
+	final boolean bSpatial = getGeometry() != null && getGeometry().getDimension() > 0;
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			getImagePlaneManagerPanel1().setVisible(bSpatial);
+			getJPanelOrigin().setVisible(bSpatial);
+			getJPanelSize().setVisible(bSpatial);
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+
 	
 	if(getGeometry() != null){
 		try{
@@ -1158,12 +1166,18 @@ private void setgeometry1(cbit.vcell.geometry.Geometry newValue) {
 		try {
 			cbit.vcell.geometry.Geometry oldValue = getgeometry1();
 			ivjgeometry1 = newValue;
-			connPtoP3SetSource();
-			connEtoM3(ivjgeometry1);
-			connEtoM5(ivjgeometry1);
-			connEtoM8(ivjgeometry1);
-			connEtoM9(ivjgeometry1);
-			connEtoM10(ivjgeometry1);
+			new EventDispatchRunWithException (){
+				public Object runWithException() throws Exception{
+					connPtoP3SetSource();
+					connEtoM3(ivjgeometry1);
+					connEtoM5(ivjgeometry1);
+					connEtoM8(ivjgeometry1);
+					connEtoM9(ivjgeometry1);
+					connEtoM10(ivjgeometry1);
+					return null;
+				}
+			}.runEventDispatchThreadSafelyWrapRuntime();
+			
 			connEtoC1(ivjgeometry1);
 			firePropertyChange("geometry", oldValue, newValue);
 			// user code begin {1}
