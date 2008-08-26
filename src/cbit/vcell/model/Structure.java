@@ -126,10 +126,15 @@ public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
 
 public StructureSize getStructureSize(){
 	if (fieldStructureSize == null){
-		fieldStructureSize = new StructureSize(cbit.util.TokenMangler.fixTokenStrict(fieldName));
+		fieldStructureSize = new StructureSize(getDefaultStructureSizeName(fieldName));
 	}
 	return fieldStructureSize;
 }
+
+public static String getDefaultStructureSizeName(String structureName){
+	return cbit.util.TokenMangler.fixTokenStrict(structureName);
+}
+
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.

@@ -87,6 +87,7 @@ public static Model getExample() throws Exception {
 //	model.addReaction("IP3_Volume");
 //	reaction = model.getReaction("IP3_Volume");
 	sr = new SimpleReaction(cytosol,"IP3_DEGRADATION");
+	sr.setModel(model);
 	sr.addReactant(ip3_cytosol,1);
 	sr.setKinetics(new MassActionKinetics(sr));
 	MassActionKinetics massAct = (MassActionKinetics)sr.getKinetics();
@@ -97,6 +98,7 @@ public static Model getExample() throws Exception {
 	
 
 	sr = new SimpleReaction(cytosol,"IP3_BASAL_CREATION");
+	sr.setModel(model);
 	sr.addProduct(ip3_cytosol,1);
 	massAct = new MassActionKinetics(sr);
 	sr.setKinetics(massAct);
@@ -107,6 +109,7 @@ public static Model getExample() throws Exception {
 		
 		
 	sr1 = new SimpleReaction(cytosol,"IP3_DEGRADATION1");
+	sr1.setModel(model);
 	sr1.addReactant(ip3_cytosol,1);
 	sr1.setKinetics(new HMM_IRRKinetics(sr1));
 	HMM_IRRKinetics hmmKinetics = (HMM_IRRKinetics)sr1.getKinetics();
@@ -120,6 +123,7 @@ public static Model getExample() throws Exception {
 //	model.addReaction("IP3_generation");
 //	reaction = model.getReaction("IP3_generation");
 	fr = new FluxReaction(plasmaMembrane,ip3,model,"IP3_FLUX");
+	fr.setModel(model);
 	GeneralKinetics genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
 	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Jfinal * (1 - exp(-t/TAU));"));
@@ -155,6 +159,7 @@ public static Model getExample() throws Exception {
 //	model.addReaction("IP3_Receptor");
 //	reaction = model.getReaction("IP3_Receptor");
 	sr = new SimpleReaction(erMembrane,"IP3_BINDING");
+	sr.setModel(model);
 	sr.addReactant(r_erMembrane,2);
 	sr.addReactant(ip3_cytosol,3);
 	sr.addProduct(ri_erMembrane,1);
@@ -168,6 +173,7 @@ public static Model getExample() throws Exception {
 	model.addReactionStep(sr);
 	
 	fr = new FluxReaction(erMembrane,calcium,model,"IP3R_FLUX");
+	fr.setModel(model);
 	fr.addCatalyst(ri_erMembrane);
 //	fr.addCatalyst(calcium_cytosol);
 //	fr.addCatalyst(calcium_er);
@@ -190,6 +196,7 @@ public static Model getExample() throws Exception {
 //	model.addReaction("Serca_Pump");
 //	reaction = model.getReaction("Serca_Pump");
 	fr = new FluxReaction(erMembrane,calcium,model,"SERCA_FLUX");
+	fr.setModel(model);
 	genKinetics = (GeneralKinetics)fr.getKinetics();
 	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Vmax * pow("+calcium_cytosol.getName()+",2) / (pow(Kd,2) + pow("+calcium_er.getName()+",2));"));
 	genKinetics.setParameterValue("Kd",Double.toString(0.7));

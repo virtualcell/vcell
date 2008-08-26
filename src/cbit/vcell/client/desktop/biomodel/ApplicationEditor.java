@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.util.Issue;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 
@@ -2366,11 +2367,16 @@ private boolean updateMath() {
 		cbit.util.Issue issues[] = mathMapping.getIssues();
 		if (issues!=null && issues.length>0){
 			StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
-			
+			int issueCount=0;
 			for (int i = 0; i < issues.length; i++){
-				messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
+				if (issues[i].getSeverity()==Issue.SEVERITY_ERROR || issues[i].getSeverity()==Issue.SEVERITY_WARNING){
+					messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
+					issueCount++;
+				}
 			}
-			cbit.vcell.client.PopupGenerator.showWarningDialog(this,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
+			if (issueCount>0){
+				cbit.vcell.client.PopupGenerator.showWarningDialog(this,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
+			}
 		}
 		return true;
 	} catch (Exception exc) {

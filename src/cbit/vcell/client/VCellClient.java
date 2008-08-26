@@ -67,7 +67,7 @@ public class VCellClient {
 	                return;
 	            }
 	            exception.printStackTrace();
-	            throw new RuntimeException("Swing Thread Violation");
+	         //   throw new RuntimeException("Swing Thread Violation");
 	        }
 	    }
 	}

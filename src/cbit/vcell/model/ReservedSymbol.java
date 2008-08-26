@@ -7,6 +7,8 @@ import cbit.vcell.parser.*;
 
 import java.beans.PropertyVetoException;
 import java.io.*;
+import java.util.Set;
+
 import cbit.vcell.units.VCUnitDefinition;
 
 public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
@@ -75,6 +77,20 @@ public boolean equals(Object obj) {
 	return true;
 }
 
+public static void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries){
+	symbolTableEntries.add(TIME);
+	symbolTableEntries.add(X);
+	symbolTableEntries.add(Y);
+	symbolTableEntries.add(Z);
+	symbolTableEntries.add(TEMPERATURE);
+	symbolTableEntries.add(GAS_CONSTANT);
+	symbolTableEntries.add(FARADAY_CONSTANT);
+	symbolTableEntries.add(FARADAY_CONSTANT_NMOLE);
+	symbolTableEntries.add(KMOLE);
+	symbolTableEntries.add(N_PMOLE);
+	symbolTableEntries.add(KMILLIVOLTS);
+	symbolTableEntries.add(K_GHK);
+}
 
 public static ReservedSymbol fromString(String symbolName) {
 	if (symbolName==null){
