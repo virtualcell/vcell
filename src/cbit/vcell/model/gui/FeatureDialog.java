@@ -4,9 +4,15 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -30,6 +36,7 @@ import cbit.vcell.model.*;
  *
  */
 public class FeatureDialog extends cbit.gui.JInternalFrameEnhanced implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	private JCheckBox overrideSizeNameCheckBox;
 	private JTextField featureSizeNameJTextField;
 	private JLabel featureSizeNameLabel;
 	private JPanel ivjFeatureSizeNamePanel;
@@ -288,6 +295,11 @@ private javax.swing.JTextField getNameJTextField() {
 	if (ivjNameJTextField == null) {
 		try {
 			ivjNameJTextField = new javax.swing.JTextField();
+			ivjNameJTextField.addKeyListener(new KeyAdapter() {
+				public void keyReleased(final KeyEvent e) {
+					updateDependentText();
+				}
+			});
 			ivjNameJTextField.setName("NameJTextField");
 			ivjNameJTextField.setEnabled(false);
 			ivjNameJTextField.setColumns(20);
@@ -438,7 +450,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && (evt.getPropertyName().equals("childFeature"))) {
 		getNameJTextField().setText(this.getChildName());
 		if (getChildFeature()!=null){
+			boolean bOverride = !getChildFeature().getStructureSize().getName().equals(Structure.getDefaultStructureSizeName(getChildFeature().getName()));
+			getOverrideSizeNameCheckBox().setSelected(bOverride);
 			getFeatureSizeNameJTextField().setText(this.getChildFeature().getStructureSize().getName());
+			updateDependentText();
 		}
 		updateInterface();
 	}
@@ -556,7 +571,9 @@ private void updateInterface() {
 	protected JPanel getFeatureSizeNamePanel() {
 		if (ivjFeatureSizeNamePanel == null) {
 			ivjFeatureSizeNamePanel = new JPanel();
-			ivjFeatureSizeNamePanel.setLayout(new GridBagLayout());
+			final GridBagLayout gridBagLayout = new GridBagLayout();
+			gridBagLayout.columnWidths = new int[] {0,0,7};
+			ivjFeatureSizeNamePanel.setLayout(gridBagLayout);
 			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 0;
@@ -569,6 +586,10 @@ private void updateInterface() {
 			gridBagConstraints_1.gridy = 0;
 			gridBagConstraints_1.insets = new Insets(5, 5, 5, 5);
 			ivjFeatureSizeNamePanel.add(getFeatureSizeNameJTextField(), gridBagConstraints_1);
+			final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
+			gridBagConstraints_2.gridy = 0;
+			gridBagConstraints_2.gridx = 2;
+			ivjFeatureSizeNamePanel.add(getOverrideSizeNameCheckBox(), gridBagConstraints_2);
 		}
 		return ivjFeatureSizeNamePanel;
 	}
@@ -592,4 +613,32 @@ private void updateInterface() {
 		}
 		return featureSizeNameJTextField;
 	}
+	/**
+	 * @return
+	 */
+	protected JCheckBox getOverrideSizeNameCheckBox() {
+		if (overrideSizeNameCheckBox == null) {
+			overrideSizeNameCheckBox = new JCheckBox();
+			overrideSizeNameCheckBox.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					updateDependentText();
+				}
+			});
+			overrideSizeNameCheckBox.setText("override");
+		}
+		return overrideSizeNameCheckBox;
+	}
+	
+	private void updateDependentText(){
+		if (!getOverrideSizeNameCheckBox().isSelected()){
+			getFeatureSizeNameJTextField().setEnabled(false);
+			getFeatureSizeNameJTextField().setDisabledTextColor(new Color(130,130,130));
+			if (getNameJTextField().getText().length()>0 && !getFeatureSizeNameJTextField().getText().equals(Structure.getDefaultStructureSizeName(getNameJTextField().getText()))){
+				getFeatureSizeNameJTextField().setText(Structure.getDefaultStructureSizeName(getNameJTextField().getText()));
+			}
+		}else{
+			getFeatureSizeNameJTextField().setEnabled(true);
+		}
+	}
+	
 }

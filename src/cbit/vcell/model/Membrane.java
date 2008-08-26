@@ -55,12 +55,16 @@ public class Membrane extends Structure {
 public Membrane(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
 	setName(name);
-	fieldMembraneVoltage = new MembraneVoltage(cbit.util.TokenMangler.fixTokenStrict("Voltage_"+name));
+	fieldMembraneVoltage = new MembraneVoltage(getDefaultMembraneVoltageName(name));
 }
 
 
 public Membrane(String name) throws java.beans.PropertyVetoException {
 	this(null,name);
+}
+
+public static String getDefaultMembraneVoltageName(String structureName){
+	return cbit.util.TokenMangler.fixTokenStrict("Voltage_"+structureName);
 }
 
 

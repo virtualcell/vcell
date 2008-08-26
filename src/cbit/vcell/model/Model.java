@@ -630,7 +630,7 @@ public void gatherIssues(Vector issueList) {
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,"Units","unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(this,"Units","unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	
 	//
@@ -639,6 +639,24 @@ public void gatherIssues(Vector issueList) {
 	for (int i = 0; i < fieldReactionSteps.length; i++){
 		fieldReactionSteps[i].gatherIssues(issueList);
 	}
+	
+	//
+	// get issues for symbol name clashes (specifically structures with same voltage names or structure names)
+	//
+	HashSet<SymbolTableEntry> steHashSet = new HashSet<SymbolTableEntry>();
+	gatherLocalEntries(steHashSet);
+	Iterator<SymbolTableEntry> iter = steHashSet.iterator();
+	Hashtable<String,SymbolTableEntry> symbolHashtable = new Hashtable<String, SymbolTableEntry>();
+	while (iter.hasNext()){
+		SymbolTableEntry ste = iter.next();
+		SymbolTableEntry existingSTE = symbolHashtable.get(ste.getName());
+		if (existingSTE!=null){
+			issueList.add(new Issue(this,"Identifiers", "model symbol \""+ste.getName()+"\" is used within \""+ste.getNameScope().getName()+"\" and \""+existingSTE.getNameScope().getName()+"\"",Issue.SEVERITY_ERROR));
+		}else{
+			symbolHashtable.put(ste.getName(),ste);
+		}
+	}
+	
 }
 
 
@@ -871,6 +889,32 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 	}
 	
 	return getSpeciesContext(identifier);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (8/27/2003 10:03:05 PM)
+ * @return cbit.vcell.parser.SymbolTableEntry
+ * @param identifier java.lang.String
+ */
+public void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries) {
+
+	ReservedSymbol.gatherLocalEntries(symbolTableEntries);
+
+	for (int i = 0; i < fieldModelParameters.length; i++) {
+		symbolTableEntries.add(fieldModelParameters[i]);
+	}
+	
+	for (int i = 0; i < fieldStructures.length; i++){
+		symbolTableEntries.add(fieldStructures[i].getStructureSize());
+		if (fieldStructures[i] instanceof Membrane){
+			symbolTableEntries.add(((Membrane)fieldStructures[i]).getMembraneVoltage());
+		}
+	}
+	
+	for (int i = 0; i < fieldSpeciesContexts.length; i++){
+		symbolTableEntries.add(fieldSpeciesContexts[i]);
+	}
 }
 
 
@@ -2069,11 +2113,23 @@ public void setStructures(cbit.vcell.model.Structure[] structures) throws java.b
 		oldValue[i].removePropertyChangeListener(this);
 		oldValue[i].removeVetoableChangeListener(this);
 		oldValue[i].setModel(null);
+		oldValue[i].getStructureSize().removePropertyChangeListener(this);
+		oldValue[i].getStructureSize().removeVetoableChangeListener(this);
+		if (oldValue[i] instanceof Membrane){
+			((Membrane)oldValue[i]).getMembraneVoltage().removePropertyChangeListener(this);
+			((Membrane)oldValue[i]).getMembraneVoltage().removeVetoableChangeListener(this);
+		}
 	}
 	for (int i=0;i<newValue.length;i++){	
 		newValue[i].addPropertyChangeListener(this);
 		newValue[i].addVetoableChangeListener(this);
 		newValue[i].setModel(this);
+		newValue[i].getStructureSize().addPropertyChangeListener(this);
+		newValue[i].getStructureSize().addVetoableChangeListener(this);
+		if (newValue[i] instanceof Membrane){
+			((Membrane)newValue[i]).getMembraneVoltage().addPropertyChangeListener(this);
+			((Membrane)newValue[i]).getMembraneVoltage().addVetoableChangeListener(this);
+		}
 	}
 	
 //	showStructureHierarchy();
@@ -2176,6 +2232,32 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			validateNamingConflicts("SpeciesContext",SpeciesContext.class, newName, e);
 		}
 	}
+	if (e.getSource() instanceof MembraneVoltage){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
+			String newName = (String)e.getNewValue();
+			try {
+				SymbolTableEntry existingSTE = getLocalEntry(newName);
+				if (existingSTE instanceof MembraneVoltage){
+					throw new PropertyVetoException("new name \""+newName+"\" conflicts with the voltage parameter name for membrane \""+((MembraneVoltage)existingSTE).getMembrane().getName()+"\"",e);
+				}
+			} catch (ExpressionBindingException e1) {
+			}
+			validateNamingConflicts("MembraneVoltage",MembraneVoltage.class, newName, e);
+		}
+	}
+	if (e.getSource() instanceof StructureSize){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
+			String newName = (String)e.getNewValue();
+			try {
+				SymbolTableEntry existingSTE = getLocalEntry(newName);
+				if (existingSTE instanceof StructureSize){
+					throw new PropertyVetoException("new name \""+newName+"\" conflicts with the size parameter name for structure \""+((StructureSize)existingSTE).getStructure().getName()+"\"",e);
+				}
+			} catch (ExpressionBindingException e1) {
+			}
+			validateNamingConflicts("StructureSize",StructureSize.class, newName, e);
+		}
+	}
 	if (e.getSource() instanceof ModelParameter){
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
@@ -2227,7 +2309,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (newStructures[i] instanceof Membrane){
 				String newMembraneVoltageName = ((Membrane)newStructures[i]).getMembraneVoltage().getName();
 				if (structSymbolSet.contains(newMembraneVoltageName)){
-					throw new PropertyVetoException("membrane '"+newStructureName+"' has Voltage name '"+newMembraneVoltageName+"' that conflicts with another Voltage name or Size name",e);
+					//throw new PropertyVetoException("membrane '"+newStructureName+"' has Voltage name '"+newMembraneVoltageName+"' that conflicts with another Voltage name or Size name",e);
 				}
 				structSymbolSet.add(newMembraneVoltageName);
 				validateNamingConflicts("MembraneVoltage",MembraneVoltage.class, newMembraneVoltageName, e);
@@ -2520,7 +2602,11 @@ private void validateNamingConflicts(String symbolDescription, Class newSymbolCl
 	//
 	// old and new symbols of different type but same name, throw exception 
 	//
-	if (localSTE instanceof SpeciesContext){
+	if (localSTE instanceof StructureSize){
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Size in Structure '"+((StructureSize)localSTE).getStructure().getName()+"'",e);
+	}else if (localSTE instanceof MembraneVoltage){
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Voltage Context in Structure '"+((MembraneVoltage)localSTE).getMembrane().getName()+"'",e);
+	}else if (localSTE instanceof SpeciesContext){
 		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Species Context in Structure '"+((SpeciesContext)localSTE).getStructure().getName()+"'",e);
 	}else if (localSTE instanceof MembraneVoltage){
 		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Membrane Voltage in Membrane '"+((Membrane.MembraneVoltage)localSTE).getMembrane().getName()+"'",e);

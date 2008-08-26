@@ -1117,6 +1117,8 @@ protected Variable newFunctionOrConstant(String name, Expression exp) {
 private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException {
 //System.out.println("MathMapping.refresh()");
 	issueList.clear();
+	getSimulationContext().gatherIssues(issueList);
+	getSimulationContext().getModel().gatherIssues(issueList);
 	refreshKFluxParameters();
 	refreshSpeciesContextMappings();
 	refreshStructureAnalyzers();

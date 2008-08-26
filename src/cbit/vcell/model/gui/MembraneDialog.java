@@ -4,10 +4,16 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.*;
@@ -16,6 +22,8 @@ import cbit.vcell.model.*;
  * 
  */
 public class MembraneDialog extends cbit.gui.JInternalFrameEnhanced implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	private JCheckBox overrideSizeNameCheckBox;
+	private JCheckBox overrideVoltageNameCheckBox;
 	private JTextField sizeNameTextField;
 	private JLabel sizeNameLabel;
 	private javax.swing.JButton okButton = null;
@@ -195,6 +203,22 @@ private javax.swing.JTextField getMembraneNameTextField() {
 	if (membraneNameTextField == null) {
 		try {
 			membraneNameTextField = new javax.swing.JTextField();
+			membraneNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+				public void changedUpdate(final DocumentEvent e) {
+					updateDependentText();
+				}
+				public void insertUpdate(final DocumentEvent e) {
+					updateDependentText();
+				}
+				public void removeUpdate(final DocumentEvent e) {
+					updateDependentText();
+				}
+			});
+			membraneNameTextField.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					updateDependentText();
+				}
+			});
 			membraneNameTextField.setName("NameTextField");
 			membraneNameTextField.setColumns(20);
 			// user code begin {1}
@@ -218,6 +242,7 @@ private javax.swing.JPanel getPanel1() {
 			ivjPanel1 = new javax.swing.JPanel();
 			ivjPanel1.setName("Panel1");
 			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
+			gridBagLayout.columnWidths = new int[] {0,0,0,7};
 			gridBagLayout.rowHeights = new int[] {0,0,7};
 			ivjPanel1.setLayout(gridBagLayout);
 
@@ -245,6 +270,10 @@ private javax.swing.JPanel getPanel1() {
 			gridBagConstraints.anchor = GridBagConstraints.EAST;
 			gridBagConstraints.gridy = 2;
 			gridBagConstraints.gridx = 0;
+			final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
+			gridBagConstraints_2.gridy = 1;
+			gridBagConstraints_2.gridx = 3;
+			ivjPanel1.add(getOverrideVoltageNameCheckBox(), gridBagConstraints_2);
 			ivjPanel1.add(getSizeNameLabel(), gridBagConstraints);
 			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 			gridBagConstraints_1.fill = GridBagConstraints.HORIZONTAL;
@@ -254,6 +283,10 @@ private javax.swing.JPanel getPanel1() {
 			gridBagConstraints_1.gridy = 2;
 			gridBagConstraints_1.gridx = 1;
 			ivjPanel1.add(getSizeNameTextField(), gridBagConstraints_1);
+			final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
+			gridBagConstraints_3.gridy = 2;
+			gridBagConstraints_3.gridx = 3;
+			ivjPanel1.add(getOverrideSizeNameCheckBox(), gridBagConstraints_3);
 			getPanel1().add(getOkButton(), constraintsButton1);
 
 			java.awt.GridBagConstraints constraintsButton2 = new java.awt.GridBagConstraints();
@@ -325,7 +358,7 @@ private void initialize() {
 		setName("MembraneDialog");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setClosable(true);
-		setSize(345, 200);
+		setSize(400, 200);
 		setContentPane(getPanel1());
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -373,9 +406,14 @@ private void setMembrane(cbit.vcell.model.Membrane newValue) {
 				fieldMembrane.getStructureSize().addPropertyChangeListener(this);
 			}
 			if (fieldMembrane!=null){
+				boolean bOverrideSizeName = !fieldMembrane.getStructureSize().getName().equals(Structure.getDefaultStructureSizeName(fieldMembrane.getName()));
+				getOverrideSizeNameCheckBox().setSelected(bOverrideSizeName);
+				boolean bOverrideVoltageName = !fieldMembrane.getMembraneVoltage().getName().equals(Membrane.getDefaultMembraneVoltageName(fieldMembrane.getName()));
+				getOverrideVoltageNameCheckBox().setSelected(bOverrideVoltageName);
 				getMembraneNameTextField().setText(fieldMembrane.getName());
 				getVoltageNameTextField().setText(fieldMembrane.getMembraneVoltage().getName());
 				getSizeNameTextField().setText(fieldMembrane.getStructureSize().getName());
+				updateDependentText();
 			}
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -402,5 +440,56 @@ private void setMembrane(cbit.vcell.model.Membrane newValue) {
 			sizeNameTextField = new JTextField();
 		}
 		return sizeNameTextField;
+	}
+	/**
+	 * @return
+	 */
+	protected JCheckBox getOverrideVoltageNameCheckBox() {
+		if (overrideVoltageNameCheckBox == null) {
+			overrideVoltageNameCheckBox = new JCheckBox();
+			overrideVoltageNameCheckBox.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					updateDependentText();
+				}
+			});
+			overrideVoltageNameCheckBox.setText("override");
+		}
+		return overrideVoltageNameCheckBox;
+	}
+
+	private void updateDependentText(){
+		if (!getOverrideSizeNameCheckBox().isSelected()){
+			getSizeNameTextField().setEnabled(false);
+			getSizeNameTextField().setDisabledTextColor(new Color(130,130,130));
+			if (getMembraneNameTextField().getText().length()>0 && !getSizeNameTextField().getText().equals(Structure.getDefaultStructureSizeName(getMembraneNameTextField().getText()))){
+				getSizeNameTextField().setText(Structure.getDefaultStructureSizeName(getMembraneNameTextField().getText()));
+			}
+		}else{
+			getSizeNameTextField().setEnabled(true);
+		}
+		if (!getOverrideVoltageNameCheckBox().isSelected()){
+			getVoltageNameTextField().setEnabled(false);
+			getVoltageNameTextField().setDisabledTextColor(new Color(130,130,130));
+			if (getMembraneNameTextField().getText().length()>0 && !getVoltageNameTextField().getText().equals(Membrane.getDefaultMembraneVoltageName(getMembraneNameTextField().getText()))){
+				getVoltageNameTextField().setText(Membrane.getDefaultMembraneVoltageName(getMembraneNameTextField().getText()));
+			}
+		}else{
+			getVoltageNameTextField().setEnabled(true);
+		}
+	}
+	/**
+	 * @return
+	 */
+	protected JCheckBox getOverrideSizeNameCheckBox() {
+		if (overrideSizeNameCheckBox == null) {
+			overrideSizeNameCheckBox = new JCheckBox();
+			overrideSizeNameCheckBox.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					updateDependentText();
+				}
+			});
+			overrideSizeNameCheckBox.setText("override");
+		}
+		return overrideSizeNameCheckBox;
 	}
 }
