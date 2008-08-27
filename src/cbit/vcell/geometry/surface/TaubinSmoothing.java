@@ -13,7 +13,7 @@ public TaubinSmoothing() {
 	super();
 }
 public void smooth(SurfaceCollection surfaceCollection, TaubinSmoothingSpecification taubinSmoothingSpecification) {
-	long t1 = System.currentTimeMillis();
+	//long t1 = System.currentTimeMillis();
 	if (taubinSmoothingSpecification != null) {
 		for (int iterations = 1; iterations <= taubinSmoothingSpecification.getIterations(); iterations++) {
 			double lambda = taubinSmoothingSpecification.getLambda();
@@ -35,7 +35,7 @@ public void smooth(SurfaceCollection surfaceCollection, TaubinSmoothingSpecifica
 			}
 		}
 	}
-	long t2 = System.currentTimeMillis();
-	System.out.println("smoothing time = "+(t2-t1)/1000.0+" sec");
+	//long t2 = System.currentTimeMillis();
+	//System.out.println("smoothing time = "+(t2-t1)/1000.0+" sec");
 }
 }

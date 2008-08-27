@@ -18,13 +18,13 @@ public class GeometryFileWriter {
  */
 public static int write(Geometry geometry, ISize newSize, java.io.Writer writer) throws Exception {
 
-	long tm = System.currentTimeMillis();
+	//long tm = System.currentTimeMillis();
 
 	// clone geometry to isolate sampling from model (setVolumeSampleSize());
 	
 	Geometry newGeometry = (Geometry)cbit.util.BeanUtils.cloneSerializable(geometry);
 	
-	GeometrySurfaceDescription geoSurfaceDesc = geometry.getGeometrySurfaceDescription();
+	GeometrySurfaceDescription geoSurfaceDesc = newGeometry.getGeometrySurfaceDescription();
 	ISize oldSize = geoSurfaceDesc.getVolumeSampleSize();
 	if (oldSize.equals(newSize)) {
 		System.out.println("Sample size is the same as old size: " + oldSize);
@@ -32,7 +32,7 @@ public static int write(Geometry geometry, ISize newSize, java.io.Writer writer)
 		System.out.println("Old sample size: " + oldSize + ", New Sample size: " + newSize);
 		geoSurfaceDesc.setVolumeSampleSize(newSize);
 		geoSurfaceDesc.updateAll();
-		System.out.println("Geometry updateAll takes " + (System.currentTimeMillis() - tm)/1000.0 + " sec");
+		//System.out.println("Geometry updateAll takes " + (System.currentTimeMillis() - tm)/1000.0 + " sec");
 	}
 	RegionImage regionImage = geoSurfaceDesc.getRegionImage();
 	SurfaceCollection surfaceCollection = geoSurfaceDesc.getSurfaceCollection();

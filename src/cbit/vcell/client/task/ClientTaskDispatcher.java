@@ -55,7 +55,7 @@ public static void dispatch(final Component requester, final Hashtable hash, fin
 				// after abort, run only non-skippable tasks
 				// also skip selected tasks specified by conditionalSkip tag 
 				final AsynchClientTask currentTask = tasks[i];
-System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
+//System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
 				if (useTaskProgress) {
 					// update Hash with current interval for Progress
 					hash.put(TASK_PROGRESS_INTERVAL, new Range(i*100/tasks.length, (i+1)*100/tasks.length));
@@ -111,7 +111,7 @@ System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(Sy
 			return hash;
 		}
 		public void finished() {
-System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
+//System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
 			pp.stop();
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong
@@ -129,7 +129,7 @@ System.out.println("DISPATCHING: finished() called at "+ new Date(System.current
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);
 			}
-System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
+//System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
 		}
 	};
 	worker.start();

@@ -293,7 +293,7 @@ public boolean closeWindow(java.lang.String windowID, boolean exitIfLast) {
 }
 
 
-private TMLPanel compareDocuments(VCDocument doc1, VCDocument doc2, String comparisonSetting) throws DataAccessException, XmlParseException {
+private TMLPanel compareDocuments(final VCDocument doc1, final VCDocument doc2, String comparisonSetting, final String baselineDesc, final String modifiedDesc) throws Exception {
 
 	if (!TMLPanel.COMPARE_DOCS_SAVED.equals(comparisonSetting) && 
 		!TMLPanel.COMPARE_DOCS_OTHER.equals(comparisonSetting)) {
@@ -321,13 +321,16 @@ private TMLPanel compareDocuments(VCDocument doc1, VCDocument doc2, String compa
 			break;			
 		}
 	}
-	XmlTreeDiff diffTree = XmlHelper.compareMerge(doc1XML, doc2XML, comparisonSetting, true);
-	TMLPanel aTMLPanel = new cbit.xml.merge.TMLPanel();
-	aTMLPanel.setXmlTreeDiff(diffTree);
-	String date1 = doc1.getVersion() == null ? "not saved" : doc1.getVersion().getDate().toString();
-	String date2 = doc2.getVersion() == null ? "not saved" : doc2.getVersion().getDate().toString();
-	aTMLPanel.setBaselineVersionDescription(doc1.getName()+", "+date1);
-	aTMLPanel.setModifiedVersionDescription(doc2.getName()+", "+date2);
+	final XmlTreeDiff diffTree = XmlHelper.compareMerge(doc1XML, doc2XML, comparisonSetting, true);
+	TMLPanel aTMLPanel = (TMLPanel) new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			TMLPanel aTMLPanel = new cbit.xml.merge.TMLPanel();
+			aTMLPanel.setXmlTreeDiff(diffTree);
+			aTMLPanel.setBaselineVersionDescription(baselineDesc);
+			aTMLPanel.setModifiedVersionDescription(modifiedDesc);
+			return aTMLPanel;
+		}
+	}.runEventDispatchThreadSafelyWithException();	
 	
 	return aTMLPanel;
 }
@@ -356,10 +359,9 @@ public TMLPanel compareWithOther(final VCDocumentInfo docInfo1, final VCDocument
 		} else {
 			throw new IllegalArgumentException("The two documents are invalid or of different types.");
 		}
-		TMLPanel comparePanel = compareDocuments(document1, document2, TMLPanel.COMPARE_DOCS_OTHER);
-		comparePanel.setBaselineVersionDescription(document2.getVersion().getName()+", "+document2.getVersion().getDate().toString());
-		comparePanel.setModifiedVersionDescription(document1.getVersion().getName()+", "+document1.getVersion().getDate().toString());
-
+		String baselineDesc = document2.getVersion().getName() + ", " + document2.getVersion().getDate();
+		String modifiedDesc = document1.getVersion().getName() + ", " + document1.getVersion().getDate();		
+		TMLPanel comparePanel = compareDocuments(document1, document2, TMLPanel.COMPARE_DOCS_OTHER, baselineDesc, modifiedDesc);
 		return comparePanel;
 	} catch (Exception e) {
 		System.err.println("Unable to process model comparison request.");
@@ -399,9 +401,9 @@ public TMLPanel compareWithSaved(VCDocument document) {
 				break;
 			}
 		}
-		TMLPanel comparePanel = compareDocuments(savedVersion, document, TMLPanel.COMPARE_DOCS_SAVED);
-		comparePanel.setModifiedVersionDescription("Opened document instance");
-
+		String baselineDesc = savedVersion.getName()+ ", " + (savedVersion.getVersion() == null ? "not saved" : savedVersion.getVersion().getDate());
+		String modifiedDesc = "Opened document instance";
+		TMLPanel comparePanel = compareDocuments(savedVersion, document, TMLPanel.COMPARE_DOCS_SAVED, baselineDesc, modifiedDesc);
 		return comparePanel;
 	} catch (Throwable e) {
 		System.err.println("Unable to compare models.");

@@ -389,11 +389,11 @@ public static BioModel XMLToBioModel(String xmlString) throws XmlParseException 
 		}
 		bioModel = reader.getBioModel(root);
 
-		long l1 = System.currentTimeMillis();
+		//long l1 = System.currentTimeMillis();
 		bioModel.refreshDependencies();
-		long l2 = System.currentTimeMillis();
-		System.out.println("refresh-------- "+((double)(l2-l1))/1000);
-		System.out.println("total-------- "+((double)(l2-l0))/1000);
+		//long l2 = System.currentTimeMillis();
+		//System.out.println("refresh-------- "+((double)(l2-l1))/1000);
+		//System.out.println("total-------- "+((double)(l2-l0))/1000);
 
 		return bioModel;		
 	}
