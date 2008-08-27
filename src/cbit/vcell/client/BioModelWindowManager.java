@@ -384,12 +384,12 @@ public boolean isRecyclable() {
  * Creation date: (6/13/2004 11:17:41 PM)
  */
 public void preloadApps() {
-System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
+//System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
 	SimulationContext[] scs = getBioModel().getSimulationContexts();
 	for (int i = 0; i < scs.length; i++){
 		createAppComponents(scs[i]);
 	}
-System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
+//System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
 }
 
 
@@ -460,16 +460,22 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.vcell.document.VCDocument newDocument) {
-	setBioModel((BioModel)newDocument);
-	setDocumentID(getBioModel());
-	getBioModelEditor().setBioModel(getBioModel());
-	checkValidApplicationFrames(true);
-	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
-	while (en.hasMoreElements()) {
-		close((JInternalFrame)en.nextElement(), getJDesktopPane());
-	}
-	getRequestManager().updateStatusNow();
+public void resetDocument(final cbit.vcell.document.VCDocument newDocument) {
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			setBioModel((BioModel)newDocument);
+			setDocumentID(getBioModel());
+			getBioModelEditor().setBioModel(getBioModel());
+			checkValidApplicationFrames(true);
+			Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
+			while (en.hasMoreElements()) {
+				close((JInternalFrame)en.nextElement(), getJDesktopPane());
+			}
+			getRequestManager().updateStatusNow();
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+	
 }
 
 

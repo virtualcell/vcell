@@ -699,8 +699,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 		}
 	}
 //	System.out.println(xSurfElements.cardinality()+" "+ySurfElements.cardinality()+" "+zSurfElements.cardinality());
-	System.out.println("----------link time "+((System.currentTimeMillis()-startTime)/1000.0));
-	startTime = System.currentTimeMillis();
+	//System.out.println("----------link time "+((System.currentTimeMillis()-startTime)/1000.0));
+	//startTime = System.currentTimeMillis();
 	
 
 	//Distribute links
@@ -730,8 +730,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 		}
 //		System.out.println();
 	}
-	System.out.println("----------distribute link time "+((System.currentTimeMillis()-startTime)/1000.0));
-	startTime = System.currentTimeMillis();
+	//System.out.println("----------distribute link time "+((System.currentTimeMillis()-startTime)/1000.0));
+	//startTime = System.currentTimeMillis();
 	
 //	for (int i = 1; i < collector.length; i++) {// 0 not used
 //		if(regionSizeArr[i] != 0){
@@ -805,8 +805,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	if(totalSize != vcImage.getNumXYZ()){
 		throw new ImageException("Accumulated regions size does not equal image size");
 	}
-	System.out.println("----------gather link distinct regions time "+((System.currentTimeMillis()-startTime)/1000.0));
-	startTime = System.currentTimeMillis();
+	//System.out.println("----------gather link distinct regions time "+((System.currentTimeMillis()-startTime)/1000.0));
+	//startTime = System.currentTimeMillis();
 	
 //	//Create bitmasks of distinct regions
 //	BitSet[] regionBitMaskBS = new BitSet[regionsV.size()];
@@ -830,8 +830,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 					null//regionBitMaskBS[i]
 				);
 	}
-	System.out.println("----------regioninfo time "+((System.currentTimeMillis()-startTime)/1000.0));
-	startTime = System.currentTimeMillis();
+	//System.out.println("----------regioninfo time "+((System.currentTimeMillis()-startTime)/1000.0));
+	//startTime = System.currentTimeMillis();
 	
 	mapImageIndexToLinkRegion = regionPixels;
 	mapLinkRegionToDistinctRegion = linkRegionMap;
@@ -849,8 +849,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 				xSurfElements,ySurfElements,zSurfElements,
 				dimension, extent, origin);
 	}
-	System.out.println("----------create surface time "+((System.currentTimeMillis()-startTime)/1000.0));
-	startTime = System.currentTimeMillis();
+	//System.out.println("----------create surface time "+((System.currentTimeMillis()-startTime)/1000.0));
+	//startTime = System.currentTimeMillis();
 	
 	//Taubin smoothing
 	if (surfaceCollection != null && filterCutoffFrequency<NO_SMOOTHING){
@@ -858,8 +858,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 		TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.getInstance(filterCutoffFrequency);
 		taubinSmoothing.smooth(surfaceCollection,taubinSpec);
 	}
-	System.out.println("----------smooth surface time "+((System.currentTimeMillis()-startTime)/1000.0));
-	startTime = System.currentTimeMillis();
+	//System.out.println("----------smooth surface time "+((System.currentTimeMillis()-startTime)/1000.0));
+	//startTime = System.currentTimeMillis();
 
 	System.out.println("Total Num Regions = "+regionsV.size());
 	System.out.println("Total Size = "+totalSize);

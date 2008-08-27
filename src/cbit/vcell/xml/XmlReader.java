@@ -255,7 +255,7 @@ public AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseExce
  * @param param org.jdom.Element
  */
 public cbit.vcell.biomodel.BioModel getBioModel(Element param) throws XmlParseException{
-long l1 = System.currentTimeMillis();
+//long l1 = System.currentTimeMillis();
 	//Get metadata information Version (if available)
 	Version version = getVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
 		
@@ -280,8 +280,8 @@ long l1 = System.currentTimeMillis();
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());
 	}
-long l2 = System.currentTimeMillis();
-System.out.println("biomodel-------- "+((double)(l2-l1))/1000);
+//long l2 = System.currentTimeMillis();
+//System.out.println("biomodel-------- "+((double)(l2-l1))/1000);
 	
 	//***Add biomodel to the dictionnary***
 	//dictionnary.put(simcontext.getClass().getName()+":"+simcontext.getName(), simcontext);
@@ -291,10 +291,10 @@ System.out.println("biomodel-------- "+((double)(l2-l1))/1000);
 	//Set simulation contexts
 	java.util.List children = param.getChildren(XMLTags.SimulationSpecTag, vcNamespace);
 	java.util.Iterator iterator = children.iterator();
-long l3 = System.currentTimeMillis();
-System.out.println("model-------- "+((double)(l3-l2))/1000);
+//long l3 = System.currentTimeMillis();
+//System.out.println("model-------- "+((double)(l3-l2))/1000);
 	while (iterator.hasNext()) {
-long l4 = System.currentTimeMillis();
+//long l4 = System.currentTimeMillis();
 		Element tempElement = (Element)iterator.next();
 		cbit.vcell.mapping.SimulationContext simContext = getSimulationContext(tempElement, biomodel);
 		try {
@@ -305,8 +305,8 @@ long l4 = System.currentTimeMillis();
 		}
 		//process the simulations within this Simspec
 		Iterator simIterator = tempElement.getChildren(XMLTags.SimulationTag, vcNamespace).iterator();
-long l5 = System.currentTimeMillis();
-System.out.println("simcontext-------- "+((double)(l5-l4))/1000);
+//long l5 = System.currentTimeMillis();
+//System.out.println("simcontext-------- "+((double)(l5-l4))/1000);
 		while (simIterator.hasNext()) {
 			try {
 				biomodel.addSimulation(getSimulation((Element)simIterator.next(), simContext.getMathDescription()));
@@ -315,8 +315,8 @@ System.out.println("simcontext-------- "+((double)(l5-l4))/1000);
 				throw new XmlParseException("A PropertyVetoException occurred when adding a Simulation entity to the BioModel " + name+" : "+e.getMessage());
 			}
 		}
-long l6 = System.currentTimeMillis();
-System.out.println("sims-------- "+((double)(l6-l5))/1000);		
+//long l6 = System.currentTimeMillis();
+//System.out.println("sims-------- "+((double)(l6-l5))/1000);		
 	}
 	MIRIAMHelper.setFromSBMLAnnotation(biomodel, param);
 	MIRIAMHelper.setFromSBMLNotes(biomodel, param);

@@ -1341,12 +1341,6 @@ public org.jdom.Element getXML(Equation param) throws XmlParseException{
  * @param param cbit.vcell.math.FastSystemImplicit
  */
 public org.jdom.Element getXML(FastSystem param) {
-	try {
-		System.out.println("XMLproducer.getXML(FastSystem); Removed refresh all!!!!!");
-		//param.refreshAll();
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-	}
 	org.jdom.Element fastsystem = new org.jdom.Element(XMLTags.FastSystemTag);
 
 	//Add Fast Invariant subelements

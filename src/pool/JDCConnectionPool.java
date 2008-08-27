@@ -50,7 +50,7 @@ public class JDCConnectionPool {
 	   c = new JDCConnection(conn, this);
 	   c.lease();
 	   connections.addElement(c);
-printToLog("JDCConnectionPool.getConnection() - using newly added connection = "+c); //+"\n"+toString());
+//printToLog("JDCConnectionPool.getConnection() - using newly added connection = "+c); //+"\n"+toString());
 	   return c;
   }                  
 
@@ -67,7 +67,7 @@ public synchronized void printToLog(String message) {
 
 public synchronized void reapConnections() {
 	
-printToLog("reapConnection() ... STARTING\n" + toString());
+//printToLog("reapConnection() ... STARTING\n" + toString());
 	long stale = System.currentTimeMillis() - timeout;
 	
 	JDCConnection conArray[] = (JDCConnection[])connections.toArray(new JDCConnection[connections.size()]);
@@ -77,24 +77,24 @@ printToLog("reapConnection() ... STARTING\n" + toString());
 			//
 			// flagged as failed by application code
 			//
-			printToLog("<<<<ALERT>>>> reapConnection(), removing 'failed' connection "+conn+" from pool (reason='"+conn.getFailureMessage()+"')\n");
+			//printToLog("<<<<ALERT>>>> reapConnection(), removing 'failed' connection "+conn+" from pool (reason='"+conn.getFailureMessage()+"')\n");
 			removeConnection(conn);
 		}else if (conn.inUse() && (stale > conn.getLastUse())){
 			//
 			// timed out (probably didn't return the connection)
 			//
-			printToLog("<<<<ALERT>>>> reapConnection(), removing 'timed-out' connection "+conn+" from pool\n");
+			//printToLog("<<<<ALERT>>>> reapConnection(), removing 'timed-out' connection "+conn+" from pool\n");
 			removeConnection(conn); 
 		}else if (!conn.inUse() && (!conn.validate())) {
 			//
 			// not in use, but not valid, remove
 			//
-			printToLog("<<<<ALERT>>>> reapConnection(), removing 'invalid' connection "+conn+" from pool\n");
+			//printToLog("<<<<ALERT>>>> reapConnection(), removing 'invalid' connection "+conn+" from pool\n");
 			removeConnection(conn);
 		}
 	}
 	
-printToLog("reapConnection() ... DONE\n" + toString());
+//printToLog("reapConnection() ... DONE\n" + toString());
 }
 
 
@@ -113,7 +113,7 @@ private synchronized void removeConnection(JDCConnection conn) {
 public synchronized void returnFailedConnection(JDCConnection conn) {
 	conn.expireLease();
 	reapConnections();
-printToLog("<<<<ALERT>>>> JDCConnectionPool.returnFailedConnection() returned connection = " + conn + " to the pool\n" + toString());
+//printToLog("<<<<ALERT>>>> JDCConnectionPool.returnFailedConnection() returned connection = " + conn + " to the pool\n" + toString());
 }
 
 
