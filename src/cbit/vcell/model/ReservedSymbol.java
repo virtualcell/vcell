@@ -50,6 +50,13 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
 			return null;
 		}
+		public boolean isPeer(NameScope nameScope){
+			if (nameScope instanceof BioNameScope){
+				return true;
+			}else{
+				return false;
+			}
+		}
 	}
 
 private ReservedSymbol(String argName, String argDescription, cbit.vcell.units.VCUnitDefinition argUnitDefinition, Double argConstantValue){
