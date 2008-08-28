@@ -465,7 +465,7 @@ String getBioModelXML(User user, KeyValue key, boolean bEnableRetry)
 		// Child objects (of the requested object) are given permission by reachablity anyway, 
 		// so if the user is allowed permission to the parent, no further checks are necessary.
 		//
-		Vector vInfos = getVersionableInfos(user,key,VersionableType.BioModelMetaData,false,true,false);
+		Vector vInfos = getVersionableInfos(user,key,VersionableType.BioModelMetaData,true,true,false);
 		if (vInfos.size()==0){
 			throw new ObjectNotFoundException(VersionableType.BioModelMetaData.getTypeName()+" not found");
 		}
