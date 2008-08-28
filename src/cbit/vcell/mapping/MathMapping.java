@@ -95,6 +95,9 @@ public class MathMapping implements ScopedSymbolTable {
 			return MathMapping.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+			if (super.isPeer(nameScope)){
+				return true;
+			}
 			return (nameScope == MathMapping.this.simContext.getNameScope() || nameScope == MathMapping.this.simContext.getModel().getNameScope());
 		}
 	}

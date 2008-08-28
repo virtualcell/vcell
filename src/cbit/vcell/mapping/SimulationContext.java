@@ -87,6 +87,9 @@ public class SimulationContext
 			return SimulationContext.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+			if (super.isPeer(nameScope)){
+				return true;
+			}
 			return ((nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
 		}
 	}
