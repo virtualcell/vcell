@@ -1,6 +1,8 @@
 package cbit.vcell.client;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -18,6 +20,7 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.sql.KeyValue;
 import cbit.sql.VersionableType;
+import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
@@ -32,13 +35,11 @@ import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.model.ModelInfo;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
 
 public class FieldDataWindowManager 
@@ -143,59 +144,64 @@ public class FieldDataWindowManager
 		fieldDataGUIPanel.updateJTree(getRequestManager());
 	}
 	
-	public SimInfoHolder selectSimulationFromDesktop() throws UserCancelException,DataAccessException{
-		SimInfoHolder[] simInfoHolders =
-			getRequestManager().getOpenDesktopDocumentInfos();
-		if(simInfoHolders == null || simInfoHolders.length == 0){
-			return null;
-		}
-		String[] colNames = new String[] {"Simulation","Scan Index","Model","Type","Application","Owner","Date"};
-		Vector<String[]> rowsV = new Vector<String[]>();
-		Vector<SimInfoHolder> simInfoHolderV = new Vector<SimInfoHolder>();
-		for(int i=0;i<simInfoHolders.length;i+= 1){
-			if(simInfoHolders[i].isCompartmental){
-				continue;//skip, only spatial simInfos are used for Field Data
+	public SimInfoHolder selectSimulationFromDesktop(Container c) throws UserCancelException,DataAccessException{
+		try {
+			BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			SimInfoHolder[] simInfoHolders = getRequestManager().getOpenDesktopDocumentInfos();
+			if(simInfoHolders == null || simInfoHolders.length == 0){
+				return null;
 			}
-			String[] rows = new String[colNames.length];
-			if(simInfoHolders[i] instanceof FDSimMathModelInfo){
-				MathModelInfo mmInfo =
-					getRequestManager().getDocumentManager().getMathModelInfo(
-							((FDSimMathModelInfo)simInfoHolders[i]).getMathModelKey());
-				rows[0] = simInfoHolders[i].simInfo.getName();
-				rows[1] = simInfoHolders[i].jobIndex+"";
-				rows[2] = mmInfo.getVersion().getName();
-				rows[3] = "MathModel";
-				rows[4] = "";
-				rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
-				rows[6] = mmInfo.getVersion().getDate().toString();
-				
-			}else if(simInfoHolders[i] instanceof FDSimBioModelInfo){
-				BioModelInfo bmInfo =
-					getRequestManager().getDocumentManager().getBioModelInfo(
-							((FDSimBioModelInfo)simInfoHolders[i]).getBioModelKey());					
-				rows[0] = simInfoHolders[i].simInfo.getName();
-				rows[1] = simInfoHolders[i].jobIndex+"";
-				rows[2] = bmInfo.getVersion().getName();
-				rows[3] = "BioModel";
-				rows[4] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContextName();
-				rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
-				rows[6] = bmInfo.getVersion().getDate().toString();
+			String[] colNames = new String[] {"Simulation","Scan Index","Model","Type","Application","Owner","Date"};
+			Vector<String[]> rowsV = new Vector<String[]>();
+			Vector<SimInfoHolder> simInfoHolderV = new Vector<SimInfoHolder>();
+			for(int i=0;i<simInfoHolders.length;i+= 1){
+				if(simInfoHolders[i].isCompartmental){
+					continue;//skip, only spatial simInfos are used for Field Data
+				}
+				String[] rows = new String[colNames.length];
+				if(simInfoHolders[i] instanceof FDSimMathModelInfo){
+					MathModelInfo mmInfo =
+						getRequestManager().getDocumentManager().getMathModelInfo(
+								((FDSimMathModelInfo)simInfoHolders[i]).getMathModelKey());
+					rows[0] = simInfoHolders[i].simInfo.getName();
+					rows[1] = simInfoHolders[i].jobIndex+"";
+					rows[2] = mmInfo.getVersion().getName();
+					rows[3] = "MathModel";
+					rows[4] = "";
+					rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
+					rows[6] = mmInfo.getVersion().getDate().toString();
+					
+				}else if(simInfoHolders[i] instanceof FDSimBioModelInfo){
+					BioModelInfo bmInfo =
+						getRequestManager().getDocumentManager().getBioModelInfo(
+								((FDSimBioModelInfo)simInfoHolders[i]).getBioModelKey());					
+					rows[0] = simInfoHolders[i].simInfo.getName();
+					rows[1] = simInfoHolders[i].jobIndex+"";
+					rows[2] = bmInfo.getVersion().getName();
+					rows[3] = "BioModel";
+					rows[4] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContextName();
+					rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
+					rows[6] = bmInfo.getVersion().getDate().toString();
+				}
+				rowsV.add(rows);
+				simInfoHolderV.add(simInfoHolders[i]);
 			}
-			rowsV.add(rows);
-			simInfoHolderV.add(simInfoHolders[i]);
+			if(rowsV.size() == 0){
+				return null;
+			}
+			String[][] rows = new String[rowsV.size()][];
+			rowsV.copyInto(rows);
+			cbit.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
+					getComponent(), "Select Simulation for Field Data",
+					colNames, rows, ListSelectionModel.SINGLE_SELECTION);
+			if(selectionIndexArr != null && selectionIndexArr.length > 0){
+				return simInfoHolderV.elementAt(selectionIndexArr[0]);//simInfoHolders[selectionIndexArr[0]];
+			}
+			throw UserCancelException.CANCEL_GENERIC;
+		} finally {
+			cbit.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
-		if(rowsV.size() == 0){
-			return null;
-		}
-		String[][] rows = new String[rowsV.size()][];
-		rowsV.copyInto(rows);
-		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
-				getComponent(), "Select Simulation for Field Data",
-				colNames, rows, ListSelectionModel.SINGLE_SELECTION);
-		if(selectionIndexArr != null && selectionIndexArr.length > 0){
-			return simInfoHolderV.elementAt(selectionIndexArr[0]);//simInfoHolders[selectionIndexArr[0]];
-		}
-		throw UserCancelException.CANCEL_GENERIC;
 	}
 	
 	public PDEDataContext getPDEDataContext(ExternalDataIdentifier eDI) throws DataAccessException{

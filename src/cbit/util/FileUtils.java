@@ -47,18 +47,36 @@ public static void copyFile(File sourceFile, File destFile, boolean overwrite, b
             parent.mkdirs();
         }
 
-        FileInputStream in = new FileInputStream(sourceFile);
-        FileOutputStream out = new FileOutputStream(destFile);
-
-        byte[] buffer = new byte[bufferSize];
-        int count = 0;
-        do {
-            out.write(buffer, 0, count);
-            count = in.read(buffer, 0, buffer.length);
-        } while (count != -1);
-
-        in.close();
-        out.close();
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+	        in = new BufferedInputStream(new FileInputStream(sourceFile));
+	        out = new BufferedOutputStream(new FileOutputStream(destFile));
+	
+	        byte[] buffer = new byte[bufferSize];
+	        while (true) {
+	        	int count = in.read(buffer, 0, buffer.length);
+	        	if (count == -1) {
+	        		break;
+	        	}
+	            out.write(buffer, 0, count);	            
+	        }
+        } finally {
+        	if (in != null) {
+        		try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+        	}
+        	if (out != null) {
+        		try {
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+        	}
+        }
 
         if (preserveLastModified) {
             destFile.setLastModified(sourceFile.lastModified());
