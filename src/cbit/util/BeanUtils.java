@@ -12,6 +12,7 @@ import java.awt.geom.*;
 import java.awt.*;
 import java.util.Vector;
 import javax.swing.*;
+
 import java.io.Serializable;
 /**
  * Insert the type's description here.
@@ -850,21 +851,26 @@ public static Dimension scaleToFitProportional(Dimension viewport, Dimension toS
 /**
  * Comment
  */
-public static void setCursorThroughout(Container container, Cursor cursor) {
+public static void setCursorThroughout(final Container container, final Cursor cursor) {
 	if (container==null){
 		return;
 	}
-	Component[] components = container.getComponents();
-	for (int i=0;i<components.length;i++) {
-		components[i].setCursor(cursor);
-		if(components[i] instanceof JRootPane){
-			BeanUtils.setCursorThroughout(((JRootPane)components[i]).getContentPane(), cursor);
-		}else if (components[i] instanceof Container) {
-			if (((Container)components[i]).getComponentCount() > 0) {
-				BeanUtils.setCursorThroughout((Container)components[i], cursor);
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			Component[] components = container.getComponents();
+			for (int i=0;i<components.length;i++) {
+				components[i].setCursor(cursor);
+				if(components[i] instanceof JRootPane){
+					BeanUtils.setCursorThroughout(((JRootPane)components[i]).getContentPane(), cursor);
+				}else if (components[i] instanceof Container) {
+					if (((Container)components[i]).getComponentCount() > 0) {
+						BeanUtils.setCursorThroughout((Container)components[i], cursor);
+					}
+				}
 			}
+			return null;
 		}
-	}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 

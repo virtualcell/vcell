@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.EventObject;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -31,6 +32,7 @@ import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
+import cbit.util.EventDispatchRunWithException;
 import cbit.util.Extent;
 import cbit.util.FileFilters;
 import cbit.util.ISize;
@@ -953,8 +955,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 	try{
 		final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
-		final FieldDataWindowManager.SimInfoHolder simInfoHolder =
-			fieldDataWindowManager.selectSimulationFromDesktop();
+		final FieldDataWindowManager.SimInfoHolder simInfoHolder = fieldDataWindowManager.selectSimulationFromDesktop(this);
 		if(simInfoHolder == null){
 			PopupGenerator.showErrorDialog(
 					"Please open a Bio or Math model containing the spatial (non-compartmental)\nsimulation you wish to use to create a new Field Data");
@@ -981,7 +982,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 		AsynchClientTask CreateFDFromSim = new AsynchClientTask() {
 			public String getTaskName() { return "Create Field Data from Simulation"; }
 			public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
-			public void run(java.util.Hashtable hash){
+			public void run(Hashtable<String, Object> hash){
 				try{
 					try{
 //						FieldDataFileOperationSpec infoFDOS = new FieldDataFileOperationSpec();
@@ -1034,7 +1035,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 		};
 
 		AsynchClientTask tasks[] = new AsynchClientTask[] { CreateFDFromSim};
-		java.util.Hashtable hash = new java.util.Hashtable();
+		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		ClientTaskDispatcher.dispatch(this,hash,tasks,false);
 		
 		
@@ -1121,7 +1122,7 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 		AsynchClientTask importImageTask = new AsynchClientTask() {
 		public String getTaskName() { return "Import image"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
-		public void run(java.util.Hashtable hash){
+		public void run(Hashtable<String, Object> hash){
 			try{
 				FieldDataFileOperationSpec fdos = null;
 				String initFDName = null;
@@ -1160,7 +1161,6 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 					}
 					//				}
 					//read BioFormat
-					ImageDataset imagedataSet = null;
 					if (fdos == null) {
 						try {
 							fdos = createFDOSFromImageFile(imageFile,true);
@@ -1200,7 +1200,7 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 		//Execute Field Data Info - JTree tasks
 		//
 		AsynchClientTask tasks[] = new AsynchClientTask[] {importImageTask};
-		java.util.Hashtable hash = new java.util.Hashtable();
+		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		ClientTaskDispatcher.dispatch(this,hash,tasks,false);
 	}catch(UserCancelException e){
 		return;
@@ -1293,7 +1293,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	AsynchClientTask CheckRemoveFromDBTask = new AsynchClientTask() {
 		public String getTaskName() { return "Check Field Data references in DB"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
-		public void run(java.util.Hashtable hash){
+		public void run(Hashtable<String, Object> hash){
 			try{
 				if(fieldDataWindowManager.findReferencingModels(fieldDataMainList.externalDataIdentifier, false)){
 					throw new Exception("Cannot delete Field Data '"+fieldDataMainList.externalDataIdentifier.getName()+
@@ -1313,7 +1313,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	AsynchClientTask RemoveNodeTreeTask = new AsynchClientTask() {
 		public String getTaskName() { return "remove FieldData tree node"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_SWING_BLOCKING; }
-		public void run(java.util.Hashtable hash){
+		public void run(Hashtable<String, Object> hash){
 			try{
 				((DefaultTreeModel)getJTree1().getModel()).removeNodeFromParent(mainNode);
 				if(((DefaultMutableTreeNode)getJTree1().getModel().getRoot()).getChildCount() == 0){
@@ -1333,7 +1333,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	AsynchClientTask RemoveFromDiskAndDBTask = new AsynchClientTask() {
 		public String getTaskName() { return "remove Field Data from Disk and DB"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
-		public void run(java.util.Hashtable hash){
+		public void run(Hashtable<String, Object> hash){
 			try{
 				//Remove from Disk
 				FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
@@ -1359,7 +1359,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	//Execute Field Data Info - JTree tasks
 	//
 	AsynchClientTask tasks[] = new AsynchClientTask[] { CheckRemoveFromDBTask,RemoveFromDiskAndDBTask,RemoveNodeTreeTask};
-	java.util.Hashtable hash = new java.util.Hashtable();
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	ClientTaskDispatcher.dispatch(this,hash,tasks,false);
 
 }
@@ -1521,7 +1521,7 @@ private void refreshMainNode(final DefaultMutableTreeNode mainNode){
 	AsynchClientTask FieldDataInfoTask = new AsynchClientTask() {
 		public String getTaskName() { return "gather Field Data info"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
-		public void run(java.util.Hashtable hash){
+		public void run(Hashtable<String, Object> hash){
 			try{
 				FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
 				final FieldDataFileOperationResults fieldDataFileOperationResults =
@@ -1548,7 +1548,7 @@ private void refreshMainNode(final DefaultMutableTreeNode mainNode){
 	AsynchClientTask FieldDataInfoTreeUpdate = new AsynchClientTask() {
 		public String getTaskName() { return "Update Field Data GUI"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_SWING_BLOCKING; }
-		public void run(java.util.Hashtable hash){
+		public void run(Hashtable<String, Object> hash){
 			try{
 				FieldDataFileOperationResults fieldDataFileOperationResults =
 					(FieldDataFileOperationResults)hash.get(FDOR_INFO);
@@ -1599,7 +1599,7 @@ private void refreshMainNode(final DefaultMutableTreeNode mainNode){
 	//Execute Field Data Info - JTree tasks
 	//
 	AsynchClientTask tasks[] = new AsynchClientTask[] { FieldDataInfoTask,FieldDataInfoTreeUpdate };
-	java.util.Hashtable hash = new java.util.Hashtable();
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	ClientTaskDispatcher.dispatch(this,hash,tasks,false);
 }
 
@@ -1619,7 +1619,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1635,22 +1635,26 @@ public void setFieldDataWindowManager(FieldDataWindowManager fdwm){
 
 private void addNewExternalData(
 		RequestManager clientRequestManager,
-		FieldDataFileOperationSpec fdos,
-		String initialExtDataName,
-		boolean isFromSimulation) throws Exception{
+		final FieldDataFileOperationSpec fdos,
+		final String initialExtDataName,
+		final boolean isFromSimulation) throws Exception{
 
 	fdos.specEDI = null;
 	
-	FieldDataInfoPanel fdip = new FieldDataInfoPanel();
-	
-	fdip.setSimulationMode(isFromSimulation);
-	fdip.initISize(fdos.isize);
-	fdip.initIOrigin(fdos.origin);
-	fdip.initIExtent(fdos.extent);
-	fdip.initTimes(fdos.times);
-	fdip.initNames(TokenMangler.fixTokenStrict(initialExtDataName), fdos.varNames);
-	fdip.setAnnotation(fdos.annotation);
-	
+	FieldDataInfoPanel fdip = (FieldDataInfoPanel) new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			FieldDataInfoPanel fdip = new FieldDataInfoPanel();			
+			fdip.setSimulationMode(isFromSimulation);
+			fdip.initISize(fdos.isize);
+			fdip.initIOrigin(fdos.origin);
+			fdip.initIExtent(fdos.extent);
+			fdip.initTimes(fdos.times);
+			fdip.initNames(TokenMangler.fixTokenStrict(initialExtDataName), fdos.varNames);
+			fdip.setAnnotation(fdos.annotation);
+			return fdip;
+		}
+	}.runEventDispatchThreadSafelyWithException();	
+
 	while(true){
 		try{
 			//Adds to Server DB while getting Info

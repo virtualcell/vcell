@@ -140,18 +140,14 @@ public void fullRepaint() {
 	
 	try{
 		if(canvasParentWindow != null){
-			if(javax.swing.SwingUtilities.isEventDispatchThread()){
-				cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-			}else{
-				javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));}});
-			}
+			cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 		}
 		getSurfaceCanvas().setBQuickRender(false);
 		//getSurfaceCanvas().invalidate();
 		getSurfaceCanvas().repaint();
 	}finally{
 		if(canvasParentWindow != null){
-			javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());}});
+			cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());
 		}
 	}
 	

@@ -971,12 +971,12 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			        	byte[] zdataIN = new byte[(int)zeIN.getSize()];
 			        	int num = 0;
 			        	int numTotal = 0;
-			        	zis = inZipFile.getInputStream(zeIN);
-//			    long startTime = System.currentTimeMillis();
+			        	zis = new BufferedInputStream(inZipFile.getInputStream(zeIN));
+			    //long startTime = System.currentTimeMillis();
 			        	while((num = zis.read(zdataIN, numTotal, zdataIN.length-numTotal)) != -1 && numTotal != zdataIN.length){
 			        		numTotal+= num;
 			        	}
-//			    System.out.println("zipread time="+((System.currentTimeMillis()-startTime)/1000.0));
+			    //System.out.println("zipread time="+((System.currentTimeMillis()-startTime)/1000.0));
 			        	zis.close();
 			        	String newName;
 			        	String replace_new =
