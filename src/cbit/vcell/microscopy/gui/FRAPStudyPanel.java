@@ -100,7 +100,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public static final LineBorder TAB_LINE_BORDER = new LineBorder(new Color(153, 186,243), 3);
 	
-	private FRAPStudy frapStudy = null; 
+	private FRAPStudy frapStudy = null;
+	private FRAPOptData frapOptData = null;
 	private FRAPDataPanel frapDataPanel = null;
 	private LocalWorkspace localWorkspace = null;
 	private JTabbedPane jTabbedPane = null;
@@ -220,6 +221,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		private final FrapChangeInfo frapChangeInfo;
 		private final boolean areSimeFilesOK;
 		private final boolean areExtDataFileOK;
+		private final boolean isRefDataFileOK;
 		public CurrentSimulationDataState() throws Exception{
 			if(getSavedFrapModelInfo() == null){
 				throw new Exception("CurrentSimulationDataState can't be determined because no savedFrapModelInfo available");
@@ -230,6 +232,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				areExternalDataOK(getLocalWorkspace(),
 				getFrapStudy().getFrapDataExternalDataInfo(),
 				getFrapStudy().getRoiExternalDataInfo());
+			isRefDataFileOK = areReferenceDataOK(getLocalWorkspace(), getFrapStudy().getRefExternalDataInfo());
 		}
 		public boolean isDataInvalidBecauseModelChanged(){
 			return frapChangeInfo.hasAnyChanges();
@@ -607,11 +610,25 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							return false;
 						}
 					}
-					runSimulation(true);
+					if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null && currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
+					{
+						runSimulation(true, false);
+					}
+					else
+					{
+						runSimulation(true, true);
+					}
 					return false;
 				}else{
 					if(!getResultsSummaryPanel().hasData()){
-						spatialAnalysis(null);//creates progress automatically if null
+						if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null && currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
+						{
+							spatialAnalysis(null, false);//creates progress automatically if null
+						}
+						else
+						{
+							spatialAnalysis(null, true);
+						}
 						return false;
 					}
 				}
@@ -628,7 +645,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							"Simulation Data are not valid.\n"+currentSimulationDataState.getDescription()+"\nSimulation needs to be run to view Spatial Results.",
 							new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
 					if(result != null && result.equals(RUN_SIM)){
-						runSimulation(false);
+						runSimulation(false, false);
 					}
 					return false;
 				}
@@ -711,6 +728,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		newFrapStudy.setXmlFilename(getFrapStudy().getXmlFilename());
 		newFrapStudy.setFrapDataExternalDataInfo(getFrapStudy().getFrapDataExternalDataInfo());
 		newFrapStudy.setRoiExternalDataInfo(getFrapStudy().getRoiExternalDataInfo());
+		newFrapStudy.setRefExternalDataInfo(getFrapStudy().getRefExternalDataInfo());
 		setFrapStudy(newFrapStudy,false);
 	}
 	
@@ -976,6 +994,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								newFRAPStudy.setFrapDataExternalDataInfo(null);
 								newFRAPStudy.setRoiExternalDataInfo(null);
 							}
+							if(!areReferenceDataOK(getLocalWorkspace(),newFRAPStudy.getRefExternalDataInfo()))
+							{
+								newFRAPStudy.setRefExternalDataInfo(null);
+							}
 							newSavedFrapModelInfo = FRAPStudyPanel.createSavedFrapModelInfo(newFRAPStudy);
 							newVFRAPFileName = inFile.getAbsolutePath();
 						}else if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)){
@@ -1195,12 +1217,27 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return true;
 	}
 	
+	private static boolean areReferenceDataOK(LocalWorkspace localWorkspace,ExternalDataInfo refDataExtDataInfo)
+	{
+		if(refDataExtDataInfo == null || refDataExtDataInfo.getExternalDataIdentifier() == null){
+			return false;
+		}
+		File[] referenceDataExtDataFiles =
+			FRAPStudy.getCanonicalExternalDataFiles(localWorkspace,
+					refDataExtDataInfo.getExternalDataIdentifier());
+		for (int i = 0;referenceDataExtDataFiles != null && i < referenceDataExtDataFiles.length; i++) {
+			if(!referenceDataExtDataFiles[i].exists()){
+				return false;
+			}
+		}
+		return true;
+	}
 	public static String convertDoubletoString(double doubleValue){
 		String doubleString = doubleValue+"";
 		return doubleString;
 	}
 
-	protected void runSimulation(final boolean bSpatialAnalysis) throws Exception{
+	protected void runSimulation(final boolean bSpatialAnalysis, final boolean bReferenceSim) throws Exception{
 		
 		
 		
@@ -1371,8 +1408,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								pp.setMessage(message);
 							}
 					};
-
-					spatialAnalysis(optimizationProgressListener);
+					
+					spatialAnalysis(optimizationProgressListener, bReferenceSim);
+					
 
 //					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 //						getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_REPORT));
@@ -1781,7 +1819,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //					getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
 //		}
 //	}
-	public void spatialAnalysis(final DataSetControllerImpl.ProgressListener progressListener) throws Exception{
+	public void spatialAnalysis(final DataSetControllerImpl.ProgressListener progressListener,final boolean bRefSimulation) throws Exception{
 		
 		final AsynchProgressPopup pp =
 			(progressListener != null?null:
@@ -1795,16 +1833,28 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		new Thread(new Runnable(){public void run(){
 			try{
 				final double SPATIAL_ANLYSIS_PROGRESS_FRACTION = .5;
+				final double SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM = 1;
 				DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
 					new DataSetControllerImpl.ProgressListener(){
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
+								}
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
+								}
+								else
+								{
+									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+								}
 							}
 						}
 						public void updateMessage(String message) {
@@ -1847,11 +1897,22 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
+								}
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
+								}
+								else
+								{
+									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+								}
 							}
 						}
 						public void updateMessage(String message) {
@@ -1864,8 +1925,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 						}
 				};
-				FRAPOptData frapOptData = new FRAPOptData(getFrapStudy(), getLocalWorkspace(),optimizationProgressListener);
-				
+				if(bRefSimulation || frapOptData == null)
+				{
+					frapOptData = new FRAPOptData(getFrapStudy(), getLocalWorkspace(), optimizationProgressListener, bRefSimulation);
+				}
 				if(progressListener != null){
 					progressListener.updateProgress(1.0);
 				}
@@ -1925,7 +1988,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					newParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
 					newParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+""
 			);
-			runSimulation(true);
+			runSimulation(true, false);
 		} catch (Exception e) {
 //			getFrapStudy().setFrapModelParameters(origFRAPModelParameters);
 			if(!(e instanceof UserCancelException)){
