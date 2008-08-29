@@ -1,5 +1,4 @@
 package cbit.vcell.solver;
-import cbit.vcell.mapping.MappingException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,7 +10,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
-import cbit.util.ISize;
 import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.server.DataAccessException;
@@ -70,8 +68,8 @@ public class Simulation implements Versionable, cbit.util.Matchable, cbit.vcell.
 	//
 	// lists used for binding for use by solvers.
 	//
-	private transient java.util.Vector localFunctions = null;
-	private transient java.util.Vector localConstants = null;
+	private transient Vector<Function> localFunctions = null;
+	private transient Vector<Constant> localConstants = null;
 	private boolean fieldIsDirty = false;
 	private java.lang.String fieldWarning = null;
 	/**
@@ -538,7 +536,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  */
 public Function[] getFunctions() {
 	
-	java.util.Vector functList = new java.util.Vector();
+	Vector<Function> functList = new Vector<Function>();
 	
 	//
 	// get all variables from MathDescription, but replace MathOverrides
@@ -546,7 +544,7 @@ public Function[] getFunctions() {
 	Variable variables[] = getVariables();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof Function){
-			functList.addElement(variables[i]);
+			functList.addElement((Function)variables[i]);
 		}
 	}
 
@@ -619,7 +617,7 @@ public KeyValue getKey() {
  */
 private Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
 	if (localConstants==null){
-		localConstants = new Vector();
+		localConstants = new Vector<Constant>();
 	}
 	for (int i = 0; i < localConstants.size(); i++){
 		Constant localConstant = (Constant)localConstants.elementAt(i);
@@ -659,7 +657,7 @@ private Constant getLocalConstant(Constant referenceConstant) throws ExpressionE
  */
 private Function getLocalFunction(Function referenceFunction) throws ExpressionException {
 	if (localFunctions==null){
-		localFunctions = new Vector();
+		localFunctions = new Vector<Function>();
 	}
 	for (int i = 0; i < localFunctions.size(); i++){
 		Function localFunction = (Function)localFunctions.elementAt(i);
@@ -732,7 +730,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return java.util.Enumeration
  * @param exp cbit.vcell.parser.Expression
  */
-public Enumeration getRequiredVariables(Expression exp) throws MathException, ExpressionException {
+public Enumeration<Variable> getRequiredVariables(Expression exp) throws MathException, ExpressionException {
 	return MathUtilities.getRequiredVariables(exp,this);
 }
 
@@ -815,14 +813,14 @@ public Variable getVariable(String variableName) {
  */
 public Variable[] getVariables() {
 	
-	java.util.Vector varList = new java.util.Vector();
+	Vector<Variable> varList = new Vector<Variable>();
 	
 	//
 	// get all variables from MathDescription, but replace MathOverrides
 	//
-	java.util.Enumeration enum1 = getMathDescription().getVariables();
+	Enumeration<Variable> enum1 = getMathDescription().getVariables();
 	while (enum1.hasMoreElements()) {
-		Variable mathDescriptionVar = (Variable)enum1.nextElement();
+		Variable mathDescriptionVar = enum1.nextElement();
 		//
 		// replace all Constants with math overrides
 		//
@@ -942,15 +940,15 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param volVariable cbit.vcell.math.VolVariable
  */
 public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws Exception {
-	Enumeration enum1 = getMathDescription().getSubDomains();
+	Enumeration<SubDomain> enum1 = getMathDescription().getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		Equation equation = subDomain.getEquation(variable);
 		//
 		// get diffusion expressions, see if function of time or volume variables
 		//
 		if (equation instanceof PdeEquation){
-			Vector spatialExpressionList = new Vector();
+			Vector<Expression> spatialExpressionList = new Vector<Expression>();
 			spatialExpressionList.add(((PdeEquation)equation).getDiffusionExpression());
 			if (((PdeEquation)equation).getVelocityX()!=null){
 				spatialExpressionList.add(((PdeEquation)equation).getVelocityX());
@@ -962,7 +960,7 @@ public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws Exce
 				spatialExpressionList.add(((PdeEquation)equation).getVelocityZ());
 			}
 			for (int i = 0; i < spatialExpressionList.size(); i++){
-				Expression spatialExp = (Expression)spatialExpressionList.elementAt(i);
+				Expression spatialExp = spatialExpressionList.elementAt(i);
 				spatialExp = substituteFunctions(spatialExp);
 				String symbols[] = spatialExp.getSymbols();
 				if (symbols!=null){
@@ -1009,25 +1007,47 @@ private void rebindAll() {
 	getVariables();
 
 	//
-	// bind all Constants
+	// bind all Constants, since now all the variables are sorted alphabetically
+	// a constant might be function of other constants which have not bound yet.
+	// so we need to first bind all then evaluate.
 	//
-	for (int i = 0; localConstants!=null && i < localConstants.size(); i++){
-		Constant localConstant = (Constant)localConstants.elementAt(i);
-		try {
-			localConstant.bind(this); // update bindings to latest mathOverrides
-		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+	if (localConstants != null) {
+		for (Constant localConstant : localConstants){
+			try {
+				if (localConstant.getExpression() != null) {
+					localConstant.getExpression().bindExpression(this); // update bindings to latest mathOverrides
+				}
+			}catch (ExpressionBindingException e){
+				e.printStackTrace(System.out);
+			}
 		}
-	}
+		for (Constant localConstant : localConstants){
+			try {
+				localConstant.bind(this); // update bindings to latest mathOverrides
+			}catch (ExpressionBindingException e){
+				e.printStackTrace(System.out);
+			}
+		}
+	}	
 	//
 	// bind all Functions
 	//
-	for (int i = 0; localFunctions!=null && i < localFunctions.size(); i++){
-		Function localFunction = (Function)localFunctions.elementAt(i);
-		try {
-			localFunction.bind(this); // update bindings to latest mathOverrides
-		}catch (ExpressionBindingException e){
-			e.printStackTrace(System.out);
+	if (localFunctions != null) {
+		for (Function localFunction : localFunctions){			
+			try {
+				if (localFunction.getExpression() != null) {
+					localFunction.getExpression().bindExpression(this); // update bindings to latest mathOverrides
+				}
+			}catch (ExpressionBindingException e){
+				e.printStackTrace(System.out);
+			}
+		}
+		for (Function localFunction : localFunctions){			
+			try {
+				localFunction.bind(this); // update bindings to latest mathOverrides
+			}catch (ExpressionBindingException e){
+				e.printStackTrace(System.out);
+			}
 		}
 	}
 }
