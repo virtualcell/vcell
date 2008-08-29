@@ -190,7 +190,7 @@ public class FRAPOptData {
 			referenceSimKeyValue = getExpFrapStudy().getRefExternalDataInfo().getExternalDataIdentifier().getKey();
 		}
 		//loading data only if the reference data is null or a new reference simulation is done
-		if(dimensionReducedRefData == null || isRunRefSim().booleanValue())
+		if(isLoadRefDataNeeded())
 		{
 			VCSimulationIdentifier vcSimID =
 				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
@@ -218,6 +218,15 @@ public class FRAPOptData {
 						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(),reducedRefDataProgressListener);
 			System.out.println("generating dimension reduced ref data, done ....");
 		}
+	}
+	
+	public boolean isLoadRefDataNeeded()
+	{
+		if(dimensionReducedRefData == null || isRunRefSim().booleanValue())
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	public KeyValue runRefSimulation(final DataSetControllerImpl.ProgressListener progressListener) throws Exception

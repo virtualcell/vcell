@@ -599,7 +599,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							return false;
 						}
 					}
-					if(currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
+					if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null && currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
 					{
 						runSimulation(true, false);
 					}
@@ -610,7 +610,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					return false;
 				}else{
 					if(!getResultsSummaryPanel().hasData()){
-						if(currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
+						if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null && currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
 						{
 							spatialAnalysis(null, false);//creates progress automatically if null
 						}
@@ -1811,16 +1811,28 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		new Thread(new Runnable(){public void run(){
 			try{
 				final double SPATIAL_ANLYSIS_PROGRESS_FRACTION = .5;
+				final double SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM = 1;
 				DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
 					new DataSetControllerImpl.ProgressListener(){
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
+								}
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
+								}
+								else
+								{
+									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+								}
 							}
 						}
 						public void updateMessage(String message) {
@@ -1863,11 +1875,22 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
+								}
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								{
+									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
+								}
+								else
+								{
+									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+								}
 							}
 						}
 						public void updateMessage(String message) {
