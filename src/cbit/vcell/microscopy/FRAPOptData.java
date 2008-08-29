@@ -9,10 +9,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.ROI.RoiType;
-import cbit.vcell.opt.Constraint;
-import cbit.vcell.opt.ConstraintType;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -55,6 +52,8 @@ public class FRAPOptData {
 	private static int maxRefSavePoints = 500;
 	private static int startingTime = 0;
 	
+	private Boolean bRunRefSim = null;
+	
 	private FRAPStudy expFrapStudy = null;
 	private LocalWorkspace localWorkspace = null;
 	private TimeBounds refTimeBounds = null;
@@ -66,18 +65,14 @@ public class FRAPOptData {
 	private double[][] dimensionReducedExpData = null;
 	private double[] reducedExpTimePoints = null;
 	
-	public FRAPOptData(FRAPStudy argExpFrapStudy, LocalWorkspace argLocalWorkSpace,
-			DataSetControllerImpl.ProgressListener progressListener) throws Exception
-	{
-		this(argExpFrapStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, argLocalWorkSpace, progressListener);
-	}
 	
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
-			DataSetControllerImpl.ProgressListener progressListener) throws Exception
+			DataSetControllerImpl.ProgressListener progressListener, boolean bRefSim) throws Exception
 	{
 		expFrapStudy = argExpFrapStudy;
 		setNumEstimatedParams(numberOfEstimatedParams);
 		localWorkspace = argLocalWorkSpace;
+		bRunRefSim = new Boolean(bRefSim); 
 		if(progressListener != null){
 			progressListener.updateMessage("Getting experimental data ROI averages...");
 		}
@@ -185,8 +180,18 @@ public class FRAPOptData {
 				}
 		};
 		System.out.println("run simulation...");
-		KeyValue referenceSimKeyValue = runRefSimulation(runSimProgressListener);
-		try{
+		KeyValue referenceSimKeyValue = null;
+		if(isRunRefSim().booleanValue())
+		{
+			referenceSimKeyValue = runRefSimulation(runSimProgressListener);
+		}
+		else
+		{
+			referenceSimKeyValue = getExpFrapStudy().getRefExternalDataInfo().getExternalDataIdentifier().getKey();
+		}
+		//loading data only if the reference data is null or a new reference simulation is done
+		if(dimensionReducedRefData == null || isRunRefSim().booleanValue())
+		{
 			VCSimulationIdentifier vcSimID =
 				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
 			VCSimulationDataIdentifier vcSimDataID =
@@ -212,8 +217,6 @@ public class FRAPOptData {
 				FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,
 						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(),reducedRefDataProgressListener);
 			System.out.println("generating dimension reduced ref data, done ....");
-		}finally{
-			FRAPStudy.removeExternalDataAndSimulationFiles(referenceSimKeyValue, null, null, getLocalWorkspace());
 		}
 	}
 	
@@ -224,13 +227,16 @@ public class FRAPOptData {
 			progressListener.updateMessage("Running Reference Simulation...");
 		}
 		try{
+			ExternalDataInfo oldRefDataInfo = getExpFrapStudy().getRefExternalDataInfo();
+			ExternalDataInfo refDataInfo = FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(),FRAPStudy.REF_EXTDATA_NAME);
+			
 			bioModel =
 				FRAPStudy.createNewBioModel(
 					expFrapStudy,
 					new Double(REF_DIFFUSION_RATE_PARAM.getInitialGuess()),
 					REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess()+"",
 					REF_MOBILE_FRACTION_PARAM.getInitialGuess()+"",
-					LocalWorkspace.createNewKeyValue(),
+					refDataInfo.getExternalDataIdentifier().getKey(),
 					LocalWorkspace.getDefaultOwner(),
 					new Integer(expFrapStudy.getFrapModelParameters().startIndexForRecovery));
 			
@@ -264,6 +270,13 @@ public class FRAPOptData {
 				getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 				getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
 				runRefSimProgressListener);
+			
+			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
+			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
+			if(oldRefDataInfo != null && oldRefDataInfo.getExternalDataIdentifier() != null)
+			{
+				FRAPStudy.removeExternalDataAndSimulationFiles(oldRefDataInfo.getExternalDataIdentifier().getKey(), null, null, getLocalWorkspace());
+			}
 			
 			return sim.getVersion().getVersionKey();
 		}catch(Exception e){
@@ -637,7 +650,7 @@ public class FRAPOptData {
 				}
 			};
 
-			FRAPOptData optData = new FRAPOptData(expFrapStudy, 5, localWorkspace,progressListener);
+			FRAPOptData optData = new FRAPOptData(expFrapStudy, 5, localWorkspace,progressListener, true);
 			
 			//trying 3 parameters
 //			Parameter diff = new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 100, 1.0, Double.parseDouble(expFrapStudy.getFrapModelParameters().diffusionRate));
@@ -718,5 +731,7 @@ public class FRAPOptData {
 	public void setNumEstimatedParams(int numEstimatedParams) {
 		this.numEstimatedParams = numEstimatedParams;
 	}
-	
+	public Boolean isRunRefSim() {
+		return bRunRefSim;
+	}
 }
