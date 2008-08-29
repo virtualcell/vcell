@@ -34,7 +34,7 @@ public IDAFileWriter(Simulation simulation) {
 protected void writeEquations(java.io.PrintWriter pw) throws MathException, ExpressionException {
 	VariableSymbolTable varsSymbolTable = createSymbolTable();
 
-	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();
+//	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();
 		
 	StringBuffer sb = new StringBuffer();
 	sb.append("NUM_EQUATIONS " + getStateVariableCount() + "\n");
@@ -167,16 +167,16 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			slowRateExp.bindExpression(getSimulation());	
 			slowRateExp = getSimulation().substituteFunctions(slowRateExp);
 			
-			Vector<Discontinuity> v = slowRateExp.getDiscontinuities();
-			Expression newRateExpr = new Expression(slowRateExp);
-			for (Discontinuity od : v) {
-				String dname = discontinuityNameMap.get(od);
-				if (dname == null) {
-					dname = "D_B" + discontinuityNameMap.size();
-					discontinuityNameMap.put(od, dname);				
-				}
-				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
-			}
+			Expression newRateExpr = new Expression(slowRateExp);			
+//			Vector<Discontinuity> v = slowRateExp.getDiscontinuities();
+//			for (Discontinuity od : v) {
+//				String dname = discontinuityNameMap.get(od);
+//				if (dname == null) {
+//					dname = "D_B" + discontinuityNameMap.size();
+//					discontinuityNameMap.put(od, dname);				
+//				}
+//				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+//			}
 			
 			sb.append(newRateExpr.infix()+";\n");
 			equationIndex++;
@@ -187,17 +187,17 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			Expression fastRateExp = new Expression(enumFastRates.nextElement().getFunction());
 			fastRateExp.bindExpression(getSimulation());	
 			fastRateExp = getSimulation().substituteFunctions(fastRateExp);
-			
-			Vector<Discontinuity> v = fastRateExp.getDiscontinuities();
+
 			Expression newRateExpr = new Expression(fastRateExp);
-			for (Discontinuity od : v) {
-				String dname = discontinuityNameMap.get(od);
-				if (dname == null) {
-					dname = "D_B" + discontinuityNameMap.size();
-					discontinuityNameMap.put(od, dname);				
-				}
-				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
-			}
+//			Vector<Discontinuity> v = fastRateExp.getDiscontinuities();
+//			for (Discontinuity od : v) {
+//				String dname = discontinuityNameMap.get(od);
+//				if (dname == null) {
+//					dname = "D_B" + discontinuityNameMap.size();
+//					discontinuityNameMap.put(od, dname);				
+//				}
+//				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+//			}
 			
 			sb.append(newRateExpr.flatten().infix()+";\n");
 			equationIndex++;
@@ -244,27 +244,27 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			rateExpr.bindExpression(varsSymbolTable);
 			rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
 			
-			Vector<Discontinuity> v = rateExpr.getDiscontinuities();
 			Expression newRateExpr = new Expression(rateExpr);
-			for (Discontinuity od : v) {
-				String dname = discontinuityNameMap.get(od);
-				if (dname == null) {
-					dname = "D_B" + discontinuityNameMap.size();
-					discontinuityNameMap.put(od, dname);				
-				}
-				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
-			}
+//			Vector<Discontinuity> v = rateExpr.getDiscontinuities();			
+//			for (Discontinuity od : v) {
+//				String dname = discontinuityNameMap.get(od);
+//				if (dname == null) {
+//					dname = "D_B" + discontinuityNameMap.size();
+//					discontinuityNameMap.put(od, dname);				
+//				}
+//				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+//			}
 			
 			sb.append(newRateExpr.infix() + ";\n");
 		}
 	}
 	
-	if (discontinuityNameMap.size() > 0) {
-		pw.println("DISCONTINUITIES " + discontinuityNameMap.size());
-		for (Discontinuity od : discontinuityNameMap.keySet()) {
-			pw.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
-		}
-	}
+//	if (discontinuityNameMap.size() > 0) {
+//		pw.println("DISCONTINUITIES " + discontinuityNameMap.size());
+//		for (Discontinuity od : discontinuityNameMap.keySet()) {
+//			pw.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
+//		}
+//	}
 	pw.print(sb);
 }
 }
