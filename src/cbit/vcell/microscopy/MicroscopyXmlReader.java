@@ -335,6 +335,10 @@ public FRAPStudy getFrapStudy(Element param,DataSetControllerImpl.ProgressListen
 	if (roiExternalDataElement!=null){
 		frapStudy.setRoiExternalDataInfo(getExternalDataInfo(roiExternalDataElement));
 	}
+	Element refExternalDataElement = param.getChild(MicroscopyXMLTags.RefExternalDataInfoTag);
+	if (refExternalDataElement!=null){
+		frapStudy.setRefExternalDataInfo(getExternalDataInfo(refExternalDataElement));
+	}
 	return frapStudy;
 }
 

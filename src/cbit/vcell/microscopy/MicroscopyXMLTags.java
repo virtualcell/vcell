@@ -29,6 +29,7 @@ public class MicroscopyXMLTags {
 	public static final String FilenameAttrTag = "Filename";
 	public static final String ExternalDataIdentifierTag = "ExternalDataIdentifier";
 	public static final String ROIExternalDataInfoTag = "ROIExternalDataInfo";
+	public static final String RefExternalDataInfoTag = "RefExternalDataInfo";
 	public static final String OriginalImagePathAttrTag = "OriginalImagePath";
 	public static final String StartingIndexForRecoveryAttrTag = "StartingIndexForRecovery";
 	public static final String FitExpressionAttrTag = "FitExpression";

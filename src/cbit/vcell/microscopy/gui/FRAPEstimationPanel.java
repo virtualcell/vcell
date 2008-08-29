@@ -159,7 +159,7 @@ public class FRAPEstimationPanel extends JPanel {
 		scrollPane.setViewportView(table);
 
 		final JButton applyEstimatedValuesButton = new JButton();
-		applyEstimatedValuesButton.setFont(new Font("", Font.BOLD, 16));
+//		applyEstimatedValuesButton.setFont(new Font("", Font.BOLD, 16));
 		applyEstimatedValuesButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				Object[][] rowData = new Object[4][FRAP_ESTIMATE_COLUMN_NAMES.length];

@@ -327,6 +327,13 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 		roiEDINode.addContent( getXML(param.getRoiExternalDataInfo().getExternalDataIdentifier()) );
 		frapStudyNode.addContent( roiEDINode );
 	}
+	//Get ExternalDataIdentifier (for reference data)
+	if (param.getRefExternalDataInfo()!=null){
+		Element refEDINode = new Element(MicroscopyXMLTags.RefExternalDataInfoTag);
+		refEDINode.setAttribute(MicroscopyXMLTags.FilenameAttrTag,param.getRefExternalDataInfo().getFilename());
+		refEDINode.addContent( getXML(param.getRefExternalDataInfo().getExternalDataIdentifier()) );
+		frapStudyNode.addContent( refEDINode );
+	}
 	//Get BioModel
 	if (param.getBioModel()!=null){
 		frapStudyNode.addContent( vcellXMLProducer.getXML(param.getBioModel()) );

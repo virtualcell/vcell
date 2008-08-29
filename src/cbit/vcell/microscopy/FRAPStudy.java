@@ -117,7 +117,19 @@ public class FRAPStudy implements Matchable{
 	private BioModel bioModel = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
+	private ExternalDataInfo refExternalDataInfo = null;
+	public static final String IMAGE_EXTDATA_NAME = "timeData";
+	public static final String ROI_EXTDATA_NAME = "roiData";
+	public static final String REF_EXTDATA_NAME = "refData";
 	
+	public ExternalDataInfo getRefExternalDataInfo() {
+		return refExternalDataInfo;
+	}
+
+
+	public void setRefExternalDataInfo(ExternalDataInfo refExternalDataInfo) {
+		this.refExternalDataInfo = refExternalDataInfo;
+	}
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	public static class FRAPModelParameters {
@@ -1247,7 +1259,7 @@ public class FRAPStudy implements Matchable{
 			System.arraycopy(dilatedROI_2D_5.getPixels(), 0, roiBleachedRing8_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_5.getPixels().length);
 		}
 	}
-	public static final String IMAGE_EXTDATA_NAME = "timeData";
+	
 	public void  saveImageDatasetAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newImageExtDataID,int startingIndexForRecovery) throws Exception{
 			ImageDataset imageDataset = getFrapData().getImageDataset();
 			if (imageDataset.getSizeC()>1){
@@ -1364,7 +1376,7 @@ public class FRAPStudy implements Matchable{
 		}
 		return avgPrebleachDouble;
 	}
-	public static final String ROI_EXTDATA_NAME = "roiData";
+	
 	public void saveROIsAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newROIExtDataID,int startingIndexForRecovery) throws Exception{
 			ImageDataset imageDataset = getFrapData().getImageDataset();
 			Extent extent = imageDataset.getExtent();
@@ -1606,6 +1618,10 @@ public class FRAPStudy implements Matchable{
 				return false;
 			}
 			if (!cbit.util.Compare.isEqualOrNull(getRoiExternalDataInfo(),fStudy.getRoiExternalDataInfo()))
+			{
+				return false;
+			}
+			if (!cbit.util.Compare.isEqualOrNull(getRefExternalDataInfo(),fStudy.getRefExternalDataInfo()))
 			{
 				return false;
 			}
