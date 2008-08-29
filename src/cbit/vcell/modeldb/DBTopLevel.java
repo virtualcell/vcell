@@ -650,7 +650,7 @@ String getMathModelXML(User user, KeyValue key, boolean bEnableRetry)
 		// Child objects (of the requested object) are given permission by reachablity anyway, 
 		// so if the user is allowed permission to the parent, no further checks are necessary.
 		//
-		Vector vInfos = getVersionableInfos(user,key,versionableType,false,true,false);
+		Vector vInfos = getVersionableInfos(user,key,versionableType,true,true,false);
 		if (vInfos.size()==0){
 			throw new ObjectNotFoundException(versionableType.getTypeName()+" not found");
 		}
