@@ -1,10 +1,12 @@
 package cbit.vcell.solvers;
+import cbit.util.BeanUtils;
 import cbit.util.ISize;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
-import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.FilamentVariable;
@@ -29,6 +31,7 @@ import cbit.vcell.server.*;
 ©*/
 import cbit.vcell.solver.*;
 import cbit.vcell.server.PropertyLoader;
+
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -40,6 +43,7 @@ import java.util.Map.Entry;
 public class FVSolver extends AbstractCompiledSolver implements Solver {
 	protected CppCoderVCell cppCoderVCell = null;
 	private SimResampleInfoProvider simResampleInfoProvider;
+	private Geometry resampledGeometry = null;
 	
 	public static final int HESM_KEEP_AND_CONTINUE = 0;
 	public static final int HESM_THROW_EXCEPTION = 1;
@@ -509,6 +513,22 @@ protected void initialize() throws SolverException {
 
 }
 
+public Geometry getResampledGeometry() throws SolverException {
+	if (resampledGeometry == null) {
+		// clone and resample geometry
+		try {
+			resampledGeometry = (Geometry) BeanUtils.cloneSerializable(getSimulation().getMathDescription().getGeometry());
+			GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+			ISize newSize = getSimulation().getMeshSpecification().getSamplingSize();
+			geoSurfaceDesc.setVolumeSampleSize(newSize);
+			geoSurfaceDesc.updateAll();		
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SolverException(e.getMessage());
+		}
+	}
+	return resampledGeometry;
+}
 
 protected void initStep1() throws SolverException {
 	// ** Dumping the functions of a simulation into a '.functions' file.
@@ -549,11 +569,11 @@ protected void initStep1() throws SolverException {
 	}		
 		
 	fireSolverStarting("processing geometry...");
-	try {	
-		cbit.vcell.geometry.Geometry geo = getSimulation().getMathDescription().getGeometry();
+	
+	try {
 		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".vcg")));
 		int numMembraneElements =
-			GeometryFileWriter.write(geo, getSimulation().getMeshSpecification().getSamplingSize(),pw);
+			GeometryFileWriter.write(pw, getResampledGeometry());
 		pw.close();
 
 
@@ -563,18 +583,13 @@ protected void initStep1() throws SolverException {
 			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
 				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(getSimulation());
 			}
-			resampleFieldData(
-					argFieldDataIDSpecs,
-					getSaveDirectory(),//getSaveDirectory(),
-					CartesianMesh.createSimpleCartesianMesh(
-						getSimulation().getMathDescription().getGeometry().getOrigin(), 
-						getSimulation().getMathDescription().getGeometry().getExtent(),
-						getSimulation().getMeshSpecification().getSamplingSize(),
-						getSimulation().getMathDescription().getGeometry().getGeometrySurfaceDescription().getRegionImage()),
-					simResampleInfoProvider,
-					numMembraneElements,
-					HESM_OVERWRITE_AND_CONTINUE
-				);
+			
+			CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(getResampledGeometry().getOrigin(), 
+					getResampledGeometry().getExtent(),
+					getSimulation().getMeshSpecification().getSamplingSize(),
+					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());			
+			resampleFieldData(argFieldDataIDSpecs, getSaveDirectory(),//getSaveDirectory(),
+					simpleMesh, simResampleInfoProvider, numMembraneElements, HESM_OVERWRITE_AND_CONTINUE);
 		}
 
 	} catch (Exception ex) {

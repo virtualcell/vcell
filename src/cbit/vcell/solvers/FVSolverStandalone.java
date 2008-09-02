@@ -47,7 +47,7 @@ protected void initialize() throws SolverException {
 			
 		File fvinputFile = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".fvinput");
 		PrintWriter pw = new PrintWriter(new FileWriter(fvinputFile));
-		new FiniteVolumeFileWriter(getSimulationJob(), getSaveDirectory(), pw, bMessaging).write();
+		new FiniteVolumeFileWriter(getSimulationJob(), getResampledGeometry(), getSaveDirectory(), pw, bMessaging).write();
 		pw.close();
 	
 		String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);

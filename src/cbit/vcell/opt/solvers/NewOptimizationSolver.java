@@ -1,20 +1,18 @@
 package cbit.vcell.opt.solvers;
 
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-
 import org.jdom.CDATA;
 import org.jdom.Element;
 import org.vcell.optimization.OptXmlReader;
 import org.vcell.optimization.OptXmlTags;
 
 import cbit.sql.KeyValue;
+import cbit.util.BeanUtils;
 import cbit.util.ISize;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.geometry.surface.GeometryFileWriter;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.ReservedSymbol;
@@ -40,12 +38,10 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.NativeCVODESolver;
 import cbit.vcell.solvers.NativeIDASolver;
@@ -479,28 +475,22 @@ public static Element getModelXML(PdeObjectiveFunction pdeObjectiveFunction, Str
 		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolume);
 		simulation.getSolverTaskDescription().setTimeStep(new TimeStep(minDt/5, minDt/5, minDt/5));
 		
-		// write vcg file
-//		cbit.vcell.geometry.Geometry geo = simulation.getMathDescription().getGeometry();
-//		PrintWriter pw = new PrintWriter(new FileWriter(new File(pdeObjectiveFunction.getWorkingDirectory(), simJob.getSimulationJobID()+".vcg")));
-//		int numMembraneElements = GeometryFileWriter.write(geo, simulation.getMeshSpecification().getSamplingSize(),pw);
-//		pw.close();
-		
-//		FVSolver.resampleFieldData(
-//				pdeObjectiveFunction.getFieldDataIDSs(),
-//				pdeObjectiveFunction.getWorkingDirectory(),
-//				CartesianMesh.createSimpleCartesianMesh(
-//					simulation.getMathDescription().getGeometry().getOrigin(), 
-//					simulation.getMathDescription().getGeometry().getExtent(),
-//					simulation.getMeshSpecification().getSamplingSize(),
-//					simulation.getMathDescription().getGeometry().getGeometrySurfaceDescription().getRegionImage()),
-//					(VCSimulationDataIdentifier)simJob.getVCDataIdentifier(),
-//				numMembraneElements,
-//				FVSolver.HESM_OVERWRITE_AND_CONTINUE
-//			);
+		// clone and resample geometry
+		Geometry resampledGeometry = null;
+		try {
+			resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
+			GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+			ISize newSize = simulation.getMeshSpecification().getSamplingSize();
+			geoSurfaceDesc.setVolumeSampleSize(newSize);
+			geoSurfaceDesc.updateAll();		
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SolverException(e.getMessage());
+		}	
 		SimulationJob simJob = new SimulationJob(simulation, pdeObjectiveFunction.getFieldDataIDSs(), 0);
 		
 		java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
-		FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(simJob, pdeObjectiveFunction.getWorkingDirectory(), parameterNames, new java.io.PrintWriter(simulationInputStringWriter,true));		
+		FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(simJob, resampledGeometry, pdeObjectiveFunction.getWorkingDirectory(), parameterNames, new java.io.PrintWriter(simulationInputStringWriter,true));		
 		fvFileWriter.write();
 		simulationInputStringWriter.close();
 		modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_FVSOLVER);

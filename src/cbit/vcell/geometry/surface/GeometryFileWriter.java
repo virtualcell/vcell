@@ -2,6 +2,9 @@ package cbit.vcell.geometry.surface;
 import java.io.Writer;
 import cbit.vcell.geometry.RegionImage;
 import cbit.util.ISize;
+
+import java.util.Comparator;
+import java.util.Vector;
 import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
 import cbit.vcell.geometry.Geometry;
@@ -11,97 +14,13 @@ import cbit.vcell.geometry.Geometry;
  * @author: Jim Schaff
  */
 public class GeometryFileWriter {
-/**
- * Insert the method's description here.
- * Creation date: (7/19/2004 10:54:30 AM)
- * @param geometrySurfaceDescription cbit.vcell.geometry.surface.GeometrySurfaceDescription
- */
-public static int write(Geometry geometry, ISize newSize, java.io.Writer writer) throws Exception {
-
-	//long tm = System.currentTimeMillis();
-
-	// clone geometry to isolate sampling from model (setVolumeSampleSize());
-	
-	Geometry newGeometry = (Geometry)cbit.util.BeanUtils.cloneSerializable(geometry);
-	
-	GeometrySurfaceDescription geoSurfaceDesc = newGeometry.getGeometrySurfaceDescription();
-	ISize oldSize = geoSurfaceDesc.getVolumeSampleSize();
-	if (oldSize.equals(newSize)) {
-		System.out.println("Sample size is the same as old size: " + oldSize);
-	} else {
-		System.out.println("Old sample size: " + oldSize + ", New Sample size: " + newSize);
-		geoSurfaceDesc.setVolumeSampleSize(newSize);
-		geoSurfaceDesc.updateAll();
-		//System.out.println("Geometry updateAll takes " + (System.currentTimeMillis() - tm)/1000.0 + " sec");
-	}
-	RegionImage regionImage = geoSurfaceDesc.getRegionImage();
-	SurfaceCollection surfaceCollection = geoSurfaceDesc.getSurfaceCollection();
-	GeometricRegion geometricRegions[] = geoSurfaceDesc.getGeometricRegions();
-	
-	/*
-	long tm = System.currentTimeMillis();
-
-	Geometry newGeometry = new Geometry(geometry);
-	
-	GeometrySurfaceDescription geoSurfaceDesc = newGeometry.getGeometrySurfaceDescription();	
-	geoSurfaceDesc.setVolumeSampleSize(newSize);
-	
-	
-	cbit.vcell.geometry.GeometrySpec geometrySpec = newGeometry.getGeometrySpec();
-	
-	RegionImage regionImage = GeometrySurfaceUtils.getUpdatedRegionImage(geoSurfaceDesc);
-
-	// make surfaces
-	SurfaceGenerator surfaceGenerator = new SurfaceGenerator(new cbit.vcell.server.StdoutSessionLog("suface generator"));
-	cbit.util.Extent extent = geometrySpec.getExtent();
-	cbit.util.Origin origin = geometrySpec.getOrigin();
-	SurfaceCollection surfaceCollection = surfaceGenerator.generateSurface(regionImage, 3, extent, origin);
-	//
-	// smooth surfaces
-	//	
-	int numPoints = 0;
-	if (surfaceCollection != null) {
-		for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++){
-			numPoints += surfaceCollection.getSurfaces(i).getPolygonCount();
-		}
-	}
-
-	double lambda = 0.7;
-	double L  = 0.0;	
-	if (newGeometry.getDimension() == 2) {
-		L = numPoints;		
-	} else if (newGeometry.getDimension() == 3)  {
-		L = Math.sqrt(numPoints);		
-	}
-	double epsilon = 1/Math.sqrt(L);
-	double delta = 2 * Math.PI * Math.PI * lambda * lambda / L;
-	
-	double mu = - lambda - delta;		
-	int N = (int)(4 * lambda * lambda * epsilon / (delta * delta));
-	System.out.println("Smoothing parameters: epsilon=" + epsilon + ", delta=" + delta + ", lambda=" + lambda +", mu=" + mu + ", N=" + N);
-	
-	
-	TaubinSmoothing taubinSmoothing = new TaubinSmoothingWrong();
-	TaubinSmoothingSpecification taubinSpec = new TaubinSmoothingSpecification(lambda, mu, N, null); //TaubinSmoothingSpecification.getInstance(geoSurfaceDesc.getFilterCutoffFrequency().doubleValue());
-	taubinSmoothing.smooth(surfaceCollection,taubinSpec);			
-
-	//
-	// parse regionImage into VolumeGeometricRegions and SurfaceCollection into SurfaceGeometricRegions
-	//
-	GeometricRegion geometricRegions[] = GeometrySurfaceUtils.getUpdatedGeometricRegions(geoSurfaceDesc, regionImage, surfaceCollection);		
-	System.out.println("Geometry updateAll takes " + (System.currentTimeMillis() - tm)/1000.0 + " sec");
-	*/
-
-	return write(writer, newGeometry, newSize, regionImage, surfaceCollection, geometricRegions);
-}
-
 
 /**
  * Insert the method's description here.
  * Creation date: (7/19/2004 10:54:30 AM)
  * @param geometrySurfaceDescription cbit.vcell.geometry.surface.GeometrySurfaceDescription
  */
-private static int write(Writer writer, Geometry geometry, ISize volumeSampleSize, RegionImage regionImage, SurfaceCollection surfaceCollection, GeometricRegion[] geometricRegions) throws Exception {
+public static int write(Writer writer, Geometry resampledGeometry) throws Exception {
 	//
 	// "name" name
 	// "dimension" dimension
@@ -124,11 +43,11 @@ private static int write(Writer writer, Geometry geometry, ISize volumeSampleSiz
 	//
 	//When we are writing volume regions, we sort regions so that ID is equal to index
 	//	
-	writer.write("name "+geometry.getName()+"\n");
-	writer.write("dimension "+geometry.getDimension()+"\n");
-	cbit.util.Extent extent = geometry.getExtent();
-	cbit.util.Origin origin = geometry.getOrigin();
-	switch (geometry.getDimension()) {
+	writer.write("name "+resampledGeometry.getName()+"\n");
+	writer.write("dimension "+resampledGeometry.getDimension()+"\n");
+	cbit.util.Extent extent = resampledGeometry.getExtent();
+	cbit.util.Origin origin = resampledGeometry.getOrigin();
+	switch (resampledGeometry.getDimension()) {
 		case 1:			
 			writer.write("size "+extent.getX()+"\n");
 			writer.write("origin "+origin.getX()+"\n");
@@ -143,14 +62,20 @@ private static int write(Writer writer, Geometry geometry, ISize volumeSampleSiz
 			break;
 	}	
 
+	GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+	
+	RegionImage regionImage = geoSurfaceDesc.getRegionImage();
+	SurfaceCollection surfaceCollection = geoSurfaceDesc.getSurfaceCollection();
+	GeometricRegion geometricRegions[] = geoSurfaceDesc.getGeometricRegions();	
+	
 	int numVolumeRegions = 0;
 	int numMembraneRegions = 0;	
-	java.util.Vector volRegionList = new java.util.Vector();
+	Vector<VolumeGeometricRegion> volRegionList = new Vector<VolumeGeometricRegion>();
 	if (geometricRegions != null) {	
 		for (int i = 0; i < geometricRegions.length; i++){
 			if (geometricRegions[i] instanceof VolumeGeometricRegion){
 				numVolumeRegions++;
-				volRegionList.add(geometricRegions[i]);
+				volRegionList.add((VolumeGeometricRegion)geometricRegions[i]);
 			}else if (geometricRegions[i] instanceof SurfaceGeometricRegion){
 				numMembraneRegions++;
 			}
@@ -160,10 +85,8 @@ private static int write(Writer writer, Geometry geometry, ISize volumeSampleSiz
 	//
 	// get ordered array of volume regions (where "id" == index into array)... fail if impossible
 	//
-	java.util.Collections.sort(volRegionList,new java.util.Comparator() {
-		public int compare(Object obj1, Object obj2){
-			VolumeGeometricRegion reg1 = (VolumeGeometricRegion)obj1;
-			VolumeGeometricRegion reg2 = (VolumeGeometricRegion)obj2;
+	java.util.Collections.sort(volRegionList,new Comparator<VolumeGeometricRegion>() {
+		public int compare(VolumeGeometricRegion reg1, VolumeGeometricRegion reg2){
 			if (reg1.getRegionID()<reg2.getRegionID()){
 				return -1;
 			}else if (reg1.getRegionID()>reg2.getRegionID()){
@@ -199,10 +122,12 @@ private static int write(Writer writer, Geometry geometry, ISize volumeSampleSiz
 			}
 		}
 	}
+	
 	//
 	// write volume samples
 	//
-	switch (geometry.getDimension()) {		
+	ISize volumeSampleSize = geoSurfaceDesc.getVolumeSampleSize();
+	switch (resampledGeometry.getDimension()) {		
 		case 1:
 			writer.write("volumeSamples "+volumeSampleSize.getX()+"\n");
 			break;
@@ -276,7 +201,7 @@ private static int write(Writer writer, Geometry geometry, ISize volumeSampleSiz
 	//    insideVolumeIndex outsideVolumeIndex area normalx normaly normalz
 	//
 	int cellID = 0;
-	int dimension = geometry.getDimension();
+	int dimension = resampledGeometry.getDimension();
 	
 	double correctCoeff = 1;
 
