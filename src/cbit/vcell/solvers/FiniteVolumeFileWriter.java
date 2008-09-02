@@ -18,6 +18,7 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.mapping.FastSystemAnalyzer;
@@ -37,6 +38,7 @@ public class FiniteVolumeFileWriter {
 	private boolean bInlineVCG = false;
 	private String[] parameterNames = null;
 	private boolean bMessaging = true;
+	private Geometry resampledGeometry = null;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -58,18 +60,19 @@ public class FiniteVolumeFileWriter {
 		}
 	};	
 
-public FiniteVolumeFileWriter(SimulationJob simJob, File dir, String[] paramNames, PrintWriter pw) {	
-	this (simJob, dir, pw, false);
+public FiniteVolumeFileWriter(SimulationJob simJob, Geometry geo, File dir, String[] paramNames, PrintWriter pw) {	
+	this (simJob, geo, dir, pw, false);
 	parameterNames = paramNames;
-	bInlineVCG = true;
+	bInlineVCG = true; 
 }
 
 /**
  * FiniteVolumeFileWriter constructor comment.
  */
-public FiniteVolumeFileWriter(SimulationJob simJob, File dir, PrintWriter pw, boolean arg_bMessaging) {
+public FiniteVolumeFileWriter(SimulationJob simJob, Geometry geo, File dir, PrintWriter pw, boolean arg_bMessaging) {
 	super();
 	simulationJob = simJob;
+	resampledGeometry = geo;
 	simulation = simulationJob.getWorkingSim();
 	userDirectory = dir;
 	writer = pw;
@@ -330,12 +333,12 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 		}
 		if (((PdeEquation)equation).getVelocityY() != null) {
 			writer.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY()).infix() + ";");
-		} else if (simulation.getMathDescription().getGeometry().getDimension() > 1){
+		} else if (resampledGeometry.getDimension() > 1){
 			writer.println("VELOCITY_Y 0.0;");
 		}
 		if (((PdeEquation)equation).getVelocityZ() != null) {
 			writer.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ()).infix() + ";");			
-		} else if (simulation.getMathDescription().getGeometry().getDimension() > 2){
+		} else if (resampledGeometry.getDimension() > 2){
 			writer.println("VELOCITY_Z 0.0;");
 		}
 		
@@ -439,7 +442,7 @@ private void writeMembrane_boundaryConditions(MembraneSubDomain msd) throws Exce
 
 
 private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
-	int dimension = simulation.getMathDescription().getGeometry().getDimension();
+	int dimension = resampledGeometry.getDimension();
 	for (int i = 0; i < 2 * dimension; i ++) {
 		if (bctypes[i].isDIRICHLET()) {
 			writer.print("value ");
@@ -516,7 +519,7 @@ private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDom
 
 
 private void writeBoundaryValues(BoundaryConditionType[] bctypes, PdeEquation pde) throws Exception {
-	int dimension = simulation.getMathDescription().getGeometry().getDimension();
+	int dimension = resampledGeometry.getDimension();
 	
 	String[] bctitles = new String[]{"BOUNDARY_XM", "BOUNDARY_XP", "BOUNDARY_YM", "BOUNDARY_YP", "BOUNDARY_ZM", "BOUNDARY_ZP"};
 	Expression[] bcs = new Expression[] {
@@ -645,9 +648,8 @@ private void writeMeshFile() {
 	writer.println("# Mesh file");
 	writer.println("MESH_BEGIN");
 	if (bInlineVCG) {
-		cbit.vcell.geometry.Geometry geo = simulation.getMathDescription().getGeometry();
 		try {
-			GeometryFileWriter.write(geo, simulation.getMeshSpecification().getSamplingSize(),writer);
+			GeometryFileWriter.write(writer, resampledGeometry);
 		} catch (Exception e) {			 
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
