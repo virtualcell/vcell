@@ -4023,11 +4023,27 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	//Initial
 	temp = param.getChildText(XMLTags.InitialTag, vcNamespace);
 	try {
-		Expression expression = unMangleExpression(temp);
-		specspec.getInitialConditionParameter().setExpression(expression);
+		if (temp != null) {
+			Expression expression = unMangleExpression(temp);
+			specspec.getInitialConditionParameter().setExpression(expression);
+		} else {
+			// if the 'Initial' tag is not present in the VCML, but 'InitialConcentration' tag is present, it is a new-style model
+			// these should be brought in as if they were the regular 'Initial' tag 
+			temp = param.getChildText("InitialConcentration", vcNamespace);
+			if (temp != null) {
+				specspec.getInitialConditionParameter().setExpression(unMangleExpression(temp));
+			} else {
+				temp = param.getChildText("InitialCount", vcNamespace); 
+				if (temp != null) {
+					throw new XmlParseException("Initial Amount/No. of particles not supported in VCell 4.5. Please use VCell 4.6 or a later version to load this model.");
+				} else {
+					throw new XmlParseException("Initial Condition for species " + specref.getName() + " not specified.");
+				}
+			}
+		}
 	} catch (ExpressionException e) {
 		e.printStackTrace();
-		throw new XmlParseException("An expressionException was fired when setting the InitilaconditionExpression "+ temp + ", for a SpeciesContextSpec!"+" : "+e.getMessage());
+		throw new XmlParseException("An expressionException was fired when setting the InitilaConditionExpression "+ temp + ", for a SpeciesContextSpec!"+" : "+e.getMessage());
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());
