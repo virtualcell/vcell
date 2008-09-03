@@ -435,6 +435,8 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
+			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_23 && !n.endsWith(".xml")) {
+				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV5 && !n.endsWith(".m")) {
 				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {

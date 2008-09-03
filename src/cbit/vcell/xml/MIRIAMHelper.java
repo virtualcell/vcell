@@ -22,6 +22,7 @@ import org.jdom.Namespace;
 import org.jdom.Text;
 
 import cbit.gui.ZEnforcer;
+import cbit.util.BeanUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.ReactionStep;
@@ -492,15 +493,22 @@ private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAn
 		MIRIAMHelper.cleanEmptySpace(userNotesElement);
 		Element html = null;
 		if(MIRIAMHelper.recurseForElement(userNotesElement, HTML.Tag.HTML.toString()) == null){
+			// if userNotes doesn't have <html> tag, create one
 			html = new Element(HTML.Tag.HTML.toString());
 			Attribute attrXHTML =
 				new Attribute(XMLTags.HTML_XHTML_ATTR_TAG,XMLTags.XHTML_URI);
 			html.setAttribute(attrXHTML);
 			html.addContent(new Element(HTML.Tag.HEAD.toString()));
 			if(MIRIAMHelper.recurseForElement(userNotesElement, HTML.Tag.BODY.toString()) == null){
+				// If userNotes doesn't have <body>, create one, and add children of <notes>, typically <p>, to <body>
+				// Then add <body> to created <html> tag.
 				Element body = new Element(HTML.Tag.BODY.toString());
+				Iterator<Element> notesChildren = userNotesElement.getChildren().iterator();
+				while (notesChildren.hasNext()) {
+					Element noteChild = (Element)notesChildren.next().clone();
+					body.addContent(noteChild);
+				}
 				html.addContent(body);
-				userNotesElement.getDocument().setRootElement(body);
 			}else{
 				html.addContent(MIRIAMHelper.recurseForElement(userNotesElement, HTML.Tag.BODY.toString()).detach());
 			}
@@ -787,7 +795,7 @@ private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAn
 				//----------------------------------
 				Element vcInfoElement = recurseForElement(annotationElement, XMLTags.VCellInfoTag);
 				if(vcInfoElement != null){
-							System.out.println(XmlUtil.xmlToString(vcInfoElement));
+//							System.out.println(XmlUtil.xmlToString(vcInfoElement));
 				}
 				//----------------------------------
 		} catch (Exception e) {

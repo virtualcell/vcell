@@ -59,6 +59,13 @@ public class BiomodelsDB_SBMLSolverTest {
 					String biomodelsAccessionNumber = stringTokenizer.nextToken();
 					String sbmlModelName = biomodelsAccessionNumber; // should be replaced with  later after reading from SBML file.
 					String filePrefix = biomodelsAccessionNumber;
+					// *** BIOMD_24, 25, 34, 154, 155 : Copasi simulation fails; VCell doesn't import (csymbol not handled); 
+					// so ignore model for present *** 
+					if (filePrefix.equals("BIOMD0000000024") || filePrefix.equals("BIOMD0000000025") || filePrefix.equals("BIOMD0000000034") || 
+						filePrefix.equals("BIOMD0000000154") || filePrefix.equals("BIOMD0000000155")) {
+						printWriter.println("Ignoring model : " + filePrefix + " because it has <csymbol> delay term nota handled in VCell.");
+						continue;
+					}
 					String bioModelsPrefix = "http://www.ebi.ac.uk/compneur-srv/biomodels-main/publ-model.do?mid=";
 					String sbmlLink = "[["+bioModelsPrefix+biomodelsAccessionNumber+"]["+biomodelsAccessionNumber+"]]";
 					PrintStream saved_sysout = System.out;
@@ -77,7 +84,8 @@ public class BiomodelsDB_SBMLSolverTest {
 						// get SBML model "name" (or "id")
 						//
 						Element rootSBML = SBMLUtils.readXML(new StringReader(sbmlText));
-						Namespace sbmlNamespace = Namespace.getNamespace("http://www.sbml.org/sbml/level2");
+						Namespace sbmlNamespace = rootSBML.getNamespace();
+						// Namespace sbmlNamespace = Namespace.getNamespace("http://www.sbml.org/sbml/level2");
 						Element sbmlModelElement = rootSBML.getChild("model",sbmlNamespace);
 						sbmlModelName = sbmlModelElement.getAttributeValue("name");
 						if (sbmlModelName==null || sbmlModelName.length()==0){
@@ -303,7 +311,7 @@ public class BiomodelsDB_SBMLSolverTest {
 		String reportText = XmlUtil.getXMLString(resultFile.getAbsolutePath());
 		//System.out.println(reportText);
 		ODESolverResultSet odeResultSet = new ODESolverResultSet();
-		StringTokenizer lineTokenizer = new StringTokenizer(reportText,"\n",false);
+		StringTokenizer lineTokenizer = new StringTokenizer(reportText,"\r\n",false);
 		int lineCount = 0;
 		while (lineTokenizer.hasMoreElements()){
 			lineCount++;

@@ -524,7 +524,8 @@ protected void addReactions() {
 			} else {
 				vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 			}
-			
+			simContext.getModel().addReactionStep(vcReactions[i]);
+
 			// Now add the reactants, products, modifiers as specified by the sbmlRxn
 			addReactionParticipants(sbmlRxn, vcReactions[i]);
 			
@@ -586,6 +587,9 @@ protected void addReactions() {
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Cannot have a local parameter which does not occur in kinetic law expression for SBML reaction : " + rxnName);
 			}
 
+			// set kinetics on vcReaction
+			vcReactions[i].setKinetics(kinetics);
+
 			// If the name of the rate parameter has been changed by user, or matches with global/local param, 
 			// it has to be changed.
 			resolveRxnParameterNameConflicts(sbmlRxn, kinetics);
@@ -642,7 +646,7 @@ protected void addReactions() {
 				   an intermediate unit conversion is required between SBML and VC units before evaluating 
 				   the 'dimensionless' scale factor (see next step below) */
 				if (kLawSubstanceUnit.isCompatible(VCUnitDefinition.UNIT_mol)) {
-					if (reactionStructure instanceof Membrane) {
+					if (reactionStructure instanceof Membrane && vcReactions[i] instanceof SimpleReaction) {
 						SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
 						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(ReservedSymbol.KMOLE.getName())));
 					} 
@@ -684,6 +688,7 @@ protected void addReactions() {
 				// sometimes, the reaction rate can contain a compartment name, not necessarily the compartment the reaction takes place.
 				for (int kk = 0; kk < (int)sbmlModel.getNumCompartments(); kk++){
 					Compartment comp1 = sbmlModel.getCompartment(kk);
+					String comp1_Id = comp1.getId();
 					boolean bCompFoundInLocalParams = false;
 					for (int ll = 0; ll < kLaw.getNumParameters(); ll++) {
 						if (comp1.getId().equals(((org.sbml.libsbml.Parameter)listofLocalParams.get((long)ll)).getId())) {
@@ -941,8 +946,6 @@ protected void addReactions() {
 
 			// set the reaction kinetics, and add reaction to the vcell model.
 			kinetics.resolveUndefinedUnits();
-			vcReactions[i].setKinetics(kinetics);
-			simContext.getModel().addReactionStep(vcReactions[i]);
 			// System.out.println("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
 			if (sbmlRxn.isSetFast() && sbmlRxn.getFast()) {
 				simContext.getReactionContext().getReactionSpec(vcReactions[i]).setReactionMapping(cbit.vcell.mapping.ReactionSpec.FAST);
