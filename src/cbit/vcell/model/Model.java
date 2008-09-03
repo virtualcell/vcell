@@ -2527,6 +2527,9 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (nameSet.contains(newReactionStepArr[i].getName())){
 				throw new PropertyVetoException("multiple reactionSteps with name '"+newReactionStepArr[i].getName()+"' defined",e);
 			}
+			if (ReservedSymbol.fromString(newReactionStepArr[i].getName())!=null){
+				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Reaction name",e);
+			}
 			nameSet.add(newReactionStepArr[i].getName());
 
 			// validateNamingConflicts("Reaction", ReactionStep.class, newReactionStepArr[i].getName(), e);

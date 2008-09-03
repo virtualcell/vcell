@@ -52,7 +52,8 @@ public class SimSpec {
 	
 	public static SimSpec fromSBML(String sbmlText) throws IOException, SbmlException {
 		Element rootSBML = SBMLUtils.readXML(new StringReader(sbmlText));
-		Namespace sbmlNamespace = Namespace.getNamespace("http://www.sbml.org/sbml/level2");
+		Namespace sbmlNamespace = rootSBML.getNamespace();
+		//Namespace sbmlNamespace = Namespace.getNamespace("http://www.sbml.org/sbml/level2");
 		Element sbmlModelElement = rootSBML.getChild("model",sbmlNamespace);
 		//
 		// collect names of Species to compare
