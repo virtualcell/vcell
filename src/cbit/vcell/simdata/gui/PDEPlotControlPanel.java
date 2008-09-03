@@ -791,9 +791,9 @@ private void filterVariableNames(){
 			}
 			if(displayVarNames.size() == 0){
 				Object emptyFilter = filterComboBox.getSelectedItem();
-				filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
-				DialogUtils.showInfoDialog("No Variables matching filter '"+emptyFilter+"' found");
-				return;
+//				filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
+				System.err.println("No Variables matching filter '"+emptyFilter+"' found");
+//				return;
 			}
 			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
 			getDefaultListModelCivilized1().setContents((displayNames.length == 0?null:displayNames));
