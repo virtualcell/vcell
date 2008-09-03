@@ -1839,7 +1839,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
 								{
 									percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
 								}
@@ -1847,7 +1847,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
 								{
 									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
 								}
@@ -1897,7 +1897,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
 								{
 									percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
 								}
@@ -1905,7 +1905,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded())
+								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
 								{
 									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
 								}

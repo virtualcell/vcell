@@ -183,7 +183,7 @@ public class FRAPOptData {
 			referenceSimKeyValue = getExpFrapStudy().getRefExternalDataInfo().getExternalDataIdentifier().getKey();
 		}
 		//loading data only if the reference data is null or a new reference simulation is done
-		if(isLoadRefDataNeeded())
+		if(isLoadRefDataNeeded(isRunRefSim().booleanValue()))
 		{
 			VCSimulationIdentifier vcSimID =
 				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
@@ -213,9 +213,9 @@ public class FRAPOptData {
 		}
 	}
 	
-	public boolean isLoadRefDataNeeded()
+	public boolean isLoadRefDataNeeded(boolean isRunRefSim)
 	{
-		if(dimensionReducedRefData == null || isRunRefSim().booleanValue())
+		if(dimensionReducedRefData == null || isRunRefSim)
 		{
 			return true;
 		}
