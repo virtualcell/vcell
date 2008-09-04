@@ -124,7 +124,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 			cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(rowText);
 			double[] rowData = new double[numCols];
 			for (int j = 0; j < numCols; j++){
-				if (tokens.hasMoreElements()){
+				if (tokens.hasMoreTokens()){
 					String token = tokens.nextToken();
 					rowData[j] = Double.parseDouble(token);
 				}else{
