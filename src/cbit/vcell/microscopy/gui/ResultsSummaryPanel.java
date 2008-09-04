@@ -94,18 +94,11 @@ public class ResultsSummaryPanel extends JPanel {
 			CardLayout cl = ((CardLayout)(cardPanel.getLayout()));
 			if(plotFRAPSimResultsRadioButton.isSelected()){
 				B_TABLE_DISABLED = false;
-				BeanUtils.enableComponents(interpolationPanel, false);
-				BeanUtils.enableComponents(scrollPane, true);
 				standardErrorseLabel.setEnabled(true);
-				interactiveAnalysisUsingLabel_1.setEnabled(false);
 				processTableSelection();
 				cl.show(cardPanel, SIM_RESULTS);
 			}else if(plotDerivedSimResultsRadioButton.isSelected()){
 				B_TABLE_DISABLED = true;
-				interpolationPanel.enableAllButSetButtons();
-				BeanUtils.enableComponents(scrollPane, false);
-				interactiveAnalysisUsingLabel_1.setEnabled(true);
-				standardErrorseLabel.setEnabled(false);
 				plotDerivedSimulationResults();
 				cl.show(cardPanel, DERIVED_RESULTS);
 			}
@@ -427,7 +420,6 @@ public class ResultsSummaryPanel extends JPanel {
 		plotButtonGroup.add(plotFRAPSimResultsRadioButton);
 		plotButtonGroup.add(plotDerivedSimResultsRadioButton);
 		plotFRAPSimResultsRadioButton.setSelected(true);
-		BeanUtils.enableComponents(interpolationPanel, false);
 	}
 
 	private void plotDerivedSimulationResults(/*boolean bBestFit*/){

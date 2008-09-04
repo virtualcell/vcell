@@ -170,7 +170,7 @@ public class FRAPOptimization {
 	{
 		double error = 0;
 		// trying 5 parameters
-		double diffFastOffset = newParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_OFFSET_INDEX];
+		double diffFastRate = newParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX];
 		double mFracFast = newParams[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX];
 		double diffSlowRate = newParams[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX];
 		double mFracSlow = newParams[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX];
@@ -181,7 +181,7 @@ public class FRAPOptimization {
 				
 		if(newParams != null && newParams.length > 0)
 		{
-			double diffFastRate = diffSlowRate + diffFastOffset;
+//			double diffFastRate = diffSlowRate + diffFastOffset;
 									
 			fastData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffFastRate,

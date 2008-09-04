@@ -232,7 +232,7 @@ public class FRAPEstimationPanel extends JPanel {
 				}
 			}
 		});
-		applyEstimatedValuesButton.setText("Apply Estimated Values...");
+		applyEstimatedValuesButton.setText("Apply  Estimated  Values ...");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_5.fill = GridBagConstraints.HORIZONTAL;

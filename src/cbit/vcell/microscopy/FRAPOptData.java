@@ -27,12 +27,12 @@ public class FRAPOptData {
 	public static final int ONEDIFFRATE_MOBILE_FRACTION_INDEX = 1;
 	public static final int ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX = 2;
 	
-	public static String[] TWODIFFRATES_PARAMETER_NAMES = new String[]{"fastDiffOffset",
+	public static String[] TWODIFFRATES_PARAMETER_NAMES = new String[]{"fastDiffRate",
 		  															   "fastMobileFrac",
 		  															   "slowDiffRate",
 		  															   "slowMobileFrac",
 		  															   "bleachWhileMonitoringRate"};
-	public static final int TWODIFFRATES_FAST_DIFFUSION_OFFSET_INDEX = 0;
+	public static final int TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX = 0;
 	public static final int TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX = 1;
 	public static final int TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX = 2;
 	public static final int TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX = 3;
@@ -48,6 +48,12 @@ public class FRAPOptData {
 		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX], 0, 20, 1.0,  0);
+	public static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM =
+		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX], 0, 20, 1.0, 1.0);
+	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
+		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
+	
+	
 	
 	private static int maxRefSavePoints = 500;
 	private static int startingTime = 0;
@@ -465,7 +471,8 @@ public class FRAPOptData {
 		int roiLen = getExpFrapStudy().getFrapData().getRois().length;
 		double refTimeInterval = (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery());
 		
-		double diffFastOffset = 0;
+//		double diffFastOffset = 0;
+		double diffFastRate = 0;
 		double mFracFast = 1;
 		double diffSlowRate = 0;
 		double mFracSlow = 0;
@@ -475,13 +482,13 @@ public class FRAPOptData {
 		double[][] slowData = null;
 		double[][] newData = new double[roiLen][reducedExpTimePoints.length];
 		
-		if(newParams != null && newParams.length > 0)
+		if(newParams != null && newParams.length > 0)   
 		{
 			for(int i=0; i<newParams.length; i++)
 			{
-				if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_OFFSET_INDEX]))
-				{
-					diffFastOffset = newParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_OFFSET_INDEX].getInitialGuess();
+				if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX]))
+				{   
+					diffFastRate = newParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX].getInitialGuess();
 				}
 				else if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX]))
 				{
@@ -502,7 +509,7 @@ public class FRAPOptData {
 			}
 			
 			
-			double diffFastRate = diffSlowRate + diffFastOffset;
+//			double diffFastRate = diffFastOffset; //diffSlowRate + diffFastOffset;
 						   
 			fastData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffFastRate,
@@ -532,23 +539,21 @@ public class FRAPOptData {
 				}
 			}
 			
-			//compute error against exp data
+			
 			for(int i=0; i<roiLen; i++)
 			{
-				if(errorOfInterest != null && errorOfInterest[i])
+				for(int j=0; j<reducedExpTimePoints.length; j++)
 				{
-					for(int j=0; j<reducedExpTimePoints.length; j++)
-					{
-						newData[i][j] = FRAPOptimization.getValueFromParameters_twoDiffRates(mFracFast, 
-								                                              fastData[i][j],
-								                                              mFracSlow, 
-								                                              slowData[i][j],
-								                                              monitoringRate,
-								                                              firstPostBleach[i],
-								                                              reducedExpTimePoints[j]);
+					newData[i][j] = FRAPOptimization.getValueFromParameters_twoDiffRates(mFracFast, 
+							                                              fastData[i][j],
+							                                              mFracSlow, 
+							                                              slowData[i][j],
+							                                              monitoringRate,
+							                                              firstPostBleach[i],
+							                                              reducedExpTimePoints[j]);
 //						double newValue = (mFracFast * fastData[i][j] + mFracSlow * slowData[i][j] + immobileFrac * firstPostBleach[i]) * Math.exp(-(monitoringRate * expTimePoints[j]));
-					}
 				}
+				
 			}
 			// REORder according to roiTypes
 			double[][] fitDataInROITypeOrder = new double[newData.length][];
@@ -574,8 +579,9 @@ public class FRAPOptData {
 		Parameter[] outParams = new Parameter[inParams.length];
 		String[] outParaNames = new String[inParams.length];
 		double[] outParaVals = new double[inParams.length];
+		
 		FRAPOptimization.estimate(this, inParams, outParaNames, outParaVals, errorOfInterest);
-		for(int i = 0; i < inParams.length; i++)
+		for(int i = 0; i < outParams.length; i++)
 		{
 			outParams[i] = new Parameter(outParaNames[i], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1.0, outParaVals[i]);
 		}
@@ -638,7 +644,7 @@ public class FRAPOptData {
 		try {
 			//read original data from file
 			System.out.println("start loading original data....");
-			String expFileName = "C:/VirtualMicroscopy/testFastD_4_fastFrac_0p5_slowD_1_slowFrac_0p3_ImmobileFrac_0p2_mwb_0p0015.vfrap";
+			String expFileName = "C:/VirtualMicroscopy/testFastD_4_fastFrac_0p5_slowD_1_slowFrac_0p3_ImmobileFrac_0p2_mwb_0p0015_new.vfrap";
 			xmlString = XmlUtil.getXMLString(expFileName);
 			MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
 			FRAPStudy expFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null), null);
@@ -667,7 +673,7 @@ public class FRAPOptData {
 //			Parameter bleachWhileMonitoringRate = new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX], 0, 10, 1.0,  0/*Double.parseDouble(expFrapStudy.getFrapModelParameters().monitorBleachRate)*/);
 			
 			//trying 5 parameters
-			Parameter diffFastOffset = new cbit.vcell.opt.Parameter("fastDiffOffset", 1, 50, 1.0, 10);
+			Parameter diffFastOffset = new cbit.vcell.opt.Parameter("fastDiffOffset", 0, 50, 1.0, 10);
 			Parameter mFracFast = new cbit.vcell.opt.Parameter("fastMobileFrac", 0, 1, 1.0, 0.5);
 			Parameter diffSlow = new cbit.vcell.opt.Parameter("slowDiffRate", 0, 10, 1.0, 0.1);
 			Parameter mFracSlow = new cbit.vcell.opt.Parameter("slowMobileFrac", 0, 1, 1.0, 0.5);
