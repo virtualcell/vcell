@@ -640,7 +640,7 @@ protected void addReactions() {
 				   an intermediate unit conversion is required between SBML and VC units before evaluating 
 				   the 'dimensionless' scale factor (see next step below) */
 				if (kLawSubstanceUnit.isCompatible(VCUnitDefinition.UNIT_mol)) {
-					if (reactionStructure instanceof Membrane) {
+					if (reactionStructure instanceof Membrane && vcReactions[i] instanceof SimpleReaction) {
 						SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
 						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(ReservedSymbol.KMOLE.getName())));
 					} 
