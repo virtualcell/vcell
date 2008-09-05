@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop;
+import cbit.gui.DialogUtils;
 import cbit.gui.UtilCancelException;
+import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.client.PopupGenerator;
@@ -605,8 +607,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		} else if (e.getActionCommand().equals(TestingFrameworkPanel.ADD_TESTCASE)) {
 			if (selectedObj instanceof TestSuiteInfoNew) {
 				TestSuiteInfoNew tsInfo = (TestSuiteInfoNew)selectedObj;
-				TestCaseNew tcn = getTestingFrameworkWindowManager().getNewTestCase();
-				tasksV.add(new cbit.vcell.client.task.TFAddTestCases(getTestingFrameworkWindowManager(),tsInfo,new TestCaseNew[] {tcn}));
+				TestCaseNew[] tcnArr = getTestingFrameworkWindowManager().getNewTestCaseArr();
+				tasksV.add(new cbit.vcell.client.task.TFAddTestCases(getTestingFrameworkWindowManager(),tsInfo,tcnArr));					
 				tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsInfo);
 				tasksV.add(tfRefreshTreeTask);
 			} else {
@@ -716,23 +718,24 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		
 		else if (e.getActionCommand().equals(TestingFrameworkPanel.REMOVE_TESTCASE)) {
 			if (selectedObj instanceof TestCaseNew) {
-				TestCaseNew testCase = (TestCaseNew)selectedObj;
-				String confirm =
-					PopupGenerator.showWarningDialog(
-						this,
-						UserMessage.warn_deleteDocument.getMessage(testCase.getVersion().getName()),
-						UserMessage.warn_deleteDocument.getOptions(),
-						UserMessage.warn_deleteDocument.getDefaultSelection());
-				if (confirm.equals(UserMessage.OPTION_DELETE)) {
-					tasksV.add(new TFRemove(getTestingFrameworkWindowManager(),testCase));
-					//find parent testsuite
-					TestSuiteInfoNew tsInfo = gettestingFrameworkPanel().getTestSuiteInfoOfSelectedTestCase();
-					tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsInfo);
-					tasksV.add(tfRefreshTreeTask);
-				}else{
-					throw UserCancelException.CANCEL_GENERIC;
+
+				String[][] rowData = new String[selectedTreePaths.length][3];
+				TestSuiteInfoNew tsInfo = gettestingFrameworkPanel().getTestSuiteInfoOfSelectedTestCase();
+				for(int i=0;i<selectedTreePaths.length;i+= 1){
+					TestCaseNew tCase = (TestCaseNew)((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
+					rowData[i][0] = tsInfo.getTSID();
+					tasksV.add(new TFRemove(getTestingFrameworkWindowManager(),tCase));
+					if(tCase instanceof TestCaseNewBioModel){
+						rowData[i][1] = "BM "+tCase.getVersion().getName();
+						rowData[i][2] = ((TestCaseNewBioModel)tCase).getSimContextName();
+					}else{
+						rowData[i][1] = "MM "+tCase.getVersion().getName();
+						rowData[i][2] = "N/A";
+					}
 				}
-				//getTestingFrameworkWindowManager().removeTestCase(testCase);
+				DialogUtils.showComponentOKCancelTableList(this, "Confirm Remove TestCase(s)", new String[] {"Test Suite","Test Case","App"}, rowData, null);
+				tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsInfo);
+				tasksV.add(tfRefreshTreeTask);
 			} else {
 				throw new Exception("Selected Object is not a TestCase, cannot remove selection!");
 			}
