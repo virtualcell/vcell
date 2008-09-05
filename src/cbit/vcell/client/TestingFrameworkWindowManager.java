@@ -1,14 +1,11 @@
 package cbit.vcell.client;
-import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.gui.DialogUtils;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.MergedDataInfo;
 import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -25,24 +22,20 @@ import cbit.vcell.clientdb.DocumentManager;
 import javax.swing.JDialog;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import javax.swing.JComponent;
 import cbit.vcell.client.server.DynamicDataManager;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.test.DataErrorSummary;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import cbit.sql.KeyValue;
 
-import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -57,23 +50,17 @@ import java.util.Vector;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.messaging.admin.ColumnComparator;
 import cbit.vcell.messaging.admin.ManageTableModel;
 import cbit.vcell.messaging.admin.sorttable.JSortTable;
 import cbit.util.BeanUtils;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
-import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-
-import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry.Entry;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -81,7 +68,6 @@ import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.numericstest.*;
-import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
 import cbit.util.AsynchProgressPopup;
 /**
  * Insert the type's description here.
@@ -486,7 +472,7 @@ public void compare(TestCriteriaNew testCriteria){
 	VCDataIdentifier vcSimId1 = new VCSimulationDataIdentifier(simInfo.getAuthoritativeVCSimulationIdentifier(), 0); 
 	VCDataIdentifier vcSimId2 = new VCSimulationDataIdentifier(regrSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
 	User user = simInfo.getOwner();
-	MergedDataInfo mergedDataInfo = new MergedDataInfo(user, new VCDataIdentifier[] {vcSimId1, vcSimId2});
+	MergedDataInfo mergedDataInfo = new MergedDataInfo(user, new VCDataIdentifier[] {vcSimId2,vcSimId1});
 
 	// get the data manager and wire it up
 	try {
@@ -1371,7 +1357,7 @@ private TestCriteriaNew getMatchingTestCriteria(Simulation sim, TestCriteriaNew[
  * Creation date: (4/10/2003 11:27:32 AM)
  * @param testCase cbit.vcell.numericstestingframework.TestCase
  */
-public TestCaseNew getNewTestCase() throws UserCancelException{
+public TestCaseNew[] getNewTestCaseArr() throws UserCancelException{
 	// invoke the testCaseAddPanel to define testCaseInfo parameters.
 	// This is where we invoke the TestCaseAddPanel to define a testCase for the test suite ...
 	getTestCaseAddPanel().resetTextFields();
@@ -1380,7 +1366,7 @@ public TestCaseNew getNewTestCase() throws UserCancelException{
 		
 		if (choice != null && choice.equals("OK")) {
 			try{
-				return getTestCaseAddPanel().getNewTestCase();
+				return getTestCaseAddPanel().getNewTestCaseArr();
 			}catch(Exception e){
 				PopupGenerator.showErrorDialog("Error getting New TestCase:\n"+e.getMessage());
 				continue;
