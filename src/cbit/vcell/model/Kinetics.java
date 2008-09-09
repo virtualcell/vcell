@@ -1670,6 +1670,21 @@ protected void removeKineticsParameter(KineticsParameter parameter) throws Prope
 	setKineticsParameters(newKineticsParameters);
 }
 
+/**
+ * removeUserDefinedKineticParam : wrapper for 'removeKineticsParameter' to be able to remove user-defined kinetics parameter
+ * 		from ModelParameterPanel.
+ * @param parameter
+ * @throws PropertyVetoException
+ */
+
+public void removeUserDefinedKineticParam(Parameter parameter) throws PropertyVetoException {
+	if (parameter instanceof KineticsParameter && ((KineticsParameter)parameter).getRole() == ROLE_UserDefined) {
+		removeKineticsParameter((KineticsParameter)parameter);
+	} else {
+		throw new RuntimeException("The kinetic parameter to be removed is not user-defined; Cannot remove it from reaction \'" + getReactionStep().getName() + "\'.");
+	}
+}
+
 
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
