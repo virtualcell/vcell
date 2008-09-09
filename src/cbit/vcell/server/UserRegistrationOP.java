@@ -163,32 +163,35 @@ public class UserRegistrationOP implements Serializable{
 				if(clientServerManager != null){
 					registrationProvider = new RegistrationProvider(clientServerManager);
 				}
-//				do {
-						if (registrationProvider == null) {
-							if (currentClientServerInfo.getServerType() == ClientServerInfo.SERVER_LOCAL) {
-								PropertyLoader.loadProperties();
-								SessionLog log = new cbit.vcell.server.StdoutSessionLog("Local");
-								ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
-								KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
-								registrationProvider = new RegistrationProvider(
-										new cbit.vcell.modeldb.LocalAdminDbServer(conFactory, keyFactory, log));
+				if (registrationProvider == null) {
+					if (currentClientServerInfo.getServerType() == ClientServerInfo.SERVER_LOCAL) {
+						PropertyLoader.loadProperties();
+						SessionLog log = new cbit.vcell.server.StdoutSessionLog("Local");
+						ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
+						KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
+						registrationProvider = new RegistrationProvider(
+								new cbit.vcell.modeldb.LocalAdminDbServer(conFactory, keyFactory, log));
 //							registeredUserInfo = adminDbServer.insertUserInfo(newUserInfo);
 //							registeredUserInfo = adminDbServer.getUserInfo(new KeyValue("227"));
 //							registrationPanel.setUserInfo(registeredUserInfo);
 //							continue;
-							} else {
-								registrationProvider = new RegistrationProvider(
-									(cbit.vcell.server.VCellBootstrap) java.rmi.Naming.lookup(
-											"//"
-											+ currentClientServerInfo.getHost()
-											+ "/"
-											+ RMIVCellConnectionFactory.SERVICE_NAME)
-								);
-				
-//								registeredUserInfo = vcellBootstrap.insertUserInfo(newUserInfo);
-	
+					} else {
+						String[] hosts = currentClientServerInfo.getHosts();
+						VCellBootstrap vcellBootstrap = null;
+						for (int i = 0; i < hosts.length; i ++) {
+							try {
+								vcellBootstrap = (cbit.vcell.server.VCellBootstrap) java.rmi.Naming.lookup("//" + hosts[i]	+ "/" + RMIVCellConnectionFactory.SERVICE_NAME);
+								vcellBootstrap.getVCellSoftwareVersion(); // test connection
+								break;
+							} catch (Exception ex) {
+								if (i == hosts.length - 1) {
+									throw ex;
+								}
 							}
 						}
+						registrationProvider = new RegistrationProvider(vcellBootstrap);
+					}
+				}
 				if(userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD)){
 					if(currentClientServerInfo.getUsername() == null || currentClientServerInfo.getUsername().length() == 0){
 						throw new IllegalArgumentException("Lost Password requires a VCell User Name.");

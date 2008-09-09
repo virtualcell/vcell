@@ -11,7 +11,8 @@ public class ClientServerInfo {
 	public final static String LOCAL_SERVER = "LOCAL";
 
 	private int serverType = -1;
-	private String host = null;
+	private String[] hosts = null;
+	private String activeHost = null;
 	private String username = null;
 	private String password = null;
 
@@ -22,8 +23,8 @@ public class ClientServerInfo {
  * @param username java.lang.String
  * @param password java.lang.String
  */
-private ClientServerInfo(String host, String username, String password) {
-	this.host = host;
+private ClientServerInfo(String[] hosts, String username, String password) {
+	this.hosts = hosts;
 	this.username = username;
 	this.password = password;
 }
@@ -50,7 +51,7 @@ public static ClientServerInfo createFileBasedServerInfo() {
  * @param password java.lang.String
  */
 public static ClientServerInfo createLocalServerInfo(String username, String password) {
-	ClientServerInfo csi = new ClientServerInfo(LOCAL_SERVER, username, password);
+	ClientServerInfo csi = new ClientServerInfo(new String[] {LOCAL_SERVER}, username, password);
 	csi.setServerType(SERVER_LOCAL);
 	return csi;
 }
@@ -64,7 +65,7 @@ public static ClientServerInfo createLocalServerInfo(String username, String pas
  * @param username java.lang.String
  * @param password java.lang.String
  */
-public static ClientServerInfo createRemoteServerInfo(String host, String username, String password) {
+public static ClientServerInfo createRemoteServerInfo(String[] host, String username, String password) {
 	ClientServerInfo csi = new ClientServerInfo(host, username, password);
 	csi.setServerType(SERVER_REMOTE);
 	return csi;
@@ -91,8 +92,8 @@ public boolean equals(Object o) {
  * Creation date: (5/12/2004 4:09:30 PM)
  * @return java.lang.String
  */
-public java.lang.String getHost() {
-	return host;
+public String[] getHosts() {
+	return hosts;
 }
 
 
@@ -159,7 +160,7 @@ public String toString() {
 			break;
 		}
 		case SERVER_REMOTE: {
-			details = "SERVER_REMOTE, host:" + getHost() + ", user:" + getUsername() + ", password:" + getPassword();
+			details = "SERVER_REMOTE, host:" + activeHost + ", user:" + getUsername() + ", password:" + getPassword();
 			break;
 		}
 		case SERVER_FILE: {
@@ -168,5 +169,15 @@ public String toString() {
 		}
 	}
 	return "ClientServerInfo: [" + details + "]";
+}
+
+
+public String getActiveHost() {
+	return activeHost;
+}
+
+
+public void setActiveHost(String activeHost) {
+	this.activeHost = activeHost;
 }
 }
