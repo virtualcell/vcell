@@ -18,7 +18,9 @@ public class FRAPOptimization {
 	static double epsilon = 1e-8;
 	static double penalty = 1E4;
 		
-	public static double[][] dataReduction(FRAPData argFrapData, boolean bRemovePrebleach,int argStartRecoveryIndex, ROI[] expRois, double[] normFactor) 
+	//This function generates average intensity under different ROIs according to each time points for EXPERIMENTAL data.
+	//the results returns double[roi length][time points with prebleach removed]. 
+	public static double[][] dataReduction(FRAPData argFrapData,int argStartRecoveryIndex, ROI[] expRois, double[] normFactor) 
 	{ 
 		int roiLen = expRois.length;
 		int numRefTimePoints = argFrapData.getImageDataset().getSizeT();
@@ -26,41 +28,24 @@ public class FRAPOptimization {
 		double[][] baseData = new double[roiLen][numRefTimePoints];
         // data set which is normalized and without prebleach.
 		double[][] newData = null;
+		double[] avgBkIntensity = argFrapData.getAvgBackGroundIntensity();
 		
-		if(bRemovePrebleach)
-		{
-			newData = new double[roiLen][numRefTimePoints-argStartRecoveryIndex];
-		}
-		else
-		{
-			newData = new double[roiLen][numRefTimePoints];
-		}
+		newData = new double[roiLen][numRefTimePoints-argStartRecoveryIndex];
+		
 		for(int i = 0; i < roiLen; i++)
 		{
-			baseData[i] = FRAPDataAnalysis.getAverageROIIntensity(argFrapData, expRois[i], normFactor,null);
-
+			baseData[i] = FRAPDataAnalysis.getAverageROIIntensity(argFrapData, expRois[i], normFactor, avgBkIntensity);
 			//remove prebleach
-			if(bRemovePrebleach)
-			{   
-				for(int j = 0; j < numRefTimePoints - argStartRecoveryIndex; j++)
-				{
-					newData[i][j]  = baseData[i][j+argStartRecoveryIndex];
-				}
-			}
-			else
+			for(int j = 0; j < numRefTimePoints - argStartRecoveryIndex; j++)
 			{
-				for(int j = 0; j < numRefTimePoints; j++)
-				{
-					newData[i][j]  = baseData[i][j];
-				}
+				newData[i][j]  = baseData[i][j+argStartRecoveryIndex];
 			}
 		}
 		return newData;
 	}
 
-	
-	
-	
+	//This function generates average intensity under different ROIs according to each time points for REFERENCE data.
+	//the results returns double[roi length][time points].
 	public static double[][] dataReduction(
 			VCDataManager vcDataManager,VCSimulationDataIdentifier vcSimdataID,int argStartRecoveryIndex,
 			ROI[] expRois,DataSetControllerImpl.ProgressListener progressListener) throws Exception{ 

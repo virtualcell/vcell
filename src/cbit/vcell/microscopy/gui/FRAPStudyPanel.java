@@ -1535,7 +1535,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 			// add function to display normalized fluorence data 
-			Expression norm_fluor = new Expression("((Data2.cell_mask*(Data1.fluor/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
+			Expression norm_fluor = new Expression("((Data2.cell_mask*((Data1.fluor-Data1.bg_average)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
 			AnnotatedFunction[] func = {new AnnotatedFunction("norm_fluor", norm_fluor, null, VariableType.VOLUME, false)};
 			boolean isExisted = false;
 			for(int i=0; i < pdeDataContext.getFunctions().length; i++)
@@ -1847,6 +1847,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				};
 
 				VCDataManager testVCDataManager = getLocalWorkspace().getVCDataManager();
+				//the prebleachAverage
 				double[] prebleachAverage = testVCDataManager.getSimDataBlock(
 						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
 

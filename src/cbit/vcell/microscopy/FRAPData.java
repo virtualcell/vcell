@@ -236,6 +236,11 @@ public void setOriginalGlobalScaleInfo(OriginalGlobalScaleInfo originalGlobalSca
 	this.originalGlobalScaleInfo = originalGlobalScaleInfo;
 }
 
+public double[] getAvgBackGroundIntensity()
+{
+	return FRAPDataAnalysis.getAverageROIIntensity(this,this.getRoi(RoiType.ROI_BACKGROUND),null,null);
+}
+
 public boolean compareEqual(Matchable obj) 
 {
 	if (this == obj) {

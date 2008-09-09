@@ -124,10 +124,10 @@ public class FRAPDataAnalysis {
 		//
 		// get unnormalized average background fluorescence at each time point
 		//
-		double[] temp_background = getAverageROIIntensity(frapData,frapData.getRoi(RoiType.ROI_BACKGROUND),null,null);
-		
+		double[] temp_background = frapData.getAvgBackGroundIntensity();
+		//the prebleachAvg has backgroud subtracted.
 		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
-		
+		//temp_fluor has subtracted background and divided by prebleach average.
 		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(RoiType.ROI_BLEACHED),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
 		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
 

@@ -155,7 +155,7 @@ public class FRAPOptData {
 			VCDataManager vcManager = getLocalWorkspace().getVCDataManager();
 			double[] prebleachAvg = vcManager.getSimDataBlock(getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
 			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
-			dimensionReducedExpData = FRAPOptimization.dataReduction(getExpFrapStudy().getFrapData(),true,startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(), prebleachAvg);
+			dimensionReducedExpData = FRAPOptimization.dataReduction(getExpFrapStudy().getFrapData(),startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(), prebleachAvg);
 		}
 		return dimensionReducedExpData;
 	}

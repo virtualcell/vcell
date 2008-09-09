@@ -827,13 +827,13 @@ public class FRAPInterpolationPanel extends JPanel {
 	
 	private void disableSecondDiffComponents()
 	{
-		secondDiffTextField.setText("0");
+		secondDiffTextField.setText(INI_SECOND_DIFF_RATE);
 		secondDiffTextField.setEnabled(false);
-		secondDiffSlider.setValue(0);
+		secondDiffSlider.setValue(Integer.parseInt(INI_SECOND_DIFF_RATE));
 		secondDiffSlider.setEnabled(false);
-		secondMobileFracTextField.setText("0");
+		secondMobileFracTextField.setText(INI_SECOND_MOBILE_FRAC);
 		secondMobileFracTextField.setEnabled(false);
-		secondMobileFracSlider.setValue(0);
+		secondMobileFracSlider.setValue(Integer.parseInt(INI_SECOND_MOBILE_FRAC));
 		secondMobileFracSlider.setEnabled(false);
 		secondDiffSetButton.setEnabled(false);
 		secondMobileFracSetButton.setEnabled(false);

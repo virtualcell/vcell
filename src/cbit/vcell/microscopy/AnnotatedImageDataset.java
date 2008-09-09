@@ -133,12 +133,13 @@ public abstract class AnnotatedImageDataset {
 	 * @param roi ROI
 	 * @return double
 	 */
+	//average under roi at each time point
 	public double getAverageUnderROI(int timeIndex, ROI roi,double[] normalizeFactorXYZ,double preNormalizeOffset){
 		short[] dataArray = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(imageDataset, timeIndex);
 		short[] roiArray = roi.getPixelsXYZ();
 		return AnnotatedImageDataset.getAverageUnderROI(dataArray,roiArray,normalizeFactorXYZ,preNormalizeOffset);
 	}
-	
+	//NOTE: the normalized fractor (prebleachaverage) should have background subtracted.
 	public static double getAverageUnderROI(Object dataArray,short[] roi,double[] normalizeFactorXYZ,double preNormalizeOffset){
 		
 		if(!(dataArray instanceof short[]) && !(dataArray instanceof double[])){
@@ -168,7 +169,7 @@ public abstract class AnnotatedImageDataset {
 				if(normalizeFactorXYZ == null){
 					intensityVal += imagePixel;
 				}else{
-					intensityVal += ((double)imagePixel-preNormalizeOffset)/(normalizeFactorXYZ[i]-preNormalizeOffset);
+					intensityVal += ((double)imagePixel-preNormalizeOffset)/(normalizeFactorXYZ[i]);
 				}
 				numPixelsInMask++;
 			}
