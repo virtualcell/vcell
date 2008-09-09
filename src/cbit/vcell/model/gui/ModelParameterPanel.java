@@ -5,17 +5,29 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Vector;
 
 import javax.swing.JDesktopPane;
 
 import cbit.gui.DialogUtils;
 import cbit.util.BeanUtils;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.graph.StructureShape;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SymbolTableEntry;
 
 /**
  * Insert the type's description here.
@@ -32,6 +44,8 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	private cbit.vcell.model.Model ivjmodel1 = null;
 	private javax.swing.JMenuItem ivjJMenuItemAdd = null;
 	private javax.swing.JMenuItem ivjJMenuItemDelete = null;
+	private javax.swing.JMenuItem ivjJMenuItemPromoteToGlobal = null;
+	private javax.swing.JMenuItem ivjJMenuItemConvertToLocal = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
@@ -46,6 +60,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 					jMenuItemAdd_ActionPerformed(e);
 				if (e.getSource() == ModelParameterPanel.this.getJMenuItemDelete()) 
 					jMenuItemDelete_ActionPerformed(e);
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemPromoteToGlobal()) 
+					jMenuItemPromoteToGlobal_ActionPerformed(e);
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemConvertToLocal()) 
+					jMenuItemConvertToLocal_ActionPerformed(e);
 				if (e.getSource() == ModelParameterPanel.this.getJMenuItemCopy()) 
 					jMenuItemCopy_ActionPerformed(e);
 				if (e.getSource() == ModelParameterPanel.this.getJMenuItemCopyAll()) 
@@ -212,6 +230,32 @@ private javax.swing.JMenuItem getJMenuItemDelete() {
 	return ivjJMenuItemDelete;
 }
 
+private javax.swing.JMenuItem getJMenuItemPromoteToGlobal() {
+	if (ivjJMenuItemPromoteToGlobal == null) {
+		try {
+			ivjJMenuItemPromoteToGlobal = new javax.swing.JMenuItem();
+			ivjJMenuItemPromoteToGlobal.setName("JMenuItemPromoteToGlobal");
+			ivjJMenuItemPromoteToGlobal.setText("Merge to Single Global Parameter");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemPromoteToGlobal;
+}
+
+private javax.swing.JMenuItem getJMenuItemConvertToLocal() {
+	if (ivjJMenuItemConvertToLocal == null) {
+		try {
+			ivjJMenuItemConvertToLocal = new javax.swing.JMenuItem();
+			ivjJMenuItemConvertToLocal.setName("JMenuItemConvertToLocal");
+			ivjJMenuItemConvertToLocal.setText("Convert to Local Parameter");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemConvertToLocal;
+}
+
 /**
  * Return the JMenuItemCopy property value.
  * @return javax.swing.JMenuItem
@@ -296,6 +340,8 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
 			ivjJPopupMenuICP.setLabel("Add/Delete/Copy/Paste Menu");
 			ivjJPopupMenuICP.add(getJMenuItemAdd());
 			ivjJPopupMenuICP.add(getJMenuItemDelete());
+			ivjJPopupMenuICP.add(getJMenuItemPromoteToGlobal());
+			ivjJPopupMenuICP.add(getJMenuItemConvertToLocal());
 			ivjJPopupMenuICP.add(getJMenuItemCopy());
 			ivjJPopupMenuICP.add(getJMenuItemCopyAll());
 			ivjJPopupMenuICP.add(getJMenuItemPaste());
@@ -417,6 +463,8 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJMenuItemAdd().addActionListener(ivjEventHandler);
 	getJMenuItemDelete().addActionListener(ivjEventHandler);
+	getJMenuItemPromoteToGlobal().addActionListener(ivjEventHandler);
+	getJMenuItemConvertToLocal().addActionListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
@@ -480,6 +528,220 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) {
 			} catch (PropertyVetoException e) {
 				//e.printStackTrace();
 				PopupGenerator.showErrorDialog(e.getMessage());
+			}
+		}
+	}
+}
+
+private void jMenuItemPromoteToGlobal_ActionPerformed(ActionEvent actionEvent) throws Exception {
+	if(actionEvent.getSource() == getJMenuItemPromoteToGlobal()){
+		int[] rows = getScrollPaneTable().getSelectedRows();
+		if (rows.length < 1) {
+			PopupGenerator.showErrorDialog("No parameter selected for conversion to global.");
+			return;
+		}
+		// At this point, all selected rows should be local, user-defined kinetic parameters, so proceed with promoting them.
+		Parameter[] selectedParams = new Parameter[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			selectedParams[i] = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+		}
+		
+		// choose the first selected parameter
+		Parameter param = selectedParams[0];
+		// first check if param name is used as model quantity : structure size/speciesContext/other name. 
+		SymbolTableEntry ste = getModel().getEntry(param.getName());
+		if (ste != null) {
+			String msg = "Parameter name conflicts with ";
+			String mqStr = "";
+			if (ste instanceof ReservedSymbol) {
+				mqStr = "ReservedSymbol";
+			} else if (ste instanceof SpeciesContext) {
+				mqStr = "SpeciesContext";
+			} else if (ste instanceof ModelQuantity) {
+				mqStr = ((ste instanceof StructureSize) ? "StructureSize" : "MembraneVoltage");
+			} else {
+				mqStr = ste.getClass().getName()+"' in context '"+ste.getNameScope().getName();
+			}
+			
+			msg = msg + mqStr + " '" + param.getName() + "' : name already used in model. " + 
+				"Was this the intent of using \'" + param.getName() + "\' in kinetics?" +
+				"\n\nPress 'Rename Parameter and Continue Merge' to rename all occurances of the selected parameter in the model and continue merging to single global parameter." + 
+				"\n\nPress 'Replace with " + mqStr + "' to change '"+ param.getName() + "' to refer to the " + mqStr + " '" + param.getName() + "' instead of the local parameter (" + 
+				"local parameter will be lost)." + 
+				"\n\nPress 'Quit' to quit this operation and modify parameters manually.";
+
+			String choice = PopupGenerator.showWarningDialog(this, msg, new String[] {"Rename Parameter and Continue Merge", "Replace with " + mqStr, "Quit"}, "Quit");
+			if (choice.equals("Rename Parameter and Continue Merge")) {
+				String newName = PopupGenerator.showInputDialog(this,"Parameter name:", param.getName());
+				for (int i = 0; i < selectedParams.length; i++) {
+					while (newName.equals(selectedParams[i].getName())) {
+						// if new name that user input is same as old for selected parameter, force user to give new name
+						// (kinetics.renameParameter() throws RuntimeException, but it is consumed and user has no feedback.
+						newName = PopupGenerator.showInputDialog(this,"Parameter name:", newName);
+					}
+					Kinetics kinetics = ((ReactionStep) selectedParams[i].getNameScope().getScopedSymbolTable()).getKinetics();
+					kinetics.renameParameter(selectedParams[i].getName(), newName);
+				}
+				// need to change paramName to newName in order to continue with merging
+				param.setName(newName);
+			} else if (choice.equals("Replace with " + mqStr)) {
+				for (int i = 0; i < selectedParams.length; i++) {
+					Kinetics kinetics = ((ReactionStep) selectedParams[i].getNameScope().getScopedSymbolTable()).getKinetics();
+					kinetics.removeUserDefinedKineticParam(selectedParams[i]);
+				}
+				// return - since the selected parameters referred to a model quantity and has been resolved; nothing more to do!
+				return;
+			} else if (choice.equals("Quit")){
+				// User wants to manually change things, return from this operation.
+				return;
+			}
+		} 
+
+		// then check if a model param with that name exists. If not, add it to the model.
+		ModelParameter mp = getModel().getModelParameter(param.getName());
+		if (mp == null) {
+			// if model parameter with same name as param doesn't exist, add it to model 
+			Expression newExpr = new Expression(param.getExpression());
+			try {
+				newExpr.bindExpression(getModel());
+			} catch (ExpressionBindingException ebe) {
+				// ebe.printStackTrace(System.out);
+				PopupGenerator.showErrorDialog(ebe.getMessage() + ". Identifier is probably a local parameter. Unable to convert '" + param.getName() + "' to global parameter.");
+				return;
+			}
+			getModel().addModelParameter(getModel().new ModelParameter(param.getName(), newExpr, Model.ROLE_UserDefined, param.getUnitDefinition()));
+			mp = getModel().getModelParameter(param.getName());
+		}
+
+		Vector<String> ignoredParamsVector = new Vector<String>(); 
+		for (int i = 0; i < selectedParams.length; i++) {
+			Kinetics kinetics = ((ReactionStep) selectedParams[i].getNameScope().getScopedSymbolTable()).getKinetics();
+			if (selectedParams[i].getName().equals(mp.getName()) && selectedParams[i].getExpression().compareEqual(mp.getExpression())) {
+				// if the selected kinetics param has same name and expr as model param, remove it from its kinetics
+				kinetics.removeUserDefinedKineticParam(selectedParams[i]);
+			} else {
+				String msgStr = null;
+				if (selectedParams[i].getName().equals(mp.getName()) && !selectedParams[i].getExpression().compareEqual(mp.getExpression())) {
+					// if the selected kinetics param has same name as model param, but not same expr, warn user
+					msgStr = "Model already has a global parameter named : '" + mp.getName() + "'; with value = '" 
+						+ mp.getExpression().infix() + "'; The selected local parameter '" + selectedParams[i].getName() + "' with value = '" + 
+						selectedParams[i].getExpression().infix() + "' in reaction '" + kinetics.getReactionStep().getName() + "' will be " + 
+						"overridden by the global value." +
+						"\n\nPress 'Convert to Global' to override local value with global value of '" + selectedParams[i].getName() + "'." +
+						"\n\nPress 'Skip' to cancel local parameter's merge with the global.";
+				} else if (!selectedParams[i].getName().equals(mp.getName())) {
+					// if names of selected param and model param are different (expression doesn't matter now), ask user if this local should
+					// be replaced by model param or not.
+					msgStr = "Selected kinetic parameter '" + selectedParams[i].getName() + "' in reaction '" + kinetics.getReactionStep().getName() + 
+						"' does not match the model parameter that was promoted ('" + mp.getName() + "'). "+
+						"Do you want to replace the kinetic parameter with the model parameter?" +
+						"\n\nPress 'Convert to Global' to replace '" + selectedParams[i].getName() + "' with '" + mp.getName() + "'." +  
+						"\n\nPress 'Skip' to ignore converting this parameter to global.";
+				}
+				// warn user with appropriate message
+				String choice = PopupGenerator.showWarningDialog(this, msgStr, new String[] {"Convert to Global", "Skip"}, "Convert to Global");
+				if (choice.equals("Convert to Global")) {
+					// if selected local and promoted global param names are not same, at this point, user has chosen to override local
+					// with global, so rename selected local with global name
+					if (!selectedParams[i].getName().equals(mp.getName())) {
+						kinetics.renameParameter(selectedParams[i].getName(), mp.getName());
+						kinetics.removeUserDefinedKineticParam(kinetics.getKineticsParameter(mp.getName()));
+					} else {
+						// remove local param from kinetics
+						kinetics.removeUserDefinedKineticParam(selectedParams[i]);
+					}
+				} else if (choice.equals("Skip")) {
+					// Store rxnName and param name to display consolidated list of skipped params at the end.
+					String rxnType = (kinetics.getReactionStep() instanceof SimpleReaction) ? "Reaction " : "Flux Reaction ";
+					ignoredParamsVector.add(rxnType + kinetics.getReactionStep().getName() + " : " + selectedParams[i].getName());
+					// Cancel merge/conversion to global. Proceed with next selected parameter
+					continue;
+				}
+			} 
+		} 
+		if (ignoredParamsVector.size() > 0) {
+			String[] ignoreParamsArr = (String[])BeanUtils.getArray(ignoredParamsVector, String.class);
+			PopupGenerator.showListDialog(this, ignoreParamsArr, "List of local kinetic parameters NOT converted to global");
+		}
+	}
+}
+
+private void jMenuItemConvertToLocal_ActionPerformed(ActionEvent actionEvent) {
+	if(actionEvent.getSource() == getJMenuItemConvertToLocal()){
+		int[] rows = getScrollPaneTable().getSelectedRows();
+		if (rows.length < 1) {
+			PopupGenerator.showErrorDialog("No parameter selected for conversion to local.");
+			return;
+		}
+		// At this point, all selected rows should be model parameters, so proceed with converting them to locals
+		Parameter[] selectedParams = new Parameter[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			selectedParams[i] = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+		}
+		
+		// For each selected model parameter, check which reaction kinetics it occurs in, add it as a local;
+		// once done with all reactions, delete model param.
+		ReactionStep[] rsArr = getModel().getReactionSteps();
+		for (int i = 0; i < selectedParams.length; i++) {
+			if (selectedParams[i] != null) {
+				boolean bSuccessfullyConverted = false;
+				Vector<String> rsNamesVector = new Vector<String>();
+				for (int j = 0; j < rsArr.length; j++){
+					KineticsParameter[] kParams = rsArr[j].getKinetics().getKineticsParameters();
+					boolean bUsed = false;
+					for (int k = 0; k < kParams.length; k++) {
+						if (kParams[k].getExpression().hasSymbol(selectedParams[i].getName())) {
+							if ((rsArr[j].getKinetics().getKineticsParameter(selectedParams[i].getName()) != null)) {
+								rsNamesVector.add(rsArr[j].getName());
+							} else if ((rsArr[j].getKinetics().getProxyParameter(selectedParams[i].getName()) != null)) {
+								bUsed = true;
+							}
+						}
+					}
+					// if 'bUsed' is <true> at this point, model param is used in reactionStep; 
+					// check if is it not already a local param - then local value overrides global, hence cannot convert
+					if (bUsed){
+						try {
+							KineticsProxyParameter kpp = rsArr[j].getKinetics().getProxyParameter(selectedParams[i].getName());
+							if (kpp != null) {
+								rsArr[j].getKinetics().convertParameterType(kpp, false);
+								bSuccessfullyConverted = true;
+							} else {
+								PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter." );
+							}
+						} catch (Exception e) {
+							e.printStackTrace(System.out);
+							PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter : " + e.getMessage());
+						}
+					} 
+				}
+				// If 'bSuccessfullyConverted' is <true>, selected parameter can be deleted from model parameters list
+				if (bSuccessfullyConverted) {
+					try {
+						getModel().removeModelParameter((ModelParameter)selectedParams[i]);
+					} catch (PropertyVetoException e) {
+						//e.printStackTrace();
+						PopupGenerator.showErrorDialog(e.getMessage());
+					}
+				} 
+				// if there were some reactions that had locals of same name as globals, those were not converted, so list them
+				if (rsNamesVector.size() > 0) {
+					String msg = "The following reaction(s): ";
+					for (int jj = 0; jj < rsNamesVector.size(); jj++) {
+						msg = msg + "\'" + rsNamesVector.elementAt(jj) + "\'";
+						if (jj < rsNamesVector.size()-1) {
+							msg = msg + ", "; 
+						}
+					}
+					msg = msg + " in the model have a local parameter that has the same name as the selected global parameter '" + selectedParams[i].getName() +
+						"'. The existing local value overrides the global value of the parameter.";
+					PopupGenerator.showInfoDialog(msg);
+					return;
+				}
+				// if there were no reactions with local param of same name and 'bSuccessfullyConverted' is <false>, show info
+				if (rsNamesVector.size() == 0 && !bSuccessfullyConverted) {
+					PopupGenerator.showInfoDialog("Did not convert model parameter \'" + selectedParams[i].getName() + "\' to local kinetic parameter : no reaction kinetics references the parameter.");
+				}
 			}
 		}
 	}
@@ -704,9 +966,8 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 		getJMenuItemCopy().setEnabled(bSomethingSelected);
 		//getJMenuItemCopyAll().setEnabled(bSomethingSelected);
 
-		// to enable 'Delete' button - only if all selections are Global parameters
+		// to enable 'Delete' & 'ConvertToLocal' buttons - only if all selections are Global parameters
 		boolean bIsModelParam = true;
-//		int numSelectedRows = getScrollPaneTable().getSelectedRowCount();
 		int[] rows = getScrollPaneTable().getSelectedRows();
 		for (int i = 0; i < rows.length; i++) {
 			if (getmodelParameterTableModel().getData().get(rows[i]) instanceof ModelParameter) {
@@ -716,6 +977,24 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 			}
 		}
 		getJMenuItemDelete().setEnabled(bIsModelParam);
+		getJMenuItemConvertToLocal().setEnabled(bIsModelParam);
+
+		// to enable 'PromoteToGlobal' button - only if all selections are local (kinetic, only user-defined) parameters
+		boolean bIsUserDefinedKinParam = true;
+		for (int i = 0; i < rows.length; i++) {
+			if (getmodelParameterTableModel().getData().get(rows[i]) instanceof KineticsParameter) {
+				KineticsParameter kp = (KineticsParameter)getmodelParameterTableModel().getData().get(rows[i]);
+				if (kp.getRole() == Kinetics.ROLE_UserDefined) {
+					bIsUserDefinedKinParam = bIsUserDefinedKinParam && true; 
+				} else {
+					bIsUserDefinedKinParam = bIsUserDefinedKinParam && false;
+				}
+			} else {
+				bIsUserDefinedKinParam = bIsUserDefinedKinParam && false;
+			}
+		}
+		getJMenuItemPromoteToGlobal().setEnabled(bIsUserDefinedKinParam);
+
 		getJPopupMenuICP().show(getJScrollPane1(),mouseEvent.getX(),mouseEvent.getY());
 	}
 }

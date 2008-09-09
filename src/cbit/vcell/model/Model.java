@@ -2440,9 +2440,10 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 				}
 			}
 			// use this missing model parameter (to be deleted) to determine if it is used in any reaction kinetic parameters. 
+			Vector<String> referencedRxnsVector = new Vector<String>();
 			if (missingMP != null) {
-				boolean bUsed = false;
 				for (int i=0;i<fieldReactionSteps.length;i++){
+					boolean bUsed = false;
 					KineticsParameter[] kParams = fieldReactionSteps[i].getKinetics().getKineticsParameters();
 					for (int k = 0; k < kParams.length; k++) {
 						if (kParams[k].getExpression().hasSymbol(missingMP.getName()) && (fieldReactionSteps[i].getKinetics().getProxyParameter(missingMP.getName()) != null)) {
@@ -2452,8 +2453,23 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 					}
 					// if 'bUsed' is true at this point, can cannot delete model parameter.
 					if (bUsed){
-						throw new PropertyVetoException("Model Parameter \'" + missingMP.getName() + "\' is used in reaction \'" + fieldReactionSteps[i].getName() + "\'. Cannot delete parameter.",e);
+						referencedRxnsVector.add(fieldReactionSteps[i].getName());
+						// throw new PropertyVetoException("Model Parameter \'" + missingMP.getName() + "\' is used in reaction \'" + fieldReactionSteps[i].getName() + "\'. Cannot delete parameter.",e);
 					}
+				}
+				// if there are any reactionSteps referencing the global, list them all in error msg.
+				if (referencedRxnsVector.size() > 0) {
+					String msg = "Model Parameter \'" + missingMP.getName() + "\' is used in reaction(s): ";
+					for (int i = 0; i < referencedRxnsVector.size(); i++) {
+						msg = msg + "\'" + referencedRxnsVector.elementAt(i) + "\'";
+						if (i < referencedRxnsVector.size()-1) {
+							msg = msg + ", "; 
+						} else {
+							msg = msg + ". ";
+						}
+					}
+					msg = msg + "Cannot delete parameter.";
+					throw new PropertyVetoException(msg,e);
 				}
 			}
 		}
