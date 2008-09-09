@@ -353,7 +353,7 @@ public static ClientServerInfo createClientServerInfo(ClientServerInfo clientSer
 			return ClientServerInfo.createLocalServerInfo(userid,password);
 		}
 		case ClientServerInfo.SERVER_REMOTE: {
-			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHost(),userid,password);
+			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHosts(),userid,password);
 		}
 	};
 	return null;
@@ -392,7 +392,7 @@ public static void startClientFromApplet(VCellClientApplet vcellClientApplet) {
 	vcellClientApplet.getSplashWindow().dispose();
     // try server connection
     final ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo(
-	    vcellClientApplet.getParameter("HOST")+":"+vcellClientApplet.getParameter("PORT"),
+	    new String[] {vcellClientApplet.getParameter("HOST")+":"+vcellClientApplet.getParameter("PORT")},
 	    vcellClientApplet.getParameter("USERID"),
 	    vcellClientApplet.getParameter("PASSWORD")
 	    );

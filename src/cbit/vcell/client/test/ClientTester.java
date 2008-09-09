@@ -31,7 +31,7 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		if (args[0].equalsIgnoreCase("-local")) {
 			csInfo = ClientServerInfo.createLocalServerInfo(args[1], args[2]);
 		} else {
-			csInfo = ClientServerInfo.createRemoteServerInfo(args[0], args[1], args[2]);
+			csInfo = ClientServerInfo.createRemoteServerInfo(new String[] {args[0]}, args[1], args[2]);
 		}
 	}else{
 		System.err.println("usage: " + programName + " -local userid password");
@@ -55,7 +55,7 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		if (args[0].equalsIgnoreCase("-local")) {
 			csInfo = ClientServerInfo.createLocalServerInfo(args[1], args[2]);
 		} else {
-			csInfo = ClientServerInfo.createRemoteServerInfo(args[0], args[1], args[2]);
+			csInfo = ClientServerInfo.createRemoteServerInfo(new String[] {args[0]}, args[1], args[2]);
 		}
 	}else{
 		System.err.println("usage: " + programName + " -local userid password");
