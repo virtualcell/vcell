@@ -91,6 +91,12 @@ public class ClientDocumentManager implements DocumentManager{
 	
 	protected transient cbit.vcell.clientdb.DatabaseListener aDatabaseListener = null;
 	private transient HashSet<FieldDataDBEventListener> fieldDataDBEventListenerH = null;
+	
+	static final String FAIL_LOAD_MESSAGE = "Failed to load document. Possible reasons :\n" +
+	"1. You are no longer connected to the server. Reconnect in order to retrieve model. \n" +
+	"2. You previously saved this model using a newer version of VCell. Open model in that version.";
+	static final String FAIL_SAVE_MESSAGE = "Failed to save document. Possible reason :\n" +
+	"You are no longer connected to the server. Reconnect in order to save model.";
 
 /**
  * ClientDocumentManager constructor comment.
@@ -757,7 +763,7 @@ private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAcces
 		return bm;
 	}catch(cbit.vcell.xml.XmlParseException e){
 		e.printStackTrace();
-		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}
 }
 
@@ -844,7 +850,7 @@ private String getBioModelXML(KeyValue vKey) throws DataAccessException {
 		return null;
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException("Error getting XML document from server: "+e.getMessage());
+		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 	}
 }
 
@@ -1047,7 +1053,7 @@ private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 		return null;
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException("Error getting XML document from server: "+e.getMessage());
+		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 		//return null;
 	}
 }
@@ -1153,7 +1159,7 @@ private String getImageXML(KeyValue vKey) throws DataAccessException {
 		return null;
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException("Error getting XML document from server: "+e.getMessage());
+		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 		//return null;
 	}
 }
@@ -1329,7 +1335,7 @@ private String getMathModelXML(KeyValue vKey) throws DataAccessException {
 		return null;
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException("Error getting XML document from server: "+e.getMessage());
+		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
 		//return null;
 	}
 }
@@ -2359,7 +2365,7 @@ public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws cbit.vcell.ser
 		return savedVCImage;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2396,7 +2402,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		return savedBioModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2434,7 +2440,7 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 		return savedGeometry;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2472,7 +2478,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		return savedMathModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2500,7 +2506,7 @@ public Simulation save(Simulation simulation, boolean bForceIndependent) throws 
 		return savedSimulation;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2550,7 +2556,7 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
 		return savedVCImage;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2589,7 +2595,7 @@ public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioMo
 		return savedBioModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2632,7 +2638,7 @@ public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geome
 		return savedGeometry;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
@@ -2670,7 +2676,7 @@ public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel m
 		return savedMathModel;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
 	}	
 }
 
