@@ -43,7 +43,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 	try {
 		vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup(connectString);
 	} catch (Throwable e){
-		throw new ConnectionException("Cannot connect to VCell server: Please try again by Server->Reconnect or Change User..., or contact VCell support");
+		throw new ConnectionException(e.getMessage());
 	}
 	try {
 		vcellConnection = vcellBootstrap.getVCellConnection(userid,password);

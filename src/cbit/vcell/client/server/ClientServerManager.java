@@ -4,10 +4,7 @@ import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.clientdb.*;
-import swingthreads.*;
-
 import cbit.vcell.server.*;
-import cbit.vcell.server.bionetgen.*;
 import cbit.vcell.client.*;
 import cbit.vcell.desktop.controls.*;
 /**
@@ -20,6 +17,8 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 
 	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/onlinehelp";
 	public static final String REGISTER_URL_STRING = "http://www.vcell.org/register";
+	static final String BAD_CONNECTION_MESSAGE = "Your computer is unable to connect to the Virtual Cell server. " 
+		+ "Please try again later.\n\nIf problem persists, it may be due to a firewall problem. Contact your network administrator and send the error message below to vcell_support@uchc.edu.";
 	
 	class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
@@ -290,6 +289,8 @@ private VCellConnection connectToServer() {
 						newVCellConnection = vcConnFactory.createVCellConnection();
 						getClientServerInfo().setActiveHost(hosts[i]);
 						break;
+					} catch (AuthenticationException ex) {
+						throw ex;
 					} catch (Exception ex) {
 						if (i == hosts.length - 1) {
 							throw ex;
@@ -315,10 +316,10 @@ private VCellConnection connectToServer() {
 		PopupGenerator.showErrorDialog(aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		cexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(cexc.getMessage());
+		PopupGenerator.showErrorDialog(BAD_CONNECTION_MESSAGE + "\n\n" + cexc.getMessage());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());		
+		PopupGenerator.showErrorDialog(BAD_CONNECTION_MESSAGE + "\n\n" + exc.getMessage());		
 	} finally {
 		return newVCellConnection;
 	}
