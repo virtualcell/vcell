@@ -1431,7 +1431,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 				if (exc != null) {
 					exc.printStackTrace(System.out);
 					if (!(exc instanceof UserCancelException)) {                      //allow 
-						PopupGenerator.showErrorDialog(requester, "Loading document failed:\n\n" + exc.getMessage());
+						PopupGenerator.showErrorDialog(requester, exc.getMessage());
 					}
 					if (!inNewWindow) {
 						getMdiManager().unBlockWindow(requester.getManagerID());

@@ -4,10 +4,7 @@ import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.clientdb.*;
-import swingthreads.*;
-
 import cbit.vcell.server.*;
-import cbit.vcell.server.bionetgen.*;
 import cbit.vcell.client.*;
 import cbit.vcell.desktop.controls.*;
 /**
@@ -20,6 +17,8 @@ public class ClientServerManager implements SessionManager {
 
 	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/onlinehelp";
 	public static final String REGISTER_URL_STRING = "http://www.vcell.org/register";
+	static final String BAD_CONNECTION_MESSAGE = "Your computer is unable to connect to the Virtual Cell server. " 
+		+ "Please try again later.\n\nIf problem persists, it may be due to a firewall problem. Contact your network administrator and send the error message below to vcell_support@uchc.edu.";
 	
 	class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
@@ -206,17 +205,17 @@ private void changeConnection(VCellConnection newVCellConnection, boolean reconn
 				getUserPreferences().resetFromSaved(getDocumentManager().getPreferences());
 
 			}
-			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.CONNECTED));
+			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.CONNECTED));
 		} catch (DataAccessException exc) {
 			// unlikely, since we just connected, but it looks like we did loose the connection...
 			lastVCellConnection = getVcellConnection();
 			setVcellConnection(null);
-			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.DISCONNECTED));
+			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 			exc.printStackTrace(System.out);
 			PopupGenerator.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());
 		}
 	} else if(lastVCellConnection != null) {
-		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.DISCONNECTED));
+		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 	} else {
 		setConnectionStatus(new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED));
 	}
@@ -264,7 +263,7 @@ public void connectAs(String user, String password) {
 			break;
 		}
 		case ClientServerInfo.SERVER_REMOTE: {
-			clientServerInfo = ClientServerInfo.createRemoteServerInfo(getClientServerInfo().getHost(), user, password);
+			clientServerInfo = ClientServerInfo.createRemoteServerInfo(getClientServerInfo().getHosts(), user, password);
 			break;
 		}
 	}
@@ -282,7 +281,22 @@ private VCellConnection connectToServer() {
 	try {
 		switch (getClientServerInfo().getServerType()) {
 			case ClientServerInfo.SERVER_REMOTE: {
-				vcConnFactory = new RMIVCellConnectionFactory(getClientServerInfo().getHost(), getClientServerInfo().getUsername(), getClientServerInfo().getPassword());
+				String[] hosts = getClientServerInfo().getHosts();
+				for (int i = 0; i < hosts.length; i ++) {
+					try {
+						vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUsername(), getClientServerInfo().getPassword());
+						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), hosts[i], ConnectionStatus.INITIALIZING));
+						newVCellConnection = vcConnFactory.createVCellConnection();
+						getClientServerInfo().setActiveHost(hosts[i]);
+						break;
+					} catch (AuthenticationException ex) {
+						throw ex;
+					} catch (Exception ex) {
+						if (i == hosts.length - 1) {
+							throw ex;
+						}
+					}
+				}
 				break;
 			}
 			case ClientServerInfo.SERVER_LOCAL: {
@@ -291,20 +305,21 @@ private VCellConnection connectToServer() {
 				Class localVCConnFactoryClass = Class.forName("cbit.vcell.server.LocalVCellConnectionFactory");
 				Constructor constructor = localVCConnFactoryClass.getConstructor(new Class[] {String.class, String.class, SessionLog.class, boolean.class});
 				vcConnFactory = (VCellConnectionFactory)constructor.newInstance(new Object[] {getClientServerInfo().getUsername(), getClientServerInfo().getPassword(), log, Boolean.TRUE});
+				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
+				newVCellConnection = vcConnFactory.createVCellConnection();
+				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);
 				break;
 			}
-		}
-		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.INITIALIZING));
-		newVCellConnection = vcConnFactory.createVCellConnection();
+		}		
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog("Authentication failed:\n\n" + aexc.getMessage());
+		PopupGenerator.showErrorDialog(aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		cexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog("Server connection failed:\n\n" + cexc.getMessage());
+		PopupGenerator.showErrorDialog(BAD_CONNECTION_MESSAGE + "\n\n" + cexc.getMessage());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());		
+		PopupGenerator.showErrorDialog(BAD_CONNECTION_MESSAGE + "\n\n" + exc.getMessage());		
 	} finally {
 		return newVCellConnection;
 	}

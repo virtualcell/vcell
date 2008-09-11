@@ -1,35 +1,19 @@
 package cbit.vcell.client;
 import java.awt.event.*;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.ZEnforcer;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.KeyValue;
 import cbit.sql.UserInfo;
-import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.server.*;
-import cbit.vcell.clientdb.*;
-import swingthreads.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.UserCancelException;
-import cbit.vcell.client.test.ClientTester;
 import cbit.vcell.document.*;
 import cbit.vcell.client.desktop.*;
-import java.awt.*;
 import javax.swing.*;
-import cbit.vcell.biomodel.*;
 
-import java.net.MalformedURLException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.*;
+import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:24:03 PM)
@@ -313,7 +297,7 @@ public static ClientServerInfo createClientServerInfo(ClientServerInfo clientSer
 			return ClientServerInfo.createLocalServerInfo(userid,password);
 		}
 		case ClientServerInfo.SERVER_REMOTE: {
-			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHost(),userid,password);
+			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHosts(),userid,password);
 		}
 	};
 	return null;
@@ -352,7 +336,7 @@ public static void startClientFromApplet(VCellClientApplet vcellClientApplet) {
 	vcellClientApplet.getSplashWindow().dispose();
     // try server connection
     final ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo(
-	    vcellClientApplet.getParameter("HOST")+":"+vcellClientApplet.getParameter("PORT"),
+	    new String[] {vcellClientApplet.getParameter("HOST")+":"+vcellClientApplet.getParameter("PORT")},
 	    vcellClientApplet.getParameter("USERID"),
 	    vcellClientApplet.getParameter("PASSWORD")
 	    );
