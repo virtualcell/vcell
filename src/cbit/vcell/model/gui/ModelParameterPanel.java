@@ -606,7 +606,7 @@ private void jMenuItemPromoteToGlobal_ActionPerformed(ActionEvent actionEvent) t
 				newExpr.bindExpression(getModel());
 			} catch (ExpressionBindingException ebe) {
 				// ebe.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ebe.getMessage() + ". Identifier is probably a local parameter. Unable to convert '" + param.getName() + "' to global parameter.");
+				PopupGenerator.showErrorDialog(ebe.getMessage() + ". '" + ebe.getIdentifier() + "' is probably a local parameter. Unable to convert '" + param.getName() + "' to global parameter.");
 				return;
 			}
 			getModel().addModelParameter(getModel().new ModelParameter(param.getName(), newExpr, Model.ROLE_UserDefined, param.getUnitDefinition()));

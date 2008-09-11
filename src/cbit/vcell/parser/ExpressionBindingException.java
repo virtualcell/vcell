@@ -8,9 +8,9 @@ package cbit.vcell.parser;
  * This type was created in VisualAge.
  */
 public class ExpressionBindingException extends ExpressionException {
-/**
- * ExpressionBindingException constructor comment.
- */
+
+	private String identifier = null;
+	
 public ExpressionBindingException() {
 	super();
 }
@@ -21,4 +21,13 @@ public ExpressionBindingException() {
 public ExpressionBindingException(String s) {
 	super(s);
 }
+
+public ExpressionBindingException(String s, String argIdentifier) {
+	super(s);
+	identifier = argIdentifier;
+}
+public String getIdentifier() {
+	return identifier;
+}
+
 }

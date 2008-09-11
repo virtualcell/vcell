@@ -84,7 +84,7 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 		private String modelParameterAnnotation;
 		
-		private static final String MODEL_PARAMETER_DESCRIPTION = "Model Parameter";
+		private static final String MODEL_PARAMETER_DESCRIPTION = "Global Parameter";
 		
 		public ModelParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
