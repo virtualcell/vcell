@@ -61,6 +61,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JToggleButton fillButton;
 	private JToggleButton eraseButton;
 	private JToggleButton paintButton;
+	private JButton importROIMaskButton;
+	private JButton clearROIbutton;
+	private JButton roiTimePlotButton;
+	private JToggleButton autoCropButton;
+	private JButton roiAssistButton;
 	private static final long serialVersionUID = 1L;
 	private OverlayImageDisplayJAI imagePane = null;
 	private JSlider timeSlider = null;
@@ -79,8 +84,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JLabel textLabel = null;
 	private JPanel topJPanel = null;
 	private JPanel editROIPanel = null;
-	private JButton autoCropButton = null;
-	private JButton roiTimePlotButton = null;
 	public static final String FRAP_DATA_AUTOROI_PROPERTY = "FRAP_DATA_AUTOROI_PROPERTY";
 	public static final String FRAP_DATA_CROP_PROPERTY = "FRAP_DATA_CROP_PROPERTY";
 	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
@@ -220,7 +223,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
 		topJPanel.setLayout(gridBagLayout);
 
-		autoCropButton = new JButton();
+		autoCropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
 		autoCropButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try {
@@ -256,14 +259,14 @@ public class OverlayEditorPanelJAI extends JPanel {
 				}
 			}
 		});
-		autoCropButton.setText("Auto Crop DataSet");
-		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-		gridBagConstraints_1.gridx = 0;
-		gridBagConstraints_1.gridy = 0;
-		gridBagConstraints_1.insets = new Insets(2, 2, 2, 2);
-		topJPanel.add(autoCropButton, gridBagConstraints_1);
+//		autoCropButton.setText("Auto Crop DataSet");
+//		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
+//		gridBagConstraints_1.gridx = 0;
+//		gridBagConstraints_1.gridy = 0;
+//		gridBagConstraints_1.insets = new Insets(2, 2, 2, 2);
+//		topJPanel.add(autoCropButton, gridBagConstraints_1);
 
-		final JButton importROIMaskButton = new JButton();
+		importROIMaskButton = new JButton(new ImageIcon(getClass().getResource("/images/importROI.gif")));
 		importROIMaskButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try {
@@ -345,27 +348,27 @@ public class OverlayEditorPanelJAI extends JPanel {
 				}
 			}
 		});
-		importROIMaskButton.setText("Import ROI Mask...");
-		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-		gridBagConstraints_5.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_5.gridy = 0;
-		gridBagConstraints_5.gridx = 1;
-		topJPanel.add(importROIMaskButton, gridBagConstraints_5);
+//		importROIMaskButton.setText("Import ROI Mask...");
+//		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
+//		gridBagConstraints_5.insets = new Insets(2, 2, 2, 2);
+//		gridBagConstraints_5.gridy = 0;
+//		gridBagConstraints_5.gridx = 1;
+//		topJPanel.add(importROIMaskButton, gridBagConstraints_5);
 
-		final JButton clearROIbutton = new JButton();
+		clearROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/clearROI.gif")));
 		clearROIbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				clearROI();
 			}
 		});
-		clearROIbutton.setText("Clear ROI");
-		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_4.gridy = 0;
-		gridBagConstraints_4.gridx = 2;
-		topJPanel.add(clearROIbutton, gridBagConstraints_4);
+//		clearROIbutton.setText("Clear ROI");
+//		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
+//		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
+//		gridBagConstraints_4.gridy = 0;
+//		gridBagConstraints_4.gridx = 2;
+//		topJPanel.add(clearROIbutton, gridBagConstraints_4);
 
-		roiTimePlotButton = new JButton();
+		roiTimePlotButton = new JButton(new ImageIcon(getClass().getResource("/images/plotROI.gif")));
 		roiTimePlotButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(getImagePane() == null || getImagePane().getHighlightImage() == null){
@@ -392,27 +395,27 @@ public class OverlayEditorPanelJAI extends JPanel {
 				}
 			}
 		});
-		roiTimePlotButton.setText("Time Plot ROI...");
-		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_3.gridx = 3;
-		gridBagConstraints_3.gridy = 0;
-		gridBagConstraints_3.insets = new Insets(2, 2, 2, 2);
-		topJPanel.add(roiTimePlotButton, gridBagConstraints_3);
-		BeanUtils.enableComponents(topJPanel, false);
+//		roiTimePlotButton.setText("Time Plot ROI...");
+//		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
+//		gridBagConstraints_3.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints_3.gridx = 3;
+//		gridBagConstraints_3.gridy = 0;
+//		gridBagConstraints_3.insets = new Insets(2, 2, 2, 2);
+//		topJPanel.add(roiTimePlotButton, gridBagConstraints_3);
+//		BeanUtils.enableComponents(topJPanel, false);
 
-		final JButton roiAssistButton = new JButton();
+		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
 		roiAssistButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				firePropertyChange(FRAP_DATA_AUTOROI_PROPERTY, null,new Object());						
 			}
 		});
-		roiAssistButton.setText(ROI_ASSIST_TEXT);
-		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
-		gridBagConstraints_16.insets = new Insets(2, 2, 2, 0);
-		gridBagConstraints_16.gridy = 0;
-		gridBagConstraints_16.gridx = 4;
-		topJPanel.add(roiAssistButton, gridBagConstraints_16);
+//		roiAssistButton.setText(ROI_ASSIST_TEXT);
+//		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
+//		gridBagConstraints_16.insets = new Insets(2, 2, 2, 0);
+//		gridBagConstraints_16.gridy = 0;
+//		gridBagConstraints_16.gridx = 4;
+//		topJPanel.add(roiAssistButton, gridBagConstraints_16);
 
 		viewZLabel = new JLabel();
 		viewZLabel.setText("View Z:");
@@ -480,7 +483,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		editROIPanel.add(editRoiLabel, gridBagConstraints_7);
 
 		final JPanel editROIButtonPanel = new JPanel();
-		editROIButtonPanel.setBorder(new LineBorder(Color.black, 2, false));
+//		editROIButtonPanel.setBorder(new LineBorder(Color.black, 2, false));
 		final GridBagLayout gridBagLayout_3 = new GridBagLayout();
 		gridBagLayout_3.columnWidths = new int[] {0,7,7};
 		editROIButtonPanel.setLayout(gridBagLayout_3);
@@ -549,7 +552,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		roiDrawButtonGroup.add(fillButton);
 		roiDrawButtonGroup.add(cropButton);
 		
-		BeanUtils.enableComponents(leftJPanel, false);
+		BeanUtils.enableComponents(getLeftJPanel(), false);
 		BeanUtils.enableComponents(editROIPanel, false);
 	}
 	
@@ -1164,11 +1167,34 @@ public class OverlayEditorPanelJAI extends JPanel {
 			contrastButtonMinus.setMargin(new Insets(2, 2, 2, 2));
 			contrastButtonMinus.setToolTipText("Decrease Contrast");
 			final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-//			gridBagConstraints_6.insets = new Insets(0, 0, 10, 0);
+			gridBagConstraints_6.insets = new Insets(0, 0, 10, 0);
 			gridBagConstraints_6.gridy = 3;
 			gridBagConstraints_6.gridx = 0;
 			leftJPanel.add(contrastButtonMinus, gridBagConstraints_6);
 
+			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
+			cropButton.setPreferredSize(new Dimension(32, 32));
+			cropButton.setMinimumSize(new Dimension(32, 32));
+			cropButton.setMaximumSize(new Dimension(32, 32));
+			cropButton.setMargin(new Insets(2, 2, 2, 2));
+			cropButton.setToolTipText("Crop");
+			final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
+			gridBagConstraints_5.gridy = 4;
+			gridBagConstraints_5.gridx = 0;
+			leftJPanel.add(cropButton, gridBagConstraints_5);
+			
+			
+			autoCropButton.setPreferredSize(new Dimension(32, 32));
+			autoCropButton.setMinimumSize(new Dimension(32, 32));
+			autoCropButton.setMaximumSize(new Dimension(32, 32));
+			autoCropButton.setMargin(new Insets(2, 2, 2, 2));
+			autoCropButton.setToolTipText("Auto Crop");
+			final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
+			gridBagConstraints_7.insets = new Insets(0, 0, 10, 0);
+			gridBagConstraints_7.gridy = 5;
+			gridBagConstraints_7.gridx = 0;
+			leftJPanel.add(autoCropButton, gridBagConstraints_7);
+			
 			paintButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/paint.gif")));
 			paintButton.setSelected(true);
 			paintButton.setPreferredSize(new Dimension(32, 32));
@@ -1180,7 +1206,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			paintButton.setMargin(new Insets(2, 2, 2, 2));
 			paintButton.setToolTipText("Paint");
 			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-			gridBagConstraints_1.gridy = 5;
+			gridBagConstraints_1.gridy = 6;
 			gridBagConstraints_1.gridx = 0;
 			leftJPanel.add(paintButton, gridBagConstraints_1);
 
@@ -1194,7 +1220,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			eraseButton.setMargin(new Insets(2, 2, 2, 2));
 			eraseButton.setToolTipText("Erase");
 			final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-			gridBagConstraints_2.gridy = 6;
+			gridBagConstraints_2.gridy = 7;
 			gridBagConstraints_2.gridx = 0;
 			leftJPanel.add(eraseButton, gridBagConstraints_2);
 
@@ -1208,21 +1234,63 @@ public class OverlayEditorPanelJAI extends JPanel {
 			fillButton.setMargin(new Insets(2, 2, 2, 2));
 			fillButton.setToolTipText("Fill");
 			final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-			gridBagConstraints_3.gridy = 7;
+			gridBagConstraints_3.gridy = 8;
 			gridBagConstraints_3.gridx = 0;
+			gridBagConstraints_3.insets = new Insets(0, 0, 10, 0);
 			leftJPanel.add(fillButton, gridBagConstraints_3);
 
-			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
-			cropButton.setPreferredSize(new Dimension(32, 32));
-			cropButton.setMinimumSize(new Dimension(32, 32));
-			cropButton.setMaximumSize(new Dimension(32, 32));
-			cropButton.setMargin(new Insets(2, 2, 2, 2));
-			cropButton.setToolTipText("Crop");
-			final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-			gridBagConstraints_5.insets = new Insets(0, 0, 10, 0);
-			gridBagConstraints_5.gridy = 4;
-			gridBagConstraints_5.gridx = 0;
-			leftJPanel.add(cropButton, gridBagConstraints_5);
+			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
+			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
+			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
+			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
+			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
+			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
+			importROIMaskButton.setMargin(new Insets(2, 2, 2, 2));
+			importROIMaskButton.setToolTipText("Import ROI mask from file");
+			final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
+			gridBagConstraints_8.gridy = 9;
+			gridBagConstraints_8.gridx = 0;
+			leftJPanel.add(importROIMaskButton, gridBagConstraints_8);
+			
+			clearROIbutton.setPreferredSize(new Dimension(32, 32));
+			clearROIbutton.setMinimumSize(new Dimension(32, 32));
+			clearROIbutton.setMaximumSize(new Dimension(32, 32));
+			clearROIbutton.setPreferredSize(new Dimension(32, 32));
+			clearROIbutton.setMinimumSize(new Dimension(32, 32));
+			clearROIbutton.setMaximumSize(new Dimension(32, 32));
+			clearROIbutton.setMargin(new Insets(2, 2, 2, 2));
+			clearROIbutton.setToolTipText("Clear ROI");
+			final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
+			gridBagConstraints_9.gridy = 10;
+			gridBagConstraints_9.gridx = 0;
+			leftJPanel.add(clearROIbutton, gridBagConstraints_9);
+			
+			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
+			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
+			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
+			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
+			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
+			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
+			roiTimePlotButton.setMargin(new Insets(2, 2, 2, 2));
+			roiTimePlotButton.setToolTipText("ROI time plot");
+			final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
+			gridBagConstraints_10.gridy = 11;
+			gridBagConstraints_10.gridx = 0;
+			leftJPanel.add(roiTimePlotButton, gridBagConstraints_10);
+			
+			roiAssistButton.setPreferredSize(new Dimension(32, 32));
+			roiAssistButton.setMinimumSize(new Dimension(32, 32));
+			roiAssistButton.setMaximumSize(new Dimension(32, 32));
+			roiAssistButton.setPreferredSize(new Dimension(32, 32));
+			roiAssistButton.setMinimumSize(new Dimension(32, 32));
+			roiAssistButton.setMaximumSize(new Dimension(32, 32));
+			roiAssistButton.setMargin(new Insets(2, 2, 2, 2));
+			roiAssistButton.setToolTipText("ROI assistant");
+			final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
+			gridBagConstraints_11.gridy = 12;
+			gridBagConstraints_11.gridx = 0;
+			leftJPanel.add(roiAssistButton, gridBagConstraints_11);
+			
 		}
 		return leftJPanel;
 	}
