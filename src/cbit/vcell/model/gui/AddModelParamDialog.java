@@ -20,6 +20,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -688,8 +689,14 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 		Expression exp = new Expression(getExpressionValueTextField().getText());
 		try {
 			exp.bindExpression(getModel());
-		} catch (Exception e) {
-			throw new RuntimeException("Only numeric values for global parameters are allowed at this time");
+		} catch (ExpressionBindingException e) {
+			String msg = "";
+			if (getModel().getSpecies(e.getIdentifier()) != null) {
+				msg = ": If '" + e.getIdentifier() + "' is a species, please use its speciesContext name (eg: " + e.getIdentifier() + "_" + getModel().getStructures()[0].getName() + ") instead.";
+			} else {
+				msg = ": '" + e.getIdentifier() + "' is undefined in the global scope.";
+			}
+			throw new RuntimeException(e.getMessage() + msg);
 		}
 
 		getModelParameter().setExpression(exp);

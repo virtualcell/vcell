@@ -41,7 +41,7 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 
 	if (symbolTableEntry==null){
 		String id = name;
-		throw new ExpressionBindingException("error binding identifier " + id);
+		throw new ExpressionBindingException("error binding identifier '" + id + "'", id);
 	}
 }    
 /**

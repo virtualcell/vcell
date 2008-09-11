@@ -46,7 +46,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String DISABLE_MENU_ACTION = "Disable";
 	public static final String SOLVE_MENU_ACTION = "Solve";
 	public static final String RESET_MENU_ACTION = "Reset";
-	public static final String SHOW_PARAMETERS_MENU_ACTION = "Model Parameters";
+	public static final String SHOW_PARAMETERS_MENU_ACTION = "Parameters and Rate Expressions";
 	//reaction and structure cartoon image actions
 	public static final String HIGH_RES_MENU_ACTION = "High Res (x3.0)";
 	public static final String MED_RES_MENU_ACTION = "Medium Res (x2.0)";
