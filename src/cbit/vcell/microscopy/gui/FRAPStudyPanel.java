@@ -860,8 +860,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		saveProcedure(outputFile,bSaveAs);
 	}
 	
-	private void saveProcedure(File xmlFrapFileName,boolean bSaveAsNew) throws Exception{
-		VirtualFrapMainFrame.updateStatus("Saving file " + xmlFrapFileName.getAbsolutePath()+" ...");
+	private void saveProcedure(File xmlFrapFile,boolean bSaveAsNew) throws Exception{
+		VirtualFrapMainFrame.updateStatus("Saving file " + xmlFrapFile.getAbsolutePath()+" ...");
 		
 		BioModel newBioModel = null;
 		try{
@@ -884,11 +884,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			//Replace with new external data IDs for use in 'run sim'
 			getFrapStudy().setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
 			getFrapStudy().setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
-			
 		}
 		
-		MicroscopyXmlproducer.writeXMLFile(getFrapStudy(), xmlFrapFileName, true,progressListenerZeroToOne,VirtualFrapMainFrame.SAVE_COMPRESSED);
-		getFrapStudy().setXmlFilename(xmlFrapFileName.getAbsolutePath());
+		MicroscopyXmlproducer.writeXMLFile(getFrapStudy(), xmlFrapFile, true,progressListenerZeroToOne,VirtualFrapMainFrame.SAVE_COMPRESSED);
+		getFrapStudy().setXmlFilename(xmlFrapFile.getAbsolutePath());
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 			try{
 			setSavedFrapModelInfo(FRAPStudyPanel.createSavedFrapModelInfo(getFrapStudy()));	
@@ -896,8 +895,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}});
-		VirtualFrapMainFrame.updateStatus("File " + xmlFrapFileName.getAbsolutePath()+" has been saved.");
-        VirtualFrapLoader.mf.setMainFrameTitle(xmlFrapFileName.getName());
+		VirtualFrapMainFrame.updateStatus("File " + xmlFrapFile.getAbsolutePath()+" has been saved.");
+        VirtualFrapLoader.mf.setMainFrameTitle(xmlFrapFile.getName());
         VirtualFrapMainFrame.updateProgress(0);
 	}
 	private boolean cleanupSavedSimDataFilesIfNotOK() throws Exception{
@@ -1071,6 +1070,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 		            VirtualFrapMainFrame.updateStatus("Loaded " + inFileDescription);
 		            VirtualFrapMainFrame.updateProgress(0);
+		            //after loading new file, we need to set frapOptData to null.
+		            frapOptData = null;
 //					if(bTest[0]){throw new Exception("test exception");}
 
 				}catch(UserCancelException uce){
@@ -1333,10 +1334,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					VirtualFrapMainFrame.updateProgress(0);
 //					genericProgress(10,genericProgressStopSignal);
 					if(getSavedFrapModelInfo() == null || cleanupSavedSimDataFilesIfNotOK()){
-					getFrapStudy().saveROIsAsExternalData(localWorkspace,
-						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
-					getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
-						getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
+						getFrapStudy().saveROIsAsExternalData(localWorkspace,
+							getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
+						getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
+							getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
 					}
 //					genericProgressStopSignal[0] = true;
 					

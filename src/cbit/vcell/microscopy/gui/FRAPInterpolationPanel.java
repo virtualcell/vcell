@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
@@ -202,7 +203,6 @@ public class FRAPInterpolationPanel extends JPanel {
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_8.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_8.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_8.gridwidth = 3;
 		gridBagConstraints_8.gridy = 0;
 		gridBagConstraints_8.gridx = 0;
 		add(createOptimalButton, gridBagConstraints_8);
@@ -237,14 +237,15 @@ public class FRAPInterpolationPanel extends JPanel {
 				}}).start();
 			}
 		});
-		createOptimalButton.setText("Set Parameters for Best Fit with Experimental Data");
-
+		createOptimalButton.setText("Get Best Fit Parameters");
+		createOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 		final JButton runSimbutton = new JButton();
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
+		gridBagConstraints_13.gridwidth = 2;
 		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_13.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_13.gridy = 0;
-		gridBagConstraints_13.gridx = 3;
+		gridBagConstraints_13.gridx = 1;
 		add(runSimbutton, gridBagConstraints_13);
 //		runSimbutton.setFont(new Font("", Font.BOLD, 14));
 		runSimbutton.addActionListener(new ActionListener() {
@@ -252,8 +253,8 @@ public class FRAPInterpolationPanel extends JPanel {
 				firePropertyChange(PROPERTY_CHANGE_RUNSIM, null,null);
 			}
 		});
-		runSimbutton.setText("Create New FRAP Document using Current Parameter Settings...");
-
+		runSimbutton.setText("Create  New  Simulation");
+		runSimbutton.setToolTipText("Create new FRAP simulation using current parameter settings");
 		final JLabel diffusionRateLabel = new JLabel();
 //		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
 		diffusionRateLabel.setText("Diffusion Rate:");

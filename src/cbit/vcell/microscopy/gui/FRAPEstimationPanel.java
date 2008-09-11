@@ -35,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -98,7 +99,8 @@ public class FRAPEstimationPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JPanel panel = new JPanel();
-		panel.setBorder(new LineBorder(Color.black, 1, false));
+//		panel.setBorder(new LineBorder(Color.black, 1, false));
+		panel.setBorder(new EtchedBorder());
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.columnWidths = new int[] {7,0};
 		gridBagLayout_1.rowHeights = new int[] {7,7,7,7};
@@ -113,7 +115,7 @@ public class FRAPEstimationPanel extends JPanel {
 		add(panel, gridBagConstraints);
 
 		final JLabel frapModelParameterLabel_1 = new JLabel();
-		frapModelParameterLabel_1.setFont(new Font("", Font.BOLD, 14));
+		frapModelParameterLabel_1.setFont(new Font("", Font.BOLD, 12));
 		frapModelParameterLabel_1.setText("FRAP Model Parameter Estimates");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.gridwidth = 2;
@@ -122,7 +124,7 @@ public class FRAPEstimationPanel extends JPanel {
 		panel.add(frapModelParameterLabel_1, gridBagConstraints_3);
 
 		final JLabel frapParameterEstimatesLabel = new JLabel();
-		frapParameterEstimatesLabel.setFont(new Font("", Font.BOLD, 14));
+//		frapParameterEstimatesLabel.setFont(new Font("", Font.BOLD, 14));
 		frapParameterEstimatesLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		frapParameterEstimatesLabel.setText("Estimation Method");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
@@ -162,7 +164,7 @@ public class FRAPEstimationPanel extends JPanel {
 		scrollPane.setViewportView(table);
 
 		final JButton applyEstimatedValuesButton = new JButton();
-		applyEstimatedValuesButton.setFont(new Font("", Font.BOLD, 16));
+//		applyEstimatedValuesButton.setFont(new Font("", Font.BOLD, 16));
 		applyEstimatedValuesButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				Object[][] rowData = new Object[4][FRAP_ESTIMATE_COLUMN_NAMES.length];
@@ -245,7 +247,8 @@ public class FRAPEstimationPanel extends JPanel {
 		panel.add(applyEstimatedValuesButton, gridBagConstraints_5);
 
 		final JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new LineBorder(Color.black, 1, false));
+//		panel_1.setBorder(new LineBorder(Color.black, 1, false));
+		panel_1.setBorder(new EtchedBorder());
 		panel_1.setPreferredSize(new Dimension(350, 225));
 		panel_1.setMinimumSize(new Dimension(350, 225));
 		final GridBagLayout gridBagLayout_2 = new GridBagLayout();
@@ -279,7 +282,7 @@ public class FRAPEstimationPanel extends JPanel {
 		panel_1.add(expressionCanvas, gridBagConstraints_26);
 
 		plotOfAverageLabel = new JLabel();
-		plotOfAverageLabel.setFont(new Font("", Font.BOLD, 14));
+		plotOfAverageLabel.setFont(new Font("", Font.BOLD, 12));
 		plotOfAverageLabel.setText("Plot -  'Bleach' ROI average (Experiment and Estimated) vs. Time");
 		final GridBagConstraints gridBagConstraints_29 = new GridBagConstraints();
 		gridBagConstraints_29.insets = new Insets(4, 2, 2, 2);
@@ -291,7 +294,8 @@ public class FRAPEstimationPanel extends JPanel {
 		multisourcePlotPane = new MultisourcePlotPane();
 		multisourcePlotPane.setModelDataLabelPrefix("Estimated_");
 		multisourcePlotPane.setRefDataLabelPrefix("Experiment_");
-		multisourcePlotPane.setBorder(new LineBorder(Color.black, 1, false));
+//		multisourcePlotPane.setBorder(new LineBorder(Color.black, 1, false));
+		multisourcePlotPane.setBorder(new EtchedBorder());
 		multisourcePlotPane.setListVisible(false);
 		final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();
 		gridBagConstraints_27.insets = new Insets(4, 4, 4, 4);

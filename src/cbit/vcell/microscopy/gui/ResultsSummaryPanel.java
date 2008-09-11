@@ -24,6 +24,7 @@ import java.util.Vector;
 import javax.swing.JLabel;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -34,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -178,12 +180,12 @@ public class ResultsSummaryPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new LineBorder(Color.gray, 2, false));
+		panel_1.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		panel_1.setLayout(new GridBagLayout());
 		cardPanel.add(panel_1, SIM_RESULTS);
 
 		plotFRAPSimResultsRadioButton = new JRadioButton();
-		plotFRAPSimResultsRadioButton.setFont(new Font("", Font.BOLD, 14));
+		plotFRAPSimResultsRadioButton.setFont(new Font("", Font.BOLD, 12));
 		buttonPanel.add(plotFRAPSimResultsRadioButton);
 		plotFRAPSimResultsRadioButton.setText(SIM_RESULTS);
 		plotFRAPSimResultsRadioButton.addActionListener(plotButtonActionListener);
@@ -194,7 +196,7 @@ public class ResultsSummaryPanel extends JPanel {
 		gridBagConstraints_6.gridy = 0;
 		gridBagConstraints_6.gridx = 0;
 		panel_1.add(standardErrorseLabel, gridBagConstraints_6);
-		standardErrorseLabel.setFont(new Font("", Font.PLAIN, 14));
+//		standardErrorseLabel.setFont(new Font("", Font.PLAIN, 14));
 		standardErrorseLabel.setText("FRAP Simulation Summary: Standard Error (se) including all Times of Normalized ROI Average  (Experimental vs. Simulation Data)");
 
 		scrollPane = new JScrollPane();
@@ -296,12 +298,12 @@ public class ResultsSummaryPanel extends JPanel {
 		table.setModel(getTableModel(summaryReportColumnNames,new Object[][] {{"diffTest","summaryTest"}}));
 		
 		final JPanel panel_2 = new JPanel();
-		panel_2.setBorder(new LineBorder(Color.gray, 2, false));
+		panel_2.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		panel_2.setLayout(new GridBagLayout());
 		cardPanel.add(panel_2,DERIVED_RESULTS);
 				
 		plotDerivedSimResultsRadioButton = new JRadioButton();
-		plotDerivedSimResultsRadioButton.setFont(new Font("", Font.BOLD, 14));
+		plotDerivedSimResultsRadioButton.setFont(new Font("", Font.BOLD, 12));
 		buttonPanel.add(plotDerivedSimResultsRadioButton);
 		plotDerivedSimResultsRadioButton.setText(DERIVED_RESULTS);
 		plotDerivedSimResultsRadioButton.addActionListener(plotButtonActionListener);
@@ -360,10 +362,11 @@ public class ResultsSummaryPanel extends JPanel {
 		gridBagConstraints_4.gridy = 0;
 		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
-		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 14));
+		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
 
-		final JButton showROIbutton = new JButton();
+		final JButton showROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/showROI.gif")));
+		showROIbutton.setToolTipText("Show ROIS");
 		showROIbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				ROIImagePanel roiImagePanel = new ROIImagePanel();
@@ -389,11 +392,16 @@ public class ResultsSummaryPanel extends JPanel {
 				DialogUtils.showComponentCloseDialog(ResultsSummaryPanel.this, roiImagePanel, "FRAP Model ROIs");
 			}
 		});
-		showROIbutton.setText("Show ROIs...");
+//		showROIbutton.setText("Show ROIs...");
+//		showROIbutton.setBorderPainted(false);
+//		showROIbutton.setFocusPainted(false);
+		showROIbutton.setBorder(new EtchedBorder());
+		showROIbutton.setContentAreaFilled(false);
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
-		gridBagConstraints_12.insets = new Insets(4, 0, 0, 0);
+		gridBagConstraints_12.insets = new Insets(0, 8, 0, 0);
 		gridBagConstraints_12.gridy = 0;
 		gridBagConstraints_12.gridx = 1;
+		gridBagConstraints_12.anchor = GridBagConstraints.EAST;
 		panel_3.add(showROIbutton, gridBagConstraints_12);
 
 		final JPanel panel = new JPanel();
