@@ -6,6 +6,7 @@ import java.io.File;
 import cbit.sql.KeyValue;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.ROI.RoiType;
@@ -288,6 +289,8 @@ public class FRAPOptData {
 			
 			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
 			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
+			//we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
+			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
 			if(oldRefDataInfo != null && oldRefDataInfo.getExternalDataIdentifier() != null)
 			{
 				FRAPStudy.removeExternalDataAndSimulationFiles(oldRefDataInfo.getExternalDataIdentifier().getKey(), null, null, getLocalWorkspace());

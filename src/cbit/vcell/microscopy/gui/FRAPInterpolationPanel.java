@@ -8,7 +8,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
-
+import javax.swing.border.EtchedBorder;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -369,7 +369,7 @@ public class FRAPInterpolationPanel extends JPanel {
 			}
 		});
 		createOptimalButton.setText("Get Best Fit Parameters");
-
+		createOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 		final JButton runSimbutton = new JButton();
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
@@ -386,7 +386,7 @@ public class FRAPInterpolationPanel extends JPanel {
 			}
 		});
 		runSimbutton.setText("Create New Simulation");
-		
+		runSimbutton.setToolTipText("Create new FRAP simulation using current parameter settings");
 		secondDiffRateCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent arg0) {
 				if(secondDiffRateCheckBox.isSelected())

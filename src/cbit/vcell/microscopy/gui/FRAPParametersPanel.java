@@ -18,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.UndoableEditEvent;
@@ -50,7 +51,7 @@ public class FRAPParametersPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JPanel panel = new JPanel();
-		panel.setBorder(new TitledBorder(new LineBorder(Color.black, 2, false), "Initial FRAP Model Parameters", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 16), null));
+		panel.setBorder(new TitledBorder(new EtchedBorder(Color.gray, Color.lightGray), "Initial FRAP Model Parameters", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 12), null));
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.columnWidths = new int[] {7,0,0};
 		gridBagLayout_1.rowHeights = new int[] {0,7,7,7,7,0,7,7};
@@ -64,7 +65,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints.gridx = 1;
 
 		estimationPanel = new FRAPEstimationPanel();
-		estimationPanel.setBorder(new TitledBorder(new LineBorder(Color.black, 2, false), "FRAP Model Parameter Assistant (Select 'Estimation Method')", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 16), null));
+		estimationPanel.setBorder(new TitledBorder(new EtchedBorder(Color.gray, Color.lightGray), "FRAP Model Parameter Assistant (Select 'Estimation Method')", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 12), null));
 		estimationPanel.addPropertyChangeListener(
 			new PropertyChangeListener(){
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -109,7 +110,8 @@ public class FRAPParametersPanel extends JPanel {
 		add(panel, gridBagConstraints);
 
 		final JLabel parameterLabel = new JLabel();
-		parameterLabel.setBorder(new LineBorder(Color.black, 1, false));
+//		parameterLabel.setBorder(new LineBorder(Color.black, 1, false));
+		parameterLabel.setBorder(new EtchedBorder());
 		parameterLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		parameterLabel.setText("Parameter Type");
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
@@ -120,7 +122,8 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(parameterLabel, gridBagConstraints_19);
 
 		final JLabel valueLabel = new JLabel();
-		valueLabel.setBorder(new LineBorder(Color.black, 1, false));
+//		valueLabel.setBorder(new LineBorder(Color.black, 1, false));
+		valueLabel.setBorder(new EtchedBorder());
 		valueLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		valueLabel.setText("Value");
 		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
@@ -133,7 +136,8 @@ public class FRAPParametersPanel extends JPanel {
 
 		final JLabel unitsLabel = new JLabel();
 		unitsLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		unitsLabel.setBorder(new LineBorder(Color.black, 1, false));
+//		unitsLabel.setBorder(new LineBorder(Color.black, 1, false));
+		unitsLabel.setBorder(new EtchedBorder());
 		unitsLabel.setText("Units");
 		final GridBagConstraints gridBagConstraints_31 = new GridBagConstraints();
 		gridBagConstraints_31.insets = new Insets(4, 4, 4, 4);
