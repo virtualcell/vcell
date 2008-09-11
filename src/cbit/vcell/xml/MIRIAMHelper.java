@@ -130,8 +130,17 @@ public class MIRIAMHelper {
 	
 	public static void addToSBML(Element parent,MIRIAMAnnotation miriamAnnotation,boolean bAdd){
 		try {
-			addToSBMLAnnotation(parent, miriamAnnotation);
-			addToSBMLNotes(parent, miriamAnnotation);
+			if (parent.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)) {
+				// while exporting object (biomodel/species,etc) to SBML, adding notes element from MiriamAnnotation
+				addToSBMLNotes(parent, miriamAnnotation);
+			} else if (parent.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)) {
+				// while exporting object (biomodel/species,etc) to SBML, adding annotation element from MiriamAnnotation
+				addToSBMLAnnotation(parent, miriamAnnotation);
+			} else {
+				// while exporting object (biomodel/species,etc) to VCML, adding annotations and notes elements to appropriate VCML element
+				addToSBMLAnnotation(parent, miriamAnnotation);
+				addToSBMLNotes(parent, miriamAnnotation);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -144,7 +153,9 @@ private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAn
 			}
 			if(parent.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)){
 				Element rdfElement = recurseForElement(miriamAnnotation.getAnnotation(),XMLTags.RDF_RDF_NAME_TAG);
-				parent.addContent(((Element)rdfElement.clone()).detach());
+				if (rdfElement != null) {
+					parent.addContent(((Element)rdfElement.clone()).detach());
+				}
 			}else{
 //			parent.addContent(miriamAnnotation.getAnnotation().detach());
 				parent.addContent(((Element)miriamAnnotation.getAnnotation().clone()).detach());
@@ -181,7 +192,9 @@ private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAn
 			}
 			if(parent.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
 				Element htmlElement = recurseForElement(miriamAnnotation.getUserNotes(),HTML.Tag.HTML.toString());
-				parent.addContent(((Element)htmlElement.clone()).detach());
+				if (htmlElement != null) {
+					parent.addContent(((Element)htmlElement.clone()).detach());
+				}
 			}else{
 				parent.addContent(((Element)miriamAnnotation.getUserNotes().clone()).detach());
 			}
