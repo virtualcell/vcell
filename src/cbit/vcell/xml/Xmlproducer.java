@@ -2432,7 +2432,7 @@ public org.jdom.Element getXML(cbit.vcell.model.Model param) throws XmlParseExce
 
 	// get global parameters
 	ModelParameter[] modelGlobals = param.getModelParameters();
-	if (modelGlobals != null || modelGlobals.length > 0) {
+	if (modelGlobals != null && modelGlobals.length > 0) {
 		modelnode.addContent(getXML(modelGlobals));
 	}
 
