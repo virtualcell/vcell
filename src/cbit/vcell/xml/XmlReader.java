@@ -2740,7 +2740,7 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		
 		// Check for global parameters - if found, throw exception and prompt user to use a later version
 		Element mpElement = param.getChild("ModelParameters", vcNamespace); 
-		if (mpElement != null) {
+		if (mpElement != null && mpElement.getChildren(XMLTags.ParameterTag, vcNamespace) != null) {
 			throw new XmlParseException("Global Parameters not supported in VCell 4.5. Please use VCell 4.6 (Beta) or a later version to load this model.");
 		} 
 
