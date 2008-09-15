@@ -41,7 +41,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 		} else if (stateVar instanceof SensStateVariable) {
 			rateExpr = ((SensStateVariable)stateVar).getRateExpression();
 		}
-		Expression initExpr = new Expression(0.0);
+		Expression initExpr = null;
 		if (stateVar instanceof ODEStateVariable) {
 			initExpr = ((ODEStateVariable)stateVar).getInitialRateExpression();
 			initExpr.bindExpression(getSimulation());
@@ -50,6 +50,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			initExpr = ((SensStateVariable)stateVar).getInitialRateExpression();
 		}
 		
+		initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 		
 		rateExpr.bindExpression(varsSymbolTable);
 		rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();

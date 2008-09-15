@@ -176,7 +176,7 @@ public Object getValueAt(int row, int col) {
 	if (col<0 || col>=NUM_COLUMNS){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	SpeciesContextSpec scSpec = getSimulationContext().getReactionContext().getSpeciesContextSpecs(row);
+	SpeciesContextSpec scSpec = getSpeciesContextSpec(row);
 	switch (col){
 		case COLUMN_SPECIESCONTEXT:{
 			return scSpec.getSpeciesContext().getName();
@@ -205,6 +205,13 @@ public Object getValueAt(int row, int col) {
 			return null;
 		}
 	}
+}
+
+public SpeciesContextSpec getSpeciesContextSpec(int row) {
+	if (row<0 || row>=getRowCount()){
+		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
+	}
+	return getSimulationContext().getReactionContext().getSpeciesContextSpecs(row);
 }
 
 
