@@ -82,6 +82,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			Expression initExpr = equation.getInitialExpression();
 			initExpr.bindExpression(varsSymbolTable);
 			initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable);
+			initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 			origInitVector.set_elem(varIndex, 0, new RationalExp("("+initExpr.flatten().infix()+")"));
 
 			varIndex++;
@@ -205,7 +206,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 	} else {
 		for (int i = 0; i < getStateVariableCount(); i++) {
 			StateVariable stateVar = (StateVariable)getStateVariable(i);
-			Expression initExpr = new Expression(0.0);
+			Expression initExpr = null;
 			if (stateVar instanceof ODEStateVariable) {
 				initExpr = ((ODEStateVariable)stateVar).getInitialRateExpression();
 				initExpr.bindExpression(getSimulation());
@@ -214,6 +215,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 				initExpr = ((SensStateVariable)stateVar).getInitialRateExpression();
 			}		
 			
+			initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 			sb.append("VAR " + stateVar.getVariable().getName() + " INIT " + initExpr.flatten().infix() + ";\n");
 		}
 		
