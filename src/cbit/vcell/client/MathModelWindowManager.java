@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
+import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.vcell.client.desktop.mathmodel.*;
 import cbit.vcell.mathmodel.MathModel;
@@ -148,7 +149,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * Creation date: (6/11/2004 7:32:07 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindow simWindow) {
+public void addResultsFrame(final SimulationWindow simWindow) {
 	if (simWindow.getSimOwner() != getMathModel()) {
 		// it shouldn't happen, but check anyway...
 		try {
@@ -159,8 +160,13 @@ public void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindo
 		return;
 	}
 	simulationWindowsHash.put(simWindow.getVcSimulationIdentifier(), simWindow);
-	simWindow.getFrame().setLocation(100 + 20 * simulationWindowsHash.size(), 100 + 15 * simulationWindowsHash.size());
-	showFrame(simWindow.getFrame());
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			simWindow.getFrame().setLocation(100 + 20 * simulationWindowsHash.size(), 100 + 15 * simulationWindowsHash.size());
+			showFrame(simWindow.getFrame());
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
