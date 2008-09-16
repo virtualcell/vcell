@@ -2,9 +2,6 @@ package cbit.vcell.client;
 import cbit.xml.merge.*;
 import java.util.*;
 import java.io.*;
-
-import cbit.gui.DialogUtils;
-import cbit.gui.SimpleUserMessage;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
@@ -66,9 +63,6 @@ public class DatabaseWindowManager extends TopLevelWindowManager{
 		public int ysize;
 		public int zsize;
 	};
-	//
-	//
-	private RequestManager requestManager = null;
 	
 	private BioModelDbTreePanel bioModelDbTreePanel = new BioModelDbTreePanel();
 	private ACLEditor aclEditor = new ACLEditor();
@@ -600,7 +594,7 @@ public static ImageHelper convertZIP(byte[] zipData,AsynchProgressPopup pp) {
 		int finalysize = 0;
 		int totalsize = 0;
 		
-		java.util.TreeMap sortedHash = new java.util.TreeMap();
+		TreeMap<String, ImageHelper> sortedHash = new TreeMap<String, ImageHelper>();
 		zis = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(zipData));
 		java.util.zip.ZipEntry ze = null;
 		while ((ze = zis.getNextEntry()) != null) {
@@ -813,7 +807,7 @@ public void findModelsUsingSelectedGeometry() {
 			//System.out.println(vrArr[i].from() +" -> "+vrArr[i].to());
 		//}
 
-		Hashtable choices = new Hashtable();
+		Hashtable<String, Object> choices = new Hashtable<String, Object>();
 		if(dependants != null){
 			//System.out.println("\nMajor Relationships");
 			for(int i=0;i<dependants.length;i+= 1){
@@ -944,7 +938,7 @@ private VCDocumentInfo[] getDocumentVersionDates(VCDocumentInfo thisDocumentInfo
 	// From the list of biomodels in the workspace, get list of biomodels with the same branch ID.
 	// This is the list of different versions of the same biomodel.
 	//
- 	Vector documentBranchList = new Vector();
+ 	Vector<VCDocumentInfo> documentBranchList = new Vector<VCDocumentInfo>();
  	for (int i = 0; i < vcDocumentInfos.length; i++) {
 	 	VCDocumentInfo vcDocumentInfo = vcDocumentInfos[i];
 	 	if (vcDocumentInfo.getVersion().getBranchID().equals(thisDocumentInfo.getVersion().getBranchID())) {
@@ -1193,7 +1187,6 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
  * Creation date: (5/14/2004 5:35:55 PM)
  */
 public VCImage selectImageFromDatabase() throws DataAccessException, UserCancelException {
-	Geometry newGeometry = null;
 	Object choice = showImageSelectorDialog(getImageBrowser(), null);
 	if (choice != null && choice.equals("OK")) {
 		if (getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo() != null) {
@@ -1595,5 +1588,9 @@ public String showSaveDialog(final int documentType, final Component requester) 
 		}
 	}.runEventDispatchThreadSafelyWithException();
 
+}
+
+public void reconnect() {
+	getRequestManager().reconnect();
 }
 }
