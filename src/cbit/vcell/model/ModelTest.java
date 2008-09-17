@@ -1418,6 +1418,7 @@ public static Model getExample_GlobalParams() throws Exception {
 	double K4 = 4.0;
 
 	sr = new SimpleReaction(cytosol,"SIMPLE_REACTION_ABC");
+	sr.setModel(model);
 	sr.addReactant(A_cyt,1);
 	sr.addReactant(B_cyt,1);
 	sr.addProduct(C_cyt,1);
@@ -1430,6 +1431,7 @@ public static Model getExample_GlobalParams() throws Exception {
 	model.addReactionStep(sr);
 
 	sr = new SimpleReaction(cytosol,"SIMPLE_REACION_CDA");
+	sr.setModel(model);
 	sr.addReactant(C_cyt,1);
 	sr.addReactant(D_cyt,1);
 	sr.addProduct(A_cyt,1);
