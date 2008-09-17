@@ -138,7 +138,9 @@ public ODESolverResultSet getODESolverResultSet()  {
 	// read .ida file
 	//
 	ODESolverResultSet odeSolverResultSet = getStateVariableResultSet();
-
+	if (odeSolverResultSet == null) {
+		return null;
+	}
 	//
 	// add appropriate Function columns to result set
 	//
@@ -252,6 +254,7 @@ private ODESolverResultSet getStateVariableResultSet() {
 		String line = bufferedReader.readLine();
 		if (line == null) {
 			//  throw exception
+			return null;
 		}
 		while (line.indexOf(':') > 0) {
 			String name = line.substring(0, line.indexOf(':'));
@@ -282,6 +285,7 @@ private ODESolverResultSet getStateVariableResultSet() {
 		//
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
+		return null;
 	} finally {
 		try {
 			if (inputStream != null) {
@@ -302,6 +306,9 @@ private ODESolverResultSet getStateVariableResultSet() {
 private final void printODEFile() throws IOException {
 	// executable writes .ida file, now we write things in .ode format
 	ODESolverResultSet odeSolverResultSet = ((ODESolver)this).getODESolverResultSet();
+	if (odeSolverResultSet == null) {
+		return;
+	}
 	if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
 		odeSolverResultSet.trimRows(((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
 	}
