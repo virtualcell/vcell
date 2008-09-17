@@ -120,11 +120,11 @@ public void initialize() throws Exception {
 		throw new MathException("invalid simulation : "+getSimulation().getWarning());
 	}
 	if (getSimulation().getIsSpatial()) {
-		throw new MathException("solver doesn't support spatial models. Please change the solver.");
+		throw new MathException("solver does not support spatial models. Please change the solver.");
 	}
 	if (getSimulation().getMathDescription().hasFastSystems()) {
 		if (!getSimulation().getSolverTaskDescription().getSolverDescription().solvesFastSystem()) {
-			throw new MathException("solver doesn't support models containing fast system (algebraic constraints). Please change the solver.");
+			throw new MathException("solver does not support models containing fast system (algebraic constraints). Please change the solver.");
 		}
 	}
 

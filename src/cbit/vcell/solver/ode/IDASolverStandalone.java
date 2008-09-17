@@ -1,6 +1,5 @@
 package cbit.vcell.solver.ode;
 
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverException;
@@ -24,25 +23,25 @@ public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.i
  *  This method takes the place of the old runUnsteady()...
  */
 protected void initialize() throws cbit.vcell.solver.SolverException {
-	SessionLog sessionLog = getSessionLog();
-	sessionLog.print("IDASolver.initialize()");
-	fireSolverStarting("IDASolver initializing...");
+	//SessionLog sessionLog = getSessionLog();
+	//sessionLog.print("IDASolver.initialize()");
+	fireSolverStarting("IDA solver initializing...");
 	//
 	String inputFilename = getBaseName() + ".idaInput";
-	String ExeFilename = getBaseName() + System.getProperty(PropertyLoader.exesuffixProperty);
+	//String ExeFilename = getBaseName() + System.getProperty(PropertyLoader.exesuffixProperty);
 	//
-	sessionLog.print("IDASolver.initialize() baseName = " + getBaseName());
+	//sessionLog.print("IDASolver.initialize() baseName = " + getBaseName());
 	//
 	IDAFileWriter idaFileWriter = new IDAFileWriter(getSimulation());
 	try {
 		idaFileWriter.initialize();
 	} catch (Exception e) {
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not initialize IDAFileWriter..."));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not initialize IDA file writer..."));
 		e.printStackTrace(System.out);
 		throw new SolverException("autocode init exception: " + e.getMessage());
 	}
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
-	fireSolverStarting("generating input file...");
+	fireSolverStarting("IDA solver generating input file...");
 	//
 	try {
 		java.io.FileOutputStream fileOutputStream = new java.io.FileOutputStream(inputFilename);
@@ -51,11 +50,11 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not generate input file: " + e.getMessage()));
 		e.printStackTrace(System.out);
-		throw new SolverException("solver input file exception: " + e.getMessage());
+		throw new SolverException("IDA solver could not generate input file: " + e.getMessage());
 	}
 	//
 	//
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"IDASolver starting"));	
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"IDA solver starting"));	
 	
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.idaExecutableProperty);
 	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " + getBaseName() + ".idaInput" + " " + getBaseName() + ".ida"));
