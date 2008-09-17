@@ -168,8 +168,18 @@ public abstract class AnnotatedImageDataset {
 			if (roi == null || roi[i] != 0){
 				if(normalizeFactorXYZ == null){
 					intensityVal += imagePixel;
+					
 				}else{
-					intensityVal += ((double)imagePixel-preNormalizeOffset)/(normalizeFactorXYZ[i]);
+					//if pixel value after background subtraction is <=0, clamp it to 0
+					//the whole image add up 1 after background subtraction
+					if(((double)imagePixel-preNormalizeOffset) > 0)
+					{
+						intensityVal += ((double)imagePixel+1-preNormalizeOffset)/(normalizeFactorXYZ[i]);
+					}
+					else
+					{
+						intensityVal += 1/(normalizeFactorXYZ[i]);
+					}
 				}
 				numPixelsInMask++;
 			}
@@ -179,7 +189,6 @@ public abstract class AnnotatedImageDataset {
 		}
 		
 		return intensityVal/numPixelsInMask;
-
 	}
 	/**
 	 * Method getNumRois.

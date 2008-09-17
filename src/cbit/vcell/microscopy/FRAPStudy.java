@@ -157,7 +157,7 @@ public class FRAPStudy implements Matchable{
 	
 	public static final String EXTRACELLULAR_NAME = "extracellular";
 	public static final String CYTOSOL_NAME = "cytosol";
-	public static final double Epsilon = FRAPOptimization.epsilon; // to avoid divided by zero error.
+//	public static final double Epsilon = FRAPOptimization.epsilon; // to avoid divided by zero error.
 
 	public static class AnalysisParameters{
 		public final Double diffusionRate;
@@ -905,8 +905,7 @@ public class FRAPStudy implements Matchable{
 		speciesContexts[MOBILE_SPECIES_INDEX] = 
 				new SpeciesContext(null,species[MOBILE_SPECIES_INDEX].getCommonName(),species[MOBILE_SPECIES_INDEX],cytosol,true);
 		initialConditions[MOBILE_SPECIES_INDEX] =
-				new Expression(mobileFraction+"*(field("+roiDataName+",postbleach_first,0,"+VariableType.VOLUME.getTypeName()+") / field("+roiDataName+",prebleach_avg,0,"+VariableType.VOLUME.getTypeName()+"))");
-		
+			    new Expression(mobileFraction+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
 		//Immobile Species (No diffusion)
 		//Set very small diffusion rate on immobile to force evaluation as state variable (instead of FieldData function)
 		//If left as a function errors occur because functions involving FieldData require a database connection
@@ -919,8 +918,7 @@ public class FRAPStudy implements Matchable{
 		speciesContexts[IMMOBILE_SPECIES_INDEX] = 
 				new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol,true);
 		initialConditions[IMMOBILE_SPECIES_INDEX] =
-				new Expression((1.0-mobileFraction)+"*(field("+roiDataName+",postbleach_first,0,"+VariableType.VOLUME.getTypeName()+") / field("+roiDataName+",prebleach_avg,0,"+VariableType.VOLUME.getTypeName()+"))");
-
+			    new Expression((1.0-mobileFraction)+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
 		
 		// for parameter scans, use cube root of 10 (3 per decade) = factor of 2.154434690030230132025595313452
 		// add reactions to species if there is bleachWhileMonitoring rate.
@@ -1391,16 +1389,20 @@ public class FRAPStudy implements Matchable{
 			System.err.println("need to determine factor for prebleach average if no pre bleach images.");
 			short[] pixels = frapData.getImageDataset().getPixelsZ(0, (frapData.getImageDataset().getSizeT() - 1));
 			for (int i = 0; i < pixels.length; i++) {
-				avgPrebleachDouble[i] = 0x0000ffff&pixels[i];
+				avgPrebleachDouble[i] = ((double)(0x0000ffff&pixels[i]) - backGround[frapData.getImageDataset().getSizeT() - 1]);
 			}
 		}
 		
-		// since prebleach will be used to normalize image data, we have to eliminate any value <= 0.
+		//for each pixel if it's grater than 0, we add 1 offset to it. 
+		//if it is smaller or equal to 0 , we set it to 1.
 		for (int i = 0; i < avgPrebleachDouble.length; i++) {
 			if(avgPrebleachDouble[i] <= 0){
-				avgPrebleachDouble[i] = FRAPStudy.Epsilon;
+				avgPrebleachDouble[i] = 1;
 			}
-
+			else
+			{
+				avgPrebleachDouble[i]=avgPrebleachDouble[i]+1;
+			}
 		}
 		return avgPrebleachDouble;
 	}
@@ -1451,12 +1453,12 @@ public class FRAPStudy implements Matchable{
 //			}
 	    	pixData[0][0] = avgPrebleachDouble; // average of prebleach with background subtracted
 	    	// first post-bleach with background subtracted
-    		pixData[0][1] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, startingIndexForRecovery), temp_background[startingIndexForRecovery]); 
+    		pixData[0][1] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, startingIndexForRecovery), temp_background[startingIndexForRecovery], true); 
     		// last post-bleach image (at last time point) with background subtracted
-    		pixData[0][2] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, imageDataset.getSizeT()-1), temp_background[imageDataset.getSizeT()-1]);
+    		pixData[0][2] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, imageDataset.getSizeT()-1), temp_background[imageDataset.getSizeT()-1], true);
     		//below are ROIs, we don't need to subtract background for them.
-    		pixData[0][3] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED).getBinaryPixelsXYZ(1), 0);
-    		pixData[0][4] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_CELL).getBinaryPixelsXYZ(1), 0);
+    		pixData[0][3] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED).getBinaryPixelsXYZ(1), 0, false);
+    		pixData[0][4] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_CELL).getBinaryPixelsXYZ(1), 0, false);
     		if (getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1) == null){
     			//throw new RuntimeException("must first generate \"derived masks\"");
     			pixData[0][5] = new double[imageDataset.getISize().getXYZ()];
@@ -1469,14 +1471,14 @@ public class FRAPStudy implements Matchable{
 	    		pixData[0][12] = new double[imageDataset.getISize().getXYZ()];
     		}
     		else{
-    			pixData[0][5] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1).getBinaryPixelsXYZ(1), 0);
-	    		pixData[0][6] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING2).getBinaryPixelsXYZ(1), 0);
-	    		pixData[0][7] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING3).getBinaryPixelsXYZ(1), 0);
-	    		pixData[0][8] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING4).getBinaryPixelsXYZ(1), 0);
-	    		pixData[0][9] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING5).getBinaryPixelsXYZ(1), 0);
-	    		pixData[0][10] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING6).getBinaryPixelsXYZ(1), 0);
-	    		pixData[0][11] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING7).getBinaryPixelsXYZ(1), 0);
-	    		pixData[0][12] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING8).getBinaryPixelsXYZ(1), 0);
+    			pixData[0][5] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][6] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING2).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][7] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING3).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][8] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING4).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][9] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING5).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][10] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING6).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][11] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING7).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][12] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING8).getBinaryPixelsXYZ(1), 0, false);
     		}
     		CartesianMesh cartesianMesh = getCartesianMesh();
     		Origin origin = new Origin(0,0,0);
@@ -1522,13 +1524,23 @@ public class FRAPStudy implements Matchable{
 	    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
 	}
 	
-	private double[] createDoubleArray(short[] shortData, double bkGround){
+	//when creating double array for firstPostBleach and last PostBleach, etc images
+	//We'll clamp all pixel value <= 0 to 0 and add offset 1 to the whole image.
+	//For ROI images, we don't have to do so.
+	private double[] createDoubleArray(short[] shortData, double bkGround, boolean isOffset1ProcessNeeded){
 		double[] doubleData = new double[shortData.length];
 		for (int i = 0; i < doubleData.length; i++) {
 			doubleData[i] = ((0x0000FFFF&shortData[i]) - bkGround);
-			if(doubleData[i] < 0)
+			if(isOffset1ProcessNeeded)
 			{
-				doubleData[i] = 0;
+				if(doubleData[i] <= 0)
+				{
+					doubleData[i] = 1;
+				}
+				else
+				{
+					doubleData[i] = doubleData[i]+1;
+				}
 			}
 		}
 		return doubleData;

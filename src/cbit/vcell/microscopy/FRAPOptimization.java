@@ -21,9 +21,9 @@ public class FRAPOptimization {
 	{ 
 		int roiLen = expRois.length;
 		int numRefTimePoints = argFrapData.getImageDataset().getSizeT();
-		// data set which may has prebleach average and may need to be normalized.
+		// data set which is normalized with prebleach time points
 		double[][] baseData = new double[roiLen][numRefTimePoints];
-        // data set which is normalized and without prebleach.
+		// data set which is normalized and removed time points in prebleach
 		double[][] newData = null;
 		double[] avgBkIntensity = argFrapData.getAvgBackGroundIntensity();
 		
