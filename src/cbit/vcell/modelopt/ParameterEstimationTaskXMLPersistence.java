@@ -69,23 +69,25 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 		if (ste instanceof cbit.vcell.model.Parameter){
 			cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)ste;
 			ParameterMappingSpec parameterMappingSpec = parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpec(parameter);
-		
-			String lowLimitString = parameterMappingSpecElement.getAttributeValue(LowLimitAttribute);
-			if (lowLimitString!=null){
-				parameterMappingSpec.setLow(parseDouble(lowLimitString));
-			}
-			String highLimitString = parameterMappingSpecElement.getAttributeValue(HighLimitAttribute);
-			if (highLimitString!=null){
-				parameterMappingSpec.setHigh(parseDouble(highLimitString));
-			}
-			String currentValueString = parameterMappingSpecElement.getAttributeValue(CurrentValueAttribute);
-			if (currentValueString!=null){
-				parameterMappingSpec.setCurrent(Double.parseDouble(currentValueString));
-			}
-			String selectedString = parameterMappingSpecElement.getAttributeValue(SelectedAttribute);
-			if (selectedString!=null){
-				parameterMappingSpec.setSelected(Boolean.valueOf(selectedString).booleanValue());
-			}
+			
+			if  (parameterMappingSpec != null) {
+				String lowLimitString = parameterMappingSpecElement.getAttributeValue(LowLimitAttribute);
+				if (lowLimitString!=null){
+					parameterMappingSpec.setLow(parseDouble(lowLimitString));
+				}
+				String highLimitString = parameterMappingSpecElement.getAttributeValue(HighLimitAttribute);
+				if (highLimitString!=null){
+					parameterMappingSpec.setHigh(parseDouble(highLimitString));
+				}
+				String currentValueString = parameterMappingSpecElement.getAttributeValue(CurrentValueAttribute);
+				if (currentValueString!=null){
+					parameterMappingSpec.setCurrent(Double.parseDouble(currentValueString));
+				}
+				String selectedString = parameterMappingSpecElement.getAttributeValue(SelectedAttribute);
+				if (selectedString!=null){
+					parameterMappingSpec.setSelected(Boolean.valueOf(selectedString).booleanValue());
+				}
+			} 
 		}else{
 			System.out.println("couldn't read parameterMappingSpec '"+parameterName+"', ste="+ste);
 		}	
