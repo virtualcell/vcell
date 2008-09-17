@@ -24,9 +24,9 @@ public class FRAPOptimization {
 	{ 
 		int roiLen = expRois.length;
 		int numRefTimePoints = argFrapData.getImageDataset().getSizeT();
-		// data set which may has prebleach average and may need to be normalized.
+		// data set which is normalized with prebleach time points
 		double[][] baseData = new double[roiLen][numRefTimePoints];
-        // data set which is normalized and without prebleach.
+        // data set which is normalized and removed time points in prebleach
 		double[][] newData = null;
 		double[] avgBkIntensity = argFrapData.getAvgBackGroundIntensity();
 		
@@ -220,7 +220,7 @@ public class FRAPOptimization {
 				double rateError = diffSlowRate - diffFastRate;
 				error = error + (rateError + rateError * rateError) * penalty;
 			}
-
+			//System.out.println("error:" + error);
 			return error;
 		}
 		else
@@ -321,22 +321,33 @@ public class FRAPOptimization {
 		OptimizationSpec optSpec = new OptimizationSpec();
 		DefaultScalarFunction scalarFunc = new LookupTableObjectiveFunction(argOptData, eoi); // add opt function 
 		optSpec.setObjectiveFunction(new ImplicitObjectiveFunction(scalarFunc));
-//		if(constraints != null)//add constraints
-//		{
-//			for(int i=0; i<constraints.length; i++)
-//			optSpec.addConstraint(constraints[i]);
-//		}
-		for (int i = 0; i < inParams.length; i++) { //add parameters
-			optSpec.addParameter(inParams[i]);
-		}
 		// create solver spec 
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL, FRAPOptimization.FTOL);
 		// create solver call back
 		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
 		// create optimization result set
 		OptimizationResultSet optResultSet = null;
+		for (int i = 0; i < inParams.length; i++) { //add parameters
+			optSpec.addParameter(inParams[i]);
+		}
 		optResultSet = optSolver.solve(optSpec, optSolverSpec, optSolverCallbacks);
-		 
+		//if the parameters are 5, we have to go over again to see if we get the best answer.
+		if(inParams.length == 5)//5 parameters
+		{
+			OptimizationSpec optSpec2 = new OptimizationSpec();
+			optSpec2.setObjectiveFunction(new ImplicitObjectiveFunction(scalarFunc));
+			Parameter[] inParamsFromResult = generateInParamSet(inParams, optResultSet.getParameterValues());
+			for (int i = 0; i < inParamsFromResult.length; i++) { //add parameters
+				optSpec2.addParameter(inParamsFromResult[i]);
+			}
+			OptimizationResultSet tempOptResultSet = optSolver.solve(optSpec2, optSolverSpec, optSolverCallbacks);
+			if(optResultSet.getObjectiveFunctionValue() > tempOptResultSet.getObjectiveFunctionValue())
+			{
+				optResultSet = tempOptResultSet;
+			}
+		}
+		//System.out.println("obj function value:"+optResultSet.getObjectiveFunctionValue());
+		//System.out.println("");
 		// copy results to output parameters
 		String[] names = optResultSet.getParameterNames();
 		double[] values = optResultSet.getParameterValues();
@@ -345,6 +356,43 @@ public class FRAPOptimization {
 			outParaNames[i] = names[i];
 			outParaVals[i] = values[i];
 		}
+	}
+	
+	private static Parameter[] generateInParamSet(Parameter[] inputParams, double newValues[])
+	{
+		Parameter[] result = new Parameter[inputParams.length];
+		Parameter fastRate = inputParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX];
+		Parameter slowRate = inputParams[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX];
+		Parameter fastMobileFrac = inputParams[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX];
+		Parameter slowMobileFrac = inputParams[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX];
+		Parameter bwmRate = inputParams[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX];
+		
+		result[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] = new Parameter(fastRate.getName(), 
+				                                                                    fastRate.getLowerBound(), 
+				                                                                    fastRate.getUpperBound(),
+				                                                                    fastRate.getScale(),
+				                                                                    newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX]);
+		result[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] = new Parameter(slowRate.getName(), 
+																					slowRate.getLowerBound(), 
+																					slowRate.getUpperBound(),
+																					slowRate.getScale(),
+																					newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX]);
+		result[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] = new Parameter(fastMobileFrac.getName(), 
+																					fastMobileFrac.getLowerBound(), 
+																					fastMobileFrac.getUpperBound(),
+																					fastMobileFrac.getScale(),
+																					newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX]);
+		result[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] = new Parameter(slowMobileFrac.getName(), 
+																					slowMobileFrac.getLowerBound(), 
+																					slowMobileFrac.getUpperBound(),
+																					slowMobileFrac.getScale(),
+																					newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX]);
+       result[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] = new Parameter(bwmRate.getName(),
+    		   																	   bwmRate.getLowerBound(),
+    		   																	   bwmRate.getUpperBound(),
+    		   																	   bwmRate.getScale(),
+    		   																	   newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX]);
+ 		return result;
 	}
 	
 }
