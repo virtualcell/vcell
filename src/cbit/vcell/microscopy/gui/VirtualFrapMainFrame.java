@@ -55,9 +55,10 @@ public class VirtualFrapMainFrame extends JFrame
 
 	public static final boolean SAVE_COMPRESSED = true;
 	
-	public static Dimension INIT_WINDOW_SIZE = new Dimension(
-		  (int)(Toolkit.getDefaultToolkit().getScreenSize().width*.8),
-	  	  (int)(Toolkit.getDefaultToolkit().getScreenSize().height*.9));
+	public static Dimension INIT_WINDOW_SIZE = new Dimension(1024, 768);
+//	       new Dimension(
+//	    	   (Toolkit.getDefaultToolkit().getScreenSize().width > 1024)?((int)(Toolkit.getDefaultToolkit().getScreenSize().width*0.8)): 1024,
+//	  	       (Toolkit.getDefaultToolkit().getScreenSize().height > 768)? ((int)(Toolkit.getDefaultToolkit().getScreenSize().height*0.85)): 768);
 
 	private MenuHandler menuHandler = new MenuHandler();
 	private static final String VERSION_NUMBER = "VFrap 0.8  Alpha_1";

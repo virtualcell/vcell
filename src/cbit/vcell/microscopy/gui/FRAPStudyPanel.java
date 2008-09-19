@@ -1767,7 +1767,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		botPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Original Virtual Microscopy Data and Masks", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
 		
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upPanel, botPanel);
-	    split.setDividerLocation(((int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2))-90);
+	    split.setDividerLocation(((int)(VirtualFrapMainFrame.INIT_WINDOW_SIZE.height/2))-70);
 	    split.setDividerSize(4);
 	    return split;
 	}
