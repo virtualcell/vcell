@@ -1,5 +1,6 @@
 package cbit.vcell.solver;
 
+import cbit.vcell.solvers.CombinedSundialsSolver;
 import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solver.ode.*;
@@ -41,6 +42,8 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 		solver = new IDASolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.CVODE)) {
 		solver = new CVodeSolverStandalone(simJob, directory, sessionLog);
+	} else if (solverDescription.equals(SolverDescription.SUNDIALS)) {
+		solver = new CombinedSundialsSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
 		solver = new FVSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {

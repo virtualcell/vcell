@@ -16,7 +16,7 @@ import cbit.vcell.math.SubDomain;
 public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
 	private int type;
 
-	private static final int NUM_SOLVERS = 13;
+	private static final int NUM_SOLVERS = 14;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -30,6 +30,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	private static final int TYPE_HYBRID_MIL_Adaptive = 10; //added adaptive milstein solver on July 12, 2007
 	private static final int TYPE_CVODE = 11;
 	private static final int TYPE_FINITE_VOLUME_STANDALONE = 12;
+	private static final int TYPE_SUNDIALS_STANDALONE = 13;
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
 	
@@ -47,6 +48,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"Hybrid (Adaptive Gibson + Milstein Method)",
 		"CVODE (Variable Order, Variable Time Step)",
 		"Finite Volume Standalone, Regular Grid",
+		"Combined Stiff Solver (IDA/CVODE)",
 	};
 	private static final String[] FULL_DESCRIPTIONS = {
 		// Forward Euler (First Order, Fixed Time Step)
@@ -182,6 +184,11 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		 "ENDING TIME: the time when simulation ends.\n"+
 	     "Default TIME STEP: the time step to numerically solve PDEs.\n\n"+
 	     "Output options: use keep every number of samples.",
+	     // Combined Stiff Solver (IDA/CVODE)
+	     "This chooses between IDA and CVODE depending on the problem to be solved. \n" 
+	     + "CVODE is used for ordinary differential equation (ODE) systems;\n" 
+	     + "IDA is used for differential-algebraic equation (DAE) systems.\n\n"
+	     + "VCell models with fast reactions (i.e. fast systems) are DAE systems. ",
 	};
 	private static final boolean[] SOLVES_FASTSYSTEM = {
 		true,   // TYPE_FORWARD_EULER
@@ -196,7 +203,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_Hybrid_Milstein
 		false,	// TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
-		true	// TYPE_FINITE_VOLUME_STANDALONE
+		true,	// TYPE_FINITE_VOLUME_STANDALONE
+		true	// TYPE_SUNDIALS_STANDALONE
 	};
 	private static final boolean[] IS_ODE = {
 		true,   // TYPE_FORWARD_EULER
@@ -211,7 +219,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_Hybrid_Milstein
 		false,	// TYPE_HYBRID_MIL_Adaptive
 		true,	// TYPE_CVODE
-		false	// TYPE_FINITE_VOLUME_STANDALONE
+		false,	// TYPE_FINITE_VOLUME_STANDALONE
+		true	// TYPE_SUNDIALS_STANDALONE
 	};
 	private static final boolean[] IS_STOCH = {
 		false,  // TYPE_FORWARD_EULER
@@ -226,7 +235,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_Hybrid_Milstein
 		true,	// TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
-		false	// TYPE_FINITE_VOLUME_STANDALONE
+		false,	// TYPE_FINITE_VOLUME_STANDALONE
+		false	// TYPE_SUNDIALS_STANDALONE
 	};
 	private static final boolean[] IS_INTERPRETED = {
 		true,   // TYPE_FORWARD_EULER
@@ -241,7 +251,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false, 	// TYPE_Hybrid_Milstein
 		false,  // TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
-		false	// TYPE_FINITE_VOLUME_STANDALONE
+		false,	// TYPE_FINITE_VOLUME_STANDALONE
+		false,	// TYPE_SUNDIALS_STANDALONE
 	};
 		
 			
@@ -258,6 +269,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription HybridMilAdaptive     = new SolverDescription(TYPE_HYBRID_MIL_Adaptive);
 	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
 	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
+	public static final SolverDescription SUNDIALS				= new SolverDescription(TYPE_SUNDIALS_STANDALONE);
 
 	private static String[] fieldODESolverDescriptions = new String[] {
 		ForwardEuler.getName(),
@@ -266,11 +278,13 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		AdamsMoulton.getName(),
 		RungeKuttaFehlberg.getName(),
 		IDA.getName(),
-		CVODE.getName()
+		CVODE.getName(),
+		SUNDIALS.getName(),
 	};
 	private static String[] fieldODEWithFastSolverDescriptions = new String[] {
 		ForwardEuler.getName(),
-		IDA.getName()
+		IDA.getName(),
+		SUNDIALS.getName(),
 	};
 	private static String[] fieldPDESolverDescriptions = new String[] {
 		FiniteVolume.getName(),
@@ -308,7 +322,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
  * @see #setSolver
  */
 public static SolverDescription getDefaultODESolverDescription() {
-	return IDA;
+	return SUNDIALS;
 }
 
 
