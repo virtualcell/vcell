@@ -44,7 +44,7 @@ public class FRAPOptData {
 	
 	/*----------------reference data by diffusion rate=1, mobileFrac=1 and bwmRate = 0-------------------*/
 	public static final Parameter REF_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX], 0, 20, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX], 0, 40, 1.0, 1.0);
 	public static final Parameter REF_MOBILE_FRACTION_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =

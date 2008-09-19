@@ -366,6 +366,46 @@ public class FRAPOptimization {
 		Parameter fastMobileFrac = inputParams[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX];
 		Parameter slowMobileFrac = inputParams[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX];
 		Parameter bwmRate = inputParams[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX];
+		if(newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] < fastRate.getLowerBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] = fastRate.getLowerBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] > fastRate.getUpperBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] = fastRate.getUpperBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] < slowRate.getLowerBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] = slowRate.getLowerBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] > slowRate.getUpperBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] = slowRate.getUpperBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] < fastMobileFrac.getLowerBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] = fastMobileFrac.getLowerBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] > fastMobileFrac.getUpperBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] = fastMobileFrac.getUpperBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] < slowMobileFrac.getLowerBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] = slowMobileFrac.getLowerBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] > slowMobileFrac.getUpperBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] = slowMobileFrac.getUpperBound();
+		}
+		if(newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] < bwmRate.getLowerBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] = bwmRate.getLowerBound();
+		}	
+		if(newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] > bwmRate.getUpperBound())
+		{
+			newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] = bwmRate.getUpperBound();
+		}
 		
 		result[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] = new Parameter(fastRate.getName(), 
 				                                                                    fastRate.getLowerBound(), 
