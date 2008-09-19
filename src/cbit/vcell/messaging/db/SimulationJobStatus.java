@@ -387,8 +387,8 @@ private void setStatusMessage(String statusMsg) {
 		fieldStatusMessage = fieldStatusMessage.substring(0, 2048);
 	}
 	if (fieldStatusMessage != null) {
-		fieldStatusMessage = fieldStatusMessage.replace('\r', ' ');
-		fieldStatusMessage = fieldStatusMessage.replace('\n', ' ');
+//		fieldStatusMessage = fieldStatusMessage.replace('\r', ' ');
+//		fieldStatusMessage = fieldStatusMessage.replace('\n', ' ');
 		fieldStatusMessage = fieldStatusMessage.replace('\'', ' ');
 	}
 }

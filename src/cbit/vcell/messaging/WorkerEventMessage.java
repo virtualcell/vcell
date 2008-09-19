@@ -175,8 +175,8 @@ public static WorkerEventMessage sendFailed(JmsSession session, Object source, S
 			revisedFailMsg = revisedFailMsg.substring(0, 2048); //status message is only 2048 chars long in database
 		}
 
-		revisedFailMsg = revisedFailMsg.replace('\r', ' ');
-		revisedFailMsg = revisedFailMsg.replace('\n', ' ');
+//		revisedFailMsg = revisedFailMsg.replace('\r', ' ');
+//		revisedFailMsg = revisedFailMsg.replace('\n', ' ');
 		revisedFailMsg = revisedFailMsg.replace('\'', ' '); // these characters are not valid both in database and in messages as a property
 	}
 	
@@ -229,8 +229,8 @@ public static WorkerEventMessage sendStarting(JmsSession session, Object source,
 			revisedStartMsg = revisedStartMsg.substring(0, 2048); // status message is only 2048 chars long in database
 		}
 
-		revisedStartMsg = revisedStartMsg.replace('\r', ' ');
-		revisedStartMsg = revisedStartMsg.replace('\n', ' ');
+//		revisedStartMsg = revisedStartMsg.replace('\r', ' ');
+//		revisedStartMsg = revisedStartMsg.replace('\n', ' ');
 		revisedStartMsg = revisedStartMsg.replace('\'', ' '); // these characters are not valid both in database and in messages as a property
 	}
 		
