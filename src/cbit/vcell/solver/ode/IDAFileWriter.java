@@ -173,7 +173,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			for (Discontinuity od : v) {
 				String dname = discontinuityNameMap.get(od);
 				if (dname == null) {
-					dname = "D_B" + discontinuityNameMap.size();
+					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);				
 				}
 				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
@@ -194,7 +194,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			for (Discontinuity od : v) {
 				String dname = discontinuityNameMap.get(od);
 				if (dname == null) {
-					dname = "D_B" + discontinuityNameMap.size();
+					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);				
 				}
 				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
@@ -251,7 +251,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			for (Discontinuity od : v) {
 				String dname = discontinuityNameMap.get(od);
 				if (dname == null) {
-					dname = "D_B" + discontinuityNameMap.size();
+					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);				
 				}
 				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));

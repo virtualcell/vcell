@@ -16,6 +16,7 @@ import cbit.vcell.solver.*;
 public abstract class OdeFileWriter {
 	private Vector<StateVariable> fieldStateVariables = new Vector<StateVariable>();
 	private Simulation fieldSimulation = null;
+	protected String ROOT_VARIABLE_PREFIX = "__D_B_";
 
 /**
  * OdeFileCoder constructor comment.
