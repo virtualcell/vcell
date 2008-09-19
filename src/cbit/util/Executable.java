@@ -69,12 +69,12 @@ protected void executeProcess() throws cbit.util.ExecutableException {
 	} catch (Throwable e) {
 		if (getStatus().isError()) {
 			// process failed and we relay the exception thrown on error status finish above
-			throw new ExecutableException(e.getMessage() + "(" + getCommand() + ")");
+			throw new ExecutableException(e.getMessage() + "\n\n(" + getCommand() + ")");
 		} else {
 			//something really unexpected happened, update status and log it before relaying...
 			setStatus(ExecutableStatus.getError("error running executable " + e.getMessage()));
 			e.printStackTrace(System.out);
-			throw new ExecutableException("Unexpected error: " + e.getMessage() + "(" + getCommand() + ")");
+			throw new ExecutableException("Unexpected error: " + e.getMessage() + "\n\n(" + getCommand() + ")");
 		}			
 	}
 }
