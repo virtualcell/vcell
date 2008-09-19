@@ -35,37 +35,35 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 	sb.append("NUM_EQUATIONS " + getStateVariableCount() + "\n");
 	for (int i = 0; i < getStateVariableCount(); i++) {
 		StateVariable stateVar = (StateVariable)getStateVariable(i);
-		Expression rateExpr = new Expression(0.0);
+		Expression rateExpr = null;
 		if (stateVar instanceof ODEStateVariable) {
-			rateExpr = ((ODEStateVariable)stateVar).getRateExpression();
+			rateExpr = new Expression(((ODEStateVariable)stateVar).getRateExpression());
 		} else if (stateVar instanceof SensStateVariable) {
-			rateExpr = ((SensStateVariable)stateVar).getRateExpression();
+			rateExpr = new Expression(((SensStateVariable)stateVar).getRateExpression());
 		}
 		Expression initExpr = null;
 		if (stateVar instanceof ODEStateVariable) {
-			initExpr = ((ODEStateVariable)stateVar).getInitialRateExpression();
-			initExpr.bindExpression(getSimulation());
-			initExpr = getSimulation().substituteFunctions(initExpr);
+			initExpr = new Expression(((ODEStateVariable)stateVar).getInitialRateExpression());
 		} else if (stateVar instanceof SensStateVariable) {
-			initExpr = ((SensStateVariable)stateVar).getInitialRateExpression();
+			initExpr = new Expression(((SensStateVariable)stateVar).getInitialRateExpression());
 		}
 		
 		initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
-		
-		rateExpr.bindExpression(varsSymbolTable);
+		initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable).flatten();
 		rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
-		Expression newRateExpr = new Expression(rateExpr);		
+		
 		Vector<Discontinuity> v = rateExpr.getDiscontinuities();		
 		for (Discontinuity od : v) {
+			od.subsituteAndFlatten(varsSymbolTable);
 			String dname = discontinuityNameMap.get(od);
 			if (dname == null) {
 				dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 				discontinuityNameMap.put(od, dname);				
 			}
-			newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+			rateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
 		}
 
-		sb.append("ODE "+stateVar.getVariable().getName()+" INIT "+ initExpr.flatten().infix() + ";\n\t RATE " + newRateExpr.flatten().infix() + ";\n");
+		sb.append("ODE "+stateVar.getVariable().getName()+" INIT "+ initExpr.flatten().infix() + ";\n\t RATE " + rateExpr.flatten().infix() + ";\n");
 	}
 	
 	if (discontinuityNameMap.size() > 0) {

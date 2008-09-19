@@ -79,10 +79,9 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable);
 			origSlowRateVector.set_elem(varIndex, 0, new RationalExp("("+rateExpr.flatten().infix()+")"));
 
-			Expression initExpr = equation.getInitialExpression();
-			initExpr.bindExpression(varsSymbolTable);
-			initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable);
+			Expression initExpr = new Expression(equation.getInitialExpression());
 			initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
+			initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable).flatten();
 			origInitVector.set_elem(varIndex, 0, new RationalExp("("+initExpr.flatten().infix()+")"));
 
 			varIndex++;
@@ -166,41 +165,40 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			// print row of mass matrix followed by slow rate corresponding to fast invariant
 			Expression slowRateExp = new Expression(newSlowRateVector.get(equationIndex,0).infixString()).flatten();
 			slowRateExp.bindExpression(getSimulation());	
-			slowRateExp = getSimulation().substituteFunctions(slowRateExp);
+			slowRateExp = MathUtilities.substituteFunctions(slowRateExp, varsSymbolTable).flatten();
 			
-			Expression newRateExpr = new Expression(slowRateExp);			
 			Vector<Discontinuity> v = slowRateExp.getDiscontinuities();
 			for (Discontinuity od : v) {
+				od.subsituteAndFlatten(varsSymbolTable);
 				String dname = discontinuityNameMap.get(od);
 				if (dname == null) {
 					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);				
 				}
-				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+				slowRateExp.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
 			}
 			
-			sb.append(newRateExpr.infix()+";\n");
+			sb.append(slowRateExp.infix()+";\n");
 			equationIndex++;
 		}
 		Enumeration<FastRate> enumFastRates = fastSystem.getFastRates();
 		while (enumFastRates.hasMoreElements()){
 			// print the fastRate for this row
 			Expression fastRateExp = new Expression(enumFastRates.nextElement().getFunction());
-			fastRateExp.bindExpression(getSimulation());	
-			fastRateExp = getSimulation().substituteFunctions(fastRateExp);
+			fastRateExp = MathUtilities.substituteFunctions(fastRateExp, varsSymbolTable).flatten();
 
-			Expression newRateExpr = new Expression(fastRateExp);
 			Vector<Discontinuity> v = fastRateExp.getDiscontinuities();
 			for (Discontinuity od : v) {
+				od.subsituteAndFlatten(varsSymbolTable);
 				String dname = discontinuityNameMap.get(od);
 				if (dname == null) {
 					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
-					discontinuityNameMap.put(od, dname);				
+					discontinuityNameMap.put(od, dname);
 				}
-				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+				fastRateExp.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
 			}
 			
-			sb.append(newRateExpr.flatten().infix()+";\n");
+			sb.append(fastRateExp.flatten().infix()+";\n");
 			equationIndex++;
 		}
 	} else {
@@ -208,14 +206,13 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			StateVariable stateVar = (StateVariable)getStateVariable(i);
 			Expression initExpr = null;
 			if (stateVar instanceof ODEStateVariable) {
-				initExpr = ((ODEStateVariable)stateVar).getInitialRateExpression();
-				initExpr.bindExpression(getSimulation());
-				initExpr = getSimulation().substituteFunctions(initExpr);
+				initExpr = new Expression(((ODEStateVariable)stateVar).getInitialRateExpression());
 			} else if (stateVar instanceof SensStateVariable) {
-				initExpr = ((SensStateVariable)stateVar).getInitialRateExpression();
+				initExpr = new Expression(((SensStateVariable)stateVar).getInitialRateExpression());
 			}		
 			
 			initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
+			initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable);
 			sb.append("VAR " + stateVar.getVariable().getName() + " INIT " + initExpr.flatten().infix() + ";\n");
 		}
 		
@@ -236,28 +233,27 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 		sb.append("RHS DIFFERENTIAL " + getStateVariableCount() + " ALGEBRAIC 0\n");
 		for (int i = 0; i < getStateVariableCount(); i++) {
 			StateVariable stateVar = (StateVariable)getStateVariable(i);
-			Expression rateExpr = new Expression(0.0);
+			Expression rateExpr = null;
 			if (stateVar instanceof ODEStateVariable) {
-				rateExpr = ((ODEStateVariable)stateVar).getRateExpression();
+				rateExpr = new Expression(((ODEStateVariable)stateVar).getRateExpression());
 			} else if (stateVar instanceof SensStateVariable) {
-				rateExpr = ((SensStateVariable)stateVar).getRateExpression();
+				rateExpr = new Expression(((SensStateVariable)stateVar).getRateExpression());
 			}	
 			
-			rateExpr.bindExpression(varsSymbolTable);
 			rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
 			
-			Expression newRateExpr = new Expression(rateExpr);
 			Vector<Discontinuity> v = rateExpr.getDiscontinuities();			
 			for (Discontinuity od : v) {
+				od.subsituteAndFlatten(varsSymbolTable);
 				String dname = discontinuityNameMap.get(od);
 				if (dname == null) {
 					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);				
 				}
-				newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+				rateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
 			}
 			
-			sb.append(newRateExpr.infix() + ";\n");
+			sb.append(rateExpr.infix() + ";\n");
 		}
 	}
 	
