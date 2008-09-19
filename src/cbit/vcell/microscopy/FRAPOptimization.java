@@ -53,11 +53,15 @@ public class FRAPOptimization {
 		int roiLen = expRois.length;
 		double[] simTimes = vcDataManager.getDataSetTimes(vcSimdataID);
 		double[][] newData = new double[roiLen][simTimes.length];
-
+//		double[] normFactor = new double[expRois[0].getPixelsXYZ().length]; 
+//		for(int i=0; i<normFactor.length; i++)
+//		{
+//			normFactor[i]=1;
+//		}
 		for (int j = 0; j < simTimes.length; j++) {
 			double[] simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,simTimes[j]).getData();
 			for(int i = 0; i < roiLen; i++){
-				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
+				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null, 0.0);
 			}
 			if(progressListener != null){
 				progressListener.updateProgress(((double)(j+1))/(double)simTimes.length);

@@ -1135,19 +1135,19 @@ public class FRAPStudy implements Matchable{
 //			writeUShortFile(bleachedROI_2D, new File("D:\\developer\\eclipse\\workspace\\bleachedROI_2D.bmp"));
 
     		dilatedROI_2D_1 =
-    			fastDilate(bleachedROI_2D, 8, cellROI_2D);
+    			fastDilate(bleachedROI_2D, 4, cellROI_2D);
 //    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(8), cellROI_2D,false);
 
 			dilatedROI_2D_2 = 
-				fastDilate(bleachedROI_2D, 16, cellROI_2D);
+				fastDilate(bleachedROI_2D, 10, cellROI_2D);
 //    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(16), cellROI_2D,false);
 
 	    	dilatedROI_2D_3 = 
-	    		fastDilate(bleachedROI_2D, 24, cellROI_2D);
+	    		fastDilate(bleachedROI_2D, 18, cellROI_2D);
 //    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(24), cellROI_2D,false);
 
 	    	dilatedROI_2D_4 = 
-	    		fastDilate(bleachedROI_2D, 32, cellROI_2D);
+	    		fastDilate(bleachedROI_2D, 28, cellROI_2D);
 //    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(32), cellROI_2D,false);
 
 	    	dilatedROI_2D_5 = 
@@ -1157,10 +1157,10 @@ public class FRAPStudy implements Matchable{
 			erodedROI_2D_0 = new UShortImage(bleachedROI_2D);
 			
 			erodedROI_2D_1 = 
-    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(3), null,true);
+    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(2), cellROI_2D,true);
 			
 			erodedROI_2D_2 = 
-    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(6), null,true);
+    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(5), cellROI_2D,true);
 			
 			UShortImage reverseErodeROI_2D_1 = new UShortImage(erodedROI_2D_1);
 			reverseErodeROI_2D_1.reverse();

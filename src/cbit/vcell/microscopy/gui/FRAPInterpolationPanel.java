@@ -458,11 +458,20 @@ public class FRAPInterpolationPanel extends JPanel {
 	}
 	private static Parameter[] createParameterArray(double diffusionRate,double mobileFraction,double monitorBleachRate){
 		Parameter diff =
-			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 100, 1.0,diffusionRate);
+			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX],
+					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),diffusionRate);
 		Parameter mobileFrac =
-			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.MOBILE_FRACTION_INDEX], 0, 1, 1.0,mobileFraction);
+			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.MOBILE_FRACTION_INDEX],
+					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),mobileFraction);
 		Parameter bleachWhileMonitoringRate =
-			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX], 0, 10, 1.0,monitorBleachRate);
+			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX],
+					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),monitorBleachRate);
 		
 		return new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate};
 	}

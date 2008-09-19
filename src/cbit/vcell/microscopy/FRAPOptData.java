@@ -29,7 +29,7 @@ public class FRAPOptData {
 	public static final int BLEACH_WHILE_MONITOR_INDEX = 2;
 			
 	public static final Parameter REF_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 20, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 40, 1.0, 1.0);
 	public static final Parameter REF_MOBILE_FRACTION_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
