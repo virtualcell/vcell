@@ -149,7 +149,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * Creation date: (6/11/2004 7:32:07 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void addResultsFrame(final SimulationWindow simWindow) {
+public void addResultsFrame(SimulationWindow simWindow) {
 	if (simWindow.getSimOwner() != getMathModel()) {
 		// it shouldn't happen, but check anyway...
 		try {
@@ -160,13 +160,8 @@ public void addResultsFrame(final SimulationWindow simWindow) {
 		return;
 	}
 	simulationWindowsHash.put(simWindow.getVcSimulationIdentifier(), simWindow);
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
-			simWindow.getFrame().setLocation(100 + 20 * simulationWindowsHash.size(), 100 + 15 * simulationWindowsHash.size());
-			showFrame(simWindow.getFrame());
-			return null;
-		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	simWindow.getFrame().setLocation(100 + 20 * simulationWindowsHash.size(), 100 + 15 * simulationWindowsHash.size());
+	showFrame(simWindow.getFrame());
 }
 
 

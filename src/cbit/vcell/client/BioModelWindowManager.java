@@ -8,7 +8,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.TreeMap;
@@ -149,30 +148,23 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * Creation date: (6/11/2004 7:32:07 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void addResultsFrame(final SimulationWindow simWindow) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
-			if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
-				// it shouldn't happen, but check anyway...
-				try {
-					throw new RuntimeException("we are asked to show results but we don't have the simOwner");
-				} catch (Exception exc) {
-					exc.printStackTrace(System.out);
-				}
-				return null;
-			}
-			ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(simWindow.getSimOwner());
-			appComponents.addDataViewer(simWindow);
-			if (appComponents.getAppEditorFrame().isShowing()) {
-				// should be showing, but you never know...
-				int count = appComponents.getDataViewerFrames().length;
-				simWindow.getFrame().setLocation(appComponents.getAppEditorFrame().getLocation().x + 100 + count * 20, appComponents.getAppEditorFrame().getLocation().y + 100 + count * 15);
-				showFrame(simWindow.getFrame());
-			}
-			return null;
+public void addResultsFrame(SimulationWindow simWindow) {
+	if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
+		// it shouldn't happen, but check anyway...
+		try {
+			throw new RuntimeException("we are asked to show results but we don't have the simOwner");
+		} catch (Exception exc) {
+			exc.printStackTrace(System.out);
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
-
+	}
+	ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(simWindow.getSimOwner());
+	appComponents.addDataViewer(simWindow);
+	if (appComponents.getAppEditorFrame().isShowing()) {
+		// should be showing, but you never know...
+		int count = appComponents.getDataViewerFrames().length;
+		simWindow.getFrame().setLocation(appComponents.getAppEditorFrame().getLocation().x + 100 + count * 20, appComponents.getAppEditorFrame().getLocation().y + 100 + count * 15);
+		showFrame(simWindow.getFrame());
+	}
 }
 
 
