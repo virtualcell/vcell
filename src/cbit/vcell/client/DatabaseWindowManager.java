@@ -16,9 +16,12 @@ import cbit.util.xml.XmlUtil;
 import cbit.sql.*;
 import cbit.vcell.clientdb.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.document.*;
 import javax.swing.*;
+import javax.swing.Timer;
 
 import cbit.vcell.desktop.*;
 import swingthreads.*;
@@ -1546,12 +1549,13 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-public String showSaveDialog(final int documentType, final Component requester) throws Exception {
+public String showSaveDialog(final int documentType, final Component requester, final String oldName) throws Exception {
 	return (String)
 	new EventDispatchRunWithException (){
 		public Object runWithException() throws Exception{
 			JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
 			saveDialog.setWantsInput(true);
+			saveDialog.setInitialSelectionValue(oldName);
 			JPanel panel = new JPanel(new BorderLayout());
 			JComponent tree = null;
 			switch (documentType) {
@@ -1578,6 +1582,15 @@ public String showSaveDialog(final int documentType, final Component requester) 
 			saveDialog.setMessage(panel);
 			JDialog d = saveDialog.createDialog(requester, "Save document:");
 			d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			final JOptionPane finalSaveDialog = saveDialog;
+			ActionListener al = new ActionListener() {
+				public void actionPerformed(ActionEvent ae){
+					finalSaveDialog.selectInitialValue();
+				 }
+			};
+			final Timer getFocus = new Timer(100, al);
+			getFocus.setRepeats(false);
+			getFocus.start();	
 			cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
 			if ("Save".equals(saveDialog.getValue())) {
 				return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
