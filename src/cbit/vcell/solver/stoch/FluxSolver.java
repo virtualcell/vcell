@@ -1,5 +1,7 @@
 package cbit.vcell.solver.stoch;
  
+import java.util.Enumeration;
+
 import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -96,9 +98,21 @@ public class FluxSolver {
 	//we have to pass the math description because the math description is not updated in simulation context.	
 	public static FluxFunction solveFlux(Expression orgExp, FluxReaction rs) throws ExpressionException, MathException{
 		FluxFunction ff = new FluxFunction();
-		//get Species outside and inside contexts
+		//get species outside the membrane where the flux happens
 		SpeciesContext sc_outside = ((FluxReaction)rs).getFlux(((Feature)rs.getStructure().getParentStructure())).getSpeciesContext();
-		SpeciesContext sc_inside = ((FluxReaction)rs).getFlux(((Feature)rs.getStructure().getSubFeatures().nextElement())).getSpeciesContext();
+		//get the feature right inside the membrane
+		Feature featureInside = null;
+		Enumeration<Feature> enu = rs.getStructure().getSubFeatures();
+		while(enu.hasMoreElements())
+		{
+			Feature struc = enu.nextElement();
+			if(((Feature)struc).getParentStructure().compareEqual(rs.getStructure()))
+			{
+				featureInside = struc;
+			}
+		}
+		//get species inside the membrane where the flux happens
+		SpeciesContext sc_inside = ((FluxReaction)rs).getFlux(featureInside).getSpeciesContext();
 		ff.setSpeciesOutside(sc_outside.getName());
 		ff.setSpeciesInside(sc_inside.getName());
 		
@@ -119,7 +133,7 @@ public class FluxSolver {
 		    fluxExp = fluxExp.getSubstitutedExpression(new Expression(sc_outside.getName()), new Expression(0)).flatten();
 			fluxExp = fluxExp.getSubstitutedExpression(new Expression(sc_inside.getName()), new Expression(0)).flatten();
 			if (!ExpressionUtils.functionallyEquivalent(fluxExp, new Expression(0.0), false, 1e-8, 1e-8)){
-				throw new MathException("Cannot generate stochastic math mapping for the flux: " + rs.getName() + ". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
+				throw new MathException("Transform failed in flux: " + rs.getName() + ". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
 			}
 			//get p1 after partially differentiating speciesOutside
 			fluxExp = new Expression(orgExp);
@@ -131,7 +145,7 @@ public class FluxSolver {
 			}
 			else
 			{
-				throw new MathException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
+				throw new MathException("Transform failed in flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
 			}
 			//get p2 after partially differentiating speciesInside
 			fluxExp = new Expression(orgExp);
@@ -144,7 +158,7 @@ public class FluxSolver {
 			}
 			else
 			{
-				throw new MathException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
+				throw new MathException("Transform failed in flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
 			}
 			//check if permeabilities have symbol 't'
 			if(p1.hasSymbol(ReservedSymbol.TIME.getName()) || p2.hasSymbol(ReservedSymbol.TIME.getName()))

@@ -1,15 +1,19 @@
 package cbit.vcell.model.gui;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Vector;
 
 import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.solver.stoch.MassActionSolver;
 
 
 /**
@@ -185,8 +189,8 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 			throw new RuntimeException("TransfromMassActionTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 		}
 		
-		Kinetics orgiKinetics = getModel().getReactionSteps()[row].getKinetics();
-		Kinetics transKinetics = transMAs.getTransformedReactionSteps()[row].getTransformedReaction().getKinetics();
+		Kinetics origKinetics = getModel().getReactionSteps()[row].getKinetics();
+		MassActionSolver.MassActionFunction maFunc = transMAs.getTransformedReactionSteps()[row].getMassActionFunction();
 		switch (col){
 			case COLUMN_REACTION:
 			{
@@ -205,17 +209,17 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 			}
 			case COLUMN_KINETICS:
 			{
-				if(orgiKinetics != null)
+				if(origKinetics != null)
 				{
-					return orgiKinetics.getKineticsDescription().getDescription();
+					return origKinetics.getKineticsDescription().getDescription();
 				}
 				return null;
 			}
 			case COLUMN_RATE:
 			{
-				if(orgiKinetics != null)
+				if(origKinetics != null)
 				{
-					Kinetics.KineticsParameter ratePara = orgiKinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
+					Kinetics.KineticsParameter ratePara = origKinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
 					if(ratePara != null && ratePara.getExpression() !=null)
 					{
 						return new ScopedExpression(ratePara.getExpression(),ratePara.getNameScope(),false);
@@ -232,23 +236,17 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 			}
 			case COLUMN_FORWARDRATE:
 			{
-				if(transKinetics != null)
+				if(maFunc != null && maFunc.getForwardRate() != null)
 				{
-					if(transKinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
-					{
-						return new ScopedExpression(transKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression(), transKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getNameScope(),false);
-					}
+					return new ScopedExpression(maFunc.getForwardRate(), null, false);
 				}
 				return null;
 			}
 			case COLUMN_REVERSERATE:
 			{
-				if(transKinetics != null)
+				if(maFunc != null && maFunc.getReverseRate() != null)
 				{
-					if(transKinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
-					{
-						return new ScopedExpression(transKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression(), transKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getNameScope(),false);
-					}
+					return new ScopedExpression(maFunc.getReverseRate(), null, false);
 				}
 				return null;
 			}
@@ -302,8 +300,10 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 	
 	public void saveTransformedReactions() throws Exception
 	{
+		//isTransformable and TransformedREactions are stored according to the indexes in model reaction steps.
 		boolean[] isTransformable = getTransformMassActions().getIsTransformable();
 		TransformMassActions.TransformedReaction[] trs = getTransformMassActions().getTransformedReactionSteps();
+		ReactionStep[] origReactions = getModel().getReactionSteps();
 		String okTransReacNames = ""; // names of those who can be transformed and will be transformed
 		String noTransReacNames = ""; // names of those who can be transformed and will not be transformed
 		String errReacNames = ""; // names of those who can not be transformed
@@ -311,41 +311,73 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 		{
 			if(trs[i].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMED && getIsSelected(i) )
 			{
-				okTransReacNames = okTransReacNames + trs[i].getTransformedReaction().getName()+ ",";
+				okTransReacNames = okTransReacNames + origReactions[i].getName()+ ",";
 			}
 			else if(trs[i].getTransformType() == TransformMassActions.TransformedReaction.TRANSFORMED &&  !getIsSelected(i))
 			{
-				noTransReacNames = noTransReacNames + trs[i].getTransformedReaction().getName()+ ",";
+				noTransReacNames = noTransReacNames + origReactions[i].getName()+ ",";
 			}
 			else if(!isTransformable[i])
 			{
-				errReacNames = errReacNames + trs[i].getTransformedReaction().getName()+ ",";
+				errReacNames = errReacNames + origReactions[i].getName()+ ",";
 			}
 		}
-		//set transformed Mass Action kinetics to model
-		ReactionStep[] reacSteps = new ReactionStep[trs.length];
-		for(int i=0; i< trs.length; i++)
+		//set transformed Mass Action kinetics to model reactions
+		for(int i=0; i< origReactions.length; i++)
 		{
 			if(getIsSelected(i))
 			{
-				if(getModel().getReactionSteps()[i] instanceof SimpleReaction)// for simple reaction, we replace the kinetics
+				// for simple reaction, we replace the original kinetics with MassActionKinetics if it wasn't MassActionKinetics
+				if(origReactions[i] instanceof SimpleReaction) 
 				{
-					reacSteps[i] = getModel().getReactionSteps()[i];
-					reacSteps[i].setKinetics(trs[i].getTransformedReaction().getKinetics());
-//					reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression().bindExpression(reacSteps[i]);
-//					reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression().bindExpression(reacSteps[i]);
+					if(!(origReactions[i].getKinetics() instanceof MassActionKinetics))
+					{
+						//***Below we will physically change the simple reaction*** 
+						
+						//put all kinetic parameters together into array newKps
+						Vector<Kinetics.KineticsParameter> newKps = new Vector<Kinetics.KineticsParameter>();
+						
+						//get original kinetic parameters which are not current density and reaction rate.
+						//those parameters are basically the symbols in rate expression.
+						Vector<Kinetics.KineticsParameter> origKps = new Vector<Kinetics.KineticsParameter>();
+						Kinetics.KineticsParameter[] Kps = origReactions[i].getKinetics().getKineticsParameters();
+						for (int j = 0; j < Kps.length; j++) {
+							if (!(Kps[j].getRole() == Kinetics.ROLE_CurrentDensity || Kps[j].getRole() == Kinetics.ROLE_ReactionRate))
+							{
+								origKps.add(Kps[j]);
+							}
+						}
+						
+						// create mass action kinetics for the original reaction step
+						MassActionKinetics maKinetics = new MassActionKinetics(origReactions[i]);
+						maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).setExpression(trs[i].getMassActionFunction().getForwardRate());
+						maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).setExpression(trs[i].getMassActionFunction().getReverseRate());
+						
+						// copy rate, currentdensity, Kf and Kr to the new Kinetic
+						// Parameter list first(to make sure that paramters are in
+						// the correct order in the newly created Mass Action
+						// Kinetics)
+						for (int j = 0; j < maKinetics.getKineticsParameters().length; j++) {
+							newKps.add(maKinetics.getKineticsParameters(j));
+						}
+						// copy other kinetic parameters from original kinetics
+						for (int j = 0; j < origKps.size(); j++) {
+							newKps.add(origKps.elementAt(j));
+						}
+						// add parameters to mass action kinetics
+						KineticsParameter[] newParameters = new KineticsParameter[newKps.size()];
+						newParameters = (KineticsParameter[]) newKps.toArray(newParameters);
+						maKinetics.addKineticsParameters(newParameters);
+												
+						//after adding all the parameters, we bind the forward/reverse rate expression with symbol table (the reaction step itself)
+						origReactions[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression().bindExpression(origReactions[i]);
+						origReactions[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression().bindExpression(origReactions[i]);
+					}
 				}
-				else // for flux, we set the flux reaction back, coz we will parse it again in stoch math mapping.
-				{
-					reacSteps[i] = getModel().getReactionSteps()[i];
-				}
-			}
-			else
-			{
-				reacSteps[i] = getModel().getReactionSteps()[i];
+				// for flux, we set the flux reaction back, coz we will parse it to mass action form in stochastic math mapping.
+				// However, we don't physically change it.
 			}
 		}
-		getModel().setReactionSteps(reacSteps);
 		String msg = "";
 		if(!okTransReacNames.equals(""))
 		{

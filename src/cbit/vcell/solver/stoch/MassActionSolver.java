@@ -11,6 +11,7 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.gui.TransformMassActions.TransformedReaction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
@@ -27,6 +28,14 @@ public class MassActionSolver {
 	{
 		private Expression fRate = null;
 		private Expression rRate = null;
+				
+		public MassActionFunction()
+		{}
+		public MassActionFunction(Expression forwardRate, Expression reverseRate)
+		{
+			fRate = forwardRate;
+			rRate = reverseRate;
+		}
 		
 		public Expression getForwardRate() {
 			return fRate;
@@ -44,11 +53,11 @@ public class MassActionSolver {
 			rRate = rate;
 		}
 		
-		public void show()
-		{
-			System.out.println("Forward rate is " + getForwardRate().infix());
-			System.out.println("Reverse rate is " + getReverseRate().infix());
-		}
+//		public void show()
+//		{
+//			System.out.println("Forward rate is " + getForwardRate().infix());
+//			System.out.println("Reverse rate is " + getReverseRate().infix());
+//		}
 	}
 	
 	public static MassActionFunction solveMassAction(Expression orgExp, ReactionStep rs ) throws ExpressionException, MathException{
@@ -142,7 +151,7 @@ public class MassActionSolver {
 				}
 				else
 				{
-					throw new MathException("Failed to transform to Mass Action kinetics for reaction " + rs.getName() + ". Reconstruced rate from Mass Action is not equivalent to the original rate.");
+					throw new MathException("Transform failed in reaction: " + rs.getName() + "." + TransformedReaction.Label_expectedReacForm);
 				}
 			}
 			else
@@ -195,7 +204,7 @@ public class MassActionSolver {
 					}
 					else
 					{
-						throw new MathException("Failed to transform to Mass Action kinetics for reaction " + rs.getName() + ". Reconstruced rate from Mass Action is not equivalent to the original rate.");
+						throw new MathException("Transform failed in reaction: " + rs.getName() + "." + TransformedReaction.Label_expectedReacForm);
 					}
 				}
 				//reaction in which reactants and products are totally overlaping, throw exception
