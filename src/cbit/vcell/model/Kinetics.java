@@ -377,59 +377,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 					e3.printStackTrace(System.out);
 				}
 			} 
-			if ( (evt.getSource() instanceof ModelParameter) && (evt.getPropertyName().equals("expression"))) {
-				// if 'evt' is a ModelParameter, and 'propertyName' is "expression", we need to update the model parameter expression.
-				Expression oldExpr = (Expression)evt.getOldValue();
-				Expression newExpr = (Expression)evt.getNewValue();
-				ModelParameter mp = (ModelParameter)evt.getSource();
-				Parameter p = getProxyParameter(mp.getName());
-				// if we don't find a proxy parameter in the kinetics with same name as model parameter 'mp', throw exception
-				if (p == null){
-					throw new RuntimeException("parameter "+mp.getName()+" not found");
-				}
-
-				boolean bBound = false;
-				try {
-					String symbols[] = newExpr.getSymbols(getReactionStep().getNameScope());
-					for (int i = 0; symbols!=null && i < symbols.length; i++){
-						SymbolTableEntry ste = reactionStep.getEntry(symbols[i]);
-						// if newExpr contains a symbol that is not in the symbol table, throw exception, since model parameters 
-						// should be expressed in terms of known symbols/identifiers
-						if (ste==null){
-							throw new RuntimeException("Unknown identifier : \'" + symbols[i] + "\'.");
-						}
-					}
-					// Go through all proxy parameters in kinetics and set expression with 'newExpr' for parameter with same name as 'mp'
-					// Then set the newProxyParameters (on kinetics) and bind 'newExpr' to reactionStep.
-					KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
-					for (int i = 0; i < newProxyParameters.length; i++) {
-						if (newProxyParameters[i].getName().equals(mp.getName())) {
-							newProxyParameters[i].setExpression(newExpr);
-						}
-					}
-					setProxyParameters(newProxyParameters);
-					newExpr.bindExpression(reactionStep);
-					bBound = true;
-				} catch (PropertyVetoException pve) {
-					pve.printStackTrace(System.out);
-					throw new RuntimeException("Couldn't set new expression \"" + newExpr.infix() + "\" on model parameter \'" + mp.getName() + "\'. " + pve.getMessage());
-				} catch (ExpressionBindingException ebe) {
-					ebe.printStackTrace(System.out);
-					throw new RuntimeException("Couldn't set new expression \"" + newExpr.infix() + "\" on model parameter \'" + mp.getName() + "\'. " + ebe.getMessage());
-				} finally{
-					try {
-						// if setting new expression value failed, re-set mp with old expression.
-						if (!bBound){
-							mp.setExpression(oldExpr);
-						}
-						cleanupParameters();
-					}catch (Exception e){
-						e.printStackTrace(System.out);
-						throw new RuntimeException(e.getMessage());
-					}
-				}				
-			}
-		}
+		} 
 		
 	}
 	

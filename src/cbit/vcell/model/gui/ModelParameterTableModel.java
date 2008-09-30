@@ -11,6 +11,8 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -447,6 +449,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			for (int i = 0; oldRS!=null && i < oldRS.length; i++){
 				oldRS[i].removePropertyChangeListener(this);
 				oldRS[i].getKinetics().removePropertyChangeListener(this);
+				for (int j = 0; j < oldRS[i].getKinetics().getKineticsParameters().length; j++) {
+					oldRS[i].getKinetics().getKineticsParameters()[j].removePropertyChangeListener(this);
+				}
+				for (int j = 0; j < oldRS[i].getKinetics().getProxyParameters().length; j++) {
+					oldRS[i].getKinetics().getProxyParameters()[j].removePropertyChangeListener(this);
+				}
+				for (int j = 0; j < oldRS[i].getKinetics().getUnresolvedParameters().length; j++) {
+					oldRS[i].getKinetics().getUnresolvedParameters()[j].removePropertyChangeListener(this);
+				}
 			}
 		}
 		cbit.vcell.model.Model newValue = (cbit.vcell.model.Model)evt.getNewValue();
@@ -456,6 +467,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			for (int i = 0; newRS!=null && i < newRS.length; i++){
 				newRS[i].addPropertyChangeListener(this);
 				newRS[i].getKinetics().addPropertyChangeListener(this);
+				for (int j = 0; j < newRS[i].getKinetics().getKineticsParameters().length; j++) {
+					newRS[i].getKinetics().getKineticsParameters()[j].addPropertyChangeListener(this);
+				}
+				for (int j = 0; j < newRS[i].getKinetics().getProxyParameters().length; j++) {
+					newRS[i].getKinetics().getProxyParameters()[j].addPropertyChangeListener(this);
+				}
+				for (int j = 0; j < newRS[i].getKinetics().getUnresolvedParameters().length; j++) {
+					newRS[i].getKinetics().getUnresolvedParameters()[j].addPropertyChangeListener(this);
+				}
 			}
 		}
 		setData(getUnsortedParameters());
@@ -466,11 +486,29 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i = 0; oldRS!=null && i < oldRS.length; i++){
 			oldRS[i].removePropertyChangeListener(this);
 			oldRS[i].getKinetics().removePropertyChangeListener(this);
+			for (int j = 0; j < oldRS[i].getKinetics().getKineticsParameters().length; j++) {
+				oldRS[i].getKinetics().getKineticsParameters()[j].removePropertyChangeListener(this);
+			}
+			for (int j = 0; j < oldRS[i].getKinetics().getProxyParameters().length; j++) {
+				oldRS[i].getKinetics().getProxyParameters()[j].removePropertyChangeListener(this);
+			}
+			for (int j = 0; j < oldRS[i].getKinetics().getUnresolvedParameters().length; j++) {
+				oldRS[i].getKinetics().getUnresolvedParameters()[j].removePropertyChangeListener(this);
+			}
 		}
 		ReactionStep[] newRS = (ReactionStep[])evt.getNewValue();
 		for (int i = 0; newRS!=null && i < newRS.length; i++){
 			newRS[i].addPropertyChangeListener(this);
 			newRS[i].getKinetics().addPropertyChangeListener(this);
+			for (int j = 0; j < newRS[i].getKinetics().getKineticsParameters().length; j++) {
+				newRS[i].getKinetics().getKineticsParameters()[j].addPropertyChangeListener(this);
+			}
+			for (int j = 0; j < newRS[i].getKinetics().getProxyParameters().length; j++) {
+				newRS[i].getKinetics().getProxyParameters()[j].addPropertyChangeListener(this);
+			}
+			for (int j = 0; j < newRS[i].getKinetics().getUnresolvedParameters().length; j++) {
+				newRS[i].getKinetics().getUnresolvedParameters()[j].addPropertyChangeListener(this);
+			}
 		}
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
@@ -479,23 +517,70 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		Kinetics oldValue = (Kinetics)evt.getOldValue();
 		if (oldValue!=null){
 			oldValue.removePropertyChangeListener(this);
+			for (int j = 0; j < oldValue.getKineticsParameters().length; j++) {
+				oldValue.getKineticsParameters()[j].removePropertyChangeListener(this);
+			}
+			for (int j = 0; j < oldValue.getProxyParameters().length; j++) {
+				oldValue.getProxyParameters()[j].removePropertyChangeListener(this);
+			}
+			for (int j = 0; j < oldValue.getUnresolvedParameters().length; j++) {
+				oldValue.getUnresolvedParameters()[j].removePropertyChangeListener(this);
+			}
 		}
 		Kinetics newValue = (Kinetics)evt.getNewValue();
 		if (newValue!=null){
 			newValue.addPropertyChangeListener(this);
+			for (int j = 0; j < newValue.getKineticsParameters().length; j++) {
+				newValue.getKineticsParameters()[j].addPropertyChangeListener(this);
+			}
+			for (int j = 0; j < newValue.getProxyParameters().length; j++) {
+				newValue.getProxyParameters()[j].addPropertyChangeListener(this);
+			}
+			for (int j = 0; j < newValue.getUnresolvedParameters().length; j++) {
+				newValue.getUnresolvedParameters()[j].addPropertyChangeListener(this);
+			}
 		}
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
+	if (evt.getSource() instanceof Parameter) {
+		setData(getUnsortedParameters());
+		fireTableRowsUpdated(0, getRowCount()-1);
+	}
+
 	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("kineticsParameters")) {
+		KineticsParameter[] old = (KineticsParameter[])evt.getOldValue();
+		for (int i = 0; old!=null && i < old.length; i++){
+			old[i].removePropertyChangeListener(this);
+		}
+		KineticsParameter[] newVal = (KineticsParameter[])evt.getNewValue();
+		for (int i = 0; newVal!=null && i < newVal.length; i++){
+			newVal[i].addPropertyChangeListener(this);
+		}
 		setData(getUnsortedParameters());
 		fireTableRowsUpdated(0, getRowCount()-1);
 	}
 	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("proxyParameters")) {
+		KineticsProxyParameter[] old = (KineticsProxyParameter[])evt.getOldValue();
+		for (int i = 0; old!=null && i < old.length; i++){
+			old[i].removePropertyChangeListener(this);
+		}
+		KineticsProxyParameter[] newVal = (KineticsProxyParameter[])evt.getNewValue();
+		for (int i = 0; newVal!=null && i < newVal.length; i++){
+			newVal[i].addPropertyChangeListener(this);
+		}
 		setData(getUnsortedParameters());
 		fireTableRowsUpdated(0, getRowCount()-1);
 	}
 	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("unresolvedParameters")) {
+		UnresolvedParameter[] old = (UnresolvedParameter[])evt.getOldValue();
+		for (int i = 0; old!=null && i < old.length; i++){
+			old[i].removePropertyChangeListener(this);
+		}
+		UnresolvedParameter[] newVal = (UnresolvedParameter[])evt.getNewValue();
+		for (int i = 0; newVal!=null && i < newVal.length; i++){
+			newVal[i].addPropertyChangeListener(this);
+		}
 		setData(getUnsortedParameters());
 		fireTableRowsUpdated(0, getRowCount()-1);
 	}
