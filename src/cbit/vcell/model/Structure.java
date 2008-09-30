@@ -281,9 +281,9 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * Creation date: (12/11/2006 5:42:07 PM)
  * @return java.util.Enumeration
  */
-public Enumeration getSubFeatures() 
+public Enumeration<Feature> getSubFeatures() 
 {
-	Vector subFeatures = new Vector();
+	Vector<Feature> subFeatures = new Vector<Feature>();
 	Structure[] structures = this.getModel().getStructures();
 	for (int i=0; i<structures.length; i++)
 	{

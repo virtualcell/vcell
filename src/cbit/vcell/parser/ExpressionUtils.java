@@ -456,10 +456,10 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				double result1 = exp1.evaluateVector(values);
 				double result2 = exp2.evaluateVector(values);
 				if (Double.isInfinite(result1) || Double.isNaN(result1)){
-					throw new RuntimeException("exp1 = '"+exp1+"' evaluates to "+result1);
+					throw new RuntimeException("Expression = '"+exp1+"' evaluates to "+result1);
 				}
 				if (Double.isInfinite(result2) || Double.isNaN(result2)){
-					throw new RuntimeException("exp1 = '"+exp2+"' evaluates to "+result2);
+					throw new RuntimeException("Expression = '"+exp2+"' evaluates to "+result2);
 				}
 				double scale = Math.abs(result1)+Math.abs(result2);
 				double absdiff = Math.abs(result1-result2);
