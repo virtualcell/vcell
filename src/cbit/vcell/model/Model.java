@@ -65,6 +65,9 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 			return Model.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+			if (super.isPeer(nameScope)) {
+				return true;
+			}
 			return ((nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
 		}
 
