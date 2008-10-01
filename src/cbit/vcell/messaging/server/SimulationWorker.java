@@ -30,7 +30,7 @@ public class SimulationWorker extends AbstractJmsWorker  {
  * @param argParentNode cbit.vcell.appserver.ComputationalNode
  * @param argInitialContext javax.naming.Context
  */
-public SimulationWorker( WorkerType wt, int wo, int wm, String logdir) throws JMSException, DataAccessException, FileNotFoundException, UnknownHostException {
+public SimulationWorker(WorkerType wt, int wo, int wm, String logdir) throws JMSException, DataAccessException, FileNotFoundException, UnknownHostException {
 	super(wt, wo, wm, logdir);
 }
 

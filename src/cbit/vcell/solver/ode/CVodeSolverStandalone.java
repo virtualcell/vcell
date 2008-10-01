@@ -32,7 +32,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	//
 	//sessionLog.print("CVodeSolverStandalone.initialize() baseName = " + getBaseName());
 	//
-	CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(getSimulation());
+	CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(getSimulation(), getJobIndex(), true);
 	try {
 		cvodeFileWriter.initialize();
 	} catch (Exception e) {
@@ -56,7 +56,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	//
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"CVODE solver starting"));	
 	
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.cvodeExecutableProperty);
+	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
 	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " + inputFilename + " " + outputFilename));
 }
 }

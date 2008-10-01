@@ -13,12 +13,16 @@ import cbit.vcell.solver.*;
  * @author: John Wagner
  */
 public class CVodeFileWriter extends OdeFileWriter {
-
+	
 /**
  * OdeFileCoder constructor comment.
  */
 public CVodeFileWriter(Simulation simulation) {
-	super(simulation);
+	this(simulation, 0, false);
+}
+
+public CVodeFileWriter(Simulation simulation, int ji, boolean bUseMessaging) {
+	super(simulation, ji, bUseMessaging);
 }
 
 
@@ -73,5 +77,11 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 		}
 	}
 	pw.print(sb);
+}
+
+
+@Override
+String getSolverName() {
+	return "CVODE";
 }
 }

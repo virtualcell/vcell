@@ -7,6 +7,7 @@ import cbit.vcell.parser.*;
 import java.util.*;
 import java.io.*;
 import cbit.vcell.math.*;
+import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
@@ -15,14 +16,18 @@ import cbit.vcell.solver.*;
  */
 public abstract class OdeFileWriter {
 	private Vector<StateVariable> fieldStateVariables = new Vector<StateVariable>();
-	private Simulation fieldSimulation = null;
 	protected String ROOT_VARIABLE_PREFIX = "__D_B_";
+	protected boolean bUseMessaging = true;
+	private Simulation simulation = null;
+	private int jobIndex = 0;
 
 /**
  * OdeFileCoder constructor comment.
  */
-public OdeFileWriter(Simulation simulation) {
-	fieldSimulation = simulation;
+public OdeFileWriter(Simulation sim, int ji, boolean messaging) {
+	simulation = sim;
+	jobIndex = ji;
+	bUseMessaging = messaging;
 }
 
 
@@ -96,7 +101,7 @@ protected VariableSymbolTable createSymbolTable() {
  * OdeFileCoder constructor comment.
  */
 public Simulation getSimulation() {
-	return (fieldSimulation);
+	return simulation;
 }
 
 
@@ -183,19 +188,36 @@ public void writeInputFile(PrintWriter pw) throws Exception {
 }
 
 
+private void writeJMSParamters(PrintWriter pw) {
+	pw.println("# JMS_Paramters");
+	pw.println("JMS_PARAM_BEGIN");
+	pw.println("JMS_BROKER " + JmsUtils.getJmsUrl());
+    pw.println("JMS_USER " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword());
+    pw.println("JMS_QUEUE " + JmsUtils.getQueueWorkerEvent());  
+	pw.println("JMS_TOPIC " + JmsUtils.getTopicServiceControl());
+	pw.println("VCELL_USER " + simulation.getVersion().getOwner().getName());
+	pw.println("SIMULATION_KEY " + simulation.getVersion().getVersionKey());
+	pw.println("JOB_INDEX " + jobIndex);
+	pw.println("JMS_PARAM_END");
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-public void writeInputFile(PrintWriter pw, String[] parameterNames) throws Exception {
-	
+public void writeInputFile(PrintWriter pw, String[] parameterNames) throws Exception {	
 	if (getSimulation().getSolverTaskDescription().getUseSymbolicJacobian()){
 		throw new RuntimeException("symbolic jacobian option not yet supported in interpreted Stiff solver");
 	}
 	
+	if (bUseMessaging) {
+		writeJMSParamters(pw);
+		pw.println();
+	}
 	SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
 	TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 	ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
+	pw.println("SOLVER " + getSolverName());
 	pw.println("STARTING_TIME " + timeBounds.getStartingTime());
 	pw.println("ENDING_TIME " + timeBounds.getEndingTime());
 	pw.println("RELATIVE_TOLERANCE " + errorTolerance.getRelativeErrorTolerance());
@@ -220,4 +242,6 @@ public void writeInputFile(PrintWriter pw, String[] parameterNames) throws Excep
 	
 	pw.flush();
 }
+
+abstract String getSolverName();
 }

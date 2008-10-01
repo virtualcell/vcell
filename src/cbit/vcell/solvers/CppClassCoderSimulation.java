@@ -371,7 +371,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("SimTool* getSimTool();");
 	
 	out.println("int vcellExit(int returnCode, char* returnMsg) {");
-	out.println("\tif (!SimTool::getInstance()->isStopped()) {");
+	out.println("\tif (!SimulationMessaging::getInstVar()->isStopRequested()) {");
 	out.println("\t\tif (returnCode != 0) {");
 	out.println("\t\t\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_FAILURE, returnMsg));");
 	out.println("\t\t}");

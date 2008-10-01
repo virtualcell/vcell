@@ -1,7 +1,6 @@
 package cbit.vcell.server;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Vector;
 
 import cbit.util.Preference;
@@ -40,10 +39,7 @@ public class PropertyLoader {
 	public static final String optLibsProperty				= "vcell.opt.libs";
 	public static final String optIncludeProperty			= "vcell.opt.include";
 	//
-	public static final String idaLibraryProperty			= "vcell.ida.library";
-	public static final String idaIncludeProperty			= "vcell.ida.include";
-	public static final String idaExecutableProperty		= "vcell.ida.executable";
-	public static final String cvodeExecutableProperty		= "vcell.cvode.executable";
+	public static final String sundialsSolverExecutableProperty		= "vcell.sundialsSolver.executable";
 	
 	//Stoch properties
 	public static final String stochLibraryProperty			= "vcell.stoch.library";
@@ -178,10 +174,7 @@ public class PropertyLoader {
 		optLibsProperty,
 		optIncludeProperty,
 		
-		idaLibraryProperty,
-		idaIncludeProperty,
-		idaExecutableProperty,
-		cvodeExecutableProperty,
+		sundialsSolverExecutableProperty,
 		
 		stochLibraryProperty,
 		stochIncludeProperty,
