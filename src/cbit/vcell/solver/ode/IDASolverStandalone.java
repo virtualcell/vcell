@@ -28,11 +28,11 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	fireSolverStarting("IDA solver initializing...");
 	//
 	String inputFilename = getBaseName() + ".idaInput";
-	//String ExeFilename = getBaseName() + System.getProperty(PropertyLoader.exesuffixProperty);
+	String outputFilename = getBaseName() + ".ida";
 	//
 	//sessionLog.print("IDASolver.initialize() baseName = " + getBaseName());
 	//
-	IDAFileWriter idaFileWriter = new IDAFileWriter(getSimulation());
+	IDAFileWriter idaFileWriter = new IDAFileWriter(getSimulation(), getJobIndex(), true);
 	try {
 		idaFileWriter.initialize();
 	} catch (Exception e) {
@@ -56,7 +56,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	//
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"IDA solver starting"));	
 	
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.idaExecutableProperty);
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " + getBaseName() + ".idaInput" + " " + getBaseName() + ".ida"));
+	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
+	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " + inputFilename + " " + outputFilename));
 }
 }

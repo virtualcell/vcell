@@ -1,7 +1,6 @@
 package cbit.vcell.solvers;
 import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
-import cbit.vcell.server.PropertyLoader;
 import java.io.File;
 import cbit.vcell.solver.SolverStatus;
 

@@ -541,6 +541,10 @@ public static String[] getStochSolverDescriptions() {
 	return fieldStochSolverDescriptions;
 }
 
+public boolean goodForHTC() {
+	return type == TYPE_FINITE_VOLUME || type == TYPE_FINITE_VOLUME_STANDALONE
+		|| type == TYPE_CVODE || type == TYPE_IDA || type == TYPE_SUNDIALS_STANDALONE;
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/23/01 3:52:28 PM)
