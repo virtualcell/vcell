@@ -121,7 +121,7 @@ public int getStateVariableCount () {
 }
 
 
-public void initialize() throws Exception {
+private void initialize() throws Exception {
 	if (!getSimulation().getIsValid()) {
 		throw new MathException("invalid simulation : "+getSimulation().getWarning());
 	}
@@ -205,7 +205,9 @@ private void writeJMSParamters(PrintWriter pw) {
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-public void writeInputFile(PrintWriter pw, String[] parameterNames) throws Exception {	
+public void writeInputFile(PrintWriter pw, String[] parameterNames) throws Exception {
+	initialize();
+	
 	if (getSimulation().getSolverTaskDescription().getUseSymbolicJacobian()){
 		throw new RuntimeException("symbolic jacobian option not yet supported in interpreted Stiff solver");
 	}

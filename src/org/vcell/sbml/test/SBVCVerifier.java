@@ -157,7 +157,6 @@ private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFas
 		RowColumnResultSet rcResultSet = null;
 		try {
 			IDAFileWriter idaFileWriter = new IDAFileWriter(sim);
-			idaFileWriter.initialize();
 			java.io.StringWriter stringWriter = new java.io.StringWriter();
 			idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
 			stringWriter.close();

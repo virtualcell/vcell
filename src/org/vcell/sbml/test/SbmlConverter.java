@@ -268,7 +268,6 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 	try {
 		// Generate .idaInput string
 		IDAFileWriter idaFileWriter = new IDAFileWriter(sim);
-		idaFileWriter.initialize();
 		File idaInputFile = new File(filePathName.replace(".vcml", ".idaInput"));
 		PrintWriter idaPW = new java.io.PrintWriter(idaInputFile);
 		idaFileWriter.writeInputFile(idaPW);

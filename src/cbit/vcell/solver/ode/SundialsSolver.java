@@ -1,7 +1,6 @@
 package cbit.vcell.solver.ode;
+import cbit.util.BeanUtils;
 import cbit.vcell.math.*;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.Constant;
 import cbit.vcell.solvers.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -10,10 +9,13 @@ import cbit.vcell.solvers.*;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataSetIdentifier;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Function;
 import java.util.*;
 import java.io.*;
+import java.net.SocketException;
+
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.PropertyLoader;
@@ -39,6 +41,10 @@ public SundialsSolver(cbit.vcell.solver.SimulationJob simulationJob, File direct
 	}
 }
 
+protected void initialize() throws cbit.vcell.solver.SolverException {
+	writeFunctionsFile();
+	writeLogFile();
+}
 
 /**
  * Insert the method's description here.
@@ -52,7 +58,6 @@ public void cleanup() {
 		fireSolverAborted(e.getMessage());
 	}
 }
-
 
 /*
 	This method was created in Visual Age
@@ -113,8 +118,6 @@ protected ApplicationMessage getApplicationMessage(String message) {
 	// "progress:xx.x%"        .... sent every 1% for IDASolver
 	//
 	//
-	String SEPARATOR = ":";
-	String PROGRESS_PREFIX = "progress:";
 	if (message.startsWith(PROGRESS_PREFIX)){
 		String progressString = message.substring(message.lastIndexOf(SEPARATOR)+1,message.indexOf("%"));
 		double progress = Double.parseDouble(progressString)/100.0;
@@ -122,7 +125,11 @@ protected ApplicationMessage getApplicationMessage(String message) {
 		double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
 		setCurrentTime(startTime + (endTime-startTime)*progress);
 		return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
-	}else{
+	} else if (message.startsWith(DATA_PREFIX)){
+		double timepoint = Double.parseDouble(message.substring(message.lastIndexOf(SEPARATOR)+1));
+		setCurrentTime(timepoint);
+		return new ApplicationMessage(ApplicationMessage.DATA_MESSAGE,getProgress(),timepoint,null,message);
+	} else {
 		throw new RuntimeException("unrecognized message");
 	}
 }
@@ -247,7 +254,7 @@ private ODESolverResultSet getStateVariableResultSet() {
 	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
 	FileInputStream inputStream = null;
 	try {
-		inputStream = new FileInputStream(getBaseName() + ".ida");
+		inputStream = new FileInputStream(getBaseName() + IDA_DATA_EXTENSION);
 		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		//  Read header
@@ -305,21 +312,21 @@ private ODESolverResultSet getStateVariableResultSet() {
  */
 private final void printODEFile() throws IOException {
 	// executable writes .ida file, now we write things in .ode format
-	ODESolverResultSet odeSolverResultSet = ((ODESolver)this).getODESolverResultSet();
+	ODESolverResultSet odeSolverResultSet = getODESolverResultSet();
 	if (odeSolverResultSet == null) {
 		return;
 	}
-	if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
-		odeSolverResultSet.trimRows(((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
-	}
-	ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
-	String mathName = odeSimData.getMathName();
-	getSessionLog().print("SundialsSolver.printODEFile(" + mathName + ")");
-	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
-	File dataFile = new File(getSaveDirectory(), mathName + ODE_DATA_EXTENSION);
-	ODESimData.writeODEDataFile(odeSimData, dataFile);
-	odeSimData.writeODELogFile(logFile, dataFile);
-	// fire event
+//	if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
+//		odeSolverResultSet.trimRows(((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
+//	}
+//	ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
+//	String mathName = odeSimData.getMathName();
+//	getSessionLog().print("SundialsSolver.printODEFile(" + mathName + ")");
+//	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
+//	File dataFile = new File(getSaveDirectory(), mathName + ODE_DATA_EXTENSION);
+//	ODESimData.writeODEDataFile(odeSimData, dataFile);
+//	odeSimData.writeODELogFile(logFile, dataFile);
+//	// fire event
 	fireSolverPrinted(getCurrentTime());
 }
 
@@ -367,7 +374,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 			return;
 		}
 		ApplicationMessage appMessage = getApplicationMessage(messageString);
-		if (appMessage!=null && appMessage.getMessageType() == ApplicationMessage.PROGRESS_MESSAGE) {
+		if (appMessage!=null && appMessage.getMessageType() == ApplicationMessage.DATA_MESSAGE) {
 			try {
 				printToFile(appMessage.getProgress());
 			}catch (IOException e){
@@ -385,5 +392,110 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
  */
 public void setSaveToFileInterval(int newSaveToFileInterval) {
 	saveToFileInterval = newSaveToFileInterval;
+}
+
+private Vector<AnnotatedFunction> createFunctionList() {
+	//
+	// add appropriate Function columns to result set
+	//
+	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
+	
+	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	for (int i = 0; i < functions.length; i++){
+		if (isFunctionSaved(functions[i])){
+			Expression exp1 = new Expression(functions[i].getExpression());
+			try {
+				exp1 = getSimulation().substituteFunctions(exp1).flatten();
+			} catch (cbit.vcell.math.MathException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			} catch (cbit.vcell.parser.ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			}
+			
+			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, false);
+			funcList.add(af);
+		}
+	}
+	//
+	// add dependent sensitivity function columns to new result set
+	//
+
+	if (getSensitivityParameter() != null) {
+		try {
+			AnnotatedFunction saf = new AnnotatedFunction(getSensitivityParameter().getName(), new Expression(getSensitivityParameter().getConstantValue()), "", VariableType.NONSPATIAL, false);
+			if (!funcList.contains(saf)) {
+				funcList.add(saf);
+			}
+			Variable variables[] = getSimulation().getVariables();
+			StateVariable stateVars[] = createStateVariables();
+						
+			for (int i = 0; i < variables.length; i++){
+				if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
+					Function depSensFunction = (Function)variables[i];
+					Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
+					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);
+					
+					depSensFnExpr = getFunctionSensitivity(depSensFnExpr, getSensitivityParameter(), stateVars);
+					// depSensFnExpr = depSensFnExpr.flatten(); 	// already bound and flattened in getFunctionSensitivity, no need here.....
+					
+					String depSensFnName = new String("sens_"+depSensFunction.getName()+"_wrt_"+getSensitivityParameter().getName());
+					
+					if (depSensFunction != null) {
+						AnnotatedFunction af = new AnnotatedFunction(depSensFnName, depSensFnExpr.flatten(), "", VariableType.NONSPATIAL, false);
+						funcList.add(af);
+					}
+				}
+			}
+		} catch (MathException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
+		} catch (cbit.vcell.parser.ExpressionException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
+		}
+	} 
+	return funcList;
+}
+
+private void writeLogFile() throws SolverException {
+	String logFile = getBaseName() + LOGFILE_EXTENSION;
+	String ideDataFileName = new File(getBaseName() + IDA_DATA_EXTENSION).getName();
+	PrintWriter pw = null;
+	try {
+		pw = new PrintWriter(logFile);
+		pw.println(IDA_DATA_IDENTIFIER);
+		pw.println(IDA_DATA_FORMAT_ID);
+		pw.println(ideDataFileName);
+		if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
+			pw.println(KEEP_MOST + " " + ((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
+		}		
+		pw.close();
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+		throw new SolverException(e.getMessage());
+	} finally {
+		if (pw != null) {
+			pw.close();
+		}
+	}
+
+}
+
+private void writeFunctionsFile() {
+	// ** Dumping the functions of a simulation into a '.functions' file.
+	String functionFileName = getBaseName() + ".functions";
+	Vector<AnnotatedFunction> funcList = createFunctionList();
+	
+	//Try to save existing user defined functions
+	FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList.toArray(new AnnotatedFunction[0]));
+
+	try {
+		functionFileGenerator.generateFunctionFile();		
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
+	}		
 }
 }

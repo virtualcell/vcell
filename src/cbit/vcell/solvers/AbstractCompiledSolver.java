@@ -17,6 +17,9 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 	private transient Thread fieldThread = null;
 	private cbit.vcell.solvers.MathExecutable mathExecutable = null;
 	private double currentTime = -1;
+	protected final static String DATA_PREFIX = "data:";
+	protected final static String PROGRESS_PREFIX = "progress:";
+	protected final static String SEPARATOR = ":";
 /**
  * AbstractPDESolver constructor comment.
  */

@@ -1,6 +1,8 @@
 package cbit.vcell.solver.ode;
+
 import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -10,6 +12,7 @@ import cbit.vcell.math.*;
 import java.io.*;
 import java.util.*;
 import cbit.vcell.simdata.*;
+import cbit.vcell.solvers.FunctionFileGenerator;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:57:59 PM)
@@ -22,6 +25,10 @@ public class ODESimData extends ODESolverResultSet implements SimDataConstants, 
 /**
  * SimpleODEData constructor comment.
  */
+private ODESimData() {
+	
+}
+
 public ODESimData(VCDataIdentifier vcdId, ODESolverResultSet odeSolverResultSet) {
 	int rowCount = odeSolverResultSet.getRowCount();
 	//
@@ -360,5 +367,81 @@ public void writeOut(DataOutputStream output) throws IOException {
 			output.writeUTF(functionColumns[c].getExpression().infix());
 		}
 	}                          
+}
+
+
+public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, int keepMost, File functionsFile) throws DataAccessException {
+	// read ida file
+	System.out.println("reading ida file : " + dataFile);
+	ODESimData odeSimData = new ODESimData();	
+	odeSimData.formatID = IDA_DATA_FORMAT_ID;
+	odeSimData.mathName = vcdId.getID();
+	
+	BufferedReader bufferedReader = null;
+	try {
+		bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(dataFile)));
+		//  Read header
+		String line = bufferedReader.readLine();
+		if (line == null) {
+			//  throw exception
+			return null;
+		}
+		StringTokenizer st = new StringTokenizer(line, ":");
+		while (st.hasMoreTokens()) {
+			odeSimData.addDataColumn(new ODESolverResultSetColumnDescription(st.nextToken()));
+		}
+		//  Read data
+		while ((line = bufferedReader.readLine()) != null) {
+			st = new StringTokenizer(line);
+			double[] values = new double[odeSimData.getDataColumnCount()];
+			int count = 0;
+			while (st.hasMoreTokens()) {
+				values[count ++] = Double.valueOf(st.nextToken()).doubleValue();
+			}
+			if (count == odeSimData.getDataColumnCount()){
+				odeSimData.addRow(values);
+			} else {
+				break;
+			}
+		}
+		//
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+		return null;
+	} finally {
+		try {
+			if (bufferedReader != null) {
+				bufferedReader.close();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+		}
+	}
+	
+	// read functions file
+	
+	Vector<AnnotatedFunction> funcList;
+	try {
+		funcList = FunctionFileGenerator.readFunctionsFile(functionsFile);
+		for (AnnotatedFunction func : funcList){
+			try {
+				Expression expression = new Expression(func.getExpression());
+				odeSimData.addFunctionColumn(new FunctionColumnDescription(expression, func.getName(), null, func.getName(), false));
+			} catch (ExpressionException e) {
+				throw new RuntimeException("Could not add function " + func.getName() + " to annotatedFunctionList");
+			}
+		}	
+	} catch (FileNotFoundException e1) {
+		e1.printStackTrace(System.out);
+		throw new DataAccessException(e1.getMessage());
+	} catch (IOException e1) {
+		e1.printStackTrace(System.out);
+		throw new DataAccessException(e1.getMessage());
+	}
+
+	if (keepMost > 0) {
+		odeSimData.trimRows(keepMost);
+	}
+	return odeSimData;
 }
 }

@@ -369,9 +369,6 @@ protected ApplicationMessage getApplicationMessage(String message) {
 	// "progress:xx.x%"        .... sent every 1% for FVSolver
 	//
 	//
-	String SEPARATOR = ":";
-	String DATA_PREFIX = "data:";
-	String PROGRESS_PREFIX = "progress:";
 	if (message.startsWith(DATA_PREFIX)){
 		double timepoint = Double.parseDouble(message.substring(message.lastIndexOf(SEPARATOR)+1));
 		setCurrentTime(timepoint);

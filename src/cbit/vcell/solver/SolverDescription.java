@@ -430,7 +430,8 @@ public boolean hasVariableTimestep() {
 	switch (type) {
 		case TYPE_IDA:
 		case TYPE_RUNGE_KUTTA_FEHLBERG:
-		case TYPE_CVODE:{
+		case TYPE_CVODE:
+		case TYPE_SUNDIALS_STANDALONE: {
 			return true;
 		}
 		default: {
@@ -492,7 +493,8 @@ public boolean isSTOCHSolver() {
 public boolean supports(OutputTimeSpec outputTimeSpec) {
 	switch (type) {
 		case TYPE_IDA: 
-		case TYPE_CVODE:{
+		case TYPE_CVODE:
+		case TYPE_SUNDIALS_STANDALONE: {
 			return (outputTimeSpec.isDefault() || outputTimeSpec.isExplicit() || outputTimeSpec.isUniform());
 		}
 		case TYPE_STOCH_GIBSON:{
@@ -507,6 +509,19 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 			return (outputTimeSpec.isDefault());
 		}
 	}
+}
+
+public boolean supportsUniformExplicitOutput() {
+	switch (type) {
+	case TYPE_IDA: 
+	case TYPE_CVODE:
+	case TYPE_SUNDIALS_STANDALONE: {			
+		return true;
+	}
+	default: {
+		return false;
+	}
+}	
 }
 
 public static String getFullDescription(SolverDescription sd) {
