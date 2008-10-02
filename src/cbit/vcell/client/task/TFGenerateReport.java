@@ -3,8 +3,10 @@ package cbit.vcell.client.task;
 //import cbit.vcell.numericstest.TestSuiteInfoNew;
 //import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.solver.SimulationInfo;
 //import cbit.vcell.numericstest.AddTestSuiteOP;
 import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.document.VCDocumentInfo;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 //import cbit.vcell.client.RequestManager;
 import cbit.util.AsynchProgressPopup;
@@ -21,6 +23,7 @@ public class TFGenerateReport extends AsynchClientTask {
 	private TestCriteriaNew tcrit = null;
 	private TestCaseNew tcn = null;
 	private TestSuiteInfoNew tsin = null;
+	private SimulationInfo userDefinedRegrRef = null;
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:06:56 PM)
@@ -34,11 +37,12 @@ public TFGenerateReport(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:06:56 PM)
  */
-public TFGenerateReport(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn,TestCriteriaNew argtcrit) {
+public TFGenerateReport(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn,TestCriteriaNew argtcrit,SimulationInfo userDefinedRegrRef) {
 	
 	tfwm = argtfwm;
 	tcrit = argtcrit;
 	tcn = argtcn;
+	this.userDefinedRegrRef = userDefinedRegrRef;
 }
 /**
  * Insert the method's description here.
@@ -72,7 +76,7 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable){
+public void run(java.util.Hashtable hashTable) throws Exception{
 
 	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
 	String report = (String)hashTable.get(TFRefresh.TF_REPORT);
@@ -81,9 +85,13 @@ public void run(java.util.Hashtable hashTable){
 	}
 	//tfwm.updateSimRunningStatus(pp);
 	if(tcrit != null && tcn != null){
-		report+= tfwm.generateTestCaseReport(tcn,tcrit,pp);
+		if(userDefinedRegrRef != null){
+			report+= tfwm.generateTestCaseReport(tcn,tcrit,pp,userDefinedRegrRef);
+		}else{
+			report+= tfwm.generateTestCaseReport(tcn,tcrit,pp,null);
+		}
 	}else if(tcn != null){
-		report+= tfwm.generateTestCaseReport(tcn,null,pp);
+		report+= tfwm.generateTestCaseReport(tcn,null,pp,null);
 	}else if (tsin != null){
 		report+= tfwm.generateTestSuiteReport(tsin,pp);
 	}

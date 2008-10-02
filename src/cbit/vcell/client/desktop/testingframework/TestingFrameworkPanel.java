@@ -42,6 +42,8 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String DUPLICATE_TESTSUITE = "Duplicate TestSuite...";
 	public static final String REMOVE_TESTSUITE = "Remove TestSuite...";
 	public static final String EDIT_TESTCRITERIA = "Edit Test Criteria...";
+	public static final String GENTCRITREPORT_USERDEFREF_TESTCRITERIA = "Show TCrit Report (Choose RefSim)";
+	public static final String GENTCRITREPORT_INTERNALREF_TESTCRITERIA = "Generate TestCriteria Report";
 
 	private class TSRefreshListener implements PropertyChangeListener {
 			private BioModelNode selectedNode = null;
@@ -148,7 +150,8 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjCompareMenuItem = null;
 	private javax.swing.JMenuItem ivjViewMenuItem = null;
 	private javax.swing.JPopupMenu  ivjTCritVarPopupMenu = null;
-
+	private javax.swing.JMenuItem  ivjGenerateTCRiteportUserDefinedReferenceMenuItem1 = null;
+	
 class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == TestingFrameworkPanel.this.getAddTestSuiteMenuItem()) 
@@ -181,8 +184,10 @@ class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionList
 				connEtoC2(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getRefreshTestCriteriaJMenuItem()) 
 				connEtoC2(e);
-			if (e.getSource() == TestingFrameworkPanel.this.getGenerateTCRiteportMenuItem1()) 
+			if (e.getSource() == TestingFrameworkPanel.this.getGenerateTCRitReportMenuItem1()) 
 				connEtoC17(e);
+			if (e.getSource() == TestingFrameworkPanel.this.getGenerateTCRitReportUserDefinedReferenceMenuItem1()) 
+				genTCritReportUserDefinedReference(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getCompareMenuItem()) 
 				connEtoC16(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getViewMenuItem()) 
@@ -318,6 +323,12 @@ public void addActionListener(java.awt.event.ActionListener newListener) {
 	return;
 }
 
+private void genTCritReportUserDefinedReference(ActionEvent e){
+	tsRefreshListener.rememberSelectedNode();
+	this.refireActionPerformed(e);
+
+//	gettestingFrameworkWindowManager1().generateTestCriteriaReport(testCase, testCriteria, sim, refSimInfo);
+}
 /**
  * connEtoC1:  (AddTestSuiteMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> TestingFrameworkPanel.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -1061,12 +1072,12 @@ private javax.swing.JMenuItem getGenerateTCReportMenuItem() {
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getGenerateTCRiteportMenuItem1() {
+private javax.swing.JMenuItem getGenerateTCRitReportMenuItem1() {
 	if (ivjGenerateTCRiteportMenuItem1 == null) {
 		try {
 			ivjGenerateTCRiteportMenuItem1 = new javax.swing.JMenuItem();
 			ivjGenerateTCRiteportMenuItem1.setName("GenerateTCRiteportMenuItem1");
-			ivjGenerateTCRiteportMenuItem1.setText("Generate TestCriteria Report");
+			ivjGenerateTCRiteportMenuItem1.setText(GENTCRITREPORT_INTERNALREF_TESTCRITERIA);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1076,6 +1087,23 @@ private javax.swing.JMenuItem getGenerateTCRiteportMenuItem1() {
 		}
 	}
 	return ivjGenerateTCRiteportMenuItem1;
+}
+
+private javax.swing.JMenuItem getGenerateTCRitReportUserDefinedReferenceMenuItem1() {
+	if (ivjGenerateTCRiteportUserDefinedReferenceMenuItem1 == null) {
+		try {
+			ivjGenerateTCRiteportUserDefinedReferenceMenuItem1 = new javax.swing.JMenuItem();
+			ivjGenerateTCRiteportUserDefinedReferenceMenuItem1.setName("GenerateTCRiteportUserDefinedReferenceMenuItem1");
+			ivjGenerateTCRiteportUserDefinedReferenceMenuItem1.setText(GENTCRITREPORT_USERDEFREF_TESTCRITERIA);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjGenerateTCRiteportUserDefinedReferenceMenuItem1;
 }
 
 private javax.swing.JMenuItem getQueryTCritCrossRefMenuItem1() {
@@ -1499,7 +1527,8 @@ private javax.swing.JPopupMenu getSimulationPopupMenu() {
 			ivjSimulationPopupMenu.add(getViewMenuItem());
 			ivjSimulationPopupMenu.add(getCompareMenuItem());
 			ivjSimulationPopupMenu.add(getEditTCrMenuItem());
-			ivjSimulationPopupMenu.add(getGenerateTCRiteportMenuItem1());
+			ivjSimulationPopupMenu.add(getGenerateTCRitReportMenuItem1());
+			ivjSimulationPopupMenu.add(getGenerateTCRitReportUserDefinedReferenceMenuItem1());
 			ivjSimulationPopupMenu.add(getQueryTCritCrossRefMenuItem1());
 			// user code begin {1}
 			// user code end
@@ -1731,7 +1760,8 @@ private void initConnections() throws java.lang.Exception {
 	getRefreshTestSuiteJMenuItem().addActionListener(ivjEventHandler);
 	getRefreshTestCaseJMenuItem().addActionListener(ivjEventHandler);
 	getRefreshTestCriteriaJMenuItem().addActionListener(ivjEventHandler);
-	getGenerateTCRiteportMenuItem1().addActionListener(ivjEventHandler);
+	getGenerateTCRitReportMenuItem1().addActionListener(ivjEventHandler);
+	getGenerateTCRitReportUserDefinedReferenceMenuItem1().addActionListener(ivjEventHandler);
 	getCompareMenuItem().addActionListener(ivjEventHandler);
 	getViewMenuItem().addActionListener(ivjEventHandler);
 	getChangeTypeToSteadyMenuItem().addActionListener(ivjEventHandler);
