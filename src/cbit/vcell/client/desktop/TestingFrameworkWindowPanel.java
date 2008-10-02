@@ -4,11 +4,15 @@ import cbit.gui.UtilCancelException;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.solver.SimulationInfo;
+
 import java.awt.event.ActionEvent;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFAddTestSuite;
@@ -30,6 +34,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.document.VCDocumentInfo;
 /**
  * Insert the type's description here.
  * Creation date: (7/15/2004 2:36:18 PM)
@@ -844,7 +849,25 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			}
 			tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),(tsinV.size() == 1?tsinV.elementAt(0):null));
 			tasksV.add(tfRefreshTreeTask);
-		}else if (e.getActionCommand().equals("Generate TestCriteria Report")) {
+		}else if (e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_INTERNALREF_TESTCRITERIA) ||
+				e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_USERDEFREF_TESTCRITERIA)) {
+			SimulationInfo userDefinedRegrRef = null;
+			if(e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_USERDEFREF_TESTCRITERIA)){
+				final String CANCEL_STRING =  "Cancel";
+				final String BM_STRING = "BioModel";
+				final String MM_STRING = "MathModel";
+				String result = PopupGenerator.showWarningDialog(this, "Choose Reference Model Type.", new String[]{BM_STRING,MM_STRING,CANCEL_STRING},CANCEL_STRING);
+				if(result == null || result.equals(CANCEL_STRING)){
+					return;
+				}
+				VCDocumentInfo userDefinedRegrRefModel = null;
+				if(result.equals(BM_STRING)){
+					userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectBioModelInfo(getTestingFrameworkWindowManager());
+				}else{
+					userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectMathModelInfo(getTestingFrameworkWindowManager());					
+				}
+				userDefinedRegrRef = TestingFrameworkWindowManager.getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
+			}
 			Vector<TestSuiteInfoNew> tsinV = new Vector<TestSuiteInfoNew>();
 			for(int i=0;selectedTreePaths != null &&  i<selectedTreePaths.length;i+= 1){
 				Object selTreeNode = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
@@ -854,27 +877,14 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 						tsinV.add(tsInfo);
 						tasksV.add(new cbit.vcell.client.task.TFUpdateRunningStatus(getTestingFrameworkWindowManager(),tsInfo));
 					}
-					tasksV.add(new TFGenerateReport(getTestingFrameworkWindowManager(),(TestCaseNew)((BioModelNode)selectedTreePaths[i].getParentPath().getLastPathComponent()).getUserObject(),(TestCriteriaNew)selTreeNode));
+					tasksV.add(new TFGenerateReport(getTestingFrameworkWindowManager(),(TestCaseNew)((BioModelNode)selectedTreePaths[i].getParentPath().getLastPathComponent()).getUserObject(),(TestCriteriaNew)selTreeNode,
+							userDefinedRegrRef));
 				} else {
 					throw new Exception("Selected Object is not a TestCriteria");
 				}
 			}
 			tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),(tsinV.size() == 1?tsinV.elementAt(0):null));
 			tasksV.add(tfRefreshTreeTask);
-//			Object[][] objArr = gettestingFrameworkPanel().getMultiTreeSelection();
-//			TestSuiteInfoNew tsInfo = gettestingFrameworkPanel().getTestSuiteInfoOfSelectedTestCriteria();
-//			tasksV.add(new cbit.vcell.client.task.TFUpdateRunningStatus(getTestingFrameworkWindowManager(),tsInfo));
-//			for(int i=0;i<objArr.length;i+= 1){
-//				//if (objArr[i] instanceof cbit.vcell.numericstest.TestCriteriaNew) {
-//					TestCaseNew testCase = (TestCaseNew)objArr[i][0];
-//					TestCriteriaNew tCriteria = (TestCriteriaNew)objArr[i][1];
-//					tasksV.add(new TFGenerateReport(getTestingFrameworkWindowManager(),testCase,tCriteria));
-//				//} else {
-//					//throw new Exception("Selected Object is not a TestCriteria!");
-//				//}
-//			}
-//			tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsInfo);
-//			tasksV.add(tfRefreshTreeTask);
 		}
 
 		else if (e.getActionCommand().equals(TestingFrameworkPanel.EDIT_TESTCRITERIA)) {

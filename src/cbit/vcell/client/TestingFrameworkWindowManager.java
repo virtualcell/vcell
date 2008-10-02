@@ -1,7 +1,9 @@
 package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.document.VCDocumentInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.gui.DialogUtils;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.MergedDataInfo;
@@ -16,6 +18,8 @@ import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelMetaData;
+
 import java.math.*;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.clientdb.DocumentManager;
@@ -772,7 +776,7 @@ private void updateReports(final Hashtable<TestSuiteInfoNew, Vector<TestCriteria
 														TestingFrameworkWindowManager.this,
 														tsNew.getTestCases()[j],
 														tsNew.getTestCases()[j]
-																.getTestCriterias()[k]));
+																.getTestCriterias()[k],null));
 										bDone = true;
 										break;
 									}
@@ -863,12 +867,121 @@ public void exportMessage(ExportEvent exportEvent) {
 	*/
 }
 
+public static SimulationInfo getUserSelectedRefSimInfo(RequestManager currentRequstManager,VCDocumentInfo vcDocInfo) throws Exception{
+	final int MODELTYPE_INDEX = 0;
+	final int MODELKEY_INDEX = 2;
+	final int SIMNAME_INDEX = 5;
+	final String[] ROWDATACOLNAMES = new String[] {"Type","Model","Model Key","Owner","App","Sim","Date"};
+	Vector<Object[]> simInfoV = new Vector<Object[]>();
+//	BioModelMetaData[] bmMetaDataArr = getRequestManager().getDocumentManager().getSessionManager().getUserMetaDbServer().getBioModelMetaDatas(true);
+//	bmMetaDataArr[0].
+	BioModelInfo[] bioModelInfoArr = null;
+	if(vcDocInfo == null){
+		bioModelInfoArr = currentRequstManager.getDocumentManager().getBioModelInfos();
+	}else if(vcDocInfo instanceof BioModelInfo){
+		bioModelInfoArr = new BioModelInfo[] {(BioModelInfo)vcDocInfo};
+	}
+	for (int i = 0; bioModelInfoArr != null && i < bioModelInfoArr.length; i++) {
+		if(bioModelInfoArr[i].getBioModelChildSummary() != null){
+			String[] bmSimContextNamesArr = bioModelInfoArr[i].getBioModelChildSummary().getSimulationContextNames();
+			for (int j = 0; bmSimContextNamesArr != null && j < bmSimContextNamesArr.length; j++) {
+				String[] bmSimNamesArr = bioModelInfoArr[i].getBioModelChildSummary().getSimulationNames(bmSimContextNamesArr[j]);
+				for (int k = 0; bmSimNamesArr != null && k < bmSimNamesArr.length; k++) {
+//					System.out.println("BM "+
+//							bioModelInfoArr[i].getVersion().getOwner().getName()+" "+
+//							bioModelInfoArr[i].getVersion().getName()+
+//							" app="+bmSimContextNamesArr[j]+
+//							" sim="+bmSimNamesArr[k]);
+					simInfoV.add(new Object[] {"BM",
+							bioModelInfoArr[i].getVersion().getName(),
+							bioModelInfoArr[i].getVersion().getVersionKey(),
+							bioModelInfoArr[i].getVersion().getOwner().getName(),
+							bmSimContextNamesArr[j],
+							bmSimNamesArr[k],
+							bioModelInfoArr[i].getVersion().getDate()}
+					);
+				}
+			}
+		}
+	}
+	MathModelInfo[] mathModelInfoArr =null;
+	if(vcDocInfo == null){
+		mathModelInfoArr = currentRequstManager.getDocumentManager().getMathModelInfos();
+	}else if(vcDocInfo instanceof MathModelInfo){
+		mathModelInfoArr = new MathModelInfo[] {(MathModelInfo)vcDocInfo};
+	}
+	for (int i = 0; mathModelInfoArr != null && i < mathModelInfoArr.length; i++) {
+		if(mathModelInfoArr[i].getMathModelChildSummary() != null){
+			String[] mathSimNamesArr = mathModelInfoArr[i].getMathModelChildSummary().getSimulationNames();
+			for (int j = 0; mathSimNamesArr != null && j < mathSimNamesArr.length; j++) {
+//				System.out.println("MM "+
+//						mathModelInfoArr[i].getVersion().getOwner().getName()+" "+
+//						mathModelInfoArr[i].getVersion().getName()+
+//						" sim="+mathSimNamesArr[j]);
+				simInfoV.add(new Object[] {"MM",
+						mathModelInfoArr[i].getVersion().getName(),
+						mathModelInfoArr[i].getVersion().getVersionKey(),
+						mathModelInfoArr[i].getVersion().getOwner().getName(),
+						null,
+						mathSimNamesArr[j],
+						mathModelInfoArr[i].getVersion().getDate()}
+				);
 
+			}
+		}
+	}
+	Object[][] rowData = new Object[simInfoV.size()][ROWDATACOLNAMES.length];
+	simInfoV.copyInto(rowData);
+		int[] simSelection = DialogUtils.showComponentOKCancelTableList(
+			null/*getComponent()*/, "Choose Ref Simulation",
+			ROWDATACOLNAMES,
+			rowData, ListSelectionModel.SINGLE_SELECTION);
+	if(simSelection == null || simSelection.length == 0){
+		throw UserCancelException.CANCEL_GENERIC;
+	}
+	Simulation[] simArr = null;
+	if(rowData[simSelection[0]][MODELTYPE_INDEX].equals("BM")){
+		BioModel bm = currentRequstManager.getDocumentManager().getBioModel((KeyValue)rowData[simSelection[0]][MODELKEY_INDEX]);
+		simArr = bm.getSimulations();
+	}else{
+		MathModel mm = currentRequstManager.getDocumentManager().getMathModel((KeyValue)rowData[simSelection[0]][MODELKEY_INDEX]);
+		simArr = mm.getSimulations();
+	}
+	for (int i = 0; simArr != null && i < simArr.length; i++) {
+		if(simArr[i].getName().equals(rowData[simSelection[0]][SIMNAME_INDEX])){
+			return simArr[i].getSimulationInfo();
+		}
+	}
+	throw new Exception("Couldn't find selected simulation");
+}
+
+//private static Object[] createRow(VCDocumentInfo vcDocInfo,String appName,String simName){
+//	if(vcDocInfo instanceof BioModelInfo){
+//		BioModelInfo bmInfo = (BioModelInfo)vcDocInfo;
+//		return new Object[] {"BM",
+//				bmInfo.getVersion().getName(),
+//				bmInfo.getVersion().getVersionKey(),
+//				bmInfo.getVersion().getOwner().getName(),
+//				appName,
+//				simName,
+//				bmInfo.getVersion().getDate()};
+//	}else if(vcDocInfo instanceof MathModelInfo){
+//		MathModelInfo mmInfo = (MathModelInfo)vcDocInfo;
+//		return new Object[] {"MM",
+//				mmInfo.getVersion().getName(),
+//				mmInfo.getVersion().getVersionKey(),
+//				mmInfo.getVersion().getOwner().getName(),
+//				null,
+//				simName,
+//				mmInfo.getVersion().getDate()};
+//	}
+//	throw new IllegalArgumentException("Only BioModelInfo and MathModelInfo supported");
+//}
 /**
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  */
-public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,cbit.util.AsynchProgressPopup pp) {
+public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,cbit.util.AsynchProgressPopup pp,SimulationInfo userDefinedRefSimInfo) {
 
 	StringBuffer reportTCBuffer = new StringBuffer();
 	if (testCase == null) {
@@ -880,6 +993,11 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 		Simulation[] sims = null;
 		reportTCBuffer.append("\n\tTEST CASE : "+(testCase.getVersion() != null?testCase.getVersion().getName():"Null")+"\n\tAnnotation : "+testCase.getAnnotation()+"\n");
 		try{
+//			SimulationInfo userDefinedRefSimInfo = null;
+//			if(bUserSelectRefSimInfo){
+//				userDefinedRefSimInfo = getUserSelectedRefSimInfo(getRequestManager());
+//			}
+
 			if(testCase instanceof TestCaseNewMathModel){
 				MathModelInfo mmInfo = ((TestCaseNewMathModel)testCase).getMathModelInfo();
 				MathModel mathModel = getRequestManager().getDocumentManager().getMathModel(mmInfo);
@@ -945,9 +1063,11 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 					//}
 					pp.setMessage((testCase instanceof TestCaseNewMathModel?"(MM)":"(BM)")+" "+
 						(onlyThisTCrit == null?"sim "+(k+1)+" of "+sims.length:"sim="+onlyThisTCrit.getSimInfo().getName())+"  "+testCase.getVersion().getName()+" "+testCase.getType());
-					reportTCBuffer.append(generateTestCriteriaReport(testCase,testCriteria,sims[k]));
+					reportTCBuffer.append(generateTestCriteriaReport(testCase,testCriteria,sims[k],userDefinedRefSimInfo));
 				}
 			}
+		}catch(UserCancelException e){
+			throw e;
 		}catch(Throwable e){
 			e.printStackTrace();
 			reportTCBuffer.append("\tERROR "+e.getClass().getName()+" mesg="+e.getMessage()+"\n");
@@ -974,7 +1094,7 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
  * Creation date: (8/18/2003 5:36:47 PM)
  * 
  */
-private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew testCriteria,Simulation sim) {
+public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew testCriteria,Simulation sim,SimulationInfo userSelectedRefSimInfo) {
 
 	String simReportStatus = null;
 	String simReportStatusMessage = null;
@@ -989,9 +1109,15 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 	 	relErr = testCriteria.getMaxRelError().doubleValue();
 	}
 	
-	reportTCBuffer.append("\t\t"+sim.getName() + " : "+"\n");
-	try {		
-		SimulationInfo refSimInfo = testCriteria.getRegressionSimInfo();
+	try {
+		SimulationInfo refSimInfo = null;
+		if(userSelectedRefSimInfo == null){
+			refSimInfo = testCriteria.getRegressionSimInfo();
+			reportTCBuffer.append("\t\t"+sim.getName() + (refSimInfo != null?" (Using TestCrit RegrRefSim)":"")+" : "+"\n");
+		}else{
+			refSimInfo = userSelectedRefSimInfo;
+			reportTCBuffer.append("\t\t"+sim.getName() + " (Using UserDefined RegrRefSim '"+userSelectedRefSimInfo.getAuthoritativeVCSimulationIdentifier()+"') : "+"\n");
+		}
 		if (testCase.getType().equals(TestCaseNew.REGRESSION) && refSimInfo == null) {
 			reportTCBuffer.append("\t\t\tNo reference SimInfo, SimInfoKey="+testCriteria.getSimInfo().getVersion().getName()+". Cannot perform Regression Test!\n");
 			simReportStatus = TestCriteriaNew.TCRIT_STATUS_NOREFREGR;
@@ -1196,28 +1322,30 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 		e.printStackTrace(System.out);
 	}
 
-	try{			
-		// Remove any test results already present for testCriteria
-		RemoveTestResultsOP removeResultsOP = new RemoveTestResultsOP(new BigDecimal[] {testCriteria.getTCritKey()});
-		//testResultsOPsVector.add(removeResultsOP);
-		getRequestManager().getDocumentManager().doTestSuiteOP(removeResultsOP)		;
-		// Create new AddTestREsultsOP object for the current simulation./testCriteria.
-		if(allVarSummaries != null){
-			AddTestResultsOP testResultsOP = new AddTestResultsOP(testCriteria.getTCritKey(), allVarSummaries);
-			//testResultsOPsVector.add(testResultsOP);			
-			// Write the testResults for simulation/TestCriteria into the database ...
-			getRequestManager().getDocumentManager().doTestSuiteOP(testResultsOP);
-		}
-		//Update report status
-		updateTCritStatus(testCriteria,simReportStatus,simReportStatusMessage);
-	}catch(Throwable e){
-		reportTCBuffer.append("\t\tUpdate DB Results failed. "+e.getClass().getName()+" "+e.getMessage()+"\n");
-		try{
-			getRequestManager().getDocumentManager().doTestSuiteOP(
-				new EditTestCriteriaOPReportStatus(testCriteria.getTCritKey(),TestCriteriaNew.TCRIT_STATUS_RPERROR,e.getClass().getName()+" "+e.getMessage())
-				);
-		}catch(Throwable e2){
-			//Nothing more can be done
+	if(userSelectedRefSimInfo == null){
+		try{			
+			// Remove any test results already present for testCriteria
+			RemoveTestResultsOP removeResultsOP = new RemoveTestResultsOP(new BigDecimal[] {testCriteria.getTCritKey()});
+			//testResultsOPsVector.add(removeResultsOP);
+			getRequestManager().getDocumentManager().doTestSuiteOP(removeResultsOP)		;
+			// Create new AddTestREsultsOP object for the current simulation./testCriteria.
+			if(allVarSummaries != null){
+				AddTestResultsOP testResultsOP = new AddTestResultsOP(testCriteria.getTCritKey(), allVarSummaries);
+				//testResultsOPsVector.add(testResultsOP);			
+				// Write the testResults for simulation/TestCriteria into the database ...
+				getRequestManager().getDocumentManager().doTestSuiteOP(testResultsOP);
+			}
+			//Update report status
+			updateTCritStatus(testCriteria,simReportStatus,simReportStatusMessage);
+		}catch(Throwable e){
+			reportTCBuffer.append("\t\tUpdate DB Results failed. "+e.getClass().getName()+" "+e.getMessage()+"\n");
+			try{
+				getRequestManager().getDocumentManager().doTestSuiteOP(
+					new EditTestCriteriaOPReportStatus(testCriteria.getTCritKey(),TestCriteriaNew.TCRIT_STATUS_RPERROR,e.getClass().getName()+" "+e.getMessage())
+					);
+			}catch(Throwable e2){
+				//Nothing more can be done
+			}
 		}
 	}
 		
@@ -1252,9 +1380,11 @@ public String generateTestSuiteReport(TestSuiteInfoNew testSuiteInfo,AsynchProgr
 		sb.append("\n"+testSuiteInfo.toString()+"\n");
 		for (int j = 0; j < testCases.length; j++) {
 			pp.setProgress(1+(int)((((double)j/(double)testCases.length)*100)));
-			sb.append(generateTestCaseReport(testCases[j],null,pp));
+			sb.append(generateTestCaseReport(testCases[j],null,pp,null));
 		}
 		
+	}catch(UserCancelException e){
+		throw e;
 	}catch(Throwable e){
 		e.printStackTrace();
 		sb.append("ERROR "+e.getClass().getName()+" mesg="+e.getMessage());
@@ -1300,7 +1430,7 @@ private AddTestSuitePanel getAddTestSuitePanel() {
  * @return java.lang.String
  */
 java.awt.Component getComponent() {
-	return null;
+	return getTestingFrameworkWindowPanel();
 }
 
 
