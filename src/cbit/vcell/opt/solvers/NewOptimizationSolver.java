@@ -409,7 +409,6 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 			simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
 			simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 			cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(simulation);
-			idaFileWriter.initialize();
 			java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
 			idaFileWriter.writeInputFile(new java.io.PrintWriter(simulationInputStringWriter,true), parameterNames);
 			simulationInputStringWriter.close();
@@ -428,7 +427,6 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 			simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
 			simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 			cbit.vcell.solver.ode.CVodeFileWriter cvodeFileWriter = new cbit.vcell.solver.ode.CVodeFileWriter(simulation);
-			cvodeFileWriter.initialize();
 			java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
 			cvodeFileWriter.writeInputFile(new java.io.PrintWriter(simulationInputStringWriter,true), parameterNames);
 			simulationInputStringWriter.close();

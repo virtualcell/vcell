@@ -23,7 +23,7 @@ import java.util.zip.*;
 public class SimulationData extends VCData implements SymbolTable {
 	private final static long SizeInBytes = 2000;  // a guess
 
-	private VCDataIdentifier info = null;
+	private VCDataIdentifier vcDataId = null;
 	private File userDirectory = null;
 	
 	private double dataTimes[] = null;
@@ -56,7 +56,7 @@ public class SimulationData extends VCData implements SymbolTable {
 			// just so it doesn't get instantiated elsewhere by mistake
 		}
 		public String getSimulationDataIdentifier() {
-			return info.getID();
+			return vcDataId.getID();
 		}
 		private File getServerDirectory() {
 			return serverDirectory;
@@ -193,20 +193,22 @@ public class SimulationData extends VCData implements SymbolTable {
 	}
 	private boolean bZipFormat2 = false;
 	private boolean bZipFormat1 = false;
+	private boolean bOdeDataFormat = true;
+	private int odeKeepMost = 0;
 
 /**
  * SimResults constructor comment.
  */
 public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws IOException, DataAccessException {	
 	try {
-		this.info = argVCDataID;
+		this.vcDataId = argVCDataID;
 		this.userDirectory = primaryUserDir;
 		checkLogFile();
 	} catch (FileNotFoundException exc) {		 
 		if (secondaryUserDir == null) {
 			throw new FileNotFoundException("secondarySimDataDirProperty not specified, primary user directory, " + primaryUserDir + " doesn't exist.");
 		}
-		this.info = argVCDataID;
+		this.vcDataId = argVCDataID;
 		userDirectory = secondaryUserDir;
 		checkLogFile();
 	}
@@ -219,7 +221,7 @@ private void checkLogFile() throws FileNotFoundException {
 		getLogFile();
 	} catch (FileNotFoundException ex) {
 		// maybe we are being asked for pre-parameter scans data files, try old style
-		info = createScanFriendlyVCDataID(info);
+		vcDataId = createScanFriendlyVCDataID(vcDataId);
 		getLogFile();
 	}
 }
@@ -418,11 +420,19 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 
 	if (getIsODEData()){ // this will refresh log file; enough for PDE's (refresh method rebuilds time array)
 		// for ODE's we need to rebuild
-		ODESimData odeSimData = ODESimData.readODEDataFile(getODEDataFile());
 		try {
+			ODESimData odeSimData = null;
+			if (bOdeDataFormat) {
+				odeSimData = ODESimData.readODEDataFile(getODEDataFile());
+			} else {
+				odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getFunctionsFile());
+			}
 			dataTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
+			throw new DataAccessException("error getting dataset times: "+e.getMessage());
+		} catch (FileNotFoundException e) {			
+			e.printStackTrace();
 			throw new DataAccessException("error getting dataset times: "+e.getMessage());
 		}
 	}
@@ -557,11 +567,11 @@ public AnnotatedFunction[] getFunctions() {
  */
 private synchronized File getFunctionsFile() throws FileNotFoundException {
 	File functionsFile = null;
-	if (info instanceof VCSimulationDataIdentifier && ((VCSimulationDataIdentifier)info).isParameterScanType()) { 
+	if (vcDataId instanceof VCSimulationDataIdentifier && ((VCSimulationDataIdentifier)vcDataId).isParameterScanType()) { 
 		// always use the functions file from the first simulation in the scan 
-		functionsFile = new File(userDirectory, ExternalDataIdentifier.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)info).getSimulationKey(), 0, false));
+		functionsFile = new File(userDirectory, ExternalDataIdentifier.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)vcDataId).getSimulationKey(), 0, false));
 	} else {
-		functionsFile = new File(userDirectory,info.getID()+".functions");
+		functionsFile = new File(userDirectory,vcDataId.getID()+".functions");
 	}
 	if (functionsFile.exists()){
 		return functionsFile;
@@ -611,7 +621,7 @@ private long getLastModified(File pdeFile, File zipFile) throws IOException {
  * @param simID java.lang.String
  */
 public File getLogFile() throws FileNotFoundException {
-	File logFile = new File(userDirectory,info.getID()+".log");
+	File logFile = new File(userDirectory,vcDataId.getID()+".log");
 	if (logFile.exists()){
 		return logFile;
 	}else{
@@ -627,7 +637,7 @@ public File getLogFile() throws FileNotFoundException {
  * @param simID java.lang.String
  */
 private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundException {
-	File meshMetricsFile = new File(userDirectory,info.getID()+".meshmetrics");
+	File meshMetricsFile = new File(userDirectory,vcDataId.getID()+".meshmetrics");
 	if (meshMetricsFile.exists()){
 		return meshMetricsFile;
 	}
@@ -653,7 +663,7 @@ public synchronized CartesianMesh getMesh() throws DataAccessException, MathExce
  * @param simID java.lang.String
  */
 private synchronized File getMeshFile() throws FileNotFoundException {
-	File meshFile = new File(userDirectory,info.getID()+".mesh");
+	File meshFile = new File(userDirectory,vcDataId.getID()+".mesh");
 	if (meshFile.exists()){
 		return meshFile;
 	}else{
@@ -670,18 +680,29 @@ private synchronized File getMeshFile() throws FileNotFoundException {
 public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 	File file = getODEDataFile();
 	long lastModified = file.lastModified();
-	cbit.vcell.solver.ode.ODESimData odeSimData = cbit.vcell.solver.ode.ODESimData.readODEDataFile(file);
+	ODESimData odeSimData = null;
 	try {
+		if (bOdeDataFormat) {
+			odeSimData = ODESimData.readODEDataFile(getODEDataFile());
+		} else {
+			odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getFunctionsFile());
+		}
+		if (odeSimData == null) {
+			return null;
+		}
 		int colIndex = odeSimData.findColumn(ReservedVariable.TIME.getName()); //look for 't' first
 		//if not time serie data, it should be multiple trial data. get the trial no as fake time data. let it run since we will not need it when displaying histogram
 		if(colIndex == -1)
 			colIndex = odeSimData.findColumn("TrialNo"); 
 		dataTimes = odeSimData.extractColumn(colIndex);
-	}catch (ExpressionException e){
+	} catch (ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException("error getting data times: "+e.getMessage());
+	} catch (FileNotFoundException e) {			
+		e.printStackTrace();
+		throw new DataAccessException("error getting dataset times: "+e.getMessage());
 	}
-	ODEDataInfo odeDataInfo = new ODEDataInfo(info.getOwner(), info.getID(), lastModified);
+	ODEDataInfo odeDataInfo = new ODEDataInfo(vcDataId.getOwner(), vcDataId.getID(), lastModified);
 	if (odeSimData != null) {
 		return new ODEDataBlock(odeDataInfo, odeSimData);
 	} else {
@@ -696,9 +717,13 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
  */
 private synchronized File getODEDataFile() throws DataAccessException {
 	refreshLogFile();
-	if (dataFilenames == null) throw new DataAccessException("ODE data filename not read from logfile");
+	if (dataFilenames == null) {
+		throw new DataAccessException("ODE data filename not read from logfile");
+	}
 	File odeFile = new File(userDirectory, dataFilenames[0]);
-	if (odeFile.exists()) return odeFile;
+	if (odeFile.exists()) {
+		return odeFile;
+	}
 	throw new DataAccessException("ODE data file not found");
 }
 
@@ -721,7 +746,7 @@ public synchronized ParticleDataBlock getParticleDataBlock(double time) throws D
 		zipFile = null;
 	}
 	
-	ParticleDataBlock particleDataBlock = new ParticleDataBlock(info.getOwner(), info.getID(), time, particleFile, zipFile);
+	ParticleDataBlock particleDataBlock = new ParticleDataBlock(vcDataId.getOwner(), vcDataId.getID(), time, particleFile, zipFile);
 	if (particleDataBlock.getParticleData() != null) {
 		return particleDataBlock;
 	} else {
@@ -827,7 +852,7 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 	// take a snapshot in time
 	//
 	if (bZipFormat1) {
-		File zipFile = new File(userDirectory,info.getID()+".zip");
+		File zipFile = new File(userDirectory,vcDataId.getID()+".zip");
 		if (zipFile.exists()) {
 			return zipFile;
 		} else {
@@ -900,7 +925,7 @@ private AnnotatedFunction[] getReferringUserFunctions(String symbolName){
  * @return cbit.vcell.simdata.SimResultsInfo
  */
 public synchronized VCDataIdentifier getResultsInfoObject() {
-	return info;
+	return vcDataId;
 }
 
 
@@ -949,7 +974,7 @@ public synchronized SimDataBlock getSimDataBlock(String varName, double time) th
 			throw new DataAccessException(ex.getMessage());
 		}
 	}
-	PDEDataInfo pdeDataInfo = new PDEDataInfo(info.getOwner(),info.getID(),varName,time,lastModified);
+	PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastModified);
 	if (data!=null){
 		return new SimDataBlock(pdeDataInfo,data,variableType);
 	}else{
@@ -1183,8 +1208,8 @@ public synchronized long getSizeInBytes() {
  */
 public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers() throws IOException, DataAccessException {
 	// Is this zip format?
-	File zipFile1 = new File(userDirectory,info.getID()+".zip");
-	File zipFile2 = new File(userDirectory,info.getID()+"00.zip");
+	File zipFile1 = new File(userDirectory,vcDataId.getID()+".zip");
+	File zipFile2 = new File(userDirectory,vcDataId.getID()+"00.zip");
 	bZipFormat1 = false;
 	bZipFormat2 = false;
 	if (zipFile1.exists()) {
@@ -1359,14 +1384,29 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	if (stringBuffer.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
 	}
-	if ((stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(STOCH_DATA_IDENTIFIER)))
+	if ((stringBuffer.toString().startsWith(IDA_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(STOCH_DATA_IDENTIFIER)))
 	{
 		String newLineDelimiters = "\n\r";
 		StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
 		isODEData = true;
 		String odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
+		if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
+			bOdeDataFormat = true;
+		} else if (odeIdentifier.equals(IDA_DATA_IDENTIFIER)) {
+			bOdeDataFormat = false;
+		} else {
+			throw new DataAccessException("unexpected data format " + odeIdentifier + " in log file.");
+		}
 		String odeDataFormat = lineTokenizer.nextToken(); // br.readLine();
 		dataFilenames = new String[] { lineTokenizer.nextToken() }; // {br.readLine()};
+		if (lineTokenizer.hasMoreTokens()) {
+			String keepMostLine = lineTokenizer.nextToken();
+			StringTokenizer st = new StringTokenizer(keepMostLine);
+			String token = st.nextToken();
+			if (token.equals(KEEP_MOST)) {
+				odeKeepMost = Integer.parseInt(st.nextToken());
+			}
+		}		
 	} else {
 		StringTokenizer st = new StringTokenizer(stringBuffer.toString());
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays

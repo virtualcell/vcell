@@ -1070,7 +1070,7 @@ private void enableOutputOptionPanel() {
 		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-	} else if (solverTaskDescription.getSolverDescription().equals(SolverDescription.IDA) || solverTaskDescription.getSolverDescription().equals(SolverDescription.CVODE)) {
+	} else if (solverTaskDescription.getSolverDescription().supportsUniformExplicitOutput()) {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(true);

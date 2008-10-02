@@ -23,27 +23,17 @@ public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.i
  *  This method takes the place of the old runUnsteady()...
  */
 protected void initialize() throws cbit.vcell.solver.SolverException {
-	//SessionLog sessionLog = getSessionLog();
-	//sessionLog.print("IDASolver.initialize()");
+
 	fireSolverStarting("IDA solver initializing...");
-	//
-	String inputFilename = getBaseName() + ".idaInput";
-	String outputFilename = getBaseName() + ".ida";
-	//
-	//sessionLog.print("IDASolver.initialize() baseName = " + getBaseName());
-	//
-	IDAFileWriter idaFileWriter = new IDAFileWriter(getSimulation(), getJobIndex(), true);
-	try {
-		idaFileWriter.initialize();
-	} catch (Exception e) {
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not initialize IDA file writer..."));
-		e.printStackTrace(System.out);
-		throw new SolverException("autocode init exception: " + e.getMessage());
-	}
+	super.initialize();
+	
+	String inputFilename = getBaseName() + IDAINPUT_DATA_EXTENSION;
+	String outputFilename = getBaseName() + IDA_DATA_EXTENSION;
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
 	fireSolverStarting("IDA solver generating input file...");
-	//
+
 	try {
+		IDAFileWriter idaFileWriter = new IDAFileWriter(getSimulation(), getJobIndex(), true);
 		java.io.FileOutputStream fileOutputStream = new java.io.FileOutputStream(inputFilename);
 		idaFileWriter.writeInputFile(new java.io.PrintWriter(fileOutputStream));
 		fileOutputStream.close();
@@ -52,8 +42,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 		e.printStackTrace(System.out);
 		throw new SolverException("IDA solver could not generate input file: " + e.getMessage());
 	}
-	//
-	//
+
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"IDA solver starting"));	
 	
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
