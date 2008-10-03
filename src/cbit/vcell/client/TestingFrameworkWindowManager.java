@@ -463,11 +463,16 @@ public void checkNewTestSuiteInfo(TestSuiteInfoNew newTestSuiteInfo) throws Data
  * @param mathDesc cbit.vcell.math.MathDescription
  * 
  */
-public void compare(TestCriteriaNew testCriteria){
+public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrSimInfo){
 	
 	// create the merged data for the simulationInfo in testCriteria and the regression simInfo
 	SimulationInfo simInfo = testCriteria.getSimInfo();
-	SimulationInfo regrSimInfo = testCriteria.getRegressionSimInfo();
+	SimulationInfo regrSimInfo = null;
+	if(userDefinedRegrSimInfo != null){
+		regrSimInfo = userDefinedRegrSimInfo;
+	}else{
+		regrSimInfo = testCriteria.getRegressionSimInfo();
+	}
 
 	if (regrSimInfo == null) {
 		return;

@@ -44,6 +44,9 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String EDIT_TESTCRITERIA = "Edit Test Criteria...";
 	public static final String GENTCRITREPORT_USERDEFREF_TESTCRITERIA = "Show TCrit Report (Choose RefSim)";
 	public static final String GENTCRITREPORT_INTERNALREF_TESTCRITERIA = "Generate TestCriteria Report";
+	
+	public static final String COMPARERREGR_USERDEFREF_TESTCRITERIA = "Compare With Regression (Choose RefSim)";
+	public static final String COMPARERREGR_INTERNALREF_TESTCRITERIA = "Compare With Regression";
 
 	private class TSRefreshListener implements PropertyChangeListener {
 			private BioModelNode selectedNode = null;
@@ -151,7 +154,8 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjViewMenuItem = null;
 	private javax.swing.JPopupMenu  ivjTCritVarPopupMenu = null;
 	private javax.swing.JMenuItem  ivjGenerateTCRiteportUserDefinedReferenceMenuItem1 = null;
-	
+	private javax.swing.JMenuItem  ivjCompareUserDefinedMenuItem = null;
+
 class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == TestingFrameworkPanel.this.getAddTestSuiteMenuItem()) 
@@ -190,6 +194,8 @@ class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionList
 				genTCritReportUserDefinedReference(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getCompareMenuItem()) 
 				connEtoC16(e);
+			if (e.getSource() == TestingFrameworkPanel.this.getCompareUserDefinedMenuItem()) 
+				refireActionPerformed(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getViewMenuItem()) 
 				connEtoC18(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getChangeTypeToSteadyMenuItem()){
@@ -975,7 +981,7 @@ private javax.swing.JMenuItem getCompareMenuItem() {
 		try {
 			ivjCompareMenuItem = new javax.swing.JMenuItem();
 			ivjCompareMenuItem.setName("CompareMenuItem");
-			ivjCompareMenuItem.setText("Compare With Regression");
+			ivjCompareMenuItem.setText(COMPARERREGR_INTERNALREF_TESTCRITERIA);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -985,6 +991,23 @@ private javax.swing.JMenuItem getCompareMenuItem() {
 		}
 	}
 	return ivjCompareMenuItem;
+}
+
+private javax.swing.JMenuItem getCompareUserDefinedMenuItem() {
+	if (ivjCompareUserDefinedMenuItem == null) {
+		try {
+			ivjCompareUserDefinedMenuItem = new javax.swing.JMenuItem();
+			ivjCompareUserDefinedMenuItem.setName("CompareUserDefinedMenuItem");
+			ivjCompareUserDefinedMenuItem.setText(COMPARERREGR_USERDEFREF_TESTCRITERIA);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjCompareUserDefinedMenuItem;
 }
 /**
  * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
@@ -1526,6 +1549,7 @@ private javax.swing.JPopupMenu getSimulationPopupMenu() {
 			ivjSimulationPopupMenu.add(getRunSimMenuItem());
 			ivjSimulationPopupMenu.add(getViewMenuItem());
 			ivjSimulationPopupMenu.add(getCompareMenuItem());
+			ivjSimulationPopupMenu.add(getCompareUserDefinedMenuItem());
 			ivjSimulationPopupMenu.add(getEditTCrMenuItem());
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportMenuItem1());
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportUserDefinedReferenceMenuItem1());
@@ -1763,6 +1787,7 @@ private void initConnections() throws java.lang.Exception {
 	getGenerateTCRitReportMenuItem1().addActionListener(ivjEventHandler);
 	getGenerateTCRitReportUserDefinedReferenceMenuItem1().addActionListener(ivjEventHandler);
 	getCompareMenuItem().addActionListener(ivjEventHandler);
+	getCompareUserDefinedMenuItem().addActionListener(ivjEventHandler);
 	getViewMenuItem().addActionListener(ivjEventHandler);
 	getChangeTypeToSteadyMenuItem().addActionListener(ivjEventHandler);
 	getEditAnnotationTestCaseMenuItem().addActionListener(ivjEventHandler);
