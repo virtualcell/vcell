@@ -398,6 +398,23 @@ public void setTestingFrameworkWindowManager(cbit.vcell.client.TestingFrameworkW
 }
 
 
+private SimulationInfo getUserSelectedSimulationInfo() throws Exception{
+	final String CANCEL_STRING =  "Cancel";
+	final String BM_STRING = "BioModel";
+	final String MM_STRING = "MathModel";
+	String result = PopupGenerator.showWarningDialog(this, "Choose Reference Model Type.", new String[]{BM_STRING,MM_STRING,CANCEL_STRING},CANCEL_STRING);
+	if(result == null || result.equals(CANCEL_STRING)){
+		throw UserCancelException.CANCEL_GENERIC;
+	}
+	VCDocumentInfo userDefinedRegrRefModel = null;
+	if(result.equals(BM_STRING)){
+		userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectBioModelInfo(getTestingFrameworkWindowManager());
+	}else{
+		userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectMathModelInfo(getTestingFrameworkWindowManager());					
+	}
+	return TestingFrameworkWindowManager.getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
+
+}
 /**
  * Comment
  */
@@ -694,13 +711,23 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			} else {
 				PopupGenerator.showErrorDialog("Selected Object is not a TestCriteria!");
 			}
-		} else if (e.getActionCommand().equals("Compare With Regression")) {
+		} else if (e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_INTERNALREF_TESTCRITERIA) ||
+				e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_USERDEFREF_TESTCRITERIA)) {
 			if (selectedObj instanceof cbit.vcell.numericstest.TestCriteriaNew) {
 				TestCriteriaNew tCriteria = (TestCriteriaNew)selectedObj;
+				SimulationInfo userDefinedRegrRef = null;
+				if(e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_USERDEFREF_TESTCRITERIA)){
+					try{
+						userDefinedRegrRef = getUserSelectedSimulationInfo();
+					}catch(UserCancelException e2){
+						return;
+					}
+				}
+
 				if (tCriteria.getRegressionSimInfo() == null) {
 					PopupGenerator.showErrorDialog("Either the selected simulation does not belong to a REGRESSION test or the regression simInfo is not set!");
 				}
-				getTestingFrameworkWindowManager().compare(tCriteria);			
+				getTestingFrameworkWindowManager().compare(tCriteria,userDefinedRegrRef);			
 			} else {
 				PopupGenerator.showErrorDialog("Selected Object is not a TestCriteria!");
 			}
@@ -853,20 +880,11 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_USERDEFREF_TESTCRITERIA)) {
 			SimulationInfo userDefinedRegrRef = null;
 			if(e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_USERDEFREF_TESTCRITERIA)){
-				final String CANCEL_STRING =  "Cancel";
-				final String BM_STRING = "BioModel";
-				final String MM_STRING = "MathModel";
-				String result = PopupGenerator.showWarningDialog(this, "Choose Reference Model Type.", new String[]{BM_STRING,MM_STRING,CANCEL_STRING},CANCEL_STRING);
-				if(result == null || result.equals(CANCEL_STRING)){
+				try{
+					userDefinedRegrRef = getUserSelectedSimulationInfo();
+				}catch(UserCancelException e2){
 					return;
 				}
-				VCDocumentInfo userDefinedRegrRefModel = null;
-				if(result.equals(BM_STRING)){
-					userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectBioModelInfo(getTestingFrameworkWindowManager());
-				}else{
-					userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectMathModelInfo(getTestingFrameworkWindowManager());					
-				}
-				userDefinedRegrRef = TestingFrameworkWindowManager.getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
 			}
 			Vector<TestSuiteInfoNew> tsinV = new Vector<TestSuiteInfoNew>();
 			for(int i=0;selectedTreePaths != null &&  i<selectedTreePaths.length;i+= 1){
