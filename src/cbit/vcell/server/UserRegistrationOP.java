@@ -15,6 +15,7 @@ import cbit.sql.UserInfo;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.Compare;
 import cbit.util.EventDispatchRunWithException;
+import cbit.util.TokenMangler;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -226,8 +227,7 @@ public class UserRegistrationOP implements Serializable{
 					}
 				}
 				do{
-					int result =
-						DialogUtils.showComponentOKCancelDialog(null/*loginDialog*/, registrationPanel,
+					int result = DialogUtils.showComponentOKCancelDialog(null/*loginDialog*/, registrationPanel,
 								(userAction.equals(LoginDialog.USERACTION_REGISTER)?"Create New User Registration":"Update Registration Information ("+clientServerManager.getUser().getName()+")"));
 					if (result != JOptionPane.OK_OPTION) {
 						throw UserCancelException.CANCEL_GENERIC;
@@ -235,11 +235,13 @@ public class UserRegistrationOP implements Serializable{
 					try {
 						UserInfo newUserInfo = registrationPanel.getUserInfo();
 						try {
+							TokenMangler.checkLoginID(newUserInfo.userid);
 							if(!checkUserInfo(originalUserInfoHolder[0],newUserInfo)){
 								PopupGenerator.showInfoDialog("No registration information has changed.");
 								continue;
-							}
-						} catch (UserCancelException e) {
+							}							
+						} catch (IllegalArgumentException ex) {
+							PopupGenerator.showErrorDialog(registrationPanel, ex.getMessage());
 							continue;
 						}
 						pp.start();
@@ -247,9 +249,6 @@ public class UserRegistrationOP implements Serializable{
 						registeredUserInfo = registrationProvider.insertUserInfo(newUserInfo,(userAction.equals(LoginDialog.USERACTION_EDITINFO)?true:false));
 						return registeredUserInfo;
 					}catch (Exception e) {
-						if(pp != null){
-							pp.stop();
-						}
 						e.printStackTrace();
 						PopupGenerator.showErrorDialog("Error "+
 								(userAction.equals(LoginDialog.USERACTION_REGISTER)?"inserting New User Registration":"Updating Registration Information ("+clientServerManager.getUser().getName()+")")

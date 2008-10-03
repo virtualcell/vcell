@@ -659,6 +659,19 @@ public static String replaceSubString(String origString, String targetSubstring,
 	return buffer.toString();
 }
 
+public static void checkLoginID(String loginID) throws IllegalArgumentException {	
+	if (loginID == null){
+		throw new IllegalArgumentException("Login ID must not be empty");
+	} 
+	for (int i = 0; i < loginID.length(); i ++) {
+		char ch = loginID.charAt(i);
+		if (!Character.isDigit(ch) && !Character.isLetter(ch) && ch != '.' && ch != '-' && ch != '_') {
+			throw new IllegalArgumentException("Login ID contains illegal character '" + ch + "' at position " + i + ". Login ID can contain only letters, numbers, periods (.), hyphens (-), and underscores (_). " 
+					+ "Special characters or accented letters are not allowed. Please type a different Login ID.");
+		}
+	}	
+}
+
 public static void checkNameProperty(Object source, String owner, PropertyChangeEvent evt) throws PropertyVetoException {
 	if (evt.getSource() == source && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
 		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
