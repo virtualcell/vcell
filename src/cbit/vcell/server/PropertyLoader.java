@@ -151,6 +151,8 @@ public class PropertyLoader {
 	public static final String vcellSMTPPort = "vcell.smtp.port";
 	public static final String vcellSMTPEmailAddress = "vcell.smtp.emailAddress";
 	
+	public static final String javaSimulationExecutable = "vcell.javaSimulation.executable";
+	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
@@ -278,6 +280,8 @@ public class PropertyLoader {
 		vcellSMTPHostName,
 		vcellSMTPPort,
 		vcellSMTPEmailAddress,
+		
+		javaSimulationExecutable,
 	};
 
 /**

@@ -7,7 +7,6 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.User;
 import cbit.sql.KeyValue;
-import cbit.vcell.solver.SolverDescription;
 
 /**
  * Insert the type's description here.
@@ -27,16 +26,16 @@ public class SimulationTask implements java.io.Serializable {
  * @param argUserid java.lang.String
  */
 public SimulationTask(SimulationJob argSimulationJob, int tid) {
-	if (argSimulationJob == null){
-		throw new RuntimeException("simulationJob is null");
+	if (argSimulationJob == null || argSimulationJob.getWorkingSim() == null){
+		throw new RuntimeException("simulation cannot be null");
 	}
 	simulationJob = argSimulationJob;
 	taskID = tid;
 }
 
 public SimulationTask(SimulationJob argSimulationJob, int tid, String comres) {
-	if (argSimulationJob == null){
-		throw new RuntimeException("simulationJob is null");
+	if (argSimulationJob == null || argSimulationJob.getWorkingSim() == null){
+		throw new RuntimeException("simulation cannot be null");
 	}
 	simulationJob = argSimulationJob;
 	taskID = tid;
@@ -113,7 +112,7 @@ public cbit.vcell.solver.SimulationJob getSimulationJob() {
  * @return cbit.vcell.solver.Simulation
  */
 public String getSimulationJobIdentifier() {
-	return (getSimulationJob().getWorkingSim() == null) ? null : getSimulationJob().getWorkingSim().getSimulationID() + "_" + getSimulationJob().getJobIndex() + "_";
+	return simulationJob.getSimulationJobID();
 }
 
 
@@ -155,22 +154,6 @@ public java.lang.String getUserName() {
 	
 	return user.getName();
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/25/2003 2:32:00 PM)
- * @return boolean
- */
-public boolean goodForHTC() {
-	if (getSimulationJob().getWorkingSim() == null) {
-		return false;
-	}
-	
-	SolverDescription solverDescription = getSimulationJob().getWorkingSim().getSolverTaskDescription().getSolverDescription();
-	return solverDescription.goodForHTC();
-}
-
 
 /**
  * Insert the method's description here.

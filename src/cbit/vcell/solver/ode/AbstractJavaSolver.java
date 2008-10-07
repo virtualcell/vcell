@@ -4,7 +4,6 @@ import java.io.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.solver.*;
 /**
@@ -68,13 +67,6 @@ public int getProgressIncrement() {
 public int getSaveToFileInterval() {
 	return saveToFileInterval;
 }
-
-
-/**
- *  This method takes the place of the old runUnsteady()...
- */
-protected abstract void initialize() throws cbit.vcell.solver.SolverException;
-
 
 /**
  *  This method takes the place of the old runUnsteady()...

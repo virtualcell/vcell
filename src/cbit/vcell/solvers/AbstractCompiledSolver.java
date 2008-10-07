@@ -65,10 +65,7 @@ public double getProgress() {
 	double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
 	return (currentTime-startTime)/(endTime-startTime);
 }
-/**
- *  This method takes the place of the old runUnsteady()...
- */
-protected abstract void initialize() throws cbit.vcell.solver.SolverException;
+
 /**
  * Insert the method's description here.
  * Creation date: (6/27/2001 2:33:03 PM)

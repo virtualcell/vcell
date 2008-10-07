@@ -4,8 +4,6 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.SessionLog;
 /**
  * Any kind of a solver.  Its implementors implement specific
  * solver types (ODE or PDE solvers, for example), as well as

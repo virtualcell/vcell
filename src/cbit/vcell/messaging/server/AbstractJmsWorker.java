@@ -22,139 +22,54 @@ import static cbit.vcell.messaging.MessageConstants.*;
  */
 public abstract class AbstractJmsWorker extends AbstractJmsServiceProvider implements Worker {
 	protected int maxMemoryMB = 100;
-	protected SimulationTask[] currentTasks = null;
-	protected Solver[] currentSolvers = null;
+	protected SimulationTask currentTask = null;
+	protected Solver currentSolver = null;
 	protected boolean bStopped = true;
 	protected WorkerMessaging workerMessaging = null;
-	protected WorkerType workerType;
-	int numSubWorkers = 1;
-	protected WorkerType[] subworkerTypes = null;
+	protected ServiceType serviceType;
 	
-public AbstractJmsWorker(WorkerType wType, int workerOrdinal, int workerMem, String logdir) throws JMSException, FileNotFoundException {
-	workerType = wType;
+public AbstractJmsWorker(ServiceType wt, int workerOrdinal, int workerMem, String logdir) throws JMSException, FileNotFoundException {
+	serviceType = wt;
 	maxMemoryMB = workerMem;	
-	numSubWorkers = 1;
-	
-	ServiceType servicetype = ServiceType.LOCALCOMPUTE; 
-	switch (workerType) {
-	case ODE_WORKER:
-		servicetype = ServiceType.ODECOMPUTE;		
-		break;
-	case PDE_WORKER:
-		servicetype = ServiceType.PDECOMPUTE;		
-		break;
-//	case LSF_WORKER:
-//	case CONDOR_WORKER:	
-	case PBS_WORKER:	
-		servicetype = ServiceType.PBSCOMPUTE;
-		break;
-//	case LSFODE_WORKER:
-//	case CONDORODE_WORKER:
-	case PBSODE_WORKER:
-		numSubWorkers = 2;
-		servicetype = ServiceType.PBSODECOMPUTE;
-		break;
-	case LOCAL_WORKER:
-		numSubWorkers = 2;
-		servicetype = ServiceType.LOCALCOMPUTE;
-		break;
-	}
-	
-	// determine subworkers
-	subworkerTypes = new WorkerType[numSubWorkers];
-	switch (workerType) {
-	case ODE_WORKER:
-	case PDE_WORKER:
-//	case LSF_WORKER:
-//	case CONDOR_WORKER:	
-	case PBS_WORKER:	// only one worker
-		subworkerTypes[0] = workerType;
-		break;
-//	case LSFODE_WORKER:
-//	case CONDORODE_WORKER:
-	case PBSODE_WORKER:
-		subworkerTypes[0] = WorkerType.ODE_WORKER;
-		subworkerTypes[1] = WorkerType.PBS_WORKER; // now we are using PBS
-		break;
-	case LOCAL_WORKER:
-		subworkerTypes[0] = WorkerType.ODE_WORKER;
-		subworkerTypes[1] = WorkerType.PDE_WORKER; // now we are using PBS
-		break;
-	}	
-	
-	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), servicetype, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
+			
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), serviceType, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
 	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());
 	workerMessaging = new WorkerMessaging(this, log);
 }
 
-public int getNumSubworkers() {	
-	return numSubWorkers;
-}
-protected abstract void doJob(int workerIndex) throws JMSException, SolverException, XmlParseException;
+protected abstract void doJob() throws JMSException, SolverException, XmlParseException;
 
-public final String[] getJobSelectors() {
-	String[] jobSelectors = new String[numSubWorkers];
-	for (int i = 0; i < numSubWorkers; i ++) {
-		String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
-		String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
-		StringTokenizer st = new StringTokenizer(computeResources, " ,");	
-		jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
-		int count = 0;
-		while (st.hasMoreTokens()) {
-			if (count > 0) {
-				jobSelector = ", ";
-			}
-			jobSelector += "'" + st.nextToken() + "'";
-			count ++;
+public final String getJobSelector() {
+	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
+	String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
+	StringTokenizer st = new StringTokenizer(computeResources, " ,");	
+	jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
+	int count = 0;
+	while (st.hasMoreTokens()) {
+		if (count > 0) {
+			jobSelector = ", ";
 		}
-		jobSelector += ")))";
-		
-		switch (subworkerTypes[i]) {
-//			case LSF_WORKER: 
-//			case CONDOR_WORKER :
-			case PDE_WORKER :
-			case PBS_WORKER :{
-				jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY + "='" + MessageConstants.SOLVER_TYPE_PDE_PROPERTY + "')";
-				break;
-			}	
-			case ODE_WORKER: {
-				jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY	+ "='" + MessageConstants.SOLVER_TYPE_ODE_PROPERTY + "')" ;
-				break;
-			}
-			case LOCAL_WORKER:
-			case PBSODE_WORKER:
-				throw new RuntimeException("subworker can't be PBSODE or LOCAL");			
-		}
-		jobSelectors[i] = jobSelector;
+		jobSelector += "'" + st.nextToken() + "'";
+		count ++;
 	}
-	return jobSelectors;
+	jobSelector += ")))";
+	
+	return jobSelector;
 }
 
-private int getWorkerIndexFromSolver(Solver s){
-	for (int i = 0; i < numSubWorkers; i ++) {
-		if (s == currentSolvers[i]) {
-			return i;
-		}
-	}
-	return -1;
-}
 /**
  * Invoked when the solver aborts a calculation (abnormal termination).
  * @param event indicates the solver and the event type
  */
 public final void solverAborted(SolverEvent event) {
-	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
-	if (workerIndex == -1) {
-		return;
-	}
 	String failMsg = event.getMessage();
 	if (failMsg == null) {
 		failMsg = "Solver aborted";
 	}
 		
-	workerMessaging.sendFailed(workerIndex, failMsg);
+	workerMessaging.sendFailed(failMsg);
 }
 
 
@@ -163,11 +78,7 @@ public final void solverAborted(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverFinished(SolverEvent event) {
-	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
-	if (workerIndex == -1) {
-		return;
-	}
-	workerMessaging.sendCompleted(workerIndex, event.getProgress(), event.getTimePoint());
+	workerMessaging.sendCompleted(event.getProgress(), event.getTimePoint());
 }
 
 
@@ -176,15 +87,10 @@ public final void solverFinished(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverPrinted(SolverEvent event) {
-	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
-	if (workerIndex == -1) {
+	if (!isRunning()) {
 		return;
 	}
-	if (!isRunning(workerIndex)) {
-		return;
-	}
-
-	workerMessaging.sendNewData(workerIndex, event.getProgress(), event.getTimePoint());
+	workerMessaging.sendNewData(event.getProgress(), event.getTimePoint());
 }
 
 
@@ -193,15 +99,10 @@ public final void solverPrinted(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverProgress(SolverEvent event) {
-	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
-	if (workerIndex == -1) {
+	if (!isRunning()) {
 		return;
 	}
-	if (!isRunning(workerIndex)) {
-		return;
-	}
-		
-	workerMessaging.sendProgress(workerIndex, event.getProgress(), event.getTimePoint());
+	workerMessaging.sendProgress(event.getProgress(), event.getTimePoint());
 }
 
 
@@ -210,16 +111,12 @@ public final void solverProgress(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverStarting(SolverEvent event) {
-	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
-	if (workerIndex == -1) {
-		return;
-	}
 	String startMsg = event.getMessage();
 	if (startMsg == null) {
 		startMsg = "Solver starting";
 	}
 	
-	workerMessaging.sendStarting(workerIndex, startMsg);
+	workerMessaging.sendStarting(startMsg);
 }
 
 
@@ -234,51 +131,31 @@ public final void solverStopped(SolverEvent event) {
 	//workerMessaging.sendStopped(event.getProgress(), event.getTimePoint());
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/22/2001 11:21:02 PM)
- */
-public final void startSubworker(int workerIndex) {		
-	log.print("starting subworker " + workerIndex);
-	while (!bStopped){
-		currentTasks[workerIndex] = null;
-		currentSolvers[workerIndex] = null;
-		
-		try {
-			currentTasks[workerIndex] = workerMessaging.getNextTask(workerIndex);
-			
-			if (currentTasks[workerIndex] == null || !(currentTasks[workerIndex] instanceof SimulationTask)){
-				try {
-					Thread.sleep(MessageConstants.SECOND);
-				} catch (Exception ex) {
-				}
-				continue;				
-			}
-			doJob(workerIndex);			
-		} catch (Exception ex) {			
-			workerMessaging.sendFailed(workerIndex, ex.getMessage());
-		}			
-	}	
-}
-
 public final void start() {
 	bStopped = false;
 	
 	log.print("Start PropertyLoader thread...");
 	new PropertyLoaderThread().start();
 
-	currentTasks = new SimulationTask[numSubWorkers];
-	currentSolvers = new Solver[numSubWorkers];
-	for (int i = 1; i < numSubWorkers; i ++) {
-		final int workerIndex = i;
-		new Thread() {
-			public void run() {
-				startSubworker(workerIndex);
+	while (!bStopped){
+		currentTask = null;
+		currentSolver = null;
+		
+		try {
+			currentTask = workerMessaging.getNextTask();
+			
+			if (currentTask == null || !(currentTask instanceof SimulationTask)){
+				try {
+					Thread.sleep(MessageConstants.SECOND);
+				} catch (Exception ex) {
+				}
+				continue;				
 			}
-		}.start();		
-	}
-	startSubworker(0);
+			doJob();			
+		} catch (Exception ex) {			
+			workerMessaging.sendFailed(ex.getMessage());
+		}			
+	}	
 	
 	log.print(serviceInstanceStatus.getSpecID() + " stopped");
 }

@@ -4,9 +4,7 @@ import cbit.vcell.server.SessionLog;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.IDASolverStandalone;
-
 import java.io.*;
-import cbit.vcell.messaging.server.SimulationTask;
 
 /**
  * Insert the type's description here.

@@ -35,6 +35,8 @@ public interface SimDataConstants {
 	public static final String PARTICLE_DATA_EXTENSION = ".particle";
 	public static final String ZIPFILE_EXTENSION = ".zip";
 	public static final String FIELDDATARESAMP_EXTENSION = ".fdat";
+	
+	public static final String JAVA_INPUT_EXTENSION = ".javaInput";
 
 	public static final int PDE_DATA = 0;
 	public static final int ODE_DATA = 1;
