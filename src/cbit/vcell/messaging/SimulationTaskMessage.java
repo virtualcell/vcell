@@ -135,7 +135,6 @@ private javax.jms.Message toMessage(JmsSession session) throws javax.jms.JMSExce
 	message.setStringProperty(MessageConstants.USERNAME_PROPERTY, simTask.getUserName()); // might be used to remove from the job queue when do stopSimulation
 	message.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simTask.getSimKey() + "")); // might be used to remove from the job queue when do stopSimulation
 
-	message.setStringProperty(MessageConstants.SOLVER_TYPE_PROPERTY, simTask.goodForHTC() ? MessageConstants.SOLVER_TYPE_PDE_PROPERTY : MessageConstants.SOLVER_TYPE_ODE_PROPERTY); // for worker message filter
 	message.setDoubleProperty(MessageConstants.SIZE_MB_PROPERTY, simTask.getEstimatedMemorySizeMB()); // for worker message filter
 	
 	if (simTask.getComputeResource() != null) {

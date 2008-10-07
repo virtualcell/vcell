@@ -11,7 +11,6 @@ import java.io.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.ODEStateVariable;
-import java.util.Vector;
 import cbit.vcell.parser.*;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.*;
@@ -181,7 +180,7 @@ protected final String getBaseName() {
  * @return double
  */
 public abstract double getCurrentTime();
-
+protected abstract void initialize() throws cbit.vcell.solver.SolverException;
 
 public final FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
 	return simulationJob.getFieldDataIdentifierSpecs();

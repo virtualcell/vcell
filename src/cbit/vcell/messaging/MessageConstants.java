@@ -37,12 +37,6 @@ public interface MessageConstants {
 
 	public static final String COMPUTE_RESOURCE_PROPERTY	= "ComputeResource";	
 	
-	public static final String SOLVER_TYPE_PROPERTY	= "SolverType";
-	public static final String SOLVER_TYPE_ODE_PROPERTY = "OdeSolver";
-	public static final String SOLVER_TYPE_PDE_PROPERTY	= "PdeSolver";	
-
-	public enum WorkerType { ODE_WORKER, PDE_WORKER, PBS_WORKER, /*LSF_WORKER, CONDOR_WORKER,*/ PBSODE_WORKER, /*LSFODE_WORKER, CONDORODE_WORKER,*/ LOCAL_WORKER,  };
-	
 	public static final String HOSTNAME_PROPERTY		= "HostName";
 	public static final String SERVICE_TYPE_PROPERTY	= "ServiceType";
 	
@@ -51,10 +45,7 @@ public interface MessageConstants {
 		DATA ("Data"),
 		DATAEXPORT ("Exprt"),
 		DISPATCH ("Dsptch"),
-		PBSCOMPUTE ("PbsC"), 	// high throughput computing only, include LSF, PBS, Condor
-		ODECOMPUTE ("OdeC"),  // Ode only
-		PDECOMPUTE ("PdeC"),  // local Pde only
-		PBSODECOMPUTE ("PbsOC"),	// high throughput computing and Ode, include LSF, PBS, Condor
+		PBSCOMPUTE ("PbsC"),	// submit everything to PBS
 		LOCALCOMPUTE ("LclC"),   // local pde and ode
 		SERVERMANAGER ("ServerManager");
 		

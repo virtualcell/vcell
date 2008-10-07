@@ -5,7 +5,6 @@ package cbit.vcell.messaging.server;
  * @author: Fei Gao
  */
 public interface Worker extends ServiceProvider, cbit.vcell.messaging.ControlTopicListener, cbit.vcell.solver.SolverListener {
-	public String[] getJobSelectors();
-	public int getNumSubworkers();
-	public boolean isRunning(int workerIndex);
+	public String getJobSelector();
+	public boolean isRunning();
 }
