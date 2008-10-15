@@ -264,8 +264,11 @@ private static org.jdom.Element getXML(FRAPStudy.FRAPModelParameters param) thro
 //	if (param.getFitExpression()!=null){
 //		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.FitExpressionAttrTag, param.getFitExpression().infix());
 //	}
-	if (param.slowerRate!=null){
-		frapModelParametersNode.setAttribute(MicroscopyXMLTags.SlowerRateAttrTag, param.slowerRate.toString());
+	if (param.secondRate!=null){
+		frapModelParametersNode.setAttribute(MicroscopyXMLTags.SecondRateAttrTag, param.secondRate.toString());
+	}
+	if (param.secondFraction!=null){
+		frapModelParametersNode.setAttribute(MicroscopyXMLTags.SecondFractionAttTag, param.secondFraction.toString());
 	}
 	return frapModelParametersNode;
 }
@@ -344,7 +347,5 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 	}
 	return frapStudyNode;
 }
-
-
 
 }

@@ -22,6 +22,8 @@ public class MicroscopyXMLTags {
 	public static final String BleachWhileMonitoringTauAttrTag = "BleachWhileMonitoringTau";
 	public static final String RecoveryDiffusionRateAttrTag = "RecoveryDiffusionRate";
 	public static final String MobileFractionAttrTag = "MobileFraction";
+	public static final String SecondRateAttrTag = "SecondaryDiffusionRate";
+	public static final String SecondFractionAttTag = "SecondaryMobileFraction";
 	public static final String BleachTypeAttrTag = "BleachType";
 	public static final String ImageDatasetTag = "ImageDataset";
 	public static final String OwnerNameAttrTag = "OwnerName";
@@ -40,9 +42,6 @@ public class MicroscopyXMLTags {
     public final static String OriginalGlobalScaleInfoScaleTag = "OriginalGlobalScaleInfoScale";
     public final static String OriginalGlobalScaleInfoOffsetTag = "OriginalGlobalScaleInfoOffset";
     
-	public static final String SlowerRateAttrTag = "SlowerRate";
-
-
 /**
  * XMLTags default constructor.
  */

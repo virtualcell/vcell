@@ -1,14 +1,18 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -18,13 +22,16 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.net.URL;
 
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -63,6 +70,7 @@ import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
@@ -105,11 +113,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private LocalWorkspace localWorkspace = null;
 	private JTabbedPane jTabbedPane = null;
 	private FRAPParametersPanel frapParametersPanel = null;
-	private JPanel fitSpatialModelPanel = null;
-	
+	//to make alternative view for comparing simulation results/frap data
+	final static String SPLITEDVIEW = "Parallel View";
+	final static String TABBEDVIEW = "Tabbed View";
+	private JRadioButton tabRadio = null;
+	private JRadioButton splitRadio = null;
+	private JPanel simResultsViewPanel = null;
 	private PDEDataViewer pdeDataViewer = null;
 	private PDEDataViewer flourDataViewer = null;
-	
+	private JPanel fitSpatialModelPanel = null;
+	private FRAPSimDataViewerPanel frapSimDataViewerPanel = null;
+		
 	private ResultsSummaryPanel resultsSummaryPanel;
 	
 	public interface NewFRAPFromParameters{
@@ -132,16 +146,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		public final String bleachWhileMonitorRateString;
 		public final boolean bMobileFractionChanged;
 		public final String mobileFractionString;
-		public final boolean bSlowerChanged;
-		public final String slowerString;
+		public final boolean bSecondRateChanged;
+		public final String secondRateString;
+		public final boolean bSecondFractionChanged;
+		public final String secondFractionString;
 		public final boolean bStartIndexForRecoveryChanged;
 		public final String startIndexForRecoveryString;
 		public FrapChangeInfo(boolean bROIValuesChanged,boolean bROISizeChanged,
 				boolean bDiffusionRateChanged,String diffusionRateString,
 				boolean bBleachWhileMonitorChanged,String bleachWhileMonitorRateString,
 				boolean bMobileFractionChanged,String mobileFractionString,
-				boolean bSlowerChanged, String slowerString,
-				boolean bStartIndexForRecoveryChanged,String startIndexForRecoveryString){
+				boolean bSecondRateChanged, String secondRateString,
+				boolean bSecondFractionChanged, String secondFractionString,
+				boolean bStartIndexForRecoveryChanged,String startIndexForRecoveryString)
+		{
 			this.bROIValuesChanged = bROIValuesChanged;
 			this.bROISizeChanged = bROISizeChanged;
 			this.bDiffusionRateChanged = bDiffusionRateChanged;
@@ -150,8 +168,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			this.bleachWhileMonitorRateString = bleachWhileMonitorRateString;
 			this.bMobileFractionChanged = bMobileFractionChanged;
 			this.mobileFractionString = mobileFractionString;
-			this.bSlowerChanged = bSlowerChanged;
-			this.slowerString = slowerString;
+			this.bSecondRateChanged = bSecondRateChanged;
+			this.secondRateString = secondRateString;
+			this.bSecondFractionChanged = bSecondFractionChanged;
+			this.secondFractionString = secondFractionString;
 			this.bStartIndexForRecoveryChanged = bStartIndexForRecoveryChanged;
 			this.startIndexForRecoveryString = startIndexForRecoveryString;
 			//Don't forget to change 'hasAnyChanges' if adding new parameters
@@ -159,7 +179,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		public boolean hasAnyChanges(){
 			return bROIValuesChanged || bROISizeChanged ||
 				bDiffusionRateChanged || bBleachWhileMonitorChanged ||
-				bMobileFractionChanged || bSlowerChanged || bStartIndexForRecoveryChanged;
+				bMobileFractionChanged || bSecondRateChanged || bSecondFractionChanged ||
+				bStartIndexForRecoveryChanged;
 		}
 		public boolean hasROIChanged(){
 			return bROISizeChanged || bROIValuesChanged;
@@ -171,7 +192,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			(bDiffusionRateChanged?"(Diffusion Rate)":" ")+
 			(bBleachWhileMonitorChanged?"(BleachWhileMonitoring Rate)":" ")+
 			(bMobileFractionChanged?"(Mobile Fraction)":" ")+
-			(bSlowerChanged?"(Slower Rate)":" ")+
+			(bSecondRateChanged?"(Secondary Diffusion Rate)":" ")+
+			(bSecondFractionChanged?"(Secondary Mobile Fraction Rate)":" ")+
 			(bStartIndexForRecoveryChanged?"(Start Index for Recovery)":" ");
 
 		}
@@ -184,7 +206,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		public final String lastBaseDiffusionrate;
 		public final String lastBleachWhileMonitoringRate;
 		public final String lastMobileFraction;
-		public final String lastSlowerRate;
+		public final String lastSecondRate;
+		public final String lastSecondFraction;
 		public final String startingIndexForRecovery;
 		public SavedFrapModelInfo(
 			KeyValue savedSimKeyValue,
@@ -194,8 +217,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			String lastBaseDiffusionrate,
 			String lastBleachWhileMonitoringRate,
 			String lastMobileFraction,
-			String lastSlowerRate,
-			String startingIndexForRecovery){
+			String lastSecondRate,
+			String lastSecondFraction,
+			String startingIndexForRecovery)
+		{
 			if(savedSimKeyValue == null){
 				throw new IllegalArgumentException("SimKey cannot be null for a saved FrapModel.");
 			}
@@ -206,7 +231,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			this.lastBaseDiffusionrate = lastBaseDiffusionrate;
 			this.lastBleachWhileMonitoringRate = lastBleachWhileMonitoringRate;
 			this.lastMobileFraction = lastMobileFraction;
-			this.lastSlowerRate = lastSlowerRate;
+			this.lastSecondRate = lastSecondRate;
+			this.lastSecondFraction = lastSecondFraction;
 			this.startingIndexForRecovery = startingIndexForRecovery;
 		}
 
@@ -401,13 +427,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		String savedDiffusionRate = null;
 		String savedBleachWhileMonitoringRate = null;
 		String savedMobileFraction = null;
-		String savedSlowerRate = null;
+		String savedSecondRate = null;
+		String savedSecondFraction = null;
 		String startingIndexForRecovery = null;
 		if(frapModelParameters != null){
 			savedDiffusionRate = frapModelParameters.diffusionRate;
 			savedBleachWhileMonitoringRate = frapModelParameters.monitorBleachRate;
 			savedMobileFraction = frapModelParameters.mobileFraction;
-			savedSlowerRate = frapModelParameters.slowerRate;
+			savedSecondRate = frapModelParameters.secondRate;
+			savedSecondFraction = frapModelParameters.secondFraction;
 			startingIndexForRecovery = frapModelParameters.startIndexForRecovery;
 		}
 		return new SavedFrapModelInfo(
@@ -416,7 +444,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				savedDiffusionRate,
 				savedBleachWhileMonitoringRate,
 				savedMobileFraction,
-				savedSlowerRate,
+				savedSecondRate,
+				savedSecondFraction,
 				startingIndexForRecovery
 			);
 	}
@@ -442,6 +471,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private FRAPDataPanel getFRAPDataPanel() {
 		if (frapDataPanel == null) {
 			frapDataPanel = new FRAPDataPanel();
+			frapDataPanel.setBorder(TAB_LINE_BORDER);
 			frapDataPanel.getOverlayEditorPanelJAI().addPropertyChangeListener(this);
 		}
 		return frapDataPanel;
@@ -458,7 +488,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_IMAGES, null, getFRAPDataPanel(), null);
 			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE, null, getFRAPParametersPanel(), null);
 			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_REPORT, null, getResultsSummaryPanel(), null);
-			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS, null, getFitSpatialModelPanel(), null);
+			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS, null, getSimResultsViewPanel(), null);
 			jTabbedPane.setModel(
 				new DefaultSingleSelectionModel(){
 					@Override
@@ -484,6 +514,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return jTabbedPane;
 	}
 
+	private FRAPSimDataViewerPanel getFRAPSimDataViewerPanel(){
+		if(frapSimDataViewerPanel == null){
+			frapSimDataViewerPanel = new FRAPSimDataViewerPanel();
+			frapSimDataViewerPanel.setBorder(TAB_LINE_BORDER);
+		}
+		return frapSimDataViewerPanel;
+	}
+	
 	private boolean checkROIConstraints() throws Exception{
 		short[] cellPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).getPixelsXYZ();
 		short[] bleachPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).getPixelsXYZ();
@@ -667,10 +705,55 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private JPanel getFitSpatialModelPanel() {
 		if (fitSpatialModelPanel == null) {
 			fitSpatialModelPanel = new JPanel();
-			fitSpatialModelPanel.setLayout(new BorderLayout());
-			fitSpatialModelPanel.add(getSplitDataViewers(), BorderLayout.CENTER);
+			fitSpatialModelPanel.setLayout(new CardLayout());
+			fitSpatialModelPanel.add(getFRAPSimDataViewerPanel(), TABBEDVIEW);
+			fitSpatialModelPanel.add(getSplitDataViewers(), SPLITEDVIEW);
 		}
 		return fitSpatialModelPanel;
+	}
+	
+	/**
+	 * This method initializes fitSpatialModelPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getSimResultsViewPanel() {
+		if (simResultsViewPanel == null) {
+			simResultsViewPanel = new JPanel();
+			JPanel radioPanel = new JPanel();
+			radioPanel.setLayout(new FlowLayout());
+			tabRadio = new JRadioButton(TABBEDVIEW, true);
+			tabRadio.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					if(((JRadioButton)e.getSource()).isSelected() && getFitSpatialModelPanel() != null)
+					{
+						CardLayout cl = (CardLayout)(getFitSpatialModelPanel().getLayout());
+						cl.show(getFitSpatialModelPanel(), TABBEDVIEW);
+					}
+					
+				}
+			});
+			splitRadio = new JRadioButton(SPLITEDVIEW);
+			splitRadio.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					if(((JRadioButton)e.getSource()).isSelected() && getFitSpatialModelPanel() != null)
+					{
+						CardLayout cl = (CardLayout)(getFitSpatialModelPanel().getLayout());
+						cl.show(getFitSpatialModelPanel(), SPLITEDVIEW);
+					}
+					
+				}
+			});
+			ButtonGroup bg = new ButtonGroup();
+			bg.add(tabRadio);
+			bg.add(splitRadio);
+			radioPanel.add(tabRadio);
+			radioPanel.add(splitRadio);
+			simResultsViewPanel.setLayout(new BorderLayout());
+			simResultsViewPanel.add(radioPanel, BorderLayout.NORTH);
+			simResultsViewPanel.add(getFitSpatialModelPanel(), BorderLayout.CENTER);
+		}
+		return simResultsViewPanel;
 	}
 	
 	private ResultsSummaryPanel getResultsSummaryPanel(){
@@ -856,6 +939,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				new Double(getFrapStudy().getFrapModelParameters().diffusionRate),
 				getFrapStudy().getFrapModelParameters().monitorBleachRate,
 				getFrapStudy().getFrapModelParameters().mobileFraction,
+				getFrapStudy().getFrapModelParameters().secondRate==null?null:new Double(getFrapStudy().getFrapModelParameters().secondRate),
+				getFrapStudy().getFrapModelParameters().secondFraction,
 				(bSaveAsNew || getSavedFrapModelInfo() == null || getSavedFrapModelInfo().savedSimKeyValue == null
 						?LocalWorkspace.createNewKeyValue()
 						:getSavedFrapModelInfo().savedSimKeyValue),
@@ -1013,7 +1098,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}else{
 								throw UserCancelException.CANCEL_GENERIC;
 							}
-						}else{
+						}else{//.lsm
 							clearCurrentLoadState();
 							ImageLoadingProgress myImageLoadingProgress =
 								new ImageLoadingProgress(){
@@ -1441,30 +1526,100 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
 			fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier());
 		}
-		
+		PDEDataViewer[] PDEviewers = new PDEDataViewer[]{getPDEDataViewer(), getPDEDataViewer2()};
+		PDEDataViewer[] flourViewers = new PDEDataViewer[]{getFlourDataViewer(), getFlourDataViewer2()};
 		DataManager dataManager = null;
 		if (choice == DisplayChoice.PDE){
-			getPDEDataViewer().setSimulation(null);
-			getPDEDataViewer().setPdeDataContext(null);
 			
-			getPDEDataViewer().setDataIdentifierFilter(
+			for(int j=0; j<PDEviewers.length; j++)
+			{
+				PDEviewers[j].setSimulation(null);
+				PDEviewers[j].setPdeDataContext(null);
+				
+				PDEviewers[j].setDataIdentifierFilter(
+						new PDEPlotControlPanel.DataIdentifierFilter(){
+							private String ALL_DATAIDENTIFIERS = "All";
+							private String NORM_FLUOR = "Normalized Fluor.";
+							private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,NORM_FLUOR};
+							public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+								if(dataidentifier.getName().endsWith(MathMapping.FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION)){
+									//Temporary fix for bug that occurs with FieldFunctions in DatasetcontrollerImpl because
+									//DSCI requires a database to deal with fieldfunctions.
+									//VirtualFRAP has no database connection.
+									//Remove _initConc variables saved by solver because they are functions of FieldData
+									return false;
+								}
+								if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
+									return true;
+								}else if(filterSetName.equals(NORM_FLUOR)){
+									return
+										dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED) ||
+										dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE) ||
+										dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE)||
+										dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE);
+								}
+								throw new IllegalArgumentException("DataIdentifierFilter: Unknown filterSetName "+filterSetName);
+							}
+							public String getDefaultFilterName() {
+								return NORM_FLUOR;
+							}
+							public String[] getFilterSetNames() {
+								return filterSetNames;
+							}
+							public boolean isAcceptAll(String filterSetName){
+								return false;//return filterSetName.equals(ALL_DATAIDENTIFIERS);
+							}
+						}
+					);
+	
+				int jobIndex = 0;
+				SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
+				dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
+				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+	
+				PDEviewers[j].setSimulation(sim);
+				PDEviewers[j].setPdeDataContext(pdeDataContext);
+				SimulationModelInfo simModelInfo =
+					new SimulationWorkspaceModelInfo(
+							getFrapStudy().getBioModel().getSimulationContext(sim),
+							sim.getName()
+					);
+				PDEviewers[j].setSimulationModelInfo(simModelInfo);
+				try {
+					getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(PDEviewers[j]);
+					((VirtualFrapWindowManager)PDEviewers[j].getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				PDEviewers[j].repaint();
+		    }
+		}
+		else if (choice == DisplayChoice.EXTTIMEDATA){
+			for(int j=0; j<flourViewers.length; j++)
+			{
+				flourViewers[j].setSimulation(null);
+				flourViewers[j].setPdeDataContext(null);
+				
+				final String NORM_FLUOR_VAR = "norm_fluor";
+				flourViewers[j].setDataIdentifierFilter(
 					new PDEPlotControlPanel.DataIdentifierFilter(){
 						private String ALL_DATAIDENTIFIERS = "All";
-						private String NORM_FLUOR = "Normalized Fluor.";
-						private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,NORM_FLUOR};
+						private String EXP_NORM_FLUOR = "Exp. Norm. Fluor";
+						private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,EXP_NORM_FLUOR};
 						public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
 							if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
 								return true;
-							}else if(filterSetName.equals(NORM_FLUOR)){
+							}else if(filterSetName.equals(EXP_NORM_FLUOR)){
 								return
-									dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED) ||
-									dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE) ||
-									dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE);
+									dataidentifier.getName().indexOf(NORM_FLUOR_VAR) != -1;
+	//								dataidentifier.getName().indexOf("Data2.") == -1 ||
+	//								dataidentifier.getName().indexOf(".ring") != -1;
 							}
 							throw new IllegalArgumentException("DataIdentifierFilter: Unknown filterSetName "+filterSetName);
 						}
 						public String getDefaultFilterName() {
-							return NORM_FLUOR;
+							return EXP_NORM_FLUOR;
 						}
 						public String[] getFilterSetNames() {
 							return filterSetNames;
@@ -1474,102 +1629,48 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						}
 					}
 				);
-
-			int jobIndex = 0;
-			SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
-			dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
-			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
-
-			getPDEDataViewer().setSimulation(sim);
-			getPDEDataViewer().setPdeDataContext(pdeDataContext);
-			SimulationModelInfo simModelInfo =
-				new SimulationWorkspaceModelInfo(
-						getFrapStudy().getBioModel().getSimulationContext(sim),
-						sim.getName()
-				);
-			getPDEDataViewer().setSimulationModelInfo(simModelInfo);
-			try {
-				getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getPDEDataViewer());
-				((VirtualFrapWindowManager)getPDEDataViewer().getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			getPDEDataViewer().repaint();
-		}
-		else if (choice == DisplayChoice.EXTTIMEDATA){
-			getFlourDataViewer().setSimulation(null);
-			getFlourDataViewer().setPdeDataContext(null);
-			
-			final String NORM_FLUOR_VAR = "norm_fluor";
-			getFlourDataViewer().setDataIdentifierFilter(
-				new PDEPlotControlPanel.DataIdentifierFilter(){
-					private String ALL_DATAIDENTIFIERS = "All";
-					private String EXP_NORM_FLUOR = "Exp. Norm. Fluor";
-					private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,EXP_NORM_FLUOR};
-					public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
-						if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
-							return true;
-						}else if(filterSetName.equals(EXP_NORM_FLUOR)){
-							return
-								dataidentifier.getName().indexOf(NORM_FLUOR_VAR) != -1;
-//								dataidentifier.getName().indexOf("Data2.") == -1 ||
-//								dataidentifier.getName().indexOf(".ring") != -1;
-						}
-						throw new IllegalArgumentException("DataIdentifierFilter: Unknown filterSetName "+filterSetName);
-					}
-					public String getDefaultFilterName() {
-						return EXP_NORM_FLUOR;
-					}
-					public String[] getFilterSetNames() {
-						return filterSetNames;
-					}
-					public boolean isAcceptAll(String filterSetName){
-						return filterSetName.equals(ALL_DATAIDENTIFIERS);
-					}
-				}
-			);
-			
-			ExternalDataIdentifier timeSeriesExtDataID = getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier();
-			ExternalDataIdentifier maskExtDataID = getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier();
-			VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID};
-			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs);
-			dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
-			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
-			// add function to display normalized fluorence data 
-			Expression norm_fluor = new Expression("((Data2.cell_mask*((Data1.fluor+1-Data1.bg_average)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
-			AnnotatedFunction[] func = {new AnnotatedFunction("norm_fluor", norm_fluor, null, VariableType.VOLUME, false)};
-			boolean isExisted = false;
-			for(int i=0; i < pdeDataContext.getFunctions().length; i++)
-			{
-				if(func[0].getName().equals(pdeDataContext.getFunctions()[i].getName()))
+				
+				ExternalDataIdentifier timeSeriesExtDataID = getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier();
+				ExternalDataIdentifier maskExtDataID = getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier();
+				VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID};
+				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs);
+				dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
+				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+				// add function to display normalized fluorence data 
+				Expression norm_fluor = new Expression("((Data2.cell_mask*((Data1.fluor+1-Data1.bg_average)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
+				AnnotatedFunction[] func = {new AnnotatedFunction("norm_fluor", norm_fluor, null, VariableType.VOLUME, false)};
+				boolean isExisted = false;
+				for(int i=0; i < pdeDataContext.getFunctions().length; i++)
 				{
-					isExisted = true;
-					break;
+					if(func[0].getName().equals(pdeDataContext.getFunctions()[i].getName()))
+					{
+						isExisted = true;
+						break;
+					}
 				}
+				if(!isExisted)
+				{
+					pdeDataContext.addFunctions(func, new boolean[] {false});
+					pdeDataContext.refreshIdentifiers();
+				}
+				
+				flourViewers[j].setSimulation(sim);
+				flourViewers[j].setPdeDataContext(pdeDataContext);
+				SimulationModelInfo simModelInfo =
+					new SimulationWorkspaceModelInfo(
+							getFrapStudy().getBioModel().getSimulationContext(sim),
+							sim.getName()
+					);
+				flourViewers[j].setSimulationModelInfo(simModelInfo);
+				try {
+					getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(flourViewers[j]);
+					((VirtualFrapWindowManager)flourViewers[j].getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				flourViewers[j].repaint();
 			}
-			if(!isExisted)
-			{
-				pdeDataContext.addFunctions(func, new boolean[] {false});
-				pdeDataContext.refreshIdentifiers();
-			}
-			
-			getFlourDataViewer().setSimulation(sim);
-			getFlourDataViewer().setPdeDataContext(pdeDataContext);
-			SimulationModelInfo simModelInfo =
-				new SimulationWorkspaceModelInfo(
-						getFrapStudy().getBioModel().getSimulationContext(sim),
-						sim.getName()
-				);
-			getFlourDataViewer().setSimulationModelInfo(simModelInfo);
-			try {
-				getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getFlourDataViewer());
-				((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			getFlourDataViewer().repaint();
 		}
 	}
 	
@@ -1626,6 +1727,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			}
 
 			Double baseDiffusionRate = null;
+			Double secDiffusionRate = null;
 			if(frapChangeInfo.diffusionRateString == null){
 				throw new Exception("Diffusion Rate must be set to a value greater than 0.");
 			}
@@ -1633,10 +1735,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				baseDiffusionRate =
 					(frapChangeInfo.diffusionRateString == null?null:new Double(frapChangeInfo.diffusionRateString));
 			}catch(Exception e){
-				throw new Exception("Error parsing value for Base Diffusion Rate. ("+frapChangeInfo.diffusionRateString+")");
+				throw new Exception("Error parsing value for primary Diffusion Rate. ("+frapChangeInfo.diffusionRateString+")");
 			}
 			if(baseDiffusionRate != null && baseDiffusionRate.doubleValue() < 0.0){
-				throw new Exception("Base Diffusion Rate must be positive. ("+baseDiffusionRate.doubleValue()+")");			
+				throw new Exception("Primary Diffusion Rate must be positive. ("+baseDiffusionRate.doubleValue()+")");			
+			}
+			
+			try{
+				secDiffusionRate =
+					(frapChangeInfo.secondRateString == null?null:new Double(frapChangeInfo.secondRateString));
+			}catch(Exception e){
+				throw new Exception("Error parsing value for secondary Diffusion Rate. ("+frapChangeInfo.secondRateString+")");
+			}
+			if(secDiffusionRate != null && secDiffusionRate.doubleValue() < 0.0){
+				throw new Exception("Secondary Diffusion Rate must be positive. ("+secDiffusionRate.doubleValue()+")");			
 			}
 
 			if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
@@ -1670,6 +1782,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				baseDiffusionRate,
 				frapChangeInfo.bleachWhileMonitorRateString,
 				frapChangeInfo.mobileFractionString,
+				secDiffusionRate,
+				frapChangeInfo.secondFractionString,
 				(getSavedFrapModelInfo() == null?null:getSavedFrapModelInfo().savedSimKeyValue),
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapChangeInfo.startIndexForRecoveryString));
@@ -1692,9 +1806,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		getFRAPDataPanel().setLocalWorkspace(localWorkspace);
 		try {
 			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getPDEDataViewer());
+			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getPDEDataViewer2());
 			((VirtualFrapWindowManager)getPDEDataViewer().getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
+			((VirtualFrapWindowManager)getPDEDataViewer2().getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
 			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getFlourDataViewer());
+			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getFlourDataViewer2());
 			((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
+			((VirtualFrapWindowManager)getFlourDataViewer2().getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1707,12 +1825,18 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	 * @return cbit.vcell.client.data.PDEDataViewer	
 	 */
 	private PDEDataViewer getPDEDataViewer() {
+		return getFRAPSimDataViewerPanel().getSimulationDataViewer();
+	}
+
+	private PDEDataViewer getPDEDataViewer2()
+	{
 		if (pdeDataViewer == null) {
-			pdeDataViewer = new VFrapPDEDataViewer();
+			pdeDataViewer = new PDEDataViewer();
 			VirtualFrapWindowManager dataViewerManager = new VirtualFrapWindowManager();
 			try {
 				pdeDataViewer.setDataViewerManager(dataViewerManager);
 				dataViewerManager.addDataJobListener(pdeDataViewer);
+				dataViewerManager.addExportListener(pdeDataViewer);
 			} catch (PropertyVetoException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1722,12 +1846,18 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 
 	private PDEDataViewer getFlourDataViewer() {
+		return getFRAPSimDataViewerPanel().getOriginalDataViewer();
+	}
+	
+	private PDEDataViewer getFlourDataViewer2()
+	{
 		if (flourDataViewer == null) {
-			flourDataViewer = new VFrapPDEDataViewer();
+			flourDataViewer = new PDEDataViewer();
 			VirtualFrapWindowManager dataViewerManager = new VirtualFrapWindowManager();
 			try {
 				flourDataViewer.setDataViewerManager(dataViewerManager);
 				dataViewerManager.addDataJobListener(flourDataViewer);
+				dataViewerManager.addExportListener(flourDataViewer);
 			} catch (PropertyVetoException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1740,8 +1870,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	{
 		//Added margins in both viewers to make it look nicer
 		JPanel upPanel = new JPanel();
-		PDEDataViewer pdeViewer = getPDEDataViewer();
-		pdeViewer.setPreferredSize(new Dimension(700,450));
+		PDEDataViewer pdeViewer = getPDEDataViewer2();
 		JScrollPane upScroll = new JScrollPane(pdeViewer);
 		upScroll.setAutoscrolls(true);
 		upPanel.setLayout(new BorderLayout());
@@ -1754,8 +1883,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		
 		JPanel botPanel = new JPanel();		
-		PDEDataViewer fluorViewer = getFlourDataViewer();
-		fluorViewer.setPreferredSize(new Dimension(700,450));
+		PDEDataViewer fluorViewer = getFlourDataViewer2();
 		JScrollPane botScroll = new JScrollPane(fluorViewer);
 		botPanel.setAutoscrolls(true);
 		botPanel.setLayout(new BorderLayout());
@@ -1767,7 +1895,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		botPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Original Virtual Microscopy Data and Masks", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
 		
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upPanel, botPanel);
-	    split.setDividerLocation(((int)(VirtualFrapMainFrame.INIT_WINDOW_SIZE.height/2))-70);
+	    split.setDividerLocation(((int)(VirtualFrapMainFrame.INIT_WINDOW_SIZE.getHeight()/2))-85);
 	    split.setDividerSize(4);
 	    return split;
 	}
@@ -1951,12 +2079,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 
 	private void createNewFRAPFromParameters(Parameter[] newParameters){
-		String result = DialogUtils.showWarningDialog(this,
-				"The CURRENT FRAP document will be replaced using new parameters:\n"+
-				"Diffusion Rate="+newParameters[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess()+"\n"+
-				"Mobile Fraction="+newParameters[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess()+"\n"+	
-				"Monitor Bleach Rate="+newParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()
-				,new String[] {UserMessage.OPTION_OK,UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+		String msg = "The CURRENT FRAP document will be replaced using new parameters:\n"+
+					 "Primary diffusion Rate="+newParameters[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess()+"\n"+
+					 "Primary mobile Fraction="+newParameters[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess()+"\n"+	
+					 "Monitor Bleach Rate="+newParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess();
+		if(newParameters.length == 5)
+		{
+			msg = msg + "\nSecondary diffusion Rate="+newParameters[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX].getInitialGuess()+"\n"+
+						"Secondary mobile Fraction="+newParameters[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX].getInitialGuess();
+			            
+		}
+		String result = DialogUtils.showWarningDialog(this,msg,new String[] {UserMessage.OPTION_OK,UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 
 		if(result == null || !result.equals(UserMessage.OPTION_OK)){
 			return;
@@ -1964,10 +2097,19 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 //		FRAPModelParameters origFRAPModelParameters = getFrapStudy().getFrapModelParameters();
 		try {
-			getFRAPParametersPanel().changeCoreFRAPModelParameters( 
+			String secRate = null;
+			String secFraction = null;
+			if(newParameters.length == 5)
+			{
+				secRate = newParameters[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX].getInitialGuess()+"";
+				secFraction = newParameters[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX].getInitialGuess()+"";
+			}
+ 			getFRAPParametersPanel().changeCoreFRAPModelParameters( 
 					newParameters[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess()+"",
 					newParameters[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess()+"",
-					newParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+""
+					newParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+"",
+					secRate,
+					secFraction
 			);
 			runSimulation(true, false);
 		} catch (Exception e) {

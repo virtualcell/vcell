@@ -172,6 +172,17 @@ public class ResultsSummaryPanel extends JPanel {
 		gridBagLayout.columnWidths = new int[] {7};
 		setLayout(gridBagLayout);
 
+		final JPanel panel_2 = new JPanel();
+		panel_2.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
+		panel_2.setLayout(new GridBagLayout());
+		cardPanel.add(panel_2,DERIVED_RESULTS);
+
+		plotDerivedSimResultsRadioButton = new JRadioButton();
+		plotDerivedSimResultsRadioButton.setFont(new Font("", Font.BOLD, 12));
+		buttonPanel.add(plotDerivedSimResultsRadioButton);
+		plotDerivedSimResultsRadioButton.setText(DERIVED_RESULTS);
+		plotDerivedSimResultsRadioButton.addActionListener(plotButtonActionListener);
+	
 		final JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		panel_1.setLayout(new GridBagLayout());
@@ -290,17 +301,6 @@ public class ResultsSummaryPanel extends JPanel {
 		
 		table.setModel(getTableModel(summaryReportColumnNames,new Object[][] {{"diffTest","summaryTest"}}));
 		
-		final JPanel panel_2 = new JPanel();
-		panel_2.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
-		panel_2.setLayout(new GridBagLayout());
-		cardPanel.add(panel_2,DERIVED_RESULTS);
-				
-		plotDerivedSimResultsRadioButton = new JRadioButton();
-		plotDerivedSimResultsRadioButton.setFont(new Font("", Font.BOLD, 12));
-		buttonPanel.add(plotDerivedSimResultsRadioButton);
-		plotDerivedSimResultsRadioButton.setText(DERIVED_RESULTS);
-		plotDerivedSimResultsRadioButton.addActionListener(plotButtonActionListener);
-
 		interactiveAnalysisUsingLabel_1 = new JLabel();
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.gridy = 0;
@@ -424,7 +424,7 @@ public class ResultsSummaryPanel extends JPanel {
 	private void init(){
 		plotButtonGroup.add(plotFRAPSimResultsRadioButton);
 		plotButtonGroup.add(plotDerivedSimResultsRadioButton);
-		plotFRAPSimResultsRadioButton.setSelected(true);
+		plotDerivedSimResultsRadioButton.setSelected(true);
 	}
 
 	private void plotDerivedSimulationResults(/*boolean bBestFit*/){
@@ -467,29 +467,33 @@ public class ResultsSummaryPanel extends JPanel {
 //				currentOptFitData = interpolationPanel.getBestFitData();
 //			}
 			double[][] currentOptFitData = interpolationPanel.getCurrentFitData();
-			
-			int columncounter = 0;
-			for (int j = 0; j < numROITypes; j++) {
-				if(!wantsROITypes[j]){continue;}
-//				RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j]:argROIType);
-				double[] values = currentOptFitData[j];
-//				double[] values = curveHash.get(new FRAPStudy.CurveInfo(analysisParameters[analysisParametersIndex],currentROIType)); // get simulated data for this ROI
-				for (int k = 0; k < values.length; k++) {
-					fitOdeSolverResultSet.setValue(k, columncounter/*j*/+1, values[k]);
+			if(allDataHash != null && summaryData != null && currentOptFitData != null)
+			{
+				int columncounter = 0;
+				for (int j = 0; j < numROITypes; j++) {
+					if(!wantsROITypes[j]){continue;}
+//  				RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j]:argROIType);
+					double[] values = currentOptFitData[j];
+//	    			double[] values = curveHash.get(new FRAPStudy.CurveInfo(analysisParameters[analysisParametersIndex],currentROIType)); // get simulated data for this ROI
+					for (int k = 0; k < values.length; k++) {
+						fitOdeSolverResultSet.setValue(k, columncounter/*j*/+1, values[k]);
+					}
+					columncounter++;
 				}
-				columncounter++;
+				DataSource[] selectedRowDataSourceArr = allDataHash.get(summaryData[0][0]);
+				if(selectedRowDataSourceArr != null)
+				{
+					ReferenceData referenceData =
+						(ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
+					final DataSource expDataSource = new DataSource(referenceData,"exp");
+					final DataSource simDataSource = new DataSource(fitOdeSolverResultSet, "opt");
+					DataSource[] newDataSourceArr = new DataSource[2];
+					newDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
+					newDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
+					multisourcePlotPane.setDataSources(newDataSourceArr);
+					multisourcePlotPane.selectAll();
+				}
 			}
-			
-			DataSource[] selectedRowDataSourceArr = allDataHash.get(summaryData[0][0]);
-			ReferenceData referenceData =
-				(ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
-			final DataSource expDataSource = new DataSource(referenceData,"exp");
-			final DataSource simDataSource = new DataSource(fitOdeSolverResultSet, "opt");
-			DataSource[] newDataSourceArr = new DataSource[2];
-			newDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
-			newDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
-			multisourcePlotPane.setDataSources(newDataSourceArr);
-			multisourcePlotPane.selectAll();
 		}catch(Exception e2){
 			e2.printStackTrace();
 			DialogUtils.showErrorDialog("Error graphing Optimizer data "+e2.getMessage());
@@ -654,7 +658,11 @@ public class ResultsSummaryPanel extends JPanel {
 
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 			try{
-				plotFRAPSimResultsRadioButton.doClick();
+//				plotFRAPSimResultsRadioButton.doClick();
+				//we still need to process the simResultsRadioButton does
+				//but now we show Derived FRAP simulation result by default
+				processTableSelection();
+			
 				interpolationPanel.init(frapOptData);
 				table.setModel(getTableModel(summaryReportColumnNames,tableData));				
 				sortColumn(FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE,false);

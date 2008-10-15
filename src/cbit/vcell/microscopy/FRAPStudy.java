@@ -107,7 +107,8 @@ import cbit.vcell.solvers.FVSolverStandalone;
 public class FRAPStudy implements Matchable{
 	private transient String xmlFilename = null;
 	private transient String directory = null;
-	public static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_mobile"; 
+	public static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_primary_mobile"; 
+	public static final String SPECIES_NAME_PREFIX_SLOW_MOBILE = "fluor_secondary_mobile";
 	public static final String SPECIES_NAME_PREFIX_IMMOBILE = "fluor_immobile"; 
 	public static final String SPECIES_NAME_PREFIX_COMBINED = "fluor_combined"; 
 	private String name = null;
@@ -137,19 +138,22 @@ public class FRAPStudy implements Matchable{
 		public final String diffusionRate;
 		public final String monitorBleachRate;
 		public final String mobileFraction;
-		public final String slowerRate;
+		public final String secondRate;
+		public final String secondFraction;
 		
 		public FRAPModelParameters(
 				String startingIndexForRecovery,
 				String diffusionRate,
 				String monitorBleachRate,
 				String mobileFraction,
-				String slowerRate){
+				String secondRate,
+				String secondFraction){
 			this.startIndexForRecovery = startingIndexForRecovery;
 			this.diffusionRate = diffusionRate;
 			this.monitorBleachRate = monitorBleachRate;
 			this.mobileFraction = mobileFraction;
-			this.slowerRate = slowerRate;
+			this.secondRate = secondRate;
+			this.secondFraction = secondFraction;
 		}
 	}
 	
@@ -804,11 +808,15 @@ public class FRAPStudy implements Matchable{
 			);
 	}
 
+	
 	public static BioModel createNewBioModel(
 			FRAPStudy sourceFrapStudy,
 			Double baseDiffusionRate,
 			String bleachWhileMonitoringRateString,
 			String mobileFractionString,
+			Double secDiffusionRate,
+			String secondFractionString,
+			
 			KeyValue simKey,
 			User owner,
 			int startingIndexForRecovery) throws Exception {
@@ -827,7 +835,7 @@ public class FRAPStudy implements Matchable{
 			throw new Exception("No Cell ROI is defined");
 		}
 		if(baseDiffusionRate == null){
-			throw new Exception("Diffusion Rate is not defined");
+			throw new Exception("Primary diffusion Rate is not defined");
 		}
 		if(mobileFractionString == null){
 			throw new Exception("Mobile fraction is not defined");
@@ -841,7 +849,7 @@ public class FRAPStudy implements Matchable{
 
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
 		TimeBounds timeBounds = new TimeBounds(0.0,timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery]);
-		double timeStepVal = timeStamps[timeStamps.length-1] - timeStamps[timeStamps.length-2];
+		double timeStepVal = timeStamps[startingIndexForRecovery+1] - timeStamps[startingIndexForRecovery];
 //		timeStepVal/= 10.0;
 		TimeStep timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
 
@@ -885,15 +893,32 @@ public class FRAPStudy implements Matchable{
 
 		String roiDataName = "roiData";
 		
-		final int MOBILE_IMMOBILE_SPECIES_COUNT = 2;
+		final int ONE_DIFFUSION_SPECIES_COUNT = 2;
+		final int TWO_DIFFUSION_SPECIES_COUNT = 3;
 		final int MOBILE_SPECIES_INDEX = 0;
 		final int IMMOBILE_SPECIES_INDEX = 1;
+		final int SEC_MOBILE_SPECIES_INDEX = 2;
 		
-		Expression[] diffusionConstants = new Expression[MOBILE_IMMOBILE_SPECIES_COUNT];
-		Species[] species = new Species[MOBILE_IMMOBILE_SPECIES_COUNT];
-		SpeciesContext[] speciesContexts = new SpeciesContext[MOBILE_IMMOBILE_SPECIES_COUNT];
-		Expression[] initialConditions = new Expression[MOBILE_IMMOBILE_SPECIES_COUNT];
+		Expression[] diffusionConstants = null;
+		Species[] species = null;
+		SpeciesContext[] speciesContexts = null;
+		Expression[] initialConditions = null;
 		
+		if(secDiffusionRate == null || secondFractionString == null)
+		{
+			diffusionConstants = new Expression[ONE_DIFFUSION_SPECIES_COUNT];
+			species = new Species[ONE_DIFFUSION_SPECIES_COUNT];
+			speciesContexts = new SpeciesContext[ONE_DIFFUSION_SPECIES_COUNT];
+			initialConditions = new Expression[ONE_DIFFUSION_SPECIES_COUNT];
+		}
+		else
+		{
+			diffusionConstants = new Expression[TWO_DIFFUSION_SPECIES_COUNT];
+			species = new Species[TWO_DIFFUSION_SPECIES_COUNT];
+			speciesContexts = new SpeciesContext[TWO_DIFFUSION_SPECIES_COUNT];
+			initialConditions = new Expression[TWO_DIFFUSION_SPECIES_COUNT];
+		}
+				
 		double mobileFraction = (mobileFractionString != null?Double.parseDouble(mobileFractionString):new Double(1.0));
 		//Mobile Species
 		diffusionConstants[MOBILE_SPECIES_INDEX] = new Expression(baseDiffusionRate);
@@ -920,8 +945,24 @@ public class FRAPStudy implements Matchable{
 		initialConditions[IMMOBILE_SPECIES_INDEX] =
 				new Expression((1.0-mobileFraction)+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
 
+		//Slower mobile species
+		if(secDiffusionRate != null && secondFractionString != null)
+		{
+			double secMobileFraction = (secondFractionString != null? Double.parseDouble(secondFractionString):new Double(0));
+			diffusionConstants[SEC_MOBILE_SPECIES_INDEX] = new Expression(secDiffusionRate);
+			
+			species[SEC_MOBILE_SPECIES_INDEX] =
+					new Species(SPECIES_NAME_PREFIX_SLOW_MOBILE,
+						"Slower mobile bleachable species");
+			speciesContexts[SEC_MOBILE_SPECIES_INDEX] = 
+					new SpeciesContext(null,species[SEC_MOBILE_SPECIES_INDEX].getCommonName(),species[SEC_MOBILE_SPECIES_INDEX],cytosol,true);
+			initialConditions[SEC_MOBILE_SPECIES_INDEX] =
+					new Expression(secMobileFraction+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
+			//we got to change the immobile fraction for immobile species' initial condition
+			initialConditions[IMMOBILE_SPECIES_INDEX] =
+				new Expression((1.0-mobileFraction-secMobileFraction)+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
+		}
 		
-		// for parameter scans, use cube root of 10 (3 per decade) = factor of 2.154434690030230132025595313452
 		// add reactions to species if there is bleachWhileMonitoring rate.
 		for (int i = 0; i < initialConditions.length; i++) {
 			model.addSpecies(species[i]);
@@ -955,11 +996,21 @@ public class FRAPStudy implements Matchable{
 
 		MathMapping mathMapping = new MathMapping(simContext);
 		MathDescription mathDesc = mathMapping.getMathDescription();
-		//Add total fluorescence as function of mobile and immobile fractions
-		mathDesc.addVariable(
-			new Function(SPECIES_NAME_PREFIX_COMBINED,
-				new Expression(species[MOBILE_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName())));
-		simContext.setMathDescription(mathDesc);
+		//Add total fluorescence as function of mobile(optional: and slower mobile) and immobile fractions
+		if(secDiffusionRate == null || secondFractionString == null)
+		{
+			mathDesc.addVariable(
+				new Function(SPECIES_NAME_PREFIX_COMBINED,
+					new Expression(species[MOBILE_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName())));
+			simContext.setMathDescription(mathDesc);
+		}
+		else
+		{
+			mathDesc.addVariable(
+					new Function(SPECIES_NAME_PREFIX_COMBINED,
+						new Expression(species[MOBILE_SPECIES_INDEX].getCommonName()+"+"+species[SEC_MOBILE_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName())));
+				simContext.setMathDescription(mathDesc);
+		}
 
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
 		Simulation newSimulation = new Simulation(simVersion,mathDesc);
