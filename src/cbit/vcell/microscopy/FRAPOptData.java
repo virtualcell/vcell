@@ -30,14 +30,14 @@ public class FRAPOptData {
 	
 	public static String[] TWODIFFRATES_PARAMETER_NAMES = new String[]{"fastDiffRate",
 		  															   "fastMobileFrac",
+		  															   "bleachWhileMonitoringRate",
 		  															   "slowDiffRate",
-		  															   "slowMobileFrac",
-		  															   "bleachWhileMonitoringRate"};
+		  															   "slowMobileFrac"};
 	public static final int TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX = 0;
 	public static final int TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX = 1;
-	public static final int TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX = 2;
-	public static final int TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX = 3;
-	public static final int TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX = 4;
+	public static final int TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX = 2;
+	public static final int TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX = 3;
+	public static final int TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX = 4;
 		
 	public static final int NUM_PARAMS_FOR_ONE_DIFFUSION_RATE = 3;//diffusion rate, mobile fraction, bleach while monitoring rate
 	public static final int NUM_PARAMS_FOR_TWO_DIFFUSION_RATE = 5;//fast diff rate, fast mobile fraction, slow diff rate, slow mobile fraction, bleach while monitoring rate
@@ -91,7 +91,7 @@ public class FRAPOptData {
 	{
 		if(refTimeBounds == null)
 		{
-			//estimated t = ( bleach area max width /(4*D)) * ln(1/delta), use bleah area width as length.
+			//estimated t = ( bleach area max width^2 /(4*D)) * ln(1/delta), use bleah area width as length.
 			ROI bleachedROI = getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED);
 			
 			Rectangle bleachRect = bleachedROI.getRoiImages()[0].getNonzeroBoundingBox();
@@ -252,6 +252,8 @@ public class FRAPOptData {
 					new Double(REF_DIFFUSION_RATE_PARAM.getInitialGuess()),
 					REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess()+"",
 					REF_MOBILE_FRACTION_PARAM.getInitialGuess()+"",
+					null,
+					null,
 					refDataInfo.getExternalDataIdentifier().getKey(),
 					LocalWorkspace.getDefaultOwner(),
 					new Integer(expFrapStudy.getFrapModelParameters().startIndexForRecovery));

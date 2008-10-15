@@ -232,7 +232,8 @@ public class NonGUIFRAPTest {
 				frapStudy.getFrapModelParameters().diffusionRate,
 				frapStudy.getFrapModelParameters().monitorBleachRate,
 				frapStudy.getFrapModelParameters().mobileFraction,
-				frapStudy.getFrapModelParameters().slowerRate,
+				frapStudy.getFrapModelParameters().secondRate,
+				frapStudy.getFrapModelParameters().secondFraction,
 				testDirectoryPath,
 				imageDataSetZipFile.getAbsolutePath(),
 				cellROIFile.getAbsolutePath(),
@@ -275,15 +276,16 @@ public class NonGUIFRAPTest {
 		String recoveryDiffusionRateString = args[1];
 		String bleachWhileMonitoringRateString = args[2];
 		String mobileFractionString = args[3];
-		String slowerRateString = args[4];
-		String workingDirectoryPath = args[5];
-		String inputFRAPDataFileName = args[6];
-		String inputCellROIFileName = args[7];
-		String inputBleachROIFileName = args[8];
-		String inputBackgroundROIFileName = args[9];
-		String outputXMLFileName = args[10];
-		String commaSepTimeStamps = args[11];
-		String commaSepExtentXYZ = args[12];
+		String secondRateString = args[4];
+		String secondFractionString = args[5];
+		String workingDirectoryPath = args[6];
+		String inputFRAPDataFileName = args[7];
+		String inputCellROIFileName = args[8];
+		String inputBleachROIFileName = args[9];
+		String inputBackgroundROIFileName = args[10];
+		String outputXMLFileName = args[11];
+		String commaSepTimeStamps = args[12];
+		String commaSepExtentXYZ = args[13];
 		
 		LocalWorkspace localWorkspace =
 			new LocalWorkspace(new File(workingDirectoryPath));
@@ -331,7 +333,8 @@ public class NonGUIFRAPTest {
 					recoveryDiffusionRateString,
 					bleachWhileMonitoringRateString,
 					mobileFractionString,
-					slowerRateString
+					secondRateString,
+					secondFractionString
 				);
 		frapStudy.setFrapModelParameters(frapModelParameters);
 		frapStudy.refreshDependentROIs();
@@ -358,6 +361,8 @@ public class NonGUIFRAPTest {
 				new Double(recoveryDiffusionRateString),
 				bleachWhileMonitoringRateString,
 				mobileFractionString,
+				new Double(secondRateString),
+				secondFractionString,
 				LocalWorkspace.createNewKeyValue(),
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapModelParameters.startIndexForRecovery));

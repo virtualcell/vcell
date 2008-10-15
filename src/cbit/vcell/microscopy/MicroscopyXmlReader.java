@@ -100,15 +100,16 @@ private FRAPStudy.FRAPModelParameters getFRAPModelParameters(Element param) thro
 	String recoveryDiffusionRateStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag);
 	String mobileFractionStr = param.getAttributeValue(MicroscopyXMLTags.MobileFractionAttrTag);
 	String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
-	String slowerRateStr = param.getAttributeValue(MicroscopyXMLTags.SlowerRateAttrTag);
-
+	String secondRateStr = param.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag);
+	String secondFractionStr = param.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag);
 	return
 		new FRAPStudy.FRAPModelParameters(
 				startingIndexForRecoveryStr,
 				recoveryDiffusionRateStr,
 				bleachWhileMonitoringStr,
 				mobileFractionStr,
-				slowerRateStr
+				secondRateStr,
+				secondFractionStr
 			);
 }
 

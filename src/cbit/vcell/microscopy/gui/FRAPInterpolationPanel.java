@@ -397,10 +397,7 @@ public class FRAPInterpolationPanel extends JPanel {
 			public void actionPerformed(final ActionEvent arg0) {
 				if(secondDiffRateCheckBox.isSelected())
 				{
-					secondDiffTextField.setEnabled(true);
-					secondDiffSlider.setEnabled(true);
-					secondMobileFracTextField.setEnabled(true);
-					secondMobileFracSlider.setEnabled(true);
+					enableSecondDiffComponents();
 				}
 				else
 				{
@@ -758,11 +755,31 @@ public class FRAPInterpolationPanel extends JPanel {
 		
 		this.frapOptData = frapOptData;
 
+		String secondRate = INI_SECOND_DIFF_RATE;
+		String secondFraction = INI_SECOND_MOBILE_FRAC;
+		if(frapOptData.getExpFrapStudy().getFrapModelParameters().secondRate != null &&
+		   frapOptData.getExpFrapStudy().getFrapModelParameters().secondFraction != null)
+		{
+			secondDiffRateCheckBox.setSelected(true);
+			enableSecondDiffComponents();
+			if(!frapOptData.getExpFrapStudy().getFrapModelParameters().secondRate.equals("") &&
+			   !frapOptData.getExpFrapStudy().getFrapModelParameters().secondFraction.equals(""))
+			{
+				secondRate = frapOptData.getExpFrapStudy().getFrapModelParameters().secondRate;
+				secondFraction = frapOptData.getExpFrapStudy().getFrapModelParameters().secondFraction;
+			}
+		}
+		else
+		{
+			secondDiffRateCheckBox.setSelected(false);
+			disableSecondDiffComponents();
+			
+		}
 		setParameterValues(
 				frapOptData.getExpFrapStudy().getFrapModelParameters().diffusionRate,
 				frapOptData.getExpFrapStudy().getFrapModelParameters().mobileFraction,
-				INI_SECOND_DIFF_RATE,
-				INI_SECOND_MOBILE_FRAC,
+				secondRate,
+				secondFraction,
 				frapOptData.getExpFrapStudy().getFrapModelParameters().monitorBleachRate);
 
 	}
@@ -832,11 +849,16 @@ public class FRAPInterpolationPanel extends JPanel {
 					                                                                       FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 					                                                                       FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), monitorBleachRate.doubleValue());
 			
-			params = new Parameter[]{diff, mobileFrac, secDiffRate, secMobileFrac, monitorRate};
+			params = new Parameter[]{diff, mobileFrac, monitorRate, secDiffRate, secMobileFrac};
 		}
 		return params;
 	}
 	public Parameter[] getCurrentParameters(){
+		if(diffusionRateTextField == null || diffusionRateTextField.getText().equals("")||
+		   mobileFractionTextField == null || mobileFractionTextField.getText().equals(""))
+		{
+			return null;
+		}
 		Double diffusionRate = new Double(diffusionRateTextField.getText());
 		Double mobileFraction = new Double(mobileFractionTextField.getText());
 		Double bleachWhileMonitorRate = new Double(bleachWhileMonitorRateTextField.getText());
@@ -853,6 +875,10 @@ public class FRAPInterpolationPanel extends JPanel {
 			createParameterArray(diffusionRate, mobileFraction, bleachWhileMonitorRate, secondDiffRate, secondMobileFrac);
 	}
 	private double[][] getFitData(Parameter[] userParams) throws Exception{
+		if(userParams == null || userParams.length <= 0)
+		{
+			return null;
+		}
 		frapOptData.setNumEstimatedParams(userParams.length);
 		double[][] fitData = frapOptData.getFitData(userParams, FRAPInterpolationPanel.getErrorOfInterest()); 
 
@@ -890,18 +916,26 @@ public class FRAPInterpolationPanel extends JPanel {
 		return getFitData(getCurrentParameters());
 	}
 	
+	private void enableSecondDiffComponents()
+	{
+		secondDiffTextField.setEnabled(true);
+		secondDiffSlider.setEnabled(true);
+		secondMobileFracTextField.setEnabled(true);
+		secondMobileFracSlider.setEnabled(true);
+	}
+	
 	private void disableSecondDiffComponents()
 	{
 		secondDiffTextField.setText(INI_SECOND_DIFF_RATE);
 		secondDiffTextField.setEnabled(false);
-		secondDiffSlider.setValue(Integer.parseInt(INI_SECOND_DIFF_RATE));
 		secondDiffSlider.setEnabled(false);
 		secondMobileFracTextField.setText(INI_SECOND_MOBILE_FRAC);
 		secondMobileFracTextField.setEnabled(false);
-		secondMobileFracSlider.setValue(Integer.parseInt(INI_SECOND_MOBILE_FRAC));
 		secondMobileFracSlider.setEnabled(false);
 		secondDiffSetButton.setEnabled(false);
 		secondMobileFracSetButton.setEnabled(false);
+		secondDiffSlider.setValue(Integer.parseInt(INI_SECOND_DIFF_RATE));
+		secondMobileFracSlider.setValue(Integer.parseInt(INI_SECOND_MOBILE_FRAC));
 	}
 	
 }
