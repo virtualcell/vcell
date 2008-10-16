@@ -54,7 +54,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 		int status;
 		while (true) {
 			try {
-				Thread.sleep(500);
+				Thread.sleep(1000);
 			} catch (InterruptedException ex) {
 			}
 			
@@ -77,7 +77,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 					}				
 				}
 				break;
-			} else if (System.currentTimeMillis() - t > 2 * MessageConstants.MINUTE) {
+			} else if (System.currentTimeMillis() - t > 4 * MessageConstants.MINUTE) {
 				String pendingReason = PBSUtils.getPendingReason(jobid);
 				PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 				throw new SolverException("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
