@@ -15,6 +15,7 @@ import java.io.*;
  */
 public class FVSolverStandalone extends FVSolver implements Solver {
 	private boolean bMessaging = true;
+	private Boolean bCheckSteadyState = null; 
 /**
  * This method was created by a SmartGuide.
  * @param mathDesc cbit.vcell.math.MathDescription
@@ -32,6 +33,10 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
 	bMessaging = arg_bMessaging;
 }
 
+public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog sessionLog, boolean arg_bMessaging, Boolean bcss) throws SolverException {
+	this(argSimulationJob, dir, sessionLog, arg_bMessaging);
+	bCheckSteadyState = bcss;
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -47,7 +52,7 @@ protected void initialize() throws SolverException {
 			
 		File fvinputFile = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".fvinput");
 		PrintWriter pw = new PrintWriter(new FileWriter(fvinputFile));
-		new FiniteVolumeFileWriter(getSimulationJob(), getResampledGeometry(), getSaveDirectory(), pw, bMessaging).write();
+		new FiniteVolumeFileWriter(getSimulationJob(), getResampledGeometry(), getSaveDirectory(), pw, bMessaging, bCheckSteadyState).write();
 		pw.close();
 	
 		String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
