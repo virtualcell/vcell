@@ -11,6 +11,7 @@ import javax.swing.UIManager;
 
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.resource.ResourceUtil;
 
 public class VirtualFrapLoader {
 	
@@ -78,19 +79,24 @@ public class VirtualFrapLoader {
 	public static void main(final String[] args)
 	{
 		try { 
-			if(args.length != 1){
-				System.out.println("Usage: progName workingDirectory");
+			if(args.length != 0 && args.length != 1){
+				System.out.println("Usage: progName [workingDirectory]");
 				System.exit(1);
 			}
-			
-			RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
+			File wd = null;
+			if (args.length == 0) {
+				wd = ResourceUtil.userHome;
+			} else {
+				wd = new File(args[0]);
+			}
+			final File workingDirectory = wd;
+			RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager()); 
 
 			SwingUtilities.invokeLater(new Runnable(){public void run(){
-				File workingDirectory = new File(args[0]);
 				LocalWorkspace localWorkspcae = new LocalWorkspace(workingDirectory);
 			    FRAPStudy frapStudy = null; 
 			    frapStudy = new FRAPStudy(); 
-			
+			    
 			    //Check swing availability 
 			    String vers = System.getProperty("java.version"); 
 			    if (vers.compareTo("1.1.2") < 0) 

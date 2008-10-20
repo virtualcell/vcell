@@ -39,20 +39,8 @@ public class LocalWorkspace {
 
     private File workingDirectory;
     
-	private static String osname = null;
-	static {
-		if (ResourceUtil.bWindows) {
-			osname = "windows";
-		} else if (ResourceUtil.bMac) {
-			osname = "mac";
-		} else if (ResourceUtil.bLinux) {
-			osname = "linux";
-		} else {
-			throw new RuntimeException(System.getProperty("os.name") + " is not supported.");
-		}
-	}
 	private final static String FINITE_VOLUME_EXECUTABLE_CLASSPATH =
-		"/fvexecutables/" + osname + "/FiniteVolume.exe";
+		"/fvexecutables/" + ResourceUtil.osname + "/FiniteVolume" + ResourceUtil.EXE_SUFFIX;
 
 	public LocalWorkspace(File workingDirectory){
 		this.workingDirectory = workingDirectory;
