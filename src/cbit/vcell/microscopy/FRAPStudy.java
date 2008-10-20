@@ -650,12 +650,23 @@ public class FRAPStudy implements Matchable{
 	}
 	
 	public static void runFVSolverStandalone(
+			File simulationDataDir,
+			SessionLog sessionLog,
+			Simulation sim,
+			ExternalDataIdentifier imageDataExtDataID,
+			ExternalDataIdentifier roiExtDataID,
+			ProgressListener progressListener) throws Exception{
+		runFVSolverStandalone(simulationDataDir, sessionLog, sim, imageDataExtDataID, roiExtDataID, progressListener, false);
+	}
+	
+	public static void runFVSolverStandalone(
 		File simulationDataDir,
 		SessionLog sessionLog,
 		Simulation sim,
 		ExternalDataIdentifier imageDataExtDataID,
 		ExternalDataIdentifier roiExtDataID,
-		ProgressListener progressListener) throws Exception{
+		ProgressListener progressListener,
+		boolean bCheckSteadyState) throws Exception{
 
 		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
@@ -672,17 +683,10 @@ public class FRAPStudy implements Matchable{
 		int jobIndex = 0;
 		SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
 		
-		System.setProperty(PropertyLoader.jmsURL, "abc");
-		System.setProperty(PropertyLoader.jmsUser, "abc");
-		System.setProperty(PropertyLoader.jmsPassword, "abc");
-		System.setProperty(PropertyLoader.jmsSimJobQueue, "abc");
-		System.setProperty(PropertyLoader.jmsWorkerEventQueue, "abc");
-		System.setProperty(PropertyLoader.jmsServiceControlTopic, "abc");
-		//
 		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
 		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
 		//
-		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
+		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false, new Boolean(bCheckSteadyState));
 		fvSolver.startSolver();
 		
 		SolverStatus status = fvSolver.getSolverStatus();
@@ -811,12 +815,12 @@ public class FRAPStudy implements Matchable{
 	
 	public static BioModel createNewBioModel(
 			FRAPStudy sourceFrapStudy,
-			Double baseDiffusionRate,
+			String baseDiffusionRate,
 			String bleachWhileMonitoringRateString,
 			String mobileFractionString,
 			Double secDiffusionRate,
 			String secondFractionString,
-			
+			TimeStep tStep,
 			KeyValue simKey,
 			User owner,
 			int startingIndexForRecovery) throws Exception {
@@ -850,9 +854,16 @@ public class FRAPStudy implements Matchable{
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
 		TimeBounds timeBounds = new TimeBounds(0.0,timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery]);
 		double timeStepVal = timeStamps[startingIndexForRecovery+1] - timeStamps[startingIndexForRecovery];
-//		timeStepVal/= 10.0;
-		TimeStep timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
-
+		TimeStep timeStep = null;
+		if(tStep != null)
+		{
+			timeStep = tStep;
+		}
+		else
+		{
+			timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
+		}
+		
 		int numX = cellROI_2D.getRoiImages()[0].getNumX();
 		int numY = cellROI_2D.getRoiImages()[0].getNumY();
 		int numZ = cellROI_2D.getRoiImages().length;

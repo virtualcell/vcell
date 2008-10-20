@@ -936,11 +936,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		BioModel newBioModel = null;
 		try{
 			newBioModel = FRAPStudy.createNewBioModel(getFrapStudy(),
-				new Double(getFrapStudy().getFrapModelParameters().diffusionRate),
+				getFrapStudy().getFrapModelParameters().diffusionRate,
 				getFrapStudy().getFrapModelParameters().monitorBleachRate,
 				getFrapStudy().getFrapModelParameters().mobileFraction,
 				getFrapStudy().getFrapModelParameters().secondRate==null?null:new Double(getFrapStudy().getFrapModelParameters().secondRate),
 				getFrapStudy().getFrapModelParameters().secondFraction,
+				null, 
 				(bSaveAsNew || getSavedFrapModelInfo() == null || getSavedFrapModelInfo().savedSimKeyValue == null
 						?LocalWorkspace.createNewKeyValue()
 						:getSavedFrapModelInfo().savedSimKeyValue),
@@ -1493,6 +1494,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //					}});
 
 				}catch(UserCancelException uce){
+					pp.stop();
 					return;
 				}catch (final Exception e) {
 					pp.stop();
@@ -1779,11 +1781,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getFrapStudy().refreshDependentROIs();
 			BioModel bioModel = FRAPStudy.createNewBioModel(
 				getFrapStudy(),
-				baseDiffusionRate,
+				frapChangeInfo.diffusionRateString,
 				frapChangeInfo.bleachWhileMonitorRateString,
 				frapChangeInfo.mobileFractionString,
 				secDiffusionRate,
 				frapChangeInfo.secondFractionString,
+				null,
 				(getSavedFrapModelInfo() == null?null:getSavedFrapModelInfo().savedSimKeyValue),
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapChangeInfo.startIndexForRecoveryString));

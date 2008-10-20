@@ -90,14 +90,13 @@ public class FRAPParametersPanel extends JPanel {
 							}
 						}
 						if(frapParamEstVals.diffusionRate != null){
-							diffusionRateTextField.setText(""+NumberUtils.formatNumber(frapParamEstVals.diffusionRate, 5));
+							diffusionRateTextField.setText(""+NumberUtils.formatNumber(frapParamEstVals.diffusionRate));
 						}
 						if(frapParamEstVals.mobileFraction != null){
-							mobileFractionTextField.setText(""+NumberUtils.formatNumber(frapParamEstVals.mobileFraction, 5));
-//							immobileFractionValueJLabel.setText(""+NumberUtils.formatNumber((1.0-frapParamEstVals.mobileFraction),5));
+							mobileFractionTextField.setText(""+NumberUtils.formatNumber(frapParamEstVals.mobileFraction));
 						}
 						if(frapParamEstVals.bleachWhileMonitorRate != null){
-							monitorBleachRateTextField.setText(""+NumberUtils.formatNumber(frapParamEstVals.bleachWhileMonitorRate, 5));
+							monitorBleachRateTextField.setText(""+NumberUtils.formatNumber(frapParamEstVals.bleachWhileMonitorRate));
 						}
 						updateImmobileFractionModelText();
 					}
@@ -347,12 +346,12 @@ public class FRAPParametersPanel extends JPanel {
 
 	public void changeCoreFRAPModelParameters(String diffusionRateString,String MobileFractionString,String monitorBeachRateString, String secondRateString, String secondFractionString)
 	{
-		diffusionRateTextField.setText(NumberUtils.formatNumber(Double.parseDouble(diffusionRateString), 5));
-		monitorBleachRateTextField.setText(NumberUtils.formatNumber(Double.parseDouble(monitorBeachRateString), 5));
-		mobileFractionTextField.setText(NumberUtils.formatNumber(Double.parseDouble(MobileFractionString), 5));
+		diffusionRateTextField.setText(NumberUtils.formatNumber(Double.parseDouble(diffusionRateString)));
+		monitorBleachRateTextField.setText(NumberUtils.formatNumber(Double.parseDouble(monitorBeachRateString)));
+		mobileFractionTextField.setText(NumberUtils.formatNumber(Double.parseDouble(MobileFractionString)));
 		if(secondRateString != null)
 		{
-			secondDiffRateTextField.setText(NumberUtils.formatNumber(Double.parseDouble(secondRateString), 5));
+			secondDiffRateTextField.setText(NumberUtils.formatNumber(Double.parseDouble(secondRateString)));
 		}
 		else
 		{
@@ -360,7 +359,7 @@ public class FRAPParametersPanel extends JPanel {
 		}
 		if(secondFractionString != null)
 		{
-			secondMobileFracTextField.setText(NumberUtils.formatNumber(Double.parseDouble(secondFractionString), 5));
+			secondMobileFracTextField.setText(NumberUtils.formatNumber(Double.parseDouble(secondFractionString)));
 		}
 		else
 		{
@@ -433,7 +432,7 @@ public class FRAPParametersPanel extends JPanel {
 			double slowMobileFraction = Double.parseDouble(secondMobileFracTextField.getText());
 			if((fastMobileFraction + slowMobileFraction )<= 1.0){
 				double immobileFractionIntermediate = 1.0 - (fastMobileFraction + slowMobileFraction );
-				immobileFractionValueJLabel.setText(""+Double.parseDouble(NumberUtils.formatNumber(immobileFractionIntermediate, 5)));
+				immobileFractionValueJLabel.setText(""+Double.parseDouble(NumberUtils.formatNumber(immobileFractionIntermediate)));
 			}else{
 				immobileFractionValueJLabel.setText("");
 			}
@@ -441,7 +440,7 @@ public class FRAPParametersPanel extends JPanel {
 			if((fastMobileFraction != -1) && (fastMobileFraction <= 1.0))
 			{
 				double immobileFractionIntermediate = 1.0 - fastMobileFraction;
-				immobileFractionValueJLabel.setText(""+Double.parseDouble(NumberUtils.formatNumber(immobileFractionIntermediate, 5)));
+				immobileFractionValueJLabel.setText(""+Double.parseDouble(NumberUtils.formatNumber(immobileFractionIntermediate)));
 			}
 			else
 			{

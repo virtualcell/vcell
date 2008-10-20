@@ -689,7 +689,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				Hashtable<Integer, JComponent> labeltable = new Hashtable<Integer, JComponent>();
 				labeltable.put(1, new JLabel(imageDataset.getImageTimeStamps()[0]+""));
 				labeltable.put(imageDataset.getSizeT()-1,
-					new JLabel(NumberUtils.formatNumber(imageDataset.getImageTimeStamps()[imageDataset.getSizeT()-1],5)));
+					new JLabel(NumberUtils.formatNumber(imageDataset.getImageTimeStamps()[imageDataset.getSizeT()-1])));
 				timeSlider.setLabelTable(labeltable);
 				timeSlider.setMaximum(imageDataset.getSizeT());
 				//Added because setMaximum SOMETIMES resets the label table
