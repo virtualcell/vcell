@@ -13,7 +13,7 @@ public class ResourceUtil {
 	public final static boolean bWindows = System.getProperty("os.name").indexOf("Windows") >= 0 ? true : false;
 	public final static boolean bMac = System.getProperty("os.name").indexOf("Mac") >= 0 ? true : false;
 	public final static boolean bLinux = System.getProperty("os.name").indexOf("Linux") >= 0 ? true : false;
-	private static String osname = null;
+	public static String osname = null;
 	static {
 		if (bWindows) {
 			osname = "windows";
@@ -28,7 +28,7 @@ public class ResourceUtil {
 	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
-	private static File userHome = null;
+	public static File userHome = null;
 	private static File vcellHome = null;
 	private static File libDir = null;
 	
