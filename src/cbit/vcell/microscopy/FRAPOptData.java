@@ -56,8 +56,9 @@ public class FRAPOptData {
 	
 	
 	
-	private static int maxRefSavePoints = 500;
-	private static int startingTime = 0;
+//	private static int maxRefSavePoints = 500;
+	private static double REF_STARTINGTIME = 0;
+	private static double REF_ENDINGTIME = 1000;
 	
 	private Boolean bRunRefSim = null;
 	
@@ -72,7 +73,10 @@ public class FRAPOptData {
 	private double[][] dimensionReducedExpData = null;
 	private double[] reducedExpTimePoints = null;
 	
-	
+	private static final String REFERENCE_DIFF_DELTAT = "0.1";
+	private static final String REFERENCE_DIFF_RATE_COEFFICIENT = "1";
+	private static final String REFERENCE_DIFF_RATE_STR = REFERENCE_DIFF_RATE_COEFFICIENT +"*(t+"+ REFERENCE_DIFF_DELTAT +")";
+		
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
 			DataSetControllerImpl.ProgressListener progressListener, boolean bRefSim) throws Exception
 	{
@@ -89,56 +93,59 @@ public class FRAPOptData {
 	
 	public TimeBounds getRefTimeBounds()
 	{
-		if(refTimeBounds == null)
-		{
-			//estimated t = ( bleach area max width^2 /(4*D)) * ln(1/delta), use bleah area width as length.
-			ROI bleachedROI = getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED);
+//		if(refTimeBounds == null)
+//		{
+//			//estimated t = ( bleach area max width^2 /(4*D)) * ln(1/delta), use bleah area width as length.
+//			ROI bleachedROI = getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED);
+//			
+//			Rectangle bleachRect = bleachedROI.getRoiImages()[0].getNonzeroBoundingBox();
+//			double width = ((double)bleachRect.width/getExpFrapStudy().getFrapData().getImageDataset().getISize().getX()) * 
+//			               getExpFrapStudy().getFrapData().getImageDataset().getExtent().getX();
+//			double height = ((double)bleachRect.height/getExpFrapStudy().getFrapData().getImageDataset().getISize().getY()) * 
+//            			   getExpFrapStudy().getFrapData().getImageDataset().getExtent().getY();
+//			
+//			double bleachWidth = Math.max(width, height);
+//			final double  unrecovery_threshold = .01;
+//			double refEndingTime = (bleachWidth * bleachWidth/(4*REF_DIFFUSION_RATE_PARAM.getInitialGuess())) * Math.log(1/unrecovery_threshold);
 			
-			Rectangle bleachRect = bleachedROI.getRoiImages()[0].getNonzeroBoundingBox();
-			double width = ((double)bleachRect.width/getExpFrapStudy().getFrapData().getImageDataset().getISize().getX()) * 
-			               getExpFrapStudy().getFrapData().getImageDataset().getExtent().getX();
-			double height = ((double)bleachRect.height/getExpFrapStudy().getFrapData().getImageDataset().getISize().getY()) * 
-            			   getExpFrapStudy().getFrapData().getImageDataset().getExtent().getY();
-			
-			double bleachWidth = Math.max(width, height);
-			final double  unrecovery_threshold = .01;
-			double refEndingTime = (bleachWidth * bleachWidth/(4*REF_DIFFUSION_RATE_PARAM.getInitialGuess())) * Math.log(1/unrecovery_threshold);
-			
-			refTimeBounds = new TimeBounds(FRAPOptData.startingTime, refEndingTime);
-		}
+//			refTimeBounds = new TimeBounds(FRAPOptData.startingTime, refEndingTime);
+//		}
+		TimeBounds refTimeBounds = new TimeBounds(FRAPOptData.REF_STARTINGTIME, FRAPOptData.REF_ENDINGTIME);
 		return refTimeBounds;
 	}
 	
 	public TimeStep getRefTimeStep()
 	{
 		//time step is estimated as deltaX^2/(4*D)
-		if(refTimeStep == null)
-		{
-			int numX = getExpFrapStudy().getFrapData().getImageDataset().getAllImages()[0].getNumX();
-			double deltaX = getExpFrapStudy().getFrapData().getImageDataset().getAllImages()[0].getExtent().getX()/(numX-1);
-			double timeStep = (deltaX*deltaX /REF_DIFFUSION_RATE_PARAM.getInitialGuess()) * 0.25;
-			refTimeStep = new TimeStep(timeStep, timeStep, timeStep);
-		}
-		return refTimeStep;
+//		if(refTimeStep == null)
+//		{
+//			int numX = getExpFrapStudy().getFrapData().getImageDataset().getAllImages()[0].getNumX();
+//			double deltaX = getExpFrapStudy().getFrapData().getImageDataset().getAllImages()[0].getExtent().getX()/(numX-1);
+//			double timeStep = (deltaX*deltaX /REF_DIFFUSION_RATE_PARAM.getInitialGuess()) * 0.25;
+//			refTimeStep = new TimeStep(timeStep, timeStep, timeStep);
+//		}
+//		return refTimeStep;
+		double timeStep = Double.parseDouble(REFERENCE_DIFF_DELTAT); 
+		return new TimeStep(timeStep, timeStep, timeStep);
 	}
 	
 	public DefaultOutputTimeSpec getRefTimeSpec()
 	{
-		if(refTimeSpec == null)
-		{
-			int numSavePoints = (int)Math.ceil((getRefTimeBounds().getEndingTime() - getRefTimeBounds().getStartingTime())/getRefTimeStep().getDefaultTimeStep());
-			if(numSavePoints <= FRAPOptData.maxRefSavePoints)
-			{
-				refTimeSpec = new DefaultOutputTimeSpec(1, FRAPOptData.maxRefSavePoints);
-			}
-			else
-			{
-				int keepEvery = (int)Math.ceil(numSavePoints/FRAPOptData.maxRefSavePoints);
-				refTimeSpec = new DefaultOutputTimeSpec(keepEvery, FRAPOptData.maxRefSavePoints);
-			}
-			
-		}
-		return refTimeSpec;
+//		if(refTimeSpec == null)
+//		{
+//			int numSavePoints = (int)Math.ceil((getRefTimeBounds().getEndingTime() - getRefTimeBounds().getStartingTime())/getRefTimeStep().getDefaultTimeStep());
+//			if(numSavePoints <= FRAPOptData.maxRefSavePoints)
+//			{
+//				refTimeSpec = new DefaultOutputTimeSpec(1, FRAPOptData.maxRefSavePoints);
+//			}
+//			else
+//			{
+//				int keepEvery = (int)Math.ceil(numSavePoints/FRAPOptData.maxRefSavePoints);
+//				refTimeSpec = new DefaultOutputTimeSpec(keepEvery, FRAPOptData.maxRefSavePoints);
+//			}
+//			
+//		}
+		return new DefaultOutputTimeSpec(1, 10000);
 	}
 	
 	public double[][] getDimensionReducedRefData(DataSetControllerImpl.ProgressListener progressListener) throws Exception
@@ -203,7 +210,8 @@ public class FRAPOptData {
 				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
 			VCSimulationDataIdentifier vcSimDataID =
 				new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
-			refDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
+			double[] rawRefDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
+			refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
 			System.out.println("simulation done...");
 			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
 			
@@ -227,6 +235,20 @@ public class FRAPOptData {
 		}
 	}
 	
+	private double[] timeShiftForBaseDiffRate(double[] timePoints)
+	{
+		double delT = Double.parseDouble(REFERENCE_DIFF_DELTAT);
+		double s = Double.parseDouble(REFERENCE_DIFF_RATE_COEFFICIENT);
+		double[] shiftedTimePoints = new double[timePoints.length];
+		shiftedTimePoints[0] = 0;
+		for(int i=1; i< timePoints.length; i++)
+		{
+			shiftedTimePoints[i] = shiftedTimePoints[i-1]+s*(timePoints[i-1]+delT)*delT;
+		}
+		return shiftedTimePoints;
+	}
+	
+	
 	public boolean isLoadRefDataNeeded(boolean isRunRefSim)
 	{
 		if(dimensionReducedRefData == null || isRunRefSim)
@@ -249,11 +271,12 @@ public class FRAPOptData {
 			bioModel =
 				FRAPStudy.createNewBioModel(
 					expFrapStudy,
-					new Double(REF_DIFFUSION_RATE_PARAM.getInitialGuess()),
+					REFERENCE_DIFF_RATE_STR,
 					REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess()+"",
 					REF_MOBILE_FRACTION_PARAM.getInitialGuess()+"",
 					null,
 					null,
+					getRefTimeStep(),
 					refDataInfo.getExternalDataIdentifier().getKey(),
 					LocalWorkspace.getDefaultOwner(),
 					new Integer(expFrapStudy.getFrapModelParameters().startIndexForRecovery));
@@ -270,7 +293,10 @@ public class FRAPOptData {
 				new DataSetControllerImpl.ProgressListener(){
 					public void updateProgress(double progress) {
 						if(progressListener != null){
-							progressListener.updateProgress(progress*RUN_REFSIM_PROGRESS_FRACTION);
+							//To run to the steady state the time length is unpredictable. Progress increase 10 times
+							//because we manually set ending time to 1000 and usually it will reach steady state in less than 100 seconds.
+							//max allowed progress is 80%. this is heuristic.
+							progressListener.updateProgress(Math.min(0.8, (progress*10)*RUN_REFSIM_PROGRESS_FRACTION));
 						}
 					}
 					public void updateMessage(String message){
@@ -287,7 +313,7 @@ public class FRAPOptData {
 				bioModel.getSimulations(0),
 				getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 				getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
-				runRefSimProgressListener);
+				runRefSimProgressListener, true);
 			
 			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
 			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);

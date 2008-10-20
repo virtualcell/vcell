@@ -358,11 +358,12 @@ public class NonGUIFRAPTest {
 		BioModel bioModel =
 			FRAPStudy.createNewBioModel(
 				frapStudy,
-				new Double(recoveryDiffusionRateString),
+				recoveryDiffusionRateString,
 				bleachWhileMonitoringRateString,
 				mobileFractionString,
 				new Double(secondRateString),
 				secondFractionString,
+				null,
 				LocalWorkspace.createNewKeyValue(),
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapModelParameters.startIndexForRecovery));

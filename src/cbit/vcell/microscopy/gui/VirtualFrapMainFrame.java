@@ -61,7 +61,7 @@ public class VirtualFrapMainFrame extends JFrame
 //	  	       (Toolkit.getDefaultToolkit().getScreenSize().height > 768)? ((int)(Toolkit.getDefaultToolkit().getScreenSize().height*0.85)): 768);
 
 	private MenuHandler menuHandler = new MenuHandler();
-	private static final String VERSION_NUMBER = "VFrap 0.9  Alpha";
+	private static final String VERSION_NUMBER = "VFrap 0.9";
 	private static final String OPEN_ACTION_COMMAND = "Open";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";

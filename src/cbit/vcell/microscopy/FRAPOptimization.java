@@ -234,30 +234,37 @@ public class FRAPOptimization {
 		double[][] result = new double[roiLen][expTimePoints.length];
 		int preTimeIndex = 0;
 		int postTimeIndex = 0;
-				
+		int idx = 0;
 		for(int j = 0; j < expTimePoints.length; j++)
 		{	
-			// find corresponding time points in reference data by diffusion rate
+			// find corresponding time points in reference data 
 			double estimateTime = (newDiffRate/refDiffRate) * expTimePoints[j];
-			preTimeIndex =(int) (estimateTime / refTimeInterval);
+			for( ;idx < refTimePoints.length; idx ++)
+			{
+				if(estimateTime < (refTimePoints[idx] + FRAPOptimization.epsilon))
+				{
+					break;
+				}
+			}
+			postTimeIndex = idx;
 			
-			if(preTimeIndex < 0)//negtive newDiffRate will cause array index out of bound exception
+			if(postTimeIndex <= 0)//negtive newDiffRate will cause array index out of bound exception
 			{
 				preTimeIndex = 0;
 				postTimeIndex = preTimeIndex;
 			}
-			else if(preTimeIndex >= 0 && preTimeIndex < (refTimePoints.length - 1))
+			else if(postTimeIndex > 0 && postTimeIndex < refTimePoints.length )
 			{
-				if((estimateTime > (refTimePoints[preTimeIndex] - FRAPOptimization.epsilon)) &&  (estimateTime  < (refTimePoints[preTimeIndex] + FRAPOptimization.epsilon)))
+				if((estimateTime > (refTimePoints[postTimeIndex] - FRAPOptimization.epsilon)) &&  (estimateTime  < (refTimePoints[postTimeIndex] + FRAPOptimization.epsilon)))
 				{
-					postTimeIndex = preTimeIndex;
+					preTimeIndex = postTimeIndex;
 				}
 				else 
 				{
-					postTimeIndex = preTimeIndex + 1;
+					preTimeIndex = postTimeIndex - 1;
 				}
 			}
-			else//set value to last time point in reference data if the time is already the last ref time or exceed it  
+			else if(postTimeIndex >= refTimePoints.length)  
 			{
 				preTimeIndex = refTimePoints.length -1;
 				postTimeIndex = preTimeIndex;
@@ -265,11 +272,8 @@ public class FRAPOptimization {
 			double preTimeInRefData = refTimePoints[preTimeIndex];
 			double postTimeInRefData = refTimePoints[postTimeIndex];
 			double proportion = 0;
-			if((postTimeInRefData-preTimeInRefData) == 0)
-			{
-				proportion = ((estimateTime-preTimeInRefData)/FRAPOptimization.epsilon);
-			}
-			else
+			
+			if((postTimeInRefData-preTimeInRefData) != 0)
 			{
 				proportion = ((estimateTime-preTimeInRefData)/(postTimeInRefData-preTimeInRefData));
 			}
