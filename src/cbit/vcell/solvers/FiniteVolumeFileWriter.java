@@ -39,6 +39,7 @@ public class FiniteVolumeFileWriter {
 	private String[] parameterNames = null;
 	private boolean bMessaging = true;
 	private Geometry resampledGeometry = null;
+	private Boolean bCheckSteadyState = null;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -77,6 +78,11 @@ public FiniteVolumeFileWriter(SimulationJob simJob, Geometry geo, File dir, Prin
 	userDirectory = dir;
 	writer = pw;
 	bMessaging = arg_bMessaging;
+}
+
+public FiniteVolumeFileWriter(SimulationJob simJob, Geometry geo, File dir, PrintWriter pw, boolean arg_bMessaging, Boolean bcss) {
+	this(simJob, geo, dir, pw, arg_bMessaging);
+	bCheckSteadyState = bcss;
 }
 
 private Expression subsituteExpression(Expression exp) throws Exception {
@@ -633,7 +639,10 @@ private void writeSimulationParamters() {
 	writer.println("SIMULATION_PARAM_BEGIN");
 	writer.println("BASE_FILE_NAME " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
     writer.println("ENDING_TIME " + simulation.getSolverTaskDescription().getTimeBounds().getEndingTime());
-    writer.println("TIME_STEP " + simulation.getSolverTaskDescription().getTimeStep().getDefaultTimeStep());  
+    writer.println("TIME_STEP " + simulation.getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+    if (bCheckSteadyState != null) {
+    	writer.println("CHECK_STEADY_STATE " + bCheckSteadyState);
+    }
 	writer.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)simulation.getSolverTaskDescription().getOutputTimeSpec()).getKeepEvery());
 	writer.println("SIMULATION_PARAM_END");	
 }
