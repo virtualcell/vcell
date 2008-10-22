@@ -505,7 +505,7 @@ protected void initialize() throws SolverException {
 		throw new RuntimeException("MathExecutableCORBA not supported");
 		//executable = new MathExecutableCORBA(exeFile,mathDesc.getSimulationID(),getSessionLog());
 	}else{
-		setMathExecutable(new MathExecutable(exeFile));
+		setMathExecutable(new MathExecutable(new String[] {exeFile.getAbsolutePath()}));
 	}
 
 }

@@ -1,37 +1,20 @@
 package cbit.vcell.solvers;
 
-import cbit.vcell.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.SessionLog;
-import java.io.*;
-/**
- * This type was created in VisualAge.
- */
+
 public class MathExecutable extends cbit.util.Executable {
 	private int currentStringPosition = 0;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldApplicationMessage = new String();
-/**
- * MathExecutable constructor comment.
- */
-public MathExecutable(File executable) {
-	this(executable.getPath());
-}
-/**
- * MathExecutable constructor comment.
- */
-public MathExecutable(File executable, String arguments) {
-    this(executable.getPath() + " " + arguments);
-}
-/**
- * MathExecutable constructor comment.
- */
-public MathExecutable(String command) {
+
+
+public MathExecutable(String[] command) {	
 	super(command);
 }
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -114,7 +97,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 }
 public static void main(java.lang.String[] args) {
 	try {
-		MathExecutable mathExecutable = new MathExecutable(args[0]);
+		MathExecutable mathExecutable = new MathExecutable(args);
 		mathExecutable.start();
 	}catch (cbit.util.ExecutableException e) {
 		System.out.println("\nExecutable Exception thrown, normally handled upstream by other classes...");

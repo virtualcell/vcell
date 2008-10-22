@@ -2,6 +2,10 @@ package cbit.vcell.messaging.admin;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 
+import cbit.util.Executable;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.PropertyLoader;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/11/2003 11:41:43 AM)
@@ -82,12 +86,12 @@ public static ServerPerformance getDaemonPerformance() {
 		long javaTotalMemoryBytes = Runtime.getRuntime().totalMemory();
 		long maxJavaMemoryBytes = -1;
 		try {
-			maxJavaMemoryBytes = Long.parseLong(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.maxJavaMemoryBytesProperty));
+			maxJavaMemoryBytes = Long.parseLong(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.maxJavaMemoryBytesProperty));
 		}catch (NumberFormatException e){
 			System.out.println("error reading property '"+cbit.vcell.server.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
 		}
 		try {
-			cbit.util.Executable executable = new cbit.util.Executable(PROGRAM);
+			Executable executable = new Executable(new String[]{PROGRAM});
 			executable.start();
 			String stdout = executable.getStdoutString();
 			java.util.StringTokenizer tokens = new java.util.StringTokenizer(stdout);
@@ -114,17 +118,16 @@ public static ServerPerformance getDaemonPerformance() {
  */
 public static String getEnvVariable(String keyword, cbit.vcell.server.SessionLog log) {
 	String value = null;
-	String osName = System.getProperty("os.name");
-	String command = null;
+	String[] command = null;
 	
-	if (osName.indexOf("Windows") >= 0) {
-		command = "cmd.exe /c echo %" + keyword + "%";
+	if (ResourceUtil.bWindows) {
+		command = new String[]{"cmd.exe", "/c" , "echo %" + keyword + "%"};
 	} else {
-		command = "echo $" + keyword;
+		command = new String[]{"echo", "$" + keyword};
 	}
 	
 	try {
-		cbit.util.Executable exe = new cbit.util.Executable(command);
+		Executable exe = new Executable(command);
 		exe.start();
 		value = exe.getStdoutString().trim();
 	} catch (Exception e) {

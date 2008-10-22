@@ -1,5 +1,6 @@
 package cbit.htc;
 import static cbit.htc.CondorConstants.*;
+import cbit.util.Executable;
 /**
  * Insert the type's description here.
  * Creation date: (9/25/2003 9:59:32 AM)
@@ -20,7 +21,7 @@ public static int getJobStatus(String jobid) {
 	String line = null;
 	
 	try {
-		String cmd = JOB_CMD_STATUS + " " + jobid;
+		String[] cmd = new String[]{JOB_CMD_STATUS, jobid};
 		exe = new cbit.util.Executable(cmd);
 		exe.start();
 		
@@ -52,7 +53,7 @@ public static int getJobStatus(String jobid) {
 	int exitCode = 0;
 	
 	if (iStatus == CONDOR_STATUS_UNKNOWN) {
-		String cmd = JOB_CMD_HISTORY + " " + jobid;
+		String[] cmd = new String[]{JOB_CMD_HISTORY, "-l", jobid};
 		try {		
 			exe = new cbit.util.Executable(cmd);
 			exe.start();
@@ -100,8 +101,8 @@ public static String getPendingReason(String jobid) {
 	String reason = "";
 	
 	try {
-		String cmd = JOB_CMD_STATUSDETAILS + " " + jobid;
-		exe = new cbit.util.Executable(cmd);
+		String[] cmd = new String[]{JOB_CMD_STATUSDETAILS, "-analyze", jobid};
+		exe = new Executable(cmd);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -130,8 +131,8 @@ public static void killJob(String jobid) {
 	}
 		
 	try {
-		String cmd = JOB_CMD_DELETE + " " + jobid;
-		cbit.util.Executable exe = new cbit.util.Executable(cmd);
+		String[] cmd = new String[]{JOB_CMD_DELETE, jobid};
+		Executable exe = new Executable(cmd);
 		exe.start();
 	} catch (cbit.util.ExecutableException ex) {
 		condorLog.exception(ex);
@@ -192,9 +193,9 @@ public static String submitJob(String computeResource, String sub_file, String e
 		return null;
 	}
 	
-	String completeCommand =  JOB_CMD_SUBMIT + " " + sub_file;
+	String[] completeCommand =  new String[] {JOB_CMD_SUBMIT, sub_file};
 	String jobid = null;
-	cbit.util.Executable exe = new cbit.util.Executable(completeCommand);
+	cbit.util.Executable exe = new Executable(completeCommand);
 	exe.start();
 	String output = exe.getStdoutString();
 	String typicalWords = "submitted to cluster";

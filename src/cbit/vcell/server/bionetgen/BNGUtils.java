@@ -55,31 +55,6 @@ private static File createTempDirectory(String prefix, File parentDir) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/19/2006 1:33:20 PM)
- * @return java.lang.String
- * @param str java.lang.String
- */
-private static String escapeSpace(String str) {
-	if (ResourceUtil.bWindows) {
-		return "\"" + str + "\"";
-	}
-
-	return str;
-
-	//For now, don't escape on Unix
-	
-	//StringBuffer sb = new StringBuffer();
-	//for (int i = 0; i < str.length(); i ++) {
-		//if (str.charAt(i) == ' ') {
-			//sb.append("\)
-		//}
-	//return null;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (6/23/2005 3:57:30 PM)
@@ -114,7 +89,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		
 		System.out.println("-------------Starting BNG ...-------------------------------");
 		// run BNG
-		String cmd = escapeSpace(file_exe_bng.getAbsolutePath()) + " " + escapeSpace(bngInputFile.getAbsolutePath());
+		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
 		executable = new cbit.util.Executable(cmd);
 		executable.start();
 		

@@ -1,16 +1,13 @@
 package cbit.vcell.solver.stoch;
 
-import java.awt.geom.Point2D;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
-import ucar.ma2.Array;
 import ucar.ma2.ArrayDouble;
 
-import cbit.gui.DialogUtils;
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
@@ -281,7 +278,6 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	fireSolverStarting("HybridSolver initializing...");
 	//
 	String inputFilename = getBaseName() + ".nc";//file used by precompiled solver.
-	String ExeFilename = getBaseName() + System.getProperty(cbit.vcell.server.PropertyLoader.exesuffixProperty);
 	//
 	sessionLog.print("HybridSolver.initialize() baseName = " + getBaseName());
 	//
@@ -334,17 +330,26 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	
 	if(getIntegratorType() == HybridSolver.EMIntegrator)
 	{
-		executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridEMExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridEMExecutableProperty);
 	}
 	else if (getIntegratorType() == HybridSolver.MilsteinIntegrator)
 	{
-		executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilExecutableProperty);
 	}
 	else 
 	{
-		executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilAdaptiveExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilAdaptiveExecutableProperty);
 	}
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " +getBaseName() + ".nc" + paraString.toLowerCase() +randomNumber + " -OV"));
+	
+	ArrayList<String> commandList = new ArrayList<String>();
+	commandList.add(executableName);
+	commandList.add(inputFilename);
+	String argumentString = paraString.toLowerCase() +randomNumber + " -OV";
+	StringTokenizer st = new StringTokenizer(argumentString);
+	while (st.hasMoreTokens()) {
+		commandList.add(st.nextToken());
+	}	
+	setMathExecutable(new cbit.vcell.solvers.MathExecutable(commandList.toArray(new String[0])));
 }
 
 

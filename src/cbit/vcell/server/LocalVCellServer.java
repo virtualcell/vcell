@@ -1,4 +1,6 @@
 package cbit.vcell.server;
+import cbit.vcell.messaging.admin.ManageUtils;
+import cbit.vcell.messaging.admin.ServerPerformance;
 import cbit.vcell.messaging.server.LocalVCellConnectionMessaging;
 import cbit.vcell.solvers.SolverController;
 /*©
@@ -295,39 +297,10 @@ private int getNumProcessors() {
  */
 public ProcessStatus getProcessStatus() {
 	try {
-		String PROGRAM = null;
-		try {
-			PROGRAM = System.getProperty(PropertyLoader.serverStatisticsProperty);
-		}catch (Exception e){
-			sessionLog.exception(e);
-			throw new RuntimeException("required System property \""+PropertyLoader.serverStatisticsProperty+"\" not defined");
-		}
-
-		long memoryBytes = -1;
-		float fractionCPU = 0.9999999f;
-		long javaFreeMemoryBytes = Runtime.getRuntime().freeMemory();
-		long javaTotalMemoryBytes = Runtime.getRuntime().totalMemory();
-		long maxJavaMemoryBytes = -1;
-		try {
-			maxJavaMemoryBytes = Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.maxJavaMemoryBytesProperty));
-		}catch (NumberFormatException e){
-			sessionLog.alert("error reading property '"+PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
-		}
-		try {
-			cbit.util.Executable executable = new cbit.util.Executable(PROGRAM);
-			executable.start();
-			String stdout = executable.getStdoutString();
-			StringTokenizer tokens = new StringTokenizer(stdout);
-			memoryBytes = Long.parseLong(tokens.nextToken());
-			int cpuPercent = Integer.parseInt (tokens.nextToken());
-			fractionCPU = cpuPercent/100.0f;
-		} catch (Exception e) {
-			e.printStackTrace (System.out);
-		}
-
-		return new ProcessStatus(getNumLocalJobs(),getNumProcessors(),fractionCPU,memoryBytes,javaFreeMemoryBytes,javaTotalMemoryBytes,maxJavaMemoryBytes,bootTime);
-	}catch (Throwable e){
-		sessionLog.exception(e);
+		ServerPerformance sp = ManageUtils.getDaemonPerformance();
+		return new ProcessStatus(getNumLocalJobs(),getNumProcessors(),sp.getFractionFreeCPU(),sp.getFreeMemoryBytes(),sp.getFreeJavaMemoryBytes(),sp.getTotalJavaMemoryBytes(),sp.getMaxJavaMemoryBytes(),bootTime);
+	} catch (Throwable e){
+		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
 }

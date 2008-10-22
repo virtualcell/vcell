@@ -23,14 +23,7 @@ public static void main(String[] args) {
 			System.out.println("usage: MathExecutableTest cmd [arg1] [arg2] ...");
 			System.exit(1);
 		}
-		StringBuffer buffer = new StringBuffer();
-		for (int i = 0; i < args.length; i++){
-			if (i>0){
-				buffer.append(" ");
-			}
-			buffer.append(args[i]);
-		}
-		MathExecutable mathExecutable = new MathExecutable(buffer.toString());
+		MathExecutable mathExecutable = new MathExecutable(args);
 		mathExecutable.start();
 		while (mathExecutable.getStatus().equals(cbit.util.ExecutableStatus.RUNNING)){
 		}
