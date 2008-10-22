@@ -46,6 +46,6 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"CVODE solver starting"));	
 	
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " + inputFilename + " " + outputFilename));
+	setMathExecutable(new cbit.vcell.solvers.MathExecutable(new String[] {executableName, inputFilename, outputFilename}));
 }
 }

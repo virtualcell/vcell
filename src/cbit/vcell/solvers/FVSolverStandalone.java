@@ -56,9 +56,7 @@ protected void initialize() throws SolverException {
 		pw.close();
 	
 		String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
-	
-		String cmdline = executableName + " \"" + fvinputFile.getAbsolutePath() + "\"";// + cmdArguments;
-		setMathExecutable(new MathExecutable(cmdline));
+		setMathExecutable(new MathExecutable(new String[] {executableName, fvinputFile.getAbsolutePath()}));
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 		throw new SolverException(ex.getMessage());

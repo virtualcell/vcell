@@ -216,7 +216,9 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"StochSolver starting"));	
 	//get executable path+name.
 	String executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.stochExecutableProperty);
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
+	String outputFileName = getBaseName() + ".stoch";
+	setMathExecutable(new cbit.vcell.solvers.MathExecutable(new String[] {executableName, "gibson", inputFilename, outputFileName}));	
+	//setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
 }
 
 

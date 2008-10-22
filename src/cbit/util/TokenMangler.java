@@ -681,4 +681,13 @@ public static void checkNameProperty(Object source, String owner, PropertyChange
 		}
 	}
 }
+
+public static String getEscapedPathName(String pathname) {
+	String escapedPathName = pathname;
+	if (pathname.indexOf(" ") > 0) {
+		escapedPathName = "\"" + pathname + "\"";
+	}
+	return escapedPathName;
+}
+
 }

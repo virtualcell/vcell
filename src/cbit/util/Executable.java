@@ -1,12 +1,13 @@
 package cbit.util;
 import java.io.*;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/22/2002 4:33:29 PM)
  * @author: Ion Moraru
  */
 public class Executable {
-	private String command = null;
+	private String[] command = null;
 	private Process process = null;
 	private String outputString = "";
 	private String errorString = "";
@@ -15,17 +16,56 @@ public class Executable {
 	private long timeoutMS = 0;
 
 /**
- * Executable constructor comment.
+ * sometimes command and input file name have space, we need to escape space;
+ * So the easiest way to run the command is to call Runtime.exec(String[] cmd)
+ * where cmd[0] is the exectuable and the rest are the arguments. 
+ * If we use this method, we dont have to escape the space at all. 
+ * 
+ * if we submit the job to PBS, then we need a real unix command, then we must escape the space. 
+ * This is done in getCommand(). 
+ * 
+ * These are tests I have done.
+ * 
+	// Mac doesn't work
+	// Linux doesn't work
+	// Windows doesn't work	
+	String command = exe + " " + path;
+
+	// Mac doesn't work
+	// Linux doesn't work
+	// Windows works, weird, 	
+	String command = exe + " " + escapedPath;
+	
+	// Mac doesn't work
+	// Linux doesn't work
+	// Windows works
+	String command = escapedExe + " " + escapedPath;
+
+	//Mac works
+	// Linux works
+	// Windows works
+	String[] command = new String[] {exe, path};
+
+	//Mac  doesn't work
+	// Linux doesnt work
+	// Windows works
+	String[] command = new String[] {escapedExe, escapedPath};
+
+	// Mac works	
+	// Linux doesnt work
+	// Windows works
+	String[] command = new String[] {exe, escapedPath};
+ * 
  */
-public Executable(String command) {
+
+public Executable(String[] command) {
 	this(command, 0);
 }
-
 
 /**
  * Executable constructor comment.
  */
-public Executable(String command, long arg_timeoutMS) {
+public Executable(String[] command, long arg_timeoutMS) {
 	setCommand(command);
 	setStatus(ExecutableStatus.READY);
 	timeoutMS = arg_timeoutMS;
@@ -44,7 +84,7 @@ protected void executeProcess() throws cbit.util.ExecutableException {
 		setErrorString("");
 		setExitValue(null);
 		// start the process
-		setProcess(Runtime.getRuntime().exec(getCommand()));
+		setProcess(Runtime.getRuntime().exec(command));
 		// monitor the process; blocking call
 		// will update the fields from StdOut and StdErr
 		// will return the exit code once the process terminates
@@ -93,8 +133,15 @@ public void finalize() {
  * Creation date: (10/22/2002 4:34:39 PM)
  * @return java.lang.String
  */
-public java.lang.String getCommand() {
-	return command;
+public String getCommand() {
+	StringBuffer commandLine = new StringBuffer();
+	for (int i = 0; i < command.length; i ++) {
+		if (i > 0) {
+			commandLine.append(" ");
+		}		
+		commandLine.append(TokenMangler.getEscapedPathName(command[i]));		
+	}
+	return commandLine.toString();
 }
 
 
@@ -170,7 +217,7 @@ public String getStdoutString() {
 
 public static void main(java.lang.String[] args) {
 	try {
-		Executable executable = new Executable(args[0]);
+		Executable executable = new Executable(args);
 		executable.start();
 	}catch (ExecutableException e) {
 		System.out.println("\nExecutable Exception thrown, normally handled upstream by other classes...");
@@ -260,7 +307,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
  * Creation date: (10/22/2002 4:34:39 PM)
  * @param newCommand java.lang.String
  */
-private void setCommand(java.lang.String newCommand) {
+private void setCommand(String[] newCommand) {
 	command = newCommand;
 }
 

@@ -23,7 +23,7 @@ public class PBSUtils {
  * @param jobid java.lang.String
  */
 public static String checkServerStatus() throws ExecutableException {
-	cbit.util.Executable exe = new Executable(SERVER_CMD_STATUS);
+	cbit.util.Executable exe = new Executable(new String[] {SERVER_CMD_STATUS, "-B"});
 	exe.start();
 	
 	String output = exe.getStdoutString();
@@ -72,7 +72,7 @@ static int getJobExitCode(String jobid) {
 	Executable exe = null;
 	
 	try {
-		String cmd = JOB_CMD_HISTORY + " " + jobid;
+		String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid};
 		exe = new Executable(cmd);
 		exe.start();
 		
@@ -103,7 +103,7 @@ public static int getJobStatus(String jobid) {
 	Executable exe = null;
 	
 	try {
-		String cmd = JOB_CMD_STATUS + " " + jobid;
+		String[] cmd = new String[]{JOB_CMD_STATUS, jobid};
 		exe = new Executable(cmd);
 		exe.start();
 		
@@ -157,7 +157,7 @@ public static String getPendingReason(String jobid) {
 	Executable exe = null;
 	
 	try {
-		String cmd = JOB_CMD_STATUS + " -s " + jobid;
+		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid};
 		exe = new Executable(cmd);
 		exe.start();
 		
@@ -208,7 +208,7 @@ public static void killJob(String jobid) {
 	}
 		
 	try {
-		String cmd = JOB_CMD_DELETE + " " + jobid;
+		String[] cmd = new String[]{JOB_CMD_DELETE, jobid};
 		Executable exe = new Executable(cmd);
 		exe.start();
 	} catch (ExecutableException ex) {
@@ -268,7 +268,7 @@ public static String submitJob(String computeResource, String jobName, String su
 		return null;
 	}
 	
-	String completeCommand =  JOB_CMD_SUBMIT + " " + sub_file;
+	String[] completeCommand = new String[] {JOB_CMD_SUBMIT, sub_file};
 	Executable exe = new Executable(completeCommand);
 	exe.start();
 	String jobid = exe.getStdoutString().trim();

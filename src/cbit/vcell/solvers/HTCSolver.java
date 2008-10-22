@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
+import cbit.util.Executable;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.*;
 import cbit.vcell.xml.XmlHelper;
@@ -108,8 +109,9 @@ public String getExecutableCommand() {
 		return ((AbstractCompiledSolver)realSolver).getMathExecutable().getCommand();
 	} else {
 		File inputFile = new File(getBaseName() + JAVA_INPUT_EXTENSION);
-		return PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable) + " " + VCellServerID.getSystemServerID() + " "
-					+ inputFile.getParent() + " " + inputFile.getName() + " " + getJobIndex();
+		Executable exe = new Executable(new String[]{PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
+				VCellServerID.getSystemServerID().toString(), inputFile.getParent(), inputFile.getName(), getJobIndex()+""});
+		return exe.getCommand();
 	}
 }
 }

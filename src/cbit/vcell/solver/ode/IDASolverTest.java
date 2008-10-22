@@ -95,8 +95,8 @@ public void testStandalone(String username) {
 			File oldOutput = new File(userOutputdir, prefix + ".oldida");
 			File newOutput = new File(userOutputdir, prefix + ".newida");			
 			String inputfilepath = userdir + "\\" + inputfile;
-			String cmd_old = old_idastandalone +  " " +  inputfilepath + " " + oldOutput.getAbsolutePath();
-			String cmd_new = new_idastandalone +  " " +  inputfilepath + " " + newOutput.getAbsolutePath();
+			String[] cmd_old = new String[] {old_idastandalone, inputfilepath, oldOutput.getAbsolutePath()};
+			String[] cmd_new = new String[] {new_idastandalone, inputfilepath, newOutput.getAbsolutePath()};
 			try {
 				cbit.util.Executable exe = new cbit.util.Executable(cmd_old);
 				exe.start();

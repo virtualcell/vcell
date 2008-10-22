@@ -18,8 +18,8 @@ public interface CondorConstants {
 	
 	public final static String JOB_CMD_SUBMIT = "condor_submit";
 	public final static String JOB_CMD_DELETE = "condor_rm";
-	public final static String JOB_CMD_STATUSDETAILS = "condor_q -analyze";
+	public final static String JOB_CMD_STATUSDETAILS = "condor_q";
 	public final static String JOB_CMD_STATUS = "condor_q";
-	public final static String JOB_CMD_RUNNINGDETAILS = "condor_status -run";
-	public final static String JOB_CMD_HISTORY = "condor_history -l";	
+	//public final static String JOB_CMD_RUNNINGDETAILS = "condor_status -run";
+	public final static String JOB_CMD_HISTORY = "condor_history";	
 }
