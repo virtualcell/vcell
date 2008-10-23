@@ -40,8 +40,8 @@ public class FRAPParametersPanel extends JPanel {
 //	private static final String PLOT_TITLE_STRING = "Plot of average data intensity at each timepoint within the 'bleach' ROI -and- Plot of estimation fit";
 	
 	private static String MONITOR_BLEACH_RATE_DESCRIPTION = "Monitor Bleach Rate";
-	private static String MOBILE_FRACTION_DESCRIPTION = "Mobile Fraction";
-	private static String DIFFUSION_RATE_DESCRIPTION = "Diffusion Rate";
+	private static String MOBILE_FRACTION_DESCRIPTION = "Primary Mobile Fraction";
+	private static String DIFFUSION_RATE_DESCRIPTION = "Primary Diffusion Rate";
 	private static String SEC_DIFFUSION_RATE_DESCRIPTION = "Secondary Diffusion Rate";
 	private static String SEC_MOBILE_FRACTION_DESCRIPTION = "Secondary Mobile Fraction";
 
@@ -63,7 +63,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = GridBagConstraints.NORTH;
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints.weightx = 1;
+		gridBagConstraints.weightx = 0.5;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
 
@@ -105,6 +105,7 @@ public class FRAPParametersPanel extends JPanel {
 		);
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_1.weightx = 1;
 		gridBagConstraints_1.weighty = 1;
 		gridBagConstraints_1.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_1.gridy = 0;

@@ -52,8 +52,8 @@ public class FRAPEstimationPanel extends JPanel {
 	public static final String FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY = "FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY";
 	
 	private enum FRAPParameterEstimateEnum {
-		DIFFUSION_RATE("Diffusion Rate","um2/s"),
-		MOBILE_FRACTION("Mobile Fraction",""),
+		DIFFUSION_RATE("Primary Diffusion Rate","um2/s"),
+		MOBILE_FRACTION("Primary Mobile Fraction",""),
 		IMMOBILE_FRATION("Immobile Fraction",""),
 		START_TIME_RECOVERY("Start Time Recovery","s"),
 		BLEACH_RATE_MONITOR("Monitor Bleach Rate","1/s");
@@ -105,10 +105,10 @@ public class FRAPEstimationPanel extends JPanel {
 		gridBagLayout_1.rowHeights = new int[] {7,7,7,7};
 		panel.setLayout(gridBagLayout_1);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.anchor = GridBagConstraints.NORTH;
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1;
+		gridBagConstraints.weighty = 0.1;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
 		add(panel, gridBagConstraints);
@@ -237,7 +237,7 @@ public class FRAPEstimationPanel extends JPanel {
 		applyEstimatedValuesButton.setText("Apply Estimated Values...");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_5.fill = GridBagConstraints.HORIZONTAL;
+//		gridBagConstraints_5.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_5.gridwidth = 2;
 		gridBagConstraints_5.gridy = 3;
 		gridBagConstraints_5.gridx = 0;
@@ -252,7 +252,10 @@ public class FRAPEstimationPanel extends JPanel {
 		gridBagLayout_2.rowHeights = new int[] {0,7};
 		panel_1.setLayout(gridBagLayout_2);
 		final GridBagConstraints gridBagConstraints_24 = new GridBagConstraints();
+		gridBagConstraints_24.weightx = 1;
+		gridBagConstraints_24.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_24.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_24.weighty = 0.1;
 		gridBagConstraints_24.gridy = 0;
 		gridBagConstraints_24.gridx = 0;
 		add(panel_1, gridBagConstraints_24);
@@ -295,6 +298,7 @@ public class FRAPEstimationPanel extends JPanel {
 		multisourcePlotPane.setBorder(new EtchedBorder());
 		multisourcePlotPane.setListVisible(false);
 		final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();
+		gridBagConstraints_27.gridheight = 2;
 		gridBagConstraints_27.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_27.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_27.weighty = 1;

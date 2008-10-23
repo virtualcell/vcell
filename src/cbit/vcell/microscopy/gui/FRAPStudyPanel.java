@@ -824,7 +824,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 	}
 	
-	public void saveAs() throws Exception{
+	public boolean saveAs() throws Exception{
 		if(SwingUtilities.isEventDispatchThread()){
 			throw new Exception("SaveAs not EventDispatchThread");
 		}
@@ -837,7 +837,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						"Simulation Data will be empty for the new document.  Switch to '"+FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab before saving?" ,
 						new String[] {CONTINUE_SAVING,UserMessage.OPTION_CANCEL}, CONTINUE_SAVING);
 				if(result == null || !result.equals(CONTINUE_SAVING)){
-					return;
+					return false;
 				}
 				SwingUtilities.invokeAndWait(
 					new Runnable(){
@@ -860,6 +860,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				DialogUtils.showErrorDialog("No FRAP Data exists to save");
 			}});
 		}
+		return true;
 	}
 	private void applyUserChangesToCurrentFRAPStudy(int applyUserChangeFlags) throws Exception{
 		if((applyUserChangeFlags&USER_CHANGES_FLAG_ROI) != 0){
@@ -1388,111 +1389,118 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		new Thread(new Runnable(){
 			public void run(){
 				try {
+					boolean executed = false;
 					if(bSaveAsNew[0] != null){
 						final String SAVING_BEFORE_RUN_MESSAGE = "Saving before simulation runs...";
 						VirtualFrapMainFrame.updateStatus(SAVING_BEFORE_RUN_MESSAGE);
 						pp.setMessage(SAVING_BEFORE_RUN_MESSAGE);
 						if(bSaveAsNew[0]){
-							saveAs();
+							executed = saveAs();
 						}else {
 							save();
 						}
 					}
-					// Reset spatial analysis
-					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-						getResultsSummaryPanel().clearData();//spatialAnalysisList = null;
-					}});
-					final String SAVING_EXT_DATA_MESSAGE = "Saving ROI and initial conditions...";
-					VirtualFrapMainFrame.updateStatus(SAVING_EXT_DATA_MESSAGE);
-					pp.setMessage(SAVING_EXT_DATA_MESSAGE);
-					VirtualFrapMainFrame.updateProgress(0);
-//					genericProgress(10,genericProgressStopSignal);
-					if(getSavedFrapModelInfo() == null || cleanupSavedSimDataFilesIfNotOK()){
-						getFrapStudy().saveROIsAsExternalData(localWorkspace,
-							getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
-						getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
-							getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
-					}
-//					genericProgressStopSignal[0] = true;
-					
-					final double RUN_SIM_PROGRESS_FRACTION = (bSpatialAnalysis?.2:1.0);
-					DataSetControllerImpl.ProgressListener runSimProgressListener =
-						new DataSetControllerImpl.ProgressListener(){
-							public void updateProgress(double progress) {
-								int percentProgress = (int)(progress*100*RUN_SIM_PROGRESS_FRACTION);
-								VirtualFrapMainFrame.updateProgress(percentProgress);
-								pp.setProgress(percentProgress);
-							}
-							public void updateMessage(String message) {
-								VirtualFrapMainFrame.updateStatus(message);
-								pp.setMessage(message);
-							}
-					};
-
-					final String RUNNING_SIM_MESSAGE = "Running simulation...";
-					VirtualFrapMainFrame.updateStatus(RUNNING_SIM_MESSAGE);
-					pp.setMessage(RUNNING_SIM_MESSAGE);
-					Simulation simulation =
-						getFrapStudy().getBioModel().getSimulations()[0];
-					FRAPStudy.runFVSolverStandalone(
-						simulationDataDir,
-						new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
-						simulation,
-						getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
-						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
-						runSimProgressListener);
-					
-					if(!bSpatialAnalysis){
+					if(bSaveAsNew[0] != null && bSaveAsNew[0] && !executed) //cancelled saveas, then nothing should happen.
+					{
 						pp.stop();
-						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							try{
-								VirtualFrapMainFrame.updateStatus("Updating Simulation Data display.");
-								refreshPDEDisplay(DisplayChoice.PDE);//upper data viewer has simulated data and masks
-								refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);//lower data viewer has original data and masks
-								getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS));
-								VirtualFrapMainFrame.updateProgress(0);
-								VirtualFrapMainFrame.updateStatus("");
-							}catch(Exception e){
-								throw new RuntimeException("Error Updating simData display.  "+e.getMessage(),e);
-							}
-						}});
-						return;
 					}
-					
-					final String FINISHED_MESSAGE = "Finished simulation, running spatial analysis...";
-					VirtualFrapMainFrame.updateStatus(FINISHED_MESSAGE);
-					pp.setMessage(FINISHED_MESSAGE);
-//					VirtualFrapMainFrame.updateProgress(100);
-//					pp.setProgress(100);
-					
-					
-					DataSetControllerImpl.ProgressListener optimizationProgressListener =
-						new DataSetControllerImpl.ProgressListener(){
-							public void updateProgress(double progress) {
-								if(progress == 1.0){
-									VirtualFrapMainFrame.updateProgress(0);
-									pp.stop();
-									return;
+					else
+					{
+						// Reset spatial analysis
+						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+							getResultsSummaryPanel().clearData();//spatialAnalysisList = null;
+						}});
+						final String SAVING_EXT_DATA_MESSAGE = "Saving ROI and initial conditions...";
+						VirtualFrapMainFrame.updateStatus(SAVING_EXT_DATA_MESSAGE);
+						pp.setMessage(SAVING_EXT_DATA_MESSAGE);
+						VirtualFrapMainFrame.updateProgress(0);
+//						genericProgress(10,genericProgressStopSignal);
+						if(getSavedFrapModelInfo() == null || cleanupSavedSimDataFilesIfNotOK()){
+							getFrapStudy().saveROIsAsExternalData(localWorkspace,
+								getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
+							getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
+								getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
+						}
+//						genericProgressStopSignal[0] = true;
+						
+						final double RUN_SIM_PROGRESS_FRACTION = (bSpatialAnalysis?.2:1.0);
+						DataSetControllerImpl.ProgressListener runSimProgressListener =
+							new DataSetControllerImpl.ProgressListener(){
+								public void updateProgress(double progress) {
+									int percentProgress = (int)(progress*100*RUN_SIM_PROGRESS_FRACTION);
+									VirtualFrapMainFrame.updateProgress(percentProgress);
+									pp.setProgress(percentProgress);
 								}
-								int percentProgress = (int)(100*(RUN_SIM_PROGRESS_FRACTION+progress*(1-RUN_SIM_PROGRESS_FRACTION)));
-								VirtualFrapMainFrame.updateProgress(percentProgress);
-								pp.setProgress(percentProgress);
-							}
-							public void updateMessage(String message) {
-								VirtualFrapMainFrame.updateStatus(message);
-								pp.setMessage(message);
-							}
-					};
-					
-					spatialAnalysis(optimizationProgressListener, bReferenceSim);
-					
-
-//					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+								public void updateMessage(String message) {
+									VirtualFrapMainFrame.updateStatus(message);
+									pp.setMessage(message);
+								}
+						};
+	
+						final String RUNNING_SIM_MESSAGE = "Running simulation...";
+						VirtualFrapMainFrame.updateStatus(RUNNING_SIM_MESSAGE);
+						pp.setMessage(RUNNING_SIM_MESSAGE);
+						Simulation simulation =
+							getFrapStudy().getBioModel().getSimulations()[0];
+						FRAPStudy.runFVSolverStandalone(
+							simulationDataDir,
+							new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
+							simulation,
+							getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
+							getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
+							runSimProgressListener);
+						
+						if(!bSpatialAnalysis){
+							pp.stop();
+							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+								try{
+									VirtualFrapMainFrame.updateStatus("Updating Simulation Data display.");
+									refreshPDEDisplay(DisplayChoice.PDE);//upper data viewer has simulated data and masks
+									refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);//lower data viewer has original data and masks
+									getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS));
+									VirtualFrapMainFrame.updateProgress(0);
+									VirtualFrapMainFrame.updateStatus("");
+								}catch(Exception e){
+									throw new RuntimeException("Error Updating simData display.  "+e.getMessage(),e);
+								}
+							}});
+							return;
+						}
+						
+						final String FINISHED_MESSAGE = "Finished simulation, running spatial analysis...";
+						VirtualFrapMainFrame.updateStatus(FINISHED_MESSAGE);
+						pp.setMessage(FINISHED_MESSAGE);
+//						VirtualFrapMainFrame.updateProgress(100);
+//						pp.setProgress(100);
+						
+						
+						DataSetControllerImpl.ProgressListener optimizationProgressListener =
+							new DataSetControllerImpl.ProgressListener(){
+								public void updateProgress(double progress) {
+									if(progress == 1.0){
+										VirtualFrapMainFrame.updateProgress(0);
+										pp.stop();
+										return;
+									}
+									int percentProgress = (int)(100*(RUN_SIM_PROGRESS_FRACTION+progress*(1-RUN_SIM_PROGRESS_FRACTION)));
+									VirtualFrapMainFrame.updateProgress(percentProgress);
+									pp.setProgress(percentProgress);
+								}
+								public void updateMessage(String message) {
+									VirtualFrapMainFrame.updateStatus(message);
+									pp.setMessage(message);
+								}
+						};
+						
+						spatialAnalysis(optimizationProgressListener, bReferenceSim);
+						
+	
+//						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 //						getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_REPORT));
 //						VirtualFrapMainFrame.updateProgress(0);
 //						VirtualFrapMainFrame.updateStatus("");
-//					}});
-
+//						}});
+					}		
 				}catch(UserCancelException uce){
 					pp.stop();
 					return;
@@ -1882,7 +1890,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		upPanel.add(new JLabel("  "), BorderLayout.EAST);
 		upPanel.add(new JLabel(" "), BorderLayout.NORTH);
 		upPanel.add(new JLabel(" "), BorderLayout.SOUTH);
-		upPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Simulation Results and Masks", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
+		upPanel.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),"Simulation Results", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
 		
 		
 		JPanel botPanel = new JPanel();		

@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy;
 
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
@@ -1219,11 +1220,20 @@ public class FRAPStudy implements Matchable{
 			
 			erodedROI_2D_0 = new UShortImage(bleachedROI_2D);
 			
-			erodedROI_2D_1 = 
-    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(2), cellROI_2D,true);
-			
-			erodedROI_2D_2 = 
-    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(5), cellROI_2D,true);
+			// The erode always causes problems if eroding without checking the bleached length and hight.
+			// we have to check the min length of the bleahed area to make sure erode within the length.
+			Rectangle bleachRect = bleachedROI_2D.getNonzeroBoundingBox();
+			int minLen = Math.min(bleachRect.height, bleachRect.width);
+			if((minLen/2.0) < 5)
+			{
+				erodedROI_2D_1 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(1), bleachedROI_2D,true);
+				erodedROI_2D_2 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(2), bleachedROI_2D,true);
+			}
+			else
+			{
+				erodedROI_2D_1 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(2), bleachedROI_2D,true);
+				erodedROI_2D_2 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(5), bleachedROI_2D,true);
+			}			
 			
 			UShortImage reverseErodeROI_2D_1 = new UShortImage(erodedROI_2D_1);
 			reverseErodeROI_2D_1.reverse();

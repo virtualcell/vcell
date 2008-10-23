@@ -480,12 +480,12 @@ public class VirtualFrapMainFrame extends JFrame
     
     fileMenu.addSeparator();
 
-    mprint.addActionListener(menuHandler);
-    mprint.setEnabled(false);
-    fileMenu.add(mprint);
-    mprint.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,InputEvent.CTRL_MASK));
-
-    fileMenu.addSeparator();
+//    mprint.addActionListener(menuHandler);
+//    mprint.setEnabled(false);
+//    fileMenu.add(mprint);
+//    mprint.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,InputEvent.CTRL_MASK));
+//
+//    fileMenu.addSeparator();
 
     menuExit.addActionListener(menuHandler);
     fileMenu.add(menuExit);
