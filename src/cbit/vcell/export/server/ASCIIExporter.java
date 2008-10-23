@@ -193,20 +193,21 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 			output = new ExportOutput[variableSpecs.getVariableNames().length * (timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1)];
 			int required = output.length;
 			for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
-				String[] data2 = new String[timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1];
-				for (int i=0;i<data2.length;i++) {
-					progress = (double)(i + j * data2.length) / required;
+				//String[] data2 = new String[timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1];
+				int data2Length = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
+				for (int i=0;i<data2Length;i++) {
+					progress = (double)(i + j * data2Length) / required;
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-				data2[i] = getSlice(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns());
+					String data2 = getSlice(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns());
 					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(data2[i]);
+					data1.append(data2);
 					StringBuffer inset = new StringBuffer(Integer.toString(i + timeSpecs.getBeginTimeIndex()));
 						inset.reverse();
 						inset.append("000");
 						inset.setLength(4);
 						inset.reverse();
 					String dataID1 = dataID + variableSpecs.getVariableNames()[j] + inset.toString();
-					output[j * data2.length + i] = new ExportOutput(true, dataType, simID, dataID1, data1.toString().getBytes());
+					output[j * data2Length + i] = new ExportOutput(true, dataType, simID, dataID1, data1.toString().getBytes());
 				}
 			}
 			break;
