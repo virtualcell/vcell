@@ -26,10 +26,10 @@ public class ToolBar extends JToolBar {
 	public final static int BUT_HELP = 3;
     private URL[] iconFiles = {getClass().getResource("/images/open.gif"),
 							   getClass().getResource("/images/save.gif"),
-							   getClass().getResource("/images/printer.gif"),
+//							   getClass().getResource("/images/printer.gif"),
 							   getClass().getResource("/images/help.gif")};
 
-    private String[] buttonLabels = {"Open File", "Save File", "Print","Help"};
+    private String[] buttonLabels = {"Open File", "Save File", /*"Print",*/"Help"};
     //icon objects for initializing the image button
     private ImageIcon[] icons = new ImageIcon[iconFiles.length];
     private JButton[] buttons = new JButton[iconFiles.length];
@@ -44,7 +44,7 @@ public class ToolBar extends JToolBar {
             buttons[i].setMargin(new Insets(0, 0, 0, 0));
             buttons[i].setSize(100, 100);
             buttons[i].setToolTipText(buttonLabels[i]);
-            if (i == BUT_PRINT) buttons[i].setEnabled(false);
+//            if (i == BUT_PRINT) buttons[i].setEnabled(false);
             if (i == BUT_HELP) addSeparator();
             add(buttons[i]);
             if(i == BUT_SAVE){
