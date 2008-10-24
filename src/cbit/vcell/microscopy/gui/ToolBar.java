@@ -22,8 +22,8 @@ public class ToolBar extends JToolBar {
     // the image of the shortcut button appearance
 	public final static int BUT_OPEN = 0;
 	public final static int BUT_SAVE = 1;
-	public final static int BUT_PRINT = 2;
-	public final static int BUT_HELP = 3;
+//	public final static int BUT_PRINT = 2;
+	public final static int BUT_HELP = 2;
     private URL[] iconFiles = {getClass().getResource("/images/open.gif"),
 							   getClass().getResource("/images/save.gif"),
 //							   getClass().getResource("/images/printer.gif"),

@@ -86,6 +86,7 @@ public class VirtualFrapMainFrame extends JFrame
   private static StatusBar statusBarNew = new StatusBar();
   public static ToolBar toolBar = null;
   public static FRAPStudyPanel frapStudyPanel = null;
+  private HelpViewer hviewer = null;
   private UndoableEdit lastUndoableEdit;
 
   private MultiFileInputDialog multiFileDialog = null;
@@ -307,7 +308,16 @@ public class VirtualFrapMainFrame extends JFrame
 		      // Help menu
 		      else if(arg.equals(HELPTOPICS_ACTION_COMMAND))
 		      {
-		    	  HelpViewer hviewer = new HelpViewer();
+		    	  if(hviewer == null)
+		    	  {
+		    		  hviewer = new HelpViewer();
+		    	  }
+		    	  else
+		    	  {
+		    		  hviewer.setVisible(true);
+		    	  }
+		    		  
+		    		
 		      }
 		      else if(arg.equals(ABOUT_ACTION_COMMAND))
 		      {
@@ -342,7 +352,7 @@ public class VirtualFrapMainFrame extends JFrame
 						    updateStatus("Exception: " + e5.getMessage());
 						}
 	  	   			break;
-	  	   			case ToolBar.BUT_PRINT:
+//	  	   			case ToolBar.BUT_PRINT:
 //		  	   			if(frapStudyPanel.getJTabbedPane().getSelectedIndex() == FRAPStudyPanel.INDEX_TAB_FITCURVE)
 //		  	            {
 //		  	                statusBar.showStatus("Printing...");
@@ -360,7 +370,7 @@ public class VirtualFrapMainFrame extends JFrame
 //		  	            }
 //		  	            else
 //		  	                statusBar.showStatus("This is not printable from VFrap!");
-	  	   			break;
+//	  	   			break;
 	  	   			case ToolBar.BUT_HELP:
 	  	   				menuHandler.actionPerformed(new ActionEvent(mHelpTopics,0,HELPTOPICS_ACTION_COMMAND));
 	  	   			break;
