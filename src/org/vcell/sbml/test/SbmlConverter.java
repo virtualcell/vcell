@@ -451,7 +451,7 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 	}
 }
 
-private static ODESolverResultSet getODESolverResultSet(Simulation argSim, String idaFileName)  {
+public static ODESolverResultSet getODESolverResultSet(Simulation argSim, String idaFileName)  {
 	// read .ida file
 	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
 	FileInputStream inputStream = null;
