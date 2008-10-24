@@ -206,7 +206,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	public void setLocalWorkspace(LocalWorkspace localWorkspace) {
 		this.localWorkspace = localWorkspace;
 	}
-	public static void showCurve(WindowListener windowListener, String[] varNames, double[] independent, double[][] dependents){
+	private static void showCurve(WindowListener windowListener, String[] varNames, double[] independent, double[][] dependents){
 		PlotPane plotter = new PlotPane();
 		PlotData[] plotDatas = new PlotData[dependents.length];
 		for (int i = 0; i < plotDatas.length; i++) {
@@ -217,6 +217,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		plotter.setPlot2D(plot2D);
 		
 		JFrame frame = new JFrame();
+		frame.setTitle("ROI time course");
 		frame.addWindowListener(windowListener);
 		frame.getContentPane().add(plotter);
 		frame.setLocation(new Point(300,300));

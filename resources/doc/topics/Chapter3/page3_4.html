@@ -22,20 +22,22 @@
   <tr>
     <td class="content" valign="top">
 	
-	<font size="3">A spatial simulation is conducted after getting the initial parameters. The spatial simulation can be updated with new set of parameters in &#8220;Adjust Parameters&#8221; tab as aforementioned. The simulation results are used to compare with the original FRAP experimental. There are data viewers in the &#8220;2D Results&#8221; panel. The two viewers are,<br>
+	<font size="3">The spatial simulation is conducted initially by the parameters from &#8220;Initial Parameters&#8221; tab. It can be updated with new set of parameters in &#8220;Adjust Parameters&#8221; tab as aforementioned. The simulation results are used to compare with the original FRAP experimental data. The two sets of data are displayed in Simulation results viewer and Original Virtual Microscopy Data viewer.<br>
 	</font>
 	<p></p>
 	<ul>
         <li> 
-		<p style="margin-bottom: 15px"><font size="3">The simulation results viewer - The simulation results show how the diffusion rate works in the cell.  The immobile data, mobile data and combined data are shown in the &#8220;Variable&#8221; list. When users select one of the options, the corresponding data set will be loaded in the viewer.</font></li>
+		<p style="margin-bottom: 15px"><font size="3">Simulation results viewer &#8211; The simulation is conduced by VCell spatial solver.  The immobile data, primary mobile data, secondary mobile data (if users have selected) and combined data are shown in the &#8220;Variable&#8221; list.  The combined data is a sum of primary mobile data time primary mobile fraction, secondary mobile data time secondary mobile fraction (if users have selected) and immobile data time immobile mobile fraction. When users select one of the options, the corresponding data set will be loaded in the viewer.</font></li>
         <li> 
-		<p style="margin-bottom: 6px"><font size="3">The original data and ROI rings viewer - The original data are saved in two forms which are raw data and normalized raw data. The normalized raw data is the proper dataset to compare with the simulation results because the simulation runs based on the normalized data. The ROI rings are sample at different distances from the user defined initial bleached region. The ROI rings enable users to observe how diffusion works in others regions of cell besides the bleached area.</font></li>
+		<p style="margin-bottom: 6px"><font size="3">The original data and ROI rings viewer &#8211; The original data are saved in two forms which are raw data and normalized raw data. The normalized raw data is the proper dataset to compare with the simulation results because the simulation runs based on the normalized data. The ROI rings sample at different distances from the user defined initial bleached region. Through ROI rings, users are able to observe how diffusion works in different regions of cell besides the bleached area.</font></li>
 	</ul>
 	     
     <p></p>
-      <font size="3">The spatial simulation is done when users click on the &#8220;Adjust Parameters&#8221; tab. When all the required data are ready, the simulation will complete automatically. (Figure 3-6 shows the spatial simulation results)<br>
+      <font size="3">There are two kinds of view in this panel when taking into consideration that different monitors have different resolutions.  Parallel view requires higher resolution, which allows users to compare the simulation results and original data side by side.  Tabbed view allows users to see one data set each time.</font><br>
       
-    </font>
+    <p></p>
+      <font size="3">The spatial simulation is performed when users click on the &#8220;Adjust Parameters&#8221; tab. As long as all the required data are ready, the simulation will complete automatically. (Figure 3-6 shows the spatial simulation results)</font><br>
+    
       
     <p></p>
       <font size="3">To understand and export the spatial simulation results. Please refer to Virtual Cell documentation at 
