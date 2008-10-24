@@ -12,6 +12,7 @@ import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLWriter;
+import org.sbml.libsbml.Species;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
@@ -31,10 +32,12 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbolTable;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -222,8 +225,6 @@ protected void addCompartments() {
 		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
 		if (annotationElement.getChildren().size()>0){
 			String annotationString = XmlUtil.xmlToString(annotationElement, true);
-			System.out.println("compartment annotation string:\n"+annotationString);
-			System.out.flush();
 			sbmlCompartment.setAnnotation(new String(annotationString));
 		}
 		if (vcStructures[i].getMIRIAMAnnotation() != null && vcStructures[i].getMIRIAMAnnotation().getUserNotes() != null) {
@@ -238,10 +239,11 @@ protected void addCompartments() {
 /**
  * addKineticParameterUnits:
  */
-private void addKineticParameterUnits(ArrayList<String> unitsList) {
+private void addKineticAndGlobalParameterUnits(ArrayList<String> unitsList) {
 
 	//
 	// Get all kinetic parameters from simple reactions and flux reactions from the Biomodel
+	// And all Model (global) parameters from Model.
 	// For each parameter,
 	//		get its unit (VCunitDefinition)
 	//		check if it is part of unitsList - if so, continue
@@ -251,6 +253,12 @@ private void addKineticParameterUnits(ArrayList<String> unitsList) {
 	//
 
 	Vector<Parameter> paramsVector = new Vector<Parameter>();
+	// Add globals
+	ModelParameter[] globalParams = vcBioModel.getModel().getModelParameters();
+	for (int i = 0; i < globalParams.length; i++) {
+		paramsVector.addElement(globalParams[i]);
+	}
+	// Add reaction kinetic parameters
 	ReactionStep[] vcReactions = vcBioModel.getModel().getReactionSteps();
 	for (int i = 0; i < vcReactions.length; i++) {
 		Kinetics rxnKinetics = vcReactions[i].getKinetics();
@@ -289,13 +297,57 @@ private void addKineticParameterUnits(ArrayList<String> unitsList) {
 /**
  * At present, the Virtual cell doesn't support global parameters
  */
-protected void addParameters() {
+protected void addParameters() throws ExpressionException {
+	// first add an SBML parameter for VCell reserved symbol 'KMOLE'.
 	org.sbml.libsbml.Parameter sbmlParam = sbmlModel.createParameter();
 	String paramUnits = TokenMangler.mangleToSName(VCUnitDefinition.UNIT_uM_um3_per_molecules.getSymbol());
 	sbmlParam.setId("KMOLE");
 	sbmlParam.setValue(1.0/602.0);
 	sbmlParam.setUnits(paramUnits);
 	sbmlParam.setConstant(true);
+	// Now add VCell global parameters to the SBML listofParameters
+	Model vcModel = getOverriddenSimContext().getModel();
+	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
+	for (int i = 0; vcGlobalParams != null && i < vcGlobalParams.length; i++) {
+		sbmlParam = sbmlModel.createParameter();
+		sbmlParam.setId(vcGlobalParams[i].getName());
+		Expression paramExpr = vcGlobalParams[i].getExpression();
+		if (paramExpr.isNumeric()) {
+			// For a VCell global param, if it is numeric, it has a constant value and is not defined by a rule, hence set Constant = true.
+			sbmlParam.setValue(paramExpr.evaluateConstant());
+			sbmlParam.setConstant(true);
+		} else {
+			// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
+			sbmlParam.setConstant(false);
+
+			// add assignment rule for param
+			// First check if 'paramExpr' has any references to speciesContexts. If so, the conc units should be adjusted.
+			// Get the VC (from SpeciesContextSpec) and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
+			// Replace the occurance of species in the 'paramExpr' with the new expr : species*factor.
+			String[] symbols = paramExpr.getSymbols();
+			for (int j = 0; j < symbols.length; j++) {
+				SpeciesContext vcSpeciesContext = vcModel.getSpeciesContext(symbols[j]); 
+				if (vcSpeciesContext != null) {
+					Species species = sbmlModel.getSpecies(vcSpeciesContext.getName());
+					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
+					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
+					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
+					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+					Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
+					paramExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
+				}
+			}
+
+			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+			sbmlParamAssignmentRule.setId(vcGlobalParams[i].getName());
+			sbmlParamAssignmentRule.setMath(paramFormulaNode);
+		}
+		VCUnitDefinition vcParamUnit = vcGlobalParams[i].getUnitDefinition();
+		if (!vcParamUnit.compareEqual(VCUnitDefinition.UNIT_TBD)) {
+			sbmlParam.setUnits(TokenMangler.mangleToSName(vcParamUnit.getSymbol()));
+		}
+	}
 }
 
 
@@ -429,7 +481,7 @@ protected void addReactions() {
 										sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
 										// Set SBML units for sbmlParam using VC units from vcParam  
 										if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-											sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+											sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 										}
 										bAddedParam = true;
 									} else {
@@ -447,7 +499,7 @@ protected void addReactions() {
 							sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
 							// Set SBML units for sbmlParam using VC units from vcParam  
 							if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-								sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+								sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 							}
 						} else {
 							// if parameter has been added to global param list, its name has been mangled, 
@@ -509,7 +561,7 @@ protected void addReactions() {
 					org.sbml.libsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 					sbmlKinParam.setId(paramName);
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-						sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+						sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 					}
 					// Since the parameter is being specified by a Rule, its 'constant' field shoud be set to 'false' (default - true).
 					sbmlKinParam.setConstant(false);
@@ -579,42 +631,37 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 	// The expr for speciesConcentration from VCell is in terms of VCell units (uM); we have converted species units to SBML conc units
 	// to export to SBML. We need to translate them back to VCell units within the expr; then we translate the VCell rate units into SBML units.
 
-	String[] symbols = origRateExpr.getSymbols();
 	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
-	if (symbols != null) {
-		for (int i = 0; i < symbols.length; i++) {
-			for (int j = 0; j < vcSpeciesContexts.length; j++) {
-				if ( vcSpeciesContexts[j].getName().equals(symbols[i])) {
-					// this change is applicable only to species in volumes, not on membranes, since the 
-					// concentration units for species on membranes is already in molecules (/um2).
-					org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContexts[j].getName());
-					/* Check if species name is used as a kinetic parameter. If so, the parameter in the local namespace 
-					   takes precedence. So ignore unit conversion for the species with the same name. */
-					boolean bSpeciesNameFoundInLocalParamList = false;
-					Kinetics.KineticsParameter[] kinParams = rxnKinetics.getKineticsParameters();
-					for (int k = 0; k < kinParams.length; k++) {
-						if ( (kinParams[k].getRole() != Kinetics.ROLE_ReactionRate) && (kinParams[k].getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
-							if (kinParams[k].getName().equals(species.getId())) {
-								bSpeciesNameFoundInLocalParamList = true;
-								break; 		// break out of kinParams loop
-							}
-						}
+	for (int i = 0; i < vcSpeciesContexts.length; i++) {
+		if (origRateExpr.hasSymbol(vcSpeciesContexts[i].getName())) {
+			// this change is applicable only to species in volumes, not on membranes, since the 
+			// concentration units for species on membranes is already in molecules (/um2).
+			org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContexts[i].getName());
+			/* Check if species name is used as a kinetic parameter. If so, the parameter in the local namespace 
+			   takes precedence. So ignore unit conversion for the species with the same name. */
+			boolean bSpeciesNameFoundInLocalParamList = false;
+			Kinetics.KineticsParameter[] kinParams = rxnKinetics.getKineticsParameters();
+			for (int k = 0; k < kinParams.length; k++) {
+				if ( (kinParams[k].getRole() != Kinetics.ROLE_ReactionRate) && (kinParams[k].getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
+					if (kinParams[k].getName().equals(species.getId())) {
+						bSpeciesNameFoundInLocalParamList = true;
+						break; 		// break out of kinParams loop
 					}
-					if (bSpeciesNameFoundInLocalParamList) {
-						break;			// break out of speciesContexts loop
-					}
-					// Get the VC and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
-					// Replace the occurance of species in the rate expression with the new expr : species*factor.
-					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[j]);
-					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
-					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[j].getStructure().getDimension());
-					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
-					Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
-					origRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 				}
-			} 	// end for (j) - speciesContext
-		}	// end for (i) - symbols
-	}	// end if (symbols != null)
+			}
+			if (bSpeciesNameFoundInLocalParamList) {
+				break;			// break out of speciesContexts loop
+			}
+			// Get the VC and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
+			// Replace the occurance of species in the rate expression with the new expr : species*factor.
+			cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
+			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[i].getStructure().getDimension());
+			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+			Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
+			origRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
+		}
+	} 	// end for (j) - speciesContext
 	return origRateExpr;
 }
 
@@ -779,7 +826,7 @@ protected void addUnitDefinitions() {
 	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
 	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_um3_per_L.getSymbol()));
 	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
-	addKineticParameterUnits(unitList);
+	addKineticAndGlobalParameterUnits(unitList);
 }
 
 
@@ -1167,7 +1214,12 @@ public void translateBioModel() {
 	// Add species/speciesContexts
 	addSpecies(); 
 	// Add Parameters
-	addParameters();
+	try {
+		addParameters();
+	} catch (ExpressionException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage());
+	}
 	// Add Reactions
 	addReactions();
 }

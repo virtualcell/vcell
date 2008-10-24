@@ -18,6 +18,7 @@ import org.vcell.sbml.vcell.VCellSBMLSolver;
 
 import cbit.util.NumberUtils;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
@@ -68,6 +69,7 @@ public class BiomodelsDB_SBMLSolverTest {
 					}
 					String bioModelsPrefix = "http://www.ebi.ac.uk/compneur-srv/biomodels-main/publ-model.do?mid=";
 					String sbmlLink = "[["+bioModelsPrefix+biomodelsAccessionNumber+"]["+biomodelsAccessionNumber+"]]";
+//					String sbmlLink = "[" + biomodelsAccessionNumber + "]";
 					PrintStream saved_sysout = System.out;
 					PrintStream saved_syserr = System.err;
 					PrintStream new_sysout = null;
@@ -180,15 +182,16 @@ public class BiomodelsDB_SBMLSolverTest {
 							//
 							if (copasiResults!=null && vcellResults_RT!=null){
 								try {
-									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, vcellResults_RT, varsToTest, 1e-5, 1e-5);
+									SimulationComparisonSummary summary = MathTestingUtilities.compareResultSets(copasiResults, vcellResults_RT, varsToTest, TestCaseNew.REGRESSION, 1e-5, 1e-5);
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
 										cv_passedString = "%Y%";
 										relErrorVCCopasiString = NumberUtils.formatNumber(maxRelError,3);
 									}else{
 										relErrorVCCopasiString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
-										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
-										for (VariableComparisonSummary vcSummary : vcSummaries){
+//										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
+										VariableComparisonSummary[] failedVCSummaries = summary.getFailingVariableComparisonSummaries(1e-5, 1e-5);
+										for (VariableComparisonSummary vcSummary : failedVCSummaries){
 											System.out.println(vcSummary.toShortString());
 										}
 									}
@@ -237,8 +240,9 @@ public class BiomodelsDB_SBMLSolverTest {
 										mv_passedString = "%Y%";
 									}else{
 										relErrorVCMathSBMLString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
-										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
-										for (VariableComparisonSummary vcSummary : vcSummaries){
+//										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
+										VariableComparisonSummary[] failedVCSummaries = summary.getFailingVariableComparisonSummaries(1e-5, 1e-5);
+										for (VariableComparisonSummary vcSummary : failedVCSummaries){
 											System.out.println(vcSummary.toShortString());
 										}
 									}
@@ -281,6 +285,7 @@ public class BiomodelsDB_SBMLSolverTest {
 						}
 //						printWriter.println(" | "+sbmlLink+" | "+sbmlModelName+" | "+passedString+" | ("+relErrorVCCopasiString+") | "+combinedErrorBuffer.toString()+" | |");
 						printWriter.println(" | "+sbmlLink+" | "+sbmlModelName+" | "+cv_passedString+" "+mv_passedString+" "+cm_passedString+" | ("+relErrorVCCopasiString+")("+relErrorVCMathSBMLString+")("+relErrorCopasiMathSBMLString+") | "+combinedErrorBuffer.toString()+" |");
+//						printWriter.println(" | "+sbmlLink+" | "+sbmlModelName+" | "+cv_passedString+" | ("+relErrorVCCopasiString+")("+relErrorVCMathSBMLString+")("+relErrorCopasiMathSBMLString+") | "+combinedErrorBuffer.toString()+" |");
 						printWriter.flush();
 					}finally{
 						if (new_sysout!=null){

@@ -2,6 +2,7 @@ package org.vcell.sbml.vcell;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Hashtable;
 
 import org.vcell.sbml.SBMLSolver;
@@ -10,13 +11,15 @@ import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SolverException;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
+import org.vcell.sbml.test.SbmlConverter;
 
+import cbit.util.Executable;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.math.Variable;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.ode.CVodeFileWriter;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XmlHelper;
 
@@ -66,13 +69,16 @@ public class VCellSBMLSolver implements SBMLSolver {
 			BioModel bioModel = sbmlImporter.getBioModel();
 			Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 			double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();
-	
+
+		    String vcml_1 = XmlHelper.bioModelToXML(bioModel);
+		    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath());
+
 		    if (bRoundTrip){
 			    // Round trip the bioModel (bioModel->sbml->bioModel).
 		    	
 		    	// save imported "bioModel" as VCML
-			    String vcml_1 = XmlHelper.bioModelToXML(bioModel);
-			    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath());
+//			    String vcml_1 = XmlHelper.bioModelToXML(bioModel);
+//			    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath());
 			    
 			    // export bioModel as sbml and save
 			    // String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
@@ -116,86 +122,35 @@ public class VCellSBMLSolver implements SBMLSolver {
 		    cbit.vcell.solver.TimeStep timeStep = new cbit.vcell.solver.TimeStep();
 		    sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(timeStep.getMinimumTimeStep(),timeStep.getDefaultTimeStep(),endTime/10000));
 		    sim.getSolverTaskDescription().setOutputTimeSpec(new cbit.vcell.solver.UniformOutputTimeSpec((endTime-0)/testSpec.getNumTimeSteps()));
-		    sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-9, 1e-9));
-	//		    sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
+		    sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
+		    // sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
 	
-		    //        
-			// solve simulation - USING NativeIDASolver ....
-			//
-			cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(sim);
-			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
-			stringWriter.close();
-			StringBuffer buffer = stringWriter.getBuffer();
-			String idaInputString = buffer.toString();
+			// Generate .idaInput string
+/*			IDAFileWriter idaFileWriter = new IDAFileWriter(sim);
+			File idaInputFile = new File(filePathName.replace(".vcml", ".idaInput"));
+			PrintWriter idaPW = new java.io.PrintWriter(idaInputFile);
+			idaFileWriter.writeInputFile(idaPW);
+			idaPW.close();
+
+			// use the idastandalone solver
+			File idaOutputFile = new File(filePathName.replace(".vcml", ".ida"));
+			Executable executable = new Executable("IDAStandalone " + idaInputFile + " " + idaOutputFile);
+			executable.start();
+*/
+			// Generate .cvodeInput string
+		    CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(sim);
+			File cvodeFile = new File(outDir,filePrefix+SimDataConstants.CVODEINPUT_DATA_EXTENSION);
+			PrintWriter cvodePW = new java.io.PrintWriter(cvodeFile);
+			cvodeFileWriter.writeInputFile(cvodePW);
+			cvodePW.close();
+
+			// use the cvodeStandalone solver
+			File cvodeOutputFile = new File(outDir,filePrefix+SimDataConstants.IDA_DATA_EXTENSION);
+			Executable executable = new Executable(new String[]{"SundialsSolverStandalone_NoMessaging", cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
+			executable.start();
 	
-			final cbit.vcell.solvers.NativeIDASolver nativeIDASolver = new cbit.vcell.solvers.NativeIDASolver();
-			System.out.println(idaInputString);
-			cbit.vcell.util.RowColumnResultSet rcResultSet = null;
-			try {
-				rcResultSet = nativeIDASolver.solve(idaInputString);
-			}catch (Exception e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("NativeIDASolver: "+e.getMessage());
-			}
-		    
-		    
-/*			// solve simulation - USING NativeCVOdeSolver ....
-			cbit.vcell.solver.ode.CVodeFileWriter cvodeFileWriter = new cbit.vcell.solver.ode.CVodeFileWriter(sim);
-			cvodeFileWriter.initialize();
-			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			cvodeFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
-			stringWriter.close();
-			StringBuffer buffer = stringWriter.getBuffer();
-			String cvodeInputString = buffer.toString();
-	
-			final cbit.vcell.solvers.NativeCVODESolver nativeCVOdeSolver = new cbit.vcell.solvers.NativeCVODESolver();
-			// System.out.println(idaInputString);
-			cbit.vcell.util.RowColumnResultSet rcResultSet = null;
-			try {
-				rcResultSet = nativeCVOdeSolver.solve(cvodeInputString);
-			}catch (Exception e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("NativeCVOdeSolver: "+e.getMessage());
-			}
-*/	
-			//
-			// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
-			//
-			
-			cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
-			for (int i = 0; i < rcResultSet.getDataColumnCount(); i++){
-				odeSolverResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
-			}
-			for (int i = 0; i < rcResultSet.getRowCount(); i++){
-				odeSolverResultSet.addRow(rcResultSet.getRow(i));
-			}
-			//
-			// add appropriate Function columns to result set
-			//
-			cbit.vcell.math.Function functions[] = sim.getFunctions();
-			for (int i = 0; i < functions.length; i++){
-				if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
-					Expression exp1 = new Expression(functions[i].getExpression());
-					try {
-						exp1 = sim.substituteFunctions(exp1);
-					} catch (cbit.vcell.math.MathException e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-					} catch (cbit.vcell.parser.ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-					}
-					
-					try {
-						FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
-						odeSolverResultSet.addFunctionColumn(cd);
-					}catch (cbit.vcell.parser.ExpressionException e){
-						e.printStackTrace(System.out);
-					}
-				}
-			}
-	
+		// get the result 
+			ODESolverResultSet odeSolverResultSet = SbmlConverter.getODESolverResultSet(sim, cvodeOutputFile.getPath());	
 			//
 		    // print header
 		    //
