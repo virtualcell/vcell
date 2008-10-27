@@ -51,9 +51,15 @@ protected void initialize() throws SolverException {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
 			
 		File fvinputFile = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".fvinput");
-		PrintWriter pw = new PrintWriter(new FileWriter(fvinputFile));
-		new FiniteVolumeFileWriter(getSimulationJob(), getResampledGeometry(), getSaveDirectory(), pw, bMessaging, bCheckSteadyState).write();
-		pw.close();
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(new FileWriter(fvinputFile));
+			new FiniteVolumeFileWriter(pw, getSimulationJob(), getResampledGeometry(), getSaveDirectory(), bMessaging, bCheckSteadyState).write();
+		} finally {
+			if (pw != null) {
+				pw.close();
+			}
+		}
 	
 		String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
 		setMathExecutable(new MathExecutable(new String[] {executableName, fvinputFile.getAbsolutePath()}));

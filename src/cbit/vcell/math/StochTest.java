@@ -1,5 +1,4 @@
 package cbit.vcell.math;
-import cbit.util.Executable;
 import cbit.vcell.solver.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.stoch.*;
@@ -159,14 +158,15 @@ public static void main(String[] args)
 	try{
 		st.getSimulationModel();
 	}catch (Exception e) {}
-	cbit.vcell.solver.stoch.StochFileWriter sfw = new StochFileWriter(simInstance);
+	
 	try
 	{
 		FileWriter fw = new FileWriter("C:/gibson_deploy/gibson_deploy/testInput.txt",false);
 		PrintWriter pw = new PrintWriter(fw);
+		StochFileWriter sfw = new StochFileWriter(pw, simInstance, 0, false);
 		try
 		{
-			sfw.writeStochInputFile(pw);
+			sfw.write();
 		}catch (java.lang.Exception e){}
 		pw.close();
 	}catch (IOException e){e.printStackTrace();}

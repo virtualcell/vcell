@@ -1,24 +1,11 @@
 package cbit.vcell.solver.ode;
-import cbit.util.BeanUtils;
 import cbit.vcell.math.*;
 import cbit.vcell.solvers.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.DataSetIdentifier;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Function;
 import java.util.*;
 import java.io.*;
-import java.net.SocketException;
-
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
@@ -64,9 +51,9 @@ public void cleanup() {
 */
 
 private StateVariable[] createStateVariables() throws cbit.vcell.math.MathException, cbit.vcell.parser.ExpressionException {
-	Vector stateVariables = new Vector();
+	Vector<StateVariable> stateVariables = new Vector<StateVariable>();
 	// get Ode's from MathDescription and create ODEStateVariables
-	Enumeration enum1 = ((SubDomain)getSimulation().getMathDescription().getSubDomains().nextElement()).getEquations();
+	Enumeration<Equation> enum1 = ((SubDomain)getSimulation().getMathDescription().getSubDomains().nextElement()).getEquations();
 	while (enum1.hasMoreElements()) {
 		Equation equation = (Equation) enum1.nextElement();
 		if (equation instanceof OdeEquation) {
@@ -78,7 +65,7 @@ private StateVariable[] createStateVariables() throws cbit.vcell.math.MathExcept
 
 	//  Get sensitivity variables
 	Variable variables[] = getSimulation().getVariables(); 
-	Vector sensVariables = new Vector();
+	Vector<SensVariable> sensVariables = new Vector<SensVariable>();
 	if (getSensitivityParameter() != null) {
 		for (int i = 0; i < variables.length; i++){
 			if (variables[i] instanceof VolVariable){

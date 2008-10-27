@@ -1,5 +1,7 @@
 package cbit.vcell.solver.ode;
 
+import java.io.PrintWriter;
+
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverException;
@@ -32,15 +34,19 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "CVODE solver generating input file..."));
 	fireSolverStarting("CVODE solver generating input file...");
 
+	PrintWriter pw = null;
 	try {
-		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(getSimulation(), getJobIndex(), true);
-		java.io.FileOutputStream fileOutputStream = new java.io.FileOutputStream(inputFilename);
-		cvodeFileWriter.writeInputFile(new java.io.PrintWriter(fileOutputStream));
-		fileOutputStream.close();
+		pw = new java.io.PrintWriter(inputFilename);
+		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, getSimulation(), getJobIndex(), true);
+		cvodeFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "CVODE solver could not generate input file: " + e.getMessage()));
 		e.printStackTrace(System.out);
 		throw new SolverException("CVODE solver could not generate input file: " + e.getMessage());
+	} finally {
+		if (pw != null) {
+			pw.close();
+		}
 	}
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"CVODE solver starting"));	

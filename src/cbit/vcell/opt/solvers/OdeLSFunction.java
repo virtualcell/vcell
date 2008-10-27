@@ -1,13 +1,13 @@
 package cbit.vcell.opt.solvers;
+import java.io.PrintWriter;
+
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.parser.*;
 import cbit.vcell.opt.ReferenceData;
 import cbit.sql.KeyValue;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.ode.IDASolverStandalone;
-import cbit.vcell.solver.SolverStatus;
 /**
  * Insert the type's description here.
  * Creation date: (9/5/2005 1:32:55 PM)
@@ -19,7 +19,7 @@ public class OdeLSFunction extends cbit.function.DefaultScalarFunction {
 	private String unscaledParameterNames[] = null;
 	private double parameterScalings[] = null;
 	private cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = null;
-	private java.io.File directory = null;
+	//private java.io.File directory = null;
 	private OptSolverCallbacks optSolverCallbacks = null;
 
 /**
@@ -36,14 +36,14 @@ public OdeLSFunction(cbit.vcell.opt.OdeObjectiveFunction argOdeObjectiveFunction
 	this.parameterScalings = argParameterScalings;
 	this.optSolverCallbacks = argOptSolverCallbacks;
 	
-	try {
-		java.io.File newFile = java.io.File.createTempFile("vcell", ".dummy"); 
-		directory = newFile.getParentFile();
-		newFile.delete();
-	} catch (java.io.IOException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Could not create temp directory : " + e.getMessage());
-	}
+//	try {
+//		java.io.File newFile = java.io.File.createTempFile("vcell", ".dummy"); 
+//		directory = newFile.getParentFile();
+//		newFile.delete();
+//	} catch (java.io.IOException e) {
+//		e.printStackTrace(System.out);
+//		throw new RuntimeException("Could not create temp directory : " + e.getMessage());
+//	}
 }
 
 
@@ -89,9 +89,9 @@ private double calculateWeightedError(double[] x) {
 		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
 		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 
-		cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(simulation);
 		java.io.StringWriter stringWriter = new java.io.StringWriter();
-		idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true), unscaledParameterNames);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), simulation);
+		idaFileWriter.write(unscaledParameterNames);
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
 		idaInputString = buffer.toString();
