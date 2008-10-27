@@ -217,7 +217,7 @@ public void onControlTopicMessage(Message message) throws JMSException {
 private void doPBSJob(File userdir) throws XmlParseException, SolverException, JMSException {
 	currentSolver = new PBSSolver(currentTask, userdir,log);
 	currentSolver.addSolverListener(this);
-	((PBSSolver)currentSolver).startSolver();
+	currentSolver.startSolver();
 }
 
 /**

@@ -275,7 +275,7 @@ public static String submitJob(String computeResource, String jobName, String su
 	return jobid;
 }
 
-public static boolean isJobExisting(int status) {
+public static boolean isJobExiting(int status) {
 	return status == PBS_STATUS_EXITING;
 }
 
