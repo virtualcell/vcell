@@ -41,6 +41,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 	String jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB(), PBSConstants.PBS_ARCH_LINUX);
 	if (jobid == null) {
 		fireSolverAborted("Failed. (error message: submitting to job scheduler failed).");
+		return;
 	}
 	fireSolverStarting("submitted to job scheduler, job id is " + jobid);
 
@@ -49,42 +50,56 @@ private void submit2PBS() throws SolverException, ExecutableException {
 	// jobs or "failed" jobs actually running in PBS.
 	// to avoid this, kill the job, ask the user to try again later if the jobs
 	// are not in running status 2 minutes after submission.
-	if (jobid != null) { 
-		long t = System.currentTimeMillis();
-		int status;
-		while (true) {
+	long t = System.currentTimeMillis();
+	int status;
+	while (true) {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+		}
+		
+		status = PBSUtils.getJobStatus(jobid);
+		if (PBSUtils.isJobExiting(status)){
+			// pbs command tracejob takes more than 1 minute to get exit status after the job exists. 
+			// we don't want to spend so much time on a job, especially when the job is very short. 
+			// However, if dispatcher restarted the simulation, which means the first run failed, 
+			// we have to find out why.
+			if ((simulationTask.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) != 0) {
+				try {
+					Thread.sleep(MessageConstants.MINUTE); // have to sleep at least one minute to get tracejob exist status;
+				} catch (InterruptedException ex) {
+				}
+				if (!PBSUtils.isJobExecOK(jobid)) {
+					throw new SolverException("Job [" + jobid + "] exited unexpectedly: [" + PBSUtils.getJobExecStatus(jobid));			
+				}
+			}
+			break;
+		} else if (PBSUtils.isJobRunning(status)) {
+			//check to see if it exits soon after it runs
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException ex) {
 			}
-			
 			status = PBSUtils.getJobStatus(jobid);
-			if (PBSUtils.isJobExisting(status)){
-				if (!PBSUtils.isJobExecOK(jobid)) {
-					throw new SolverException("Job [" + jobid + "] exited unexpectedly: [" + PBSUtils.getJobExecStatus(jobid));			
-				}
-				break;
-			} else if (PBSUtils.isJobRunning(status)) {
-				//check to see if it exits soon after it runs
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException ex) {
-				}
-				status = PBSUtils.getJobStatus(jobid);
-				if (PBSUtils.isJobExisting(status)) {
+			if (PBSUtils.isJobExiting(status)) {
+				if ((simulationTask.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) != 0) {
+					try {
+						Thread.sleep(MessageConstants.MINUTE); // have to sleep at least one minute to get tracejob exist status;
+					} catch (InterruptedException ex) {
+					}
 					if (!PBSUtils.isJobExecOK(jobid)) {
 						throw new SolverException("Job [" + jobid + "] exited unexpectedly: " + PBSUtils.getJobExecStatus(jobid));			
-					}				
+					}
 				}
-				break;
-			} else if (System.currentTimeMillis() - t > 4 * MessageConstants.MINUTE) {
-				String pendingReason = PBSUtils.getPendingReason(jobid);
-				PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
-				throw new SolverException("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
 			}
+			break;
+		} else if (System.currentTimeMillis() - t > 4 * MessageConstants.MINUTE) {
+			String pendingReason = PBSUtils.getPendingReason(jobid);
+			PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
+			throw new SolverException("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
 		}
-		System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status" + PBSUtils.getJobStatusDescription(status));
 	}
+	System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status" + PBSUtils.getJobStatusDescription(status));
 }
 
 @Override

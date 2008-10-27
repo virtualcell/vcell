@@ -145,22 +145,14 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 				int status;
 				while (true) {
 					try {
-						Thread.sleep(500);
+						Thread.sleep(1000);
 					} catch (InterruptedException ex) {
 					}
 					
 					status = PBSUtils.getJobStatus(jobid);
-					if (PBSUtils.isJobExisting(status)){						
-						if (!PBSUtils.isJobExecOK(jobid)) {
-							newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
-									"Job [" + jobid + "] exited unexpectedly: " + PBSUtils.getJobExecStatus(jobid),
-									jobid);
-						} else {
-							// should never happen
-							newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
-									"unexpected exit immediately after submit",
-									jobid);	
-						}
+					if (PBSUtils.isJobExiting(status)){
+						// should never happen
+						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "exit immediately after submit", jobid);	
 						break;
 					} else if (PBSUtils.isJobRunning(status)) {						
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
