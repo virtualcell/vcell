@@ -1,5 +1,7 @@
 package org.vcell.sbml.test;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Vector;
 
 import cbit.sql.KeyValue;
@@ -100,9 +102,9 @@ private static ODESolverResultSet solveSimulation(Simulation sim) {
 	// NativeIDA solver
 	RowColumnResultSet rcResultSet = null;
 	try {
-		IDAFileWriter idaFileWriter = new IDAFileWriter(sim);
-		java.io.StringWriter stringWriter = new java.io.StringWriter();
-		idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
+		StringWriter stringWriter = new StringWriter();
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), sim);
+		idaFileWriter.write();
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
 		String idaInputString = buffer.toString();

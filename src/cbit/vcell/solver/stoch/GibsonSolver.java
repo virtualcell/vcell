@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.File;
+import java.io.PrintWriter;
 import cbit.vcell.solver.*;
-import cbit.vcell.server.*;
 
 /**
  * Gibson solver 
@@ -180,28 +180,18 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	sessionLog.print("StochSolver.initialize()");
 	fireSolverStarting("StochSolver initializing...");
 	//
-	String inputFilename = getBaseName() + ".stochInput";
-	String ExeFilename = getBaseName() + System.getProperty(cbit.vcell.server.PropertyLoader.exesuffixProperty);
+	String inputFilename = getBaseName() + ".stochInput";	
 	//
 	sessionLog.print("StochSolver.initialize() baseName = " + getBaseName());
 	//
-	cbit.vcell.solver.stoch.StochFileWriter stFileWriter = new cbit.vcell.solver.stoch.StochFileWriter(getSimulation());
-	try {
-		stFileWriter.initialize();
-	} catch (Exception e) {
-		setSolverStatus(new cbit.vcell.solver.SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not initialize StochFileWriter..."));
-		e.printStackTrace(System.out);
-		throw new SolverException("autocode init exception: " + e.getMessage());
-	}
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
 	fireSolverStarting("generating input file...");
 	//
-	java.io.FileWriter fw = null;
-	java.io.PrintWriter pw = null;
+	PrintWriter pw = null;
 	try {
-		fw = new java.io.FileWriter(inputFilename);
-		pw = new java.io.PrintWriter(fw);
-		stFileWriter.writeStochInputFile(pw);
+		pw = new PrintWriter(inputFilename);
+		StochFileWriter stFileWriter = new StochFileWriter(pw, getSimulation(), getJobIndex(), true);
+		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not generate input file: " + e.getMessage()));
 		e.printStackTrace(System.out);

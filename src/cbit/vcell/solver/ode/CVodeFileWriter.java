@@ -4,6 +4,8 @@ package cbit.vcell.solver.ode;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
+import java.io.PrintWriter;
 import java.util.*;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
@@ -17,12 +19,12 @@ public class CVodeFileWriter extends OdeFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public CVodeFileWriter(Simulation simulation) {
-	this(simulation, 0, false);
+public CVodeFileWriter(PrintWriter pw, Simulation simulation) {
+	this(pw, simulation, 0, false);
 }
 
-public CVodeFileWriter(Simulation simulation, int ji, boolean bUseMessaging) {
-	super(simulation, ji, bUseMessaging);
+public CVodeFileWriter(PrintWriter pw, Simulation simulation, int ji, boolean bUseMessaging) {
+	super(pw, simulation, ji, bUseMessaging);
 }
 
 
@@ -30,7 +32,7 @@ public CVodeFileWriter(Simulation simulation, int ji, boolean bUseMessaging) {
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-protected void writeEquations(java.io.PrintWriter pw) throws MathException, ExpressionException {		
+protected void writeEquations() throws MathException, ExpressionException {		
 	VariableSymbolTable varsSymbolTable = createSymbolTable();
 	
 	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();	
@@ -71,12 +73,12 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 	}
 	
 	if (discontinuityNameMap.size() > 0) {
-		pw.println("DISCONTINUITIES " + discontinuityNameMap.size());
+		printWriter.println("DISCONTINUITIES " + discontinuityNameMap.size());
 		for (Discontinuity od : discontinuityNameMap.keySet()) {
-			pw.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
+			printWriter.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
 		}
 	}
-	pw.print(sb);
+	printWriter.print(sb);
 }
 
 

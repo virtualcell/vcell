@@ -266,11 +266,11 @@ public static String getXMLString(String fileName) throws IOException {
 private static void solveSimulation(Simulation sim, String filePathName, Hashtable argSpUnitsHash, double argTimeFactor, SimSpec argSimSpec) {
 	ODESolverResultSet odeSolverResultSet = null;
 	try {
-		// Generate .idaInput string
-		IDAFileWriter idaFileWriter = new IDAFileWriter(sim);
+		// Generate .idaInput string		
 		File idaInputFile = new File(filePathName.replace(".vcml", ".idaInput"));
 		PrintWriter idaPW = new java.io.PrintWriter(idaInputFile);
-		idaFileWriter.writeInputFile(idaPW);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(idaPW, sim);
+		idaFileWriter.write();
 		idaPW.close();
 
 		// use the idastandalone solver

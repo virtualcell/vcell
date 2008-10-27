@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -19,6 +20,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
@@ -131,9 +133,9 @@ public class VCML_SBMLSolverTest {
 	    //        
 		// solve simulation - USING NativeIDASolver ....
 		//
-		cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(sim);
-		java.io.StringWriter stringWriter = new java.io.StringWriter();
-		idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
+		StringWriter stringWriter = new StringWriter();
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), sim);
+		idaFileWriter.write();
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
 		String idaInputString = buffer.toString();

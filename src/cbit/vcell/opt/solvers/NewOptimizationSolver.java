@@ -2,6 +2,9 @@ package cbit.vcell.opt.solvers;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.jdom.CDATA;
 import org.jdom.Element;
 import org.vcell.optimization.OptXmlReader;
@@ -39,8 +42,11 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.NativeCVODESolver;
@@ -406,11 +412,11 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 		// has fast systems, must use IDA
 		//
 		try {
-			simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
+			simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, refDataEndTime));
 			simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
-			cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(simulation);
-			java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
-			idaFileWriter.writeInputFile(new java.io.PrintWriter(simulationInputStringWriter,true), parameterNames);
+			StringWriter simulationInputStringWriter = new StringWriter();
+			IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(simulationInputStringWriter,true), simulation);
+			idaFileWriter.write(parameterNames);
 			simulationInputStringWriter.close();
 			modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_IDA);
 			CDATA simulationInputText = new CDATA(simulationInputStringWriter.getBuffer().toString());
@@ -424,11 +430,11 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 		// no fast systems, use CVODE
 		//
 		try {
-			simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
-			simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
-			cbit.vcell.solver.ode.CVodeFileWriter cvodeFileWriter = new cbit.vcell.solver.ode.CVodeFileWriter(simulation);
-			java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
-			cvodeFileWriter.writeInputFile(new java.io.PrintWriter(simulationInputStringWriter,true), parameterNames);
+			simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, refDataEndTime));
+			simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.CVODE);
+			StringWriter simulationInputStringWriter = new StringWriter();
+			CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(new PrintWriter(simulationInputStringWriter,true), simulation);
+			cvodeFileWriter.write(parameterNames);
 			simulationInputStringWriter.close();
 			modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_CVODE);
 			CDATA simulationInputText = new CDATA(simulationInputStringWriter.getBuffer().toString());
@@ -487,9 +493,9 @@ public static Element getModelXML(PdeObjectiveFunction pdeObjectiveFunction, Str
 		}	
 		SimulationJob simJob = new SimulationJob(simulation, pdeObjectiveFunction.getFieldDataIDSs(), 0);
 		
-		java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
-		FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(simJob, resampledGeometry, pdeObjectiveFunction.getWorkingDirectory(), parameterNames, new java.io.PrintWriter(simulationInputStringWriter,true));		
-		fvFileWriter.write();
+		StringWriter simulationInputStringWriter = new StringWriter();
+		FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new PrintWriter(simulationInputStringWriter,true), simJob, resampledGeometry, pdeObjectiveFunction.getWorkingDirectory());		
+		fvFileWriter.write(parameterNames);
 		simulationInputStringWriter.close();
 		modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_FVSOLVER);
 		CDATA simulationInputText = new CDATA(simulationInputStringWriter.getBuffer().toString());

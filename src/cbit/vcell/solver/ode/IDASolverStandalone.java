@@ -1,5 +1,7 @@
 package cbit.vcell.solver.ode;
 
+import java.io.PrintWriter;
+
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverException;
@@ -32,15 +34,19 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
 	fireSolverStarting("IDA solver generating input file...");
 
+	PrintWriter pw = null;
 	try {
-		IDAFileWriter idaFileWriter = new IDAFileWriter(getSimulation(), getJobIndex(), true);
-		java.io.FileOutputStream fileOutputStream = new java.io.FileOutputStream(inputFilename);
-		idaFileWriter.writeInputFile(new java.io.PrintWriter(fileOutputStream));
-		fileOutputStream.close();
+		pw = new PrintWriter(inputFilename);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, getSimulation(), getJobIndex(), true);
+		idaFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not generate input file: " + e.getMessage()));
 		e.printStackTrace(System.out);
 		throw new SolverException("IDA solver could not generate input file: " + e.getMessage());
+	} finally {
+		if (pw != null) {
+			pw.close();
+		}
 	}
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"IDA solver starting"));	

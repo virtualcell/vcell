@@ -138,10 +138,10 @@ public class VCellSBMLSolver implements SBMLSolver {
 			executable.start();
 */
 			// Generate .cvodeInput string
-		    CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(sim);
 			File cvodeFile = new File(outDir,filePrefix+SimDataConstants.CVODEINPUT_DATA_EXTENSION);
 			PrintWriter cvodePW = new java.io.PrintWriter(cvodeFile);
-			cvodeFileWriter.writeInputFile(cvodePW);
+		    CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(cvodePW, sim);
+			cvodeFileWriter.write();
 			cvodePW.close();
 
 			// use the cvodeStandalone solver

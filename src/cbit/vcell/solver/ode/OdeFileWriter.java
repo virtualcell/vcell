@@ -7,27 +7,21 @@ import cbit.vcell.parser.*;
 import java.util.*;
 import java.io.*;
 import cbit.vcell.math.*;
-import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
  * @author: John Wagner
  */
-public abstract class OdeFileWriter {
+public abstract class OdeFileWriter extends SolverFileWriter {
 	private Vector<StateVariable> fieldStateVariables = new Vector<StateVariable>();
 	protected String ROOT_VARIABLE_PREFIX = "__D_B_";
-	protected boolean bUseMessaging = true;
-	private Simulation simulation = null;
-	private int jobIndex = 0;
 
 /**
  * OdeFileCoder constructor comment.
  */
-public OdeFileWriter(Simulation sim, int ji, boolean messaging) {
-	simulation = sim;
-	jobIndex = ji;
-	bUseMessaging = messaging;
+public OdeFileWriter(PrintWriter pw, Simulation sim, int ji, boolean messaging) {
+	super(pw, sim, ji, messaging);
 }
 
 
@@ -177,72 +171,48 @@ private void initialize() throws Exception {
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-protected abstract void writeEquations(java.io.PrintWriter pw) throws MathException, ExpressionException;
+protected abstract void writeEquations() throws MathException, ExpressionException;
 
 /**
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-public void writeInputFile(PrintWriter pw) throws Exception {
-	writeInputFile(pw, null);
-}
-
-
-private void writeJMSParamters(PrintWriter pw) {
-	pw.println("# JMS_Paramters");
-	pw.println("JMS_PARAM_BEGIN");
-	pw.println("JMS_BROKER " + JmsUtils.getJmsUrl());
-    pw.println("JMS_USER " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword());
-    pw.println("JMS_QUEUE " + JmsUtils.getQueueWorkerEvent());  
-	pw.println("JMS_TOPIC " + JmsUtils.getTopicServiceControl());
-	pw.println("VCELL_USER " + simulation.getVersion().getOwner().getName());
-	pw.println("SIMULATION_KEY " + simulation.getVersion().getVersionKey());
-	pw.println("JOB_INDEX " + jobIndex);
-	pw.println("JMS_PARAM_END");
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (3/8/00 10:31:52 PM)
- */
-public void writeInputFile(PrintWriter pw, String[] parameterNames) throws Exception {
+public void write(String[] parameterNames) throws Exception {
 	initialize();
 	
 	if (getSimulation().getSolverTaskDescription().getUseSymbolicJacobian()){
 		throw new RuntimeException("symbolic jacobian option not yet supported in interpreted Stiff solver");
 	}
 	
-	if (bUseMessaging) {
-		writeJMSParamters(pw);
-		pw.println();
-	}
+	writeJMSParamters();
+	
 	SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
 	TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 	ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
-	pw.println("SOLVER " + getSolverName());
-	pw.println("STARTING_TIME " + timeBounds.getStartingTime());
-	pw.println("ENDING_TIME " + timeBounds.getEndingTime());
-	pw.println("RELATIVE_TOLERANCE " + errorTolerance.getRelativeErrorTolerance());
-	pw.println("ABSOLUTE_TOLERANCE " + errorTolerance.getAbsoluteErrorTolerance());
-  	pw.println("MAX_TIME_STEP "+getSimulation().getSolverTaskDescription().getTimeStep().getMaximumTimeStep());
+	printWriter.println("SOLVER " + getSolverName());
+	printWriter.println("STARTING_TIME " + timeBounds.getStartingTime());
+	printWriter.println("ENDING_TIME " + timeBounds.getEndingTime());
+	printWriter.println("RELATIVE_TOLERANCE " + errorTolerance.getRelativeErrorTolerance());
+	printWriter.println("ABSOLUTE_TOLERANCE " + errorTolerance.getAbsoluteErrorTolerance());
+  	printWriter.println("MAX_TIME_STEP "+getSimulation().getSolverTaskDescription().getTimeStep().getMaximumTimeStep());
   	OutputTimeSpec ots = getSimulation().getSolverTaskDescription().getOutputTimeSpec();
   	if (ots.isDefault()) {
-		pw.println("KEEP_EVERY "+((DefaultOutputTimeSpec)ots).getKeepEvery());
+		printWriter.println("KEEP_EVERY "+((DefaultOutputTimeSpec)ots).getKeepEvery());
   	} else if (ots.isUniform()) {
-	  	pw.println("OUTPUT_TIME_STEP "+((UniformOutputTimeSpec)ots).getOutputTimeStep());
+	  	printWriter.println("OUTPUT_TIME_STEP "+((UniformOutputTimeSpec)ots).getOutputTimeStep());
   	} else if (ots.isExplicit()) {
-	  	pw.println("OUTPUT_TIMES " + ((ExplicitOutputTimeSpec)ots).getNumTimePoints());
-	  	pw.println(((ExplicitOutputTimeSpec)ots).toSpaceSeperatedMultiLinesOfString());
+	  	printWriter.println("OUTPUT_TIMES " + ((ExplicitOutputTimeSpec)ots).getNumTimePoints());
+	  	printWriter.println(((ExplicitOutputTimeSpec)ots).toSpaceSeperatedMultiLinesOfString());
   	}
   	if (parameterNames != null && parameterNames.length != 0) {
-	  	pw.println("NUM_PARAMETERS " + parameterNames.length);
+	  	printWriter.println("NUM_PARAMETERS " + parameterNames.length);
 	  	for (int i = 0; i < parameterNames.length; i ++) {
-		  	pw.println(parameterNames[i]);
+		  	printWriter.println(parameterNames[i]);
 	  	}
   	}
-	writeEquations(pw);
+	writeEquations();
 	
-	pw.flush();
+	printWriter.flush();
 }
 
 abstract String getSolverName();
