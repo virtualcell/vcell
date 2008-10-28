@@ -29,6 +29,7 @@ import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.NumberUtils;
 import cbit.vcell.microscopy.FRAPOptData;
+import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.Parameter;
 
@@ -97,11 +98,14 @@ public class FRAPInterpolationPanel extends JPanel {
 					mobileFractionTextField.setText(value+"");
 					mobileFractionSetButton.setEnabled(false);
 				}else if(e.getSource() == bleachWhileMonitorSlider){
-					double value =
-						FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+
-						(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()-FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())*
-						((double)bleachWhileMonitorSlider.getValue()/(double)bleachWhileMonitorSlider.getMaximum());
-					bleachWhileMonitorRateTextField.setText(NumberUtils.formatNumber(value));
+					double value = FRAPOptData.REF_BWM_LOG_VAL_MIN + (FRAPOptData.REF_BWM_LOG_VAL_MAX - FRAPOptData.REF_BWM_LOG_VAL_MIN)* 
+					               ((double)bleachWhileMonitorSlider.getValue()/(double)bleachWhileMonitorSlider.getMaximum());
+					double realVal = Math.pow(10,value);
+					if(realVal > (Math.pow(10, FRAPOptData.REF_BWM_LOG_VAL_MIN)-FRAPOptimization.epsilon) && realVal <(Math.pow(10, FRAPOptData.REF_BWM_LOG_VAL_MIN)+FRAPOptimization.epsilon))
+					{
+						realVal = 0;
+					}
+					bleachWhileMonitorRateTextField.setText(NumberUtils.formatNumber(realVal));
 					bleachWhileMonitorSetButton.setEnabled(false);
 				}
 				else if(e.getSource() == secondDiffSlider)
@@ -204,21 +208,30 @@ public class FRAPInterpolationPanel extends JPanel {
 						mobileFractionSetButton.setEnabled(false);
 //					}else if(e.getSource() == bleachWhileMonitorSetButton){
 						/*double*/ value = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
-						if(value < FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()){
+						
+						if(value < Math.pow(10, FRAPOptData.REF_BWM_LOG_VAL_MIN)){
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
 						}
 						if(value > FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()){
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound();
 						}
 						bleachWhileMonitorRateTextField.setText(value+"");
-						/*int*/ sliderValue = (int)
-							(((value-FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())*(double)bleachWhileMonitorSlider.getMaximum())/
-							(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()-FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()));
-						if(sliderValue < bleachWhileMonitorSlider.getMinimum()){
-							sliderValue = bleachWhileMonitorSlider.getMinimum();
+						if(value == FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())
+						{
+							sliderValue = 0;
 						}
-						if(sliderValue > bleachWhileMonitorSlider.getMaximum()){
-							sliderValue = bleachWhileMonitorSlider.getMaximum();
+						else
+						{
+							double tempVal = Math.log10(value);
+							sliderValue = (int)
+								(((tempVal-FRAPOptData.REF_BWM_LOG_VAL_MIN)*(double)bleachWhileMonitorSlider.getMaximum())/
+								(FRAPOptData.REF_BWM_LOG_VAL_MAX-FRAPOptData.REF_BWM_LOG_VAL_MIN));
+							if(sliderValue < bleachWhileMonitorSlider.getMinimum()){
+								sliderValue = bleachWhileMonitorSlider.getMinimum();
+							}
+							if(sliderValue > bleachWhileMonitorSlider.getMaximum()){
+								sliderValue = bleachWhileMonitorSlider.getMaximum();
+							}
 						}
 						bleachWhileMonitorSlider.setValue(sliderValue);
 						bleachWhileMonitorSetButton.setEnabled(false);
@@ -701,8 +714,8 @@ public class FRAPInterpolationPanel extends JPanel {
 			bleachWhileMonitorSlider.setMinimum(0);
 			bleachWhileMonitorSlider.setMaximum(100);
 			bleachWhileMonitorSlider.setValue(0);
-			bleachWhileMonitorSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+""));
-			bleachWhileMonitorSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()+""));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(0), new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+""));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(100),new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()+""));
 			bleachWhileMonitorSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
 			bleachWhileMonitorSlider.setLabelTable(bleachWhileMonitorSliderLabelTable);
 		}finally{

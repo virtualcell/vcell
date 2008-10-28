@@ -15,7 +15,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 public class FRAPOptimization {
 	
 	static double FTOL = 1.0e-6;
-	static double epsilon = 1e-8;
+	public static double epsilon = 1e-8;
 	static double penalty = 1E4;
 		
 	//This function generates average intensity under different ROIs according to each time points for EXPERIMENTAL data.
