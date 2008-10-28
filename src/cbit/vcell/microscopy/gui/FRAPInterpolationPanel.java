@@ -209,7 +209,7 @@ public class FRAPInterpolationPanel extends JPanel {
 //					}else if(e.getSource() == bleachWhileMonitorSetButton){
 						/*double*/ value = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
 						
-						if(value < Math.pow(10, FRAPOptData.REF_BWM_LOG_VAL_MIN)){
+						if(value <= (Math.pow(10, FRAPOptData.REF_BWM_LOG_VAL_MIN)+FRAPOptimization.epsilon)){
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
 						}
 						if(value > FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()){
