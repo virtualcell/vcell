@@ -42,8 +42,6 @@ public class PropertyLoader {
 	public static final String sundialsSolverExecutableProperty		= "vcell.sundialsSolver.executable";
 	
 	//Stoch properties
-	public static final String stochLibraryProperty			= "vcell.stoch.library";
-	public static final String stochIncludeProperty			= "vcell.stoch.include";
 	public static final String stochExecutableProperty		= "vcell.stoch.executable";	
 	public static final String hybridEMExecutableProperty	= "vcell.hybridEM.executable";
 	public static final String hybridMilExecutableProperty	= "vcell.hybridMil.executable";
@@ -178,8 +176,6 @@ public class PropertyLoader {
 		
 		sundialsSolverExecutableProperty,
 		
-		stochLibraryProperty,
-		stochIncludeProperty,
 		stochExecutableProperty,
 		hybridEMExecutableProperty,
 		hybridMilExecutableProperty,

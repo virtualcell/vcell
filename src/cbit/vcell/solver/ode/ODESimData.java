@@ -420,23 +420,25 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 	
 	// read functions file
 	
-	Vector<AnnotatedFunction> funcList;
-	try {
-		funcList = FunctionFileGenerator.readFunctionsFile(functionsFile);
-		for (AnnotatedFunction func : funcList){
-			try {
-				Expression expression = new Expression(func.getExpression());
-				odeSimData.addFunctionColumn(new FunctionColumnDescription(expression, func.getName(), null, func.getName(), false));
-			} catch (ExpressionException e) {
-				throw new RuntimeException("Could not add function " + func.getName() + " to annotatedFunctionList");
-			}
-		}	
-	} catch (FileNotFoundException e1) {
-		e1.printStackTrace(System.out);
-		throw new DataAccessException(e1.getMessage());
-	} catch (IOException e1) {
-		e1.printStackTrace(System.out);
-		throw new DataAccessException(e1.getMessage());
+	if (!odeSimData.getColumnDescriptions(0).getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) {
+		Vector<AnnotatedFunction> funcList;
+		try {
+			funcList = FunctionFileGenerator.readFunctionsFile(functionsFile);
+			for (AnnotatedFunction func : funcList){
+				try {
+					Expression expression = new Expression(func.getExpression());
+					odeSimData.addFunctionColumn(new FunctionColumnDescription(expression, func.getName(), null, func.getName(), false));
+				} catch (ExpressionException e) {
+					throw new RuntimeException("Could not add function " + func.getName() + " to annotatedFunctionList");
+				}
+			}	
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace(System.out);
+			throw new DataAccessException(e1.getMessage());
+		} catch (IOException e1) {
+			e1.printStackTrace(System.out);
+			throw new DataAccessException(e1.getMessage());
+		}
 	}
 
 	if (keepMost > 0) {
