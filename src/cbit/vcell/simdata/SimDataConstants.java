@@ -13,7 +13,6 @@ public interface SimDataConstants {
 	
 	public static final String ODE_DATA_IDENTIFIER = "ODEData logfile";
 	public static final String IDA_DATA_IDENTIFIER = "IDAData logfile";
-	public static final String STOCH_DATA_IDENTIFIER = "StochData logfile";//stoch
 	public static final String SIMPLE_ODE_DATA_FORMAT_ID = "SimpleODEData binary format version 1";
 	public static final String GENERIC_ODE_DATA_FORMAT_ID = "GenericODEData binary format version 1";
 	public static final String COMPACT_ODE_DATA_FORMAT_ID = "CompactODEData binary format version 1";
@@ -31,6 +30,7 @@ public interface SimDataConstants {
 	public static final String IDA_DATA_EXTENSION = ".ida";
 	public static final String IDAINPUT_DATA_EXTENSION = ".idaInput";
 	public static final String CVODEINPUT_DATA_EXTENSION = ".cvodeInput";
+	public static final String STOCHINPUT_DATA_EXTENSION = ".stochInput";
 	public static final String STOCH_DATA_EXTENSION = ".stochbi"; //stoch
 	public static final String PARTICLE_DATA_EXTENSION = ".particle";
 	public static final String ZIPFILE_EXTENSION = ".zip";
@@ -38,6 +38,8 @@ public interface SimDataConstants {
 	
 	public static final String JAVA_INPUT_EXTENSION = ".javaInput";
 
+	public static final String HISTOGRAM_INDEX_NAME = "TrialNo";
+	
 	public static final int PDE_DATA = 0;
 	public static final int ODE_DATA = 1;
 	public static final int PARTICLE_DATA = 2;

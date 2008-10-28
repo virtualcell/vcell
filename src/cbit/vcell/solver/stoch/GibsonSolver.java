@@ -1,12 +1,24 @@
 package cbit.vcell.solver.stoch;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.Variable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solver.ode.StateVariable;
 import cbit.vcell.solvers.ApplicationMessage;
+import cbit.vcell.solvers.FunctionFileGenerator;
+
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Vector;
+
 import cbit.vcell.solver.*;
 
 /**
@@ -88,7 +100,7 @@ public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
 
 	FileInputStream inputStream = null;
 	try {
-		inputStream = new FileInputStream(getBaseName() + ".stoch");
+		inputStream = new FileInputStream(getBaseName() + IDA_DATA_EXTENSION);
 		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		//  Read header
@@ -97,6 +109,7 @@ public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
 		{
 			//  throw exception
 			System.out.println("There is no data in output file!");
+			return null;
 		}
 		while (line.indexOf(':') > 0) {
 			String name = line.substring(0, line.indexOf(':'));
@@ -179,14 +192,16 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	cbit.vcell.server.SessionLog sessionLog = getSessionLog();
 	sessionLog.print("StochSolver.initialize()");
 	fireSolverStarting("StochSolver initializing...");
-	//
-	String inputFilename = getBaseName() + ".stochInput";	
-	//
+	writeFunctionsFile();
+	writeLogFile();
+
+	String inputFilename = getBaseName() + STOCHINPUT_DATA_EXTENSION;	
+	String outputFileName = getBaseName() + IDA_DATA_EXTENSION;
 	sessionLog.print("StochSolver.initialize() baseName = " + getBaseName());
-	//
+
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
 	fireSolverStarting("generating input file...");
-	//
+
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
@@ -201,12 +216,10 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 			pw.close();	
 		}
 	}
-	//
-	//
+
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"StochSolver starting"));	
 	//get executable path+name.
 	String executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.stochExecutableProperty);
-	String outputFileName = getBaseName() + ".stoch";
 	setMathExecutable(new cbit.vcell.solvers.MathExecutable(new String[] {executableName, "gibson", inputFilename, outputFileName}));	
 	//setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
 }
@@ -221,16 +234,20 @@ private final void printStochFile() throws IOException
 {
 	// executable writes .stoch file, now we write things in .stochbi format
 	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = ((GibsonSolver)this).getStochSolverResultSet();
+	if (stSolverResultSet == null) {
+		return;
+	}
+	
 	//if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
 		//stSolverResultSet.trimRows(((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
 	//} ????this three sentences give array index out of bounds. at RowColumnResultSet row 540.
-	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
-	String mathName = stSimData.getMathName();
-	getSessionLog().print("GibsonSolver.printToFile(" + mathName + ")");
-	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
-	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
-	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
-	stSimData.writeODELogFile(logFile, dataFile);
+//	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
+//	String mathName = stSimData.getMathName();
+//	getSessionLog().print("GibsonSolver.printToFile(" + mathName + ")");
+//	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
+//	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
+//	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
+//	stSimData.writeODELogFile(logFile, dataFile);
 	// fire event to inform that solver has data printed. however, for gibson multiple trial and hybrid solvers, we don't show intermediate results
 	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 		fireSolverPrinted(getCurrentTime());
@@ -292,4 +309,68 @@ public void propertyChange(java.beans.PropertyChangeEvent event)
 		}
 	}
 }
+
+private void writeLogFile() throws SolverException {
+	String logFile = getBaseName() + LOGFILE_EXTENSION;
+	String ideDataFileName = new File(getBaseName() + IDA_DATA_EXTENSION).getName();
+	PrintWriter pw = null;
+	try {
+		pw = new PrintWriter(logFile);
+		pw.println(IDA_DATA_IDENTIFIER);
+		pw.println(IDA_DATA_FORMAT_ID);
+		pw.println(ideDataFileName);
+		pw.close();
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+		throw new SolverException(e.getMessage());
+	} finally {
+		if (pw != null) {
+			pw.close();
+		}
+	}
+}
+
+private void writeFunctionsFile() {
+	// ** Dumping the functions of a simulation into a '.functions' file.
+	String functionFileName = getBaseName() + ".functions";
+	Vector<AnnotatedFunction> funcList = createFunctionList();
+	
+	//Try to save existing user defined functions
+	FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList.toArray(new AnnotatedFunction[0]));
+
+	try {
+		functionFileGenerator.generateFunctionFile();		
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
+	}		
+}
+
+private Vector<AnnotatedFunction> createFunctionList() {
+	//
+	// add appropriate Function columns to result set
+	//
+	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
+	
+	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	for (int i = 0; i < functions.length; i++){
+		if (isFunctionSaved(functions[i])){
+			Expression exp1 = new Expression(functions[i].getExpression());
+			try {
+				exp1 = getSimulation().substituteFunctions(exp1).flatten();
+			} catch (cbit.vcell.math.MathException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			} catch (cbit.vcell.parser.ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			}
+			
+			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, false);
+			funcList.add(af);
+		}
+	}
+	return funcList;
+}
+
 }

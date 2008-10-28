@@ -693,7 +693,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 		int colIndex = odeSimData.findColumn(ReservedVariable.TIME.getName()); //look for 't' first
 		//if not time serie data, it should be multiple trial data. get the trial no as fake time data. let it run since we will not need it when displaying histogram
 		if(colIndex == -1)
-			colIndex = odeSimData.findColumn("TrialNo"); 
+			colIndex = odeSimData.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME); 
 		dataTimes = odeSimData.extractColumn(colIndex);
 	} catch (ExpressionException e){
 		e.printStackTrace(System.out);
@@ -1384,7 +1384,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	if (stringBuffer.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
 	}
-	if ((stringBuffer.toString().startsWith(IDA_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(STOCH_DATA_IDENTIFIER)))
+	if ((stringBuffer.toString().startsWith(IDA_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)))
 	{
 		String newLineDelimiters = "\n\r";
 		StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
