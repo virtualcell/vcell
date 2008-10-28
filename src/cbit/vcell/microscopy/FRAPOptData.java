@@ -48,12 +48,14 @@ public class FRAPOptData {
 	public static final Parameter REF_MOBILE_FRACTION_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX], 0, 20, 1.0,  0);
+		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX], 0, 1, 1.0,  0);
 	public static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX], 0, 20, 1.0, 1.0);
 	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	
+	public static final int REF_BWM_LOG_VAL_MIN = -5;
+	public static final int REF_BWM_LOG_VAL_MAX = 0;
 	
 	
 //	private static int maxRefSavePoints = 500;
