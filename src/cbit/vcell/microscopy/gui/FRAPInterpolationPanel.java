@@ -714,7 +714,13 @@ public class FRAPInterpolationPanel extends JPanel {
 			bleachWhileMonitorSlider.setMinimum(0);
 			bleachWhileMonitorSlider.setMaximum(100);
 			bleachWhileMonitorSlider.setValue(0);
+			bleachWhileMonitorSlider.setMajorTickSpacing(20);
+			bleachWhileMonitorSlider.setPaintTicks(true);
 			bleachWhileMonitorSliderLabelTable.put(new Integer(0), new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+""));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(20), new JLabel("1e-4"));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(40), new JLabel("1e-3"));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(60), new JLabel("1e-2"));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(80), new JLabel("1e-1"));
 			bleachWhileMonitorSliderLabelTable.put(new Integer(100),new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()+""));
 			bleachWhileMonitorSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
 			bleachWhileMonitorSlider.setLabelTable(bleachWhileMonitorSliderLabelTable);
