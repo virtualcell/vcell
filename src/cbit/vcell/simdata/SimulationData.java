@@ -265,10 +265,22 @@ public synchronized void addFunction(AnnotatedFunction function,boolean bReplace
 			addFunctionToList(function);
 		}
 	
-		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
-		annotatedFunctionList.copyInto(annotatedFunctions);
-	
 		File funcFile = getFirstJobFunctionsFile();
+		Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(funcFile);
+		if (bReplace) {
+			for (int i = 0; i < firstJobFunctions.size(); i ++) {
+				AnnotatedFunction f = firstJobFunctions.elementAt(i);
+				if (f.equals(function)) {
+					firstJobFunctions.set(i, function);
+					break;
+				}
+			}			
+		} else {			
+			firstJobFunctions.add(function);			
+		}
+		
+		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[firstJobFunctions.size()];
+		firstJobFunctions.copyInto(annotatedFunctions);		
 		FunctionFileGenerator ffg = new FunctionFileGenerator(funcFile.getPath(), annotatedFunctions);
 		ffg.generateFunctionFile();
 	
@@ -1653,7 +1665,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
  * Creation date: (10/11/00 1:28:51 PM)
  * @param function cbit.vcell.math.Function
  */
-public synchronized void removeFunction(AnnotatedFunction function) throws DataAccessException{
+public synchronized void removeFunction(AnnotatedFunction function) throws DataAccessException {
 	try {
 		getFunctionDataIdentifiers();
 	} catch (Exception ex) {
@@ -1689,12 +1701,22 @@ public synchronized void removeFunction(AnnotatedFunction function) throws DataA
 		}
 	}
 
-	if (bFoundAndRemoved) {
-		// if function was found in annotatedFuncslist and removed, the function file has to be updated.
-		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
-		annotatedFunctionList.copyInto(annotatedFunctions);
-		try {
-			File funcFile = getFirstJobFunctionsFile();	
+	if (bFoundAndRemoved) {		
+		try {	
+			// if function was found in annotatedFuncslist and removed, the function file has to be updated.
+			File funcFile = getFirstJobFunctionsFile();
+			Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(funcFile);
+			for (int i = 0; i < firstJobFunctions.size(); i ++) {
+				AnnotatedFunction f = firstJobFunctions.elementAt(i);
+				if (f.equals(function)) {
+					firstJobFunctions.remove(i);
+					break;
+				}
+			}
+			
+			AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[firstJobFunctions.size()];
+			firstJobFunctions.copyInto(annotatedFunctions);		
+
 			FunctionFileGenerator ffg = new FunctionFileGenerator(funcFile.getPath(), annotatedFunctions);
 			ffg.generateFunctionFile();
 
