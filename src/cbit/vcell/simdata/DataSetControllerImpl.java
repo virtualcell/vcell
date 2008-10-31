@@ -311,7 +311,7 @@ public class DataSetControllerImpl implements SimDataConstants {
 //				}
 //				System.out.println(" "+(functionArgs[functionArgs.length-2]/functionArgs[functionArgs.length-1]));
 //			}
-			return function.getSimplifiedExpression().evaluateVector(functionArgs);
+			return function.getExpression().evaluateVector(functionArgs);
 		}
 		public FunctionIndexes(AnnotatedFunction argAF,Coordinate argXYZ,
 				String[] argVarNames,String[] argSimFileVarNames,int[] argIndexes,
@@ -1414,7 +1414,7 @@ private Vector<DataSetIdentifier> identifyDataDependencies(AnnotatedFunction fun
 	// identify data dependencies
 	//
 	
-	Expression exp = function.getSimplifiedExpression();
+	Expression exp = function.getExpression();
 	String dependentIDs[] = exp.getSymbols();
 	Vector<DataSetIdentifier> dependencyList = new Vector<DataSetIdentifier>();
 	//
@@ -1642,7 +1642,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 	
 	
 	
-	Expression origExpression = function.getSimplifiedExpression();
+	Expression origExpression = function.getExpression();
 	FieldFunctionArguments[] fieldfuncArgumentsArr =
 		origExpression.getFieldFunctionArguments();
 	if(fieldfuncArgumentsArr == null || fieldfuncArgumentsArr.length == 0){
@@ -2491,7 +2491,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 					break;
 				}
 				//check function absolute size limit
-				Expression exp = functionFromVarName.getSimplifiedExpression();
+				Expression exp = functionFromVarName.getExpression();
 				String[] funcSymbols = exp.getSymbols();
 				int varCount = 0;
 				if(funcSymbols != null){
@@ -2977,8 +2977,8 @@ private void adjustMembraneAdjacentVolumeValues(
 					}
 				}
 				Vector<DataSetIdentifier> dependencyList = identifyDataDependencies(sourceFunction);
-				insideExp = new Expression(sourceFunction.getSimplifiedExpression());
-				outsideExp = new Expression(sourceFunction.getSimplifiedExpression());
+				insideExp = new Expression(sourceFunction.getExpression());
+				outsideExp = new Expression(sourceFunction.getExpression());
 				for (int j = 0; j < dependencyList.size(); j++) {
 					insideExp.substituteInPlace(
 							new Expression(dependencyList.elementAt(j).getName()),
@@ -2997,8 +2997,8 @@ private void adjustMembraneAdjacentVolumeValues(
 				outsideExp.bindExpression(getVCData(vcdID));
 				insideFunction = new AnnotatedFunction("",insideExp,"",VariableType.MEMBRANE,true);
 				outsideFunction = new AnnotatedFunction("",outsideExp,"",VariableType.MEMBRANE,true);
-				insideFunction.setSimplifiedExpression(insideExp.flatten());
-				outsideFunction.setSimplifiedExpression(outsideExp.flatten());				
+				insideFunction.setExpression(insideExp.flatten());
+				outsideFunction.setExpression(outsideExp.flatten());				
 				bIsSpecial =
 					!isAllowOptimizedTimeDataRetrieval() || 
 					insideExp.hasGradient() || outsideExp.hasGradient() ||

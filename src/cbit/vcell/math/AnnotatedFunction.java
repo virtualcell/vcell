@@ -12,7 +12,7 @@ public class AnnotatedFunction extends Function implements cbit.util.Matchable {
 	private VariableType fieldFunctionType = null;
 	private boolean bIsUserDefined = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.parser.Expression fieldSimplifiedExpression = null;
+	//private cbit.vcell.parser.Expression fieldSimplifiedExpression = null;
 
 /**
  * AnnotatedFunction constructor comment.
@@ -22,7 +22,7 @@ public AnnotatedFunction(String argFunctionName, Expression argFunctionExpressio
 	if (argFunctionName.indexOf(" ") > 0) {
 		throw new RuntimeException("Spaces are not allowed in user-defined function names. Try adding the function without spaces in its name.");
 	}
-	fieldSimplifiedExpression = null;
+	//fieldSimplifiedExpression = null;
 	fieldErrorString = argErrString;
 	fieldFunctionType = argFunctionType;
 	bIsUserDefined = userDefined;
@@ -49,14 +49,14 @@ public VariableType getFunctionType() {
 }
 
 
-/**
- * Gets the simplifiedExpression property (cbit.vcell.parser.Expression) value.
- * @return The simplifiedExpression property value.
- * @see #setSimplifiedExpression
- */
-public cbit.vcell.parser.Expression getSimplifiedExpression() {
-	return fieldSimplifiedExpression;
-}
+///**
+// * Gets the simplifiedExpression property (cbit.vcell.parser.Expression) value.
+// * @return The simplifiedExpression property value.
+// * @see #setSimplifiedExpression
+// */
+//public cbit.vcell.parser.Expression getSimplifiedExpression() {
+//	return fieldSimplifiedExpression;
+//}
 
 
 /**
@@ -69,12 +69,12 @@ public boolean isUserDefined() {
 }
 
 
-/**
- * Sets the simplifiedExpression property (cbit.vcell.parser.Expression) value.
- * @param simplifiedExpression The new value for the property.
- * @see #getSimplifiedExpression
- */
-public void setSimplifiedExpression(cbit.vcell.parser.Expression simplifiedExpression) {
-	fieldSimplifiedExpression = simplifiedExpression;
-}
+///**
+// * Sets the simplifiedExpression property (cbit.vcell.parser.Expression) value.
+// * @param simplifiedExpression The new value for the property.
+// * @see #getSimplifiedExpression
+// */
+//public void setSimplifiedExpression(cbit.vcell.parser.Expression simplifiedExpression) {
+//	fieldSimplifiedExpression = simplifiedExpression;
+//}
 }

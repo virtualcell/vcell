@@ -148,16 +148,16 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 					funcFileLineInfo.functionExpr+"' for function \""+
 					funcFileLineInfo.functionName+"\"");
 			}
-			Expression functionSimplifiedExpr = null;
-			if(funcFileLineInfo.functionSimplifiedExpr != null){
-				try {
-					functionSimplifiedExpr = new Expression(funcFileLineInfo.functionSimplifiedExpr);
-				} catch (cbit.vcell.parser.ExpressionException e) {
-					System.out.println("Error in reading simplified expression '"+
-						funcFileLineInfo.functionSimplifiedExpr+"' for function \""+
-						funcFileLineInfo.functionName+"\"");
-				}
-			}
+//			Expression functionSimplifiedExpr = null;
+//			if(funcFileLineInfo.functionSimplifiedExpr != null){
+//				try {
+//					functionSimplifiedExpr = new Expression(funcFileLineInfo.functionSimplifiedExpr);
+//				} catch (cbit.vcell.parser.ExpressionException e) {
+//					System.out.println("Error in reading simplified expression '"+
+//						funcFileLineInfo.functionSimplifiedExpr+"' for function \""+
+//						funcFileLineInfo.functionName+"\"");
+//				}
+//			}
 			AnnotatedFunction annotatedFunc =
 				new AnnotatedFunction(
 						funcFileLineInfo.functionName,
@@ -165,9 +165,9 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 						funcFileLineInfo.errorString,
 						funcFileLineInfo.funcVarType,
 						funcFileLineInfo.funcIsUserDefined);
-			if(functionSimplifiedExpr != null){
-				annotatedFunc.setSimplifiedExpression(functionSimplifiedExpr);
-			}
+//			if(functionSimplifiedExpr != null){
+//				annotatedFunc.setSimplifiedExpression(functionSimplifiedExpr);
+//			}
 			annotatedFunctionsVector.addElement(annotatedFunc);
 		}
 
@@ -251,9 +251,9 @@ public void writefunctionFile(PrintWriter out) {
 	if (annotatedFunctionList!=null){
 		for (int i=0;i<annotatedFunctionList.length;i++){
 			out.print(annotatedFunctionList[i].getName() + "; " + annotatedFunctionList[i].getExpression().infix() + "; " + annotatedFunctionList[i].getErrorString() + "; " + annotatedFunctionList[i].getFunctionType().toString()+ "; " + annotatedFunctionList[i].isUserDefined());
-			if (annotatedFunctionList[i].getSimplifiedExpression() != null) {			
-				out.print("; " + annotatedFunctionList[i].getSimplifiedExpression().infix());
-			}
+//			if (annotatedFunctionList[i].getSimplifiedExpression() != null) {			
+//				out.print("; " + annotatedFunctionList[i].getSimplifiedExpression().infix());
+//			}
 			out.println();
 		}
 	}
