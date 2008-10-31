@@ -13,10 +13,11 @@ public interface SimDataConstants {
 	
 	public static final String ODE_DATA_IDENTIFIER = "ODEData logfile";
 	public static final String IDA_DATA_IDENTIFIER = "IDAData logfile";
+	public static final String NETCDF_DATA_IDENTIFIER = "NetCDFData logfile";//stoch
 	public static final String SIMPLE_ODE_DATA_FORMAT_ID = "SimpleODEData binary format version 1";
 	public static final String GENERIC_ODE_DATA_FORMAT_ID = "GenericODEData binary format version 1";
 	public static final String COMPACT_ODE_DATA_FORMAT_ID = "CompactODEData binary format version 1";
-	public static final String COMPACT_STOCH_DATA_FORMAT_ID = "CompactSTOCHData binary format version 1"; //stoch
+	public static final String NETCDF_DATA_FORMAT_ID = "NetCDFData binary format version 1"; //netcdf for hybrid stoch
 	public static final String IDA_DATA_FORMAT_ID = "IDAData text format version 1";
 	public static final int STATE_VARIABLE = 1;
 	public static final String NO_VARIABLE = "";	
@@ -28,6 +29,7 @@ public interface SimDataConstants {
 	public static final String PDE_DATA_EXTENSION = ".sim";
 	public static final String ODE_DATA_EXTENSION = ".ode";
 	public static final String IDA_DATA_EXTENSION = ".ida";
+	public static final String NETCDF_DATA_EXTENSION = ".nc";
 	public static final String IDAINPUT_DATA_EXTENSION = ".idaInput";
 	public static final String CVODEINPUT_DATA_EXTENSION = ".cvodeInput";
 	public static final String STOCHINPUT_DATA_EXTENSION = ".stochInput";

@@ -14,6 +14,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -238,7 +239,7 @@ public class NetCDFWriterTest {
 		public static void main(String[] args) {
 			if(getExample2() != null)
 			{
-				NetCDFWriter ncWriter = new NetCDFWriter(getExample1(),"c:/test.nc");
+				NetCDFWriter ncWriter = new NetCDFWriter(new SimulationJob(getExample1(), null, 0),"c:/test.nc");
 				try{
 					ncWriter.writeHybridInputFile();
 				}catch (Exception e){
