@@ -108,7 +108,7 @@ public cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
 	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
 
 	try{
-		String filename = getBaseName() + ".nc";
+		String filename = getBaseName() + NETCDF_DATA_EXTENSION;
 		NetCDFEvaluator ncEva = new NetCDFEvaluator();
 		NetCDFReader ncReader = null;
 		try
@@ -281,7 +281,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	//
 	sessionLog.print("HybridSolver.initialize() baseName = " + getBaseName());
 	//
-	NetCDFWriter ncWriter = new NetCDFWriter(getSimulation(),inputFilename);
+	NetCDFWriter ncWriter = new NetCDFWriter(getSimulationJob(),inputFilename);
 	try {
 		ncWriter.initialize();
 	} catch (Exception e) {
@@ -362,13 +362,13 @@ private final void printStochFile() throws IOException
 {
 	// executable writes .stoch file, now we write things in .stochbi format
 	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = ((HybridSolver)this).getHybridSolverResultSet();
-	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
-	String mathName = stSimData.getMathName();
-	getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
-	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
-	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
-	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
-	stSimData.writeODELogFile(logFile, dataFile);
+//	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
+//	String mathName = stSimData.getMathName();
+//	getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
+//	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
+//	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
+//	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
+//	stSimData.writeODELogFile(logFile, dataFile);
 	
 	// we don't show intermediate data for hybrid solvers. so, event shouldn't be fired.
 	//fireSolverPrinted(getCurrentTime());

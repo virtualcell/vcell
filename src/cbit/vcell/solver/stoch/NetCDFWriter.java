@@ -23,9 +23,11 @@ import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
+import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import flanagan.math.Fmath;
 /**
@@ -41,6 +43,7 @@ public class NetCDFWriter {
 
 	private Simulation simulation = null;
 	private String filename = null;
+	private SimulationJob simJob = null;
 	// to store variables and their orders in the reactions. It is set to global in this
 	// class, since it is useful in a few functions and we don't want to calculate it 
 	// again and again. it is calculated in function getReactionRateLaws.
@@ -54,9 +57,10 @@ public class NetCDFWriter {
 	 * another constructor
 	 * @param arg_simulation
 	 */
-	public NetCDFWriter(Simulation arg_simulation, String fn) 
+	public NetCDFWriter(SimulationJob arg_simulationJob, String fn) 
 	{
-		simulation = arg_simulation;
+		simJob = arg_simulationJob;
+		simulation = simJob.getWorkingSim();
 		filename = fn;
 	}
 
@@ -177,6 +181,17 @@ public class NetCDFWriter {
 			Dimension numMaxStoichList = ncfile.addDimension("NumMaxStoichList", 25);
 			Dimension stringLen = ncfile.addDimension("StringLen", 72);
 			//define variables
+			//jms info
+			ArrayList dims = new ArrayList();
+			dims.add(stringLen);
+			ncfile.addVariable("JMS_BROKER", DataType.CHAR, dims);
+			ncfile.addVariable("JMS_USER", DataType.CHAR, dims);
+			ncfile.addVariable("JMS_PASSWORD", DataType.CHAR, dims);
+			ncfile.addVariable("JMS_QUEUE", DataType.CHAR, dims);  
+			ncfile.addVariable("JMS_TOPIC", DataType.CHAR, dims);
+			ncfile.addVariable("VCELL_USER", DataType.CHAR, dims);
+			ncfile.addVariable("SIMULATION_KEY", DataType.INT, new ArrayList());
+			ncfile.addVariable("JOB_INDEX", DataType.INT, new ArrayList());
 			//scalars
 			ncfile.addVariable("TStart", DataType.DOUBLE, new ArrayList());
 			ncfile.addVariable("TEnd", DataType.DOUBLE, new ArrayList());
@@ -200,7 +215,7 @@ public class NetCDFWriter {
 			ncfile.addVariable("Reaction_DListLen", DataType.INT, dimreactions);
 			ncfile.addVariable("Reaction_StoichListLen", DataType.INT, dimreactions);
 			ncfile.addVariable("Reaction_OptionalData", DataType.INT, dimreactions);
-			ArrayList dims = new ArrayList();
+			dims.clear();
 			dims.add(numReactions);
 			dims.add(numMaxStoichList);
 			ncfile.addVariable("Reaction_StoichCoeff", DataType.INT, dims);
@@ -231,8 +246,30 @@ public class NetCDFWriter {
 				throw new IOException("Error creating hybrid file "+filename+": "+ioe.getMessage());
 			}
 			
+			
 			//write data to the NetCDF file
 			try{
+				// write jms info
+				ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
+				jmsString.setString(JmsUtils.getJmsUrl());
+				ncfile.write("JMS_BROKER", jmsString);
+				jmsString.setString(JmsUtils.getJmsUserID());
+				ncfile.write("JMS_USER", jmsString);
+				jmsString.setString(JmsUtils.getJmsPassword());
+				ncfile.write("JMS_PASSWORD", jmsString);
+				jmsString.setString(JmsUtils.getQueueWorkerEvent());
+				ncfile.write("JMS_QUEUE", jmsString);
+				jmsString.setString(JmsUtils.getTopicServiceControl());
+				ncfile.write("JMS_TOPIC", jmsString);
+				jmsString.setString(simulation.getVersion().getOwner().getName());
+				ncfile.write("VCELL_USER", jmsString);
+				
+				ArrayInt.D0 scalarJMS = new ArrayInt.D0();
+				scalarJMS.set(Integer.parseInt(simulation.getVersion().getVersionKey()+""));
+				ncfile.write("SIMULATION_KEY", scalarJMS);
+				scalarJMS.set(simJob.getJobIndex());
+				ncfile.write("JOB_INDEX", scalarJMS);
+
 				ArrayDouble.D0 scalarDouble = new ArrayDouble.D0();
 				//TStart, TEnd, SaveTime
 				if((timeBounds.getEndingTime()>timeBounds.getStartingTime()) && (outputTimeSpec.getOutputTimeStep()>0))
