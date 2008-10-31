@@ -33,9 +33,12 @@ public class SimulationData extends VCData implements SymbolTable {
 	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
 	
 	private long logFileLastModified = 0;
-	private long functionFileLastModified = 0;
 	private long logFileLength = 0;
-	private long functionFileLength = 0;
+	// we check first job functions file for user defined functions in the parameter scan,
+	// then append user defined functions  
+	// this is the file that will be changed when users add functions
+	private long firstJobFunctionFileLastModified = 0;
+	private long firstJobFunctionFileLength = 0;
 	private long meshFileLastModified = 0;
 	
 	private CartesianMesh mesh = null;
@@ -254,24 +257,24 @@ public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCD
 public synchronized void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException {
 
 	try{
-	getFunctionDataIdentifiers();
+		getFunctionDataIdentifiers();
+		
+		if(bReplace){
+			replaceFunction(function);
+		}else{
+			addFunctionToList(function);
+		}
 	
-	if(bReplace){
-		replaceFunction(function);
-	}else{
-		addFunctionToList(function);
-	}
-
-	AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
-	annotatedFunctionList.copyInto(annotatedFunctions);
-
-	FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
-	ffg.generateFunctionFile();
-
-	// my lastModified and length should be changed because I just rewrote the file.
-	File funcFile = getFunctionsFile();		
-	functionFileLength = funcFile.length();
-	functionFileLastModified = funcFile.lastModified();
+		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
+		annotatedFunctionList.copyInto(annotatedFunctions);
+	
+		File funcFile = getFirstJobFunctionsFile();
+		FunctionFileGenerator ffg = new FunctionFileGenerator(funcFile.getPath(), annotatedFunctions);
+		ffg.generateFunctionFile();
+	
+		// my lastModified and length should be changed because I just rewrote the file.
+		firstJobFunctionFileLength = funcFile.length();
+		firstJobFunctionFileLastModified = funcFile.lastModified();
 	}catch(Exception e){
 		throw new DataAccessException("Error adding function '"+function.getName()+"' "+e.getMessage());
 	}
@@ -318,7 +321,7 @@ private void addFunctionToListInternal(AnnotatedFunction function){
 private void functionBindAndSubstitute(AnnotatedFunction function) throws ExpressionException{
 	
 	// attempt to bind function and substitute
-	Expression simExp = function.getSimplifiedExpression();	
+	Expression simExp = function.getExpression();	
 	if (simExp == null) {
 		Expression exp = new Expression(function.getExpression());
 		exp.bindExpression(this);
@@ -340,7 +343,7 @@ private void functionBindAndSubstitute(AnnotatedFunction function) throws Expres
 					for (int j = 0; j < annotatedFunctionList.size(); j ++){
 						AnnotatedFunction mathFunction = (AnnotatedFunction)annotatedFunctionList.elementAt(j);
 						if (mathFunction.getName().equals(symbols[i])) {
-							newExp = mathFunction.getSimplifiedExpression();
+							newExp = mathFunction.getExpression();
 							break;
 						}
 					}
@@ -352,7 +355,7 @@ private void functionBindAndSubstitute(AnnotatedFunction function) throws Expres
 			}
 		}
 		simExp = exp.flatten();
-		function.setSimplifiedExpression(simExp);
+		function.setExpression(simExp);
 	}
 	simExp.bindExpression(this);
 	
@@ -425,7 +428,7 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 			if (bOdeDataFormat) {
 				odeSimData = ODESimData.readODEDataFile(getODEDataFile());
 			} else {
-				odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getFunctionsFile());
+				odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getJobFunctionsFile());
 			}
 			dataTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
 		}catch (ExpressionException e){
@@ -509,16 +512,16 @@ private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFou
 	// add function names to VarName list that is returned
 	//
 	if (dataSetIdentifierList.size() != 0 && !getIsODEData()){
-		File funcFile = getFunctionsFile();
+		File funcFile = getFirstJobFunctionsFile();
 		
 		long length = funcFile.length();
 		long lastModified = funcFile.lastModified();
-		if (length == functionFileLength && lastModified == functionFileLastModified) {
+		if (length == firstJobFunctionFileLength && lastModified == firstJobFunctionFileLastModified) {
 			return;
 		}
 		
-		functionFileLength = length;
-		functionFileLastModified = lastModified;
+		firstJobFunctionFileLength = length;
+		firstJobFunctionFileLastModified = lastModified;
 
 		// remove functions from dataIdentifiers since we are reading functions again
 		for (int i = 0; i < dataSetIdentifierList.size(); i ++) {
@@ -532,7 +535,6 @@ private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFou
 		readFunctions();
 	}
 }
-
 
 /**
  * Insert the method's description here.
@@ -565,14 +567,9 @@ public AnnotatedFunction[] getFunctions() {
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-private synchronized File getFunctionsFile() throws FileNotFoundException {
-	File functionsFile = null;
-	if (vcDataId instanceof VCSimulationDataIdentifier && ((VCSimulationDataIdentifier)vcDataId).isParameterScanType()) { 
-		// always use the functions file from the first simulation in the scan 
-		functionsFile = new File(userDirectory, ExternalDataIdentifier.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)vcDataId).getSimulationKey(), 0, false));
-	} else {
-		functionsFile = new File(userDirectory,vcDataId.getID()+".functions");
-	}
+private synchronized File getFirstJobFunctionsFile() throws FileNotFoundException {
+	// always use the functions file from the first simulation in the scan 
+	File functionsFile = new File(userDirectory, ExternalDataIdentifier.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)vcDataId).getSimulationKey(), 0, false));	
 	if (functionsFile.exists()){
 		return functionsFile;
 	}else{
@@ -580,6 +577,16 @@ private synchronized File getFunctionsFile() throws FileNotFoundException {
 	}
 }
 
+
+private synchronized File getJobFunctionsFile() throws FileNotFoundException {
+	File functionsFile = null;
+	functionsFile = new File(userDirectory,vcDataId.getID()+".functions");
+	if (functionsFile.exists()){
+		return functionsFile;
+	}else{
+		throw new FileNotFoundException("functions file "+functionsFile.getPath()+" not found");
+	}
+}
 
 /**
  * This method was created in VisualAge.
@@ -685,7 +692,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 		if (bOdeDataFormat) {
 			odeSimData = ODESimData.readODEDataFile(getODEDataFile());
 		} else {
-			odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getFunctionsFile());
+			odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getJobFunctionsFile());
 		}
 		if (odeSimData == null) {
 			return null;
@@ -1311,7 +1318,17 @@ synchronized int[] getVolumeSize() throws IOException, DataAccessException {
  */
 private void readFunctions() throws FileNotFoundException, IOException {
 
-	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(getFunctionsFile());
+	File firstJobFunctionsFile = getFirstJobFunctionsFile();
+	File jobFunctionsFile = getJobFunctionsFile();
+	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(jobFunctionsFile);
+	if (!firstJobFunctionsFile.equals(jobFunctionsFile)) {
+		Vector <AnnotatedFunction> f1 = FunctionFileGenerator.readFunctionsFile(firstJobFunctionsFile);
+		for (AnnotatedFunction f : f1) {
+			if (f.isUserDefined()) {
+				annotatedFuncsVector.add(f);
+			}
+		}
+	}
 
 	//
 	// Convert this annotatedfunctionsVector into the field annotatedFunctionsList.
@@ -1626,8 +1643,8 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 	logFileLastModified = 0;
 	logFileLength = 0;
 	meshFileLastModified = 0;
-	functionFileLastModified = 0;
-	functionFileLength = 0;
+	firstJobFunctionFileLastModified = 0;
+	firstJobFunctionFileLength = 0;
 }
 
 
@@ -1677,13 +1694,13 @@ public synchronized void removeFunction(AnnotatedFunction function) throws DataA
 		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
 		annotatedFunctionList.copyInto(annotatedFunctions);
 		try {
-			FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
+			File funcFile = getFirstJobFunctionsFile();	
+			FunctionFileGenerator ffg = new FunctionFileGenerator(funcFile.getPath(), annotatedFunctions);
 			ffg.generateFunctionFile();
 
-			// my lastModified and length should be changed because I just rewrote the file.
-			File funcFile = getFunctionsFile();		
-			functionFileLength = funcFile.length();
-			functionFileLastModified = funcFile.lastModified();			
+			// my lastModified and length should be changed because I just rewrote the file.				
+			firstJobFunctionFileLength = funcFile.length();
+			firstJobFunctionFileLastModified = funcFile.lastModified();			
 		} catch (Exception e) {
 			throw new DataAccessException(
 					"Error generating function file while removing function '"+

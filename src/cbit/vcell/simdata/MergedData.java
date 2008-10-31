@@ -128,7 +128,7 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 private void functionBindAndSubstitute(AnnotatedFunction function) throws ExpressionException {
 
 	// attempt to bind function and substitute
-	Expression simExp = function.getSimplifiedExpression();	
+	Expression simExp = function.getExpression();	
 	if (simExp == null) {
 		Expression exp = new Expression(function.getExpression());
 		exp.bindExpression(this);
@@ -150,7 +150,7 @@ private void functionBindAndSubstitute(AnnotatedFunction function) throws Expres
 					for (int j = 0; j < annotatedFunctionList.size(); j ++){
 						AnnotatedFunction mathFunction = (AnnotatedFunction)annotatedFunctionList.elementAt(j);
 						if (mathFunction.getName().equals(symbols[i])) {
-							newExp = mathFunction.getSimplifiedExpression();
+							newExp = mathFunction.getExpression();
 							break;
 						}
 					}
@@ -162,7 +162,7 @@ private void functionBindAndSubstitute(AnnotatedFunction function) throws Expres
 			}
 		}
 		simExp = exp.flatten();
-		function.setSimplifiedExpression(simExp);	
+		function.setExpression(simExp);	
 	}
 	simExp.bindExpression(this);
 	function.getExpression().bindExpression(this);
