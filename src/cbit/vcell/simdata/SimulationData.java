@@ -253,36 +253,44 @@ public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCD
 public synchronized void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException {
 
 	try{
-	getFunctionDataIdentifiers();
+		getFunctionDataIdentifiers();
+		
+		if(bReplace){
+			replaceFunction(function);
+		}else{
+			addFunctionToList(function);
+		}
 	
-	if(bReplace){
-		replaceFunction(function);
-	}else{
-		addFunctionToList(function);
-	}
-
-	File funcFile = getFirstJobFunctionsFile();
-	Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(funcFile);
-	if (bReplace) {
-		for (int i = 0; i < firstJobFunctions.size(); i ++) {
-			AnnotatedFunction f = firstJobFunctions.elementAt(i);
-			if (f.equals(function)) {
-				firstJobFunctions.set(i, function);
-				break;
+		File firstFuncFile = getFirstJobFunctionsFile();
+		File jobFuncFile = getJobFunctionsFile();
+		AnnotatedFunction[] annotatedFunctions = null;
+		
+		if (firstFuncFile.equals(jobFuncFile)) {
+			annotatedFunctions = new AnnotatedFunction[annotatedFunctionList.size()];
+			annotatedFunctionList.copyInto(annotatedFunctions);
+		} else {
+			Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
+			if (bReplace) {
+				for (int i = 0; i < firstJobFunctions.size(); i ++) {
+					AnnotatedFunction f = firstJobFunctions.elementAt(i);
+					if (f.equals(function)) {
+						firstJobFunctions.set(i, function);
+						break;
+					}
+				}
+			} else {
+				firstJobFunctions.add(function);
 			}
-		}			
-	} else {			
-		firstJobFunctions.add(function);			
-	}
-	
-	AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[firstJobFunctions.size()];
-	firstJobFunctions.copyInto(annotatedFunctions);		
-	FunctionFileGenerator ffg = new FunctionFileGenerator(funcFile.getPath(), annotatedFunctions);
-	ffg.generateFunctionFile();
-	
-	// my lastModified and length should be changed because I just rewrote the file.		
-	firstJobFunctionFileLength = funcFile.length();
-	firstJobFunctionFileLastModified = funcFile.lastModified();
+			annotatedFunctions = new AnnotatedFunction[firstJobFunctions.size()];
+			firstJobFunctions.copyInto(annotatedFunctions);
+		}
+		
+		FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), annotatedFunctions);
+		ffg.generateFunctionFile();
+		
+		// my lastModified and length should be changed because I just rewrote the file.		
+		firstJobFunctionFileLength = firstFuncFile.length();
+		firstJobFunctionFileLastModified = firstFuncFile.lastModified();
 	}catch(Exception e){
 		throw new DataAccessException("Error adding function '"+function.getName()+"' "+e.getMessage());
 	}
@@ -563,6 +571,9 @@ public AnnotatedFunction[] getFunctions() {
 
 
 private synchronized File getFirstJobFunctionsFile() throws FileNotFoundException {
+	if (!(info instanceof VCSimulationDataIdentifier)) {
+		return getJobFunctionsFile();
+	}
 	// always use the functions file from the first simulation in the scan 
 	File functionsFile = new File(userDirectory, ExternalDataIdentifier.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)info).getSimulationKey(), 0, false));	
 	if (functionsFile.exists()){
@@ -1658,25 +1669,32 @@ public synchronized void removeFunction(AnnotatedFunction function) throws DataA
 	if (bFoundAndRemoved) {
 		try {	
 			// if function was found in annotatedFuncslist and removed, the function file has to be updated.
-			File funcFile = getFirstJobFunctionsFile();
-			Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(funcFile);
-			for (int i = 0; i < firstJobFunctions.size(); i ++) {
-				AnnotatedFunction f = firstJobFunctions.elementAt(i);
-				if (f.equals(function)) {
-					firstJobFunctions.remove(i);
-					break;
+			AnnotatedFunction[] annotatedFunctions = null;
+			File firstFuncFile = getFirstJobFunctionsFile();
+			File jobFuncFile = getJobFunctionsFile();
+			if (firstFuncFile.equals(jobFuncFile)) {
+				annotatedFunctions = new AnnotatedFunction[annotatedFunctionList.size()];
+				annotatedFunctionList.copyInto(annotatedFunctions);
+			} else {
+				Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
+				for (int i = 0; i < firstJobFunctions.size(); i ++) {
+					AnnotatedFunction f = firstJobFunctions.elementAt(i);
+					if (f.equals(function)) {
+						firstJobFunctions.remove(i);
+						break;
+					}
 				}
+				
+				annotatedFunctions = new AnnotatedFunction[firstJobFunctions.size()];
+				firstJobFunctions.copyInto(annotatedFunctions);
 			}
-			
-			AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[firstJobFunctions.size()];
-			firstJobFunctions.copyInto(annotatedFunctions);		
 
-			FunctionFileGenerator ffg = new FunctionFileGenerator(funcFile.getPath(), annotatedFunctions);
+			FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), annotatedFunctions);
 			ffg.generateFunctionFile();
 
 			// my lastModified and length should be changed because I just rewrote the file.		
-			firstJobFunctionFileLength = funcFile.length();
-			firstJobFunctionFileLastModified = funcFile.lastModified();			
+			firstJobFunctionFileLength = firstFuncFile.length();
+			firstJobFunctionFileLastModified = firstFuncFile.lastModified();			
 		} catch (Exception e) {
 			throw new DataAccessException(
 					"Error generating function file while removing function '"+
