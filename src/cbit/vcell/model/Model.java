@@ -1553,6 +1553,13 @@ public void refreshDependencies() {
 	for (int i=0;i<fieldModelParameters.length;i++){
 		fieldModelParameters[i].removeVetoableChangeListener(this);
 		fieldModelParameters[i].addVetoableChangeListener(this);
+		try {
+			fieldModelParameters[i].getExpression().bindExpression(this);
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error binding global parameter '" + fieldModelParameters[i].getName() + "' to model."  + e.getMessage());
+		}
+
 	}
 }
 
