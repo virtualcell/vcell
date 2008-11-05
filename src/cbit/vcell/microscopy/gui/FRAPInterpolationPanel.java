@@ -22,6 +22,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import com.icl.saxon.functions.FormatNumber;
+
 import loci.formats.TwoChannelColorSpace;
 
 import cbit.gui.DialogUtils;
@@ -43,6 +45,7 @@ public class FRAPInterpolationPanel extends JPanel {
 	private final JTextField secondDiffTextField;
 	private final JTextField secondMobileFracTextField;
 	private final JLabel immoFracValueLabel;
+	private final JCheckBox clampCheckBox;
 	private final JSlider diffusionRateSlider;
 	private final JSlider mobileFractionSlider;
 	private final JSlider bleachWhileMonitorSlider;
@@ -57,7 +60,7 @@ public class FRAPInterpolationPanel extends JPanel {
 	private FRAPOptData frapOptData;
 
 	private boolean B_HOLD_FIRE = false;
-	
+	private boolean isExecuting = false;//for control whether a paraph should execute in OPTIMIZER_SLIDER_CHANGE_LISTENER or not, when getValueIsAdjusting() is false.
 	public static final String PROPERTY_CHANGE_OPTIMIZER_VALUE = "PROPERTY_CHANGE_OPTIMIZER_VALUE";
 	public static final String PROPERTY_CHANGE_RUNSIM = "PROPERTY_CHANGE_RUNSIM";
 	public static final String INI_SECOND_DIFF_RATE = "0";
@@ -83,6 +86,7 @@ public class FRAPInterpolationPanel extends JPanel {
 	private final ChangeListener OPTIMIZER_SLIDER_CHANGE_LISTENER =
 		new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
+				boolean isSetPrimaryMFrac = true;
 				if(e.getSource() == diffusionRateSlider){
 					double value =
 						FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()+
@@ -95,7 +99,7 @@ public class FRAPInterpolationPanel extends JPanel {
 						FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()+
 						(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*
 						((double)mobileFractionSlider.getValue()/(double)mobileFractionSlider.getMaximum());
-					mobileFractionTextField.setText(value+"");
+					mobileFractionTextField.setText(NumberUtils.formatNumber(value));
 					mobileFractionSetButton.setEnabled(false);
 				}else if(e.getSource() == bleachWhileMonitorSlider){
 					double value = FRAPOptData.REF_BWM_LOG_VAL_MIN + (FRAPOptData.REF_BWM_LOG_VAL_MAX - FRAPOptData.REF_BWM_LOG_VAL_MIN)* 
@@ -116,10 +120,10 @@ public class FRAPInterpolationPanel extends JPanel {
 						((double)secondDiffSlider.getValue()/(double)secondDiffSlider.getMaximum());
 					secondDiffTextField.setText(NumberUtils.formatNumber(value));
 					secondDiffSetButton.setEnabled(false);
-					
 				}
 				else if(e.getSource() == secondMobileFracSlider)
 				{
+					isSetPrimaryMFrac = false;
 					double value =
 						FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()+
 						(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())*
@@ -128,30 +132,50 @@ public class FRAPInterpolationPanel extends JPanel {
 					secondMobileFracSetButton.setEnabled(false);
 				}
 				
-//				double secDiff = Double.parseDouble(secondDiffTextField.getText());
-//				double secMob = Double.parseDouble(secondMobileFracTextField.getText());
-//				if(secDiff == 0 || secMob == 0)
-//				{
-//					secondDiffTextField.setText("0");
-//					secondDiffSlider.setValue(secondMobileFracSlider.getMinimum());
-//					secondDiffSetButton.doClick();
-//					secondMobileFracTextField.setText("0");
-//					secondMobileFracSlider.setValue(secondMobileFracSlider.getMinimum());
-//					secondMobileFracSetButton.doClick();
-//				}
-//				
-				//	set immobile fraction label
-				double mobileFrac = FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()+
-									(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*
-									((double)mobileFractionSlider.getValue()/(double)mobileFractionSlider.getMaximum());;
-				double secondMobileFrac = FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()+
-									(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())*
-									((double)secondMobileFracSlider.getValue()/(double)secondMobileFracSlider.getMaximum());
-				double immobileFrac = 1-mobileFrac -secondMobileFrac;
-				immoFracValueLabel.setText(NumberUtils.formatNumber(immobileFrac));
-				
-				
 				if(!((JSlider)e.getSource()).getValueIsAdjusting()){
+					if(!isExecuting)
+					{
+						isExecuting = true;
+						double primaryFrac = Double.parseDouble(mobileFractionTextField.getText());
+						double secFrac = Double.parseDouble(secondMobileFracTextField.getText());
+						double immFrac = Double.parseDouble(immoFracValueLabel.getText());
+						
+						double[] adjustedVals = adjustMobileFractions(new double[]{primaryFrac, secFrac, immFrac}, isSetPrimaryMFrac);
+						//primary				
+						double value = adjustedVals[0];
+						mobileFractionTextField.setText(NumberUtils.formatNumber(value));
+						mobileFractionSetButton.setEnabled(false);
+						int sliderValue = (int)
+							(((value-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*(double)mobileFractionSlider.getMaximum())/
+							(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()));
+						if(sliderValue < mobileFractionSlider.getMinimum()){
+							sliderValue = mobileFractionSlider.getMinimum();
+						}
+						if(sliderValue > mobileFractionSlider.getMaximum()){
+							sliderValue = mobileFractionSlider.getMaximum();
+						}
+						mobileFractionSlider.setValue(sliderValue);
+						//secondary
+						value = adjustedVals[1];
+						secondMobileFracTextField.setText(NumberUtils.formatNumber(value));
+						secondMobileFracSetButton.setEnabled(false);
+						sliderValue = (int)
+							(((value-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())*(double)secondMobileFracSlider.getMaximum())/
+							(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()));
+						if(sliderValue < secondMobileFracSlider.getMinimum()){
+							sliderValue = secondMobileFracSlider.getMinimum();
+						}
+						if(sliderValue > secondMobileFracSlider.getMaximum()){
+							sliderValue = secondMobileFracSlider.getMaximum();
+						}
+						secondMobileFracSlider.setValue(sliderValue);
+						//immobile
+						immoFracValueLabel.setText(NumberUtils.formatNumber(adjustedVals[2]));
+//						mobileFractionSlider.updateUI();
+//						secondMobileFracSlider.updateUI();
+						isExecuting = false;
+					}
+					
 					firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
 				}
 			}
@@ -166,6 +190,22 @@ public class FRAPInterpolationPanel extends JPanel {
 					mobileFractionSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 					secondMobileFracSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 					bleachWhileMonitorSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
+					boolean isSetPrimaryMFrac = true;
+					//check if user clicks on second mobile fraction set button
+					if(e.getSource() == secondMobileFracSetButton)
+					{
+						isSetPrimaryMFrac = false;
+					}
+					else
+					{
+						isSetPrimaryMFrac = true;
+					}
+					//get mobile fractions
+					double primaryMFrac = Double.parseDouble(mobileFractionTextField.getText());
+					double secondMFrac = Double.parseDouble(secondMobileFracTextField.getText());
+					double immMFrac = Double.parseDouble(immoFracValueLabel.getText());
+					double[] adjustedVals = adjustMobileFractions(new double[]{primaryMFrac, secondMFrac, immMFrac}, isSetPrimaryMFrac);
+					
 //					if(e.getSource() == diffusionRateSetButton){
 						double value = Double.parseDouble(diffusionRateTextField.getText());
 						if(value < FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()){
@@ -174,7 +214,7 @@ public class FRAPInterpolationPanel extends JPanel {
 						if(value > FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()){
 							value = FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound();
 						}
-						diffusionRateTextField.setText(value+"");
+						diffusionRateTextField.setText(NumberUtils.formatNumber(value));
 						int sliderValue = (int)
 							(((value-FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound())*(double)diffusionRateSlider.getMaximum())/
 							(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()-FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()));
@@ -187,14 +227,14 @@ public class FRAPInterpolationPanel extends JPanel {
 						diffusionRateSlider.setValue(sliderValue);
 						diffusionRateSetButton.setEnabled(false);
 //					}else if(e.getSource() == mobileFractionSetButton){
-						/*double*/ value = Double.parseDouble(mobileFractionTextField.getText());
+						/*double*/ value = adjustedVals[0];
 						if(value < FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()){
 							value = FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound();
 						}
 						if(value > FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()){
 							value = FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound();
 						}
-						mobileFractionTextField.setText(value+"");
+						mobileFractionTextField.setText(NumberUtils.formatNumber(value));
 						/*int*/ sliderValue = (int)
 							(((value-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*(double)mobileFractionSlider.getMaximum())/
 							(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()));
@@ -215,7 +255,7 @@ public class FRAPInterpolationPanel extends JPanel {
 						if(value > FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()){
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound();
 						}
-						bleachWhileMonitorRateTextField.setText(value+"");
+						bleachWhileMonitorRateTextField.setText(NumberUtils.formatNumber(value));
 						if(value == FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())
 						{
 							sliderValue = 0;
@@ -243,7 +283,7 @@ public class FRAPInterpolationPanel extends JPanel {
 						if(value > FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound()){
 							value = FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound();
 						}
-						secondDiffTextField.setText(value+"");
+						secondDiffTextField.setText(NumberUtils.formatNumber(value));
 						sliderValue = (int)
 							(((value-FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound())*(double)secondDiffSlider.getMaximum())/
 							(FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound()-FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound()));
@@ -256,14 +296,14 @@ public class FRAPInterpolationPanel extends JPanel {
 						secondDiffSlider.setValue(sliderValue);
 						secondDiffSetButton.setEnabled(false);
 						//second mobile fraction set button
-						value = Double.parseDouble(secondMobileFracTextField.getText());
+						value = adjustedVals[1];
 						if(value < FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()){
 							value = FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound();
 						}
 						if(value > FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()){
 							value = FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound();
 						}
-						secondMobileFracTextField.setText(value+"");
+						secondMobileFracTextField.setText(NumberUtils.formatNumber(value));
 						sliderValue = (int)
 							(((value-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())*(double)secondMobileFracSlider.getMaximum())/
 							(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()));
@@ -275,11 +315,9 @@ public class FRAPInterpolationPanel extends JPanel {
 						}
 						secondMobileFracSlider.setValue(sliderValue);
 						secondMobileFracSetButton.setEnabled(false);
-						//set immobile fraction label
-						double mobileFrac = Double.parseDouble(mobileFractionTextField.getText());
-						double secondMobileFrac = Double.parseDouble(secondMobileFracTextField.getText());
-						double immobileFrac = 1-mobileFrac-secondMobileFrac;
-						immoFracValueLabel.setText(immobileFrac+"");
+						//set immobile label
+						value = adjustedVals[2];
+						immoFracValueLabel.setText(NumberUtils.formatNumber(value));
 //					}
 					if(!B_HOLD_FIRE){
 						firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
@@ -316,7 +354,85 @@ public class FRAPInterpolationPanel extends JPanel {
 				}
 			}
 		};
-	
+	//array inFractions stores 0:primary mobile fraction 1:secondary M F. 2:immobile fraction
+	private double[] adjustMobileFractions(double[] inFractions, boolean movingPrimaryMFrac)
+	{
+		double primaryMFrac = inFractions[0];
+		double secMFrac = inFractions[1];
+		double immFrac = inFractions[2];
+		//check if second diffusion is applied
+		if(secondDiffRateCheckBox.isSelected())//second diffusion is applied
+		{
+			if(clampCheckBox.isSelected())//immobile fraction is clamped
+			{
+				if(movingPrimaryMFrac)//changing primary mobile fraction
+				{
+					if((primaryMFrac+immFrac) >= 1)
+					{
+						primaryMFrac = 1 - immFrac;
+						secMFrac = 0;
+					}
+					else
+					{
+						secMFrac = 1 - immFrac - primaryMFrac;
+					}
+				}
+				else//changing secondary mobile fraction
+				{
+					if((secMFrac+immFrac) >= 1)
+					{
+						secMFrac = 1 - immFrac;
+						primaryMFrac = 0;
+					}
+					else
+					{
+						primaryMFrac = 1 - immFrac - secMFrac;
+					}
+				}
+			}
+			else //immobile fraction is not clamped
+			{
+				if(movingPrimaryMFrac)//changing primary mobile fraction
+				{
+					if((primaryMFrac+secMFrac) >= 1)
+					{
+						secMFrac = 1 - primaryMFrac;
+						immFrac = 0;
+					}
+					else
+					{
+						immFrac = 1 - primaryMFrac - secMFrac;
+					}
+				}
+				else //changing secondary mobile fraction
+				{
+					if((secMFrac + primaryMFrac) >= 1)
+					{
+						primaryMFrac = 1 - secMFrac;
+						immFrac = 0;
+					}
+					else
+					{
+						immFrac = 1 - primaryMFrac - secMFrac;
+					}
+				}
+			}
+		}
+		else //second diffusion is not applied
+		{	
+			double immoFrac = Double.parseDouble(immoFracValueLabel.getText());
+			if(clampCheckBox.isSelected()) //immobile fraction is clamped
+			{
+				primaryMFrac = 1 - immFrac;
+			}
+			else //immobile fraction is not clamped
+			{
+				immFrac = 1 - primaryMFrac;
+			}
+		}
+		return new double[]{primaryMFrac, secMFrac, immFrac};
+	}
+		
 	public FRAPInterpolationPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -429,7 +545,7 @@ public class FRAPInterpolationPanel extends JPanel {
 
 		final JLabel diffusionRateLabel = new JLabel();
 //		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
-		diffusionRateLabel.setText("Primary  Diffusion Rate:");
+		diffusionRateLabel.setText("Primary  Diffusion  Rate:");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
@@ -451,7 +567,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		add(diffusionRateTextField, gridBagConstraints);
 
 		diffusionRateSetButton = new JButton();
-		diffusionRateSetButton.setMargin(new Insets(0, 2, 0, 2));
+		diffusionRateSetButton.setMargin(new Insets(2, 1, 2, 1));
 		diffusionRateSetButton.addActionListener(SET_ACTION_LISTENER);
 		diffusionRateSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
@@ -488,7 +604,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		secondDiffTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		secondDiffTextField.setPreferredSize(new Dimension(125, 20));
 		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
-		gridBagConstraints_17.insets = new Insets(4, 4, 4, 0);
+		gridBagConstraints_17.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_17.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_17.gridy = 1;
 		gridBagConstraints_17.gridx = 7;
@@ -497,10 +613,10 @@ public class FRAPInterpolationPanel extends JPanel {
 		secondDiffSetButton = new JButton();
 		secondDiffSetButton.setEnabled(false);
 		secondDiffSetButton.addActionListener(SET_ACTION_LISTENER);
-		secondDiffSetButton.setMargin(new Insets(2, 2, 2, 2));
+		secondDiffSetButton.setMargin(new Insets(2, 1, 2, 1));
 		secondDiffSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
-		gridBagConstraints_20.insets = new Insets(4, 0, 4, 4);
+		gridBagConstraints_20.insets = new Insets(2, 0, 2, 2);
 		gridBagConstraints_20.gridy = 1;
 		gridBagConstraints_20.gridx = 8;
 		add(secondDiffSetButton, gridBagConstraints_20);
@@ -510,8 +626,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		secondDiffSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		secondDiffSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_22 = new GridBagConstraints();
-		gridBagConstraints_22.insets = new Insets(2, 2, 2, 35);
-		gridBagConstraints_22.weightx = 1;
+		gridBagConstraints_22.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_22.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_22.gridy = 1;
 		gridBagConstraints_22.gridx = 9;
@@ -519,7 +634,7 @@ public class FRAPInterpolationPanel extends JPanel {
 
 		final JLabel mobileFractionLabel = new JLabel();
 //		mobileFractionLabel.setFont(new Font("", Font.BOLD, 14));
-		mobileFractionLabel.setText("Primary Mobile Fraction:");
+		mobileFractionLabel.setText("Primary  Mobile Fraction:");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
@@ -542,7 +657,7 @@ public class FRAPInterpolationPanel extends JPanel {
 
 		mobileFractionSetButton = new JButton();
 		mobileFractionSetButton.addActionListener(SET_ACTION_LISTENER);
-		mobileFractionSetButton.setMargin(new Insets(0, 2, 0, 2));
+		mobileFractionSetButton.setMargin(new Insets(2, 1, 2, 1));
 		mobileFractionSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.insets = new Insets(2, 0, 2, 2);
@@ -576,7 +691,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		secondMobileFracTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
 		secondMobileFracTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
-		gridBagConstraints_18.insets = new Insets(4, 4, 4, 0);
+		gridBagConstraints_18.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_18.gridy = 2;
 		gridBagConstraints_18.gridx = 7;
@@ -585,21 +700,22 @@ public class FRAPInterpolationPanel extends JPanel {
 		secondMobileFracSetButton = new JButton();
 		secondMobileFracSetButton.setEnabled(false);
 		secondMobileFracSetButton.addActionListener(SET_ACTION_LISTENER);
-		secondMobileFracSetButton.setMargin(new Insets(2, 2, 2, 2));
+		secondMobileFracSetButton.setMargin(new Insets(2, 1, 2, 1));
 		secondMobileFracSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_21 = new GridBagConstraints();
-		gridBagConstraints_21.insets = new Insets(4, 0, 4, 4);
+		gridBagConstraints_21.insets = new Insets(0, 0, 2, 2);
 		gridBagConstraints_21.gridy = 2;
 		gridBagConstraints_21.gridx = 8;
 		add(secondMobileFracSetButton, gridBagConstraints_21);
 
 		secondMobileFracSlider = new JSlider();
+		secondMobileFracSlider.setPreferredSize(new Dimension(0, 0));
 		secondMobileFracSlider.setEnabled(false);
 		secondMobileFracSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		secondMobileFracSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_23 = new GridBagConstraints();
+		gridBagConstraints_23.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_23.weightx = 1;
-		gridBagConstraints_23.insets = new Insets(4, 4, 4, 35);
 		gridBagConstraints_23.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_23.gridy = 2;
 		gridBagConstraints_23.gridx = 9;
@@ -630,7 +746,7 @@ public class FRAPInterpolationPanel extends JPanel {
 
 		bleachWhileMonitorSetButton = new JButton();
 		bleachWhileMonitorSetButton.addActionListener(SET_ACTION_LISTENER);
-		bleachWhileMonitorSetButton.setMargin(new Insets(0, 2, 0, 2));
+		bleachWhileMonitorSetButton.setMargin(new Insets(2, 1, 2, 1));
 		bleachWhileMonitorSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.insets = new Insets(2, 0, 2, 2);
@@ -651,7 +767,7 @@ public class FRAPInterpolationPanel extends JPanel {
 
 		final JLabel immboileFractionLabel = new JLabel();
 //		immboileFractionLabel.setFont(new Font("", Font.BOLD, 14));
-		immboileFractionLabel.setText("Immobile         Fraction:");
+		immboileFractionLabel.setText("Model   Immobile  Fraction:");
 		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
 		gridBagConstraints_16.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_16.gridy = 3;
@@ -659,11 +775,39 @@ public class FRAPInterpolationPanel extends JPanel {
 		add(immboileFractionLabel, gridBagConstraints_16);
 
 		immoFracValueLabel = new JLabel();
+		immoFracValueLabel.setIconTextGap(0);
 		immoFracValueLabel.setText("New JLabel");
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
+		gridBagConstraints_19.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_19.gridy = 3;
 		gridBagConstraints_19.gridx = 7;
 		add(immoFracValueLabel, gridBagConstraints_19);
+
+		clampCheckBox = new JCheckBox();
+		clampCheckBox.setText("Clamp");
+//		clampCheckBox.setSelected(true);
+		clampCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent arg0) {
+				if(clampCheckBox.isSelected()&& !secondDiffRateCheckBox.isSelected())
+				{
+					mobileFractionSlider.setEnabled(false);
+					mobileFractionTextField.setEnabled(false);
+				}
+				else
+				{
+					mobileFractionSlider.setEnabled(true);
+					mobileFractionTextField.setEnabled(true);
+				}
+			}
+		});
+		final GridBagConstraints gridBagConstraints_25 = new GridBagConstraints();
+		gridBagConstraints_25.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_25.ipadx = 5;
+		gridBagConstraints_25.insets = new Insets(0, 0, 0, 0);
+		gridBagConstraints_25.gridwidth = 2;
+		gridBagConstraints_25.gridy = 3;
+		gridBagConstraints_25.gridx = 8;
+		add(clampCheckBox, gridBagConstraints_25);
 	}
 
 	private void initialize(){
@@ -813,7 +957,19 @@ public class FRAPInterpolationPanel extends JPanel {
 		bleachWhileMonitorRateTextField.setText((monitorBleachRate != null
 				?NumberUtils.formatNumber(monitorBleachRate.doubleValue())
 				:"0"));
-		
+		String immFrac = "";
+		if(mobileFraction != null)
+		{
+			if(secondMobileFrac != null)
+			{
+				immFrac = (1 - mobileFraction.doubleValue() - secondMobileFrac.doubleValue())+"";
+			}
+			else
+			{
+				immFrac = (1 - mobileFraction.doubleValue())+"";
+			}
+		}
+		immoFracValueLabel.setText(immFrac);
 		B_HOLD_FIRE = true;
 		diffusionRateSetButton.doClick();
 		mobileFractionSetButton.doClick();
@@ -938,6 +1094,8 @@ public class FRAPInterpolationPanel extends JPanel {
 	
 	private void enableSecondDiffComponents()
 	{
+		mobileFractionSlider.setEnabled(true);
+		mobileFractionTextField.setEnabled(true);
 		secondDiffTextField.setEnabled(true);
 		secondDiffSlider.setEnabled(true);
 		secondMobileFracTextField.setEnabled(true);
@@ -946,6 +1104,11 @@ public class FRAPInterpolationPanel extends JPanel {
 	
 	private void disableSecondDiffComponents()
 	{
+		if(clampCheckBox.isSelected())
+		{
+			mobileFractionSlider.setEnabled(false);
+			mobileFractionTextField.setEnabled(false);
+		}
 		secondDiffTextField.setText(INI_SECOND_DIFF_RATE);
 		secondDiffTextField.setEnabled(false);
 		secondDiffSlider.setEnabled(false);
