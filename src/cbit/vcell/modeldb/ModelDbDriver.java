@@ -172,7 +172,8 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
-	GlobalModelParameterTable.table.setModelParameters(con, model);
+	// moved adding global parameters to model to getModel(rset, con, user) method invoked above.
+	//	GlobalModelParameterTable.table.setModelParameters(con, model);
 	return model;
 }
 
@@ -222,6 +223,10 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 			model.setSpeciesContexts(speciesContexts);
 		}
 
+		//
+		// Add global parameters to the model
+		//
+		GlobalModelParameterTable.table.setModelParameters(con, model);
 		
 		//
 		// add reactionSteps for this model

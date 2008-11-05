@@ -1,4 +1,7 @@
 package cbit.vcell.mapping;
+
+import cbit.vcell.model.Model.ModelParameter;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2006 3:47:33 PM)
@@ -69,8 +72,14 @@ void put(cbit.vcell.parser.SymbolTableEntry biologicalSymbol, String varName) {
 		return;
 	}
 	String previousVarName = (String)biologicalToMathSymbolNameHash.get(biologicalSymbol);
-	if (previousVarName != null && !varName.equals(previousVarName)){
-		throw new RuntimeException("biological symbol '"+biologicalSymbol.getName()+"' mapped to two math symbols, '"+varName+"' and '"+previousVarName+"'");
+	if ( (biologicalSymbol instanceof ModelParameter &&  !((ModelParameter)biologicalSymbol).getExpression().isNumeric()) ) {
+		// if the biologicalSymbol is a global parameter and is not a constant, do nothing (don't check for previousVarName=varName).
+		// ** the biologicalSymbol has multiple variables in the math, we will only save the last one. **
+		// For all other biologicalSymbol and global parameters that are constants, go ahead as usual (else).
+	} else {
+		if (previousVarName != null && !varName.equals(previousVarName)){
+			throw new RuntimeException("biological symbol '"+biologicalSymbol.getName()+"' mapped to two math symbols, '"+varName+"' and '"+previousVarName+"'");
+		}
 	}
 	//System.out.println(cbit.util.BeanUtils.forceStringSize(biologicalSymbol.getName(),25," ",true)+" ---> "+varName);
 	biologicalToMathSymbolNameHash.put(biologicalSymbol,varName);

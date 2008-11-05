@@ -13,6 +13,7 @@ import cbit.vcell.units.VCUnitException;
 import cbit.gui.DialogUtils;
 import cbit.util.ISize;
 import cbit.util.Issue;
+import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model.ModelParameter;
@@ -41,6 +42,7 @@ public class MathMapping implements ScopedSymbolTable {
 	protected Vector<Issue> issueList = new Vector<Issue>();
 
 	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
+	private Hashtable<ModelParameter, Hashtable<String, Expression>> globalParamVariantsHash = new Hashtable<ModelParameter, Hashtable<String,Expression>>();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private NameScope nameScope = new MathMappingNameScope();
@@ -702,6 +704,20 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 		ProxyParameter pp = (ProxyParameter)ste;
 		return getMathSymbol0(pp.getTarget(),structureMapping);
 	}
+	
+	// 
+	if (ste instanceof ModelParameter) {
+		ModelParameter mp = (ModelParameter)ste;
+		if (simContext.getGeometry().getDimension() == 0) {
+			return mp.getName();
+		} else {
+			if (mp.getExpression().getSymbols() == null) {
+				return mp.getName();
+			}
+			return (mp.getName()+"."+TokenMangler.fixTokenStrict(structureMapping.getStructure().getName()));
+		}
+	}
+	
 	if (ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)ste;
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialConcentration){
@@ -806,7 +822,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				if (sc.getStructure()==membrane.getInsideFeature()){
 					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
-						if (!scs.isDiffusing()){
+					/*	if (!scs.isDiffusing()){
 							throw new MappingException("species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()+"') interacts"+
 														"\n  with the spatially resolved membrane '"+membrane.getName()+"'"+
 														"\n  which results in a flux, so it must diffuse."+
@@ -814,13 +830,14 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 														"\nenable diffusion and set a non-zero diffusion rate for species '"+sc.getName()+"'"+
 														"\n or disable those reaction(s)");
 						}
+					*/
 						return scm.getVariable().getName()+"_INSIDE";
 					}else{
 						return scm.getSpeciesContext().getName();
 					}
 				}else if (sc.getStructure()==membrane.getOutsideFeature()){
 					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
-						if (!scs.isDiffusing()){
+					/*	if (!scs.isDiffusing()){
 							throw new MappingException("species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()+"') interacts"+
 														"\n  with the spatially resolved membrane '"+membrane.getName()+"'"+
 														"\n  which results in a flux, so it must diffuse."+
@@ -828,6 +845,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 														"\nenable diffusion and set a non-zero diffusion rate for species '"+sc.getName()+"'"+
 														"\n or disable those reaction(s)");
 						}
+					*/
 						return scm.getVariable().getName()+"_OUTSIDE";
 					}else{
 						return scm.getSpeciesContext().getName();
@@ -1183,7 +1201,6 @@ private void refreshKFluxParameters() throws ExpressionException {
 	}
 }
 
-
 /**
  * This method was created in VisualAge.
  */
@@ -1191,6 +1208,56 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
 	simContext.checkValidity();
+	
+	//
+	// temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
+	//
+	VariableHash varHash = new VariableHash();
+	StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
+	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
+	
+	if (simContext.getGeometry().getDimension() == 0) {
+		//
+		// global parameters from model (that presently are constants)
+		//
+		for (int j=0;j<modelParameters.length;j++){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), modelParameters[j].getExpression()));
+		}
+	} else {
+		// populate in globalParameterVariants hashtable
+		for (int j = 0; j < modelParameters.length; j++){
+			Hashtable<String, Expression> structMappingVariantsHash = new Hashtable<String, Expression>();
+			String paramVariantName = null;
+			Expression paramVariantExpr = null;
+			for (int k = 0; k < structureMappings.length; k++) {
+				if (modelParameters[j].getExpression().getSymbols() == null) {
+					paramVariantName = modelParameters[j].getName();
+					paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), null);
+				} else {
+					paramVariantName = modelParameters[j].getName()+"."+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
+					paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), structureMappings[k]);
+				}
+				structMappingVariantsHash.put(paramVariantName, paramVariantExpr);
+			}
+			globalParamVariantsHash.put(modelParameters[j], structMappingVariantsHash);
+		}
+		//
+		// global parameters from model add all variants (due to different structureMappings)
+		//
+		for (int j=0;j<modelParameters.length;j++){
+			if (modelParameters[j].getExpression().getSymbols() == null) {
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), getIdentifierSubstitutions(modelParameters[j].getExpression(),modelParameters[j].getUnitDefinition(),null)));
+			} else {
+				Hashtable<String, Expression> smVariantsHash = globalParamVariantsHash.get(modelParameters[j]);
+				for (int k = 0; k < structureMappings.length; k++) {
+					String variantName = modelParameters[j].getName()+"."+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
+					Expression variantExpr = smVariantsHash.get(variantName);
+					varHash.addVariable(newFunctionOrConstant(variantName, variantExpr));
+				}
+			}
+		}
+	}
+	
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 	//
@@ -1266,11 +1333,6 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	}
 
 	//
-	// temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
-	//
-	VariableHash varHash = new VariableHash();
-	
-	//
 	// volume variables
 	//
 	Enumeration enum1 = getSpeciesContextMappings();
@@ -1302,7 +1364,6 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	// only calculate potential if at least one MembraneMapping has CalculateVoltage == true
 	//
 	boolean bCalculatePotential = false;
-	StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 	for (int i = 0; i < structureMappings.length; i++){
 		if (structureMappings[i] instanceof MembraneMapping){
 			if (((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
@@ -1510,15 +1571,6 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	}
 
 	//
-	// global parameters from model (that presently are constants)
-	//
-	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
-	for (int j=0;j<modelParameters.length;j++){
-		varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), modelParameters[j].getExpression()));
-	}
-
-	
-	//
 	// kinetic constants that evaluate to constants
 	//
 	for (int j=0;j<reactionSteps.length;j++){
@@ -1577,7 +1629,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				}catch (ExpressionException e){
 					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(rs.getStructure());
 					Expression exp = getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),sm);
-					Function function = new Function(getMathSymbol(parameters[i],null),exp);
+					Function function = new Function(getMathSymbol(parameters[i],sm),exp);
 					varHash.addVariable(function);
 				}
 			}
