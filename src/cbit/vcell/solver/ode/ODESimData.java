@@ -11,7 +11,11 @@ import cbit.vcell.server.*;
 import cbit.vcell.math.*;
 import java.io.*;
 import java.util.*;
+
+import ucar.ma2.ArrayDouble;
 import cbit.vcell.simdata.*;
+import cbit.vcell.solver.stoch.NetCDFEvaluator;
+import cbit.vcell.solver.stoch.NetCDFReader;
 import cbit.vcell.solvers.FunctionFileGenerator;
 /**
  * Insert the class' description here.
@@ -444,6 +448,167 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 	if (keepMost > 0) {
 		odeSimData.trimRows(keepMost);
 	}
+	return odeSimData;
+}
+
+
+public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, File functionsFile) throws DataAccessException {
+	// read ida file
+	System.out.println("reading NetCDF file : " + dataFile);
+	ODESimData odeSimData = new ODESimData();	
+	odeSimData.formatID = NETCDF_DATA_FORMAT_ID;
+	odeSimData.mathName = vcdId.getID();
+	
+	//read .stoch file, this funciton here equals to getODESolverRestultSet()+getStateVariableResultSet()  in ODE.
+	try{
+		NetCDFEvaluator ncEva = new NetCDFEvaluator();
+		NetCDFReader ncReader = null;
+		try
+		{
+			ncEva.setNetCDFTarget(dataFile.getAbsolutePath());
+			ncReader = ncEva.getNetCDFReader();
+		}catch (Exception e) {
+			e.printStackTrace(System.err);
+			throw new RuntimeException("Cannot open simulation result file: "+ dataFile.getAbsolutePath() +"!");
+		}
+		
+		//  Read result according to trial number
+		if(ncReader.getNumTrials() == 1)
+		{
+			//Read header
+			String[] varNames = ncReader.getSpeciesNames_val();
+			//first column will be time t.
+			odeSimData.addDataColumn(new ODESolverResultSetColumnDescription("t"));
+			//following columns are stoch variables
+			for(int i=0; i< varNames.length; i++)
+			{
+				odeSimData.addDataColumn(new ODESolverResultSetColumnDescription(varNames[i]));
+			}
+			
+			//Read data
+			ArrayDouble data = (ArrayDouble)ncEva.getTimeSeriesData(1);//data only, no time points
+			double timePoints[] = ncReader.getTimePoints();
+			System.out.println("time points length is "+timePoints.length);
+			//shape[0]:num of timepoints, shape[1]: num of species
+			int[] shape = data.getShape();
+            
+			if(shape.length == 1) //one species
+			{
+				ArrayDouble.D1 temData = (ArrayDouble.D1)data;
+				System.out.println("one species in time series data and size is "+temData.getSize());
+				for(int k=0; k<timePoints.length; k++)//rows
+				{
+					double[] values = new double[odeSimData.getDataColumnCount()];
+					values[0]=timePoints[k];
+					for(int i=1; i< odeSimData.getDataColumnCount(); i++)
+					{
+						values[i]=temData.get(k);
+					}
+					odeSimData.addRow(values);
+				}
+			}
+			
+			if(shape.length == 2) //more than one species
+			{
+				ArrayDouble.D2 temData = (ArrayDouble.D2)data;
+				System.out.println("multiple species in time series, the length of time series is :"+data.getShape()[0]+", and the total number of speceis is: "+data.getShape()[1]);
+				for(int k=0; k<timePoints.length; k++)//rows
+				{
+					double[] values = new double[odeSimData.getDataColumnCount()];
+					values[0]=timePoints[k];
+					for(int i=1; i<odeSimData.getDataColumnCount(); i++)
+					{
+						values[i]=temData.get(k, i-1);
+					}
+					odeSimData.addRow(values);
+				}
+			}
+		}
+		else if(ncReader.getNumTrials() > 1)
+		{
+			//Read header
+			String[] varNames = ncReader.getSpeciesNames_val();
+			//first column will be time t.
+			odeSimData.addDataColumn(new ODESolverResultSetColumnDescription("TrialNo"));
+			//following columns are stoch variables
+			for(int i=0; i< varNames.length; i++)
+			{
+				odeSimData.addDataColumn(new ODESolverResultSetColumnDescription(varNames[i]));
+			}
+			
+			//Read data
+			ArrayDouble data = (ArrayDouble)ncEva.getDataOverTrials(ncReader.getTimePoints().length-1);//data only, no trial numbers
+			int trialNum[] = ncEva.getNetCDFReader().getTrialNumbers();
+			//System.out.println("total trials are "+trialNum.length);
+			//shape[0]:number of trials, shape[1]: num of species
+			int[] shape = data.getShape();
+            
+			if(shape.length == 1) //one species
+			{
+				ArrayDouble.D1 temData = (ArrayDouble.D1)data;
+				//System.out.println("one species over trials, size is: "+temData.getSize());
+				for(int k=0; k<trialNum.length; k++)//rows
+				{
+					double[] values = new double[odeSimData.getDataColumnCount()];
+					values[0]=trialNum[k];
+					for(int i=1; i<odeSimData.getDataColumnCount(); i++)
+					{
+						values[i]=temData.get(k);
+					}
+					odeSimData.addRow(values);
+				}
+			}
+			
+			if(shape.length == 2) //more than one species
+			{
+				ArrayDouble.D2 temData = (ArrayDouble.D2)data;
+				//System.out.println("multiple species in multiple trials, the length of trials is :"+data.getShape()[0]+", and the total number of speceis is: "+data.getShape()[1]);
+				for(int k=0; k<trialNum.length; k++)//rows
+				{
+					double[] values = new double[odeSimData.getDataColumnCount()];
+					values[0]=trialNum[k];
+					for(int i=1; i<odeSimData.getDataColumnCount(); i++)
+					{
+						values[i]=temData.get(k, i-1);
+					}
+					odeSimData.addRow(values);
+				}
+			}
+		}
+		else
+		{
+			throw new RuntimeException("Number of trials should be a countable positive value, from 1 to N.");
+		}
+		
+	} catch (Exception e) {
+		e.printStackTrace(System.err);
+		throw new RuntimeException("Problem encountered in parsing hybrid simulation results.\n"+e.getMessage());
+	} 
+	
+	// read functions file
+	
+	if (!odeSimData.getColumnDescriptions(0).getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) {
+		Vector<AnnotatedFunction> funcList;
+		try {
+			funcList = FunctionFileGenerator.readFunctionsFile(functionsFile);
+			for (AnnotatedFunction func : funcList){
+				try {
+					Expression expression = new Expression(func.getExpression());
+					odeSimData.addFunctionColumn(new FunctionColumnDescription(expression, func.getName(), null, func.getName(), false));
+				} catch (ExpressionException e) {
+					throw new RuntimeException("Could not add function " + func.getName() + " to annotatedFunctionList");
+				}
+			}	
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace(System.out);
+			throw new DataAccessException(e1.getMessage());
+		} catch (IOException e1) {
+			e1.printStackTrace(System.out);
+			throw new DataAccessException(e1.getMessage());
+		}
+	}
+
+	
 	return odeSimData;
 }
 }

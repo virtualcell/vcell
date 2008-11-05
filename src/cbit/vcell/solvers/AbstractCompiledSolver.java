@@ -5,6 +5,9 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.io.*;
+import java.util.Vector;
+
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 /**
@@ -182,5 +185,26 @@ public final void stopSolver() {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STOPPED,"User aborted simulation"));
 		fireSolverStopped();
 	}
+}
+
+//Added Nov 2008.
+public abstract Vector<AnnotatedFunction> createFunctionList();
+
+
+//Added Nov 2008. For new mechanism of simulation data retrive. (No binary file is written for variables and functions from now on)
+public void writeFunctionsFile() {
+	// ** Dumping the functions of a simulation into a '.functions' file.
+	String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
+	Vector<AnnotatedFunction> funcList = createFunctionList();
+	
+	//Try to save existing user defined functions
+	FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList);
+
+	try {
+		functionFileGenerator.generateFunctionFile();		
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
+	}		
 }
 }

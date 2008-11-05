@@ -330,23 +330,7 @@ private void writeLogFile() throws SolverException {
 	}
 }
 
-private void writeFunctionsFile() {
-	// ** Dumping the functions of a simulation into a '.functions' file.
-	String functionFileName = getBaseName() + ".functions";
-	Vector<AnnotatedFunction> funcList = createFunctionList();
-	
-	//Try to save existing user defined functions
-	FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList.toArray(new AnnotatedFunction[0]));
-
-	try {
-		functionFileGenerator.generateFunctionFile();		
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
-	}		
-}
-
-private Vector<AnnotatedFunction> createFunctionList() {
+public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	// add appropriate Function columns to result set
 	//

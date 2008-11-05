@@ -31,7 +31,7 @@ public static void main(java.lang.String[] args) {
 		cbit.vcell.biomodel.BioModel model = cbit.vcell.biomodel.BioModelTest.getExample();
 		Simulation[] sims = model.getSimulations();
 
-		AnnotatedFunction[] annotatedFunctionList = FVSolver.createAnnotatedFunctionsList(sims[1]);
+		Vector <AnnotatedFunction> annotatedFunctionList = FVSolver.createAnnotatedFunctionsList(sims[1]);
 		
 		FunctionFileGenerator funcFileGen = new FunctionFileGenerator("\\\\C:\\"+sims[1].getName()+".functions", annotatedFunctionList);
 		System.out.println("\n\n FILE NAME : "+funcFileGen.getBasefileName()+"\n\n");

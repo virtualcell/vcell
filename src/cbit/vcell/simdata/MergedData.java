@@ -83,11 +83,7 @@ public synchronized void addFunction(AnnotatedFunction function,boolean bReplace
 		}else{
 			addFunctionToList(function);
 		}
-	
-		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
-		annotatedFunctionList.copyInto(annotatedFunctions);
-
-		FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
+		FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctionList);
 		ffg.generateFunctionFile();
 
 		// my lastModified and length should be changed because I just rewrote the file.
@@ -1110,10 +1106,9 @@ public void removeFunction(AnnotatedFunction function) throws DataAccessExceptio
 
 	if (bFoundAndRemoved) {
 		// if function was found in annotatedFuncslist and removed, the function file has to be updated.
-		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
-		annotatedFunctionList.copyInto(annotatedFunctions);
+		
 		try {
-			FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
+			FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctionList);
 			ffg.generateFunctionFile();
 
 			// my lastModified and length should be changed because I just rewrote the file.

@@ -1,13 +1,19 @@
 package cbit.vcell.solver.stoch;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import ucar.ma2.ArrayDouble;
 
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.server.PropertyLoader;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
@@ -102,7 +108,7 @@ public int getSaveToFileInterval() {
  * Creation date: (8/15/2006 11:36:43 AM)
  * @return cbit.vcell.solver.stoch.StochSolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
+private cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
 {
 	//read .stoch file, this funciton here equals to getODESolverRestultSet()+getStateVariableResultSet()  in ODE.
 	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
@@ -267,6 +273,26 @@ public cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
 	
 }
 
+private void writeLogFile() throws SolverException {
+	String logFile = getBaseName() + LOGFILE_EXTENSION;
+	String netCDFFileName = new File(getBaseName() + NETCDF_DATA_EXTENSION).getName();
+	PrintWriter pw = null;
+	try {
+		pw = new PrintWriter(logFile);
+		pw.println(NETCDF_DATA_IDENTIFIER);
+		pw.println(NETCDF_DATA_FORMAT_ID);
+		pw.println(netCDFFileName);
+		pw.close();
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+		throw new SolverException(e.getMessage());
+	} finally {
+		if (pw != null) {
+			pw.close();
+		}
+	}
+}
+
 
 /**
  *  This method takes the place of the old runUnsteady()...
@@ -276,6 +302,10 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	cbit.vcell.server.SessionLog sessionLog = getSessionLog();
 	sessionLog.print("HybridSolver.initialize()");
 	fireSolverStarting("HybridSolver initializing...");
+	writeFunctionsFile();
+	writeLogFile();
+	
+	
 	//
 	String inputFilename = getBaseName() + ".nc";//file used by precompiled solver.
 	//
@@ -361,8 +391,12 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 private final void printStochFile() throws IOException
 {
 	// executable writes .stoch file, now we write things in .stochbi format
-	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = ((HybridSolver)this).getHybridSolverResultSet();
-//	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
+//	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = ((HybridSolver)this).getHybridSolverResultSet();
+//	if (stSolverResultSet == null) {
+//		return;
+//	}
+	
+	//	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
 //	String mathName = stSimData.getMathName();
 //	getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
 //	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
@@ -451,5 +485,33 @@ public static void main(String[] args) {
 		e.printStackTrace(System.err);
 	}
 	
+}
+
+
+public Vector<AnnotatedFunction> createFunctionList() {
+	//
+	// add appropriate Function columns to result set
+	//
+	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
+	
+	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	for (int i = 0; i < functions.length; i++){
+		if (isFunctionSaved(functions[i])){
+			Expression exp1 = new Expression(functions[i].getExpression());
+			try {
+				exp1 = getSimulation().substituteFunctions(exp1).flatten();
+			} catch (cbit.vcell.math.MathException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			} catch (cbit.vcell.parser.ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			}
+			
+			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, false);
+			funcList.add(af);
+		}
+	}
+	return funcList;
 }
 }

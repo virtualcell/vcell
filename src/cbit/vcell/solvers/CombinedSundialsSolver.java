@@ -1,10 +1,12 @@
 package cbit.vcell.solvers;
 
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.IDASolverStandalone;
 import java.io.*;
+import java.util.Vector;
 
 /**
  * Insert the type's description here.
@@ -80,5 +82,10 @@ protected void initialize() throws SolverException {
 @Override
 protected MathExecutable getMathExecutable() {	
 	return realSolver.getMathExecutable();
+}
+
+@Override
+public Vector<AnnotatedFunction> createFunctionList() {
+	return realSolver.createFunctionList();
 }
 }

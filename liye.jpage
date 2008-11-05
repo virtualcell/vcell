@@ -1,0 +1,19 @@
+cbit.vcell.parser.Expression diffExp = new cbit.vcell.parser.Expression("5*X*(-1+X)*(-2+X)*Y*(Y-1)");
+String[] varSymbols = diffExp.getSymbols();
+java.util.Hashtable varInProbOrderHash = new java.util.Hashtable<String, Integer>();
+for (int j = 0; j < varSymbols.length; j++) {
+      String var = varSymbols[j];
+      try{  
+	      diffExp = diffExp.differentiate(var).flatten();
+	      varInProbOrderHash.put(var,new Integer(1));
+	      while (diffExp.hasSymbol(var)){	    	  Integer v = ((Integer)varInProbOrderHash.get(var));	    	  varInProbOrderHash.put(var,new Integer(v.intValue()+1));
+	          diffExp = diffExp.differentiate(var).flatten();
+	      }
+      }catch(cbit.vcell.parser.ExpressionException e)
+      {
+    	  e.printStackTrace(System.err);
+    	  throw new cbit.vcell.parser.ExpressionException(e.getMessage());
+      }
+      double a = new flanagan.math.Fmath().factorial(5);
+      
+      System.out.println("var "+varSymbols[j]+" has order "+varInProbOrderHash.get(var));}System.out.println(diffExp.infix());try {	cbit.vcell.solver.stoch.PropensitySolver.RootOrderIterator iter = new cbit.vcell.solver.stoch.PropensitySolver.RootOrderIterator(7,5);	while (iter.nextOrder()!=null){		iter.show();	}	System.out.println("really done");}catch(Exception e){	e.printStackTrace();}try{	cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression("(8*t+Si)*So");	//cbit.vcell.parser.Expression exp_d=exp.differentiate("So");	exp.substituteInPlace(new cbit.vcell.parser.Expression("So"), new cbit.vcell.parser.Expression(0));	System.out.println("origin:"+exp.infix());	System.out.println(exp.flatten().infix());}catch(cbit.vcell.parser.ExpressionException e){	e.printStackTrace();}	double delT = 0.1;		double s = 1;	double[] timePoints = new double[1000];	for (int i=0;i<timePoints.length;i++){		timePoints[i] = i*delT;	}	double[] shiftedTimePoints = new double[timePoints.length];	shiftedTimePoints[0] = 0;	for(int i=1; i< timePoints.length; i++)	{		shiftedTimePoints[i] = shiftedTimePoints[i-1]+s*(timePoints[i-1]+delT)*delT;		double t = timePoints[i];		double newT = (s/2.0)*(t*t+delT*t);		System.out.println("n="+i+", t="+timePoints[i]+", newT="+shiftedTimePoints[i]+", formula="+newT);	}	
