@@ -199,24 +199,23 @@ private void scan(File userDir, File outputDir) throws Exception {
 			File fnFile = functionFiles[i];
 			if (fnFile.exists()) {
 				// read the functions from the function files and and check if they have spaces
-				Vector annotatedFnsVector = FunctionFileGenerator.readFunctionsFile(fnFile);
+				Vector<AnnotatedFunction> annotatedFnsVector = FunctionFileGenerator.readFunctionsFile(fnFile);
 				boolean bNameHasSpaces = false;
-				AnnotatedFunction[] newAnnotatedFunctions = new AnnotatedFunction[annotatedFnsVector.size()];
 				for (int j = 0; j < annotatedFnsVector.size(); j++) {
-					AnnotatedFunction afn = (AnnotatedFunction)annotatedFnsVector.elementAt(j);
+					AnnotatedFunction afn = annotatedFnsVector.elementAt(j);
 					if (afn.getName().indexOf(" ") > 0) {
 						// if function name has space, mangle the name and store the function in a different list.
 						bNameHasSpaces = true;
 						String newName = cbit.util.TokenMangler.fixTokenStrict(afn.getName());
-						newAnnotatedFunctions[j] = new AnnotatedFunction(newName, afn.getExpression(), afn.getErrorString(), afn.getFunctionType(), afn.isUserDefined());
+						annotatedFnsVector.set(j, new AnnotatedFunction(newName, afn.getExpression(), afn.getErrorString(), afn.getFunctionType(), afn.isUserDefined()));
 					} else {
-						newAnnotatedFunctions[j] = afn;
+						annotatedFnsVector.set(j, afn);
 					}
 				}
 				
 				// If function file had function(s) with space(s), need to rewrite function file
 				if (bNameHasSpaces) {
-					FunctionFileGenerator ffg = new cbit.vcell.solvers.FunctionFileGenerator(fnFile.getPath(), newAnnotatedFunctions);
+					FunctionFileGenerator ffg = new cbit.vcell.solvers.FunctionFileGenerator(fnFile.getPath(), annotatedFnsVector);
 					ffg.generateFunctionFile();
 					filesWithSpaceInNames++;
 					totalNumOfFilesModified++;

@@ -2,8 +2,11 @@ package cbit.vcell.modelopt;
 import cbit.vcell.mapping.StructureMapping;
 import java.util.Vector;
 import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.ode.FunctionColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)
@@ -251,13 +254,13 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(Opt
 		//
 		// add functions (evaluating them at optimal parameter)
 		//
-		cbit.vcell.math.AnnotatedFunction[] annotatedFunctions = cbit.vcell.solvers.FVSolver.createAnnotatedFunctionsList(simulation);
-		for (int i = 0; i < annotatedFunctions.length; i++){
-			cbit.vcell.parser.Expression funcExp = annotatedFunctions[i].getExpression();
+		Vector <AnnotatedFunction> annotatedFunctions = cbit.vcell.solvers.FVSolver.createAnnotatedFunctionsList(simulation);
+		for (AnnotatedFunction f: annotatedFunctions){
+			Expression funcExp = f.getExpression();
 			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {
-				funcExp.substituteInPlace(new cbit.vcell.parser.Expression(optResultSet.getParameterNames()[j]), new cbit.vcell.parser.Expression(optResultSet.getParameterValues()[j]));
+				funcExp.substituteInPlace(new Expression(optResultSet.getParameterNames()[j]), new Expression(optResultSet.getParameterValues()[j]));
 			}
-			odeSolverResultSet.addFunctionColumn(new cbit.vcell.solver.ode.FunctionColumnDescription(annotatedFunctions[i].getExpression(),annotatedFunctions[i].getName(),null,annotatedFunctions[i].getName(),false));
+			odeSolverResultSet.addFunctionColumn(new FunctionColumnDescription(funcExp,f.getName(),null,f.getName(),false));
 		}
 
 		return odeSolverResultSet;

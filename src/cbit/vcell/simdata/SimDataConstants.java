@@ -17,7 +17,7 @@ public interface SimDataConstants {
 	public static final String SIMPLE_ODE_DATA_FORMAT_ID = "SimpleODEData binary format version 1";
 	public static final String GENERIC_ODE_DATA_FORMAT_ID = "GenericODEData binary format version 1";
 	public static final String COMPACT_ODE_DATA_FORMAT_ID = "CompactODEData binary format version 1";
-	public static final String NETCDF_DATA_FORMAT_ID = "NetCDFData binary format version 1"; //netcdf for hybrid stoch
+	public static final String NETCDF_DATA_FORMAT_ID = "NetCDFData binary format version 2"; //netcdf for hybrid stoch
 	public static final String IDA_DATA_FORMAT_ID = "IDAData text format version 1";
 	public static final int STATE_VARIABLE = 1;
 	public static final String NO_VARIABLE = "";	

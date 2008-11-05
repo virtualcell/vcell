@@ -46,9 +46,14 @@ public class SimulationData extends VCData implements SymbolTable {
 
 	private boolean particleDataExists = false;
 	private boolean isODEData = false;
+	
+	private boolean bZipFormat2 = false;
+	private boolean bZipFormat1 = false;
+	private int odeKeepMost = 0;
+	private String odeIdentifier = null;
 
 	private DataMoverThread dataMover = new DataMoverThread();
-
+	
 	public class DataMoverThread implements Runnable {
 		private File serverDirectory = null;
 		private LocalSolverController localSolverController = null;
@@ -195,11 +200,7 @@ public class SimulationData extends VCData implements SymbolTable {
 			}
 		}
 	}
-	private boolean bZipFormat2 = false;
-	private boolean bZipFormat1 = false;
-	private boolean bOdeDataFormat = true;
-	private int odeKeepMost = 0;
-
+	
 /**
  * SimResults constructor comment.
  */
@@ -268,13 +269,12 @@ public synchronized void addFunction(AnnotatedFunction function,boolean bReplace
 	
 		File firstFuncFile = getFirstJobFunctionsFile();
 		File jobFuncFile = getJobFunctionsFile();
-		AnnotatedFunction[] annotatedFunctions = null;
+		Vector<AnnotatedFunction> firstJobFunctions = null;
 		
 		if (firstFuncFile.equals(jobFuncFile)) {
-			annotatedFunctions = new AnnotatedFunction[annotatedFunctionList.size()];
-			annotatedFunctionList.copyInto(annotatedFunctions);
+			firstJobFunctions = annotatedFunctionList;
 		} else {
-			Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
+			firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
 			if (bReplace) {
 				for (int i = 0; i < firstJobFunctions.size(); i ++) {
 					AnnotatedFunction f = firstJobFunctions.elementAt(i);
@@ -286,11 +286,9 @@ public synchronized void addFunction(AnnotatedFunction function,boolean bReplace
 			} else {
 				firstJobFunctions.add(function);
 			}
-			annotatedFunctions = new AnnotatedFunction[firstJobFunctions.size()];
-			firstJobFunctions.copyInto(annotatedFunctions);
 		}
 
-		FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), annotatedFunctions);
+		FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), firstJobFunctions);
 		ffg.generateFunctionFile();
 	
 		// my lastModified and length should be changed because I just rewrote the file.
@@ -446,10 +444,22 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 		// for ODE's we need to rebuild
 		try {
 			ODESimData odeSimData = null;
-			if (bOdeDataFormat) {
+			if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
 				odeSimData = ODESimData.readODEDataFile(getODEDataFile());
-			} else {
+			} else if(odeIdentifier.equals(IDA_DATA_IDENTIFIER))
+			{
 				odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getJobFunctionsFile());
+			}
+			else if (odeIdentifier.equals(NETCDF_DATA_IDENTIFIER))
+			{
+				odeSimData = ODESimData.readNCDataFile(vcDataId, getODEDataFile(), getJobFunctionsFile());
+			}
+			else
+			{
+				throw new DataAccessException("Unexpected data format:"+odeIdentifier);
+			}
+			if (odeSimData == null) {
+				return null;
 			}
 			dataTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
 		}catch (ExpressionException e){
@@ -460,7 +470,6 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 			throw new DataAccessException("error getting dataset times: "+e.getMessage());
 		}
 	}
-	
 	return dataTimes;
 }
 
@@ -713,10 +722,20 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 	long lastModified = file.lastModified();
 	ODESimData odeSimData = null;
 	try {
-		if (bOdeDataFormat) {
+		
+		if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
 			odeSimData = ODESimData.readODEDataFile(getODEDataFile());
-		} else {
+		} else if(odeIdentifier.equals(IDA_DATA_IDENTIFIER))
+		{
 			odeSimData = ODESimData.readIDADataFile(vcDataId, getODEDataFile(), odeKeepMost, getJobFunctionsFile());
+		}
+		else if (odeIdentifier.equals(NETCDF_DATA_IDENTIFIER))
+		{
+			odeSimData = ODESimData.readNCDataFile(vcDataId, getODEDataFile(), getJobFunctionsFile());
+		}
+		else
+		{
+			throw new DataAccessException("Unexpected data format:"+odeIdentifier);
 		}
 		if (odeSimData == null) {
 			return null;
@@ -1425,19 +1444,14 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	if (stringBuffer.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
 	}
-	if ((stringBuffer.toString().startsWith(IDA_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)))
+	if ((stringBuffer.toString().startsWith(IDA_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(NETCDF_DATA_IDENTIFIER)))
 	{
 		String newLineDelimiters = "\n\r";
 		StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
 		isODEData = true;
-		String odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
-		if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
-			bOdeDataFormat = true;
-		} else if (odeIdentifier.equals(IDA_DATA_IDENTIFIER)) {
-			bOdeDataFormat = false;
-		} else {
-			throw new DataAccessException("unexpected data format " + odeIdentifier + " in log file.");
-		}
+		//memorize format
+		odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
+		
 		String odeDataFormat = lineTokenizer.nextToken(); // br.readLine();
 		dataFilenames = new String[] { lineTokenizer.nextToken() }; // {br.readLine()};
 		if (lineTokenizer.hasMoreTokens()) {
@@ -1716,14 +1730,13 @@ public synchronized void removeFunction(AnnotatedFunction function) throws DataA
 	if (bFoundAndRemoved) {		
 		try {	
 			// if function was found in annotatedFuncslist and removed, the function file has to be updated.
-			AnnotatedFunction[] annotatedFunctions = null;
+			Vector<AnnotatedFunction> firstJobFunctions = null;
 			File firstFuncFile = getFirstJobFunctionsFile();
 			File jobFuncFile = getJobFunctionsFile();
 			if (firstFuncFile.equals(jobFuncFile)) {
-				annotatedFunctions = new AnnotatedFunction[annotatedFunctionList.size()];
-				annotatedFunctionList.copyInto(annotatedFunctions);
+				firstJobFunctions = annotatedFunctionList;
 			} else {
-				Vector<AnnotatedFunction> firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
+				firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
 				for (int i = 0; i < firstJobFunctions.size(); i ++) {
 					AnnotatedFunction f = firstJobFunctions.elementAt(i);
 					if (f.equals(function)) {
@@ -1731,12 +1744,9 @@ public synchronized void removeFunction(AnnotatedFunction function) throws DataA
 						break;
 					}
 				}
-				
-				annotatedFunctions = new AnnotatedFunction[firstJobFunctions.size()];
-				firstJobFunctions.copyInto(annotatedFunctions);
 			}
 
-			FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), annotatedFunctions);
+			FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), firstJobFunctions);
 			ffg.generateFunctionFile();
 
 			// my lastModified and length should be changed because I just rewrote the file.				

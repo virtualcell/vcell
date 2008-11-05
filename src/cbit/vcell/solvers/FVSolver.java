@@ -276,7 +276,34 @@ public void cleanup() {
  * @return cbit.vcell.simdata.AnnotatedFunction[]
  * @param simulation cbit.vcell.solver.Simulation
  */
-public static AnnotatedFunction[] createAnnotatedFunctionsList(Simulation simulation) {
+@Override
+public Vector<AnnotatedFunction> createFunctionList() {
+	Vector<AnnotatedFunction> annotatedFunctionVector = createAnnotatedFunctionsList(getSimulation());
+	//Try to save existing user defined functions
+	
+	try{
+		String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
+		File existingFunctionFile = new File(functionFileName);
+		if(existingFunctionFile.exists()){
+			Vector<AnnotatedFunction> oldUserDefinedFunctions =
+				new Vector<AnnotatedFunction>();
+			Vector<AnnotatedFunction> allOldFunctionV =
+				FunctionFileGenerator.readFunctionsFile(existingFunctionFile);
+			for(int i=0;i<allOldFunctionV.size();i+= 1){
+				if(allOldFunctionV.elementAt(i).isUserDefined()){
+					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
+				}
+			}
+			
+			annotatedFunctionVector.addAll(oldUserDefinedFunctions);
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+		//ignore
+	}
+	return annotatedFunctionVector;
+}
+public static Vector<AnnotatedFunction> createAnnotatedFunctionsList(Simulation simulation) {
 	Function[] functions = simulation.getFunctions();
 
 	// Get the list of (volVariables) in the simulation. Needed to determine 'type' of  functions
@@ -352,8 +379,8 @@ public static AnnotatedFunction[] createAnnotatedFunctionsList(Simulation simula
 		}
 	}
 
-	AnnotatedFunction[] annotatedFunctionList = (AnnotatedFunction[])cbit.util.BeanUtils.getArray(annotatedFunctionVector, AnnotatedFunction.class);
-	return annotatedFunctionList;	
+	
+	return annotatedFunctionVector;	
 }
 
 
@@ -528,42 +555,7 @@ public Geometry getResampledGeometry() throws SolverException {
 }
 
 protected void initStep1() throws SolverException {
-	// ** Dumping the functions of a simulation into a '.functions' file.
-	String functionFileName = getBaseName() + ".functions";
-	AnnotatedFunction[] annotatedFunctionList = createAnnotatedFunctionsList(getSimulation());
-	
-	//Try to save existing user defined functions
-	try{
-		File existingFunctionFile = new File(functionFileName);
-		if(existingFunctionFile.exists()){
-			Vector<AnnotatedFunction> oldUserDefinedFunctions =
-				new Vector<AnnotatedFunction>();
-			Vector<AnnotatedFunction> allOldFunctionV =
-				FunctionFileGenerator.readFunctionsFile(existingFunctionFile);
-			for(int i=0;i<allOldFunctionV.size();i+= 1){
-				if(allOldFunctionV.elementAt(i).isUserDefined()){
-					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
-				}
-			}
-			Vector<AnnotatedFunction> finalFuncListV =
-				new Vector<AnnotatedFunction>(Arrays.asList(annotatedFunctionList));
-			finalFuncListV.addAll(oldUserDefinedFunctions);
-			
-			annotatedFunctionList = finalFuncListV.toArray(new AnnotatedFunction[0]);
-		}
-	}catch(Exception e){
-		e.printStackTrace();
-		//ignore
-	}
-	
-	FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, annotatedFunctionList);
-
-	try {
-		functionFileGenerator.generateFunctionFile();		
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("autocode exception: Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
-	}		
+	writeFunctionsFile();
 		
 	fireSolverStarting("processing geometry...");
 	
@@ -721,4 +713,6 @@ public static void resampleFieldData(
 		throw new SolverException(ex.getMessage());
 	}
 }
+
+
 }

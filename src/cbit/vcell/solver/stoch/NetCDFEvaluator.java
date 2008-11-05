@@ -191,7 +191,7 @@ public class NetCDFEvaluator {
 		NetCDFEvaluator ncEva = new NetCDFEvaluator();
 		try
 		{
-			ncEva.setNetCDFTarget("C:/Hy3S_2/TestCases/HMM/Hy3S/trial100000_MILAdaptive.nc");
+			ncEva.setNetCDFTarget("C:/sim1.nc");
 		}catch (Exception e) {e.printStackTrace(System.err);}
 		
 //		try
@@ -220,7 +220,7 @@ public class NetCDFEvaluator {
 //			}
 //		}catch (Exception e){e.printStackTrace(System.err);}
 		try{
-			ncEva.printAllHistograms(50);
+			ncEva.printAllHistograms(20);
 		}catch(IOException e)
 		{
 			e.printStackTrace(System.err);

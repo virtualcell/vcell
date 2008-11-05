@@ -19,7 +19,7 @@ import cbit.util.TokenMangler;
  * @author: Anuradha Lakshminarayana
  */
 public class FunctionFileGenerator {
-	private AnnotatedFunction[] annotatedFunctionList;
+	private Vector <AnnotatedFunction> annotatedFunctionList;
 	private java.lang.String basefileName;
 	
 	private static final String SEMICOLON_DELIMITERS = ";";
@@ -36,7 +36,7 @@ public class FunctionFileGenerator {
 /**
  * FuntionFileGenerator constructor comment.
  */
-public FunctionFileGenerator(String argFileName, AnnotatedFunction[] argAnnotatedFunctionList) {
+public FunctionFileGenerator(String argFileName, Vector<AnnotatedFunction> argAnnotatedFunctionList) {
 	basefileName = argFileName;
 	annotatedFunctionList = argAnnotatedFunctionList;	
 }
@@ -70,16 +70,6 @@ public void generateFunctionFile() throws Exception {
  */
 public java.lang.String getBasefileName() {
 	return basefileName;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/12/2004 11:14:41 AM)
- * @return java.lang.String
- */
-public AnnotatedFunction[] getFunctionList() {
-	return annotatedFunctionList;
 }
 
 
@@ -249,8 +239,9 @@ public void writefunctionFile(PrintWriter out) {
 	out.println("");
 
 	if (annotatedFunctionList!=null){
-		for (int i=0;i<annotatedFunctionList.length;i++){
-			out.print(annotatedFunctionList[i].getName() + "; " + annotatedFunctionList[i].getExpression().infix() + "; " + annotatedFunctionList[i].getErrorString() + "; " + annotatedFunctionList[i].getFunctionType().toString()+ "; " + annotatedFunctionList[i].isUserDefined());
+		for (AnnotatedFunction f : annotatedFunctionList){
+			out.print(f.getName() + "; " + f.getExpression().infix() + "; " + f.getErrorString() + "; " 
+					+ f.getFunctionType().toString()+ "; " + f.isUserDefined());
 //			if (annotatedFunctionList[i].getSimplifiedExpression() != null) {			
 //				out.print("; " + annotatedFunctionList[i].getSimplifiedExpression().infix());
 //			}
