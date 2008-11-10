@@ -36,7 +36,6 @@ public class ApplicationEditor extends JPanel {
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
 	private boolean ivjConnPtoP6Aligning = false;
-	private JPanel ivjSimulationContainerPanel = null;
 	private SimulationContext ivjsimulationContext = null;
 	private GeometryContext ivjgeometryContext = null;
 	private JPanel ivjJPanel3 = null;
@@ -1361,7 +1360,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.insertTab("Reaction Mapping", null, getReactionSpecsPanel(), null, 2);
 			ivjJTabbedPane1.insertTab("Electrical Mapping", null, getElectricalMembraneMappingPanel(), null, 3);
 			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, 4);
-			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationContainerPanel(), null, 5);
+			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, 5);
 			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, 6);
 			// user code begin {1}
 			// user code end
@@ -1570,31 +1569,6 @@ private javax.swing.JButton getRefreshMathButton() {
 	return ivjRefreshMathButton;
 }
 
-
-/**
- * Return the SimulationContainerPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getSimulationContainerPanel() {
-	if (ivjSimulationContainerPanel == null) {
-		try {
-			ivjSimulationContainerPanel = new javax.swing.JPanel();
-			ivjSimulationContainerPanel.setName("SimulationContainerPanel");
-			ivjSimulationContainerPanel.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
-			ivjSimulationContainerPanel.setLayout(new java.awt.BorderLayout());
-			ivjSimulationContainerPanel.setAlignmentY(java.awt.Component.CENTER_ALIGNMENT);
-			getSimulationContainerPanel().add(getSimulationListPanel(), "North");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSimulationContainerPanel;
-}
 
 /**
  * Return the simulationContext property value.
