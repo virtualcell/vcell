@@ -41,15 +41,16 @@ public static void main(String[] args) {
 	try {
 		final NativeCVODESolver nativesolver = new NativeCVODESolver();
 						
-		String input = 	"STARTING_TIME 0.0\n"+
+		String input = "SOLVER CVODE\n"+ 	
+			"STARTING_TIME 0.0\n"+
 			"ENDING_TIME 100000.0\n"+
 			"RELATIVE_TOLERANCE 1.0E-9\n"+
 			"ABSOLUTE_TOLERANCE 1.0E-9\n"+
 			"MAX_TIME_STEP 1.0\n"+
 			"KEEP_EVERY 1\n"+
 			"NUM_EQUATIONS 2\n"+
-			"ODE species1_cyt INIT 2.0 RATE  - (species1_cyt - species2_cyt);\n"+
-			"ODE species2_cyt INIT 3.0 RATE ( - ((0.01 * species2_cyt) - (6.0 - species2_cyt - species1_cyt)) + species1_cyt - species2_cyt);";	
+			"ODE species1_cyt INIT 2.0;\n RATE  - (species1_cyt - species2_cyt);\n"+
+			"ODE species2_cyt INIT 3.0;\n RATE ( - ((0.01 * species2_cyt) - (6.0 - species2_cyt - species1_cyt)) + species1_cyt - species2_cyt);";	
 
 		/*
 		Thread t = new Thread() {
