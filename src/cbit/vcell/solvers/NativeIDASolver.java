@@ -41,15 +41,38 @@ public static void main(String[] args) {
 	try {
 		final NativeIDASolver nativesolver = new NativeIDASolver();
 						
-		String input = 	"STARTING_TIME 0.0\n"+
-			"ENDING_TIME 100000.0\n"+
-			"RELATIVE_TOLERANCE 1.0E-9\n"+
-			"ABSOLUTE_TOLERANCE 1.0E-9\n"+
-			"MAX_TIME_STEP 1.0\n"+
-			"KEEP_EVERY 1\n"+
-			"NUM_EQUATIONS 2\n"+
-			"ODE species1_cyt INIT 2.0 RATE  - (species1_cyt - species2_cyt);\n"+
-			"ODE species2_cyt INIT 3.0 RATE ( - ((0.01 * species2_cyt) - (6.0 - species2_cyt - species1_cyt)) + species1_cyt - species2_cyt);";	
+		String input = 	"SOLVER IDA\n" +
+		"STARTING_TIME 0.0\n" +
+		"ENDING_TIME 1.0\n" +
+		"RELATIVE_TOLERANCE 1.0E-9\n" +
+		"ABSOLUTE_TOLERANCE 1.0E-9\n" +
+		"MAX_TIME_STEP 1.0\n" +
+		"KEEP_EVERY 1\n" +
+		"NUM_PARAMETERS 3\n" +
+		"Kf_reaction0\n" +
+		"Kr_reaction0\n" +
+		"P\n" +
+		"NUM_EQUATIONS 4\n" +
+		"VAR species0_cyt INIT 200.0;\n" +
+		"VAR species1_cyt INIT 2.0;\n" +
+		"VAR species3_cyt INIT 0.0;\n" +
+		"VAR Voltage_mitoMem INIT 0.1;\n" +
+		"TRANSFORM\n" +
+		"1 0 0 0 \n" +
+		"0 1 0 0 \n" +
+		"0 0 1 0 \n" +
+		"0 0 0 1 \n" +
+		"INVERSETRANSFORM\n" +
+		"1 0 0 0 \n" +
+		"0 1 0 0 \n" +
+		"0 0 1 0 \n" +
+		"0 0 0 1 \n" +
+		"RHS DIFFERENTIAL 4 ALGEBRAIC 0\n" +
+		" - ((Kf_reaction0 * species0_cyt) - (Kr_reaction0 * species1_cyt));\n" +
+		"((Kf_reaction0 * species0_cyt) - (Kr_reaction0 * species1_cyt));\n" +
+		"((25.0 * (8.0E-5 - (0.8 * species3_cyt))) - species3_cyt);\n" +
+		"(1000.0 * ( - (0.0010 * sin(t)) - (1.4928057733942749E-5 * Voltage_mitoMem * ((5.0 * (162.2 - (0.8 * species1_cyt) - (0.8 * species0_cyt))) - (species0_cyt * exp( - (0.07736348328121241 * Voltage_mitoMem)))) * P / (1.0 - exp( - (0.07736348328121241 * Voltage_mitoMem))))));\n";
+	
 
 		/*
 		Thread t = new Thread() {
@@ -65,9 +88,9 @@ public static void main(String[] args) {
 		t.start();
 		
 		*/
-		
+		double x[] = {1.0, 1.0, 1000.0};
 		System.out.println("**************Solve 2************************");
-		cbit.vcell.util.RowColumnResultSet rcrs = nativesolver.solve(input);
+		cbit.vcell.util.RowColumnResultSet rcrs = nativesolver.solve(input, x);
 		for (int i = 0; i < rcrs.getRowCount(); i ++) {
 			double[] row = rcrs.getRow(i);
 			for (int j = 0; j < row.length; j ++) {
