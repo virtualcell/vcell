@@ -777,6 +777,9 @@ private void filterVariableNames(){
 				TreeSet<DataIdentifier> dataIdentifierTreeSet =
 					new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
 						public int compare(DataIdentifier o1, DataIdentifier o2) {
+							if(o1.getName().compareToIgnoreCase(o2.getName()) == 0){
+								return o1.getName().compareTo(o2.getName());
+							}
 							return o1.getName().compareToIgnoreCase(o2.getName());
 						}});
 				DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
