@@ -164,7 +164,9 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 			}
 			output = new ExportOutput[required];
 			String dataIDroot = dataID;
+			int pointOffset = 0;
 			if (geometrySpecs.getPointIndexes().length > 0) {
+				pointOffset = variableSpecs.getVariableNames().length;
 				dataID += "Points_Time_";
 				for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
 					progress = (double)i / required;
@@ -183,7 +185,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 					StringBuffer data1 = new StringBuffer(data.toString());
 					data1.append(getCurveTimeSeries(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
-					output[s * variableSpecs.getVariableNames().length + i] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
+					output[s * variableSpecs.getVariableNames().length + i+pointOffset] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
 				}
 			}
 			break;
