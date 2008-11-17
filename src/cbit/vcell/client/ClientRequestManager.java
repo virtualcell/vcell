@@ -18,6 +18,7 @@ import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
 
 import java.beans.*;
+import java.io.File;
 
 import cbit.sql.UserInfo;
 import cbit.sql.VersionableType;
@@ -892,8 +893,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 		AsynchProgressPopup pp = new AsynchProgressPopup((Component)null, "Downloading exported dataset", "Retrieving data from "+url, false, false);
 		public Object construct() {
 			pp.start();
-			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-			final cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+			final String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 			try {
 				// get it
 			    java.net.URLConnection connection = url.openConnection();
@@ -908,32 +908,35 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 			    }
 			    is.close();
 			    // prepare chooser
-				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				fileChooser.setMultiSelectionEnabled(false);
-				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
-				fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
-			    String name = evt.getVCDataIdentifier().getID();
-			    //if (evt.getVCDataIdentifier() instanceof cbit.vcell.solver.SimulationInfo){
-				    //cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)evt.getVCDataIdentifier();
-				    //name = simInfo.getName();
-			    //}
-			    String suffix = "_exported.zip";
-			    java.io.File file = new java.io.File(name + suffix);
-			    if (file.exists()) {
-				    int count = 0;
-				    do {
-				    	file = new java.io.File(name + "_" + count + suffix);
-				    } while (file.exists());
-			    }
-			    fileChooser.setSelectedFile(file);
-				fileChooser.setDialogTitle("Save exported dataset...");
-				new EventDispatchRunWithException (){
+			    File selectedFile = 
+				(File)new EventDispatchRunWithException (){
 					public Object runWithException() throws Exception{
+						final cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+						fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+						fileChooser.setMultiSelectionEnabled(false);
+						fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
+						fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
+					    String name = evt.getVCDataIdentifier().getID();
+					    //if (evt.getVCDataIdentifier() instanceof cbit.vcell.solver.SimulationInfo){
+						    //cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)evt.getVCDataIdentifier();
+						    //name = simInfo.getName();
+					    //}
+					    String suffix = "_exported.zip";
+					    java.io.File file = new java.io.File(name + suffix);
+					    if (file.exists()) {
+						    int count = 0;
+						    do {
+						    	file = new java.io.File(name + "_" + count + suffix);
+						    } while (file.exists());
+					    }
+
+					    fileChooser.setSelectedFile(file);
+						fileChooser.setDialogTitle("Save exported dataset...");
 						int approve = fileChooser.showSaveDialog((Component)null);
 						if (approve != JFileChooser.APPROVE_OPTION) {
 							fileChooser.setSelectedFile(null);
 						}
-						return null;
+						return fileChooser.getSelectedFile();
 					}
 				}.runEventDispatchThreadSafelyWithException();
 
@@ -946,7 +949,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 //						}
 //					}
 //				});
-				java.io.File selectedFile = fileChooser.getSelectedFile();
+//				java.io.File selectedFile = fileChooser.getSelectedFile();
 				if (selectedFile != null) {
 			        String newPath = selectedFile.getParent();
 			        if (!newPath.equals(defaultPath)) {
