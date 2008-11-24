@@ -20,6 +20,7 @@ public class SpeciesContextMapping {
 	//
 	private boolean bDiffusing        = false;
 	private boolean bFastParticipant  = false;
+	private boolean bAdvecting        = false;
 
 	//
 	// output from structural analysis of slow reactions
@@ -100,6 +101,11 @@ public boolean isDiffusing() {
 public boolean isFastParticipant() {
 	return bFastParticipant;
 }
+
+public boolean isAdvecting() {
+	return this.bAdvecting;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (3/24/2001 4:16:14 PM)
@@ -124,6 +130,11 @@ public void setDiffusing(boolean diffusing) {
 public void setFastInvariant(Expression fastInvariantExpression) {
 	this.fastInvariant = fastInvariantExpression;
 }
+
+public void setAdvecting(boolean advecting) {
+	this.bAdvecting = advecting;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (3/24/2001 4:12:59 PM)

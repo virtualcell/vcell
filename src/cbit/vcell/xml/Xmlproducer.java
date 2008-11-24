@@ -1128,12 +1128,12 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
  * @param param cbit.vcell.mapping.SpeciesContextSpec
  */
 public org.jdom.Element getXML(SpeciesContextSpec param) {
-	org.jdom.Element speciecontext = new org.jdom.Element(XMLTags.SpeciesContextSpecTag);
+	org.jdom.Element speciesContextSpecElement = new org.jdom.Element(XMLTags.SpeciesContextSpecTag);
 
 	//Add Attributes
-	speciecontext.setAttribute(XMLTags.SpeciesContextRefAttrTag, this.mangle(param.getSpeciesContext().getName()));
-	speciecontext.setAttribute(XMLTags.ForceConstantAttrTag, String.valueOf(param.isConstant()));
-	speciecontext.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
+	speciesContextSpecElement.setAttribute(XMLTags.SpeciesContextRefAttrTag, this.mangle(param.getSpeciesContext().getName()));
+	speciesContextSpecElement.setAttribute(XMLTags.ForceConstantAttrTag, String.valueOf(param.isConstant()));
+	speciesContextSpecElement.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
 
 	//Add initial
 	Expression initCon = param.getInitialConcentrationParameter().getExpression();
@@ -1142,20 +1142,20 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 	{
 		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialConcentrationTag);
 		initial.addContent(this.mangleExpression(initCon));
-		speciecontext.addContent( initial );
+		speciesContextSpecElement.addContent( initial );
 	}
 	else if(initAmt != null)
 	{
 		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialAmountTag);
 		initial.addContent(this.mangleExpression(initAmt));
-		speciecontext.addContent( initial );
+		speciesContextSpecElement.addContent( initial );
 	}
 	//Add diffusion
 	cbit.vcell.parser.Expression diffRate = param.getDiffusionParameter().getExpression();
 	if (diffRate!=null){
 		org.jdom.Element diffusion = new org.jdom.Element(XMLTags.DiffusionTag);
 		diffusion.addContent(this.mangleExpression(diffRate));
-		speciecontext.addContent(diffusion);
+		speciesContextSpecElement.addContent(diffusion);
 	}
 	// write BoundaryConditions
 	cbit.vcell.parser.Expression exp;
@@ -1192,10 +1192,35 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 		boundaries.setAttribute(XMLTags.BoundaryAttrValueZp, this.mangleExpression(exp) );
 	}
 	if (boundaries.getAttributes().size() >0) {
-		speciecontext.addContent( boundaries );
+		speciesContextSpecElement.addContent( boundaries );
 	}
 
-	return speciecontext;
+	// Add Velocities Vx, Vy, Vz
+	Element velocityElement = null;
+	Expression velX = param.getVelocityXParameter().getExpression();
+	if (velX != null) {
+		velocityElement = new Element(XMLTags.VelocityTag);
+		velocityElement.setAttribute(XMLTags.XAttrTag, velX.infix());
+	}
+	Expression velY = param.getVelocityYParameter().getExpression();
+	if (velY != null) {
+		if (velocityElement == null) {
+			velocityElement = new Element(XMLTags.VelocityTag);
+		}
+		velocityElement.setAttribute(XMLTags.YAttrTag, velY.infix());
+	}
+	Expression velZ = param.getVelocityZParameter().getExpression();
+	if (velZ != null) {
+		if (velocityElement == null) {
+			velocityElement = new Element(XMLTags.VelocityTag);
+		}
+		velocityElement.setAttribute(XMLTags.ZAttrTag, velZ.infix());
+	}
+	if (velocityElement != null) {
+		speciesContextSpecElement.addContent(velocityElement);
+	}
+	
+	return speciesContextSpecElement;
 }
 
 

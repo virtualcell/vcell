@@ -32,9 +32,13 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field boundaryZmExp	= new Field("boundaryZmExp","varchar(255)",	"");
 	public final Field boundaryZpExp	= new Field("boundaryZpExp","varchar(255)",	"");
 	public final Field initCondCountExp	= new Field("initCondCountExp",	"varchar(1024)","");
+	public final Field velocityXExp	= new Field("velocityXExp",	"varchar(255)",	"");
+	public final Field velocityYExp	= new Field("velocityYExp",	"varchar(255)",	"");
+	public final Field velocityZExp	= new Field("velocityZExp",	"varchar(255)",	"");
 	
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
-											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp};
+											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,
+											velocityXExp, velocityYExp, velocityZExp};
 	
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
@@ -108,9 +112,26 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	}
 
 	if(speciesContextSpec.getInitialConditionParameter().getRole() == SpeciesContextSpec.ROLE_InitialCount){
-		buffer.append("'" + speciesContextSpec.getInitialConditionParameter().getExpression().infix() + "'" + ")");		
+		buffer.append("'" + speciesContextSpec.getInitialConditionParameter().getExpression().infix() + "'" + ",");		
 	}else{
-		buffer.append("NULL" + ")");				
+		buffer.append(" NULL " + ",");
+	}
+	
+	// for velocity x,y,z terms
+	if (speciesContextSpec.getVelocityXParameter().getExpression() == null){
+		buffer.append(" NULL " + ",");
+	}else{
+		buffer.append("'" + speciesContextSpec.getVelocityXParameter().getExpression().infix() + "'" + ",");
+	}
+	if (speciesContextSpec.getVelocityYParameter().getExpression() == null){
+		buffer.append(" NULL " + ",");
+	}else{
+		buffer.append("'" + speciesContextSpec.getVelocityYParameter().getExpression().infix() + "'" + ",");
+	}
+	if (speciesContextSpec.getVelocityZParameter().getExpression() == null){
+		buffer.append(" NULL " + ")");
+	}else{
+		buffer.append("'" + speciesContextSpec.getVelocityZParameter().getExpression().infix() + "'" + ")");
 	}
 
 	return buffer.toString();

@@ -196,7 +196,22 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 			if (rset.wasNull()){
 				boundaryZpString = null;
 			}
+
+			String velocityXString = rset.getString(speciesContextSpecTable.velocityXExp.toString());
+			if (rset.wasNull()){
+				velocityXString = null;
+			}
 			
+			String velocityYString = rset.getString(speciesContextSpecTable.velocityYExp.toString());
+			if (rset.wasNull()){
+				velocityYString = null;
+			}
+
+			String velocityZString = rset.getString(speciesContextSpecTable.velocityZExp.toString());
+			if (rset.wasNull()){
+				velocityZString = null;
+			}
+
 			//
 			SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 			for (int i=0;i<speciesContextSpecs.length;i++){
@@ -242,6 +257,21 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 							scs.getBoundaryZpParameter().setExpression(new Expression(boundaryZpString));
 						}else{
 							scs.getBoundaryZpParameter().setExpression(null);
+						}
+						if (velocityXString!=null){
+							scs.getVelocityXParameter().setExpression(new Expression(velocityXString));
+						}else{
+							scs.getVelocityXParameter().setExpression(null);
+						}
+						if (velocityYString!=null){
+							scs.getVelocityYParameter().setExpression(new Expression(velocityYString));
+						}else{
+							scs.getVelocityYParameter().setExpression(null);
+						}
+						if (velocityZString!=null){
+							scs.getVelocityZParameter().setExpression(new Expression(velocityZString));
+						}else{
+							scs.getVelocityZParameter().setExpression(null);
 						}
 					} catch (Exception e) {
 						throw new DataAccessException("Error setting SpeciesContextSpec info for SimulationContext:"+simContext.getVersion().getName()+" id="+simContextKey);

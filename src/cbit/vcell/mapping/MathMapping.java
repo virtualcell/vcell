@@ -729,6 +729,15 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_DiffusionRate){
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_diffusionRate";
 		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityX){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_velocityX";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityY){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_velocityY";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityZ){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_velocityZ";
+		}
 	}
 	if (ste instanceof ElectricalDevice.ElectricalDeviceParameter){
 		ElectricalDevice.ElectricalDeviceParameter edParm = (ElectricalDevice.ElectricalDeviceParameter)ste;
@@ -1111,6 +1120,33 @@ protected boolean isDiffusionRequired(SpeciesContext speciesContext) {
 	}
 
 	return bDiffusionNeeded;
+}
+
+protected boolean isAdvectionRequired(SpeciesContext speciesContext) {
+	//
+	// compartmental models never need advection
+	//
+	if (simContext.getGeometryContext().getGeometry().getDimension() == 0){
+		return false;
+	}
+
+	//
+	// if speciesContext is from a structure which is not spatially resolved, then it won't diffuse (PDE not required).
+	//
+	StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+	if (sm instanceof FeatureMapping){
+		if (!((FeatureMapping)sm).getResolved()){
+			return false;
+		}
+	} else {
+		return false;	// not Feature : advection NOT allowed at present (even for membranes)
+	}
+
+	//
+	// check if resolved speciesContext has velocity parameters
+	//
+	SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(speciesContext);
+	return scs.isAdvecting();
 }
 
 
@@ -1657,12 +1693,46 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	for (int i = 0; i < speciesContextSpecs.length; i++){
 		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
 		SpeciesContextSpec.SpeciesContextSpecParameter diffParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_DiffusionRate);
-		if (diffParm!=null && scm.isDiffusing()){
+		if (diffParm!=null && (scm.isDiffusing() || scm.isAdvecting())){
 			try {
 				diffParm.getExpression().evaluateConstant();
 				varHash.addVariable(new Constant(getMathSymbol(diffParm,null),getIdentifierSubstitutions(diffParm.getExpression(),diffParm.getUnitDefinition(),null)));
 			}catch (ExpressionException e){
 				varHash.addVariable(new Function(getMathSymbol(diffParm,null),getIdentifierSubstitutions(diffParm.getExpression(),diffParm.getUnitDefinition(),null)));
+			}
+		}
+	}
+
+	//
+	// advection constants (either function or constant)
+	//
+	for (int i = 0; i < speciesContextSpecs.length; i++){
+		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
+		SpeciesContextSpec.SpeciesContextSpecParameter advection_velX = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityX);
+		if (advection_velX!=null && (advection_velX.getExpression() != null)){
+			try {
+				advection_velX.getExpression().evaluateConstant();
+				varHash.addVariable(new Constant(getMathSymbol(advection_velX,null),getIdentifierSubstitutions(advection_velX.getExpression(),advection_velX.getUnitDefinition(),null)));
+			}catch (ExpressionException e){
+				varHash.addVariable(new Function(getMathSymbol(advection_velX,null),getIdentifierSubstitutions(advection_velX.getExpression(),advection_velX.getUnitDefinition(),null)));
+			}
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter advection_velY = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityY);
+		if (advection_velY!=null && (advection_velY.getExpression() != null)){
+			try {
+				advection_velY.getExpression().evaluateConstant();
+				varHash.addVariable(new Constant(getMathSymbol(advection_velY,null),getIdentifierSubstitutions(advection_velY.getExpression(),advection_velY.getUnitDefinition(),null)));
+			}catch (ExpressionException e){
+				varHash.addVariable(new Function(getMathSymbol(advection_velY,null),getIdentifierSubstitutions(advection_velY.getExpression(),advection_velY.getUnitDefinition(),null)));
+			}
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter advection_velZ = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityZ);
+		if (advection_velZ!=null && (advection_velZ.getExpression() != null)){
+			try {
+				advection_velZ.getExpression().evaluateConstant();
+				varHash.addVariable(new Constant(getMathSymbol(advection_velZ,null),getIdentifierSubstitutions(advection_velZ.getExpression(),advection_velZ.getUnitDefinition(),null)));
+			}catch (ExpressionException e){
+				varHash.addVariable(new Function(getMathSymbol(advection_velZ,null),getIdentifierSubstitutions(advection_velZ.getExpression(),advection_velZ.getUnitDefinition(),null)));
 			}
 		}
 	}
@@ -1836,7 +1906,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				SpeciesContextSpec    scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				VolVariable variable = (VolVariable)scm.getVariable();
 				Equation equation = null;
-				if (scm.isDiffusing() && sm instanceof FeatureMapping){
+				if ( (scm.isDiffusing() || scm.isAdvecting()) && sm instanceof FeatureMapping){
 					//
 					// PDE
 					//
@@ -1854,6 +1924,11 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryYpParameter().getExpression(),scs.getBoundaryYpParameter().getUnitDefinition(),sm));
 						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZmParameter().getExpression(),scs.getBoundaryZmParameter().getUnitDefinition(),sm));
 						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZpParameter().getExpression(),scs.getBoundaryZpParameter().getUnitDefinition(),sm));
+						
+						((PdeEquation)equation).setVelocityX((scs.getVelocityXParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityXParameter(),sm)));
+						((PdeEquation)equation).setVelocityY((scs.getVelocityYParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityYParameter(),sm)));
+						((PdeEquation)equation).setVelocityZ((scs.getVelocityZParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityZParameter(),sm)));
+						
 						subDomain.replaceEquation(equation);
 					}else{
 						Expression initial = new Expression(0.0);
@@ -2061,15 +2136,15 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}
 		}
 		//
-		// create dummy jump conditions for all volume variables that diffuse
+		// create dummy jump conditions for all volume variables that diffuse and/or advect
 		//
 		Enumeration enum_scm = getSpeciesContextMappings();
 		while (enum_scm.hasMoreElements()){
 			SpeciesContextMapping scm = (SpeciesContextMapping)enum_scm.nextElement();
-			if (scm.isDiffusing()){
+			if (scm.isDiffusing() || scm.isAdvecting()) {
 				Species species = scm.getSpeciesContext().getSpecies();
 				Variable var = scm.getVariable();
-				if (var instanceof VolVariable && scm.isDiffusing()){
+				if (var instanceof VolVariable && (scm.isDiffusing() || scm.isAdvecting())){
 					JumpCondition jc = memSubDomain.getJumpCondition((VolVariable)var);
 					if (jc==null){
 //System.out.println("MathMapping.refreshMathDescription(), adding jump condition for diffusing variable "+var.getName()+" on membrane "+membraneStructureAnalyzer.getMembrane().getName());
@@ -2095,7 +2170,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				// introduce Bug Compatability mode for NoFluxIfFixed
 				//
 				// if (scm.getVariable() instanceof VolVariable && scm.isDiffusing()){
-				if (scm.getVariable() instanceof VolVariable && (MembraneStructureAnalyzer.bNoFluxIfFixed || scm.isDiffusing())){
+				if (scm.getVariable() instanceof VolVariable && ((MembraneStructureAnalyzer.bNoFluxIfFixed || (scm.isDiffusing() || scm.isAdvecting())))){
 					if (MembraneStructureAnalyzer.bNoFluxIfFixed && !scm.isDiffusing()){
 						MembraneStructureAnalyzer.bNoFluxIfFixedExercised = true;
 					}
@@ -2203,6 +2278,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 
 		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
+		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
 			Expression initCond = scs.getInitialConditionParameter() == null? null : scs.getInitialConditionParameter().getExpression();
 			scm.setDependencyExpression(initCond);

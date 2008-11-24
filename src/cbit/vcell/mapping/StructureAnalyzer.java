@@ -660,7 +660,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	//
 	for (int i=0;i<scmList.size();i++){
 		SpeciesContextMapping scm = (SpeciesContextMapping)scmList.elementAt(i);
-		if (scm.isDiffusing()){
+		if (scm.isDiffusing() || scm.isAdvecting()){
 			rsList.addElement(new DiffusionReactionStep("DiffusionReactionStep"+i,scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 	}
