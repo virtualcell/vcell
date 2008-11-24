@@ -9,6 +9,8 @@ import cbit.vcell.simdata.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -191,6 +193,8 @@ public class PDEDataViewer extends DataViewer {
 	private BitSet membraneSnapshotROI;
 	private String membraneSnapshotROIDescription;
 
+	private static final String EXPORT_DATA_TABNAME = "Export Data";
+	
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == PDEDataViewer.this.getJButtonSpatial()) 
@@ -229,8 +233,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP3SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1()) 
 				connEtoC1(evt);
-			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("spatialSelection"))) 
-				connPtoP8SetTarget();
+//			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("spatialSelection"))) 
+//				connPtoP8SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("slice"))) 
 				connPtoP7SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("slice"))) 
@@ -1580,29 +1584,29 @@ private void connPtoP7SetTarget() {
 }
 
 
-/**
- * connPtoP8SetTarget:  (PDEDataContextPanel1.spatialSelection <--> PDEExportPanel1.selectedRegion)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP8SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP8Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP8Aligning = true;
-			getPDEExportPanel1().setSelectedRegion(getPDEDataContextPanel1().getSpatialSelection());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP8Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP8Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+///**
+// * connPtoP8SetTarget:  (PDEDataContextPanel1.spatialSelection <--> PDEExportPanel1.selectedRegion)
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connPtoP8SetTarget() {
+//	/* Set the target from the source */
+//	try {
+//		if (ivjConnPtoP8Aligning == false) {
+//			// user code begin {1}
+//			// user code end
+//			ivjConnPtoP8Aligning = true;
+//			getPDEExportPanel1().setSelectedRegion(getPDEDataContextPanel1().getSpatialSelection());
+//			// user code begin {2}
+//			// user code end
+//			ivjConnPtoP8Aligning = false;
+//		}
+//	} catch (java.lang.Throwable ivjExc) {
+//		ivjConnPtoP8Aligning = false;
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
 
 
 /**
@@ -2089,7 +2093,20 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1 = new javax.swing.JTabbedPane();
 			ivjJTabbedPane1.setName("JTabbedPane1");
 			ivjJTabbedPane1.insertTab("View Data", null, getViewData(), null, 0);
-			ivjJTabbedPane1.insertTab("Export Data", null, getExportData(), null, 1);
+			ivjJTabbedPane1.insertTab(EXPORT_DATA_TABNAME, null, getExportData(), null, 1);
+			ivjJTabbedPane1.addChangeListener(
+				new ChangeListener(){
+					public void stateChanged(ChangeEvent e) {
+						if(ivjJTabbedPane1.getSelectedIndex() == ivjJTabbedPane1.indexOfTab(EXPORT_DATA_TABNAME)){
+							SpatialSelection[] spatialSelectionsVolume =
+								getPDEDataContextPanel1().fetchSpatialSelectionsAll(VariableType.VOLUME);
+							SpatialSelection[] spatialSelectionsMembrane =
+								getPDEDataContextPanel1().fetchSpatialSelectionsAll(VariableType.MEMBRANE);
+							getPDEExportPanel1().setSpatialSelections(spatialSelectionsVolume, spatialSelectionsMembrane);
+						}
+					}
+				}
+			);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2281,7 +2298,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
-	connPtoP8SetTarget();
+//	connPtoP8SetTarget();
 	connPtoP7SetTarget();
 	connPtoP4SetTarget();
 	connPtoP6SetTarget();
