@@ -112,6 +112,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.GroupAccess;
 import cbit.vcell.server.GroupAccessAll;
@@ -4144,7 +4145,6 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	//Get Boundaries if any
 	Element tempElement = param.getChild(XMLTags.BoundariesTag, vcNamespace);
 	if (tempElement != null) {
-		cbit.vcell.parser.SymbolTable simbolTable= new ReservedSymbolTable(true);
 		try {
 			//Xm
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
@@ -4185,6 +4185,45 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 		}
 	}
 	
+    // Get Velocities if any
+    Element velocityE = param.getChild(XMLTags.VelocityTag, vcNamespace);
+    if (velocityE != null) {
+        String tempStr = null;
+        boolean dummyVel = true;
+        try {
+			tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
+			if (tempStr != null) {
+				specspec.getVelocityXParameter().setExpression(new Expression(tempStr));       //all velocity dimensions are optional.
+				if (dummyVel) {
+					dummyVel = false;
+				}
+			}
+			tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
+			if (tempStr != null) {
+				specspec.getVelocityYParameter().setExpression(new Expression(tempStr));
+				if (dummyVel) {
+					dummyVel = false;
+				}
+			}
+			tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
+			if (tempStr != null) {
+				specspec.getVelocityZParameter().setExpression(new Expression(tempStr));
+				if (dummyVel) {
+					dummyVel = false;
+				}
+			}
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName() + "'.\n" + e.getMessage());
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName() + "'.\n" + e.getMessage());
+		}
+        if (dummyVel) {
+        	throw new XmlParseException("Void Velocity element found under PDE for: " + specspec.getSpeciesContext().getName());
+    	} 
+    }
+
 	return specspec;
 }
 

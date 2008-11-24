@@ -27,7 +27,10 @@ public class VCMODL {
 	public final static String ForceConstant				   = "ForceConstant";
 	public final static String ForceIndependent				   = "ForceIndependent";
 	public final static String EnableDiffusion				   = "EnableDiffusion";
-
+	public final static String VelocityX				  	   = "VelocityX";
+	public final static String VelocityY				  	   = "VelocityY";
+	public final static String VelocityZ				   	   = "VelocityZ";
+	
 	public final static String Diagram 						   = "Diagram";
 	public final static String Model 						   = "Model";
 	public final static String ModelReference 				   = "ModelRef";

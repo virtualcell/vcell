@@ -172,7 +172,11 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 	public static final int ROLE_BoundaryValueZm		= 6;
 	public static final int ROLE_BoundaryValueZp		= 7;
 	public static final int ROLE_InitialCount			= 8;
-	public static final int NUM_ROLES		= 9;
+	public static final int ROLE_VelocityX				= 9;
+	public static final int ROLE_VelocityY				= 10;
+	public static final int ROLE_VelocityZ				= 11;
+	
+	public static final int NUM_ROLES		= 12;
 	public static final String RoleTags[] = {
 		cbit.vcell.model.VCMODL.InitialConcentration,
 		cbit.vcell.model.VCMODL.DiffusionRate,
@@ -182,7 +186,10 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		cbit.vcell.model.VCMODL.BoundaryConditionYp,
 		cbit.vcell.model.VCMODL.BoundaryConditionZm,
 		cbit.vcell.model.VCMODL.BoundaryConditionZp,
-		cbit.vcell.model.VCMODL.InitialCount
+		cbit.vcell.model.VCMODL.InitialCount,
+		cbit.vcell.model.VCMODL.VelocityX,
+		cbit.vcell.model.VCMODL.VelocityY,
+		cbit.vcell.model.VCMODL.VelocityZ
 	};
 	public static final String RoleNames[] = {
 		"initConc",
@@ -193,7 +200,10 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		"BC_Yp",
 		"BC_Zm",
 		"BC_Zp",
-		"initCount"
+		"initCount",
+		"Vel_X",
+		"Vel_Y",
+		"Vel_Z"
 	};
 	public static final String RoleDescriptions[] = {
 		"initial concentration", 
@@ -204,7 +214,10 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		"Boundary Condition Y+",
 		"Boundary Condition Z-",
 		"Boundary Condition Z+",
-		"initial count"
+		"initial count",
+		"Velocity X",
+		"Velocity Y",
+		"Velocity Z"
 	};
 	private static RealInterval[] parameterBounds = {
 		new RealInterval(0.0, Double.POSITIVE_INFINITY), // init concentration
@@ -215,7 +228,10 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		null,	// BC Y+
 		null,	// BC Z-
 		null,	// BC Z+
-		new RealInterval(0.0, Double.POSITIVE_INFINITY) // init amount
+		new RealInterval(0.0, Double.POSITIVE_INFINITY), // init amount
+		null, // Velocity X
+		null, // Velocity Y
+		null  // Velocity Z
 	};
 
 public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationContext argSimulationContext) {
@@ -298,6 +314,15 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 	fieldParameters[ROLE_BoundaryValueZp] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueZp],null,
 														ROLE_BoundaryValueZp,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueZp]);
+	fieldParameters[ROLE_VelocityX] = new SpeciesContextSpecParameter(RoleNames[ROLE_VelocityX], null,
+														ROLE_VelocityX, VCUnitDefinition.UNIT_um_per_s,	RoleDescriptions[ROLE_VelocityX]);
+	
+	fieldParameters[ROLE_VelocityY] = new SpeciesContextSpecParameter(RoleNames[ROLE_VelocityY], null,
+														ROLE_VelocityY, VCUnitDefinition.UNIT_um_per_s,	RoleDescriptions[ROLE_VelocityY]);
+	
+	fieldParameters[ROLE_VelocityZ] = new SpeciesContextSpecParameter(RoleNames[ROLE_VelocityZ], null,
+														ROLE_VelocityZ, VCUnitDefinition.UNIT_um_per_s,	RoleDescriptions[ROLE_VelocityZ]);
+
 	this.simulationContext = argSimulationContext;
 	resetDefaults();
 	refreshDependencies();
@@ -321,7 +346,6 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 
 
 /**
- * This method was created in VisualAge.
  * @return boolean
  * @param object java.lang.Object
  */
@@ -413,7 +437,6 @@ public void gatherIssues(java.util.Vector issueVector) {
 
 
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getBoundaryXmParameter() {
@@ -422,58 +445,64 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getBoundaryXmParameter() {
 
 
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getBoundaryXpParameter() {
 	return getParameterFromRole(ROLE_BoundaryValueXp);		
 }
 
-
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getBoundaryYmParameter() {
 	return getParameterFromRole(ROLE_BoundaryValueYm);		
 }
 
-
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getBoundaryYpParameter() {
 	return getParameterFromRole(ROLE_BoundaryValueYp);		
 }
 
-
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getBoundaryZmParameter() {
 	return getParameterFromRole(ROLE_BoundaryValueZm);		
 }
 
-
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getBoundaryZpParameter() {
 	return getParameterFromRole(ROLE_BoundaryValueZp);		
 }
 
-
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getDiffusionParameter() {
 	return getParameterFromRole(ROLE_DiffusionRate);		
 }
 
+public SpeciesContextSpec.SpeciesContextSpecParameter getVelocityXParameter() {
+	return getParameterFromRole(ROLE_VelocityX);		
+}
+
+/**
+ * @return cbit.vcell.parser.Expression
+ */
+public SpeciesContextSpec.SpeciesContextSpecParameter getVelocityYParameter() {
+	return getParameterFromRole(ROLE_VelocityY);		
+}
+
+/**
+ * @return cbit.vcell.parser.Expression
+ */
+public SpeciesContextSpec.SpeciesContextSpecParameter getVelocityZParameter() {
+	return getParameterFromRole(ROLE_VelocityZ);		
+}
 
 /**
  * getEntry method comment.
@@ -490,9 +519,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	return ste;
 }
 
-
 /**
- * This method was created by a SmartGuide.
  * @return java.lang.String
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getInitialConditionParameter()
@@ -594,13 +621,13 @@ public int getNumDisplayableParameters() {
 					return 1;  // just IC.
 				}
 				case 1:{
-					return 4;  // IC,Diff,Xm,Xp
+					return 5;  // IC,Diff,Xm,Xp, VelX
 				}
 				case 2:{
-					return 6;  // IC,Diff,Xm,Xp,Ym,Yp
+					return 8;  // IC,Diff,Xm,Xp,Ym,Yp, VelX, VelY
 				}
 				case 3:{
-					return 8;  // IC,Diff,Xm,Xp,Ym,Yp,Zm,Zp
+					return 11;  // IC,Diff,Xm,Xp,Ym,Yp,Zm,Zp, VelX, VelY, VelZ
 				}
 				default:{
 					throw new RuntimeException("unexpected Geometry dimension"); // could never happen
@@ -762,6 +789,20 @@ public String getVCML() {
 			buffer.append("\t\t"+VCMODL.BoundaryCondition+" "+bl.toString()+" "+boundExp.toString()+"\n");
 		}
 	}
+	// write velocity x,y,z expressions
+	Expression vel_x = getVelocityXParameter().getExpression();
+	if (vel_x!=null){
+		buffer.append("\t\t"+VCMODL.VelocityX+" "+vel_x.toString()+";\n");
+	}
+	Expression vel_y = getVelocityYParameter().getExpression();
+	if (vel_y!=null){
+		buffer.append("\t\t"+VCMODL.VelocityY+" "+vel_y.toString()+";\n");
+	}
+	Expression vel_z = getVelocityZParameter().getExpression();
+	if (vel_z!=null){
+		buffer.append("\t\t"+VCMODL.VelocityZ+" "+vel_z.toString()+";\n");
+	}
+
 	buffer.append("\t}\n");
 	return buffer.toString();		
 }
@@ -796,7 +837,6 @@ public boolean isConstant() {
 
 
 /**
- * This method was created in VisualAge.
  * @return boolean
  */
 public boolean isDiffusing() {
@@ -816,9 +856,19 @@ public boolean isDiffusing() {
 	return true;
 }
 
+public boolean isAdvecting() {
+	// If all 3 velocity (x,y,z) parameters are null, there is no advection; return <FALSE>, else return <TRUE>
+	Expression eX = getVelocityXParameter().getExpression();
+	Expression eY = getVelocityYParameter().getExpression();
+	Expression eZ = getVelocityZParameter().getExpression();
+	if (eX == null && eY == null && eZ == null) {
+		return false;
+	}
+	return true;
+}
+
 
 /**
- * This method was created in VisualAge.
  * @return boolean
  * @deprecated (no longer used)
  */
@@ -872,13 +922,32 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 			getParameterFromRole(getRole(bl)).setExpression(exp);
 			continue;
 		}
+
+		//
+		// read Velocity Expressions
+		//	
+		if (token.equalsIgnoreCase(VCMODL.VelocityX)){
+			Expression exp = new Expression(tokens);
+			getVelocityXParameter().setExpression(exp);
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCMODL.VelocityY)){
+			Expression exp = new Expression(tokens);
+			getVelocityYParameter().setExpression(exp);
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCMODL.VelocityZ)){
+			Expression exp = new Expression(tokens);
+			getVelocityZParameter().setExpression(exp);
+			continue;
+		}
+
 		throw new cbit.vcell.server.DataAccessException("unexpected identifier "+token);
 	}
 }
 
 
 /**
- * This method was created in VisualAge.
  */
 public void refreshDependencies() {
 	for (int i = 0; i < fieldParameters.length; i++){
@@ -926,7 +995,6 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
 
 
 /**
- * This method was created in VisualAge.
  */
 private void resetDefaults() {
 	bConstant = DEFAULT_CONSTANT;
@@ -939,7 +1007,6 @@ private void resetDefaults() {
 
 
 /**
- * This method was created in VisualAge.
  * @param isConstant boolean
  */
 public void setConstant(boolean isConstant) {
@@ -952,7 +1019,6 @@ public void setConstant(boolean isConstant) {
 
 
 /**
- * This method was created in VisualAge.
  * @param isDiffusing boolean
  * @deprecated
  */
@@ -990,7 +1056,6 @@ public void setSimulationContext(SimulationContext newSimulationContext) {
 
 
 /**
- * This method was created in VisualAge.
  * @param sc cbit.vcell.model.SpeciesContext
  */
 void setSpeciesContextReference(SpeciesContext sc) throws MappingException {

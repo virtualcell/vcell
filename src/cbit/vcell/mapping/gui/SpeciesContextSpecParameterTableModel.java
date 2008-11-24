@@ -84,7 +84,7 @@ public class SpeciesContextSpecParameterTableModel extends cbit.vcell.messaging.
 	private final int COLUMN_NAME = 1;
 	private final int COLUMN_VALUE = 2;
 	private final int COLUMN_UNIT = 3;
-	private String LABELS[] = { "description", "Parameter", "Expression", "Units" };
+	private String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.mapping.SpeciesContextSpec fieldSpeciesContextSpec = null;
 	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
@@ -210,7 +210,33 @@ private cbit.vcell.model.Parameter getParameter(int row) {
 	if (row<0 || row>=count){
 		throw new RuntimeException("SpeciesContextSpecParameterTableModel.getParameter("+row+") out of range ["+0+","+(count-1)+"]");
 	}
-	return getSpeciesContextSpec().getParameter(row);
+	
+	int geomDimension = fieldSimulationContext.getGeometry().getDimension();
+	if (geomDimension == 0) {
+		return getSpeciesContextSpec().getParameter(row);
+	} else if (geomDimension == 1)  {
+		if (row < 4) {
+			return getSpeciesContextSpec().getParameter(row);	
+		} else {
+			// skip Yp, Ym, Zp, Zm, initCount in the SpeciesContextSpecParameter list
+			return getSpeciesContextSpec().getParameter(row+5);
+		}
+	} else if (geomDimension == 2) {
+		if (row < 6) {
+			return getSpeciesContextSpec().getParameter(row);	
+		} else {
+			// skip Zp, Zm, initCount in the SpeciesContextSpecParameter list
+			return getSpeciesContextSpec().getParameter(row+3);
+		}
+	} else if (geomDimension == 3) {
+		if (row < 8) {
+			return getSpeciesContextSpec().getParameter(row);	
+		} else {
+			// skip initCount in the SpeciesContextSpecParameter list
+			return getSpeciesContextSpec().getParameter(row+1);
+		}
+	}
+	return null;
 }
 
 
@@ -548,14 +574,32 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-							scsParm.setExpression(exp);
+							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
+								scsParm.setExpression(exp);
+							} else {
+								// scsParam is a velocity parameter
+								if (!exp.compareEqual(new Expression(0.0))) {
+									scsParm.setExpression(exp);
+								} else {
+									scsParm.setExpression(null);
+								}
+							}
 							//fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-							scsParm.setExpression(new Expression(newExpressionString));
+							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
+								scsParm.setExpression(new Expression(newExpressionString));
+							} else {
+								// scsParam is a velocity parameter
+								if (!newExpressionString.equals("0.0")) {
+									scsParm.setExpression(new Expression(newExpressionString));
+								} else {
+									scsParm.setExpression(null);
+								}
+							}
 							//fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}

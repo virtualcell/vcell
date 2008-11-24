@@ -1147,6 +1147,7 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 
 		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
+		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scs.getInitialConditionParameter();
 			Expression initCond = new Expression(getMathSymbol0(initParm,null));

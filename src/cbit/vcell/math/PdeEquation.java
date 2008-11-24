@@ -318,13 +318,13 @@ public String getVCML() {
 		buffer.append("\t\t"+VCML.BoundaryZp+" "+boundaryZp.infix()+";\n");
 	}	
 	if (velocityX != null){
-		buffer.append("\t\t"+VCML.VelocityX+" "+velocityX.infix()+";\n");
+		buffer.append("\t\t"+VCML.VelocityX+"\t "+velocityX.infix()+";\n");
 	}	
 	if (velocityY != null){
-		buffer.append("\t\t"+VCML.VelocityY+" "+velocityY.infix()+";\n");
+		buffer.append("\t\t"+VCML.VelocityY+"\t "+velocityY.infix()+";\n");
 	}	
 	if (velocityZ != null){
-		buffer.append("\t\t"+VCML.VelocityZ+" "+velocityZ.infix()+";\n");
+		buffer.append("\t\t"+VCML.VelocityZ+"\t "+velocityZ.infix()+";\n");
 	}	
 	if (getRateExpression() != null){
 		buffer.append("\t\t"+VCML.Rate+"\t "+getRateExpression().infix()+";\n");
