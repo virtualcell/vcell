@@ -539,12 +539,17 @@ public void curveRemoved(cbit.vcell.geometry.Curve curve) {
 
 	fireDataSamplers();	
 }
+
+private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean bFetchOnlyVisible) {
+	return fetchSpatialSelections0(curveOfInterest,bFetchOnlyVisible,getPdeDataContext().getDataIdentifier().getVariableType());
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (6/28/2003 4:57:18 PM)
  * @return cbit.vcell.simdata.gui.SpatialSelection[]
  */
-private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean bFetchOnlyVisible) {
+private SpatialSelection[] fetchSpatialSelections0(Curve curveOfInterest,boolean bFetchOnlyVisible,VariableType vt) {
 	//
 	java.util.Vector<SpatialSelection> spatialSelection = new java.util.Vector<SpatialSelection>();
 	//
@@ -553,7 +558,6 @@ private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean 
 		getImagePlaneManagerPanel() != null &&
 		getImagePlaneManagerPanel().getCurveRenderer() != null){
 		//
-		VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 		cbit.vcell.solvers.CartesianMesh cm = getPdeDataContext().getCartesianMesh();
 		Curve[] curves = getImagePlaneManagerPanel().getCurveRenderer().getAllCurves();
 		//
@@ -678,6 +682,15 @@ public SpatialSelection[] fetchSpatialSelections(boolean bIgnoreSelection,boolea
 	}
 	return null;
 }
+
+public SpatialSelection[] fetchSpatialSelectionsAll(VariableType vt) {
+	if(	getImagePlaneManagerPanel() != null &&
+		getImagePlaneManagerPanel().getCurveRenderer() != null){
+		return fetchSpatialSelections0(null,false,vt);
+	}
+	return null;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/6/2003 7:42:59 PM)
