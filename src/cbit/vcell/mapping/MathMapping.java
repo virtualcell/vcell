@@ -829,33 +829,17 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			//
 			} else {
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
-				if (sc.getStructure()==membrane.getInsideFeature()){
+				if (sc.getStructure()==membrane.getInsideFeature() || sc.getStructure()==membrane.getOutsideFeature()){
 					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
-					/*	if (!scs.isDiffusing()){
-							throw new MappingException("species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()+"') interacts"+
-														"\n  with the spatially resolved membrane '"+membrane.getName()+"'"+
-														"\n  which results in a flux, so it must diffuse."+
-														"\n"+
-														"\nenable diffusion and set a non-zero diffusion rate for species '"+sc.getName()+"'"+
-														"\n or disable those reaction(s)");
-						}
-					*/
-						return scm.getVariable().getName()+"_INSIDE";
-					}else{
-						return scm.getSpeciesContext().getName();
-					}
-				}else if (sc.getStructure()==membrane.getOutsideFeature()){
-					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
-					/*	if (!scs.isDiffusing()){
-							throw new MappingException("species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()+"') interacts"+
-														"\n  with the spatially resolved membrane '"+membrane.getName()+"'"+
-														"\n  which results in a flux, so it must diffuse."+
-														"\n"+
-														"\nenable diffusion and set a non-zero diffusion rate for species '"+sc.getName()+"'"+
-														"\n or disable those reaction(s)");
-						}
-					*/
-						return scm.getVariable().getName()+"_OUTSIDE";
+						if (!scs.isDiffusing()){
+							throw new MappingException("Species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()
+									+"') interacts with the spatially resolved membrane '"+membrane.getName()+"'"+
+									" which results in a flux, so it must diffuse."+
+									"\n"+
+									"\nEnable diffusion in spatial applications by setting a non-zero diffusion rate for species '"+sc.getName()+"'"+
+									" or disable those reaction(s)");
+						}					
+						return scm.getVariable().getName()+ (sc.getStructure()==membrane.getInsideFeature() ? "_INSIDE" : "_OUTSIDE");
 					}else{
 						return scm.getSpeciesContext().getName();
 					}
