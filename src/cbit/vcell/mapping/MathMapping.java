@@ -1049,7 +1049,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @return boolean
  * @param speciesContext cbit.vcell.model.SpeciesContext
  */
-protected boolean isDiffusionRequired(SpeciesContext speciesContext) {
+protected boolean isPDERequired(SpeciesContext speciesContext) {
 	//
 	// compartmental models never need diffusion
 	//
@@ -1074,9 +1074,9 @@ protected boolean isDiffusionRequired(SpeciesContext speciesContext) {
 	}
 
 	//
-	// check if any resolved speciesContext from the same species needs diffusion
+	// check if any resolved speciesContext from the same species needs diffusion/advection
 	//
-	boolean bDiffusionNeeded = false;
+	boolean bPDENeeded = false;
 	SpeciesContext speciesContexts[] = simContext.getGeometryContext().getModel().getSpeciesContexts();
 	for (int i = 0; i < speciesContexts.length; i++){
 		if (speciesContexts[i].getSpecies().compareEqual(speciesContext.getSpecies())){
@@ -1085,11 +1085,11 @@ protected boolean isDiffusionRequired(SpeciesContext speciesContext) {
 			//
 			// another speciesContext needs diffusion if it is from a spatially resolved structure and has non-zero diffusion
 			//
-			if (otherSM instanceof FeatureMapping && ((FeatureMapping)otherSM).getResolved() && otherSCS.isDiffusing()){
-				bDiffusionNeeded = true;
+			if (otherSM instanceof FeatureMapping && ((FeatureMapping)otherSM).getResolved() && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
+				bPDENeeded = true;
 			}
-			if (otherSM instanceof MembraneMapping && ((MembraneMapping)otherSM).getResolved(simContext) && otherSCS.isDiffusing()){
-				bDiffusionNeeded = true;
+			if (otherSM instanceof MembraneMapping && ((MembraneMapping)otherSM).getResolved(simContext) && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
+				bPDENeeded = true;
 			}
 		}
 	}
@@ -1098,40 +1098,39 @@ protected boolean isDiffusionRequired(SpeciesContext speciesContext) {
 	// if this speciesContextSpec specifically disables diffusion, but is required elsewhere to make "global" PDE work,
 	// then tell it that diffusion is required and give it a zero diffusion rate.
 	//
-	SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(speciesContext);
-	if (bDiffusionNeeded){
+	if (bPDENeeded){
 		System.out.println("WARNING: MathMapping.isDiffusionRequired("+speciesContext+"), diffusion is disabled for "+speciesContext+" but needed for resolved species "+speciesContext.getSpecies());
 	}
 
-	return bDiffusionNeeded;
+	return bPDENeeded;
 }
 
-protected boolean isAdvectionRequired(SpeciesContext speciesContext) {
-	//
-	// compartmental models never need advection
-	//
-	if (simContext.getGeometryContext().getGeometry().getDimension() == 0){
-		return false;
-	}
-
-	//
-	// if speciesContext is from a structure which is not spatially resolved, then it won't diffuse (PDE not required).
-	//
-	StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-	if (sm instanceof FeatureMapping){
-		if (!((FeatureMapping)sm).getResolved()){
-			return false;
-		}
-	} else {
-		return false;	// not Feature : advection NOT allowed at present (even for membranes)
-	}
-
-	//
-	// check if resolved speciesContext has velocity parameters
-	//
-	SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(speciesContext);
-	return scs.isAdvecting();
-}
+//protected boolean isAdvectionRequired(SpeciesContext speciesContext) {
+//	//
+//	// compartmental models never need advection
+//	//
+//	if (simContext.getGeometryContext().getGeometry().getDimension() == 0){
+//		return false;
+//	}
+//
+//	//
+//	// if speciesContext is from a structure which is not spatially resolved, then it won't diffuse (PDE not required).
+//	//
+//	StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+//	if (sm instanceof FeatureMapping){
+//		if (!((FeatureMapping)sm).getResolved()){
+//			return false;
+//		}
+//	} else {
+//		return false;	// not Feature : advection NOT allowed at present (even for membranes)
+//	}
+//
+//	//
+//	// check if resolved speciesContext has velocity parameters
+//	//
+//	SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(speciesContext);
+//	return scs.isAdvecting();
+//}
 
 
 /**
@@ -1677,7 +1676,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	for (int i = 0; i < speciesContextSpecs.length; i++){
 		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
 		SpeciesContextSpec.SpeciesContextSpecParameter diffParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_DiffusionRate);
-		if (diffParm!=null && (scm.isDiffusing() || scm.isAdvecting())){
+		if (diffParm!=null && (scm.isPDERequired())){
 			try {
 				diffParm.getExpression().evaluateConstant();
 				varHash.addVariable(new Constant(getMathSymbol(diffParm,null),getIdentifierSubstitutions(diffParm.getExpression(),diffParm.getUnitDefinition(),null)));
@@ -1890,7 +1889,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				SpeciesContextSpec    scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				VolVariable variable = (VolVariable)scm.getVariable();
 				Equation equation = null;
-				if ( (scm.isDiffusing() || scm.isAdvecting()) && sm instanceof FeatureMapping){
+				if ( (scm.isPDERequired()) && sm instanceof FeatureMapping){
 					//
 					// PDE
 					//
@@ -2067,7 +2066,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				Equation equation = null;
 				MemVariable variable = (MemVariable)scm.getVariable();
 				MembraneMapping mm = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(sc.getStructure());
-				if (scm.isDiffusing()){
+				if (scm.isPDERequired()){
 					//
 					// PDE
 					//
@@ -2125,10 +2124,10 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		Enumeration enum_scm = getSpeciesContextMappings();
 		while (enum_scm.hasMoreElements()){
 			SpeciesContextMapping scm = (SpeciesContextMapping)enum_scm.nextElement();
-			if (scm.isDiffusing() || scm.isAdvecting()) {
+			if (scm.isPDERequired()) {
 				Species species = scm.getSpeciesContext().getSpecies();
 				Variable var = scm.getVariable();
-				if (var instanceof VolVariable && (scm.isDiffusing() || scm.isAdvecting())){
+				if (var instanceof VolVariable && (scm.isPDERequired())){
 					JumpCondition jc = memSubDomain.getJumpCondition((VolVariable)var);
 					if (jc==null){
 //System.out.println("MathMapping.refreshMathDescription(), adding jump condition for diffusing variable "+var.getName()+" on membrane "+membraneStructureAnalyzer.getMembrane().getName());
@@ -2154,8 +2153,8 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				// introduce Bug Compatability mode for NoFluxIfFixed
 				//
 				// if (scm.getVariable() instanceof VolVariable && scm.isDiffusing()){
-				if (scm.getVariable() instanceof VolVariable && ((MembraneStructureAnalyzer.bNoFluxIfFixed || (scm.isDiffusing() || scm.isAdvecting())))){
-					if (MembraneStructureAnalyzer.bNoFluxIfFixed && !scm.isDiffusing()){
+				if (scm.getVariable() instanceof VolVariable && ((MembraneStructureAnalyzer.bNoFluxIfFixed || (scm.isPDERequired())))){
+					if (MembraneStructureAnalyzer.bNoFluxIfFixed && !scm.isPDERequired()){
 						MembraneStructureAnalyzer.bNoFluxIfFixedExercised = true;
 					}
 					JumpCondition jc = memSubDomain.getJumpCondition((VolVariable)scm.getVariable());
@@ -2261,8 +2260,9 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 
-		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
-		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
+		scm.setPDERequired(isPDERequired(scs.getSpeciesContext()));
+//		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
+//		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
 			Expression initCond = scs.getInitialConditionParameter() == null? null : scs.getInitialConditionParameter().getExpression();
 			scm.setDependencyExpression(initCond);

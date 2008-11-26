@@ -18,9 +18,10 @@ public class SpeciesContextMapping {
 	//
 	// input to structural analysis
 	//
-	private boolean bDiffusing        = false;
 	private boolean bFastParticipant  = false;
-	private boolean bAdvecting        = false;
+	private boolean bPDERequired	  = false;
+//	private boolean bAdvecting        = false;
+//	private boolean bDiffusing        = false;
 
 	//
 	// output from structural analysis of slow reactions
@@ -72,39 +73,35 @@ public Expression getRate() {
 	return this.rateExp;
 }
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.model.SpeciesContext
  */
 public SpeciesContext getSpeciesContext() {
 	return speciesContext;
 }
 /**
- * This method was created in VisualAge.
  * @return cbit.vcell.math.Variable
  */
 public Variable getVariable() {
 	return variable;
 }
-/**
- * Insert the method's description here.
- * Creation date: (3/24/2001 3:56:35 PM)
- * @return boolean
- */
-public boolean isDiffusing() {
-	return this.bDiffusing;
-}
-/**
- * Insert the method's description here.
- * Creation date: (3/24/2001 3:49:24 PM)
- * @return boolean
- */
+
 public boolean isFastParticipant() {
 	return bFastParticipant;
+}
+
+public boolean isPDERequired() {
+	return this.bPDERequired;
+}
+
+/*
+public boolean isDiffusing() {
+	return this.bDiffusing;
 }
 
 public boolean isAdvecting() {
 	return this.bAdvecting;
 }
+*/
 
 /**
  * Insert the method's description here.
@@ -114,14 +111,7 @@ public boolean isAdvecting() {
 public void setDependencyExpression(Expression argDepencencyExpression) {
 	this.dependencyExp = argDepencencyExpression;
 }
-/**
- * Insert the method's description here.
- * Creation date: (3/24/2001 4:10:49 PM)
- * @param diffusing boolean
- */
-public void setDiffusing(boolean diffusing) {
-	this.bDiffusing = diffusing;
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (3/24/2001 3:53:28 PM)
@@ -131,9 +121,19 @@ public void setFastInvariant(Expression fastInvariantExpression) {
 	this.fastInvariant = fastInvariantExpression;
 }
 
+public void setPDERequired(boolean pdeRequired) {
+	this.bPDERequired = pdeRequired;
+}
+
+/*
+public void setDiffusing(boolean diffusing) {
+	this.bDiffusing = diffusing;
+}
+
 public void setAdvecting(boolean advecting) {
 	this.bAdvecting = advecting;
 }
+*/
 
 /**
  * Insert the method's description here.
