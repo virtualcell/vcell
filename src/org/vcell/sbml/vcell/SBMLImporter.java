@@ -538,6 +538,10 @@ protected void addParameters() throws PropertyVetoException {
 			// Also check if the SBML global param is a reserved symbol in VCell : cannot add reserved symbol to model params.
 			if (!reservedSymbolHash.contains(paramName)) {
 				ModelParameter vcGlobalParam = vcModel.new ModelParameter(paramName, valueExpr, Model.ROLE_UserDefined, glParamUnitDefn);
+				if (paramName.length() > 64) {
+					// record global parameter name in annotation if it is longer than 64 characeters
+					vcGlobalParam.setDescription("Parameter Name : " + paramName);
+				}
 				vcModel.addModelParameter(vcGlobalParam);
 			}
 		}
@@ -700,6 +704,13 @@ protected void addReactions() {
 				MIRIAMHelper.setFromSBMLNotes(vcReactions[i], XMLNode.convertXMLNodeToString(sbmlRxn.getNotes()));
 			} else {
 				vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
+			}
+			
+			// record reaction name in annotation if it is greater than 64 characters. Choosing 64, since that is (as of 12/2/08) 
+			// the limit on the reactionName length.
+			if (rxnName.length() > 64) {
+				String vcRxnAnnotation = rxnName;
+				vcReactions[i].setAnnotation(vcRxnAnnotation);
 			}
 			model.addReactionStep(vcReactions[i]);
 
@@ -2000,5 +2011,74 @@ public void translateSBMLModel() {
 	addReactions();
 	// Add Events
 	addEvents();
+	// Check if names of species, structures, reactions, parameters are long (say, > 64), if so give warning.
+	try {
+		checkIdentifiersNameLength();
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+private void checkIdentifiersNameLength() throws Exception {
+	// Check compartment name lengths
+	ListOf listofIds = sbmlModel.getListOfCompartments();
+	boolean bLongCompartmentName = false;
+	for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
+		Compartment compartment = (Compartment)listofIds.get(i);
+		String compartmentName = compartment.getId();
+		if (compartmentName.length() > 64) {
+			bLongCompartmentName = true;
+		}
+	}
+	// Check species name lengths
+	listofIds = sbmlModel.getListOfSpecies();
+	boolean bLongSpeciesName = false;
+	for (int i = 0; i < sbmlModel.getNumSpecies(); i++) {
+		Species species = (Species)listofIds.get(i);
+		String speciesName = species.getId();
+		if (speciesName.length() > 64) {
+			bLongSpeciesName = true;
+		}
+	}
+	// Check parameter name lengths
+	listofIds = sbmlModel.getListOfParameters();
+	boolean bLongParameterName = false;
+	for (int i = 0; i < sbmlModel.getNumParameters(); i++) {
+		Parameter param = (Parameter)listofIds.get(i);
+		String paramName = param.getId();
+		if (paramName.length() > 64) {
+			bLongParameterName = true;
+		}
+	}
+	// Check reaction name lengths
+	listofIds = sbmlModel.getListOfReactions();
+	boolean bLongReactionName = false;
+	for (int i = 0; i < sbmlModel.getNumReactions(); i++) {
+		Reaction rxn = (Reaction)listofIds.get(i);
+		String rxnName = rxn.getId();
+		if (rxnName.length() > 64) {
+			bLongReactionName = true;
+		}
+	}
+
+	if (bLongCompartmentName || bLongSpeciesName || bLongParameterName || bLongReactionName) {
+		String warningMsg = "WARNING: The imported model has one or more ";
+		if (bLongCompartmentName) {
+			warningMsg = warningMsg + "compartments, ";
+		} 
+		if (bLongSpeciesName) {
+			warningMsg = warningMsg + "species, ";
+		}
+		if (bLongParameterName) {
+			warningMsg = warningMsg + "global parameters, ";
+		}
+		if (bLongReactionName) {
+			warningMsg = warningMsg + "reactions ";
+		}
+		warningMsg = warningMsg + "that have ids/names that are longer than 64 characters. \n\nUser is STRONGLY recommeded to shorten " +
+						"the names to avoid problems with the length of expressions these names might be used in.";
+		logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, warningMsg);
+	}
 }
 }

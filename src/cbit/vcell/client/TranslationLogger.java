@@ -76,6 +76,8 @@ public class TranslationLogger extends VCLogger {
 		}
 		if (messageLevel == TranslationLogger.LOW_PRIORITY || messageLevel == TranslationLogger.MEDIUM_PRIORITY) {
 			messages.add(message);
+			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.OK_OPTION}, TranslationLogger.OK_OPTION);
+			String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);
 		} else if (messageLevel == TranslationLogger.HIGH_PRIORITY) {      
 			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.CANCEL_OPTION}, TranslationLogger.CANCEL_OPTION);
 			String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);
