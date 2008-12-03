@@ -20,7 +20,7 @@ public class ReactStepTable extends cbit.sql.Table {
 	public final Field structRef			= new Field("structRef",	"integer",		"NOT NULL "+StructTable.REF_TYPE);
 	//public final Field kinetics 			= new Field("kinetics",		"long raw",		"NOT NULL");
 	public final Field kinetics 			= new Field("kinetics",		"CLOB",		"");
-	public final Field name	 				= new Field("name",			"varchar(64)",	"");
+	public final Field name	 				= new Field("name",			"varchar2(255)",	"");
 	public final Field chargeValence		= new Field("chargeValence","integer",		"");
 	public final Field physicsOptions		= new Field("physicsOptions","integer",		"");
 	public final Field kineticsLarge		= new Field("kineticsLRG",	"CLOB",				"");
