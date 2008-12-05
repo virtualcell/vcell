@@ -2698,8 +2698,13 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 					//ignore
 				}
 			};
-			if(getFunction(vcdID,varName) != null){
-				AnnotatedFunction function = getFunction(vcdID,varName);
+			AnnotatedFunction function = getFunction(vcdID,varName);
+			if(function != null){
+				if (vcData instanceof SimulationData) {
+					function = ((SimulationData)vcData).simplifyFunction(function);
+				} else {
+					throw new Exception("DataSetControllerImpl::getTimeSeriesValues_private(): has to be SimulationData to get time plot.");
+				}
 				MultiFunctionIndexes mfi = new MultiFunctionIndexes(vcdID,function,indices,wantsTheseTimes, progressListener);
 				for (int i=0;i<desiredTimeValues.length;i++){
 					fireDataJobEventIfNecessary(
@@ -2959,6 +2964,7 @@ private void adjustMembraneAdjacentVolumeValues(
 	boolean bIsSpecial = false;
 	AnnotatedFunction insideFunction = null;
 	AnnotatedFunction outsideFunction = null;
+	VCData vcData = getVCData(vcdID);
 	DataIdentifier[] myDataIdentifers = getDataIdentifiers(vcdID);
 	for (int i = 0; i < myDataIdentifers.length; i++) {
 		if(myDataIdentifers[i].getName().equals(varName)){
@@ -2972,7 +2978,12 @@ private void adjustMembraneAdjacentVolumeValues(
 				AnnotatedFunction[] functionsArr = getFunctions(vcdID);
 				for (int j = 0; j < functionsArr.length; j++) {
 					if(functionsArr[j].getName().equals(varName)){
-						sourceFunction = functionsArr[j];
+						// need to subsitute and flatten the expression since we no longer store simplified expression.
+						if (vcData instanceof SimulationData) {
+							sourceFunction = ((SimulationData)vcData).simplifyFunction(functionsArr[j]);
+						} else {
+							throw new Exception("DataSetControllerImpl::getTimeSeriesValues_private(): has to be SimulationData to get time plot.");
+						}
 						break;
 					}
 				}
@@ -2993,8 +3004,8 @@ private void adjustMembraneAdjacentVolumeValues(
 				outsideExp = new Expression(varName+"_OUTSIDE");
 			}
 			if(insideExp != null && outsideExp != null){
-				insideExp.bindExpression(getVCData(vcdID));
-				outsideExp.bindExpression(getVCData(vcdID));
+				insideExp.bindExpression(vcData);
+				outsideExp.bindExpression(vcData);
 				insideFunction = new AnnotatedFunction("",insideExp,"",VariableType.MEMBRANE,true);
 				outsideFunction = new AnnotatedFunction("",outsideExp,"",VariableType.MEMBRANE,true);
 				insideFunction.setExpression(insideExp.flatten());
