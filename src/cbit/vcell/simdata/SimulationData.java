@@ -320,9 +320,7 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 	}
 	
 	checkSelfReference(function);
-
-	functionBindAndSubstitute(function);
-	
+	function.getExpression().bindExpression(this);
 	addFunctionToListInternal(function);
 	
 }
@@ -337,12 +335,12 @@ private void addFunctionToListInternal(AnnotatedFunction function){
 }
 
 
-private void functionBindAndSubstitute(AnnotatedFunction function) throws ExpressionException{
-	
+public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws ExpressionException {
 	// attempt to bind function and substitute
-	Expression simExp = function.getExpression();	
-	if (simExp == null) {
-		Expression exp = new Expression(function.getExpression());
+	AnnotatedFunction simpleFunction = null;
+	try {
+		simpleFunction = (AnnotatedFunction)BeanUtils.cloneSerializable(function);
+		Expression exp = simpleFunction.getExpression();
 		exp.bindExpression(this);
 		String[] symbols = exp.getSymbols();
 		if (symbols != null) {
@@ -373,11 +371,14 @@ private void functionBindAndSubstitute(AnnotatedFunction function) throws Expres
 				exp.substituteInPlace(oldExp, newExp);
 			}
 		}
-		simExp = exp.flatten();
-		function.setExpression(simExp);
+		exp = exp.flatten();
+		exp.bindExpression(this);
+		simpleFunction.setExpression(exp);
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		throw new ExpressionException(ex.getMessage());
 	}
-	simExp.bindExpression(this);
-	
+	return simpleFunction;
 }
 
 /**
@@ -1800,17 +1801,13 @@ private void replaceFunction(AnnotatedFunction function) throws ExpressionExcept
 		Vector<AnnotatedFunction> annotFuncsReferringToTarget = new Vector<AnnotatedFunction>();
 		AnnotatedFunction targetFunction = function;
 		while(true){
-			AnnotatedFunction[] referringFuncArr =
-				getReferringUserFunctions(targetFunction.getName());
+			AnnotatedFunction[] referringFuncArr = getReferringUserFunctions(targetFunction.getName());
 			if(referringFuncArr != null && referringFuncArr.length > 0){
 				for (int i = 0; i < targetUserDefinedFunctionSymbols.size(); i++) {
 					for (int j = 0; j < referringFuncArr.length; j++) {
-						if(targetUserDefinedFunctionSymbols.elementAt(i).
-								equals(referringFuncArr[j].getName())){
-							throw new DataAccessException(
-									"Error: Circular reference for functions '"+
+						if(targetUserDefinedFunctionSymbols.elementAt(i).equals(referringFuncArr[j].getName())){
+							throw new DataAccessException("Error: Circular reference for functions '"+
 									function.getName()+"' and '"+referringFuncArr[j].getName()+"'");
-									
 						}
 					}
 				}
@@ -1830,7 +1827,7 @@ private void replaceFunction(AnnotatedFunction function) throws ExpressionExcept
 		}
 	}
 	//Bind existing symbols to function and fail if something is wrong
-	functionBindAndSubstitute(function);
+	function.getExpression().bindExpression(this);
 	
 	for (int i=0;i<annotatedFunctionList.size();i++){
 		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
@@ -1850,7 +1847,7 @@ private void replaceFunction(AnnotatedFunction function) throws ExpressionExcept
 	//Bind Function to existing symbols
 	AnnotatedFunction[] allReferringFuncArr = allReferringFuncs.toArray(new AnnotatedFunction[0]);
 	for (int i = 0; i < allReferringFuncArr.length; i++) {
-		functionBindAndSubstitute(allReferringFuncArr[i]);
+		allReferringFuncArr[i].getExpression().bindExpression(this);
 	}
 }
 
