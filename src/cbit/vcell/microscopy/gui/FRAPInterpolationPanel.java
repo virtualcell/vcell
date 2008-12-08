@@ -45,7 +45,6 @@ public class FRAPInterpolationPanel extends JPanel {
 	private final JTextField secondDiffTextField;
 	private final JTextField secondMobileFracTextField;
 	private final JLabel immoFracValueLabel;
-	private final JCheckBox clampCheckBox;
 	private final JSlider diffusionRateSlider;
 	private final JSlider mobileFractionSlider;
 	private final JSlider bleachWhileMonitorSlider;
@@ -60,7 +59,7 @@ public class FRAPInterpolationPanel extends JPanel {
 	private FRAPOptData frapOptData;
 
 	private boolean B_HOLD_FIRE = false;
-	private boolean isExecuting = false;//for control whether a paraph should execute in OPTIMIZER_SLIDER_CHANGE_LISTENER or not, when getValueIsAdjusting() is false.
+	private boolean isExecuting = false;//for control whether a paragraph should execute in OPTIMIZER_SLIDER_CHANGE_LISTENER or not, when getValueIsAdjusting() is false.
 	public static final String PROPERTY_CHANGE_OPTIMIZER_VALUE = "PROPERTY_CHANGE_OPTIMIZER_VALUE";
 	public static final String PROPERTY_CHANGE_RUNSIM = "PROPERTY_CHANGE_RUNSIM";
 	public static final String INI_SECOND_DIFF_RATE = "0";
@@ -363,72 +362,35 @@ public class FRAPInterpolationPanel extends JPanel {
 		//check if second diffusion is applied
 		if(secondDiffRateCheckBox.isSelected())//second diffusion is applied
 		{
-			if(clampCheckBox.isSelected())//immobile fraction is clamped
+			if(movingPrimaryMFrac)//changing primary mobile fraction
 			{
-				if(movingPrimaryMFrac)//changing primary mobile fraction
+				if((primaryMFrac+secMFrac) >= 1)
 				{
-					if((primaryMFrac+immFrac) >= 1)
-					{
-						primaryMFrac = 1 - immFrac;
-						secMFrac = 0;
-					}
-					else
-					{
-						secMFrac = 1 - immFrac - primaryMFrac;
-					}
+					secMFrac = 1 - primaryMFrac;
+					immFrac = 0;
 				}
-				else//changing secondary mobile fraction
+				else
 				{
-					if((secMFrac+immFrac) >= 1)
-					{
-						secMFrac = 1 - immFrac;
-						primaryMFrac = 0;
-					}
-					else
-					{
-						primaryMFrac = 1 - immFrac - secMFrac;
-					}
+					immFrac = 1 - primaryMFrac - secMFrac;
 				}
 			}
-			else //immobile fraction is not clamped
+			else//changing secondary mobile fraction
 			{
-				if(movingPrimaryMFrac)//changing primary mobile fraction
+				if((secMFrac+primaryMFrac) >= 1)
 				{
-					if((primaryMFrac+secMFrac) >= 1)
-					{
-						secMFrac = 1 - primaryMFrac;
-						immFrac = 0;
-					}
-					else
-					{
-						immFrac = 1 - primaryMFrac - secMFrac;
-					}
+					primaryMFrac = 1 - secMFrac;
+					immFrac = 0;
 				}
-				else //changing secondary mobile fraction
+				else
 				{
-					if((secMFrac + primaryMFrac) >= 1)
-					{
-						primaryMFrac = 1 - secMFrac;
-						immFrac = 0;
-					}
-					else
-					{
-						immFrac = 1 - primaryMFrac - secMFrac;
-					}
+					immFrac = 1 - primaryMFrac - secMFrac;
 				}
 			}
-		}
+	    }
 		else //second diffusion is not applied
 		{	
-			double immoFrac = Double.parseDouble(immoFracValueLabel.getText());
-			if(clampCheckBox.isSelected()) //immobile fraction is clamped
-			{
-				primaryMFrac = 1 - immFrac;
-			}
-			else //immobile fraction is not clamped
-			{
-				immFrac = 1 - primaryMFrac;
-			}
+			immFrac = 1 - primaryMFrac;
+			secMFrac = 0;
 		}
 		return new double[]{primaryMFrac, secMFrac, immFrac};
 	}
@@ -782,32 +744,6 @@ public class FRAPInterpolationPanel extends JPanel {
 		gridBagConstraints_19.gridy = 3;
 		gridBagConstraints_19.gridx = 7;
 		add(immoFracValueLabel, gridBagConstraints_19);
-
-		clampCheckBox = new JCheckBox();
-		clampCheckBox.setText("Clamp");
-//		clampCheckBox.setSelected(true);
-		clampCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent arg0) {
-				if(clampCheckBox.isSelected()&& !secondDiffRateCheckBox.isSelected())
-				{
-					mobileFractionSlider.setEnabled(false);
-					mobileFractionTextField.setEnabled(false);
-				}
-				else
-				{
-					mobileFractionSlider.setEnabled(true);
-					mobileFractionTextField.setEnabled(true);
-				}
-			}
-		});
-		final GridBagConstraints gridBagConstraints_25 = new GridBagConstraints();
-		gridBagConstraints_25.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_25.ipadx = 5;
-		gridBagConstraints_25.insets = new Insets(0, 0, 0, 0);
-		gridBagConstraints_25.gridwidth = 2;
-		gridBagConstraints_25.gridy = 3;
-		gridBagConstraints_25.gridx = 8;
-		add(clampCheckBox, gridBagConstraints_25);
 	}
 
 	private void initialize(){
@@ -1104,11 +1040,6 @@ public class FRAPInterpolationPanel extends JPanel {
 	
 	private void disableSecondDiffComponents()
 	{
-		if(clampCheckBox.isSelected())
-		{
-			mobileFractionSlider.setEnabled(false);
-			mobileFractionTextField.setEnabled(false);
-		}
 		secondDiffTextField.setText(INI_SECOND_DIFF_RATE);
 		secondDiffTextField.setEnabled(false);
 		secondDiffSlider.setEnabled(false);
@@ -1117,7 +1048,9 @@ public class FRAPInterpolationPanel extends JPanel {
 		secondMobileFracSlider.setEnabled(false);
 		secondDiffSetButton.setEnabled(false);
 		secondMobileFracSetButton.setEnabled(false);
+		isExecuting = true; //control not to execute the paragraph when sliderBar is not changing.
 		secondDiffSlider.setValue(Integer.parseInt(INI_SECOND_DIFF_RATE));
+		isExecuting = false; 
 		secondMobileFracSlider.setValue(Integer.parseInt(INI_SECOND_MOBILE_FRAC));
 	}
 	
