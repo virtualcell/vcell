@@ -714,7 +714,50 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			if (mp.getExpression().getSymbols() == null) {
 				return mp.getName();
 			}
-			return (mp.getName()+"."+TokenMangler.fixTokenStrict(structureMapping.getStructure().getName()));
+			// check if global param variant name exists in globalVarsHash. If so, return it, else, throw exception.
+			Hashtable<String, Expression> smVariantsHash = globalParamVariantsHash.get(mp);
+			String variantName = mp.getName()+"_"+TokenMangler.fixTokenStrict(structureMapping.getStructure().getName());
+			if (smVariantsHash.get(variantName) != null) {
+				return variantName;
+			} else {
+				// global param variant doesn't exist in the hash, so get the substituted expression for global param and
+				// gather all symbols (speciesContexts) that do not match with arg 'structureMapping' to display a proper error message.
+				Expression expr = null;
+				try {
+					expr = substituteGlobalParameters(mp.getExpression());
+				} catch (ExpressionException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Could not substitute expression for global parameter '" + mp.getName() + "' with expression '" + "'" + e.getMessage());
+				}
+				// find symbols (typically speciesContexts) in 'exp' that do not match with the arg 'structureMapping' 
+				String[] symbols = expr.getSymbols();
+				String msg = "";
+				if (symbols != null) {
+					Vector<String> spContextNamesVector = new Vector<String>();
+					for (int j = 0; j < symbols.length; j++) {
+						SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[j]);
+						if (sc != null) {
+							if (!sc.getStructure().compareEqual(structureMapping.getStructure())) {
+								spContextNamesVector.addElement(sc.getName());
+							}
+						}
+					}
+					for (int i = 0; (spContextNamesVector != null && i < spContextNamesVector.size()); i++) {
+						if (i == 0) {
+							msg += "'" + spContextNamesVector.elementAt(i) + ", ";
+						} else if (i == spContextNamesVector.size() - 1) {
+							msg += spContextNamesVector.elementAt(i) + "'";
+						} else {
+							msg += spContextNamesVector.elementAt(i) + ", ";
+						}
+					}
+				}
+				throw new RuntimeException("Global parameter '" + mp.getName() + "' is not defined in compartment '" + structureMapping.getStructure().getName() + "', but was referenced in that compartment." +
+						"\n\nExpression '" + mp.getExpression().infix() + "' for global parameter '" + mp.getName() + "' expands to '" + expr.infix() + "' " +
+						"and contains species " + msg + " that is/are not in adjacent compartments.");
+			}
+
+			// return (mp.getName()+"_"+TokenMangler.fixTokenStrict(structureMapping.getStructure().getName()));
 		}
 	}
 	
@@ -1200,6 +1243,49 @@ private void refreshKFluxParameters() throws ExpressionException {
 	}
 }
 
+private Expression substituteGlobalParameters(Expression exp) throws ExpressionException {
+	Expression exp2 = new Expression(exp);
+	//
+	// do until no more globals to substitute
+	//
+	int count = 0;
+	ModelParameter[] modelParams = simContext.getModel().getModelParameters();
+	while (true){
+		if (count++ > 30){
+			throw new ExpressionBindingException("infinite loop in eliminating function nesting");
+		}
+		//
+		// get all symbols (identifiers), make list of globals used
+		//
+		String[] symbols = exp2.getSymbols();
+		Vector<ModelParameter> globalsVector = new Vector<ModelParameter>();
+		for (int i = 0; i < symbols.length; i++) {
+			for (int j = 0; j < modelParams.length; j++) {
+				if (symbols[i].equals(modelParams[j].getName())) {
+					globalsVector.addElement(modelParams[j]);
+				}
+			}
+		}
+		//
+		// if no more globals, done!
+		//
+		if (globalsVector.size()==0){
+			break;
+		}
+		
+		//
+		// substitute out all globals at this level
+		//
+		for (int i = 0; i < globalsVector.size(); i++){
+			ModelParameter mp = globalsVector.elementAt(i);
+			Expression mpExp = new Expression(mp.getName()+";");
+			exp2.substituteInPlace(mpExp,new Expression(mp.getExpression()));
+		}
+	}
+	exp2.bindExpression(simContext.getModel());
+	return exp2;
+}
+
 /**
  * This method was created in VisualAge.
  */
@@ -1213,49 +1299,6 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	VariableHash varHash = new VariableHash();
 	StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
-	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
-	
-	if (simContext.getGeometry().getDimension() == 0) {
-		//
-		// global parameters from model (that presently are constants)
-		//
-		for (int j=0;j<modelParameters.length;j++){
-			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), modelParameters[j].getExpression()));
-		}
-	} else {
-		// populate in globalParameterVariants hashtable
-		for (int j = 0; j < modelParameters.length; j++){
-			Hashtable<String, Expression> structMappingVariantsHash = new Hashtable<String, Expression>();
-			String paramVariantName = null;
-			Expression paramVariantExpr = null;
-			for (int k = 0; k < structureMappings.length; k++) {
-				if (modelParameters[j].getExpression().getSymbols() == null) {
-					paramVariantName = modelParameters[j].getName();
-					paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), null);
-				} else {
-					paramVariantName = modelParameters[j].getName()+"."+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
-					paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), structureMappings[k]);
-				}
-				structMappingVariantsHash.put(paramVariantName, paramVariantExpr);
-			}
-			globalParamVariantsHash.put(modelParameters[j], structMappingVariantsHash);
-		}
-		//
-		// global parameters from model add all variants (due to different structureMappings)
-		//
-		for (int j=0;j<modelParameters.length;j++){
-			if (modelParameters[j].getExpression().getSymbols() == null) {
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), getIdentifierSubstitutions(modelParameters[j].getExpression(),modelParameters[j].getUnitDefinition(),null)));
-			} else {
-				Hashtable<String, Expression> smVariantsHash = globalParamVariantsHash.get(modelParameters[j]);
-				for (int k = 0; k < structureMappings.length; k++) {
-					String variantName = modelParameters[j].getName()+"."+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
-					Expression variantExpr = smVariantsHash.get(variantName);
-					varHash.addVariable(newFunctionOrConstant(variantName, variantExpr));
-				}
-			}
-		}
-	}
 	
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
@@ -1286,6 +1329,100 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			throw new MappingException("geometry subVolume '"+subVolumes[i].getName()+"' not mapped from a model structure");
 		}
 	}
+
+	// deals with model parameters
+	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
+	if (simContext.getGeometry().getDimension() == 0) {
+		//
+		// global parameters from model (that presently are constants)
+		//
+		for (int j=0;j<modelParameters.length;j++){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), modelParameters[j].getExpression()));
+		}
+	} else {
+		// populate in globalParameterVariants hashtable
+		for (int j = 0; j < modelParameters.length; j++){
+			Hashtable<String, Expression> structMappingVariantsHash = new Hashtable<String, Expression>();
+			for (int k = 0; k < structureMappings.length; k++) {
+				String paramVariantName = null;
+				Expression paramVariantExpr = null;
+				if (modelParameters[j].getExpression().getSymbols() == null) {
+					paramVariantName = modelParameters[j].getName();
+					paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), null);
+				} else {
+					paramVariantName = modelParameters[j].getName()+"_"+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
+					// if the expression has symbols that do not belong in that structureMapping, do not create the variant.
+					Expression exp1 = modelParameters[j].getExpression();
+					Expression modelParamExpr = substituteGlobalParameters(exp1); 
+					String[] symbols = modelParamExpr.getSymbols();
+					boolean bValid = true;
+					Structure sm_struct = structureMappings[k].getStructure();
+					for (int ii = 0; ii < symbols.length; ii++) {
+						SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[ii]); 
+						if (sc != null) {
+							// symbol[ii] is a speciesContext, check its structure with structureMapping[k].structure. If they are the same or
+							// if it is the adjacent membrane(s), allow variant expression to be created. Else, continue.
+							Structure sp_struct = sc.getStructure();
+							if (sp_struct.compareEqual(sm_struct)) {
+								bValid = bValid && true;
+							} else {
+								// if the 2 structures are not the same, are they adjacent? then 'bValid' is true, else false.
+								if ((sm_struct instanceof Feature) && (sp_struct instanceof Membrane)) {
+									Feature sm_feature = (Feature)sm_struct;
+									Membrane sp_mem = (Membrane)sp_struct;
+									if (sp_mem.compareEqual(sm_feature.getParentStructure()) || (sp_mem.getInsideFeature().compareEqual(sm_feature) || 
+											sp_mem.getOutsideFeature().compareEqual(sm_feature))) {
+										bValid = bValid && true;
+									} else {
+										bValid = bValid && false;
+										break;
+									}
+								} else if ((sm_struct instanceof Membrane) && (sp_struct instanceof Feature)) {
+									Feature sp_feature = (Feature)sp_struct;
+									Membrane sm_mem = (Membrane)sm_struct;
+									if (sm_mem.compareEqual(sp_feature.getParentStructure()) || (sm_mem.getInsideFeature().compareEqual(sp_feature) || 
+											sm_mem.getOutsideFeature().compareEqual(sp_feature))) {
+										bValid = bValid && true;
+									} else {
+										bValid = bValid && false;
+										break;
+									}
+								} else {
+									bValid = bValid && false;
+									break;
+								}
+							}
+						} 
+					}
+					if (bValid) {
+						paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), structureMappings[k]);
+					}
+				}
+				if (paramVariantExpr != null) {
+					structMappingVariantsHash.put(paramVariantName, paramVariantExpr);
+				}
+			}
+			globalParamVariantsHash.put(modelParameters[j], structMappingVariantsHash);
+		}
+		//
+		// global parameters from model add all variants (due to different structureMappings)
+		//
+		for (int j=0;j<modelParameters.length;j++){
+			if (modelParameters[j].getExpression().getSymbols() == null) {
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), getIdentifierSubstitutions(modelParameters[j].getExpression(),modelParameters[j].getUnitDefinition(),null)));
+			} else {
+				Hashtable<String, Expression> smVariantsHash = globalParamVariantsHash.get(modelParameters[j]);
+				for (int k = 0; k < structureMappings.length; k++) {
+					String variantName = modelParameters[j].getName()+"_"+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
+					Expression variantExpr = smVariantsHash.get(variantName);
+					if (variantExpr != null) {
+						varHash.addVariable(newFunctionOrConstant(variantName, variantExpr));
+					}
+				}
+			}
+		}
+	}
+	
 	//
 	// gather only those reactionSteps that are not "excluded"
 	//
