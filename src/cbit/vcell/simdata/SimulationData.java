@@ -45,6 +45,9 @@ public class SimulationData extends VCData implements SymbolTable {
 	private boolean particleDataExists = false;
 	private boolean isODEData = false;
 
+	private int odeKeepMost = 0;
+	private String odeIdentifier = null;
+	
 	private DataMoverThread dataMover = new DataMoverThread();
 
 	public class DataMoverThread implements Runnable {
@@ -695,8 +698,27 @@ private synchronized File getMeshFile() throws FileNotFoundException {
 public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 	File file = getODEDataFile();
 	long lastModified = file.lastModified();
-	cbit.vcell.solver.ode.ODESimData odeSimData = cbit.vcell.solver.ode.ODESimData.readODEDataFile(file);
+	ODESimData odeSimData = null;
 	try {
+		
+		if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
+			odeSimData = ODESimData.readODEDataFile(getODEDataFile());
+		} else if(odeIdentifier.equals(IDA_DATA_IDENTIFIER))
+		{
+			odeSimData = ODESimData.readIDADataFile(info, getODEDataFile(), odeKeepMost, getJobFunctionsFile());
+		}
+		else if (odeIdentifier.equals(NETCDF_DATA_IDENTIFIER))
+		{
+			odeSimData = ODESimData.readNCDataFile(info, getODEDataFile(), getJobFunctionsFile());
+		}
+		else
+		{
+			throw new DataAccessException("Unexpected data format:"+odeIdentifier);
+		}
+		if (odeSimData == null) {
+			return null;
+		}
+		
 		int colIndex = odeSimData.findColumn(ReservedVariable.TIME.getName()); //look for 't' first
 		//if not time serie data, it should be multiple trial data. get the trial no as fake time data. let it run since we will not need it when displaying histogram
 		if(colIndex == -1)
@@ -705,6 +727,9 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 	}catch (ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException("error getting data times: "+e.getMessage());
+	} catch (FileNotFoundException e) {			
+		e.printStackTrace();
+		throw new DataAccessException("error getting dataset times: "+e.getMessage());
 	}
 	ODEDataInfo odeDataInfo = new ODEDataInfo(info.getOwner(), info.getID(), lastModified);
 	if (odeSimData != null) {
@@ -1394,14 +1419,24 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	if (stringBuffer.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
 	}
-	if ((stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(STOCH_DATA_IDENTIFIER)))
+	if ((stringBuffer.toString().startsWith(IDA_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(NETCDF_DATA_IDENTIFIER)))
 	{
 		String newLineDelimiters = "\n\r";
 		StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
 		isODEData = true;
-		String odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
+		//memorize format
+		odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
+		
 		String odeDataFormat = lineTokenizer.nextToken(); // br.readLine();
 		dataFilenames = new String[] { lineTokenizer.nextToken() }; // {br.readLine()};
+		if (lineTokenizer.hasMoreTokens()) {
+			String keepMostLine = lineTokenizer.nextToken();
+			StringTokenizer st = new StringTokenizer(keepMostLine);
+			String token = st.nextToken();
+			if (token.equals(KEEP_MOST)) {
+				odeKeepMost = Integer.parseInt(st.nextToken());
+			}
+		}
 	} else {
 		StringTokenizer st = new StringTokenizer(stringBuffer.toString());
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays
