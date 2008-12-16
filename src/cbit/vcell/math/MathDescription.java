@@ -16,6 +16,8 @@ import java.util.*;
 import java.io.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -284,6 +286,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 	final String EQUATION_ADDED =					" MathsDifferent:EquationAdded ";
 	final String EQUATION_REMOVED =					" MathsDifferent:EquationRemoved ";
 	final String EXPRESSION_IS_DIFFERENT =			" MathsDifferent:ExpressionIsDifferent ";
+	final String FASTRATE_EXPRESSION_IS_DIFFERENT =	" MathsDifferent:FastRateExpressionIsDifferent ";
+	final String FASTINVARIANT_EXPRESSION_IS_DIFFERENT = " MathsDifferent:FastInvariantExpressionIsDifferent ";
 	final String UNKNOWN_DIFFERENCE_IN_EQUATION =	" MathsDifferent:UnknownDifferenceInEquation ";
 	final String DIFFERENT_NUMBER_OF_SUBDOMAINS =	" MathsDifferent:DifferentNumberOfSubdomains ";
 	final String FAILURE_DIV_BY_ZERO =			 	" MathsDifferent:FailedDivideByZero ";
@@ -474,22 +478,77 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						reasonForDecision.append(EQUATION_REMOVED);
 						return false;
 					}
-					Expression oldExps[] = oldFastSystem.getExpressions();
-					Expression newExps[] = newFastSystem.getExpressions();
-					if (oldExps.length != newExps.length){
+					Enumeration<Expression> oldFastInvExpEnum = oldFastSystem.getFastInvariantExpressions();
+					Enumeration<Expression> newFastInvExpEnum = newFastSystem.getFastInvariantExpressions();
+					Expression[] oldFastInvariantExps = (Expression[])BeanUtils.getArray(oldFastInvExpEnum, Expression.class);
+					Expression[] newFastInvariantExps = (Expression[])BeanUtils.getArray(newFastInvExpEnum, Expression.class);
+					if (oldFastInvariantExps.length != newFastInvariantExps.length){
 						reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 						return false;
 					}
-					for (int k = 0; k < oldExps.length; k++){
-						if (!oldExps[k].compareEqual(newExps[k])){
+					for (int k = 0; k < oldFastInvariantExps.length; k++){
+						if (!oldFastInvariantExps[k].compareEqual(newFastInvariantExps[k])){
 							bFoundDifference = true;
-							if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+							if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[k],newFastInvariantExps[k])){
+								//
+								// difference couldn't be reconciled
+								// ... for fast invariants, it is ok if the two equations are different by a scale factor (e.g. if X+Y is conserved, so is 2*X+2*Y, or 2*(X+Y))
+								//
+								// estimate proportionality factor (average of 5 evaluations)
+								// 
+								// ratio = old/new
+								//
+								// then compare old with ratio*new.
+								//
+								Expression ratioExp = Expression.mult(oldFastInvariantExps[k], Expression.invert(newFastInvariantExps[k]));
+								String[] symbols = ratioExp.getSymbols();
+								SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
+								double[] values = new double[symbols.length];
+								ratioExp.bindExpression(symbolTable);
+								Random random = new Random(0);
+								double ratioAccum = 0.0;
+								final int NUM_TRIALS = 5;
+								for (int m = 0; m < NUM_TRIALS; m++){
+									for (int j = 0; j < values.length; j++) {
+										values[j] = random.nextDouble()+1.0;
+									}
+									ratioAccum += ratioExp.evaluateVector(values);
+								}								
+								double estimatedRatio = ratioAccum/NUM_TRIALS;
+								Expression scaled_newFastInvariantExp = Expression.mult(new Expression(estimatedRatio),newFastInvariantExps[k]);
+								System.out.println("MathDescription.compareEquivalent(): comparing "+oldFastInvariantExps[k].infix()+" with "+scaled_newFastInvariantExp.infix());
+								if (!ExpressionUtils.functionallyEquivalent(oldFastInvariantExps[k], scaled_newFastInvariantExp)){
+									if (!bSilent) System.out.println("fast invariant expressions are different Old: '"+oldFastInvariantExps[k]+"'\n"+
+													   "fast invariant expressions are different New: '"+newFastInvariantExps[k]+"'");
+									reasonForDecision.append(FASTINVARIANT_EXPRESSION_IS_DIFFERENT);
+									return false;
+								}
+								if (!bSilent) System.out.println("fast invariant expressions are proportional Old: '"+oldFastInvariantExps[k]+"'\n"+
+								   "fast invariant expressions are proportional New: '"+newFastInvariantExps[k]+"'");
+							}else{
+								//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
+												   //"expressions are equivalent New: '"+newExps[k]+"'");
+							}
+						}
+					}
+					Enumeration<Expression> oldFastRateExpEnum = oldFastSystem.getFastRateExpressions();
+					Enumeration<Expression> newFastRateExpEnum = newFastSystem.getFastRateExpressions();
+					Expression[] oldFastRateExps = (Expression[])BeanUtils.getArray(oldFastRateExpEnum, Expression.class);
+					Expression[] newFastRateExps = (Expression[])BeanUtils.getArray(newFastRateExpEnum, Expression.class);
+					if (oldFastRateExps.length != newFastRateExps.length){
+						reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
+						return false;
+					}
+					for (int k = 0; k < oldFastRateExps.length; k++){
+						if (!oldFastRateExps[k].compareEqual(newFastRateExps[k])){
+							bFoundDifference = true;
+							if (!ExpressionUtils.functionallyEquivalent(oldFastRateExps[k],newFastRateExps[k])){
 								//
 								// difference couldn't be reconciled
 								//
-								if (!bSilent) System.out.println("expressions are different Old: '"+oldExps[k]+"'\n"+
-												   "expressions are different New: '"+newExps[k]+"'");
-								reasonForDecision.append(EXPRESSION_IS_DIFFERENT);
+								if (!bSilent) System.out.println("fast rate expressions are different Old: '"+oldFastRateExps[k]+"'\n"+
+												   "fast rate expressions are different New: '"+newFastRateExps[k]+"'");
+								reasonForDecision.append(FASTRATE_EXPRESSION_IS_DIFFERENT);
 								return false;
 							}else{
 								//if (!bSilent) System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
@@ -2445,7 +2504,7 @@ public boolean isValid() {
  * Creation date: (10/9/2002 10:54:06 PM)
  * @return cbit.vcell.math.MathDescription
  */
-private void makeCanonical() throws MathException, ExpressionException, MappingException {
+void makeCanonical() throws MathException, ExpressionException, MappingException {
 	
 	// this method operates on argument; call createCanonicalMathDescription to make new one
 	MathDescription newMath = this;
@@ -2916,7 +2975,7 @@ private void setWarning(java.lang.String warning) {
  * Creation date: (10/9/2002 10:54:06 PM)
  * @return cbit.vcell.math.MathDescription
  */
-private void substituteInPlace(Function functionsToSubstitute[]) throws MathException, ExpressionException, MappingException {
+void substituteInPlace(Function functionsToSubstitute[]) throws MathException, ExpressionException, MappingException {
 	//
 	// make a "identity" simulation (no overrides), this will help to substitute/flatten expressions.
 	//

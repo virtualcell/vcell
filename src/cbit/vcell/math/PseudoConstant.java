@@ -10,7 +10,7 @@ import cbit.vcell.parser.*;
  * 
  */
 public class PseudoConstant extends Variable {
-	Expression exp = null;
+	private Expression exp = null;
 /**
  * Constant constructor comment.
  * @param name java.lang.String

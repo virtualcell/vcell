@@ -1,6 +1,9 @@
 package cbit.vcell.math;
 
+import java.beans.PropertyVetoException;
 import java.util.*;
+
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -117,4 +120,40 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 	exp2.bindExpression(symbolTable);
 	return exp2;
 }
+
+public static MathDescription[] getCanonicalMathDescriptions(MathDescription referenceMathDesc, MathDescription testMathDesc) throws PropertyVetoException, MathException, ExpressionException, MappingException {
+	HashSet<String> indepVars1 = referenceMathDesc.getStateVariableNames();
+	HashSet<String> indepVars2 = testMathDesc.getStateVariableNames();
+	HashSet<String> union = new HashSet<String>(indepVars1);
+	union.addAll(indepVars2);
+
+//	setStatus("union of state variables: ");
+//	for (String varName : union){
+//		addStatus(varName+" ");
+//	}
+//	addStatus("\n");
+	
+	HashSet<String> depVarsToSubstitute = new HashSet<String>(union);
+	depVarsToSubstitute.removeAll(indepVars1);
+	
+	MathDescription canonicalMath1 = new MathDescription(MathDescription.createMathWithExpandedEquations(referenceMathDesc,union));
+	canonicalMath1.makeCanonical();
+	MathDescription canonicalMath2 = new MathDescription(MathDescription.createMathWithExpandedEquations(testMathDesc,union));
+	canonicalMath2.makeCanonical();
+
+	if (depVarsToSubstitute.size()>0){
+		String depVarNames[] = (String[])depVarsToSubstitute.toArray(new String[depVarsToSubstitute.size()]);
+		Function functionsToSubstitute[] = MathDescription.getFlattenedFunctions(referenceMathDesc,depVarNames);
+		canonicalMath1.substituteInPlace(functionsToSubstitute);
+		canonicalMath2.substituteInPlace(functionsToSubstitute);
+	}
+	// flatten again
+	canonicalMath1.makeCanonical();
+	canonicalMath2.makeCanonical();
+	
+	MathDescription[] canonicalMathDescs = {canonicalMath1, canonicalMath2};
+	return canonicalMathDescs;
+
+}
+
 }

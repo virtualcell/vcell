@@ -198,6 +198,17 @@ private Expression getFlattenedExpression(cbit.vcell.solver.Simulation sim, Expr
 
 	return exp;
 }
+
+final Enumeration<Expression> getFastRateExpressions() {
+	Vector<Expression> expList = new Vector<Expression>();
+	for (int i = 0; i < fastRateList.size(); i++){
+		FastRate fr = (FastRate)fastRateList.elementAt(i);
+		expList.add(fr.getFunction());
+	}
+	return expList.elements();
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2002 1:58:28 AM)
@@ -229,5 +240,13 @@ public void rebind() throws ExpressionBindingException {
 		Expression fastRate = fastRateList.elementAt(i).getFunction();
 		fastRate.bindExpression(getMathDesc());
 	}
+}
+final Enumeration<Expression> getFastInvariantExpressions() {
+	Vector<Expression> expList = new Vector<Expression>();
+	for (int i = 0; i < fastInvariantList.size(); i++){
+		FastInvariant fi = fastInvariantList.elementAt(i);
+		expList.add(fi.getFunction());
+	}
+	return expList.elements();
 }
 }
