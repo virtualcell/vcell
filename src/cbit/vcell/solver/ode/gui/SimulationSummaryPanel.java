@@ -340,7 +340,8 @@ private void displayTask() {
 		getJLabelOutput().setText("");
 	}
 	try {
-		if(getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))//don't display time step for gibson solver only
+		if(getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)
+				|| getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE))//don't display time step for gibson solver only
 			getJLabelTimestep().setText("");
 		else
 			getJLabelTimestep().setText(Double.toString(getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep()));

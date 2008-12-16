@@ -1093,8 +1093,10 @@ private void enableOutputOptionPanel() {
 			getOutputTimeStepTextField().setEnabled(false);
 			getOutputTimesTextField().setEnabled(true);
 		}
-	}else if ((solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridEuler))||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilstein))||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilAdaptive))){
-	
+	}else if ((solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridEuler))
+			||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilstein))
+			||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
+			|| solverTaskDescription.getSolverDescription().equals(SolverDescription.SundialsPDE)){	
 		//amended June 5th, 2007 to display uniformOutputTimeSpec for Hybrid methods
 		getDefaultOutputRadioButton().setEnabled(false);
 		getUniformOutputRadioButton().setEnabled(true);	
