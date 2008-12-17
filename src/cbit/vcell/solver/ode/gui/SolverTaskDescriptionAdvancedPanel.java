@@ -1981,6 +1981,7 @@ private javax.swing.JTextField getOutputTimesTextField() {
 		try {
 			ivjOutputTimesTextField = new javax.swing.JTextField();
 			ivjOutputTimesTextField.setName("OutputTimesTextField");
+			ivjOutputTimesTextField.setColumns(20);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2679,6 +2680,7 @@ public void setOutputOptionFields(cbit.vcell.solver.OutputTimeSpec arg1) {
 		getKeepAtMostTextField().setText("");
 		getOutputTimeStepTextField().setText("");
 		getOutputTimesTextField().setText(((ExplicitOutputTimeSpec)arg1).toCommaSeperatedOneLineOfString() + "");
+		getOutputTimesTextField().setCaretPosition(0);
 	}
 
 	// If the solver is IDA and if the output time step has been set, set/enable the appropriate radio buttons and text fields
