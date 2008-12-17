@@ -1566,7 +1566,7 @@ private javax.swing.JLabel getJLabel3() {
 		try {
 			ivjJLabel3 = new javax.swing.JLabel();
 			ivjJLabel3.setName("JLabel3");
-			ivjJLabel3.setText("(Comma or space seperated numbers, e.g. 0.5, 0.8, 1.2, 1.7)");
+			ivjJLabel3.setText("(Comma or space separated numbers, e.g. 0.5, 0.8, 1.2, 1.7)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

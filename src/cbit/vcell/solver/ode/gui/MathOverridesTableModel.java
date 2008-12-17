@@ -4,6 +4,7 @@ package cbit.vcell.solver.ode.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.Constant;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (10/22/2000 11:46:26 AM)
@@ -389,7 +390,13 @@ public void setValueAt(Object object, int r, int c) {
 			if (object instanceof cbit.vcell.solver.ConstantArraySpec) {
 				editScanValues(name, r);
 			} else if (object instanceof String) {
-				cbit.vcell.parser.Expression expression = new cbit.vcell.parser.Expression((String) object);
+				String inputValue = (String)object;
+				Expression expression = null;
+				if (inputValue == null || inputValue.trim().length() == 0) {
+					expression = new Expression((String)getValueAt(r, COLUMN_DEFAULT));
+				} else {
+					expression = new Expression(inputValue);
+				}
 				Constant constant = new Constant(name, expression);
 				getMathOverrides().putConstant(constant);
 				fireTableCellUpdated(r, c);
