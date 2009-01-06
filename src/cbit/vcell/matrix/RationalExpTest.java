@@ -1,5 +1,7 @@
 package cbit.vcell.matrix;
 
+import java.math.BigInteger;
+
 /**
  * Insert the type's description here.
  * Creation date: (3/28/2003 5:59:43 PM)
@@ -13,7 +15,7 @@ public class RationalExpTest {
 public static void main(java.lang.String[] args) {
 	// Insert code to start the application here.
 	try {
-		RationalExp r1 = new RationalExp(1);
+		RationalExp r1 = RationalExp.ONE;
 		System.out.println("r1 = "+r1);
 		RationalExp r2 = new RationalExp("C1");
 		System.out.println("r2 = "+r2);
@@ -32,10 +34,10 @@ public static void main(java.lang.String[] args) {
 		
 		RationalExp r8 = new RationalExp("C4");
 		System.out.println("r8 = "+r8);
-		RationalExp r9 = r7.mult(r8).mult(new RationalExp(2));
+		RationalExp r9 = r7.mult(r8).mult(new RationalExp(BigInteger.valueOf(2)));
 		System.out.println("r9 = 2*r7*r8 = "+r9);
 		
-		RationalExp r10 = (new RationalExp("C4")).mult(new RationalExp(2));
+		RationalExp r10 = (new RationalExp("C4")).mult(new RationalExp(BigInteger.valueOf(2)));
 		
 		System.out.println("r10 = "+r10);
 		RationalExp r11 = r9.div(r10);

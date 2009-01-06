@@ -7,25 +7,28 @@ import java.math.BigInteger;
  * @author: Jim Schaff
  */
 public class RationalNumber extends Number {
-	private long num = 0;
-	private long den = 1;
 	private BigInteger bignum = null;
 	private BigInteger bigden = null;
+	public final static RationalNumber ZERO = new RationalNumber(0);
+	public final static RationalNumber ONE = new RationalNumber(1);
 /**
  * RationalNumber constructor comment.
  */
 public RationalNumber(long integer) {
-	this.num = integer;
-	this.den = 1;
+//	this.num = integer;
+//	this.den = 1;
+	this.bignum = BigInteger.valueOf(integer);
+	this.bigden = BigInteger.ONE;
 }
 /**
  * RationalNumber constructor comment.
  */
 public RationalNumber(long numerator, long denominator) {
-	long sign = (numerator<0 != denominator<0)?(-1):(1);
-	long gcf = getGreatestCommonFactor(numerator,denominator);
-	this.num = Math.abs(numerator)*sign/gcf;
-	this.den = Math.abs(denominator)/gcf;
+	this(BigInteger.valueOf(numerator),BigInteger.valueOf(denominator));
+//	long sign = (numerator<0 != denominator<0)?(-1):(1);
+//	long gcf = getGreatestCommonFactor(numerator,denominator);
+//	this.num = Math.abs(numerator)*sign/gcf;
+//	this.den = Math.abs(denominator)/gcf;
 }
 /**
  * RationalNumber constructor comment.
@@ -37,39 +40,32 @@ public RationalNumber(BigInteger numerator, BigInteger denominator) {
 	if (denominator.equals(BigInteger.ZERO)){
 		throw new IllegalArgumentException("denominator cannot be zero");
 	}
-	int sign = numerator.signum()*denominator.signum();
-	switch (sign){
-		case 0:{
-			this.num = 0;
-			this.den = 1;
-			break;
-		}
-		case -1:{
-			if (numerator.signum() == 1){
-				this.bignum = BigInteger.ZERO.subtract(numerator);
-				this.bigden = denominator.abs();
-			}else{ // numerator is already negative and denominator is positive
-				this.bignum = numerator;
-				this.bigden = denominator;
-			}
-			BigInteger gcf = numerator.gcd(denominator);
-			this.bignum = this.bignum.divide(gcf);
-			this.bigden = this.bigden.divide(gcf);
-			break;
-		}
-		case 1:{
-			if (numerator.signum() == -1){
+	int ns = numerator.signum();
+	int ds = denominator.signum();
+	if (ns == 0){
+		this.bignum = BigInteger.ZERO;
+		this.bigden = BigInteger.ONE;
+	}else{
+		if (ns*ds==1){ // positive
+			if (ds==-1){ // -/-
 				this.bignum = numerator.abs();
 				this.bigden = denominator.abs();
 			}else{
 				this.bignum = numerator;
 				this.bigden = denominator;
 			}
-			BigInteger gcf = numerator.gcd(denominator);
-			this.bignum = this.bignum.divide(gcf);
-			this.bigden = this.bigden.divide(gcf);
-			break;
+		}else{ // negative
+			if (ns==-1){  // negative sign is already in numerator
+				this.bignum = numerator;
+				this.bigden = denominator;
+			}else{ // negative sign moved from denominator to numerator
+				this.bignum = numerator.negate();
+				this.bigden = denominator.negate();
+			}
 		}
+		BigInteger gcf = numerator.gcd(denominator);
+		this.bignum = this.bignum.divide(gcf);
+		this.bigden = this.bigden.divide(gcf);
 	}
 }
 /**
@@ -82,44 +78,14 @@ public RationalNumber add(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
 	}
-
-	if (this.bignum==null && this.bigden==null && rational.bignum==null && rational.bigden==null){
-		try {
-			boolean bError = false;
-			long A = this.num * rational.den;
-			if (this.num!=0 && A/this.num != rational.den){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			} 
-			long B = rational.num * this.den;
-			if (this.den!=0 && B/this.den != rational.num){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			} 
-			long newNumerator = A + B;
-			if (newNumerator-A != B){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			} 
-			long newDenominator = this.den * rational.den;
-			if (this.den!=0 && newDenominator/this.den != rational.den){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			}
-			if (!bError){
-				return new RationalNumber(newNumerator,newDenominator);
-			}
-		}catch (ArithmeticException e){
-		}
+	// if denominators are same, just add numerators
+	if (this.bigden.equals(rational.bigden)){
+		return new RationalNumber(this.bignum.add(rational.bignum),this.bigden);
+	}else{
+		BigInteger newNumerator = this.bignum.multiply(rational.bigden).add(rational.bignum.multiply(this.bigden));
+		BigInteger newDenominator = this.bigden.multiply(rational.bigden);
+		return new RationalNumber(newNumerator,newDenominator);
 	}
-	
-	
-	BigInteger A = getNumBigInteger().multiply(rational.getDenBigInteger());
-	BigInteger B = rational.getNumBigInteger().multiply(getDenBigInteger());
-	BigInteger newNumerator = A.add(B);
-	BigInteger newDenominator = getDenBigInteger().multiply(rational.getDenBigInteger());
-
-	return new RationalNumber(newNumerator,newDenominator);
 }
 /**
  * Insert the method's description here.
@@ -131,30 +97,8 @@ public RationalNumber div(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
 	}
-
-	if (this.bignum==null && this.bigden==null && rational.bignum==null && rational.bigden==null){
-		try {
-			boolean bError = false;
-			long newNumerator = this.num * rational.den;
-			if (this.num!=0 && newNumerator/this.num != rational.den){
-				//throw new ArithmeticException("overflow in "+this+" / "+rational);
-				bError = true;
-			} 
-			long newDenominator = this.den * rational.num;
-			if (this.den!=0 && newDenominator/this.den != rational.num){
-				//throw new ArithmeticException("overflow in "+this+" / "+rational);
-				bError = true;
-			}
-			if (!bError){
-				return new RationalNumber(newNumerator,newDenominator);
-			}
-		}catch (ArithmeticException e){
-		}
-	}
-	
-	BigInteger newNumerator = getNumBigInteger().multiply(rational.getDenBigInteger());
-	BigInteger newDenominator = getDenBigInteger().multiply(rational.getNumBigInteger());
-
+	BigInteger newNumerator = this.bignum.multiply(rational.bigden);
+	BigInteger newDenominator = this.bigden.multiply(rational.bignum);
 	return new RationalNumber(newNumerator,newDenominator);
 }
 	/**
@@ -165,12 +109,7 @@ public RationalNumber div(RationalNumber rational) {
 	 *          to type <code>double</code>.
 	 */
 public double doubleValue() {
-	if (bignum==null && bigden==null){
-		return ((double)num)/((double)den);
-	}else{
-		java.math.BigDecimal answer = (new java.math.BigDecimal(getNumBigInteger())).divide(new java.math.BigDecimal(getDenBigInteger()),java.math.BigDecimal.ROUND_HALF_EVEN);
-		return answer.doubleValue();
-	}
+	return getNumBigInteger().doubleValue()/getDenBigInteger().doubleValue();
 }
 /**
  * Insert the method's description here.
@@ -188,28 +127,17 @@ public boolean equals(Object obj) {
 	}
 	RationalNumber r = (RationalNumber) obj;
 
-	if (r.den != den || r.num != num) { // if fit within longs
-	    return false;
-	}
-	if (r.bignum==null){
-		if (bignum!=null){
-			return false;
-		}
+	if (!this.bignum.equals(r.bignum)){
+		return false;
 	}else{
-		if (!r.bignum.equals(bignum)){
-			return false;
+		if (this.bignum.equals(BigInteger.ZERO) && r.bignum.equals(BigInteger.ZERO)){
+			// if numerators are both zero, then denominators don't matter.
+			return true;
 		}
 	}
-	if (r.bigden==null){
-		if (bigden!=null){
-			return false;
-		}
-	}else{
-		if (!r.bigden.equals(bigden)){
-			return false;
-		}
+	if (!this.bigden.equals(r.bigden)){
+		return false;
 	}
-
 	return true;
 }
 	/**
@@ -263,26 +191,11 @@ public static RationalNumber getApproximateFraction(double value) {
 }
 /**
  * Insert the method's description here.
- * Creation date: (3/27/2003 12:25:58 PM)
- * @return long
- */
-public long getDen() {
-	if (bigden != null){
-		throw new RuntimeException("denominator doesn't fit into a long");
-	}
-	return den;
-}
-/**
- * Insert the method's description here.
  * Creation date: (5/12/2003 12:41:36 PM)
  * @return java.math.BigInteger
  */
 public BigInteger getDenBigInteger() {
-	if (bigden!=null){
-		return bigden;
-	}else{
-		return BigInteger.valueOf(den);
-	}
+	return bigden;
 }
 /**
  * Insert the method's description here.
@@ -305,26 +218,11 @@ public static long getGreatestCommonFactor(long a, long b) {
 }
 /**
  * Insert the method's description here.
- * Creation date: (3/27/2003 12:25:58 PM)
- * @return long
- */
-public long getNum() {
-	if (bignum != null){
-		throw new RuntimeException("numerator doesn't fit into a long");
-	}
-	return num;
-}
-/**
- * Insert the method's description here.
  * Creation date: (5/12/2003 12:41:36 PM)
  * @return java.math.BigInteger
  */
 public BigInteger getNumBigInteger() {
-	if (bignum!=null){
-		return bignum;
-	}else{
-		return BigInteger.valueOf(num);
-	}
+	return bignum;
 }
 /**
  * Insert the method's description here.
@@ -332,11 +230,7 @@ public BigInteger getNumBigInteger() {
  * @return int
  */
 public int hashCode() {
-	if (bignum!=null && bigden!=null){
-		return bignum.hashCode() + bigden.hashCode();
-	}else{
-		return (int)(num*den);
-	}
+	return Double.valueOf(doubleValue()).hashCode();
 }
 	/**
 	 * Returns the value of the specified number as an <code>int</code>.
@@ -354,11 +248,7 @@ public int intValue() {
  * @return cbit.vcell.mapping.RationalNumber
  */
 public RationalNumber inverse() {
-	if (bignum!=null || bigden!=null){
-		return new RationalNumber(getDenBigInteger(),getNumBigInteger());
-	}else{
-		return new RationalNumber(den,num);
-	}
+	return new RationalNumber(this.bigden, this.bignum);
 }
 /**
  * Insert the method's description here.
@@ -366,11 +256,7 @@ public RationalNumber inverse() {
  * @return boolean
  */
 public boolean isZero() {
-	if (bignum!=null){
-		if (bignum.equals(BigInteger.ZERO)){
-			return true;
-		}
-	}else if (num==0L){
+	if (bignum.equals(BigInteger.ZERO)){
 		return true;
 	}
 	return false;
@@ -391,11 +277,7 @@ public long longValue() {
  * @return cbit.vcell.matrixtest.RationalNumber
  */
 public RationalNumber minus() {
-	if (bignum==null && bigden==null){
-		return new RationalNumber(-num,den);
-	}else{
-		return new RationalNumber(BigInteger.ZERO.subtract(getNumBigInteger()),getDenBigInteger());
-	}
+	return new RationalNumber(this.bignum.negate(),this.bigden);
 }
 /**
  * Insert the method's description here.
@@ -408,31 +290,10 @@ public RationalNumber mult(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
 	}
-	if (this.bignum==null && this.bigden==null && rational.bignum==null && rational.bigden==null){
-		try {
-			boolean bError = false;
-			long newNumerator = this.num * rational.num;
-			if (this.num!=0 && newNumerator/this.num != rational.num){
-				//throw new ArithmeticException("overflow in "+this+" * "+rational);
-				bError = true;
-			} 
-			long newDenominator = this.den * rational.den;
-			if (this.den!=0 && newDenominator/this.den != rational.den){
-				//throw new ArithmeticException("overflow in "+this+" * "+rational);
-				bError = true;
-			}
-			if (!bError){
-				return new RationalNumber(newNumerator,newDenominator);
-			}
-		}catch (ArithmeticException e){
-		}
+	if (this.equals(RationalNumber.ZERO) || rational.equals(RationalNumber.ZERO)){
+		return RationalNumber.ZERO;
 	}
-
-	BigInteger newNumerator = getNumBigInteger().multiply(rational.getNumBigInteger());
-	BigInteger newDenominator = getDenBigInteger().multiply(rational.getDenBigInteger());
-
-	return new RationalNumber(newNumerator,newDenominator);
-	
+	return new RationalNumber(this.bignum.multiply(rational.bignum),this.bigden.multiply(rational.bigden));
 }
 /**
  * Insert the method's description here.
@@ -444,45 +305,14 @@ public RationalNumber sub(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
 	}
-	if (this.bignum==null && this.bigden==null && rational.bignum==null && rational.bigden==null){
-		try {
-			boolean bError = false;
-			//long newNumerator = this.num * rational.den - rational.num * this.den;
-			//long newDenominator = this.den * rational.den;
-			long A = this.num * rational.den;
-			if (this.num!=0 && A/this.num != rational.den){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			} 
-			long B = rational.num * this.den;
-			if (this.den!=0 && B/this.den != rational.num){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			} 
-			long newNumerator = A - B;
-			if (newNumerator+B != A){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			} 
-			long newDenominator = this.den * rational.den;
-			if (this.den!=0 && newDenominator/this.den != rational.den){
-				//throw new ArithmeticException("overflow in "+this+" + "+rational);
-				bError = true;
-			}
-			if (!bError){
-				return new RationalNumber(newNumerator,newDenominator);
-			}
-		}catch (ArithmeticException e){
-		}
-	}
-
-	BigInteger A = getNumBigInteger().multiply(rational.getDenBigInteger());
-	BigInteger B = rational.getNumBigInteger().multiply(getDenBigInteger());
-	BigInteger newNumerator = A.subtract(B);
-	BigInteger newDenominator = getDenBigInteger().multiply(rational.getDenBigInteger());
-
-	return new RationalNumber(newNumerator,newDenominator);
-	
+	// if denominators are same, just add numerators
+	if (this.bigden.equals(rational.bigden)){
+		return new RationalNumber(this.bignum.subtract(rational.bignum),this.bigden);
+	}else{
+		BigInteger newNumerator = this.bignum.multiply(rational.bigden).subtract(rational.bignum.multiply(this.bigden));
+		BigInteger newDenominator = this.bigden.multiply(rational.bigden);
+		return new RationalNumber(newNumerator,newDenominator);
+	}	
 }
 /**
  * Insert the method's description here.
@@ -490,18 +320,11 @@ public RationalNumber sub(RationalNumber rational) {
  * @return java.lang.String
  */
 public String toString() {
-	if (bignum==null && bigden==null){
-		if (den == 1){
-			return String.valueOf(num);
-		}else{
-			return num+"/"+den;
-		}
+	if (this.bigden.equals(BigInteger.ONE)){
+		return this.bignum.toString();
 	}else{
-		if (getDenBigInteger().equals(BigInteger.ONE)){
-			return getNumBigInteger().toString();
-		}else{
-			return getNumBigInteger()+"/"+getDenBigInteger();
-		}
+		return this.bignum+"/"+this.bigden;
 	}
 }
+
 }

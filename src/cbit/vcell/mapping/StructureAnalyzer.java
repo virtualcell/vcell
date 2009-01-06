@@ -8,6 +8,7 @@ import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.math.*;
+import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalMatrixFast;
 import cbit.vcell.matrix.RationalNumber;
 /**
@@ -40,8 +41,8 @@ public abstract class StructureAnalyzer {
 	//
 	// matrices needed for structural analysis
 	//
-	private RationalMatrixFast totalSchemeMatrix = null;
-	private RationalMatrixFast totalNullSpaceMatrix = null;
+	private RationalMatrix totalSchemeMatrix = null;
+	private RationalMatrix totalNullSpaceMatrix = null;
 	
 	//
 	// working list of fast reactions and associated speciesContexts for indexing
@@ -52,8 +53,8 @@ public abstract class StructureAnalyzer {
 	//
 	// matrices needed for fast system analysis
 	//
-	private RationalMatrixFast fastSchemeMatrix = null;
-	private RationalMatrixFast fastNullSpaceMatrix = null;
+	private RationalMatrix fastSchemeMatrix = null;
+	private RationalMatrix fastNullSpaceMatrix = null;
 
 	public static class Dependency {
 		SpeciesContextMapping speciesContextMapping = null;
@@ -196,7 +197,7 @@ private void refreshFastMatrices() throws Exception {
 	//
 	// update null space matrix
 	//
-	fastNullSpaceMatrix = (RationalMatrixFast)fastSchemeMatrix.findNullSpace();
+	fastNullSpaceMatrix = fastSchemeMatrix.findNullSpace();
 
 //	if (fastNullSpaceMatrix==null){
 //		System.out.println("fast system has full rank");
@@ -370,7 +371,7 @@ private void refreshTotalDependancies() throws Exception {
  * @param b cbit.vcell.math.Matrix
  * @param vars java.lang.String[]
  */
-public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrixFast nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings, MathMapping mathMapping_temp, boolean bFast) throws Exception {
+public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings, MathMapping mathMapping_temp, boolean bFast) throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalDependancies()");
 	SimulationContext simContext_temp = mathMapping_temp.getSimulationContext();

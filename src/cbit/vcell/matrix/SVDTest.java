@@ -144,7 +144,7 @@ public static RationalMatrixFast getRationalMatrixFast(SimpleMatrix matrix) {
 	for (int i = 0; i < rMatrix.getNumRows(); i++){
 		for (int j = 0; j < rMatrix.getNumCols(); j++){
 			RationalNumber r = RationalNumber.getApproximateFraction(matrix.get_elem(i,j));
-			rMatrix.set_elem(i,j,r.getNum(),r.getDen());
+			rMatrix.set_elem(i,j,r.getNumBigInteger().longValue(),r.getDenBigInteger().longValue());
 		}
 	}
 	return rMatrix;
@@ -159,7 +159,7 @@ public static RationalMatrixFast getRationalMatrixFast(Jama.Matrix matrix) {
 	for (int i = 0; i < rMatrix.getNumRows(); i++){
 		for (int j = 0; j < rMatrix.getNumCols(); j++){
 			RationalNumber r = RationalNumber.getApproximateFraction(matrix.get(i,j));
-			rMatrix.set_elem(i,j,r.getNum(),r.getDen());
+			rMatrix.set_elem(i,j,r.getNumBigInteger().longValue(),r.getDenBigInteger().longValue());
 		}
 	}
 	return rMatrix;

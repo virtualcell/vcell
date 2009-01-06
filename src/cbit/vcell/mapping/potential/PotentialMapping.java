@@ -1,4 +1,6 @@
 package cbit.vcell.mapping.potential;
+import java.math.BigInteger;
+
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.MatrixException;
@@ -472,8 +474,8 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 				// replace dVi/dt  with   1000/Ci * Ii  +  1000/Ci * Fi
 				//
 				String Cname = fieldMathMapping.getNameScope().getSymbolName(((MembraneElectricalDevice)device).getCapacitanceSymbol());
-				currentMatrix.set_elem(row,j,coefficient.mult(new RationalExp(1000)).div(new RationalExp(Cname)));  // entry for i's
-				currentMatrix.set_elem(row,j+graph.getNumEdges(),coefficient.minus().mult(new RationalExp(1000)).div(new RationalExp(Cname))); // entry for F's
+				currentMatrix.set_elem(row,j,coefficient.mult(new RationalExp(BigInteger.valueOf(1000))).div(new RationalExp(Cname)));  // entry for i's
+				currentMatrix.set_elem(row,j+graph.getNumEdges(),coefficient.minus().mult(new RationalExp(BigInteger.valueOf(1000))).div(new RationalExp(Cname))); // entry for F's
 			}else if (device.isVoltageSource()){
 				//
 				// directly insert "symbolic" dVi/dt into the new matrix

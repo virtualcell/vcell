@@ -100,7 +100,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 			// if orig_var[i] not in fast system, add trivial fast invariant for it.
 			//
 			if (!fastSystemVarHash.contains(origVarColumnVector.get(i,0).infixString())){
-				fastInvarianceMatrix.set_elem(row, i, new RationalExp(1));
+				fastInvarianceMatrix.set_elem(row, i, RationalExp.ONE);
 				row++;
 			}
 		}

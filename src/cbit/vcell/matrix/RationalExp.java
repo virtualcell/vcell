@@ -1,4 +1,6 @@
 package cbit.vcell.matrix;
+import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.Vector;
 /**
  * Insert the type's description here.
@@ -9,22 +11,28 @@ public class RationalExp implements java.io.Serializable {
 
 	private Vector<Term> numTermList = new Vector<Term>();
 	private Vector<Term> denTermList = new Vector<Term>();
+	public final static RationalExp ZERO = new RationalExp(BigInteger.ZERO);
+	public final static RationalExp ONE = new RationalExp(BigInteger.ONE);
 
-	private static class Term implements java.io.Serializable {
-		private long coefficient = 1;
+	private class Term implements java.io.Serializable {
+		private BigInteger coefficient = BigInteger.ONE;
 		private Vector<String> symbolList = new Vector<String>();
 
-		public Term(long coeff){
+		public Term(BigInteger coeff){
 			coefficient = coeff;
 		}
-		public Term(long coeff, String symbols[]){
+		public Term(BigInteger coeff, String symbols[]){
 			coefficient = coeff;
 			for (int i=0;symbols!=null && i<symbols.length;i++){
 				symbolList.add(symbols[i]);
 			} 
 		}
+		private Term(BigInteger coeff, Vector<String> argSymbolList){
+			coefficient = coeff;
+			symbolList = argSymbolList;
+		}
 		public Term(String symbol){
-			coefficient = 1;
+			coefficient = BigInteger.ONE;
 			symbolList.add(symbol);
 		}
 		public Term(Term term){
@@ -37,7 +45,7 @@ public class RationalExp implements java.io.Serializable {
 		public boolean isConstant(){
 			return symbolList.size()==0;
 		}
-		public boolean removeSymbol(String symbol){
+		private boolean removeSymbol(String symbol){
 			return symbolList.remove(symbol);
 		}
 		public boolean isSummable(Term term){
@@ -66,7 +74,7 @@ public class RationalExp implements java.io.Serializable {
 			}
 			return true;
 		}
-		public long getCoefficient(){
+		public BigInteger getCoefficient(){
 			return coefficient;
 		}
 		public String[] getSymbols(){
@@ -80,16 +88,17 @@ public class RationalExp implements java.io.Serializable {
 				return symbols;
 			}
 		}
-		public Term mult(Term term1, Term term2){
-			Term newTerm = new Term(1);
-			newTerm.coefficient = term1.coefficient * term2.coefficient;
-			for (int i=0;i<term1.symbolList.size();i++){
-				newTerm.symbolList.add(term1.symbolList.elementAt(i));
-			}
-			for (int i=0;i<term2.symbolList.size();i++){
-				newTerm.symbolList.add(term2.symbolList.elementAt(i));
-			}
+		public Term mult(Term term){
+			BigInteger newCoefficient = this.coefficient.multiply(term.coefficient);
+			Vector<String> newSymbolList = new Vector<String>(this.symbolList);
+			newSymbolList.addAll(term.symbolList);
+			Term newTerm = new Term(newCoefficient,newSymbolList);
 			return newTerm;
+		}
+		private void divideInPlace(BigInteger factor){
+			BigInteger oldValue = this.coefficient;
+			BigInteger newCoefficient =this.coefficient.divide(factor); 
+			this.coefficient = newCoefficient;
 		}
 		public String infixString(){
 			if (symbolList.size()==0){
@@ -102,9 +111,9 @@ public class RationalExp implements java.io.Serializable {
 					}
 					buffer.append((String)symbolList.elementAt(i));
 				}
-				if (coefficient == 1){
+				if (coefficient.equals(BigInteger.ONE)){
 					return buffer.toString();
-				}else if (coefficient == -1){
+				}else if (coefficient.equals(BigInteger.ONE.negate())){
 					return "-"+buffer.toString();
 				}else{
 					return coefficient+"*"+buffer.toString();
@@ -120,9 +129,9 @@ public class RationalExp implements java.io.Serializable {
  * Insert the method's description here.
  * Creation date: (3/28/2003 5:43:11 PM)
  */
-public RationalExp(long num) {
+public RationalExp(BigInteger num) {
 	numTermList.add(new Term(num));
-	denTermList.add(new Term(1));
+	denTermList.add(new Term(BigInteger.ONE));
 }
 
 
@@ -130,9 +139,22 @@ public RationalExp(long num) {
  * Insert the method's description here.
  * Creation date: (3/28/2003 5:43:11 PM)
  */
-public RationalExp(long num, long den) {
-	numTermList.add(new Term(num));
-	denTermList.add(new Term(den));
+public RationalExp(BigInteger num, BigInteger den) {
+	BigInteger gcd = num.gcd(den);
+	numTermList.add(new Term(num.divide(gcd)));
+	denTermList.add(new Term(den.divide(gcd)));
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/28/2003 5:43:11 PM)
+ */
+public RationalExp(RationalNumber rationalNumber) {
+	BigInteger argNum = rationalNumber.getNumBigInteger();
+	BigInteger argDen = rationalNumber.getDenBigInteger();
+	BigInteger gcd = argNum.gcd(argDen);
+	numTermList.add(new Term(argNum.divide(gcd)));
+	denTermList.add(new Term(argDen.divide(gcd)));
 }
 
 
@@ -145,7 +167,7 @@ public RationalExp(String symbol) {
 		//throw new IllegalArgumentException("symbol '"+symbol+"' invalid");
 	//}
 	numTermList.add(new Term(symbol));
-	denTermList.add(new Term(1));
+	denTermList.add(new Term(BigInteger.ONE));
 }
 
 
@@ -250,18 +272,18 @@ private void collectTerms(Vector<Term> vector) {
 	for (int i = 0; i < vector.size()-1; i++){
 		int numEquivalentTerms = 1;
 		Term term1 = (Term)vector.elementAt(i);
-		long coeff = term1.getCoefficient();
+		BigInteger coeff = term1.getCoefficient();
 		for (int j = i+1; j < vector.size(); j++){
 			Term term2 = (Term)vector.elementAt(j);
 			if (term1.isSummable(term2)){
 				numEquivalentTerms++;
-				coeff += term2.getCoefficient();
+				coeff = coeff.add(term2.getCoefficient());
 				vector.remove(term2);
 				j--;
 			}
 		}
 		if (numEquivalentTerms>1){
-			if (coeff==0){
+			if (coeff.equals(BigInteger.ZERO)){
 				vector.remove(term1);
 				i--;
 			}else{
@@ -270,7 +292,7 @@ private void collectTerms(Vector<Term> vector) {
 		}
 	}
 	if (vector.size()==0){
-		vector.add(new Term(0));
+		vector.add(new Term(BigInteger.ZERO));
 	}
 }
 
@@ -285,7 +307,7 @@ public RationalExp div(RationalExp rational) {
 	if (rational.isZero()){
 		throw new RuntimeException("divide by zero");
 	}else if (isZero()){
-		return new RationalExp(0);
+		return RationalExp.ZERO;
 	}else{
 		Vector<Term> newNumTermList = multiplyTerms(this.numTermList,rational.denTermList);
 		Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.numTermList);
@@ -322,7 +344,7 @@ public RationalNumber getConstant() {
 public String infixString() {
 	String numStr = infixString(numTermList);
 	String denStr = infixString(denTermList);
-	if (denTermList.size()==1 && ((Term)denTermList.elementAt(0)).getCoefficient()==1 && ((Term)denTermList.elementAt(0)).getSymbols().length==0){
+	if (denTermList.size()==1 && denTermList.elementAt(0).getCoefficient().equals(BigInteger.ONE) && denTermList.elementAt(0).getSymbols().length==0){
 		// numerator only
 		if (numTermList.size()>1){
 			return '(' + numStr + ')';
@@ -348,8 +370,7 @@ public String infixString() {
 			buffer.append(denStr);
 		}
 		return buffer.toString();
-	}
-}
+	}}
 
 
 /**
@@ -361,7 +382,7 @@ private String infixString(Vector<Term> termList) {
 	StringBuffer buffer = new StringBuffer();
 	for (int i = 0; i < termList.size(); i++){
 		Term term = (Term)termList.elementAt(i);
-		if (i>0 && term.getCoefficient()>=0){
+		if (i>0 && term.getCoefficient().compareTo(BigInteger.ZERO)==1){ // > 0
 			buffer.append('+');
 		}
 		buffer.append(term.infixString());
@@ -403,7 +424,13 @@ public boolean isConstant() {
  * @return boolean
  */
 public boolean isZero() {
-	return ((Term)numTermList.elementAt(0)).getCoefficient()==0;
+	for (Iterator iter = numTermList.iterator(); iter.hasNext();) {
+		Term term = (Term) iter.next();
+		if (!term.getCoefficient().equals(BigInteger.ZERO)){
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -429,23 +456,11 @@ private Vector<Term> minusTerms(Vector<Term> vector) {
 	
 	for (int i = 0; i < vector.size(); i++){
 		Term term = (Term)vector.elementAt(i);
-		newVector.add(new Term(-term.getCoefficient(),term.getSymbols()));
+		newVector.add(new Term(term.getCoefficient().negate(),term.getSymbols()));
 	}
 	return newVector;
 }
 
-
-private Term mult(Term term1, Term term2){
-	Term newTerm = new Term(1);
-	newTerm.coefficient = term1.coefficient * term2.coefficient;
-	for (int i=0;i<term1.symbolList.size();i++){
-		newTerm.symbolList.add(term1.symbolList.elementAt(i));
-	}
-	for (int i=0;i<term2.symbolList.size();i++){
-		newTerm.symbolList.add(term2.symbolList.elementAt(i));
-	}
-	return newTerm;
-}
 
 /**
  * Insert the method's description here.
@@ -455,9 +470,9 @@ private Term mult(Term term1, Term term2){
  */
 public RationalExp mult(RationalExp rational) {
 	if (isZero()){
-		return new RationalExp(0);
+		return RationalExp.ZERO;
 	}else if (rational.isZero()){
-		return new RationalExp(0);
+		return RationalExp.ZERO;
 	}else{
 		Vector<Term> newNumTermList = multiplyTerms(this.numTermList,rational.numTermList);
 		Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
@@ -491,7 +506,7 @@ private Vector<Term> multiplyTerms(Vector<Term> vector1, Vector<Term> vector2) {
 		Term term1 = (Term)vector1.elementAt(i);
 		for (int j = 0; j < vector2.size(); j++){
 			Term term2 = (Term)vector2.elementAt(j);
-			newVector.add(mult(term1,term2));
+			newVector.add(term1.mult(term2));
 		}
 	}
 	collectTerms(newVector);
@@ -504,6 +519,13 @@ private Vector<Term> multiplyTerms(Vector<Term> vector1, Vector<Term> vector2) {
  * Creation date: (3/30/2003 1:52:50 PM)
  */
 private void refactor() {
+	if (isZero()){
+		this.numTermList.clear();
+		this.numTermList.add(new Term(BigInteger.ZERO));
+		this.denTermList.clear();
+		this.denTermList.add(new Term(BigInteger.ONE));
+		return;
+	}
 	//
 	// for each symbol in the first term, see if it's in all terms, and remove it from all
 	// collect all terms that are only integers
@@ -545,24 +567,24 @@ private void refactor() {
 	//
 	// if simply coefficients (divide all terms by greatest common factor)
 	//
-	long gcf_numerator = ((Term)numTermList.elementAt(0)).getCoefficient();
+	BigInteger gcf_numerator = ((Term)numTermList.elementAt(0)).getCoefficient();
 	for (int i = 1; i < numTermList.size(); i++){
-		gcf_numerator = RationalNumber.getGreatestCommonFactor(gcf_numerator,((Term)numTermList.elementAt(i)).getCoefficient());
+		gcf_numerator = gcf_numerator.gcd(((Term)numTermList.elementAt(i)).getCoefficient());
 	}
-	long gcf_denominator = ((Term)denTermList.elementAt(0)).getCoefficient();
+	BigInteger gcf_denominator = ((Term)denTermList.elementAt(0)).getCoefficient();
 	for (int i = 1; i < denTermList.size(); i++){
-		gcf_denominator = RationalNumber.getGreatestCommonFactor(gcf_denominator,((Term)denTermList.elementAt(i)).getCoefficient());
+		gcf_denominator = gcf_denominator.gcd(((Term)denTermList.elementAt(i)).getCoefficient());
 	}
-	if (gcf_numerator>1 && gcf_denominator>1){
-		long gcf = RationalNumber.getGreatestCommonFactor(gcf_numerator,gcf_denominator);
-		if (gcf > 1){
+	if (gcf_numerator.compareTo(BigInteger.ONE)==1 && gcf_denominator.compareTo(BigInteger.ONE)==1){
+		BigInteger gcf = gcf_numerator.gcd(gcf_denominator);
+		if (gcf.compareTo(BigInteger.ONE)==1){
 			for (int i = 0; i < numTermList.size(); i++){
 				Term term = (Term)numTermList.elementAt(i);
-				term.coefficient /= gcf;
+				term.divideInPlace(gcf);
 			}
 			for (int i = 0; i < denTermList.size(); i++){
 				Term term = (Term)denTermList.elementAt(i);
-				term.coefficient /= gcf;
+				term.divideInPlace(gcf);
 			}
 		}
 	}
@@ -574,43 +596,48 @@ private void refactor() {
  * Creation date: (4/22/2006 2:09:08 PM)
  */
 public RationalExp simplify() {
-	try {
-		//
-		// use symbolic capabilities of JSCL Mediator library to further simplify
-		//
-		cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(infixString());
-		jscl.math.Expression jsclExpression = null;
-		String jsclExpressionString = exp.infix_JSCL();
-		try {
-			jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-		}catch (jscl.text.ParseException e){
-			e.printStackTrace(System.out);
-			System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
-			return null;
-		}
-		cbit.vcell.parser.Expression solution = null;
-		jscl.math.Generic jsclSolution = jsclExpression.expand().simplify();
-		try {
-			solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
-		}catch (Throwable e){
-			e.printStackTrace(System.out);
-		}
-		if (solution!=null){
-			String[] jsclSymbols = solution.getSymbols();
-			for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
-				String restoredSymbol = cbit.util.TokenMangler.getRestoredStringJSCL(jsclSymbols[i]);
-				if (!restoredSymbol.equals(jsclSymbols[i])){
-					solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]),new cbit.vcell.parser.Expression(restoredSymbol));
-				}
-			}
-			return cbit.vcell.parser.RationalExpUtils.getRationalExp(solution);
-		}else{
-			return this;
-		}
-	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
+//	RationalExp newRationalExp = new RationalExp((Vector<Term>)numTermList.clone(),(Vector<Term>)denTermList.clone());
+//	newRationalExp.refactor();
+//	System.out.println("simpler RationalExp.simplify(): "+this+"==>"+newRationalExp);
+//	return newRationalExp;
+return this;
+//	try {
+//		//
+//		// use symbolic capabilities of JSCL Mediator library to further simplify
+//		//
+//		cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(infixString());
+//		jscl.math.Expression jsclExpression = null;
+//		String jsclExpressionString = exp.infix_JSCL();
+//		try {
+//			jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+//		}catch (jscl.text.ParseException e){
+//			e.printStackTrace(System.out);
+//			System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
+//			return null;
+//		}
+//		cbit.vcell.parser.Expression solution = null;
+//		jscl.math.Generic jsclSolution = jsclExpression.expand().simplify();
+//		try {
+//			solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
+//		}catch (Throwable e){
+//			e.printStackTrace(System.out);
+//		}
+//		if (solution!=null){
+//			String[] jsclSymbols = solution.getSymbols();
+//			for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
+//				String restoredSymbol = cbit.util.TokenMangler.getRestoredStringJSCL(jsclSymbols[i]);
+//				if (!restoredSymbol.equals(jsclSymbols[i])){
+//					solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]),new cbit.vcell.parser.Expression(restoredSymbol));
+//				}
+//			}
+//			return cbit.vcell.parser.RationalExpUtils.getRationalExp(solution);
+//		}else{
+//			return this;
+//		}
+//	}catch (cbit.vcell.parser.ExpressionException e){
+//		e.printStackTrace(System.out);
+//		throw new RuntimeException(e.getMessage());
+//	}
 }
 
 
@@ -623,7 +650,7 @@ public RationalExp simplify() {
 public RationalExp sub(RationalExp rational) {
 	if (isZero()){
 		if (rational.isZero()){
-			return new RationalExp(0);
+			return RationalExp.ZERO;
 		}else{
 			return rational.minus();
 		}

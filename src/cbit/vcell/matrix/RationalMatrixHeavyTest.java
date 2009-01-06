@@ -186,12 +186,12 @@ public void testELIMINATIONExp() throws Exception {
 	int C = 2; vars[C] = "C";
 	int r=0;
 	// A = B
-	a.set_elem(A,r,new RationalExp(-1));	a.set_elem(B,r,new RationalExp(1));  r++;
-	a.set_elem(A,r,new RationalExp(1));	a.set_elem(B,r,new RationalExp(-1));  r++;
+	a.set_elem(A,r,RationalExp.ONE.minus());	a.set_elem(B,r,RationalExp.ONE);  r++;
+	a.set_elem(A,r,RationalExp.ONE);	a.set_elem(B,r,RationalExp.ONE.minus());  r++;
 	// B -> C
-	a.set_elem(B,r,new RationalExp(1));	a.set_elem(C,r,new RationalExp(1));  r++;
+	a.set_elem(B,r,RationalExp.ONE);	a.set_elem(C,r,RationalExp.ONE);  r++;
 	// A -> C
-	a.set_elem(A,r,new RationalExp(-1));	a.set_elem(C,r,new RationalExp(1));  r++;
+	a.set_elem(A,r,RationalExp.ONE.minus());	a.set_elem(C,r,RationalExp.ONE);  r++;
 	// C -> *
 //	a.set_elem(C,r,-1);	  r++;
 
