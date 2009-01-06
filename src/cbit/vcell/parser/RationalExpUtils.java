@@ -1,5 +1,6 @@
 package cbit.vcell.parser;
 import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.matrix.RationalNumber;
 /**
  * This class may not exist in the future, and its functionality may be spread on one or more classes.
  
@@ -37,7 +38,7 @@ public class RationalExpUtils {
 					}
 					int intExponent = (int)constantExponent;
 					if (intExponent == 0){
-						return new RationalExp(1);
+						return RationalExp.ONE;
 					}
 					
 					RationalExp base = getRationalExp((SimpleNode)node.jjtGetChild(0));
@@ -63,7 +64,7 @@ public class RationalExpUtils {
 				}
 				int intExponent = (int)constantExponent;
 				if (intExponent == 0){
-					return new RationalExp(1);
+					return RationalExp.ONE;
 				}
 				
 				RationalExp base = getRationalExp((SimpleNode)node.jjtGetChild(0));
@@ -79,7 +80,7 @@ public class RationalExpUtils {
 				throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression, exponent is not constant");
 			}
 		} else if (node instanceof ASTAddNode) {
-			RationalExp exp = new RationalExp(0);
+			RationalExp exp = RationalExp.ZERO;
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				exp = exp.add(getRationalExp((SimpleNode)node.jjtGetChild(i)));
 			}
@@ -90,7 +91,7 @@ public class RationalExpUtils {
 			if (node.jjtGetNumChildren() == 1) {
 				return getRationalExp((SimpleNode)node.jjtGetChild(0));
 			}
-			RationalExp exp = new RationalExp(1);
+			RationalExp exp = RationalExp.ONE;
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {             
 				exp = exp.mult(getRationalExp((SimpleNode)node.jjtGetChild(i)));
 			}
@@ -101,8 +102,8 @@ public class RationalExpUtils {
 	    } else if (node instanceof ASTExpression) {
 			return getRationalExp((SimpleNode)node.jjtGetChild(0));
 		} else if (node instanceof ASTFloatNode) {          //return TBD instead of dimensionless.
-			cbit.vcell.matrix.RationalNumber r = cbit.vcell.matrix.RationalNumber.getApproximateFraction(((ASTFloatNode)node).value.doubleValue());
-			return new RationalExp(r.getNum(),r.getDen());
+			RationalNumber r = RationalNumber.getApproximateFraction(((ASTFloatNode)node).value.doubleValue());
+			return new RationalExp(r);
 		//} else if (node instanceof ASTFuncNode) {   
 			//String functionName = ((ASTFuncNode)node).getName();
 			//if (functionName.equalsIgnoreCase("pow")) {       

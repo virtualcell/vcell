@@ -5,6 +5,7 @@ package cbit.vcell.matrix;
  * All rights reserved.
 ©*/
 import java.io.*;
+import java.math.BigInteger;
 import java.util.*;
 
 public class RationalExpMatrixTest
@@ -115,7 +116,7 @@ private void runInverseTest(int n) {
 public void set_rand_int(RationalExpMatrix m) {
 	for (int i = 0; i < m.getNumRows(); i ++){
 		for (int j = 0; j < m.getNumCols(); j ++){
-			m.set_elem(i, j, new RationalExp((int)(4*(random.nextDouble()-0.5))));
+			m.set_elem(i, j, new RationalExp(BigInteger.valueOf((long)(4*(random.nextDouble()-0.5)))));
 		}
 	}		
 }
@@ -147,9 +148,9 @@ public void test3by3_example() throws Exception {
 	int numVars = 3;
 	int numReactions = 3;
 	RationalExpMatrix a = new RationalExpMatrix(3, 4);
-	a.set_elem(0,0,new RationalExp("a"));		a.set_elem(0,1,new RationalExp("b"));		a.set_elem(0,2,new RationalExp("c"));		a.set_elem(0,3,new RationalExp(0));
-	a.set_elem(1,0,new RationalExp(0));		a.set_elem(1,1,new RationalExp("g"));		a.set_elem(1,2,new RationalExp("t"));		a.set_elem(1,3,new RationalExp("w"));
-	a.set_elem(2,0,new RationalExp(0));		a.set_elem(2,1,new RationalExp("g"));		a.set_elem(2,2,new RationalExp("2*t"));		a.set_elem(2,3,new RationalExp("3*w"));
+	a.set_elem(0,0,new RationalExp("a"));		a.set_elem(0,1,new RationalExp("b"));		a.set_elem(0,2,new RationalExp("c"));		a.set_elem(0,3,RationalExp.ZERO);
+	a.set_elem(1,0,RationalExp.ZERO);		a.set_elem(1,1,new RationalExp("g"));		a.set_elem(1,2,new RationalExp("t"));		a.set_elem(1,3,new RationalExp("w"));
+	a.set_elem(2,0,RationalExp.ZERO);		a.set_elem(2,1,new RationalExp("g"));		a.set_elem(2,2,new RationalExp("2*t"));		a.set_elem(2,3,new RationalExp("3*w"));
 
 	System.out.println("============= 3 X 3 Example ==================================");
 	a.show();
@@ -168,10 +169,10 @@ public void test4by4_example() throws Exception {
 	int numVars = 4;
 	int numReactions = 4;
 	RationalExpMatrix a = new RationalExpMatrix(4, 5);
-	a.set_elem(0,0,new RationalExp(1));		a.set_elem(0,1,new RationalExp("b"));		a.set_elem(0,2,new RationalExp(0));		a.set_elem(0,3,new RationalExp("d"));		a.set_elem(0,4,new RationalExp("e"));
-	a.set_elem(1,0,new RationalExp("f"));		a.set_elem(1,1,new RationalExp(1));		a.set_elem(1,2,new RationalExp("h"));		a.set_elem(1,3,new RationalExp(0));		a.set_elem(1,4,new RationalExp("j"));
-	a.set_elem(2,0,new RationalExp("k"));		a.set_elem(2,1,new RationalExp(0));		a.set_elem(2,2,new RationalExp(1));		a.set_elem(2,3,new RationalExp("n"));		a.set_elem(2,4,new RationalExp("o"));
-	a.set_elem(3,0,new RationalExp(0));		a.set_elem(3,1,new RationalExp("q"));		a.set_elem(3,2,new RationalExp("r"));		a.set_elem(3,3,new RationalExp(1));		a.set_elem(3,4,new RationalExp(0));
+	a.set_elem(0,0,RationalExp.ONE);		a.set_elem(0,1,new RationalExp("b"));		a.set_elem(0,2,RationalExp.ZERO);		a.set_elem(0,3,new RationalExp("d"));		a.set_elem(0,4,new RationalExp("e"));
+	a.set_elem(1,0,new RationalExp("f"));		a.set_elem(1,1,RationalExp.ONE);		a.set_elem(1,2,new RationalExp("h"));		a.set_elem(1,3,RationalExp.ZERO);		a.set_elem(1,4,new RationalExp("j"));
+	a.set_elem(2,0,new RationalExp("k"));		a.set_elem(2,1,RationalExp.ZERO);		a.set_elem(2,2,RationalExp.ONE);		a.set_elem(2,3,new RationalExp("n"));		a.set_elem(2,4,new RationalExp("o"));
+	a.set_elem(3,0,RationalExp.ZERO);		a.set_elem(3,1,new RationalExp("q"));		a.set_elem(3,2,new RationalExp("r"));		a.set_elem(3,3,RationalExp.ONE);		a.set_elem(3,4,RationalExp.ZERO);
 
 	System.out.println("============= 4 X 4 Example ==================================");
 	a.show();
@@ -196,14 +197,14 @@ public void testBORIS_example() throws Exception {
 	int C = 2; vars[C] = "C";
 	int r=0;
 	// A = B
-	a.set_elem(A,r,new RationalExp(-1));	a.set_elem(B,r,new RationalExp(1));  r++;
-	a.set_elem(A,r,new RationalExp(1));	a.set_elem(B,r,new RationalExp(-1));  r++;
+	a.set_elem(A,r,RationalExp.ONE.minus());	a.set_elem(B,r,RationalExp.ONE);  r++;
+	a.set_elem(A,r,RationalExp.ONE);	a.set_elem(B,r,RationalExp.ONE.minus());  r++;
 	// B -> C
-	a.set_elem(B,r,new RationalExp(-1));	a.set_elem(C,r,new RationalExp(1));  r++;
+	a.set_elem(B,r,RationalExp.ONE.minus());	a.set_elem(C,r,RationalExp.ONE);  r++;
 	// A -> C
-	a.set_elem(A,r,new RationalExp(-1));	a.set_elem(C,r,new RationalExp(1));  r++;
+	a.set_elem(A,r,RationalExp.ONE.minus());	a.set_elem(C,r,RationalExp.ONE);  r++;
 	// C -> *
-	a.set_elem(C,r,new RationalExp(-1));	  r++;
+	a.set_elem(C,r,RationalExp.ONE.minus());	  r++;
 
 	System.out.println("============= Test Boris Example ==================================");
 //	a.show();
@@ -227,12 +228,12 @@ public void testELIMINATION() throws Exception {
 	int C = 2; vars[C] = "C";
 	int r=0;
 	// A = B
-	a.set_elem(A,r,new RationalExp(-1));	a.set_elem(B,r,new RationalExp(1));  r++;
-	a.set_elem(A,r,new RationalExp(1));	a.set_elem(B,r,new RationalExp(-1));  r++;
+	a.set_elem(A,r,RationalExp.ONE.minus());	a.set_elem(B,r,RationalExp.ONE);  r++;
+	a.set_elem(A,r,RationalExp.ONE);	a.set_elem(B,r,RationalExp.ONE.minus());  r++;
 	// B -> C
-	a.set_elem(B,r,new RationalExp(1));	a.set_elem(C,r,new RationalExp(1));  r++;
+	a.set_elem(B,r,RationalExp.ONE);	a.set_elem(C,r,RationalExp.ONE);  r++;
 	// A -> C
-	a.set_elem(A,r,new RationalExp(-1));	a.set_elem(C,r,new RationalExp(1));  r++;
+	a.set_elem(A,r,RationalExp.ONE.minus());	a.set_elem(C,r,RationalExp.ONE);  r++;
 	// C -> *
 //	a.set_elem(C,r,-1);	  r++;
 

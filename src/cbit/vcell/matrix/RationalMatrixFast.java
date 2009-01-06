@@ -1,5 +1,8 @@
 package cbit.vcell.matrix;
 
+import java.math.BigInteger;
+import java.util.Arrays;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -10,6 +13,8 @@ public class RationalMatrixFast implements RationalMatrix, java.io.Serializable
 	private int cols;
 	private long numData[];
 	private long denData[];
+	
+	
 public RationalMatrixFast(RationalNumber[][] rowColData){
 	rows = rowColData.length;
 	cols = rowColData[0].length;
@@ -19,34 +24,36 @@ public RationalMatrixFast(RationalNumber[][] rowColData){
 	for (int i = 0; i < rows; i ++){
 		for (int j = 0; j< cols; j++){
 			RationalNumber r = rowColData[i][j];
-			set_elem(i,j,r.getNum(),r.getDen());
+			BigInteger num = r.getNumBigInteger();
+			long numLong = num.longValue();
+			BigInteger den = r.getDenBigInteger();
+			long denLong = den.longValue();
+			if (num.equals(BigInteger.valueOf(numLong)) && den.equals(BigInteger.valueOf(denLong))){
+				set_elem(i,j,numLong,denLong);
+			}else{
+				throw new IllegalArgumentException("RationalMatrixFast cannot represent element("+i+","+j+")="+r+" as ratio of longs");
+			}
 		}
 	}	
 }
 public RationalMatrixFast(int r, int c){
-	numData = new long[r * c];
-	denData = new long[r * c];
 	rows = r;
 	cols = c;
-
-	for (int i = 0; i < rows * cols; i ++){
-		numData[i] = 0;
-		denData[i] = 1;
-	}	
+	numData = new long[r * c];
+	denData = new long[r * c];
+	Arrays.fill(numData, 0L);
+	Arrays.fill(denData, 1L);
 }
+
 public RationalMatrixFast(int r, int c, long values[]){
 	if (values.length != r*c){
 		throw new IllegalArgumentException("value array not of proper size");
 	}
-	numData = new long[r * c];
-	denData = new long[r * c];
 	rows = r;
 	cols = c;
-
-	for (int i = 0; i < rows * cols; i ++){
-		numData[i] = values[i];
-		denData[i] = 1;
-	}	
+	numData = values.clone();
+	denData = new long[r * c];
+	Arrays.fill(denData, 1L);
 }
 
 public RationalMatrixFast transpose(){
@@ -68,12 +75,27 @@ public RationalMatrixFast transpose(){
 public RationalMatrixFast (RationalMatrix mat) {
 	this.rows = mat.getNumRows();
 	this.cols = mat.getNumCols();
-	this.numData = new long[rows * cols];
-	this.denData = new long[rows * cols];
-	for (int i = 0; i < rows; i ++){
-		for (int j = 0; j < cols; j ++){
-			RationalNumber r = mat.get_elem(i,j);
-			set_elem(i, j, r.getNum(), r.getDen());
+	this.numData = new long[rows*cols];
+	this.denData = new long[rows*cols];
+
+	if (mat instanceof RationalMatrixFast){
+		RationalMatrixFast otherMat = (RationalMatrixFast)mat;
+		System.arraycopy(otherMat.numData, 0, numData, 0, numData.length);
+		System.arraycopy(otherMat.denData, 0, denData, 0, denData.length);
+	}else{
+		for (int i = 0; i < rows; i ++){
+			for (int j = 0; j < cols; j ++){
+				RationalNumber r = mat.get_elem(i,j);
+				BigInteger num = r.getNumBigInteger();
+				long numLong = num.longValue();
+				BigInteger den = r.getDenBigInteger();
+				long denLong = den.longValue();
+				if (num.equals(BigInteger.valueOf(numLong)) && den.equals(BigInteger.valueOf(denLong))){
+					set_elem(i,j,numLong,denLong);
+				}else{
+					throw new IllegalArgumentException("RationalMatrixFast cannot represent element("+i+","+j+")="+r+" as ratio of longs");
+				}
+			}
 		}
 	}
 }
@@ -89,69 +111,80 @@ public RationalMatrixFast (RationalMatrixFast mat) {
 	System.arraycopy(mat.numData,0,this.numData,0,rows*cols);
 	System.arraycopy(mat.denData,0,this.denData,0,rows*cols);
 }
-void div_elem(int r, int c, long num, long den) {
-	if (r < 0 || r >= rows){
-		throw new IllegalArgumentException("r out of range <"+r+">");
-	}
-	if (c < 0 || c >= cols){
-		throw new IllegalArgumentException("c out of range <"+c+">");
-	}
-	int index = c + r * cols;
-	
-	long numerator = numData[index] * den;
-	long denominator = denData[index] * num;
 
-	long sign = (numerator*denominator < 0)?(-1):(1);
+void div_elem(int r, int c, long num, long den) {
+	if (den==0L){
+		throw new IllegalArgumentException("RationalMatrixFast.div_elem(): argument has zero denominator");
+	}
+	if (num==0L){
+		throw new ArithmeticException("RationalMatrixFast.div_elem(): divide by zero");
+	}
+	int index_r_c = get_index(r, c);
+	long numerator = numData[index_r_c] * den;
+	if (numerator/den != numData[index_r_c]){
+		throw new ArithmeticException("RationalMatrixFast.div_elem(): overflow");
+	}
+	long denominator = denData[index_r_c] * num;
+	if (denominator/num != denData[index_r_c]){
+		throw new ArithmeticException("RationalMatrixFast.div_elem(): overflow");
+	}
+
+	long sign = (numerator<0 != denominator<0)?(-1):(1);
 	long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
-	numData[index] = Math.abs(numerator)*sign/gcf;
-	denData[index] = Math.abs(denominator)/gcf;
+	numData[index_r_c] = Math.abs(numerator)*sign/gcf;
+	denData[index_r_c] = Math.abs(denominator)/gcf;
 }
+
 public RationalMatrix findNullSpace() throws MatrixException {
 	
-	if (rows <= 1){
-		throw new MatrixException("this must have more than one row");
-	}
-	int numVars = rows;
+	try {
+		if (rows <= 1){
+			throw new MatrixException("this must have more than one row");
+		}
+		int numVars = rows;
+		RationalMatrixFast b = new RationalMatrixFast(this);
+		RationalMatrixFast K = new RationalMatrixFast(numVars,numVars);
+		K.identity();
+		int rank = b.gaussianElimination(K);
+		if (rank == numVars){
+			return null;
+		}
+		int nullity = numVars - rank;
+	//	b.show();
+	//	K.show();
 	
-	RationalMatrixFast b = new RationalMatrixFast(this);
-	RationalMatrixFast K = new RationalMatrixFast(numVars,numVars);
-	K.identity();
-	int rank = b.gaussianElimination(K);
-	if (rank == numVars){
-		return null;
-	}
-	int nullity = numVars - rank;
-//	b.show();
-//	K.show();
-
-	//
-	// the 'newK' matrix is the last N-rank rows of 'K' (the elimination operations of 'a')
-	//
-	RationalMatrixFast newK = new RationalMatrixFast(nullity,numVars);
-	System.arraycopy(K.numData,	rank*K.cols,	newK.numData,	0,	nullity*K.cols);
-	System.arraycopy(K.denData,	rank*K.cols,	newK.denData,	0,	nullity*K.cols);
-
-	//	newK.show();
-//	RationalMatrixFast tempMatrix = new RationalMatrixFast(nullity,nullity);
-//	tempMatrix.identity();
-	int numberOfConservations = newK.gaussianElimination(); // tempMatrix);
+		//
+		// the 'newK' matrix is the last N-rank rows of 'K' (the elimination operations of 'a')
+		//
+		RationalMatrixFast newK = new RationalMatrixFast(nullity,numVars);
+		System.arraycopy(K.numData,	rank*K.cols,	newK.numData,	0,	nullity*K.cols);
+		System.arraycopy(K.denData,	rank*K.cols,	newK.denData,	0,	nullity*K.cols);
 	
-	if (numberOfConservations == 0){
-		throw new MatrixException("system has "+rank+" of "+numVars+" independent vars, and no conserved groups identified");
-	}
-
-	//
-	//?????? I'm not sure if this assumption is valid always
-	//
-	if (numberOfConservations!=nullity){
-		System.out.println("Matrix.findNullSpace(), WARNING???: numberOfConservations<"+numberOfConservations+"> != nullity<"+nullity+">");
-		RationalMatrixFast returnMatrix = new RationalMatrixFast(numberOfConservations,numVars);
-		// copy first 'numberOfConservations' rows of newK into returnMatrix
-		System.arraycopy(newK.numData,0,returnMatrix.numData,0,numberOfConservations*returnMatrix.cols);
-		System.arraycopy(newK.denData,0,returnMatrix.denData,0,numberOfConservations*returnMatrix.cols);
-		return returnMatrix;
-	}else{
-		return newK;
+		//	newK.show();
+		int numberOfConservations = newK.gaussianElimination();
+		
+		if (numberOfConservations == 0){
+			throw new MatrixException("system has "+rank+" of "+numVars+" independent vars, and no conserved groups identified");
+		}
+	
+		//
+		//?????? I'm not sure if this assumption is valid always
+		//
+		if (numberOfConservations!=nullity){
+			System.out.println("Matrix.findNullSpace(), WARNING???: numberOfConservations<"+numberOfConservations+"> != nullity<"+nullity+">");
+			RationalMatrixFast returnMatrix = new RationalMatrixFast(numberOfConservations,numVars);
+			// copy first 'numberOfConservations' rows of newK into returnMatrix
+			System.arraycopy(newK.numData,0,returnMatrix.numData,0,numberOfConservations*returnMatrix.cols);
+			System.arraycopy(newK.denData,0,returnMatrix.denData,0,numberOfConservations*returnMatrix.cols);
+			return returnMatrix;
+		}else{
+			return newK;
+		}
+	} catch (ArithmeticException e){
+		//e.printStackTrace(System.out);
+		System.out.println("arithmetic exception, trying RationalNumberMatrix.findNullSpace()");
+		RationalNumberMatrix heavy = new RationalNumberMatrix(this);
+		return heavy.findNullSpace();
 	}
 }
 public int gaussianElimination() throws MatrixException {
@@ -160,7 +193,7 @@ public int gaussianElimination() throws MatrixException {
 		throw new MatrixException("this matrix must have at least one row");
 	}
 	int rank = 0;
-	long workarray[] = new long[cols];
+	long workarray[] = new long[rows*cols];
 	//
 	// traverse each column
 	//
@@ -170,22 +203,17 @@ public int gaussianElimination() throws MatrixException {
 		//
 		// find pivot row
 		//
-		long numMag = 0;
-		long denMag = 1;
-		double absValueMag = Math.abs(((double)numMag)/denMag);
-		
+		double absValueMag = 0.0;
 		int pivotRow = -1;
 		for (int j = currentRow; j < rows; j ++){
 			int j_current_index = j*cols + currentCol;
-			double absValueCurr = Math.abs(((double)numData[j_current_index])/denData[j_current_index]);
+			double absValueCurr = Math.abs(((double)numData[j_current_index])/(double)denData[j_current_index]);
 			if (absValueCurr > absValueMag){
-				numMag = numData[j_current_index];
-				denMag = denData[j_current_index];
 				absValueMag = absValueCurr;
 				pivotRow = j;
 			}
 		}
-		if (pivotRow == -1 || numMag == 0){
+		if (pivotRow == -1 || absValueMag == 0){
 			//
 			// no row pivot, rotate row to bottom and try next pivot
 			//
@@ -208,8 +236,8 @@ public int gaussianElimination() throws MatrixException {
 		//
 		rank++;
 		int curr_curr_index = currentRow*cols + currentCol;
-		numMag = numData[curr_curr_index];
-		denMag = denData[curr_curr_index];
+		long numMag = numData[curr_curr_index];
+		long denMag = denData[curr_curr_index];
 		
 		scale_row(currentRow,currentCol,denMag,numMag);
 		//
@@ -230,33 +258,29 @@ public int gaussianElimination() throws MatrixException {
 }
 public int gaussianElimination(RationalMatrixFast K) throws MatrixException {
 	
-	if (getNumRows() < 1){
+	if (rows < 1){
 		throw new MatrixException("this matrix must have at least one row");
 	}
-	if (K.getNumRows() != getNumRows()){
+	if (K.rows != rows){
 		throw new MatrixException("number of rows not same for matrices K and a");
 	}
-	long workarray[] = new long[getNumCols()*getNumRows()];
+	long workarray[] = new long[cols*rows];
 	int rank = 0;
 	//
 	// traverse each column
 	//
 	int currentRow = 0;
-	for (int currentCol = 0; (currentCol < getNumCols()) && (currentRow < getNumRows()); currentCol++){
+	for (int currentCol = 0; (currentCol < cols) && (currentRow < rows); currentCol++){
 //System.out.println("trying to eliminate column "+(currentCol+1)+" in row "+(currentRow+1));
 		//
 		// find pivot row
 		//
-		long numMag = 0;
-		long denMag = 1;
 		double absValueMag = 0.0;
 		int pivotRow = -1;
-		for (int j = currentRow; j < getNumRows(); j ++){
-			int j_curr_index = j*cols + currentCol;
-			double absValueCurr = Math.abs(((double)numData[j_curr_index])/((double)denData[j_curr_index]));
+		for (int j = currentRow; j < rows; j ++){
+			int j_current_index = j*cols + currentCol;
+			double absValueCurr = Math.abs(((double)numData[j_current_index])/((double)denData[j_current_index]));
 			if (absValueCurr > absValueMag){
-				numMag = numData[j_curr_index];
-				denMag = denData[j_curr_index];
 				absValueMag = absValueCurr;
 				pivotRow = j;
 			}
@@ -283,9 +307,8 @@ public int gaussianElimination(RationalMatrixFast K) throws MatrixException {
 		rank++;
 
 		int curr_curr_index = currentRow*cols + currentCol;
-		numMag = numData[curr_curr_index];
-		denMag = denData[curr_curr_index];
-		absValueMag = Math.abs(((double)numMag)/((double)denMag));
+		long numMag = numData[curr_curr_index];
+		long denMag = denData[curr_curr_index];
 
 		scale_row(currentRow,currentCol,denMag,numMag);
 		K.scale_row(currentRow,0,denMag,numMag);
@@ -319,6 +342,7 @@ public RationalNumber get_elem(int r, int c) {
 	int index = c + r * cols;
 	return new RationalNumber(numData[index], denData[index]);
 }
+
 private int get_index(int r, int c) {
 	if (r < 0 || r >= rows){
 		throw new IllegalArgumentException("r out of range <"+r+">");
@@ -375,16 +399,13 @@ public void identity() throws MatrixException {
 	if (rows != cols){
 		throw new MatrixException("num rows must equal num columns");
 	}	
+	Arrays.fill(numData, 0L);
+	Arrays.fill(denData, 1L);
 	for (int i = 0; i < rows; i ++){
-		for (int j = 0; j < cols; j ++){
-			if (i == j){
-				set_elem(i, j, 1);
-			}else{
-				set_elem(i, j, 0);
-			}
-		}
+		set_elem(i, i, 1);
 	}			
 }
+
 public void matinv(RationalMatrixFast a) throws MatrixException {
 	if (a.rows < 1){
 		throw new MatrixException("must have at least one row");
@@ -399,8 +420,8 @@ public void matinv(RationalMatrixFast a) throws MatrixException {
 	}	
 
 	if (a.rows == 1)	{
-		RationalNumber r = a.get_elem(0, 0);
-		set_elem(0, 0, r.getDen(), r.getNum());
+		int index_0_0 = a.get_index(0,0);
+		set_elem(0, 0, a.denData[index_0_0], a.numData[index_0_0]);
 		return;
 	}
 
@@ -414,19 +435,22 @@ public void matinv(RationalMatrixFast a) throws MatrixException {
 		//
 		// find pivot
 		//
-		RationalNumber mag = new RationalNumber(0);
+		double magValue = 0.0;
 		int pivot = -1;
 		for (int j = i; j < n; j ++){
-			RationalNumber mag2 = b.get_elem(j, i);
-			if (Math.abs(mag2.doubleValue()) > Math.abs(mag.doubleValue())){
-				mag = mag2;
+			int index_j_i = b.get_index(j, i);
+			long mag2Num = b.numData[index_j_i];
+			long mag2Den = b.denData[index_j_i];
+			double mag2Value = ((double)mag2Num)/((double)mag2Den);
+			if (Math.abs(mag2Value) > Math.abs(magValue)){
+				magValue = mag2Value;
 				pivot = j;
 			}
 		}
 		//
 		// no pivot (error)
 		//
-		if (pivot == -1 || mag.doubleValue() == 0){
+		if (pivot == -1 || magValue == 0){
 			return;
 		}
 		//
@@ -440,33 +464,31 @@ public void matinv(RationalMatrixFast a) throws MatrixException {
 		//
 		// normalize pivot row
 		//
-		mag = b.get_elem(i, i);
+		int index_i_i = b.get_index(i, i);
+		long magNum = b.numData[index_i_i];
+		long magDen = b.denData[index_i_i];
 		for (int j = i; j < n; j ++){
-			b.div_elem(i, j, mag.getNum(), mag.getDen());
+			b.div_elem(i, j, magNum, magDen);
 		}	
 		for (int j = 0; j < n; j ++){
-			div_elem(i, j, mag.getNum(), mag.getDen());
+			div_elem(i, j, magNum, magDen);
 		}	
 		//
 		// eliminate pivot row component from other rows
 		//
 		for (int k = 0; k < n; k ++){
 			if (k == i) continue;
+			int index_k_i = b.get_index(k, i);
+			long mag2Num = b.numData[index_k_i];
+			long mag2Den = b.denData[index_k_i];
 
-			RationalNumber mag2 = b.get_elem(k, i);
-
-			for (int j = i; j < n; j ++){
-				RationalNumber r = b.get_elem(k, j).sub(mag2.mult(b.get_elem(i, j)));
-				b.set_elem(k, j, r.getNum(), r.getDen());
-			}	
-			for (int j = 0; j < n; j ++){
-				RationalNumber r = get_elem(k, j).sub(mag2.mult(get_elem(i, j)));
-				set_elem(k, j, r.getNum(), r.getDen());
-			}
+			b.sub_scaled_row(i, i, mag2Num, mag2Den, k);
+			sub_scaled_row(i, 0, mag2Num, mag2Den, k);
 		}
 	}
 }	
-public void matmul(RationalMatrix a, RationalMatrix b) throws MatrixException {
+
+public void matmul(RationalMatrixFast a, RationalMatrixFast b) throws MatrixException {
 	if ((a.getNumCols() != b.getNumRows()) || (a.getNumRows() != getNumRows()) || (b.getNumCols() != getNumCols())){
 		return;
 	}	
@@ -476,11 +498,18 @@ public void matmul(RationalMatrix a, RationalMatrix b) throws MatrixException {
 			RationalNumber s = new RationalNumber(0);
 			for (int k = 0; k < a.getNumCols(); k ++){
 				s = s.add(a.get_elem(i, k).mult(b.get_elem(k, j)));
-			}	
-			set_elem(i, j, s.getNum(), s.getDen());
+			}
+			if (!s.getNumBigInteger().equals(BigInteger.valueOf(s.getNumBigInteger().longValue()))){
+				throw new ArithmeticException("RationalMatrixFast.matmul(): overflow");
+			}
+			if (!s.getDenBigInteger().equals(BigInteger.valueOf(s.getDenBigInteger().longValue()))){
+				throw new ArithmeticException("RationalMatrixFast.matmul(): overflow");
+			}
+			set_elem(i, j, s.getNumBigInteger().longValue(), s.getDenBigInteger().longValue());
 		}
 	}	
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2003 3:46:05 PM)
@@ -525,12 +554,18 @@ void scale_row(int row, int columnOffset, long scaleNum, long scaleDen) {
 			// multiply
 			//
 			long numerator   = scaleNum * numData[row_index];
+			if (numerator/scaleNum!=numData[row_index]){
+				throw new ArithmeticException("RationalMatrixFast.scale_row(): overflow");
+			}
 			long denominator = scaleDen * denData[row_index];
+			if (denominator/scaleDen!=denData[row_index]){
+				throw new ArithmeticException("RationalMatrixFast.scale_row(): overflow");
+			}
 			
 			//
 			// simplify and store in destRow 
 			//
-			long sign = (numerator*denominator < 0)?(-1):(1);
+			long sign = (numerator<0 != denominator<0)?(-1):(1);
 			long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 			numData[row_index] = Math.abs(numerator)*sign/gcf;
 			denData[row_index] = Math.abs(denominator)/gcf;
@@ -538,6 +573,7 @@ void scale_row(int row, int columnOffset, long scaleNum, long scaleDen) {
 		row_index++;
 	}
 }
+
 public void set_elem(int r, int c, long x) {
 	if (r < 0 || r >= rows){
 		throw new IllegalArgumentException("r out of range <"+r+">");
@@ -549,6 +585,7 @@ public void set_elem(int r, int c, long x) {
 	numData[index] = x;
 	denData[index] = 1;
 }
+
 public void set_elem(int r, int c, long numerator, long denominator) {
 	if (r < 0 || r >= rows){
 		throw new IllegalArgumentException("r out of range <"+r+">");
@@ -558,11 +595,12 @@ public void set_elem(int r, int c, long numerator, long denominator) {
 	}
 	int index = c + r * cols;
 
-	long sign = (numerator*denominator < 0)?(-1):(1);
+	long sign = (numerator<0 != denominator<0)?(-1):(1);
 	long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 	numData[index] = Math.abs(numerator)*sign/gcf;
 	denData[index] = Math.abs(denominator)/gcf;
 }
+
 public void show() {
 	System.out.println("Rows = " + rows + " Cols = " + cols);
 	for (int i = 0; i < rows; i ++){
@@ -576,6 +614,7 @@ public void show() {
 		System.out.println(s.toString());
 	}
 }
+
 /**
  * solves the system M x = b, where argument A = [M;b], returns x
  * @return double[]
@@ -603,22 +642,46 @@ public RationalNumber[] solveLinear() throws MatrixException {
 
     return x;
 }
-void sub_elem(int r, int c, long num, long den) {
-	if (r < 0 || r >= rows){
-		throw new IllegalArgumentException("r out of range <"+r+">");
-	}
-	if (c < 0 || c >= cols){
-		throw new IllegalArgumentException("c out of range <"+c+">");
-	}
-	int index = c + r * cols;
-	
-	long numerator = numData[index] * den - num * denData[index];
-	long denominator = denData[index] * den;
 
-	long sign = (numerator*denominator < 0)?(-1):(1);
-	long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
-	numData[index] = Math.abs(numerator)*sign/gcf;
-	denData[index] = Math.abs(denominator)/gcf;
+void sub_elem(int index, long num, long den) {
+	long thisDen = denData[index];
+	long thisNum = numData[index];
+	
+	long numerator;
+	long denominator;
+	if (den == thisDen){
+		numerator = thisNum - num;
+		if (numerator+num!=thisNum){
+			throw new ArithmeticException("RationalMatrixFast.sub_elem(): overflow");
+		}
+		denominator = thisDen;
+	}else{
+		long numeratorA = thisNum * den;
+		if (numeratorA/den!=thisNum){
+			throw new ArithmeticException("RationalMatrixFast.sub_elem(): overflow");
+		}
+		long numeratorB = num * thisDen;
+		if (numeratorB/num!=thisDen){
+			throw new ArithmeticException("RationalMatrixFast.sub_elem(): overflow");
+		}
+		numerator = numeratorA - numeratorB;
+		if (numerator+numeratorA!=numeratorB){
+			throw new ArithmeticException("RationalMatrixFast.sub_elem(): overflow");
+		}
+		denominator = thisDen * den;
+		if (denominator/den!=thisDen){
+			throw new ArithmeticException("RationalMatrixFast.sub_elem(): overflow");
+		}
+	}
+	if (numerator==0){
+		numData[index] = 0L;
+		denData[index] = 1L;
+	}else{
+		long sign = (numerator<0 != denominator<0)?(-1):(1);
+		long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
+		numData[index] = Math.abs(numerator)*sign/gcf;
+		denData[index] = Math.abs(denominator)/gcf;
+	}
 }
 /**
  * Insert the method's description here.
@@ -641,29 +704,17 @@ void sub_scaled_row(int pivotRow, int columnOffset, long scaleNum, long scaleDen
 			// get scaled pivotRow entry
 			//
 			long numerator   = scaleNum * numData[pivotRow_index];
+			if (scaleNum!=0 && numerator/scaleNum!=numData[pivotRow_index]){
+				throw new ArithmeticException("overflow error in RationalMatrixFast.sub_scaled_row");
+			}
 			long denominator = scaleDen * denData[pivotRow_index];
-			
-			//
-			// simplify only once.and store in destRow 
-			//
-			long sign = (numerator*denominator < 0)?(-1):(1);
-			long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
-			numerator = Math.abs(numerator)*sign/gcf;
-			denominator = Math.abs(denominator)/gcf;
-
+			if (scaleDen!=0 && denominator/scaleDen!=denData[pivotRow_index]){
+				throw new ArithmeticException("overflow error in RationalMatrixFast.sub_scaled_row");
+			}
 			//
 			// subtract from destRow entry 
 			//
-			numerator = numData[destRow_index] * denominator - numerator * denData[destRow_index];
-			denominator = denData[destRow_index] * denominator;
-
-			//
-			// simplify only once.and store in destRow 
-			//
-			sign = (numerator*denominator < 0)?(-1):(1);
-			gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
-			numData[destRow_index] = Math.abs(numerator)*sign/gcf;
-			denData[destRow_index] = Math.abs(denominator)/gcf;
+			sub_elem(destRow_index, numerator, denominator);
 		}
 		pivotRow_index++;
 		destRow_index++;
@@ -697,9 +748,7 @@ void swap_rows(int row1, int row2, int columnOffset, long workarea[]) {
  * @exception java.lang.Exception The exception description.
  */
 public void zero() {
-	for (int i = 0; i < numData.length; i ++){
-		numData[i] = 0;
-		denData[i] = 1;
-	}			
+	Arrays.fill(numData,0L);
+	Arrays.fill(denData,1L);
 }
 }
