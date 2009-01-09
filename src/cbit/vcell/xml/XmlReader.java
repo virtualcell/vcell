@@ -3851,6 +3851,11 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 	if (sensparamElement!=null) {
 		sensitivityparam = getConstant(sensparamElement);
 	}
+	
+	if (param.getAttributeValue(XMLTags.StopAtSpatiallyUniform) != null) {
+		boolean bStopAtSteadyState = Boolean.valueOf(param.getAttributeValue(XMLTags.StopAtSpatiallyUniform));
+		solverTaskDesc.setStopAtSpatiallyUniform(bStopAtSteadyState);
+	}
 
 	//set Attributes
 	try {
@@ -3898,7 +3903,7 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 			solverTaskDesc.setOutputTimeSpec(getOutputTimeSpec(param.getChild(XMLTags.OutputOptionsTag, vcNamespace)));
 		}
 		//set SensitivityParameter
-		solverTaskDesc.setSensitivityParameter(sensitivityparam);
+		solverTaskDesc.setSensitivityParameter(sensitivityparam);		
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());

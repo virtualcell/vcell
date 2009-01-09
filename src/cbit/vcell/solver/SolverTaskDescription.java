@@ -34,6 +34,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private boolean fieldUseSymbolicJacobian = false;
 	private OutputTimeSpec fieldOutputTimeSpec = new DefaultOutputTimeSpec();
 	private StochSimOptions fieldStochOpt = null; //added Dec 5th, 2006
+	private boolean bStopAtSpatiallyUniform = false;
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -97,6 +98,7 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 	fieldSensitivityParameter = solverTaskDescription.getSensitivityParameter();
 	fieldSolverDescription = solverTaskDescription.getSolverDescription();
 	fieldUseSymbolicJacobian = solverTaskDescription.getUseSymbolicJacobian();
+	bStopAtSpatiallyUniform = solverTaskDescription.bStopAtSpatiallyUniform;
 	if (simulation.getMathDescription().isStoch() && (solverTaskDescription.getStochOpt() != null)) 
 	{
 		setStochOpt(solverTaskDescription.getStochOpt());
@@ -190,6 +192,9 @@ public boolean compareEqual(Matchable object) {
 		if (!Compare.isEqualOrNull(getSensitivityParameter(),solverTaskDescription.getSensitivityParameter())) return (false);
 		if (!Compare.isEqual(getSolverDescription(),solverTaskDescription.getSolverDescription())) return (false);
 		if (getTaskType() != solverTaskDescription.getTaskType()) return (false);
+		if (bStopAtSpatiallyUniform != solverTaskDescription.bStopAtSpatiallyUniform) {
+			return false;
+		}
 		return true;
 	}
 	return (false);
@@ -469,6 +474,7 @@ public String getVCML() {
 	//          MSRTolerance 0.01
 	//          SDETolerance 1e-4
 	//   	}
+	//		StopAtSpatiallyUniform true
 	//		KeepEvery 1
 	//		KeepAtMost	1000
 	//		SensitivityParameter {
@@ -510,6 +516,9 @@ public String getVCML() {
 		buffer.append(VCML.EndBlock+"\n");
 	}
 
+	if (bStopAtSpatiallyUniform) {
+		buffer.append(VCML.StopAtSpatiallyUniform + " " + bStopAtSpatiallyUniform + "\n");
+	}
 	buffer.append(VCML.EndBlock+"\n");
 		
 	return buffer.toString();
@@ -617,6 +626,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//          SDETolerance 1e-4
 	//   	}
 
+	//		StopAtSpatiallyUniform true
 	//		KeepEvery 1
 	//		KeepAtMost	1000
 	//      OR
@@ -754,6 +764,11 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				if (!token.equalsIgnoreCase(VCML.EndBlock)) {
 					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.EndBlock); 
 				}
+				continue;
+			}
+			if (token.equalsIgnoreCase(VCML.StopAtSpatiallyUniform)) {
+				token = tokens.nextToken();
+				bStopAtSpatiallyUniform = Boolean.valueOf(token).booleanValue();
 				continue;
 			}
 			throw new DataAccessException("unexpected identifier " + token);
@@ -962,5 +977,14 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			throw new java.beans.PropertyVetoException("solverDescription '"+newSolverDescription.getName()+"' is not appropriate",evt);
 		}
 	}
+}
+
+
+public boolean isStopAtSpatiallyUniform() {
+	return bStopAtSpatiallyUniform;
+}
+
+public void setStopAtSpatiallyUniform(boolean stopAtSpatiallyUniform) {
+	bStopAtSpatiallyUniform = stopAtSpatiallyUniform;
 }
 }

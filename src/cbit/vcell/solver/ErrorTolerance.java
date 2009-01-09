@@ -21,6 +21,10 @@ public class ErrorTolerance implements java.io.Serializable, cbit.util.Matchable
 public ErrorTolerance() {
 	super();
 }
+
+public static ErrorTolerance getDefaultSpatiallyUniformErrorTolerance() {
+	return new ErrorTolerance(1e-3, 1e-9);
+}
 /**
  * ErrorTolerance constructor comment.
  */

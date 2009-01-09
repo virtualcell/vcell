@@ -122,6 +122,7 @@ public class VCML {
 	public final static String KeepAtMost				= "KeepAtMost";
 	public final static String OutputTimes              = "OutputTimes";
 	public final static String OutputTimeStep			= "OutputTimeStep";
+	public final static String StopAtSpatiallyUniform 	= "StopAtSpatiallyUniform";
 	
 	public final static String SensitivityParameter		= "SensitivityParameter";
 	public final static String TimeBounds				= "TimeBounds";

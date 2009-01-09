@@ -133,6 +133,7 @@ public class XMLTags {
     public final static String OutputTimeStepAttrTag = "OutputTimeStep";
 	public final static String KeepEveryAttrTag = "KeepEvery";
 	public final static String KeepAtMostAttrTag = "KeepAtMost";
+	public final static String StopAtSpatiallyUniform = "StopAtSpatiallyUniform";
     //End-Simulation
 
     // Begin electrical properties

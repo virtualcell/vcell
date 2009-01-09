@@ -268,6 +268,10 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	}else{
 		throw new RuntimeException("unexpected OutputTime specification type :"+taskDesc.getOutputTimeSpec().getClass().getName());
 	}
+	if (simulation.getSolverTaskDescription().isStopAtSpatiallyUniform()) {
+		out.println("\tSimTool::getInstance()->setCheckSpatiallyUniform();");
+		out.println("\tSimTool::getInstance()->setSpatiallyUniformAbsErrorTolerance(" + taskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + ");");
+	}
 	//out.println("\tSimTool::getInstance()->setStoreEnable(TRUE);");
 	//out.println("\tSimTool::getInstance()->setFileCompress(FALSE);");
 	out.println();

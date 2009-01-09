@@ -214,105 +214,23 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 	out.println("void "+getClassName()+"::"+functionName+"(MembraneElement *element,double *inFlux, double *outFlux)");
 	out.println("{");
 	
-	if (getEquation() instanceof PdeEquation){
+	if (getEquation() instanceof VolumeRegionEquation){
 
 		//
 		// if zero or one membranes, write out single inFlux/outFlux expression
 		//
-		if (membraneSubDomainsOwned.length==0){
-			out.println("\t*inFlux = 0.0;");
-			out.println("\t*outFlux = 0.0;");
-		}else if (membraneSubDomainsOwned.length==1){
-			boolean bFlipInsideOutside = (membraneSubDomainsOwned[0].getOutsideCompartment() == getCompartmentSubDomain());
-			out.println("\t// for this membrane, MathDescription defines inside='"+membraneSubDomainsOwned[0].getInsideCompartment().getName()+"', outside='"+membraneSubDomainsOwned[0].getOutsideCompartment().getName()+"'");
-			out.println("\t// '"+membraneSubDomainsOwned[0].getInsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[0].getInsideCompartment().getPriority()+", "+
-			                  "'"+membraneSubDomainsOwned[0].getOutsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[0].getOutsideCompartment().getPriority());
-			if (bFlipInsideOutside){
-				out.println("\t// **** relative priorities CONTRADICT MathDescription convension (insidePriority < outsidePriority) ... must flip definitions");
-			}else{
-				out.println("\t// :-)  Priorities are consistent (insidePriority > outsidePriority)");
-			}
-			out.println();
-			
-			JumpCondition jumpCondition = membraneSubDomainsOwned[0].getJumpCondition((VolVariable)getVariable());
-			Expression inFluxExp = jumpCondition.getInFluxExpression();
-			Expression outFluxExp = jumpCondition.getOutFluxExpression();
-			Expression inFluxExp_substituted = getSimulation().substituteFunctions(inFluxExp).flatten();
-			Expression outFluxExp_substituted = getSimulation().substituteFunctions(outFluxExp).flatten();
-			//
-			// get totalExpression (composite expression to combine symbols)
-			// then write out dependencies
-			//
-			Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
-			writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"   ");
-			if (bFlipInsideOutside){
-				out.println("\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
-				out.println("\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
-			}else{
-				out.println("\t*inFlux = "+inFluxExp_substituted.infix_C()+";");
-				out.println("\t*outFlux = "+outFluxExp_substituted.infix_C()+";");
-			}
-		}else if (membraneSubDomainsOwned.length>1){
-			//
-			// must choose which membrane at runtime
-			//
-			out.println("\tFeature *outsideFeature = element->region->getRegionOutside()->getFeature();");
-			out.println("\tint outsideHandle = outsideFeature->getHandle();");
-			out.println("\tFeature *insideFeature = element->region->getRegionInside()->getFeature();");
-			out.println("\tint insideHandle = insideFeature->getHandle();");
-			//out.println("   printf(\"getFlux(index=%ld, insideHandle=%d, outsideHandle=%ld), MembraneElement outside feature = '%s'\\n\",element->index,insideHandle,outsideHandle,outsideFeature->getName());");
-			out.println("\tswitch(outsideHandle){");
-			for (int i = 0; i < membraneSubDomainsOwned.length; i++){
-				cbit.vcell.geometry.GeometrySpec geoSpec = getSimulation().getMathDescription().getGeometry().getGeometrySpec();
-				boolean bFlipInsideOutside = (membraneSubDomainsOwned[i].getOutsideCompartment() == getCompartmentSubDomain());
-				cbit.vcell.geometry.SubVolume outsideSubVolume = null;
-				if (bFlipInsideOutside){
-					outsideSubVolume = geoSpec.getSubVolume(membraneSubDomainsOwned[i].getInsideCompartment().getName());
-				}else{
-					outsideSubVolume = geoSpec.getSubVolume(membraneSubDomainsOwned[i].getOutsideCompartment().getName());
-				}
-				out.println("\t\tcase "+outsideSubVolume.getHandle()+": {  // for outside subVolume '"+outsideSubVolume.getName()+"'");
-				out.println("\t\t\t// for this membrane, MathDescription defines inside='"+membraneSubDomainsOwned[i].getInsideCompartment().getName()+"', outside='"+membraneSubDomainsOwned[i].getOutsideCompartment().getName()+"'");
-				out.println("\t\t\t// '"+membraneSubDomainsOwned[i].getInsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[i].getInsideCompartment().getPriority()+", "+
-				                        "'"+membraneSubDomainsOwned[i].getOutsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[i].getOutsideCompartment().getPriority());
-				if (bFlipInsideOutside){
-					out.println("\t\t\t// **** relative priorities CONTRADICT MathDescription convension (insidePriority < outsidePriority) ... must flip definitions");
-				}else{
-					out.println("\t\t\t// :-)  Priorities are consistent (insidePriority > outsidePriority)");
-				}
-				out.println();
-				
-				JumpCondition jumpCondition = membraneSubDomainsOwned[i].getJumpCondition((VolVariable)getVariable());
-				Expression inFluxExp = jumpCondition.getInFluxExpression();
-				Expression outFluxExp = jumpCondition.getOutFluxExpression();
-				Expression inFluxExp_substituted = getSimulation().substituteFunctions(inFluxExp).flatten();
-				Expression outFluxExp_substituted = getSimulation().substituteFunctions(outFluxExp).flatten();
-				
-				//
-				// get totalExpression (composite expression to combine symbols)
-				// then write out dependencies
-				//
-				Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
-				writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"         ");
-				if (bFlipInsideOutside){
-					out.println("\t\t\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
-					out.println("\t\t\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
-				}else{
-					out.println("\t\t\t*inFlux = "+inFluxExp_substituted.infix_C()+";");
-					out.println("\t\t\t*outFlux = "+outFluxExp_substituted.infix_C()+";");
-				}
-				out.println("\t\t\tbreak;");
-				out.println("\t\t}");
-			}
-			out.println("\t\tdefault: {");
-			out.println("\t\t\tprintf(\"getFlux(index=%ld, insideHandle=%d, outsideHandle=%ld), MembraneElement outside feature = '%s'\\n\",element->index,insideHandle,outsideHandle,outsideFeature->getName());");
-			out.println("\t\t\tthrow \"failed to match feature handle in "+getClassName()+"::"+functionName+"\";");
-			out.println("\t\t}");
-			out.println("\t}");
-		}
-	}else{
-		out.println("\t*inFlux = 0.0;");
+		boolean bFlipInsideOutside = (membraneSubDomainsOwned.length == 0 || membraneSubDomainsOwned[0].getOutsideCompartment() == getCompartmentSubDomain());
+		Expression inFluxExp = ((VolumeRegionEquation)getEquation()).getMembraneRateExpression();
+		Expression inFluxExp_substituted = getSimulation().substituteFunctions(inFluxExp).flatten();
+		//
+		// get totalExpression (composite expression to combine symbols)
+		// then write out dependencies
+		//
+		writeMembraneFunctionDeclarations(out,"element", inFluxExp_substituted, bFlipInsideOutside, "\t");
+		out.println("\t*inFlux = " + inFluxExp_substituted.infix_C() + ";");
 		out.println("\t*outFlux = 0.0;");
+	} else {
+		throw new Exception("VolumeRegionEquation is required.");
 	}
 	out.println("}");
 }

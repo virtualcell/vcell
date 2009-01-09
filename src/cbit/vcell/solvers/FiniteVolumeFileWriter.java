@@ -16,6 +16,7 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverFileWriter;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -35,7 +36,6 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 	private File userDirectory = null;
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
-	private Boolean bCheckSteadyState = null;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -67,11 +67,6 @@ public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo
 	simulationJob = simJob;
 	resampledGeometry = geo;
 	userDirectory = dir;
-}
-
-public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo, File dir, boolean arg_bMessaging, Boolean bcss) { // for virtual microscopy
-	this(pw, simJob, geo, dir, arg_bMessaging);
-	bCheckSteadyState = bcss;
 }
 
 private Expression subsituteExpression(Expression exp) throws Exception {
@@ -362,7 +357,7 @@ private void writeCompartments() throws Exception {
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
 		SubDomain sd = enum1.nextElement();
-		if (sd instanceof cbit.vcell.math.CompartmentSubDomain) {
+		if (sd instanceof CompartmentSubDomain) {
 			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
 			printWriter.println("COMPARTMENT_BEGIN " + csd.getName());
 			printWriter.println();
@@ -604,15 +599,17 @@ SIMULATION_PARAM_END
 private void writeSimulationParamters() {
 	Simulation simulation = simulationJob.getWorkingSim();
 	
+	SolverTaskDescription solverTaskDesc = simulation.getSolverTaskDescription();
+	
 	printWriter.println("# Simulation Parameters");
 	printWriter.println("SIMULATION_PARAM_BEGIN");
 	printWriter.println("BASE_FILE_NAME " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
-    printWriter.println("ENDING_TIME " + simulation.getSolverTaskDescription().getTimeBounds().getEndingTime());
-    printWriter.println("TIME_STEP " + simulation.getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
-    if (bCheckSteadyState != null) {
-    	printWriter.println("CHECK_STEADY_STATE " + bCheckSteadyState);
+    printWriter.println("ENDING_TIME " + solverTaskDesc.getTimeBounds().getEndingTime());
+    printWriter.println("TIME_STEP " + solverTaskDesc.getTimeStep().getDefaultTimeStep());
+    if (solverTaskDesc.isStopAtSpatiallyUniform()) {
+    	printWriter.println("CHECK_SPATIALLY_UNIFORM " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance());
     }
-	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)simulation.getSolverTaskDescription().getOutputTimeSpec()).getKeepEvery());
+	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)solverTaskDesc.getOutputTimeSpec()).getKeepEvery());
 	printWriter.println("SIMULATION_PARAM_END");	
 	printWriter.println();
 }
@@ -852,8 +849,8 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
 	printWriter.println("RATE " + subsituteExpression(equation.getVolumeRateExpression()).infix() + ";");
 	printWriter.println("UNIFORMRATE " + subsituteExpression(equation.getUniformRateExpression()).infix() + ";");
-	printWriter.println("INFLUX 0.0;");
-	printWriter.println("OUTFLUX 0.0;");	
+	printWriter.println("INFLUX " + subsituteExpression(equation.getMembraneRateExpression()).infix() + ";");
+	printWriter.println("OUTFLUX 0.0;");
 	printWriter.println("EQUATION_END");
 	printWriter.println();
 }
