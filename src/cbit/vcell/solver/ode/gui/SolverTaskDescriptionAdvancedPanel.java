@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 import cbit.gui.DialogUtils;
+import cbit.util.BeanUtils;
 import cbit.util.graph.Trail;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
@@ -15,7 +16,9 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
+import java.beans.PropertyVetoException;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
@@ -85,6 +88,9 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private javax.swing.JLabel ivjSDEToleranceLabel = null;
 	private javax.swing.JTextField ivjSDEToleranceTextField = null;
 	
+	private JPanel stopSpatiallyUniformPanel = null;
+	private JCheckBox stopSpatiallyUniformCheckBox = null;
+	
 /**
  * ODEAdvancedPanel constructor comment.
  */
@@ -143,6 +149,20 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	if(e.getSource() == getQuestionButton())
 	{
 		displayHelpInfo();
+	}
+	if (e.getSource() == stopSpatiallyUniformCheckBox) {
+		getSolverTaskDescription().setStopAtSpatiallyUniform(stopSpatiallyUniformCheckBox.isSelected());
+		if (stopSpatiallyUniformCheckBox.isSelected()) {
+			try {
+				BeanUtils.enableComponents(getErrorTolerancePanel(), true);
+				getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+			} catch (PropertyVetoException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} else {
+			BeanUtils.enableComponents(getErrorTolerancePanel(), false);
+		}
 	}
 }
 
@@ -1059,7 +1079,6 @@ private void enableOutputOptionPanel() {
 	// Otherwise, that panel is disabled. 
 
 	SolverTaskDescription solverTaskDescription = getSolverTaskDescription();
-	
 	if (solverTaskDescription==null || solverTaskDescription.getSolverDescription()==null){
 		// if solver is not IDA, if the output Time step radio button had been set, 
 		// change the setting to the 'keep every' radio button and flush the contents of the output timestep text field. 
@@ -1070,7 +1089,12 @@ private void enableOutputOptionPanel() {
 		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-	} else if (solverTaskDescription.getSolverDescription().supportsUniformExplicitOutput()) {
+		return;
+	}
+
+	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
+	
+	if (solverDesc.supportsUniformExplicitOutput()) {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(true);
@@ -1093,7 +1117,9 @@ private void enableOutputOptionPanel() {
 			getOutputTimeStepTextField().setEnabled(false);
 			getOutputTimesTextField().setEnabled(true);
 		}
-	}else if ((solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridEuler))||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilstein))||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilAdaptive))){
+	}else if ((solverDesc.equals(SolverDescription.HybridEuler))
+			||(solverDesc.equals(SolverDescription.HybridMilstein))
+			||(solverDesc.equals(SolverDescription.HybridMilAdaptive))){
 	
 		//amended June 5th, 2007 to display uniformOutputTimeSpec for Hybrid methods
 		getDefaultOutputRadioButton().setEnabled(false);
@@ -1106,7 +1132,7 @@ private void enableOutputOptionPanel() {
 		getKeepEveryTextField().setEnabled(false);
 		getOutputTimeStepTextField().setEnabled(true);
 		getOutputTimesTextField().setEnabled(false);
-	}else if (solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson)){
+	}else if (solverDesc.equals(SolverDescription.StochGibson)){
 		//amended July 9th, 2007 to enable uniformaOutputTimeSpec for gibson method
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
@@ -1133,12 +1159,20 @@ private void enableOutputOptionPanel() {
 		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
 		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolume)
-			|| solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+		if (solverDesc.equals(SolverDescription.FiniteVolume)
+			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
 			getKeepAtMostLabel().setEnabled(false);
 			getPointsLabel().setEnabled(false);
 			getKeepAtMostTextField().setEnabled(false);
 		}
+	}
+	
+	if (solverDesc.equals(SolverDescription.FiniteVolume)
+			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
+		stopSpatiallyUniformPanel.setVisible(true);
+		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
+	} else {
+		stopSpatiallyUniformPanel.setVisible(false);
 	}
 }
 
@@ -1153,7 +1187,7 @@ private void enableVariableTimeStepOptions() {
 	if(getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null){
 		bHasVariableTS = getSolverTaskDescription().getSolverDescription().hasVariableTimestep();
 	}
-	cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS);
+	cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS || getSolverTaskDescription().isStopAtSpatiallyUniform());
 //	//stochastic solvers are set to be non variable time step, but we still need error tolerance. so, we have to enable error tolerance for it.
 //	if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)||
 //	   getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridEuler) ||
@@ -1681,6 +1715,16 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsExplicitOutputPanel.weighty = 1.0;
 			constraintsExplicitOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
+			
+			stopSpatiallyUniformPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));		
+			stopSpatiallyUniformCheckBox = new JCheckBox("Stop at Spatially Uniform");
+			stopSpatiallyUniformPanel.add(stopSpatiallyUniformCheckBox);
+			java.awt.GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
+			gridbag1.gridx = 0; gridbag1.gridy = 3;
+			gridbag1.fill = GridBagConstraints.HORIZONTAL;
+			gridbag1.gridwidth = 4;
+			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
+			getJPanel1().add(stopSpatiallyUniformPanel, gridbag1);
 			
 			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
      	    getJPanel1().setBorder(tb);
@@ -2334,6 +2378,7 @@ private void initConnections() throws java.lang.Exception {
 	getLambdaTextField().addFocusListener(this);
 	getMSRToleranceTextField().addFocusListener(this);
 	getSDEToleranceTextField().addFocusListener(this);
+	stopSpatiallyUniformCheckBox.addActionListener(this);
 	connPtoP1SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
@@ -2385,7 +2430,7 @@ private void initialize() {
 		constraintsErrorTolerancePanel.weighty = 1.0;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
-
+		
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;
 		constraintsJPanel1.gridwidth = 4;
@@ -2784,15 +2829,13 @@ private void solverTaskDescriptionAdvancedPanel_Initialize() {
  * Comment
  */
 private void solverTaskDescriptionAdvancedPanel_SolverTaskDescription() {
-	if(getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null){
+	if (getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null) {
 		boolean isStoch = getSolverTaskDescription().getSolverDescription().isSTOCHSolver();
-		if(isStoch)
-		{
+		if (isStoch) {
+			getJPanelStoch().setVisible(true);
 			updateStochOptionsDisplay();
-		}
-		else
-		{
-			cbit.util.BeanUtils.enableComponents(getJPanelStoch(),false);
+		} else {
+			getJPanelStoch().setVisible(false);
 		}
 	}
 }

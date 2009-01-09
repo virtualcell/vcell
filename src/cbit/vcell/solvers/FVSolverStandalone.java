@@ -14,8 +14,7 @@ import java.io.*;
  * 
  */
 public class FVSolverStandalone extends FVSolver implements Solver {
-	private boolean bMessaging = true;
-	private Boolean bCheckSteadyState = null; 
+	private boolean bMessaging = true; 
 /**
  * This method was created by a SmartGuide.
  * @param mathDesc cbit.vcell.math.MathDescription
@@ -31,11 +30,6 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
 public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog sessionLog, boolean arg_bMessaging) throws SolverException {
 	super(argSimulationJob, dir, sessionLog);
 	bMessaging = arg_bMessaging;
-}
-
-public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog sessionLog, boolean arg_bMessaging, Boolean bcss) throws SolverException {
-	this(argSimulationJob, dir, sessionLog, arg_bMessaging);
-	bCheckSteadyState = bcss;
 }
 
 /**
@@ -54,7 +48,7 @@ protected void initialize() throws SolverException {
 		PrintWriter pw = null;
 		try {
 			pw = new PrintWriter(new FileWriter(fvinputFile));
-			new FiniteVolumeFileWriter(pw, getSimulationJob(), getResampledGeometry(), getSaveDirectory(), bMessaging, bCheckSteadyState).write();
+			new FiniteVolumeFileWriter(pw, getSimulationJob(), getResampledGeometry(), getSaveDirectory(), bMessaging).write();
 		} finally {
 			if (pw != null) {
 				pw.close();

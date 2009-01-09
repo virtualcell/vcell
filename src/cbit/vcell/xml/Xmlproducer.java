@@ -3050,6 +3050,10 @@ public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
 	//Add solver name
 	solvertask.setAttribute(XMLTags.SolverNameTag, param.getSolverDescription().getName());
 	
+	if (param.isStopAtSpatiallyUniform()) {
+		solvertask.setAttribute(XMLTags.StopAtSpatiallyUniform, String.valueOf(param.isStopAtSpatiallyUniform()));
+	}
+	
 	return solvertask;
 }
 
