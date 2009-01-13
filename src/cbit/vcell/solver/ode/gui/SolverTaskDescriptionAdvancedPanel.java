@@ -1,14 +1,14 @@
-package cbit.vcell.solver.ode.gui;
-import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
-import cbit.util.graph.Trail;
-import cbit.vcell.solver.*;
-import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.vcell.solver.stoch.StochSimOptions;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
+package cbit.vcell.solver.ode.gui;
+import cbit.gui.DialogUtils;
+import cbit.util.BeanUtils;
+import cbit.vcell.solver.*;
+import cbit.vcell.solver.stoch.StochHybridOptions;
+import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.client.PopupGenerator;
 
 import java.awt.Dimension;
@@ -19,7 +19,6 @@ import java.awt.GridLayout;
 import java.beans.PropertyVetoException;
 
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -715,7 +714,7 @@ private void connEtoM6(java.awt.event.ItemEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setSolverDescription(this.getSolverDescriptionFromName((String)getSolverComboBox().getSelectedItem()));
+		getTornOffSolverTaskDescription().setSolverDescription(this.getSolverDescriptionFromDisplayLabel((String)getSolverComboBox().getSelectedItem()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1002,37 +1001,32 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	}
 	// remember cuurent solver so we can put it back as the selected one after creating the list
 	// otherwise, iterating while adding elements will fire events that wil change it on the TornoffSolverTaskDescription...
-	String currentSolverDescriptionName = null;
+	SolverDescription currentSolverDescription = null;
 	if (newSolverTaskDescription != null && newSolverTaskDescription.getSolverDescription() != null) {
-		currentSolverDescriptionName = newSolverTaskDescription.getSolverDescription().getName();
+		currentSolverDescription = newSolverTaskDescription.getSolverDescription();
 	}
 	//
 	fieldSolverComboBoxModel.removeAllElements();
 	if(getSolverTaskDescription() != null) {
-		String[] solverDescriptionNames = new String[0];
-		if (getSolverTaskDescription().getSimulation().getIsSpatial()) 
-		{
-			solverDescriptionNames = SolverDescription.getPDESolverDescriptions();
-		}
-		else if (getSolverTaskDescription().getSimulation().getMathDescription().isStoch()) //amended Sept.27, 2006
-		{
-			solverDescriptionNames = SolverDescription.getStochSolverDescriptions();
-		} 
-		else 
-		{
+		SolverDescription[] solverDescriptions = new SolverDescription[0];
+		if (getSolverTaskDescription().getSimulation().getIsSpatial()) {
+			solverDescriptions = SolverDescription.getPDESolverDescriptions();
+		} else if (getSolverTaskDescription().getSimulation().getMathDescription().isStoch()) {
+			solverDescriptions = SolverDescription.getStochSolverDescriptions();
+		} else {
 			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // ODE with FastSystem
-				solverDescriptionNames = SolverDescription.getODEWithFastSystemSolverDescriptions();
+				solverDescriptions = SolverDescription.getODEWithFastSystemSolverDescriptions();
 			} else {
-				solverDescriptionNames = SolverDescription.getODESolverDescriptions();
+				solverDescriptions = SolverDescription.getODESolverDescriptions();
 			}
 		}
-		for (int i = 0; i < solverDescriptionNames.length; i++) {
-			fieldSolverComboBoxModel.addElement(solverDescriptionNames[i]);
+		for (int i = 0; i < solverDescriptions.length; i++) {
+			fieldSolverComboBoxModel.addElement(solverDescriptions[i].getDisplayLabel());
 		}
 	}
 	//
-	if (currentSolverDescriptionName != null) {
-		fieldSolverComboBoxModel.setSelectedItem(currentSolverDescriptionName);
+	if (currentSolverDescription != null) {
+		fieldSolverComboBoxModel.setSelectedItem(currentSolverDescription.getDisplayLabel());
 	}
 	return (fieldSolverComboBoxModel);
 }
@@ -1183,22 +1177,17 @@ private void enableOutputOptionPanel() {
  */
 private void enableVariableTimeStepOptions() {
 
-	boolean bHasVariableTS = false;
-	if(getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null){
-		bHasVariableTS = getSolverTaskDescription().getSolverDescription().hasVariableTimestep();
+	if (getSolverTaskDescription() == null || getSolverTaskDescription().getSolverDescription() == null) {
+		return;
 	}
+	boolean bHasVariableTS = false;
+	SolverDescription solverDescription = getSolverTaskDescription().getSolverDescription(); 
+	bHasVariableTS = solverDescription.hasVariableTimestep();
+	
 	cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS || getSolverTaskDescription().isStopAtSpatiallyUniform());
-//	//stochastic solvers are set to be non variable time step, but we still need error tolerance. so, we have to enable error tolerance for it.
-//	if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)||
-//	   getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridEuler) ||
-//	   getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilstein) ||
-//	   getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
-//		cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(), true);
-	//enableSomponents will leave default time step for non variable time step slovers.
 	//for gibson method, we even don't need default time step.
-	//getTimeStepPanel().enableTimeStep();//enable all time steps first.
 	getTimeStepPanel().enableComponents(bHasVariableTS);
-	if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
+	if(solverDescription.equals(SolverDescription.StochGibson))
 	{
 		getTimeStepPanel().disableTimeStep();
 	}
@@ -2158,8 +2147,8 @@ private java.lang.Object getSolverComboBoxModel() {
 /**
  * Comment
  */
-public cbit.vcell.solver.SolverDescription getSolverDescriptionFromName(String argSolverName) {
-	return cbit.vcell.solver.SolverDescription.fromName(argSolverName);
+private SolverDescription getSolverDescriptionFromDisplayLabel(String argSolverName) {
+	return SolverDescription.fromDisplayLabel(argSolverName);
 }
 
 
@@ -2168,7 +2157,7 @@ public cbit.vcell.solver.SolverDescription getSolverDescriptionFromName(String a
  * @return The solverTaskDescription property value.
  * @see #setSolverTaskDescription
  */
-public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription() {
+public SolverTaskDescription getSolverTaskDescription() {
 	return fieldSolverTaskDescription;
 }
 
@@ -2877,11 +2866,11 @@ private void updateSolverNameDisplay(cbit.vcell.solver.SolverDescription argSolv
 		//
 		// if already selected, don't reselect (break the loop of events)
 		//
-		if (getSolverComboBox().getSelectedItem()!=null && getSolverComboBox().getSelectedItem().equals(argSolverDescription.getName())){
+		if (getSolverComboBox().getSelectedItem()!=null && getSolverComboBox().getSelectedItem().equals(argSolverDescription.getDisplayLabel())){
 			return;
 		}
 		if (getSolverComboBox().getModel().getSize()>0){
-			getSolverComboBox().setSelectedItem(argSolverDescription.getName());
+			getSolverComboBox().setSelectedItem(argSolverDescription.getDisplayLabel());
 		}
 	}
 }

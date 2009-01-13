@@ -1,12 +1,9 @@
-package cbit.vcell.solver;
-
-import cbit.vcell.math.Equation;
-import cbit.vcell.math.SubDomain;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
+package cbit.vcell.solver;
 /**
  * Insert the type's description here.
  * Creation date: (4/23/01 3:34:06 PM)
@@ -34,7 +31,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
 	
-	private static final String[] DESCRIPTIONS = {
+	private static final String[] DATABASE_NAME = {
 		"Forward Euler (First Order, Fixed Time Step)",
 		"Runge-Kutta (Second Order, Fixed Time Step)",
 		"Runge-Kutta (Fourth Order, Fixed Time Step)",
@@ -48,6 +45,22 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"Hybrid (Adaptive Gibson + Milstein Method)",
 		"CVODE (Variable Order, Variable Time Step)",
 		"Finite Volume Standalone, Regular Grid",
+		"Combined Stiff Solver (IDA/CVODE)",
+	};
+	private static final String[] DISPLAY_LABEL = {
+		"Forward Euler (First Order, Fixed Time Step)",
+		"Runge-Kutta (Second Order, Fixed Time Step)",
+		"Runge-Kutta (Fourth Order, Fixed Time Step)",
+		"Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
+		"Adams-Moulton (Fifth Order, Fixed Time Step)",
+		"IDA (Variable Order, Variable Time Step, ODE/DAE)",
+		"Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step)",
+		"Gibson (Next Reaction Stochastic Method)",
+		"Hybrid (Gibson + Euler-Maruyama Method)",
+		"Hybrid (Gibson + Milstein Method)",
+		"Hybrid (Adaptive Gibson + Milstein Method)",
+		"CVODE (Variable Order, Variable Time Step)",
+		"Semi-Implicit Finite Volume, Regular Grid (Fixed Time Step)",
 		"Combined Stiff Solver (IDA/CVODE)",
 	};
 	private static final String[] FULL_DESCRIPTIONS = {
@@ -271,31 +284,30 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
 	public static final SolverDescription SUNDIALS				= new SolverDescription(TYPE_SUNDIALS_STANDALONE);
 
-	private static String[] fieldODESolverDescriptions = new String[] {
-		ForwardEuler.getName(),
-		RungeKutta2.getName(),
-		RungeKutta4.getName(),
-		AdamsMoulton.getName(),
-		RungeKuttaFehlberg.getName(),
-		IDA.getName(),
-		CVODE.getName(),
-		SUNDIALS.getName(),
+	private static SolverDescription[] fieldODESolverDescriptions = new SolverDescription[] {
+		ForwardEuler,
+		RungeKutta2,
+		RungeKutta4,
+		AdamsMoulton,
+		RungeKuttaFehlberg,
+		IDA,
+		CVODE,
+		SUNDIALS,
 	};
-	private static String[] fieldODEWithFastSolverDescriptions = new String[] {
-		ForwardEuler.getName(),
-		IDA.getName(),
-		SUNDIALS.getName(),
+	private static SolverDescription[] fieldODEWithFastSolverDescriptions = new SolverDescription[] {
+		ForwardEuler,
+		IDA,
+		SUNDIALS,
 	};
-	private static String[] fieldPDESolverDescriptions = new String[] {
-		FiniteVolume.getName(),
-		FiniteVolumeStandalone.getName()
-	};
-	//Amended again June 2nd, 2007
-	private static String[] fieldStochSolverDescriptions = new String[] {
-		StochGibson.getName(),
-		HybridEuler.getName(),
-		HybridMilstein.getName(),
-		HybridMilAdaptive.getName() //added July 12, 2007
+	private static SolverDescription[] fieldPDESolverDescriptions = new SolverDescription[] {
+		FiniteVolume,
+		FiniteVolumeStandalone,
+	};	
+	private static SolverDescription[] fieldStochSolverDescriptions = new SolverDescription[] {
+		StochGibson,
+		HybridEuler,
+		HybridMilstein,
+		HybridMilAdaptive 
 	};	
 /**
  * SolverDescription constructor comment.
@@ -351,17 +363,16 @@ public static SolverDescription getDefaultStochSolverDescription() {
  * @return cbit.vcell.solver.OutputTimeSpec
  * @param solverTaskDescription cbit.vcell.solver.SolverTaskDescription
  */
-public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
-{
-	OutputTimeSpec ots = null;
-	//if(type == TYPE_STOCH_GIBSON) //amended 20th Feb, 2007
-		//ots = new DefaultOutputTimeSpec(1,1000);
-	//amended again 2nd June,2007
-	if((type == TYPE_HYBRID_EM) || (type == TYPE_HYBRID_MIL) || (type == TYPE_HYBRID_MIL_Adaptive))
-		ots = new UniformOutputTimeSpec(0.1);
-	else
-		ots = new DefaultOutputTimeSpec();
-	return ots;
+public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) {
+	switch (type) {
+		case TYPE_HYBRID_EM:
+		case TYPE_HYBRID_MIL:
+		case TYPE_HYBRID_MIL_Adaptive:{
+			return new UniformOutputTimeSpec(0.1);
+		}
+		default:	
+			return new DefaultOutputTimeSpec();
+	}
 }
 
 
@@ -387,17 +398,27 @@ public boolean equals(Object object) {
  * @return cbit.vcell.solver.SolverDescription
  * @param solverName java.lang.String
  */
-public static SolverDescription fromName(String solverName) {
+public static SolverDescription fromDatabaseName(String solverName) {
 	if (solverName == null) return null;
 	if (solverName.equals(ALTERNATE_CVODE_Description)) {
 		return CVODE;
 	}
 	for (int i=0;i<NUM_SOLVERS;i++){
-		if (DESCRIPTIONS[i].equals(solverName)){
+		if (DATABASE_NAME[i].equals(solverName)){
 			return new SolverDescription(i);
 		}
 	}
 	throw new IllegalArgumentException("unexpected solver name '"+solverName+"'");
+}
+
+public static SolverDescription fromDisplayLabel(String label) {
+	if (label == null) return null;
+	for (int i=0;i<NUM_SOLVERS;i++){
+		if (DISPLAY_LABEL[i].equals(label)){
+			return new SolverDescription(i);
+		}
+	}
+	throw new IllegalArgumentException("unexpected solver '"+label+"'");
 }
 
 
@@ -406,10 +427,13 @@ public static SolverDescription fromName(String solverName) {
  * Creation date: (4/23/01 4:34:35 PM)
  * @return java.lang.String
  */
-public String getName() {
-	return DESCRIPTIONS[type];
+public String getDatabaseName() {
+	return DATABASE_NAME[type];
 }
 
+public String getDisplayLabel() {
+	return DISPLAY_LABEL[type];
+}
 
 /**
  * Insert the method's description here.
@@ -531,18 +555,18 @@ public static String getFullDescription(SolverDescription sd) {
 /**
  * getODESolverDescriptions method comment.
  */
-public static java.lang.String[] getODESolverDescriptions() {
+public static SolverDescription[] getODESolverDescriptions() {
 	return (fieldODESolverDescriptions);
 }
 
-public static java.lang.String[] getODEWithFastSystemSolverDescriptions() {
+public static SolverDescription[] getODEWithFastSystemSolverDescriptions() {
 	return (fieldODEWithFastSolverDescriptions);
 }
 
 /**
  * getPDESolverDescriptions method comment.
  */
-public static java.lang.String[] getPDESolverDescriptions() {
+public static SolverDescription[] getPDESolverDescriptions() {
 	return (fieldPDESolverDescriptions);
 }
 
@@ -552,7 +576,7 @@ public static java.lang.String[] getPDESolverDescriptions() {
  * Creation date: (9/27/2006 9:37:49 AM)
  * @return java.lang.String[]
  */
-public static String[] getStochSolverDescriptions() {
+public static SolverDescription[] getStochSolverDescriptions() {
 	return fieldStochSolverDescriptions;
 }
 
@@ -562,6 +586,6 @@ public static String[] getStochSolverDescriptions() {
  * @return java.lang.String
  */
 public String toString() {
-	return "SolverDescription@"+Integer.toHexString(hashCode())+"("+getName()+")";
+	return "SolverDescription@" + Integer.toHexString(hashCode()) + "(" + getDisplayLabel() + ")";
 }
 }

@@ -11,15 +11,12 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.StructureMappingCartoon;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
-import cbit.vcell.model.gui.ReactionCanvas;
 import cbit.vcell.model.gui.ReactionCanvasDisplaySpec;
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
-import cbit.util.BeanUtils;
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Origin;
@@ -35,7 +32,6 @@ import java.awt.image.WritableRaster;
 import java.awt.print.PageFormat;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
-import java.io.File;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -50,17 +46,12 @@ import com.lowagie.text.Chapter;
 import com.lowagie.text.Section;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
-import com.lowagie.text.HeaderFooter;
 import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.html.HtmlWriter;
 import com.lowagie.text.Document;
-import com.lowagie.text.PageSize;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.DocWriter;
 import com.lowagie.text.Element;
 import com.lowagie.text.Jpeg;
-import com.lowagie.text.Gif;
 import com.lowagie.text.Watermark;
 
 import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
@@ -97,7 +88,6 @@ public abstract class ITextWriter {
 	private static int DEF_HEADER_FONT_SIZE = 11;
 	private Font fieldFont = null;
 	private Font fieldBold = null;
-	private int reactEqFontSize;
 	
 	protected Document document;
 	
@@ -479,7 +469,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	protected ByteArrayOutputStream generateGeometryImage(Geometry geom) throws Exception{
 
 		GeometrySpec geomSpec = geom.getGeometrySpec();
-		IndexColorModel icm = geomSpec.getHandleColorMap();
+		IndexColorModel icm = GeometrySpec.getHandleColorMap();
 		VCImage geomImage = geomSpec.getSampledImage();
 		int x = geomImage.getNumX(); 
 		int y = geomImage.getNumY();
@@ -1060,15 +1050,15 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 		eqTable.addCell(createCell(VCML.FastSystem, 
 						getBold(DEF_HEADER_FONT_SIZE), 2, 1, Element.ALIGN_CENTER, true));
 		eqTable.endHeaders();
-		Enumeration enum_fi = fs.getFastInvariants();
+		Enumeration<FastInvariant> enum_fi = fs.getFastInvariants();
 		while (enum_fi.hasMoreElements()){
-			FastInvariant fi = (FastInvariant)enum_fi.nextElement();
+			FastInvariant fi = enum_fi.nextElement();
 			eqTable.addCell(createCell(VCML.FastInvariant, getFont()));
 			eqTable.addCell(createCell(fi.getFunction().infix(), getFont()));
 		}		
-		Enumeration enum_fr = fs.getFastRates();
+		Enumeration<FastRate> enum_fr = fs.getFastRates();
 		while (enum_fr.hasMoreElements()){
-			FastRate fr = (FastRate)enum_fr.nextElement();
+			FastRate fr = enum_fr.nextElement();
 			eqTable.addCell(createCell(VCML.FastRate, getFont()));
 			eqTable.addCell(createCell(fr.getFunction().infix(), getFont()));
 		}
@@ -1278,9 +1268,9 @@ protected void writeHorizontalLine() throws DocumentException {
 		int scale = 1;
 		int viewableWidth = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());
 		//add Constants
-		Enumeration constantsList = mathDesc.getConstants();
+		Enumeration<Constant> constantsList = mathDesc.getConstants();
 		while (constantsList.hasMoreElements()) {
-			Constant constant = ((Constant)constantsList.nextElement());
+			Constant constant = constantsList.nextElement();
 			Expression exp = constant.getExpression();
 			try {
 				expArray = new Expression[] { Expression.assign(new Expression(constant.getName()), exp.flatten()) };
@@ -1310,9 +1300,9 @@ protected void writeHorizontalLine() throws DocumentException {
 		}
 		mathDescSubSection = null;
 		//add functions
-		Enumeration functionsList = mathDesc.getFunctions();
+		Enumeration<Function> functionsList = mathDesc.getFunctions();
 		while (functionsList.hasMoreElements()) {
-			Function function = ((Function)functionsList.nextElement());
+			Function function = functionsList.nextElement();
 			Expression exp = function.getExpression();
 			try {
 				expArray = new Expression[] { Expression.assign(new Expression(function.getName()), exp.flatten()) };
@@ -1356,9 +1346,9 @@ protected void writeHorizontalLine() throws DocumentException {
 		Table expTable = null;
 		int widths [] = {2, 8};
 		//add Constants
-		Enumeration constantsList = mathDesc.getConstants();
+		Enumeration<Constant> constantsList = mathDesc.getConstants();
 		while (constantsList.hasMoreElements()) {
-			Constant constant = ((Constant)constantsList.nextElement());
+			Constant constant = constantsList.nextElement();
 			Expression exp = constant.getExpression();
 			if (expTable == null) {
 				expTable = getTable(2, 100, 1, 2, 2);
@@ -1380,9 +1370,9 @@ protected void writeHorizontalLine() throws DocumentException {
 		}
 		mathDescSubSection = null;
 		//add functions
-		Enumeration functionsList = mathDesc.getFunctions();
+		Enumeration<Function> functionsList = mathDesc.getFunctions();
 		while (functionsList.hasMoreElements()) {
-			Function function = ((Function)functionsList.nextElement());
+			Function function = functionsList.nextElement();
 			Expression exp = function.getExpression();
 			if (expTable == null) {
 				expTable = getTable(2, 100, 1, 2, 2);
@@ -1584,7 +1574,7 @@ protected void writeHorizontalLine() throws DocumentException {
 		}
 		if (electTable != null) {
 			if (memMapSection == null) {
-				memMapSection = simContextSection.addSection("Membrane Mapping For " + simContext.getName(), memMapSection.numberDepth() + 1);
+				memMapSection = simContextSection.addSection("Membrane Mapping For " + simContext.getName(), 1);
 			}
 			electTable.setWidths(widths);
 			memMapSection.add(electTable);
@@ -2016,7 +2006,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 					
 					// Identify modifiers, 
 					ReactionParticipant[] rpArr = rs.getReactionParticipants();
-					Vector modifiersVector = new Vector();  
+					Vector<ReactionParticipant> modifiersVector = new Vector<ReactionParticipant>();  
 					for(int k = 0; k < rpArr.length; k += 1){
 						if (rpArr[k] instanceof Catalyst) {
 							modifiersVector.add(rpArr[k]);
@@ -2129,7 +2119,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		Table simAdvTable = null;
 		SolverTaskDescription solverDesc = sim.getSolverTaskDescription();
 		if (solverDesc != null) {
-			String solverName = solverDesc.getSolverDescription().getName();
+			String solverName = solverDesc.getSolverDescription().getDisplayLabel();
 			simAdvTable = getTable(2, 75, 1, 3, 3);
 			simAdvTable.setAlignment(Table.ALIGN_LEFT);
 			simAdvTable.addCell(createCell("Advanced Settings", getBold(DEF_HEADER_FONT_SIZE), 2, 1, Element.ALIGN_CENTER, true));
@@ -2362,25 +2352,23 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 //currently not used. 
 	protected void writeSubDomainsEquationsAsImages(Section mathDescSection, MathDescription mathDesc) {
 
-		Enumeration subDomains = mathDesc.getSubDomains();
-		Expression expArray [];
-		Table volDomainsTable = null;
-		Table memDomainsTable = null;
+		Enumeration<SubDomain> subDomains = mathDesc.getSubDomains();
+		Expression expArray[];
 		Section volDomains = mathDescSection.addSection("Volume Domains", mathDescSection.depth() + 1);
 		Section memDomains = mathDescSection.addSection("Membrane Domains", mathDescSection.depth() + 1);
 		int scale = 1, height = 200;                            //arbitrary
 		int viewableWidth = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());
 		BufferedImage dummy = new BufferedImage(viewableWidth, height, BufferedImage.TYPE_3BYTE_BGR);
 		while(subDomains.hasMoreElements()) {
-			SubDomain subDomain = (SubDomain)subDomains.nextElement();
-			Enumeration equationsList = subDomain.getEquations();
-			ArrayList expList = new ArrayList();
+			SubDomain subDomain = subDomains.nextElement();
+			Enumeration<Equation> equationsList = subDomain.getEquations();
+			ArrayList<Expression> expList = new ArrayList<Expression>();
 			while (equationsList.hasMoreElements()) {
-				Equation equ = (Equation)equationsList.nextElement();
+				Equation equ = equationsList.nextElement();
 				try {
-					Enumeration enum_equ = equ.getTotalExpressions();
+					Enumeration<Expression> enum_equ = equ.getTotalExpressions();
 					while (enum_equ.hasMoreElements()){
-						Expression exp = new Expression((Expression)enum_equ.nextElement());	
+						Expression exp = new Expression(enum_equ.nextElement());	
 						expList.add(exp.flatten());
 					}
 				} catch (cbit.vcell.parser.ExpressionException ee) {
@@ -2435,14 +2423,13 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 
 	protected void writeSubDomainsEquationsAsText(Section mathDescSection, MathDescription mathDesc) throws DocumentException {
 
-		Enumeration subDomains = mathDesc.getSubDomains();
+		Enumeration<SubDomain> subDomains = mathDesc.getSubDomains();
 		Section volDomains = mathDescSection.addSection("Volume Domains", mathDescSection.depth() + 1);
 		Section memDomains = mathDescSection.addSection("Membrane Domains", mathDescSection.depth() + 1);
 		Section filDomains = mathDescSection.addSection("Filament Domains", mathDescSection.depth() + 1);
 		while(subDomains.hasMoreElements()) {
-			Enumeration equationsList;
 			Section tempSection = null;
-			SubDomain subDomain = (SubDomain)subDomains.nextElement();
+			SubDomain subDomain = subDomains.nextElement();
 			if (subDomain instanceof CompartmentSubDomain) {
 				tempSection = volDomains.addSection(subDomain.getName(), volDomains.depth() + 1);
 			} else if (subDomain instanceof MembraneSubDomain) {
@@ -2450,18 +2437,18 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 			} else if (subDomain instanceof FilamentSubDomain) {
 				tempSection = filDomains.addSection(subDomain.getName(), filDomains.depth() + 1);
 			}
-			equationsList = subDomain.getEquations();
+			Enumeration<Equation> equationsList = subDomain.getEquations();
 			while (equationsList.hasMoreElements()) {
-				Equation equ = (Equation)equationsList.nextElement();
+				Equation equ = equationsList.nextElement();
 				writeEquation(tempSection, equ);
 			}
 			if (subDomain.getFastSystem() != null) {
 				writeFastSystem(tempSection, subDomain.getFastSystem());
 			}
 			if (subDomain instanceof MembraneSubDomain) {
-				Enumeration jcList = ((MembraneSubDomain)subDomain).getJumpConditions();
+				Enumeration<JumpCondition> jcList = ((MembraneSubDomain)subDomain).getJumpConditions();
 				while (jcList.hasMoreElements()) {
-					JumpCondition jc = (JumpCondition)jcList.nextElement();
+					JumpCondition jc = jcList.nextElement();
 					writeJumpCondition(tempSection, jc);
 				}
 			}

@@ -11,7 +11,6 @@ import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-import cbit.gui.DialogUtils;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
@@ -43,7 +42,6 @@ import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -75,6 +73,7 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
@@ -84,6 +83,7 @@ import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GHKKinetics;
 import cbit.vcell.model.GeneralCurrentKinetics;
 import cbit.vcell.model.GeneralCurrentLumpedKinetics;
@@ -102,7 +102,6 @@ import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.model.ReservedSymbolTable;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -112,7 +111,6 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.GroupAccess;
 import cbit.vcell.server.GroupAccessAll;
@@ -179,9 +177,9 @@ private boolean expressionIsSingleIdentifier(String expString) throws Expression
 public Action getAction(Element param, MathDescription md) throws XmlParseException, MathException, cbit.vcell.parser.ExpressionException
 {
 	//retrieve values
-	String operation = this.unMangle( param.getAttributeValue(XMLTags.OperationAttrTag) );
+	String operation = unMangle( param.getAttributeValue(XMLTags.OperationAttrTag) );
 	Expression exp = unMangleExpression(param.getText());
-	String name = this.unMangle( param.getAttributeValue(XMLTags.VarNameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.VarNameAttrTag) );
 	
 	Variable var = md.getVariable(name);
 	if (var == null){
@@ -234,7 +232,7 @@ public AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseExce
 	if (temp == null) {
 		throw new XmlParseException("A Problem occured while retrieving the analytic expression of the AnalyticSubvolume "+ name);
 	}
-	Expression newexpression = this.unMangleExpression(temp);
+	Expression newexpression = unMangleExpression(temp);
 	
 	//Create the AnalyticCompartment
 	AnalyticSubVolume newsubvolume = null;
@@ -264,18 +262,18 @@ public cbit.vcell.biomodel.BioModel getBioModel(Element param) throws XmlParseEx
 	cbit.vcell.biomodel.BioModel biomodel = new cbit.vcell.biomodel.BioModel( version );
 	
 	//Set name
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	try {
 		biomodel.setName( name );
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 
 		//if (annotation!=null) {
-			//biomodel.setDescription(this.unMangle(annotation));
+			//biomodel.setDescription(unMangle(annotation));
 		//}
 		//get annotation
 		String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText!=null && annotationText.length()>0) {
-			biomodel.setDescription(this.unMangle(annotationText));
+			biomodel.setDescription(unMangle(annotationText));
 		}
 	} catch(java.beans.PropertyVetoException e) {
 		e.printStackTrace();
@@ -340,7 +338,7 @@ public Catalyst getCatalyst(Element param, ReactionStep reaction) throws XmlPars
         key = new KeyValue(keystring);
     }
 
-    String speccontref = this.unMangle(param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
+    String speccontref = unMangle(param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
     //Resolve reference to the SpeciesContext
     String tempname = "cbit.vcell.model.SpeciesContext:" + speccontref;
     Element re = XMLDict.getResolvedElement(param, XMLTags.SpeciesContextTag, XMLTags.NameAttrTag, speccontref);
@@ -365,7 +363,7 @@ public Catalyst getCatalyst(Element param, ReactionStep reaction) throws XmlPars
  */
 public CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get attributes
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	int priority = -1;
 	String temp = param.getAttributeValue(XMLTags.PriorityAttrTag);
 	if ( temp != null) {
@@ -527,7 +525,7 @@ public CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlPar
  */
 public Constant getConstant(Element param) throws XmlParseException {
 	//retrieve values
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	Expression exp = unMangleExpression(param.getText());
 	
 	//-- create new constant object ---
@@ -548,20 +546,20 @@ public ControlPointCurve getControlPointCurve(Element param) {
 	//get Attributes
 	String type = param.getAttributeValue(XMLTags.TypeAttrTag);
 	boolean closed = Boolean.valueOf(param.getAttributeValue(XMLTags.ClosedAttrTag)).booleanValue();
-	List coordList = param.getChildren();
+	List<Element> coordList = param.getChildren();
 
 	//Upon de type, decide which Curve type to create
 	if (type.equalsIgnoreCase(XMLTags.PolyLineTypeTag)) {
 		if ( coordList.size()==2) { //I have a Line
-			Coordinate begin = getCoordinate((Element)coordList.get(0));
-			Coordinate end = getCoordinate((Element)coordList.get(1));
+			Coordinate begin = getCoordinate(coordList.get(0));
+			Coordinate end = getCoordinate(coordList.get(1));
 			// ****create new Line ****
 			curve = new Line(begin, end);
 		} else {
 			//If it it is not a Line, then it is a SampledCurve
 			Coordinate[] coords = new Coordinate[coordList.size()];
 			for (int i = 0; i < coordList.size(); i++){
-				coords[i] = getCoordinate( (Element)coordList.get(i) );
+				coords[i] = getCoordinate(coordList.get(i) );
 			}
 			//****create new SampledCurve ****
 			 curve = new SampledCurve(coords);
@@ -569,7 +567,7 @@ public ControlPointCurve getControlPointCurve(Element param) {
 	} else if (type.equalsIgnoreCase(XMLTags.SplineTypeTag)) {
 		Coordinate[] coords = new Coordinate[coordList.size()];
 		for (int i = 0; i < coordList.size(); i++){
-			coords[i] = getCoordinate( (Element)coordList.get(i) );
+			coords[i] = getCoordinate(coordList.get(i));
 		}
 		//****create new Spline ****
 		 curve = new Spline(coords);
@@ -675,8 +673,8 @@ public cbit.vcell.dictionary.DBSpecies getDBSpecies(Element dbSpeciesElement) th
  */
 public Diagram getDiagram(Element param) throws XmlParseException{
 	//get Attibutes
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
-	String tempname = this.unMangle( param.getAttributeValue(XMLTags.StructureAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String tempname = unMangle( param.getAttributeValue(XMLTags.StructureAttrTag) );
 
 	//Try to retrieve the reference to the structure as a Feature
 	Element re = XMLDict.getResolvedElement(param, XMLTags.FeatureTag, XMLTags.NameAttrTag, tempname);
@@ -715,7 +713,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 	ElectricalStimulus clampStimulus = null;
 	
 	//get name
-	// String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	// String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
 	//get Electrode
 	Electrode electrode = getElectrode(param.getChild(XMLTags.ElectrodeTag, vcNamespace), currentSimulationContext);
@@ -737,14 +735,14 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 		// add constants that may be used in the electrical stimulus.
 		VariableHash varHash = new VariableHash();
 		addResevedSymbols(varHash);
-		ArrayList reserved = getReservedVars();
+		ArrayList<ReservedVariable> reserved = getReservedVars();
 
 		//
 		// rename "special" parameters (those that are not "user defined")
 		//
 		for (int i = 0; i < list.size() ; i++){
 			Element xmlParam = (Element)list.get(i);
-			String paramName = this.unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
+			String paramName = unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
 			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
 			String paramExpStr = xmlParam.getText();
 			Expression paramExp = unMangleExpression(paramExpStr);
@@ -851,7 +849,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
  */
 public Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSimulationContext) {
 	//retrieve feature
-	String featureName = this.unMangle(elem.getAttributeValue(XMLTags.FeatureAttrTag));
+	String featureName = unMangle(elem.getAttributeValue(XMLTags.FeatureAttrTag));
 	Feature feature = (Feature)currentSimulationContext.getModel().getStructure(featureName);
 	//retrieve position
 	cbit.vcell.geometry.Coordinate position = getCoordinate(elem.getChild(XMLTags.CoordinateTag, vcNamespace));
@@ -952,7 +950,7 @@ public FastSystem getFastSystem(
  */
 public cbit.vcell.model.Structure getFeature(Element param) throws XmlParseException {
 	cbit.vcell.model.Feature newfeature = null;
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//retrieve the key if there is one
 	KeyValue key = null;
@@ -989,10 +987,10 @@ public cbit.vcell.model.Structure getFeature(Element param) throws XmlParseExcep
  */
 public FeatureMapping getFeatureMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
 	//Retrieve attributes
-	String featurename = this.unMangle( param.getAttributeValue(XMLTags.FeatureAttrTag) );
+	String featurename = unMangle( param.getAttributeValue(XMLTags.FeatureAttrTag) );
 	String subvolumename = param.getAttributeValue(XMLTags.SubVolumeAttrTag);
 	if (subvolumename != null)
-		subvolumename = this.unMangle(subvolumename);
+		subvolumename = unMangle(subvolumename);
 	boolean resolved = Boolean.valueOf(param.getAttributeValue(XMLTags.ResolvedAttrTag)).booleanValue();
 	
 	//Retrieve feature reference
@@ -1009,7 +1007,7 @@ public FeatureMapping getFeatureMapping(Element param, SimulationContext simulat
 	//Set Size
 	if(param.getAttributeValue(XMLTags.SizeTag) != null)
 	{
-		String size = this.unMangle( param.getAttributeValue(XMLTags.SizeTag) );
+		String size = unMangle( param.getAttributeValue(XMLTags.SizeTag) );
 		try {
 			feamap.getSizeParameter().setExpression(new Expression(size));
 		} catch (ExpressionException e) {
@@ -1080,7 +1078,7 @@ public FeatureMapping getFeatureMapping(Element param, SimulationContext simulat
  * @param param org.jdom.Element
  */
 public FilamentRegionVariable getFilamentRegionVariable(Element param) {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//-- create new FilamentRegionVariable object
 	FilamentRegionVariable filRegVariable = new FilamentRegionVariable( name );
@@ -1102,10 +1100,10 @@ public FilamentRegionVariable getFilamentRegionVariable(Element param) {
  */
 public FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get name
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
 	//get outside Compartment ref
-	String outsideName = this.unMangle( param.getAttributeValue(XMLTags.OutsideCompartmentTag) );
+	String outsideName = unMangle( param.getAttributeValue(XMLTags.OutsideCompartmentTag) );
 	String temp = "cbit.vcell.math.CompartmentSubDomain:" + outsideName;
 	Element re = XMLDict.getResolvedElement(param, XMLTags.CompartmentSubDomainTag, XMLTags.NameAttrTag, outsideName);
 	CompartmentSubDomain outsideRef = (CompartmentSubDomain)this.dictionary.get(re, temp);
@@ -1140,7 +1138,7 @@ public FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mat
  * @param param org.jdom.Element
  */
 public FilamentVariable getFilamentVariable(Element param) {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//-- create new filVariable object
 	FilamentVariable filVariable = new FilamentVariable( name );
@@ -1169,9 +1167,9 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	}
 
 	//resolve reference to the Membrane
-	String tempname = "cbit.vcell.model.Membrane:" + this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
+	String tempname = "cbit.vcell.model.Membrane:" + unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
 	Element re = XMLDict.getResolvedElement(param, XMLTags.MembraneTag, XMLTags.NameAttrTag, 
-		                                    this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
+		                                    unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
 	cbit.vcell.model.Membrane structureref = (Membrane) this.dictionary.get(re, tempname);
 
 	if (structureref == null) {
@@ -1182,9 +1180,9 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	cbit.vcell.model.Species specieref = null;
 
 	if (param.getAttribute(XMLTags.FluxCarrierAttrTag)!= null) {	
-		tempname = "cbit.vcell.model.Species:" + this.unMangle(param.getAttributeValue(XMLTags.FluxCarrierAttrTag));
+		tempname = "cbit.vcell.model.Species:" + unMangle(param.getAttributeValue(XMLTags.FluxCarrierAttrTag));
 		re = XMLDict.getResolvedElement(param, XMLTags.SpeciesTag, XMLTags.NameAttrTag, 
-										this.unMangle(param.getAttributeValue(XMLTags.FluxCarrierAttrTag)));
+										unMangle(param.getAttributeValue(XMLTags.FluxCarrierAttrTag)));
 		specieref = (Species) this.dictionary.get(re, tempname);
 		
 		if (specieref == null) {
@@ -1193,10 +1191,10 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	}
 	
 	//-- Instantiate new FluxReaction --
-	cbit.vcell.model.FluxReaction fluxreaction = null;
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	FluxReaction fluxreaction = null;
+	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	try {
-		fluxreaction = new cbit.vcell.model.FluxReaction(structureref, specieref, model, key, name);
+		fluxreaction = new FluxReaction(structureref, specieref, model, key, name);
 		fluxreaction.setModel(model);
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -1206,14 +1204,14 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	String rsAnnotation = null;
 	String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 	if (annotationText!=null && annotationText.length()>0) {
-		rsAnnotation = this.unMangle(annotationText);
+		rsAnnotation = unMangle(annotationText);
 	}
 	fluxreaction.setAnnotation(rsAnnotation);
 	
 	//set the valence
 	String valenceString = null;
 	try {
-		valenceString = this.unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
+		valenceString = unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
 			try {
 				fluxreaction.getChargeCarrierValence().setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
@@ -1232,11 +1230,11 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	if (fluxOptionString!=null&&fluxOptionString.length()>0){
 		try {
 			if (fluxOptionString.equals(XMLTags.FluxOptionElectricalOnly)){
-				fluxreaction.setPhysicsOptions(fluxreaction.PHYSICS_ELECTRICAL_ONLY);
+				fluxreaction.setPhysicsOptions(FluxReaction.PHYSICS_ELECTRICAL_ONLY);
 			}else if (fluxOptionString.equals(XMLTags.FluxOptionMolecularAndElectrical)){
-				fluxreaction.setPhysicsOptions(fluxreaction.PHYSICS_MOLECULAR_AND_ELECTRICAL);
+				fluxreaction.setPhysicsOptions(FluxReaction.PHYSICS_MOLECULAR_AND_ELECTRICAL);
 			}else if (fluxOptionString.equals(XMLTags.FluxOptionMolecularOnly)){
-				fluxreaction.setPhysicsOptions(fluxreaction.PHYSICS_MOLECULAR_ONLY);
+				fluxreaction.setPhysicsOptions(FluxReaction.PHYSICS_MOLECULAR_ONLY);
 			} 
 		}catch (java.beans.PropertyVetoException e){
 			e.printStackTrace(System.out);
@@ -1270,14 +1268,14 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
  */
 public cbit.vcell.dictionary.FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throws XmlParseException {
 	//get formalID
-	String formalID = this.unMangle(speciesInfoElement.getAttributeValue(XMLTags.FormalIDTag));
+	String formalID = unMangle(speciesInfoElement.getAttributeValue(XMLTags.FormalIDTag));
 	//get names
 	List namesList = speciesInfoElement.getChildren(XMLTags.NameTag, vcNamespace);
 	String[] namesArray = new String[namesList.size()];
 
 	for (int i = 0; i < namesList.size(); i++){
 		Element nameElement = (Element)namesList.get(i);
-		namesArray[i] = this.unMangle(nameElement.getText());
+		namesArray[i] = unMangle(nameElement.getText());
 	}
 	String tempstring;
 	//get type
@@ -1289,14 +1287,14 @@ public cbit.vcell.dictionary.FormalSpeciesInfo getFormalSpeciesInfo(Element spec
 		String formula = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.FormulaTag);
 		if (tempstring!=null) {
-			formula = this.unMangle(tempstring);
+			formula = unMangle(tempstring);
 		}
 		
 		//get CASID
 		String casid = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.CasIDTag);
 		if (tempstring!=null) {
-			casid = this.unMangle(tempstring);
+			casid = unMangle(tempstring);
 		}
 		
 		//get Enzymes
@@ -1309,7 +1307,7 @@ public cbit.vcell.dictionary.FormalSpeciesInfo getFormalSpeciesInfo(Element spec
 			for (int i = 0; i < enzymelist.size(); i++){
 				Element enzymeElement = (Element)enzymelist.get(i);
 				//get ECNumber
-				String ecnumber = this.unMangle(enzymeElement.getAttributeValue(XMLTags.ECNumberTag));
+				String ecnumber = unMangle(enzymeElement.getAttributeValue(XMLTags.ECNumberTag));
 				//get Enzymetype
 				String enztypestr = enzymeElement.getAttributeValue(XMLTags.TypeAttrTag);
 				char enzymetype = enztypestr.charAt(0);
@@ -1324,19 +1322,19 @@ public cbit.vcell.dictionary.FormalSpeciesInfo getFormalSpeciesInfo(Element spec
 		String reaction = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.ExpressionAttrTag);
 		if (tempstring != null) {
-			reaction = this.unMangle(tempstring);
+			reaction = unMangle(tempstring);
 		}
 		//get sysname
 		String sysname = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.SysNameTag);
 		if (tempstring != null) {
-			sysname = this.unMangle(tempstring);
+			sysname = unMangle(tempstring);
 		}
 		//get argcasID
 		String casid = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.CasIDTag);
 		if (tempstring != null) {
-			casid = this.unMangle(tempstring);
+			casid = unMangle(tempstring);
 		}
 		//create new EnzymeInfo
 		formalSpeciesInfo = new cbit.vcell.dictionary.EnzymeInfo(formalID, namesArray, reaction, sysname, casid);
@@ -1345,25 +1343,25 @@ public cbit.vcell.dictionary.FormalSpeciesInfo getFormalSpeciesInfo(Element spec
 		String organism = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.OrganismTag);
 		if (tempstring != null) {
-			organism = this.unMangle(tempstring);
+			organism = unMangle(tempstring);
 		}
 		//get accession
 		String accession = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.AccessionTag);
 		if (tempstring != null) {
-			accession = this.unMangle(tempstring);
+			accession = unMangle(tempstring);
 		}
 		//get keywords
 		String keywords = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.KeywordsTag);
 		if (tempstring != null) {
-			keywords = this.unMangle(tempstring);
+			keywords = unMangle(tempstring);
 		}
 		//get description
 		String description = null;
 		tempstring = speciesInfoElement.getAttributeValue(XMLTags.DescriptionTag);
 		if (tempstring != null) {
-			description = this.unMangle(tempstring);
+			description = unMangle(tempstring);
 		}
 		//create new ProteinInfo
 		formalSpeciesInfo = new cbit.vcell.dictionary.ProteinInfo(formalID, namesArray, organism, accession, keywords, description);
@@ -1384,7 +1382,7 @@ public cbit.vcell.dictionary.FormalSpeciesInfo getFormalSpeciesInfo(Element spec
  */
 public Function getFunction(Element param) throws XmlParseException {
 	//get attributes
-	String name = this.unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
 	String temp = param.getText();
 	
 	Expression exp = unMangleExpression(temp);
@@ -1418,7 +1416,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	}
 	
 	//Get attributes
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	int newdimension = Integer.parseInt(param.getAttributeValue(XMLTags.DimensionAttrTag));
 	//Get Version
 	Version version = getVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
@@ -1444,12 +1442,12 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 		
 		//if (annotation!=null) {
-			//newgeometry.setDescription( this.unMangle(annotation) );
+			//newgeometry.setDescription( unMangle(annotation) );
 		//}
 		//Add annotation
 		String annotation = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if ( annotation!=null && annotation.length()>0 ) {
-			newgeometry.setDescription(this.unMangle(annotation));
+			newgeometry.setDescription(unMangle(annotation));
 		}
 	} catch ( java.beans.PropertyVetoException e ) {
 		e.printStackTrace();
@@ -1482,7 +1480,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	while (iterator.hasNext()) {
 		Element tempElement = (Element)iterator.next();
 
-		String filname = this.unMangle( tempElement.getAttributeValue(XMLTags.NameAttrTag));
+		String filname = unMangle( tempElement.getAttributeValue(XMLTags.NameAttrTag));
 		Iterator curveiterator = tempElement.getChildren().iterator();
 		while (curveiterator.hasNext()) {
 			ControlPointCurve curve = getControlPointCurve((Element)curveiterator.next());
@@ -1623,7 +1621,7 @@ public GroupAccess getGroupAccess(Element xmlGroup) {
 		boolean[] booleanArray = new boolean[userlist.size()];
 		
 		for (int i = 0; i < userlist.size(); i++){
-			String userid = this.unMangle(((Element)userlist.get(i)).getAttributeValue(XMLTags.NameAttrTag));
+			String userid = unMangle(((Element)userlist.get(i)).getAttributeValue(XMLTags.NameAttrTag));
 			KeyValue key = new KeyValue(((Element)userlist.get(i)).getAttributeValue(XMLTags.KeyValueAttrTag));
 			boolean hidden = Boolean.valueOf(((Element)userlist.get(i)).getAttributeValue(XMLTags.HiddenTag)).booleanValue();
 			userArray[i] = new User(userid, key);
@@ -1643,7 +1641,7 @@ public GroupAccess getGroupAccess(Element xmlGroup) {
  */
 public ImageSubVolume getImageSubVolume(Element param) throws XmlParseException{
 	//retrieve the attributes
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	int handle = Integer.parseInt( param.getAttributeValue(XMLTags.HandleAttrTag) );
 	int imagePixelValue = Integer.parseInt( param.getAttributeValue(XMLTags.ImagePixelValueTag) );
  
@@ -1695,9 +1693,9 @@ public ImageSubVolume getImageSubVolume(Element param) throws XmlParseException{
  */
 public InsideVariable getInsideVariable(Element param) {
 	//Get name
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//get VolVariableRef
-	String volvarName = this.unMangle( param.getAttributeValue(XMLTags.VolumeVariableAttrTag) );
+	String volvarName = unMangle( param.getAttributeValue(XMLTags.VolumeVariableAttrTag) );
 
 	//*** create new InsideVariable ***
 	InsideVariable variable = new InsideVariable(name , volvarName);
@@ -1715,7 +1713,7 @@ public InsideVariable getInsideVariable(Element param) {
  */
 public JumpCondition getJumpCondition(Element param) throws XmlParseException {
 	//get VolVariable ref
-	String varname = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	Element re = XMLDict.getResolvedElement(param, XMLTags.VolumeVariableTag, XMLTags.NameAttrTag, varname);
 	String temp = "cbit.vcell.math.VolVariable:" + varname;
 	
@@ -1751,7 +1749,7 @@ public JumpCondition getJumpCondition(Element param) throws XmlParseException {
 public JumpProcess getJumpProcess(Element param, MathDescription md) throws XmlParseException 
 {
 	//name
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//probability rate
 	Element pb = param.getChild(XMLTags.ProbabilityRateTag, vcNamespace);
 	Expression exp = unMangleExpression(pb.getText());
@@ -1853,7 +1851,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 		//
 		for (int i = 0; i < list.size() ; i++){
 			Element xmlParam = (Element)list.get(i);
-			String paramName = this.unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
+			String paramName = unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
 			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
 			String paramExpStr = xmlParam.getText();
 			Expression paramExp = unMangleExpression(paramExpStr);
@@ -1976,7 +1974,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	Version version = getVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
 
 	//Retrieve attributes
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//Create new MathDescription
 	if (version != null) {
@@ -1991,12 +1989,12 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 		
 		//if (annotation!=null) {
-			//mathdes.setDescription(this.unMangle(annotation));
+			//mathdes.setDescription(unMangle(annotation));
 		//}
 		//add Annotation
 		String annotationText  = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText!=null && annotationText.length()>0) {
-			mathdes.setDescription(this.unMangle(annotationText));
+			mathdes.setDescription(unMangle(annotationText));
 		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
@@ -2189,18 +2187,18 @@ public cbit.vcell.mathmodel.MathModel getMathModel(Element param) throws XmlPars
 	cbit.vcell.mathmodel.MathModel mathmodel = new cbit.vcell.mathmodel.MathModel(versionObject);
 	
 	//Set attributes
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	try {
 		mathmodel.setName( name );
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 
 		//if (annotation!=null) {
-			//mathmodel.setDescription(this.unMangle(annotation));
+			//mathmodel.setDescription(unMangle(annotation));
 		//}
 		//Add annotation
 		String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText!=null && annotationText.length()>0) {
-			mathmodel.setDescription(this.unMangle(annotationText));
+			mathmodel.setDescription(unMangle(annotationText));
 		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
@@ -2298,7 +2296,7 @@ public cbit.vcell.solver.MathOverrides getMathOverrides(Element param, cbit.vcel
  * @param param org.jdom.Element
  */
 public Membrane getMembrane(Element param) throws XmlParseException {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	cbit.vcell.model.Membrane newmembrane = null;
 
 	//retrieve the key if there is one
@@ -2318,18 +2316,18 @@ public Membrane getMembrane(Element param) throws XmlParseException {
 			"An error occurred while trying to create the Membrane object " + name+" : "+e.getMessage());
 	}
 	//set inside feature
-	String featurename = "cbit.vcell.model.Feature:" + this.unMangle(param.getAttributeValue(XMLTags.InsideFeatureTag));
+	String featurename = "cbit.vcell.model.Feature:" + unMangle(param.getAttributeValue(XMLTags.InsideFeatureTag));
 	Element re = XMLDict.getResolvedElement(param, XMLTags.FeatureTag, XMLTags.NameAttrTag, 
-		                                    this.unMangle(param.getAttributeValue(XMLTags.InsideFeatureTag)));
+		                                    unMangle(param.getAttributeValue(XMLTags.InsideFeatureTag)));
 	Feature featureref = (Feature) this.dictionary.get(re, featurename );
 	if (featureref ==null) {
 		throw new XmlParseException("The feature " + featurename + "could not be retrieved from the dictionnary!");
 	}
 	newmembrane.setInsideFeature(featureref);
 	//set outside feature
-	featurename = "cbit.vcell.model.Feature:" + this.unMangle(param.getAttributeValue(XMLTags.OutsideFeatureTag));
+	featurename = "cbit.vcell.model.Feature:" + unMangle(param.getAttributeValue(XMLTags.OutsideFeatureTag));
 	re = XMLDict.getResolvedElement(param, XMLTags.FeatureTag, XMLTags.NameAttrTag, 
-		                                    this.unMangle(param.getAttributeValue(XMLTags.OutsideFeatureTag)));
+		                                    unMangle(param.getAttributeValue(XMLTags.OutsideFeatureTag)));
 	featureref = (Feature)this.dictionary.get(re, featurename );
 	if (featureref ==null) {
 		throw new XmlParseException("The feature " + featurename + "could not be retrieved from the dictionnary!");
@@ -2339,7 +2337,7 @@ public Membrane getMembrane(Element param) throws XmlParseException {
 	if (param.getAttribute(XMLTags.MemVoltNameTag)==null) {
 		throw new XmlParseException("Error reading membrane Voltage Name!");
 	}
-	String memvoltName = this.unMangle( param.getAttributeValue(XMLTags.MemVoltNameTag) );
+	String memvoltName = unMangle( param.getAttributeValue(XMLTags.MemVoltNameTag) );
 	try {
 		newmembrane.getMembraneVoltage().setName(memvoltName);
 	} catch (java.beans.PropertyVetoException e) {
@@ -2364,7 +2362,7 @@ public Membrane getMembrane(Element param) throws XmlParseException {
  */
 public MembraneMapping getMembraneMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
 	//Retrieve attributes
-	String membranename = this.unMangle( param.getAttributeValue(XMLTags.MembraneAttrTag) );
+	String membranename = unMangle( param.getAttributeValue(XMLTags.MembraneAttrTag) );
 	
 	//Retrieve membrane reference
 	String temp = "cbit.vcell.model.Membrane:" +membranename;
@@ -2380,7 +2378,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//Set SurfacetoVolumeRatio when it exists, amended Sept. 27th, 2007
 	if(param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag)!= null)
 	{
-		String ratio = this.unMangle( param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag) );
+		String ratio = unMangle( param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag) );
 		try {
 			memmap.getSurfaceToVolumeParameter().setExpression(new Expression(ratio));
 		} catch (ExpressionException e) {
@@ -2395,7 +2393,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//Set VolumeFraction when it exists, amended Sept. 27th, 2007
 	if(param.getAttributeValue(XMLTags.VolumeFractionTag) != null)
 	{
-		String fraction = this.unMangle( param.getAttributeValue(XMLTags.VolumeFractionTag) );
+		String fraction = unMangle( param.getAttributeValue(XMLTags.VolumeFractionTag) );
 		try {
 			memmap.getVolumeFractionParameter().setExpression(new Expression(fraction));
 		} catch (ExpressionException e) {
@@ -2410,7 +2408,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//Set Size
 	if(param.getAttributeValue(XMLTags.SizeTag) != null)
 	{
-		String size = this.unMangle( param.getAttributeValue(XMLTags.SizeTag) );
+		String size = unMangle( param.getAttributeValue(XMLTags.SizeTag) );
 		try {
 			memmap.getSizeParameter().setExpression(new Expression(size));
 		} catch (ExpressionException e) {
@@ -2464,7 +2462,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
  */
 public MembraneRegionEquation getMembraneRegionEquation(Element param) throws XmlParseException {
 	//get attributes
-	String varname = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
 	//find reference in the dictionnary
 	//try a MembraneRegionVariable
@@ -2496,22 +2494,22 @@ public MembraneRegionEquation getMembraneRegionEquation(Element param) throws Xm
 /*	temp = param.getChildText(XMLTags.ExactTag);
 	if (temp !=null) {
 		try {
-			Expression expression = new Expression( this.unMangle( temp) );
+			Expression expression = new Expression( unMangle( temp) );
 			odeEquation.setExactSolution( expression);			
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ this.unMangle(temp)+" : "+e.getMessage());
+			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp)+" : "+e.getMessage());
 		}
 	}
 	//get ConstructedSolution (if any)
 	temp = param.getChildText(XMLTags.ConstructedTag);
 	if (temp != null) {
 		try {
-			Expression expression = new Expression(this.unMangle(temp));
+			Expression expression = new Expression(unMangle(temp));
 			odeEquation.setConstructedSolution( expression );
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ this.unMangle(temp)+" : "+e.getMessage());
+			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp)+" : "+e.getMessage());
 		}
 	}*/
 	
@@ -2526,7 +2524,7 @@ public MembraneRegionEquation getMembraneRegionEquation(Element param) throws Xm
  * @param param org.jdom.Element
  */
 public MembraneRegionVariable getMembraneRegionVariable(Element param) {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//-- create new MembraneRegionVariable object
 	MembraneRegionVariable memRegVariable = new MembraneRegionVariable( name );
@@ -2549,7 +2547,7 @@ public MembraneRegionVariable getMembraneRegionVariable(Element param) {
 public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get compartmentSubDomain references
 	//inside
-	String name = this.unMangle( param.getAttributeValue(XMLTags.InsideCompartmentTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.InsideCompartmentTag) );
 	Element re = XMLDict.getResolvedElement(param, XMLTags.CompartmentSubDomainTag, XMLTags.NameAttrTag, name);
 	String temp = "cbit.vcell.math.CompartmentSubDomain:" + name;
 	CompartmentSubDomain insideRef = (CompartmentSubDomain)this.dictionary.get(re, temp);
@@ -2557,7 +2555,7 @@ public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mat
 		throw new XmlParseException("The reference to the inside CompartmentSubDomain "+ name+ ", could not be resolved in the dictionnary!" );
 	}
 	//outside
-	name = this.unMangle( param.getAttributeValue(XMLTags.OutsideCompartmentTag) );
+	name = unMangle( param.getAttributeValue(XMLTags.OutsideCompartmentTag) );
 	re = XMLDict.getResolvedElement(param, XMLTags.CompartmentSubDomainTag, XMLTags.NameAttrTag, name);
 	temp = "cbit.vcell.math.CompartmentSubDomain:" + name;
 	CompartmentSubDomain outsideRef = (CompartmentSubDomain)this.dictionary.get(re, temp);
@@ -2669,7 +2667,7 @@ public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mat
  * @param param org.jdom.Element
  */
 public MemVariable getMemVariable(Element param) {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//Create new memVariable
 	MemVariable memVariable = new MemVariable( name );
@@ -2729,11 +2727,11 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 	
 	try {
 		//Set attributes
-		newmodel.setName( this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag)) );
+		newmodel.setName( unMangle(param.getAttributeValue(XMLTags.NameAttrTag)) );
 		//Add annotation
 		String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText!=null && annotationText.length()>0) {
-			newmodel.setDescription(this.unMangle(annotationText));
+			newmodel.setDescription(unMangle(annotationText));
 		}
 
 		//***Add Model to the dictionnary***
@@ -2831,19 +2829,19 @@ public NodeReference getNodeReference(Element param) throws XmlParseException{
 	//determine the type of nodereference to create
 	if  ( tempname.equalsIgnoreCase(XMLTags.SpeciesContextShapeTag) ) {
 		int type = NodeReference.SPECIES_CONTEXT_NODE;
-		String name = this.unMangle(param.getAttributeValue( XMLTags.SpeciesContextRefAttrTag ));
+		String name = unMangle(param.getAttributeValue( XMLTags.SpeciesContextRefAttrTag ));
 		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
 
 		newnoderef = new NodeReference(type, name, location);
 	} else if  ( tempname.equalsIgnoreCase(XMLTags.SimpleReactionShapeTag) ) {
 		int type = NodeReference.SIMPLE_REACTION_NODE;
-		String name = this.unMangle(param.getAttributeValue( XMLTags.SimpleReactionRefAttrTag ));
+		String name = unMangle(param.getAttributeValue( XMLTags.SimpleReactionRefAttrTag ));
 		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
 
 		newnoderef = new NodeReference(type, name, location);
 	} else if  ( tempname.equalsIgnoreCase(XMLTags.FluxReactionShapeTag) ) {
 		int type = NodeReference.FLUX_REACTION_NODE;
-		String name = this.unMangle(param.getAttributeValue( XMLTags.FluxReactionRefAttrTag ));
+		String name = unMangle(param.getAttributeValue( XMLTags.FluxReactionRefAttrTag ));
 		java.awt.Point location = new java.awt.Point( Integer.parseInt(param.getAttributeValue(XMLTags.LocationXAttrTag)), Integer.parseInt(param.getAttributeValue(XMLTags.LocationYAttrTag)) );
 
 		newnoderef = new NodeReference(type, name, location);
@@ -2864,7 +2862,7 @@ public NodeReference getNodeReference(Element param) throws XmlParseException{
  */
 public OdeEquation getOdeEquation(Element param) throws XmlParseException {
 	//get attributes
-	String varname = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//find reference in the dictionnary
 	//try as a VolVariable
 	Variable varref = null;
@@ -2967,9 +2965,9 @@ public cbit.vcell.solver.OutputTimeSpec getOutputTimeSpec(Element param) {
  */
 public OutsideVariable getOutsideVariable(Element param) {
 	//Get name
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//get VolVariableRef
-	String volvarName = this.unMangle( param.getAttributeValue(XMLTags.VolumeVariableAttrTag) );
+	String volvarName = unMangle( param.getAttributeValue(XMLTags.VolumeVariableAttrTag) );
 
 	//*** create new OutsideVariable ***
 	OutsideVariable variable = new OutsideVariable(name , volvarName);
@@ -2988,7 +2986,7 @@ public OutsideVariable getOutsideVariable(Element param) {
 
 public PdeEquation getPdeEquation(Element param) throws XmlParseException {
     //Retrieve the variable reference
-    String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+    String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
     boolean bSteady = false;
     String bSteadyAttr = param.getAttributeValue(XMLTags.SteadyTag);
     if (bSteadyAttr != null && bSteadyAttr.equals("1")) {
@@ -3139,7 +3137,7 @@ public PdeEquation getPdeEquation(Element param) throws XmlParseException {
  */
 public VCPixelClass getPixelClass(Element param) {
 	//Read attributes
-	String pixelClassName = this.unMangle(param.getAttributeValue( XMLTags.NameAttrTag));
+	String pixelClassName = unMangle(param.getAttributeValue( XMLTags.NameAttrTag));
 	int pixelvalue = Integer.parseInt( param.getAttributeValue(XMLTags.ImagePixelValueTag) );
 
 	//retrieve the key if there is one
@@ -3170,7 +3168,7 @@ public Product getProduct(Element param, SimpleReaction reaction) throws XmlPars
         key = new KeyValue(keystring);
     }
 
-    String speccontref = this.unMangle(param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
+    String speccontref = unMangle(param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
     //Resolve reference to the SpeciesContext
     Element re = XMLDict.getResolvedElement(param, XMLTags.SpeciesContextTag, XMLTags.NameAttrTag, speccontref);
     String tempname = "cbit.vcell.model.SpeciesContext:" + speccontref;
@@ -3213,7 +3211,7 @@ public Reactant getReactant(Element param, SimpleReaction reaction) throws XmlPa
     }
 
     String speccontref =
-        this.unMangle(param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
+        unMangle(param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
     //Resolve reference to the SpeciesContext
     Element re = XMLDict.getResolvedElement(param, XMLTags.SpeciesContextTag, XMLTags.NameAttrTag, speccontref);
     String tempname = "cbit.vcell.model.SpeciesContext:" + speccontref;
@@ -3249,7 +3247,7 @@ public ReactionSpec getReactionSpec(Element param) throws XmlParseException{
 	ReactionSpec reactionspec = null;
 
 	//retrieve the reactionstep reference
-	String reactionstepname = this.unMangle( param.getAttributeValue(XMLTags.ReactionStepRefAttrTag) );
+	String reactionstepname = unMangle( param.getAttributeValue(XMLTags.ReactionStepRefAttrTag) );
 	//try to recover a fluxReaction
 	Element re = XMLDict.getResolvedElement(param, XMLTags.FluxStepTag, XMLTags.NameAttrTag, reactionstepname);
 	String temp = "cbit.vcell.model.FluxReaction:" + reactionstepname;
@@ -3317,16 +3315,16 @@ private ArrayList getReservedVars() {
  */
 public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param, Model model, VariableHash varsHash) throws XmlParseException {
     //resolve reference to the  structure that it belongs to.
-    String tempname = "cbit.vcell.model.Feature:" + this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
+    String tempname = "cbit.vcell.model.Feature:" + unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
     Element re = XMLDict.getResolvedElement(param, XMLTags.FeatureTag, XMLTags.NameAttrTag, 
-	    									this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
+	    									unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
     cbit.vcell.model.Structure structureref = (Structure) dictionary.get(re, tempname);
     
     if (structureref == null) {
         //if it is not a Feature, try with membrane
         re = XMLDict.getResolvedElement(param, XMLTags.MembraneTag, XMLTags.NameAttrTag, 
-	    									this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
-        tempname = "cbit.vcell.model.Membrane:" + this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
+	    									unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
+        tempname = "cbit.vcell.model.Membrane:" + unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
         structureref = (Structure) dictionary.get(re, tempname);
     } else if (structureref == null) {
             throw new XmlParseException("The structure " + tempname + "could not be resolved in the dictionnary!");
@@ -3342,7 +3340,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param, Model mo
         
     //---Instantiate a new Simplereaction---
     cbit.vcell.model.SimpleReaction simplereaction = null;
-    String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+    String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
     
     try {
         simplereaction = new cbit.vcell.model.SimpleReaction(structureref, key, name);
@@ -3355,7 +3353,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param, Model mo
 	String rsAnnotation = null;
 	String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 	if (annotationText!=null && annotationText.length()>0) {
-		rsAnnotation = this.unMangle(annotationText);
+		rsAnnotation = unMangle(annotationText);
 	}
 	simplereaction.setAnnotation(rsAnnotation);
 	
@@ -3470,19 +3468,19 @@ public cbit.vcell.solver.Simulation getSimulation(Element param, MathDescription
 	}
 	
 	//set attributes
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
 	try {
 		simulation.setName(name);
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 
 		//if (annotation!=null) {
-			//simulation.setDescription(this.unMangle(annotation));
+			//simulation.setDescription(unMangle(annotation));
 		//}
 		//Add Annotation
 		String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText!=null && annotationText.length()>0) {
-			simulation.setDescription(this.unMangle(annotationText));
+			simulation.setDescription(unMangle(annotationText));
 		}
 	}catch (java.beans.PropertyVetoException e) {
 		throw new XmlParseException(e.getMessage());
@@ -3523,7 +3521,7 @@ public cbit.vcell.solver.Simulation getSimulation(Element param, MathDescription
  */
 public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, cbit.vcell.biomodel.BioModel biomodel) throws XmlParseException{
 	//get the attributes
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
+	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
 	boolean bStoch = false;
 	boolean bUseConcentration = true;
 	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true")))
@@ -3594,7 +3592,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 		//Add annotation
 		String annotation = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotation!=null && annotation.length()>0) {
-			newsimcontext.setDescription(this.unMangle(annotation));
+			newsimcontext.setDescription(unMangle(annotation));
 		}
 		//set if using concentration
 		newsimcontext.setUsingConcentration(bUseConcentration);
@@ -3766,13 +3764,13 @@ public SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPars
 	
 	//Read all the attributes
 	//*name
-	String name = this.unMangle(xmlVersion.getAttributeValue(XMLTags.NameAttrTag));
+	String name = unMangle(xmlVersion.getAttributeValue(XMLTags.NameAttrTag));
 	//*key
 	String temp = xmlVersion.getAttributeValue(XMLTags.KeyValueAttrTag);
 	KeyValue key = new KeyValue( temp );
 	//*owner
 	Element tempElement = xmlVersion.getChild(XMLTags.OwnerTag, vcNamespace);
-	User owner = new User(this.unMangle(tempElement.getAttributeValue(XMLTags.NameAttrTag)), new KeyValue(tempElement.getAttributeValue(XMLTags.IdentifierAttrTag)));	
+	User owner = new User(unMangle(tempElement.getAttributeValue(XMLTags.NameAttrTag)), new KeyValue(tempElement.getAttributeValue(XMLTags.IdentifierAttrTag)));	
 	//*access
 	GroupAccess groupAccess = getGroupAccess(xmlVersion.getChild(XMLTags.GroupAccessTag, vcNamespace));
 	//*Branchpointref
@@ -3814,7 +3812,7 @@ public SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPars
 	String annotation = null;
 	String annotationText = xmlVersion.getChildText(XMLTags.AnnotationTag, vcNamespace);
 	if (annotationText!= null && annotationText.length()>0) {
-		annotation = this.unMangle(annotationText);
+		annotation = unMangle(annotationText);
 	}
 
 	//Create and return the version object
@@ -3860,7 +3858,7 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 	//set Attributes
 	try {
 		//set solver
-		sd = cbit.vcell.solver.SolverDescription.fromName(solverName);
+		sd = cbit.vcell.solver.SolverDescription.fromDatabaseName(solverName);
 		solverTaskDesc.setSolverDescription(sd);
 		
 		if ( taskType.equalsIgnoreCase(XMLTags.UnsteadyTag) ) {
@@ -3918,7 +3916,7 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 	while (globalsIterator.hasNext()) {
 		org.jdom.Element paramElement = (Element) globalsIterator.next();
 		//get its attributes : name, role and unit definition
-		String glParamName = this.unMangle( paramElement.getAttributeValue(XMLTags.NameAttrTag) );
+		String glParamName = unMangle( paramElement.getAttributeValue(XMLTags.NameAttrTag) );
 		String role = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
 		int glParamRole = -1;
 		if (role.equals(XMLTags.ParamRoleUserDefinedTag)) {
@@ -3937,7 +3935,7 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 		String glParamAnnotation = null;
 		String annotationText = paramElement.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText != null && annotationText.length() > 0) {
-			glParamAnnotation = this.unMangle(annotationText);
+			glParamAnnotation = unMangle(annotationText);
 		}
 		
 		//create new global parameter
@@ -3961,17 +3959,17 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
  */
 public cbit.vcell.model.Species getSpecies(Element param) throws XmlParseException {
 	//get its data
-	String specieName = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String specieName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String specieAnnotation = null;
 
 	//the Annotation paramater can be optional
 	//String temp = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 	//if (temp!=null && temp.length()!=0) {
-		//specieAnnotation = this.unMangle(temp);
+		//specieAnnotation = unMangle(temp);
 	//}
 	String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 	if (annotationText!=null && annotationText.length()>0) {
-		specieAnnotation = this.unMangle(annotationText);
+		specieAnnotation = unMangle(annotationText);
 	}
 	//create new Specie
 	cbit.vcell.model.Species newspecie = new cbit.vcell.model.Species( specieName, specieAnnotation);
@@ -4008,15 +4006,15 @@ public cbit.vcell.model.Species getSpecies(Element param) throws XmlParseExcepti
  */
 public SpeciesContext getSpeciesContext(Element param) throws XmlParseException{
 	//retrieve its information
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	String hasOverrideString = param.getAttributeValue(XMLTags.HasOverrideAttrTag);
 	boolean bHasOverride = true; // default (safety) is name has been overridden
 	if (hasOverrideString!=null && hasOverrideString.length()>0){
 		bHasOverride = Boolean.valueOf(hasOverrideString).booleanValue();
 	}
-	String tempname = "cbit.vcell.model.Species:" + this.unMangle(param.getAttributeValue(XMLTags.SpeciesRefAttrTag));
+	String tempname = "cbit.vcell.model.Species:" + unMangle(param.getAttributeValue(XMLTags.SpeciesRefAttrTag));
 	Element re = XMLDict.getResolvedElement(param, XMLTags.SpeciesTag, XMLTags.NameAttrTag, 
-											this.unMangle(param.getAttributeValue(XMLTags.SpeciesRefAttrTag)));
+											unMangle(param.getAttributeValue(XMLTags.SpeciesRefAttrTag)));
 	Species specieref= (Species)this.dictionary.get(re, tempname);
 	
 	if (specieref == null) {
@@ -4024,15 +4022,15 @@ public SpeciesContext getSpeciesContext(Element param) throws XmlParseException{
 	}
 	//Try to get the structure as a Feature
 	re = XMLDict.getResolvedElement(param, XMLTags.FeatureTag, XMLTags.NameAttrTag, 
-									this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
-	tempname = "cbit.vcell.model.Feature:" + this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
+									unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
+	tempname = "cbit.vcell.model.Feature:" + unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
 	Structure structureref = (Structure)this.dictionary.get(re, tempname);
 	
 	if (structureref == null) {
 		//Try with Membranes
 		re = XMLDict.getResolvedElement(param, XMLTags.MembraneTag, XMLTags.NameAttrTag, 
-									this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
-		tempname = "cbit.vcell.model.Membrane:" + this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
+									unMangle(param.getAttributeValue(XMLTags.StructureAttrTag)));
+		tempname = "cbit.vcell.model.Membrane:" + unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
 		structureref = (Structure)this.dictionary.get(re, tempname);
 	}/*else*/
 	if (structureref == null) {
@@ -4068,7 +4066,7 @@ public SpeciesContext getSpeciesContext(Element param) throws XmlParseException{
 public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseException{
 	SpeciesContextSpec specspec = null;
 	//Get Atributes
-	String speccontname = this.unMangle( param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag) );
+	String speccontname = unMangle( param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag) );
 	boolean constant = Boolean.valueOf(param.getAttributeValue(XMLTags.ForceConstantAttrTag)).booleanValue();
 	boolean enabledif = Boolean.valueOf(param.getAttributeValue(XMLTags.EnableDiffusionAttrTag)).booleanValue();
 	
@@ -4154,36 +4152,36 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 			//Xm
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
 			if (temp != null) {
-				specspec.getBoundaryXmParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryXmParameter().setExpression(new Expression(unMangle(temp)));
 			}
 			//Xp
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXp);
 			if (temp != null) {
-				specspec.getBoundaryXpParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryXpParameter().setExpression(new Expression(unMangle(temp)));
 			}
 			//Ym
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYm);
 			if (temp != null) {
-				specspec.getBoundaryYmParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryYmParameter().setExpression(new Expression(unMangle(temp)));
 			}
 			//Yp
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYp);
 			if (temp != null) {
-				specspec.getBoundaryYpParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryYpParameter().setExpression(new Expression(unMangle(temp)));
 			}
 			//Zm
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZm);
 			if (temp != null) {
-				specspec.getBoundaryZmParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryZmParameter().setExpression(new Expression(unMangle(temp)));
 			}
 			//Zp
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZp);
 			if (temp != null) {
-				specspec.getBoundaryZpParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryZpParameter().setExpression(new Expression(unMangle(temp)));
 			}
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when Setting the boundary Expression: " + this.unMangle(temp)+" : "+e.getMessage());
+			throw new XmlParseException("An ExpressionException was fired when Setting the boundary Expression: " + unMangle(temp)+" : "+e.getMessage());
 		} catch (java.beans.PropertyVetoException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
@@ -4274,7 +4272,7 @@ public cbit.vcell.solver.stoch.StochSimOptions getStochSimOptions(Element param,
  */
 public StochVolVariable getStochVolVariable(Element param) 
 {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//-- create new StochVolVariable object
 	StochVolVariable stochVar = new StochVolVariable(name);
 
@@ -4417,7 +4415,7 @@ public VarIniCondition getVarIniCondition(Element param, MathDescription md) thr
 	//retrieve values
 	Expression exp = unMangleExpression(param.getText());
 	
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	Variable var = md.getVariable(name);
 	if (var == null){
 		throw new MathFormatException("variable "+name+" not defined");
@@ -4463,19 +4461,19 @@ public VCImage getVCImage(Element param, Extent extent) throws XmlParseException
 		throw new XmlParseException("An imageException occurred while trying to create a VCImage!"+" : "+e.getMessage());
 	}
 	//set attributes
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
 	try {
 		newimage.setName(name);
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 		//if (annotation!=null) {
-			//newimage.setDescription(this.unMangle(annotation));
+			//newimage.setDescription(unMangle(annotation));
 		//}
 
 		//read the annotation
 		String annotation = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotation!=null && annotation.length()>0) {
-			newimage.setDescription(this.unMangle(annotation));
+			newimage.setDescription(unMangle(annotation));
 		}
 
 	} catch (java.beans.PropertyVetoException e) {
@@ -4536,13 +4534,13 @@ public Version getVersion(Element xmlVersion) throws XmlParseException {
 	
 	//Read all the attributes
 	//*name
-	String name = this.unMangle(xmlVersion.getAttributeValue(XMLTags.NameAttrTag));
+	String name = unMangle(xmlVersion.getAttributeValue(XMLTags.NameAttrTag));
 	//*key
 	String temp = xmlVersion.getAttributeValue(XMLTags.KeyValueAttrTag);
 	KeyValue key = new KeyValue( temp );
 	//*owner
 	Element tempElement = xmlVersion.getChild(XMLTags.OwnerTag, vcNamespace);
-	User owner = new User(this.unMangle(tempElement.getAttributeValue(XMLTags.NameAttrTag)), new KeyValue(tempElement.getAttributeValue(XMLTags.IdentifierAttrTag)));	
+	User owner = new User(unMangle(tempElement.getAttributeValue(XMLTags.NameAttrTag)), new KeyValue(tempElement.getAttributeValue(XMLTags.IdentifierAttrTag)));	
 	//*access
 	GroupAccess groupAccess = getGroupAccess(xmlVersion.getChild(XMLTags.GroupAccessTag, vcNamespace));
 	//*Branchpointref
@@ -4577,7 +4575,7 @@ public Version getVersion(Element xmlVersion) throws XmlParseException {
 	String annotation = null;
 	String annotationText = xmlVersion.getChildText(XMLTags.AnnotationTag, vcNamespace);
 	if (annotationText!= null && annotationText.length()>0) {
-		annotation = this.unMangle(annotationText);
+		annotation = unMangle(annotationText);
 	}
 
 	//Create and return the version object
@@ -4594,7 +4592,7 @@ public Version getVersion(Element xmlVersion) throws XmlParseException {
  */
 public VolumeRegionEquation getVolumeRegionEquation(Element param) throws XmlParseException {
 	//get attributes
-	String varname = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
 	//find reference in the dictionnary
 	//try a VolumeRegionVariable
@@ -4630,22 +4628,22 @@ public VolumeRegionEquation getVolumeRegionEquation(Element param) throws XmlPar
 /*	temp = param.getChildText(XMLTags.ExactTag);
 	if (temp !=null) {
 		try {
-			Expression expression = new Expression( this.unMangle( temp) );
+			Expression expression = new Expression( unMangle( temp) );
 			odeEquation.setExactSolution( expression);			
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ this.unMangle(temp)+" : "+e.getMessage());
+			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp)+" : "+e.getMessage());
 		}
 	}
 	//get ConstructedSolution (if any)
 	temp = param.getChildText(XMLTags.ConstructedTag);
 	if (temp != null) {
 		try {
-			Expression expression = new Expression(this.unMangle(temp));
+			Expression expression = new Expression(unMangle(temp));
 			odeEquation.setConstructedSolution( expression );
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ this.unMangle(temp) +" : "+e.getMessage());
+			throw new XmlParseException("An ExpressionException was fired when creating the expression: "+ unMangle(temp) +" : "+e.getMessage());
 		}
 	}*/
 	
@@ -4660,7 +4658,7 @@ public VolumeRegionEquation getVolumeRegionEquation(Element param) throws XmlPar
  * @param param org.jdom.Element
  */
 public VolumeRegionVariable getVolumeRegionVariable(Element param) {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//-- create new VolumeRegionVariable object
 	VolumeRegionVariable volRegVariable = new VolumeRegionVariable( name );
@@ -4680,7 +4678,7 @@ public VolumeRegionVariable getVolumeRegionVariable(Element param) {
  * @param param org.jdom.Element
  */
 public VolVariable getVolVariable(Element param) {
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
 	//-- create new VolVariable object
 	VolVariable volVariable = new VolVariable( name );
