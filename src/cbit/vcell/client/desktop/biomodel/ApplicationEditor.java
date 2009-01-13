@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.util.EventDispatchRunWithException;
 import cbit.util.Issue;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
@@ -1991,26 +1992,24 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void mathDescription_This() {
-	if (getmathDescription()!=null){
-		try {
-			final int value = getVCMLScrollPane().getVerticalScrollBar().getValue();
-			getVCMLEditorPane().setText(getmathDescription().getVCML_database());
-			SwingUtilities.invokeLater( new Runnable()
-				{
-					public void run()
-					{
-						getVCMLScrollPane().getVerticalScrollBar().setValue(value);
-					}
-				});			
-			
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-			getVCMLEditorPane().setText("error displaying math language: "+e.getMessage());
+	new EventDispatchRunWithException () {
+		public Object runWithException() throws Exception {
+			if (getmathDescription()!=null){
+				try {
+					int value = getVCMLScrollPane().getVerticalScrollBar().getValue();
+					getVCMLEditorPane().setText(getmathDescription().getVCML_database());
+					getVCMLScrollPane().getVerticalScrollBar().setValue(value);
+					return null;
+				}catch (Exception e){
+					e.printStackTrace(System.out);
+					getVCMLEditorPane().setText("error displaying math language: "+e.getMessage());
+				}
+			}else{
+				getVCMLEditorPane().setText("");
+			}
+			return null;
 		}
-	}else{
-		getVCMLEditorPane().setText("");
-	}
-	return;
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
