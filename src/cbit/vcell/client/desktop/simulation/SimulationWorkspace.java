@@ -1,18 +1,15 @@
 package cbit.vcell.client.desktop.simulation;
-import cbit.gui.DialogUtils;
 import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.ode.gui.*;
 
 import java.awt.Dimension;
-import java.util.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.document.*;
 
-import cbit.vcell.desktop.controls.*;
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;
 	private ClientSimManager clientSimManager = null;
@@ -184,13 +181,13 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 			{
 				if(! (simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
 					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
-			               			simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a stochastic solver!";
+			               			simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a stochastic solver!";
 			}
 			else
 			{
 				if((simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
 					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
-					               simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a ODE/PDE solver!";
+					               simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a ODE/PDE solver!";
 				
 			}
 		}
@@ -200,13 +197,13 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 			{
 				if(! (simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
 					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
-			               			simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a stochastic solver!";	
+			               			simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a stochastic solver!";	
 			}
 			else
 			{
 				if((simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
 					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
-					               simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a ODE/PDE solver!";
+					               simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a ODE/PDE solver!";
 			}
 		}
 	} 
@@ -294,7 +291,6 @@ void deleteSimulations(Simulation[] sims) throws java.beans.PropertyVetoExceptio
 	if (sims == null || sims.length == 0) {
 		return;
 	}
-	Simulation copiedSim = null;
 	for (int i = 0; i < sims.length; i++){
 		getSimulationOwner().removeSimulation(sims[i]);
 	}

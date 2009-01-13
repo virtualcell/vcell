@@ -1,9 +1,7 @@
 package cbit.vcell.messaging.admin;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import java.math.BigDecimal;
-import java.util.Date;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.sql.KeyValue;
 import cbit.vcell.solver.SolverTaskDescription;
 
 /**
@@ -195,7 +193,7 @@ public boolean isRunning() {
  */
 public Object[] toObjects() {	
 	return new Object[] {userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
-		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getName(), 		
+		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getDisplayLabel(), 		
 		SimulationJobStatus.getSchedulerStatusMessage(getStatus()), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate()};
 }
 }

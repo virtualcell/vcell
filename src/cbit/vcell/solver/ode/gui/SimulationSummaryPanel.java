@@ -360,7 +360,7 @@ private void displayTask() {
 		getJLabelSensitivity().setText("");
 	}
 	try {
-		getJLabelSolver().setText(getSimulation().getSolverTaskDescription().getSolverDescription().getName());
+		getJLabelSolver().setText(getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelSolver().setText("");
@@ -1299,7 +1299,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

@@ -10,7 +10,6 @@ import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
-import java.util.*;
 import cbit.util.*;
 /**
  * Insert the class' description here.
@@ -495,7 +494,7 @@ public String getVCML() {
 		throw new RuntimeException("unexpected task type");
 	}
 
-	buffer.append(VCML.SolverDescription+" \""+getSolverDescription().getName()+"\""+"\n");
+	buffer.append(VCML.SolverDescription+" \""+getSolverDescription().getDatabaseName()+"\""+"\n");
 
 	buffer.append(VCML.UseSymbolicJacobian+" "+getUseSymbolicJacobian()+"\n");
 
@@ -685,8 +684,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				// catch property veto exception to correct inappropriate solver selection in database
 				//
 				try {
-					//amended July 22nd, 2007
-					sd = SolverDescription.fromName(token);
+					sd = SolverDescription.fromDatabaseName(token);
 					setSolverDescription(sd);
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);					
@@ -974,7 +972,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	if (evt.getSource() == this && evt.getPropertyName().equals("solverDescription")) {
 		SolverDescription newSolverDescription = (SolverDescription)evt.getNewValue();
 		if (!isAllowableSolverDescription(newSolverDescription)){
-			throw new java.beans.PropertyVetoException("solverDescription '"+newSolverDescription.getName()+"' is not appropriate",evt);
+			throw new java.beans.PropertyVetoException("solverDescription '"+newSolverDescription.getDisplayLabel()+"' is not appropriate",evt);
 		}
 	}
 }

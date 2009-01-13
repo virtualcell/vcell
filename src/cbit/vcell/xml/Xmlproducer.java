@@ -1,8 +1,13 @@
+/*©
+ * (C) Copyright University of Connecticut Health Center 2001.
+ * All rights reserved.
+©*/
+
 package cbit.vcell.xml;
-import cbit.vcell.solver.Simulation;
+
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.sql.KeyValue;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -12,16 +17,14 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
 import org.jdom.Element;
 import java.util.ArrayList;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model.ModelParameter;
-
 import java.util.Enumeration;
 import cbit.util.*;
 
@@ -77,13 +80,13 @@ public org.jdom.Element getXML(cbit.image.VCImage param) throws XmlParseExceptio
 		org.jdom.Element image = new org.jdom.Element(XMLTags.ImageTag);
 
 		//add atributes
-		image.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+		image.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 //		image.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 
 		//Add annotation
 		if (param.getDescription()!=null && param.getDescription().length()>0) {
 			org.jdom.Element annotationElement = new org.jdom.Element(XMLTags.AnnotationTag);
-			annotationElement.setText( this.mangle(param.getDescription()) );
+			annotationElement.setText( mangle(param.getDescription()) );
 			image.addContent(annotationElement);
 		}
 
@@ -169,24 +172,24 @@ public org.jdom.Element getXML(cbit.sql.Version version, String nameParam, Strin
 	if (version == null || this.printKeysFlag == false) {
 		//*** If the version is empty, then use the versionable ***
 		//*Name
-		versionElement.setAttribute(XMLTags.NameAttrTag, this.mangle(nameParam));
+		versionElement.setAttribute(XMLTags.NameAttrTag, mangle(nameParam));
 		//Specify if it comes from a versionable
 		versionElement.setAttribute(XMLTags.FromVersionableTag, "true");
 		//*Annotation
 		if (descriptionParam!=null && descriptionParam.length()>0) {
 			org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-			annotationElem.setText(this.mangle(descriptionParam));
+			annotationElem.setText(mangle(descriptionParam));
 			versionElement.addContent(annotationElem);
 		}		
 	} else {
 		//** Dump the content of the 'Version' object **
 		//*Name
-		versionElement.setAttribute(XMLTags.NameAttrTag, this.mangle(version.getName()));
+		versionElement.setAttribute(XMLTags.NameAttrTag, mangle(version.getName()));
 		//*Key
 		versionElement.setAttribute(XMLTags.KeyValueAttrTag, version.getVersionKey().toString());
 		//*Owner
 		org.jdom.Element owner = new org.jdom.Element(XMLTags.OwnerTag);
-		owner.setAttribute(XMLTags.NameAttrTag, this.mangle(version.getOwner().getName()));
+		owner.setAttribute(XMLTags.NameAttrTag, mangle(version.getOwner().getName()));
 		owner.setAttribute(XMLTags.IdentifierAttrTag, version.getOwner().getID().toString());
 		versionElement.addContent(owner);
 		//*Access
@@ -209,7 +212,7 @@ public org.jdom.Element getXML(cbit.sql.Version version, String nameParam, Strin
 		//*Annotation
 		if (version.getAnnot()!=null && version.getAnnot().length()>0) {
 			org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-			annotationElem.setText(this.mangle(version.getAnnot()));
+			annotationElem.setText(mangle(version.getAnnot()));
 			versionElement.addContent(annotationElem);
 		}
 		if (version instanceof cbit.sql.SimulationVersion){
@@ -261,7 +264,7 @@ public org.jdom.Element getXML(cbit.vcell.biomodel.BioModel param) throws XmlPar
 	//Add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(param.getDescription()));
+		annotationElem.setText(mangle(param.getDescription()));
 		biomodelnode.addContent(annotationElem);
 	}
 	
@@ -368,14 +371,14 @@ public org.jdom.Element getXML(cbit.vcell.dictionary.FormalSpeciesInfo speciesIn
 	org.jdom.Element speciesInfoElement = new org.jdom.Element(XMLTags.FormalSpeciesInfoTag);
 
 	//add formalID
-	speciesInfoElement.setAttribute(XMLTags.FormalIDTag, this.mangle(speciesInfo.getFormalID()));
+	speciesInfoElement.setAttribute(XMLTags.FormalIDTag, mangle(speciesInfo.getFormalID()));
 
 	//add names
 	String[] namesArray = speciesInfo.getNames();
 
 	for (int i = 0; i < namesArray.length; i++){
 		org.jdom.Element nameElement = new org.jdom.Element(XMLTags.NameTag);
-		nameElement.addContent(this.mangle(namesArray[i]));
+		nameElement.addContent(mangle(namesArray[i]));
 		speciesInfoElement.addContent(nameElement);
 	}
 	String temp;
@@ -386,13 +389,13 @@ public org.jdom.Element getXML(cbit.vcell.dictionary.FormalSpeciesInfo speciesIn
 		//add formula
 		temp = info.getFormula();
 		if (temp !=null) {
-			speciesInfoElement.setAttribute(XMLTags.FormulaTag, this.mangle(temp));
+			speciesInfoElement.setAttribute(XMLTags.FormulaTag, mangle(temp));
 		}
 		
 		//add casID
 		temp = info.getCasID();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.CasIDTag, this.mangle(temp));			
+			speciesInfoElement.setAttribute(XMLTags.CasIDTag, mangle(temp));			
 		}
 		
 		//add enzymes
@@ -401,7 +404,7 @@ public org.jdom.Element getXML(cbit.vcell.dictionary.FormalSpeciesInfo speciesIn
 				org.jdom.Element enzymeElement = new org.jdom.Element(XMLTags.EnzymeTag);
 				cbit.vcell.dictionary.EnzymeRef ref = info.getEnzymes()[i];
 				//add ECNumber
-				enzymeElement.setAttribute(XMLTags.ECNumberTag, this.mangle(ref.getEcNumber()));
+				enzymeElement.setAttribute(XMLTags.ECNumberTag, mangle(ref.getEcNumber()));
 				//add EnzymeType
 				enzymeElement.setAttribute(XMLTags.TypeAttrTag, String.valueOf(ref.getEnzymeType()));
 				//add the enzymeElement to the speciesInfoElement
@@ -417,17 +420,17 @@ public org.jdom.Element getXML(cbit.vcell.dictionary.FormalSpeciesInfo speciesIn
 		//add reaction
 		temp = info.getReaction();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.ExpressionAttrTag, this.mangle(temp));
+			speciesInfoElement.setAttribute(XMLTags.ExpressionAttrTag, mangle(temp));
 		}
 		//add sysname
 		temp = info.getSysname();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.SysNameTag, this.mangle(temp));
+			speciesInfoElement.setAttribute(XMLTags.SysNameTag, mangle(temp));
 		}
 		//add argcasID
 		temp = info.getCasID();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.CasIDTag, this.mangle(temp));
+			speciesInfoElement.setAttribute(XMLTags.CasIDTag, mangle(temp));
 		}
 		//addtype
 		speciesInfoElement.setAttribute(XMLTags.TypeAttrTag, XMLTags.EnzymeTypeTag);
@@ -437,22 +440,22 @@ public org.jdom.Element getXML(cbit.vcell.dictionary.FormalSpeciesInfo speciesIn
 		//add Organism
 		temp = info.getOrganism();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.OrganismTag, this.mangle(temp));
+			speciesInfoElement.setAttribute(XMLTags.OrganismTag, mangle(temp));
 		}
 		//add accession
 		temp = info.getAccession();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.AccessionTag, this.mangle(temp));	
+			speciesInfoElement.setAttribute(XMLTags.AccessionTag, mangle(temp));	
 		}	
 		//add KeyWords
 		temp = info.getKeyWords();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.KeywordsTag, this.mangle(temp));
+			speciesInfoElement.setAttribute(XMLTags.KeywordsTag, mangle(temp));
 		}
 		//add description
 		temp = info.getDescription();
 		if (temp != null) {
-			speciesInfoElement.setAttribute(XMLTags.DescriptionTag, this.mangle(temp));
+			speciesInfoElement.setAttribute(XMLTags.DescriptionTag, mangle(temp));
 		}	
 		//add type
 		speciesInfoElement.setAttribute(XMLTags.TypeAttrTag, XMLTags.ProteinTypeTag);
@@ -474,14 +477,14 @@ public org.jdom.Element getXML(AnalyticSubVolume param) {
 	org.jdom.Element analytic = new org.jdom.Element(XMLTags.SubVolumeTag);
 
 	//Add Attributes
-	analytic.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	analytic.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	analytic.setAttribute(XMLTags.HandleAttrTag, String.valueOf(param.getHandle()));
 	analytic.setAttribute(XMLTags.TypeAttrTag, XMLTags.AnalyticBasedTypeTag);
 
 	//Create Analytic Expression subelement
 	org.jdom.Element expression = new org.jdom.Element(XMLTags.AnalyticExpressionTag);
 	//Add expression Content
-	expression.addContent(this.mangleExpression(param.getExpression()));
+	expression.addContent(mangleExpression(param.getExpression()));
 	analytic.addContent(expression);
 
 	//If keyFlag is on print the Keyvalue
@@ -502,7 +505,7 @@ public org.jdom.Element getXML(AnalyticSubVolume param) {
 public org.jdom.Element getXML(cbit.vcell.geometry.CompartmentSubVolume param) {
 	org.jdom.Element subvolume = new org.jdom.Element(XMLTags.SubVolumeTag);
 	//Add Atributes
-	subvolume.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	subvolume.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	subvolume.setAttribute(XMLTags.HandleAttrTag, String.valueOf(param.getHandle()));
 	subvolume.setAttribute(XMLTags.TypeAttrTag, XMLTags.CompartmentBasedTypeTag);
 
@@ -535,10 +538,10 @@ public org.jdom.Element getXML(ControlPointCurve param) {
 	curve.setAttribute(XMLTags.ClosedAttrTag, String.valueOf(param.isClosed()));
 	
 	//Add coordinates
-	java.util.Vector vector = param.getControlPointsVector();
-	java.util.Iterator iterator = vector.iterator();
+	Vector<Coordinate> vector = param.getControlPointsVector();
+	Iterator<Coordinate> iterator = vector.iterator();
 	while (iterator.hasNext()) {
-		curve.addContent( getXML((Coordinate)iterator.next()) );
+		curve.addContent(getXML(iterator.next()) );
 	}
 	
 	return curve;
@@ -575,7 +578,7 @@ public org.jdom.Element getXML(Filament param) {
 	//--- create Element
 	org.jdom.Element filament = new org.jdom.Element(XMLTags.FilamentTag);
 	//Add atributes
-	filament.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()) );
+	filament.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()) );
 
 	//add curves
 	Curve[] array = param.getCurves();
@@ -598,13 +601,13 @@ public org.jdom.Element getXML(cbit.vcell.geometry.Geometry param) throws XmlPar
 
 	// Add attributes
 	String name = param.getName();
-	geometry.setAttribute(XMLTags.NameAttrTag, this.mangle(name));
+	geometry.setAttribute(XMLTags.NameAttrTag, mangle(name));
 	geometry.setAttribute(XMLTags.DimensionAttrTag, String.valueOf(param.getDimension()));
 	//geometry.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add Annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(param.getDescription()));
+		annotationElem.setText(mangle(param.getDescription()));
 		geometry.addContent(annotationElem);
 	}
 	
@@ -665,7 +668,7 @@ public org.jdom.Element getXML(ImageSubVolume param) {
 	org.jdom.Element subvolume = new org.jdom.Element(XMLTags.SubVolumeTag);
 
 	//add atributes
-	subvolume.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	subvolume.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	subvolume.setAttribute(XMLTags.HandleAttrTag, String.valueOf(param.getHandle()));
 	subvolume.setAttribute(XMLTags.TypeAttrTag, XMLTags.ImageBasedTypeTag);
 	subvolume.setAttribute( XMLTags.ImagePixelValueTag, String.valueOf(param.getPixelClass().getPixel()));
@@ -797,13 +800,13 @@ public org.jdom.Element getXML(ElectricalStimulus param) {
 		ElectricalStimulus.ElectricalStimulusParameter parm = parameters[i];
 		org.jdom.Element tempparameter = new org.jdom.Element(XMLTags.ParameterTag);
 		//Get parameter attributes
-		tempparameter.setAttribute(XMLTags.NameAttrTag, this.mangle(parm.getName()));
+		tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
 		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, param.getDefaultParameterDesc(parm.getRole()));
 		VCUnitDefinition unit = parm.getUnitDefinition();
 		if (unit != null) {
 			tempparameter.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
 		}
-		tempparameter.addContent( this.mangleExpression(parm.getExpression()) );
+		tempparameter.addContent( mangleExpression(parm.getExpression()) );
 		//Add the parameter to the general electricalstimulus object
 		electricalStimulus.addContent(tempparameter);
 	}
@@ -821,7 +824,7 @@ public org.jdom.Element getXML(ElectricalStimulus param) {
 public org.jdom.Element getXML(Electrode param) {
 	org.jdom.Element electrodeElem = new org.jdom.Element(XMLTags.ElectrodeTag);
 	//add feature name
-	electrodeElem.setAttribute( XMLTags.FeatureAttrTag, this.mangle(param.getFeature().getName()) );
+	electrodeElem.setAttribute( XMLTags.FeatureAttrTag, mangle(param.getFeature().getName()) );
 
 	//add coordinate
 	electrodeElem.addContent(getXML(param.getPosition()));
@@ -845,15 +848,15 @@ public org.jdom.Element getXML(FeatureMapping param) {
 	org.jdom.Element feature = new org.jdom.Element(XMLTags.FeatureMappingTag);
 	
 	//Add atributes
-	feature.setAttribute(XMLTags.FeatureAttrTag, this.mangle(param.getFeature().getName()));
+	feature.setAttribute(XMLTags.FeatureAttrTag, mangle(param.getFeature().getName()));
 	SubVolume subvol = param.getSubVolume();
 	if (subvol != null) {
-		feature.setAttribute(XMLTags.SubVolumeAttrTag, this.mangle(subvol.getName()));
+		feature.setAttribute(XMLTags.SubVolumeAttrTag, mangle(subvol.getName()));
 	}
 	feature.setAttribute(XMLTags.ResolvedAttrTag, String.valueOf(param.getResolved()));
 	//Add size
 	if(param.getSizeParameter().getExpression() != null)
-		feature.setAttribute(XMLTags.SizeTag, this.mangleExpression(param.getSizeParameter().getExpression()));
+		feature.setAttribute(XMLTags.SizeTag, mangleExpression(param.getSizeParameter().getExpression()));
 	
 	// write BoundariesyConditions
 	org.jdom.Element boundariestypes = new org.jdom.Element(XMLTags.BoundariesTypesTag);
@@ -888,7 +891,7 @@ public org.jdom.Element getXML(cbit.vcell.mapping.GeometryContext param) {
 
 	// write Structure Mappings, separate membrane from feature mappings.
 	StructureMapping[] array = param.getStructureMappings();
-	ArrayList memMap = new ArrayList();
+	ArrayList<Element> memMap = new ArrayList<Element>();
 	for (int i=0; i<array.length ; i++) {
 		StructureMapping sm = (StructureMapping)array[i];
 		//check for FeatureMappings
@@ -923,13 +926,13 @@ public org.jdom.Element getXML(MembraneMapping param) {
 	org.jdom.Element membrane = new org.jdom.Element(XMLTags.MembraneMappingTag);
 	
 	//Add atributes
-	membrane.setAttribute(XMLTags.MembraneAttrTag, this.mangle(param.getMembrane().getName()));
+	membrane.setAttribute(XMLTags.MembraneAttrTag, mangle(param.getMembrane().getName()));
 	// write FluxCorrections
 	
 	//SurfaceToVolumeRatio if it exsits, amended Sept. 27th, 2007
 	if(param.getSurfaceToVolumeParameter().getExpression() != null)
 	{
-		membrane.setAttribute(XMLTags.SurfaceToVolumeRatioTag, this.mangleExpression(param.getSurfaceToVolumeParameter().getExpression()) );
+		membrane.setAttribute(XMLTags.SurfaceToVolumeRatioTag, mangleExpression(param.getSurfaceToVolumeParameter().getExpression()) );
 	}
 /*	org.jdom.Element surface = new org.jdom.Element(XMLTags.SurfaceToVolumeRatioTag);
 	surface.addContent( this.mangleExpression(param.getSurfaceToVolumeExpression()) );
@@ -938,18 +941,18 @@ public org.jdom.Element getXML(MembraneMapping param) {
 	//VolumeFraction if it exsits, amended Sept. 27th, 2007
 	if(param.getVolumeFractionParameter().getExpression() != null)
 	{
-		membrane.setAttribute(XMLTags.VolumeFractionTag, this.mangleExpression(param.getVolumeFractionParameter().getExpression()));
+		membrane.setAttribute(XMLTags.VolumeFractionTag, mangleExpression(param.getVolumeFractionParameter().getExpression()));
 	}
 /*	org.jdom.Element volume = new org.jdom.Element(XMLTags.VolumeFractionTag);
 	volume.addContent( this.mangleExpression(param.getVolumeFractionExpression()) );
 	membrane.addContent( volume );*/
 	//Add size
 	if(param.getSizeParameter().getExpression() != null)
- 		membrane.setAttribute(XMLTags.SizeTag, this.mangleExpression(param.getSizeParameter().getExpression()));
+ 		membrane.setAttribute(XMLTags.SizeTag, mangleExpression(param.getSizeParameter().getExpression()));
 	//Add the electrical properties
 	membrane.setAttribute(XMLTags.CalculateVoltageTag, String.valueOf(param.getCalculateVoltage()));
-	membrane.setAttribute(XMLTags.SpecificCapacitanceTag, this.mangleExpression(param.getSpecificCapacitanceParameter().getExpression()));
-	membrane.setAttribute(XMLTags.InitialVoltageTag,this.mangleExpression(param.getInitialVoltageParameter().getExpression()));
+	membrane.setAttribute(XMLTags.SpecificCapacitanceTag, mangleExpression(param.getSpecificCapacitanceParameter().getExpression()));
+	membrane.setAttribute(XMLTags.InitialVoltageTag,mangleExpression(param.getInitialVoltageParameter().getExpression()));
 
 	return membrane;
 }
@@ -989,8 +992,8 @@ public org.jdom.Element getXML(ReactionSpec param) {
 	org.jdom.Element reactionSpec = new org.jdom.Element(XMLTags.ReactionSpecTag);
 
 	//Add Atributes
-	reactionSpec.setAttribute( XMLTags.ReactionStepRefAttrTag, this.mangle(param.getReactionStep().getName()) );
-	reactionSpec.setAttribute( XMLTags.ReactionMappingAttrTag, this.mangle(param.getReactionMappingDescription()) );
+	reactionSpec.setAttribute( XMLTags.ReactionStepRefAttrTag, mangle(param.getReactionStep().getName()) );
+	reactionSpec.setAttribute( XMLTags.ReactionMappingAttrTag, mangle(param.getReactionMappingDescription()) );
 	
 	return reactionSpec;
 }
@@ -1006,7 +1009,7 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	org.jdom.Element simulationcontext = new org.jdom.Element(XMLTags.SimulationSpecTag);
 
 	//add attributes
-	String name = this.mangle(param.getName());
+	String name = mangle(param.getName());
 	simulationcontext.setAttribute(XMLTags.NameAttrTag, name);
 	//set isStoch, isUsingConcentration attributes
 	if (param.isStoch())
@@ -1030,7 +1033,7 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(param.getDescription()));
+		annotationElem.setText(mangle(param.getDescription()));
 		simulationcontext.addContent(annotationElem);
 	}
 	
@@ -1131,7 +1134,7 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 	org.jdom.Element speciesContextSpecElement = new org.jdom.Element(XMLTags.SpeciesContextSpecTag);
 
 	//Add Attributes
-	speciesContextSpecElement.setAttribute(XMLTags.SpeciesContextRefAttrTag, this.mangle(param.getSpeciesContext().getName()));
+	speciesContextSpecElement.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 	speciesContextSpecElement.setAttribute(XMLTags.ForceConstantAttrTag, String.valueOf(param.isConstant()));
 	speciesContextSpecElement.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
 
@@ -1141,20 +1144,20 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 	if (initCon != null)
 	{
 		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialConcentrationTag);
-		initial.addContent(this.mangleExpression(initCon));
+		initial.addContent(mangleExpression(initCon));
 		speciesContextSpecElement.addContent( initial );
 	}
 	else if(initAmt != null)
 	{
 		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialAmountTag);
-		initial.addContent(this.mangleExpression(initAmt));
+		initial.addContent(mangleExpression(initAmt));
 		speciesContextSpecElement.addContent( initial );
 	}
 	//Add diffusion
 	cbit.vcell.parser.Expression diffRate = param.getDiffusionParameter().getExpression();
 	if (diffRate!=null){
 		org.jdom.Element diffusion = new org.jdom.Element(XMLTags.DiffusionTag);
-		diffusion.addContent(this.mangleExpression(diffRate));
+		diffusion.addContent(mangleExpression(diffRate));
 		speciesContextSpecElement.addContent(diffusion);
 	}
 	// write BoundaryConditions
@@ -1164,32 +1167,32 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 	//XM
 	exp = param.getBoundaryXmParameter().getExpression();
 	if (exp!=null){
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueXm, this.mangleExpression(exp) );
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueXm, mangleExpression(exp) );
 	}
 	//XP
 	exp = param.getBoundaryXpParameter().getExpression();
 	if (exp!=null){
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueXp, this.mangleExpression(exp) );
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueXp, mangleExpression(exp) );
 	}
 	//YM
 	exp = param.getBoundaryYmParameter().getExpression();
 	if (exp!=null){
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueYm, this.mangleExpression(exp) );
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueYm, mangleExpression(exp) );
 	}
 	//YP
 	exp = param.getBoundaryYpParameter().getExpression();
 	if (exp!=null){
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueYp, this.mangleExpression(exp) );
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueYp, mangleExpression(exp) );
 	}
 	//ZM
 	exp = param.getBoundaryZmParameter().getExpression();
 	if (exp!=null){
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueZm, this.mangleExpression(exp) );
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueZm, mangleExpression(exp) );
 	}
 	//ZP
 	exp = param.getBoundaryZpParameter().getExpression();
 	if (exp!=null){
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueZp, this.mangleExpression(exp) );
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueZp, mangleExpression(exp) );
 	}
 	if (boundaries.getAttributes().size() >0) {
 		speciesContextSpecElement.addContent( boundaries );
@@ -1235,9 +1238,9 @@ public Element getXML(Action param)
 	org.jdom.Element action = new org.jdom.Element(XMLTags.ActionTag);
 
 	//Add atributes
-	action.setAttribute(XMLTags.VarNameAttrTag, this.mangle(param.getVar().getName()));
-	action.setAttribute(XMLTags.OperationAttrTag, this.mangle(param.getOperation()));
-	action.addContent( this.mangleExpression(param.getOperand()));
+	action.setAttribute(XMLTags.VarNameAttrTag, mangle(param.getVar().getName()));
+	action.setAttribute(XMLTags.OperationAttrTag, mangle(param.getOperation()));
+	action.addContent( mangleExpression(param.getOperand()));
 	return action;
 }
 
@@ -1251,7 +1254,7 @@ public Element getXML(Action param)
 public org.jdom.Element getXML(cbit.vcell.math.CompartmentSubDomain param) throws XmlParseException{
 	org.jdom.Element compartment = new org.jdom.Element(XMLTags.CompartmentSubDomainTag);
 
-	compartment.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	compartment.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	if (param.getPriority() != -1){
 			compartment.setAttribute(XMLTags.PriorityAttrTag, String.valueOf(param.getPriority()));
 	}
@@ -1288,9 +1291,9 @@ public org.jdom.Element getXML(cbit.vcell.math.CompartmentSubDomain param) throw
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZp().toString());
 	compartment.addContent(boundary);
 	//Add Equations
-	Enumeration enum1 = param.getEquations();
+	Enumeration<Equation> enum1 = param.getEquations();
 	while (enum1.hasMoreElements()){
-		Equation equ = (Equation)enum1.nextElement();
+		Equation equ = enum1.nextElement();
 		compartment.addContent( getXML(equ) );
 	}
 	//Add FastSystem
@@ -1298,17 +1301,17 @@ public org.jdom.Element getXML(cbit.vcell.math.CompartmentSubDomain param) throw
 		compartment.addContent( getXML(param.getFastSystem()) );
 	}
 	//Add Variable Initial Condition
-	Enumeration varInis = param.getVarIniConditions().elements();
+	Enumeration<VarIniCondition> varInis = param.getVarIniConditions().elements();
 	while (varInis.hasMoreElements())
 	{
-		VarIniCondition varIni = (VarIniCondition)varInis.nextElement();
+		VarIniCondition varIni = varInis.nextElement();
 		compartment.addContent(getXML(varIni));
 	}
 	//Add JumpProcesses
-	Enumeration jumps = param.getJumpProcesses().elements();
+	Enumeration<JumpProcess> jumps = param.getJumpProcesses().elements();
 	while (jumps.hasMoreElements())
 	{
-		JumpProcess jp = (JumpProcess)jumps.nextElement();
+		JumpProcess jp = jumps.nextElement();
 		compartment.addContent(getXML(jp));
 	}
 	return compartment;
@@ -1325,8 +1328,8 @@ public org.jdom.Element getXML(Constant param) {
 	org.jdom.Element constant = new org.jdom.Element(XMLTags.ConstantTag);
 
 	//Add atributes
-	constant.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
-	constant.addContent( this.mangleExpression(param.getExpression()) );
+	constant.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	constant.addContent(mangleExpression(param.getExpression()) );
 
 	return constant;
 }
@@ -1370,20 +1373,20 @@ public org.jdom.Element getXML(FastSystem param) {
 
 	//Add Fast Invariant subelements
 	org.jdom.Element fastinvariant;
-	Enumeration enum_fi = param.getFastInvariants();
+	Enumeration<FastInvariant> enum_fi = param.getFastInvariants();
 	while (enum_fi.hasMoreElements()){
 		fastinvariant = new org.jdom.Element(XMLTags.FastInvariantTag);
-		FastInvariant fi = (FastInvariant)enum_fi.nextElement();
-		fastinvariant.addContent(this.mangleExpression(fi.getFunction()));
+		FastInvariant fi = enum_fi.nextElement();
+		fastinvariant.addContent(mangleExpression(fi.getFunction()));
 		fastsystem.addContent(fastinvariant);
 	}	
 	//Add FastRate subelements
 	org.jdom.Element fastrate;
-	Enumeration enum_fr = param.getFastRates();
+	Enumeration<FastRate> enum_fr = param.getFastRates();
 	while (enum_fr.hasMoreElements()){
 		FastRate fr = (FastRate)enum_fr.nextElement();
 		fastrate = new org.jdom.Element(XMLTags.FastRateTag);
-		fastrate.addContent(this.mangleExpression(fr.getFunction()));
+		fastrate.addContent(mangleExpression(fr.getFunction()));
 		fastsystem.addContent(fastrate);
 	}
 		
@@ -1401,7 +1404,7 @@ public org.jdom.Element getXML(FilamentRegionVariable param) {
 	org.jdom.Element filregvar = new org.jdom.Element(XMLTags.FilamentRegionVariableTag);
 
 	//Add atributes
-	filregvar.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	filregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return filregvar;
 }
@@ -1416,12 +1419,12 @@ public org.jdom.Element getXML(FilamentRegionVariable param) {
 public org.jdom.Element getXML(FilamentSubDomain param) throws XmlParseException{
 	org.jdom.Element filament = new org.jdom.Element(XMLTags.FilamentSubDomainTag);
 	
-	filament.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
-	filament.setAttribute(XMLTags.OutsideCompartmentTag, this.mangle(param.getOutsideCompartment().getName()));
+	filament.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	filament.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
 	//Add equations
-	Enumeration enum1 = param.getEquations();
+	Enumeration<Equation> enum1 = param.getEquations();
 	while (enum1.hasMoreElements()){
-		Equation equ = (Equation)enum1.nextElement();
+		Equation equ = enum1.nextElement();
 		filament.addContent( getXML(equ) );
 	}
 	//Add FastSytem
@@ -1443,7 +1446,7 @@ public org.jdom.Element getXML(FilamentVariable param) {
 	org.jdom.Element filvar = new org.jdom.Element(XMLTags.FilamentVariableTag);
 
 	//Add atributes
-	filvar.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	filvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return filvar;
 }
@@ -1459,8 +1462,8 @@ public org.jdom.Element getXML(Function param) {
 	org.jdom.Element function = new org.jdom.Element(XMLTags.FunctionTag);
 
 	//Add atributes
-	function.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
-	function.addContent( this.mangleExpression(param.getExpression()) );
+	function.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	function.addContent(mangleExpression(param.getExpression()) );
 
 	return function;
 }
@@ -1476,11 +1479,11 @@ public org.jdom.Element getXML(JumpCondition param) {
 	org.jdom.Element jump = new org.jdom.Element(XMLTags.JumpConditionTag);
 
 	//add Atributes
-	jump.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVariable().getName()));
+	jump.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	//add Influx subelement
 	org.jdom.Element influx = new org.jdom.Element(XMLTags.InFluxTag);
 	if (param.getInFluxExpression() != null) {
-		influx.addContent(this.mangleExpression(param.getInFluxExpression()) );
+		influx.addContent(mangleExpression(param.getInFluxExpression()) );
 	} else {
 		influx.addContent("0.0");
 	}
@@ -1488,7 +1491,7 @@ public org.jdom.Element getXML(JumpCondition param) {
 	//Add OutFlux subelement
 	 org.jdom.Element outflux = new  org.jdom.Element(XMLTags.OutFluxTag);
 	if (param.getOutFluxExpression() != null) {
-		outflux.addContent(this.mangleExpression(param.getOutFluxExpression()));
+		outflux.addContent(mangleExpression(param.getOutFluxExpression()));
 	} else {
 		outflux.addContent("0.0");
 	}
@@ -1508,16 +1511,16 @@ public Element getXML(JumpProcess param)
 {
 	org.jdom.Element jump = new org.jdom.Element(XMLTags.JumpProcessTag);
 	//name
-	jump.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	jump.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	//probability rate
 	org.jdom.Element prob = new org.jdom.Element(XMLTags.ProbabilityRateTag);
-	prob.addContent(this.mangleExpression(param.getProbabilityRate()) );
+	prob.addContent(mangleExpression(param.getProbabilityRate()) );
 	jump.addContent(prob);
 	//Actions
-	Enumeration actions = param.getActions().elements();
+	Enumeration<Action> actions = param.getActions().elements();
 	while (actions.hasMoreElements())
 	{
-		Action action = (Action)actions.nextElement();
+		Action action = actions.nextElement();
 		jump.addContent(getXML(action));
 	}
 
@@ -1535,17 +1538,17 @@ public org.jdom.Element getXML(cbit.vcell.math.MathDescription mathdes) throws X
     org.jdom.Element math = new org.jdom.Element(XMLTags.MathDescriptionTag);
 
     //Add atributes
-    math.setAttribute(XMLTags.NameAttrTag, this.mangle(mathdes.getName()));
+    math.setAttribute(XMLTags.NameAttrTag, mangle(mathdes.getName()));
     //math.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(mathdes.getDescription()));
     //Add annotation
     if (mathdes.getDescription()!=null && mathdes.getDescription().length()>0) {
     	org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-    	annotationElem.setText(this.mangle(mathdes.getDescription()));
+    	annotationElem.setText(mangle(mathdes.getDescription()));
     	math.addContent(annotationElem);
     }
     
     //Add Constant subelements
-    Enumeration enum1 = mathdes.getVariables();
+    Enumeration<Variable> enum1 = mathdes.getVariables();
     //extra reordering added here, temporary
 	/*java.util.Iterator k;
     try {
@@ -1559,7 +1562,7 @@ public org.jdom.Element getXML(cbit.vcell.math.MathDescription mathdes) throws X
 		return null;
     }*/
     while (enum1.hasMoreElements()) {
-        Variable var = (Variable) enum1.nextElement();
+        Variable var = enum1.nextElement();
     //while (k.hasNext()) {
 	    //Variable var = (Variable)k.next();
 	    
@@ -1611,9 +1614,9 @@ public org.jdom.Element getXML(cbit.vcell.math.MathDescription mathdes) throws X
     	buffer.append("\n");*/
     	
     //Add subdomains
-    enum1 = mathdes.getSubDomains();
-    while (enum1.hasMoreElements()) {
-        SubDomain subDomain = (SubDomain) enum1.nextElement();
+    Enumeration<SubDomain> enum2 = mathdes.getSubDomains();
+    while (enum2.hasMoreElements()) {
+        SubDomain subDomain = enum2.nextElement();
         math.addContent(getXML(subDomain));
     }
     
@@ -1636,14 +1639,14 @@ public org.jdom.Element getXML(MembraneRegionEquation param) {
 	org.jdom.Element memregeq = new org.jdom.Element(XMLTags.MembraneRegionEquationTag);
 
 	//add name
-	memregeq.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVariable().getName()));
+	memregeq.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	
 	//add uniform rate
 	org.jdom.Element tempElem = null;
 	String tempString;
 	
 	if (param.getUniformRateExpression() != null){
-		tempString = this.mangleExpression(param.getUniformRateExpression());
+		tempString = mangleExpression(param.getUniformRateExpression());
 		//buffer.append("\t\t"+VCML.UniformRate+" "+getUniformRateExpression()+";\n");
 	}else{
 		tempString = "0.0";
@@ -1655,7 +1658,7 @@ public org.jdom.Element getXML(MembraneRegionEquation param) {
 	
 	//add MembraneRate
 	if (param.getMembraneRateExpression() != null){
-		tempString = this.mangleExpression(param.getMembraneRateExpression());
+		tempString = mangleExpression(param.getMembraneRateExpression());
 //		buffer.append("\t\t"+VCML.MembraneRate+" "+getMembraneRateExpression()+";\n");
 	}else{
 		tempString = "0.0";
@@ -1668,7 +1671,7 @@ public org.jdom.Element getXML(MembraneRegionEquation param) {
 	//add initial
 	if (param.getInitialExpression() != null){
 		tempElem = new org.jdom.Element( XMLTags.InitialTag );
-		tempElem.setText( this.mangleExpression(param.getInitialExpression()) );
+		tempElem.setText(mangleExpression(param.getInitialExpression()) );
 		memregeq.addContent(tempElem);
 //		buffer.append("\t\t"+VCML.Initial+"\t "+initialExp.infix()+";\n");
 	}
@@ -1687,7 +1690,7 @@ public org.jdom.Element getXML(MembraneRegionEquation param) {
 		}
 		case MembraneRegionEquation.EXACT_SOLUTION:{
 			tempElem.setAttribute(XMLTags.TypeAttrTag, "exact");
-			tempElem.setText( this.mangleExpression(param.getExactSolution()) );		
+			tempElem.setText(mangleExpression(param.getExactSolution()) );		
 //			buffer.append("\t\t"+VCML.Exact+" "+exactExp.infix()+";\n");
 			break;
 		}
@@ -1708,7 +1711,7 @@ public org.jdom.Element getXML(MembraneRegionVariable param) {
 	org.jdom.Element memregvar = new org.jdom.Element(XMLTags.MembraneRegionVariableTag);
 
 	//Add atributes
-	memregvar.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	memregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return memregvar;
 }
@@ -1724,8 +1727,8 @@ public org.jdom.Element getXML(MembraneSubDomain param) throws XmlParseException
 	org.jdom.Element membrane = new org.jdom.Element(XMLTags.MembraneSubDomainTag);
 	
 	//Add attributes
-	membrane.setAttribute(XMLTags.InsideCompartmentTag, this.mangle(param.getInsideCompartment().getName()));
-	membrane.setAttribute(XMLTags.OutsideCompartmentTag, this.mangle(param.getOutsideCompartment().getName()));
+	membrane.setAttribute(XMLTags.InsideCompartmentTag, mangle(param.getInsideCompartment().getName()));
+	membrane.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
 	
 	//Add boundatyType subelements
 	org.jdom.Element boundary;
@@ -1761,15 +1764,15 @@ public org.jdom.Element getXML(MembraneSubDomain param) throws XmlParseException
 	membrane.addContent(boundary);
 
 	//Add Equation subelements
-	Enumeration enum1 = param.getEquations();
+	Enumeration<Equation> enum1 = param.getEquations();
 	while (enum1.hasMoreElements()){
-		Equation equ = (Equation)enum1.nextElement();
+		Equation equ = enum1.nextElement();
 		membrane.addContent( getXML(equ) );
 	}
 	//Add JumConditions
-	enum1 = param.getJumpConditions();
-	while (enum1.hasMoreElements()){
-		JumpCondition jc = (JumpCondition)enum1.nextElement();
+	Enumeration<JumpCondition> enum2 = param.getJumpConditions();
+	while (enum2.hasMoreElements()){
+		JumpCondition jc = (JumpCondition)enum2.nextElement();
 		membrane.addContent( getXML(jc) );
 	}
 	//Add FastSystem (if there is)
@@ -1791,7 +1794,7 @@ public org.jdom.Element getXML(MemVariable param) {
 	org.jdom.Element memvariable = new org.jdom.Element(XMLTags.MembraneVariableTag);
 
 	//Add atributes
-	memvariable.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	memvariable.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return memvariable;
 }
@@ -1807,11 +1810,11 @@ public org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 	org.jdom.Element ode = new org.jdom.Element(XMLTags.OdeEquationTag);
 
 	//Add atribute
-	ode.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVariable().getName()));
+	ode.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	//Add Rate subelement
 	org.jdom.Element rate = new org.jdom.Element(XMLTags.RateTag);
 	if (param.getRateExpression() != null) {
-		rate.addContent(this.mangleExpression(param.getRateExpression()));
+		rate.addContent(mangleExpression(param.getRateExpression()));
 	} else {
 		rate.addContent("0.0");
 	}
@@ -1819,7 +1822,7 @@ public org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 	//Add Initial
 	org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialTag);
 	if (param.getInitialExpression() != null) {
-		initial.addContent(this.mangleExpression(param.getInitialExpression()));
+		initial.addContent(mangleExpression(param.getInitialExpression()));
 		ode.addContent(initial);
 	}
 	
@@ -1829,7 +1832,7 @@ public org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 			ode.setAttribute(XMLTags.SolutionTypeTag, XMLTags.UnknownTypeTag);
 			
 			if (param.getInitialExpression()==null) {
-				initial.setText( this.mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
+				initial.setText(mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
 				ode.addContent(initial);
 			}
 			
@@ -1838,7 +1841,7 @@ public org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 		case Equation.EXACT_SOLUTION: {
 			ode.setAttribute(XMLTags.SolutionTypeTag, XMLTags.ExactTypeTag);			
 			org.jdom.Element solution = new org.jdom.Element(XMLTags.SolutionExpressionTag);
-			solution.setText( this.mangle(param.getExactSolution().infix()) );
+			solution.setText(mangle(param.getExactSolution().infix()) );
 			ode.addContent(solution);
 
 			break;
@@ -1863,7 +1866,7 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	org.jdom.Element pde = new org.jdom.Element(XMLTags.PdeEquationTag);
 
 	//Add Atribute
-	pde.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVariable().getName()));
+	pde.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	if (param.isSteady()) {
 		pde.setAttribute(XMLTags.SteadyTag, "1");
 	}
@@ -1871,27 +1874,27 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	org.jdom.Element boundaries = new org.jdom.Element(XMLTags.BoundariesTag);
 	//Xm
 	if (param.getBoundaryXm() != null) {
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueXm, this.mangleExpression(param.getBoundaryXm()));
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueXm, mangleExpression(param.getBoundaryXm()));
 	}
 	//Xp
 	if (param.getBoundaryXp() != null) {
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueXp, this.mangleExpression(param.getBoundaryXp()));
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueXp, mangleExpression(param.getBoundaryXp()));
 	}
 	//Ym
 	if (param.getBoundaryYm() != null) {
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueYm, this.mangleExpression(param.getBoundaryYm()));
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueYm, mangleExpression(param.getBoundaryYm()));
 	}
 	//Yp
 	if (param.getBoundaryYp() != null) {
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueYp, this.mangleExpression(param.getBoundaryYp()));
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueYp, mangleExpression(param.getBoundaryYp()));
 	}
 	//Zm
 	if (param.getBoundaryZm() != null) {
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueZm, this.mangleExpression(param.getBoundaryZm()));
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueZm, mangleExpression(param.getBoundaryZm()));
 	}
 	//Zp
 	if (param.getBoundaryZp() != null) {
-		boundaries.setAttribute(XMLTags.BoundaryAttrValueZp, this.mangleExpression(param.getBoundaryZp()));
+		boundaries.setAttribute(XMLTags.BoundaryAttrValueZp, mangleExpression(param.getBoundaryZp()));
 	}
 	//If is not empty, add it to the pdeEquation
 	if (boundaries.getAttributes().size() >0){
@@ -1900,23 +1903,23 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	//add Rate
 	org.jdom.Element rate = new org.jdom.Element(XMLTags.RateTag);
 	if (param.getRateExpression() != null) {
-		rate.addContent(this.mangleExpression(param.getRateExpression()));
+		rate.addContent(mangleExpression(param.getRateExpression()));
 	} else {
-		rate.addContent(this.mangleExpression(new cbit.vcell.parser.Expression(0.0)));
+		rate.addContent(mangleExpression(new cbit.vcell.parser.Expression(0.0)));
 	}
 	pde.addContent(rate);
 	//Diffusion
 	org.jdom.Element diffusion = new org.jdom.Element(XMLTags.DiffusionTag);
 	if (param.getDiffusionExpression() != null) {
-		diffusion.addContent(this.mangleExpression(param.getDiffusionExpression()));
+		diffusion.addContent(mangleExpression(param.getDiffusionExpression()));
 	} else {
-		diffusion.addContent(this.mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
+		diffusion.addContent(mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
 	}
 	pde.addContent(diffusion);
 	//Initial
 	org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialTag);
 	if (param.getInitialExpression() != null) {
-		initial.addContent(this.mangleExpression(param.getInitialExpression()));
+		initial.addContent(mangleExpression(param.getInitialExpression()));
 		pde.addContent(initial);
 	}
 
@@ -1926,7 +1929,7 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 			pde.setAttribute(XMLTags.SolutionTypeTag, XMLTags.UnknownTypeTag);
 			
 			if (param.getInitialExpression()==null) {
-				initial.setText( this.mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
+				initial.setText( mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
 				pde.addContent(initial);
 			}
 			
@@ -1935,7 +1938,7 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 		case Equation.EXACT_SOLUTION: {
 			pde.setAttribute(XMLTags.SolutionTypeTag, XMLTags.ExactTypeTag);			
 			org.jdom.Element solution = new org.jdom.Element(XMLTags.SolutionExpressionTag);
-			solution.setText( this.mangle(param.getExactSolution().infix()) );
+			solution.setText( mangle(param.getExactSolution().infix()) );
 			pde.addContent(solution);
 
 			break;
@@ -1984,7 +1987,7 @@ public Element getXML(StochVolVariable param) {
 	org.jdom.Element stochVar = new org.jdom.Element(XMLTags.StochVolVariableTag);
 
 	//Add atribute
-	stochVar.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	stochVar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return stochVar;
 }
@@ -2019,8 +2022,8 @@ public Element getXML(VarIniCondition param)
 	org.jdom.Element varIni = new org.jdom.Element(XMLTags.VarIniConditionTag);
 
 	//Add atribute
-	varIni.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVar().getName()));
-	varIni.addContent(this.mangleExpression(param.getIniVal()));
+	varIni.setAttribute(XMLTags.NameAttrTag, mangle(param.getVar().getName()));
+	varIni.addContent(mangleExpression(param.getIniVal()));
 	return varIni;
 }
 
@@ -2036,11 +2039,11 @@ public org.jdom.Element getXML(VolumeRegionEquation param) {
 	String tempString;
 	
 	//add name
-	memregeq.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVariable().getName()));
+	memregeq.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	//
 	//add UniformRate
 	if (param.getUniformRateExpression() != null){
-		tempString = this.mangleExpression(param.getUniformRateExpression());
+		tempString = mangleExpression(param.getUniformRateExpression());
 		//buffer.append("\t\t"+VCML.UniformRate+" "+getUniformRateExpression()+";\n");
 	}else{
 		tempString = "0.0";
@@ -2052,7 +2055,7 @@ public org.jdom.Element getXML(VolumeRegionEquation param) {
 
 	//add VolumeRate
 	if (param.getVolumeRateExpression() != null){
-		tempString = this.mangleExpression(param.getVolumeRateExpression());
+		tempString = mangleExpression(param.getVolumeRateExpression());
 //		buffer.append("\t\t"+VCML.VolumeRate+" "+getVolumeRateExpression()+";\n");
 	}else{
 		tempString = "0.0";
@@ -2065,7 +2068,7 @@ public org.jdom.Element getXML(VolumeRegionEquation param) {
 	//
 	//add MembraneRate
 	if (param.getMembraneRateExpression() != null){
-		tempString = this.mangleExpression(param.getMembraneRateExpression());
+		tempString = mangleExpression(param.getMembraneRateExpression());
 //		buffer.append("\t\t"+VCML.MembraneRate+" "+getMembraneRateExpression().infix()+";\n");
 	}else{
 		tempString = "0.0";
@@ -2078,7 +2081,7 @@ public org.jdom.Element getXML(VolumeRegionEquation param) {
 	//add Initial
 	if (param.getInitialExpression() != null){
 		tempElem = new org.jdom.Element( XMLTags.InitialTag );
-		tempElem.setText( this.mangleExpression(param.getInitialExpression()) );
+		tempElem.setText(mangleExpression(param.getInitialExpression()) );
 		memregeq.addContent(tempElem);
 //		buffer.append("\t\t"+VCML.Initial+"\t "+initialExp.infix()+";\n");
 	}
@@ -2096,7 +2099,7 @@ public org.jdom.Element getXML(VolumeRegionEquation param) {
 		}
 		case MembraneRegionEquation.EXACT_SOLUTION:{
 			tempElem.setAttribute(XMLTags.TypeAttrTag, "exact");
-			tempElem.setText( this.mangleExpression(param.getExactSolution()) );		
+			tempElem.setText(mangleExpression(param.getExactSolution()) );		
 //			buffer.append("\t\t"+VCML.Exact+" "+exactExp.infix()+";\n");
 			break;
 		}
@@ -2117,7 +2120,7 @@ public org.jdom.Element getXML(VolumeRegionVariable param) {
 	org.jdom.Element volregvar = new org.jdom.Element(XMLTags.VolumeRegionVariableTag);
 
 	//Add atribute
-	volregvar.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	volregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return volregvar;
 }
@@ -2133,7 +2136,7 @@ public org.jdom.Element getXML(VolVariable param) {
 	org.jdom.Element volvariable = new org.jdom.Element(XMLTags.VolumeVariableTag);
 
 	//Add atribute
-	volvariable.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	volvariable.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return volvariable;
 }
@@ -2149,12 +2152,12 @@ public org.jdom.Element getXML(cbit.vcell.mathmodel.MathModel param) throws XmlP
 	org.jdom.Element mathmodel = new org.jdom.Element(XMLTags.MathModelTag);
 	//Add Attributes
 	String name = param.getName();
-	mathmodel.setAttribute(XMLTags.NameAttrTag, this.mangle(name));
+	mathmodel.setAttribute(XMLTags.NameAttrTag, mangle(name));
 	//mathmodel.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add Annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(param.getDescription()));
+		annotationElem.setText(mangle(param.getDescription()));
 		mathmodel.addContent(annotationElem);
 	}
 	//Add Subelements
@@ -2194,7 +2197,7 @@ public org.jdom.Element getXML(Catalyst param) {
 	org.jdom.Element catalyst = new org.jdom.Element(XMLTags.CatalystTag);
 
 	//Add attribute
-	catalyst.setAttribute(XMLTags.SpeciesContextRefAttrTag, this.mangle(param.getSpeciesContext().getName()));
+	catalyst.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 
 	//If keyFlag is on print the Keyvalue
 	if (param.getKey() !=null && this.printKeysFlag) {
@@ -2215,14 +2218,14 @@ public org.jdom.Element getXML(Diagram param) {
 	org.jdom.Element diagram = new org.jdom.Element(XMLTags.DiagramTag);
 
 	//add attributes
-	diagram.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
-	diagram.setAttribute(XMLTags.StructureAttrTag, this.mangle(param.getStructure().getName()));
+	diagram.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	diagram.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	
 	//Add NodeReferences subelements
 	if (param.getNodeList().size()>0){
-		java.util.List children = param.getNodeList();
+		List<NodeReference> children = param.getNodeList();
 		for (int i=0 ; i<children.size() ;i++ ){
-			NodeReference node = (NodeReference)children.get(i);
+			NodeReference node = children.get(i);
 			diagram.addContent( getXML(node) );
 		}
 	}
@@ -2243,7 +2246,7 @@ public org.jdom.Element getXML(Feature param/*, Model model*/) {
 	org.jdom.Element feature = new org.jdom.Element(XMLTags.FeatureTag);
 	
 	//Get parameters
-	feature.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
+	feature.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	/******* not any more in use***** Species contexts moved to the Model level ***
 	//Get SpeciesContexts
 	SpeciesContext[] array = model.getSpeciesContexts(param);
@@ -2264,12 +2267,12 @@ public org.jdom.Element getXML(Feature param/*, Model model*/) {
 public org.jdom.Element getXML(FluxReaction param) throws XmlParseException {
 	org.jdom.Element fluxreaction = new org.jdom.Element(XMLTags.FluxStepTag);
 	//get Attributes
-	String versionName = (param.getName() != null) ? this.mangle(param.getName()) : "unnamed_fluxReaction";
+	String versionName = (param.getName() != null) ? mangle(param.getName()) : "unnamed_fluxReaction";
 	fluxreaction.setAttribute(XMLTags.NameAttrTag, versionName);
-	fluxreaction.setAttribute(XMLTags.StructureAttrTag, this.mangle(param.getStructure().getName()));
+	fluxreaction.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	
 	if (param.getFluxCarrier() != null) {
-		fluxreaction.setAttribute(XMLTags.FluxCarrierAttrTag, this.mangle(param.getFluxCarrier().getCommonName()));		
+		fluxreaction.setAttribute(XMLTags.FluxCarrierAttrTag, mangle(param.getFluxCarrier().getCommonName()));		
 	}
 	Expression tempExp = null;
 	int valence;
@@ -2286,11 +2289,11 @@ public org.jdom.Element getXML(FluxReaction param) throws XmlParseException {
 									(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + param.getName()+" : "+e.getMessage());
 	}
 	fluxreaction.setAttribute(XMLTags.FluxCarrierValenceAttrTag, String.valueOf(valence));
-	if (param.getPhysicsOptions() == param.PHYSICS_ELECTRICAL_ONLY){
+	if (param.getPhysicsOptions() == FluxReaction.PHYSICS_ELECTRICAL_ONLY){
 		fluxreaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);
-	}else if (param.getPhysicsOptions() == param.PHYSICS_MOLECULAR_AND_ELECTRICAL){
+	}else if (param.getPhysicsOptions() == FluxReaction.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		fluxreaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularAndElectrical);
-	}else if (param.getPhysicsOptions() == param.PHYSICS_MOLECULAR_ONLY){
+	}else if (param.getPhysicsOptions() == FluxReaction.PHYSICS_MOLECULAR_ONLY){
 		fluxreaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularOnly);
 	}
 
@@ -2366,13 +2369,13 @@ public org.jdom.Element getXML(Kinetics param) throws XmlParseException {
 		Kinetics.KineticsParameter parm = parameters[i];
 		org.jdom.Element tempparameter = new org.jdom.Element(XMLTags.ParameterTag);
 		//Get parameter attributes
-		tempparameter.setAttribute(XMLTags.NameAttrTag, this.mangle(parm.getName()));
+		tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
 		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, param.getDefaultParameterDesc(parm.getRole()));
 		VCUnitDefinition unit = parm.getUnitDefinition();
 		if (unit != null) {
 			tempparameter.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
 		}
-		tempparameter.addContent( this.mangleExpression(parm.getExpression()) );
+		tempparameter.addContent( mangleExpression(parm.getExpression()) );
 		//Add the parameter to the general kinetics object
 		kinetics.addContent(tempparameter);
 	}
@@ -2392,9 +2395,9 @@ public org.jdom.Element getXML(Kinetics param) throws XmlParseException {
 public org.jdom.Element getXML(Membrane param/*, Model model*/) {
 	org.jdom.Element membrane = new org.jdom.Element(XMLTags.MembraneTag);
 	//Add Atributes
-	membrane.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
-	membrane.setAttribute(XMLTags.InsideFeatureTag, this.mangle(param.getInsideFeature().getName()));
-	membrane.setAttribute(XMLTags.OutsideFeatureTag, this.mangle(param.getOutsideFeature().getName()));
+	membrane.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	membrane.setAttribute(XMLTags.InsideFeatureTag, mangle(param.getInsideFeature().getName()));
+	membrane.setAttribute(XMLTags.OutsideFeatureTag, mangle(param.getOutsideFeature().getName()));
 	//*****not any more in use***** speciesContexts moved to Model level********
 	//Add SpeciesContexts			
 	/*SpeciesContext[] array = model.getSpeciesContexts(param);
@@ -2410,7 +2413,7 @@ public org.jdom.Element getXML(ModelParameter[] modelParams) {
 	for (int i = 0; i < modelParams.length; i++) {
 		Element glParamElement = new Element(XMLTags.ParameterTag);
 		//Get parameter attributes - name, role and unit definition
-		glParamElement.setAttribute(XMLTags.NameAttrTag, this.mangle(modelParams[i].getName()));
+		glParamElement.setAttribute(XMLTags.NameAttrTag, mangle(modelParams[i].getName()));
 		if (modelParams[i].getRole() == Model.ROLE_UserDefined) {
 			glParamElement.setAttribute(XMLTags.ParamRoleAttrTag, Model.RoleDesc);
 		} else {
@@ -2421,12 +2424,12 @@ public org.jdom.Element getXML(ModelParameter[] modelParams) {
 			glParamElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
 		}
 		// add expression as content
-		glParamElement.addContent( this.mangleExpression(modelParams[i].getExpression()) );
+		glParamElement.addContent(mangleExpression(modelParams[i].getExpression()) );
 		//add annotation (if there is any)
 		if (modelParams[i].getModelParameterAnnotation() != null &&
 				modelParams[i].getModelParameterAnnotation().length() > 0) {
 			Element annotationElement = new Element(XMLTags.AnnotationTag);
-			annotationElement.setText(this.mangle(modelParams[i].getModelParameterAnnotation()));
+			annotationElement.setText(mangle(modelParams[i].getModelParameterAnnotation()));
 			glParamElement.addContent(annotationElement);
 		}
 		globalsElement.addContent(glParamElement);
@@ -2444,14 +2447,14 @@ public org.jdom.Element getXML(ModelParameter[] modelParams) {
  */
 public org.jdom.Element getXML(cbit.vcell.model.Model param) throws XmlParseException/*, cbit.vcell.parser.ExpressionException */{
 	org.jdom.Element modelnode = new org.jdom.Element(XMLTags.ModelTag);
-	String versionName = (param.getName()!=null)?this.mangle(param.getName()):"unnamed_model";
+	String versionName = (param.getName()!=null)?mangle(param.getName()):"unnamed_model";
 
 	//get Attributes
 	modelnode.setAttribute(XMLTags.NameAttrTag, versionName);
 	//modelnode.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(param.getDescription()));
+		annotationElem.setText(mangle(param.getDescription()));
 		modelnode.addContent(annotationElem);
 	}
 
@@ -2469,7 +2472,7 @@ public org.jdom.Element getXML(cbit.vcell.model.Model param) throws XmlParseExce
 	}
 	//Get Structures(Features and Membranes). Add them in an ordered fashion, but it does not matter who comes first.
 	try {
-		ArrayList list = new ArrayList();
+		ArrayList<Element> list = new ArrayList<Element>();
 		Structure[] structarray = param.getStructures();
 		for (int i=0 ; i < structarray.length ; i++){
 			Element structure = getXML(structarray[i]);
@@ -2520,7 +2523,7 @@ public org.jdom.Element getXML(NodeReference param) {
 		case NodeReference.SIMPLE_REACTION_NODE:{
 			org.jdom.Element simplereaction = new org.jdom.Element(XMLTags.SimpleReactionShapeTag);
 			//add Attributes
-			simplereaction.setAttribute(XMLTags.SimpleReactionRefAttrTag, this.mangle(param.getName()));
+			simplereaction.setAttribute(XMLTags.SimpleReactionRefAttrTag, mangle(param.getName()));
 			simplereaction.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			simplereaction.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
 
@@ -2529,7 +2532,7 @@ public org.jdom.Element getXML(NodeReference param) {
 		case NodeReference.FLUX_REACTION_NODE:{
 			org.jdom.Element fluxreaction = new org.jdom.Element(XMLTags.FluxReactionShapeTag);
 			//add Attributes
-			fluxreaction.setAttribute(XMLTags.FluxReactionRefAttrTag, this.mangle(param.getName()));
+			fluxreaction.setAttribute(XMLTags.FluxReactionRefAttrTag, mangle(param.getName()));
 			fluxreaction.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			fluxreaction.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
 
@@ -2538,7 +2541,7 @@ public org.jdom.Element getXML(NodeReference param) {
 		case NodeReference.SPECIES_CONTEXT_NODE:{
 			org.jdom.Element speciecontext = new org.jdom.Element(XMLTags.SpeciesContextShapeTag);
 			//add Attributes
-			speciecontext.setAttribute(XMLTags.SpeciesContextRefAttrTag, this.mangle(param.getName()));
+			speciecontext.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getName()));
 			speciecontext.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
 			speciecontext.setAttribute(XMLTags.LocationYAttrTag, String.valueOf(param.location.y));
 
@@ -2559,7 +2562,7 @@ public org.jdom.Element getXML(NodeReference param) {
 public org.jdom.Element getXML(Product param) {
 	org.jdom.Element product = new org.jdom.Element(XMLTags.ProductTag);
 	//Add attributes
-	product.setAttribute(XMLTags.SpeciesContextRefAttrTag, this.mangle(param.getSpeciesContext().getName()));
+	product.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 	product.setAttribute(XMLTags.StoichiometryAttrTag, String.valueOf(param.getStoichiometry()));
 
 	//If keyFlag is on print the Keyvalue
@@ -2580,7 +2583,7 @@ public org.jdom.Element getXML(Product param) {
 public org.jdom.Element getXML(Reactant param) {
 	org.jdom.Element reactant = new org.jdom.Element(XMLTags.ReactantTag);
 	//Add attributes
-	reactant.setAttribute(XMLTags.SpeciesContextRefAttrTag, this.mangle(param.getSpeciesContext().getName()));
+	reactant.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 	reactant.setAttribute(XMLTags.StoichiometryAttrTag, String.valueOf(param.getStoichiometry()));
 
 	//If keyFlag is on print the Keyvalue
@@ -2628,7 +2631,7 @@ public org.jdom.Element getXML(ReactionStep param) throws XmlParseException {
 	}
 	if(rsElement != null){
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(param.getAnnotation()));
+		annotationElem.setText(mangle(param.getAnnotation()));
 		rsElement.addContent(annotationElem);
 	}
 	MIRIAMHelper.addToSBML(rsElement, param.getMIRIAMAnnotation(), true);
@@ -2645,8 +2648,8 @@ public org.jdom.Element getXML(ReactionStep param) throws XmlParseException {
 public org.jdom.Element getXML(SimpleReaction param) throws XmlParseException {
 	org.jdom.Element simplereaction = new org.jdom.Element(XMLTags.SimpleReactionTag);
 	//Add attribute
-	String nameStr = (param.getName()!=null)?(this.mangle(param.getName())):"unnamed_SimpleReaction";
-	simplereaction.setAttribute(XMLTags.StructureAttrTag, this.mangle(param.getStructure().getName()));
+	String nameStr = (param.getName()!=null)?(mangle(param.getName())):"unnamed_SimpleReaction";
+	simplereaction.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	simplereaction.setAttribute(XMLTags.NameAttrTag, nameStr);
 	Expression tempExp = null;
 	int valence;
@@ -2663,11 +2666,11 @@ public org.jdom.Element getXML(SimpleReaction param) throws XmlParseException {
 									(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + param.getName()+" : "+e.getMessage());
 	}
 	simplereaction.setAttribute(XMLTags.FluxCarrierValenceAttrTag, String.valueOf(valence));
-	if (param.getPhysicsOptions() == param.PHYSICS_ELECTRICAL_ONLY){
+	if (param.getPhysicsOptions() == SimpleReaction.PHYSICS_ELECTRICAL_ONLY){
 		simplereaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);
-	}else if (param.getPhysicsOptions() == param.PHYSICS_MOLECULAR_AND_ELECTRICAL){
+	}else if (param.getPhysicsOptions() == SimpleReaction.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		simplereaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularAndElectrical);
-	}else if (param.getPhysicsOptions() == param.PHYSICS_MOLECULAR_ONLY){
+	}else if (param.getPhysicsOptions() == SimpleReaction.PHYSICS_MOLECULAR_ONLY){
 		simplereaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularOnly);
 	}
 
@@ -2680,11 +2683,11 @@ public org.jdom.Element getXML(SimpleReaction param) throws XmlParseException {
 	// Add subelements: Reactants/Products/Catalysts
 	//separate the order of the reactants, products, and modifiers.
 	ReactionParticipant rpArray[] = param.getReactionParticipants();
-	ArrayList products = new ArrayList();
-	ArrayList modifiers = new ArrayList();
+	ArrayList<Element> products = new ArrayList<Element>();
+	ArrayList<Element> modifiers = new ArrayList<Element>();
 	for (int i = 0; i < rpArray.length; i++){
-		if (getXML(rpArray[i]) != null) {
-			Element rp =  getXML(rpArray[i]);
+		Element rp =  getXML(rpArray[i]);
+		if (rp != null) {
 			if (rpArray[i] instanceof Reactant)
 				simplereaction.addContent(rp);
 			else if (rpArray[i] instanceof Product)
@@ -2714,13 +2717,13 @@ public org.jdom.Element getXML(Species species) throws XmlParseException {
 	org.jdom.Element speciesElement = new org.jdom.Element(XMLTags.SpeciesTag);
 
 	//add name
-	speciesElement.setAttribute(XMLTags.NameAttrTag, this.mangle(species.getCommonName()) );
+	speciesElement.setAttribute(XMLTags.NameAttrTag, mangle(species.getCommonName()) );
 	
 	//add annotation (if there is any)
 	if (species.getAnnotation()!=null && species.getAnnotation().length()!=0) {
 		//speciesElement.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(species.getAnnotation()) );
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(species.getAnnotation()));
+		annotationElem.setText(mangle(species.getAnnotation()));
 		speciesElement.addContent(annotationElem);
 	}
 	MIRIAMHelper.addToSBML(speciesElement, species.getMIRIAMAnnotation(),true);
@@ -2743,9 +2746,9 @@ public org.jdom.Element getXML(Species species) throws XmlParseException {
 public org.jdom.Element getXML(SpeciesContext param) {
 	org.jdom.Element speciecontext = new org.jdom.Element( XMLTags.SpeciesContextTag);
 	//Add atributes
-	speciecontext.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getName()));
-	speciecontext.setAttribute(XMLTags.SpeciesRefAttrTag, this.mangle(param.getSpecies().getCommonName()));
-	speciecontext.setAttribute( XMLTags.StructureAttrTag, this.mangle(param.getStructure().getName()) );
+	speciecontext.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	speciecontext.setAttribute(XMLTags.SpeciesRefAttrTag, mangle(param.getSpecies().getCommonName()));
+	speciecontext.setAttribute( XMLTags.StructureAttrTag, mangle(param.getStructure().getName()) );
 	speciecontext.setAttribute( XMLTags.HasOverrideAttrTag, String.valueOf(param.getHasOverride()) );
 
 	//If keyFlag is on print the Keyvalue
@@ -2774,15 +2777,15 @@ public org.jdom.Element getXML(Structure structure) throws XmlParseException {
 	    //process a Membrane
 	    structureElement = new org.jdom.Element(XMLTags.MembraneTag);
 	    //add specific attributes
-	    structureElement.setAttribute(XMLTags.InsideFeatureTag, this.mangle(((Membrane)structure).getInsideFeature().getName()));
-		structureElement.setAttribute(XMLTags.OutsideFeatureTag, this.mangle(((Membrane)structure).getOutsideFeature().getName()));
-		structureElement.setAttribute(XMLTags.MemVoltNameTag, this.mangle(((Membrane)structure).getMembraneVoltage().getName()));
+	    structureElement.setAttribute(XMLTags.InsideFeatureTag, mangle(((Membrane)structure).getInsideFeature().getName()));
+		structureElement.setAttribute(XMLTags.OutsideFeatureTag, mangle(((Membrane)structure).getOutsideFeature().getName()));
+		structureElement.setAttribute(XMLTags.MemVoltNameTag, mangle(((Membrane)structure).getMembraneVoltage().getName()));
     } else {
 	    throw new XmlParseException("An unknown type of structure was found:"+structure.getClass().getName());
     }
     
     //add attributes
-    structureElement.setAttribute(XMLTags.NameAttrTag, this.mangle(structure.getName()));
+    structureElement.setAttribute(XMLTags.NameAttrTag, mangle(structure.getName()));
     
 	//If the keyFlag is on, print Keys
 	if (structure.getKey() != null && this.printKeysFlag) {
@@ -2822,7 +2825,7 @@ public org.jdom.Element getXML(cbit.vcell.server.GroupAccess groupAccess) {
 		for (int i = 0; i < users.length; i++){
 			org.jdom.Element userElement = new org.jdom.Element(XMLTags.UserTag);
 			//add name
-			userElement.setAttribute(XMLTags.NameAttrTag, this.mangle(users[i].getName()));
+			userElement.setAttribute(XMLTags.NameAttrTag, mangle(users[i].getName()));
 			//add key
 			userElement.setAttribute(XMLTags.KeyValueAttrTag, users[i].getID().toString());
 			//isHidden property
@@ -2838,7 +2841,7 @@ public org.jdom.Element getXML(cbit.vcell.server.GroupAccess groupAccess) {
 			for (int i = 0; i < users.length; i++){
 				org.jdom.Element userElement = new org.jdom.Element(XMLTags.UserTag);
 				//add name
-				userElement.setAttribute(XMLTags.NameAttrTag, this.mangle(users[i].getName()));
+				userElement.setAttribute(XMLTags.NameAttrTag, mangle(users[i].getName()));
 				//add key
 				userElement.setAttribute(XMLTags.KeyValueAttrTag, users[i].getID().toString());
 				//isHidden property
@@ -2883,13 +2886,13 @@ public org.jdom.Element getXML(cbit.vcell.solver.MathOverrides param) {
 	//get the expressions
 	for (int i = 0; i < constantNames.length; i++){
 		org.jdom.Element constant = new org.jdom.Element(XMLTags.ConstantTag);
-		constant.setAttribute( XMLTags.NameAttrTag, this.mangle(constantNames[i]) );
+		constant.setAttribute( XMLTags.NameAttrTag, mangle(constantNames[i]) );
 		if (param.isScan(constantNames[i])) {
 			cbit.vcell.solver.ConstantArraySpec cas = param.getConstantArraySpec(constantNames[i]);
 			constant.setAttribute(XMLTags.ConstantArraySpec, Integer.toString(cas.getType()));
-			constant.addContent(this.mangle(cas.toString()));
+			constant.addContent(mangle(cas.toString()));
 		} else {
-			constant.addContent( this.mangleExpression(param.getActualExpression(constantNames[i], 0)) );
+			constant.addContent(mangleExpression(param.getActualExpression(constantNames[i], 0)) );
 		}
 		//and add it to the mathOverrides Element
 		overrides.addContent( constant );
@@ -2981,13 +2984,13 @@ public org.jdom.Element getXML(cbit.vcell.solver.Simulation param) {
 	org.jdom.Element simulation = new org.jdom.Element(XMLTags.SimulationTag);
 
 	//Add Atributes
-	String name = this.mangle(param.getName());
+	String name = mangle(param.getName());
 	simulation.setAttribute(XMLTags.NameAttrTag, name);
 	//simulation.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//Add annotation
 	if (param.getDescription()!=null && param.getDescription().trim().length()>0) {
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(this.mangle(param.getDescription()));
+		annotationElem.setText(mangle(param.getDescription()));
 		simulation.addContent(annotationElem);
 	}
 	//Add SolverTaskDescription 
@@ -3013,13 +3016,13 @@ public org.jdom.Element getXML(cbit.vcell.solver.Simulation param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.SolverTaskDescription
  */
-public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
+public org.jdom.Element getXML(SolverTaskDescription param) {
 	org.jdom.Element solvertask = new org.jdom.Element(XMLTags.SolverTaskDescriptionTag);
 
 	//Add Atributes
-	if (param.getTaskType() == param.TASK_UNSTEADY){
+	if (param.getTaskType() == SolverTaskDescription.TASK_UNSTEADY){
 		solvertask.setAttribute(XMLTags.TaskTypeTag, XMLTags.UnsteadyTag);
-	} else if (param.getTaskType() == param.TASK_STEADY){
+	} else if (param.getTaskType() == SolverTaskDescription.TASK_STEADY){
 		solvertask.setAttribute(XMLTags.TaskTypeTag, XMLTags.SteadyTag);		
 	} else{
 		throw new IllegalArgumentException("Unexpected task type:"+ param.getTaskType());
@@ -3048,7 +3051,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
 		solvertask.addContent( getXML(param.getSensitivityParameter()) );
 	}
 	//Add solver name
-	solvertask.setAttribute(XMLTags.SolverNameTag, param.getSolverDescription().getName());
+	solvertask.setAttribute(XMLTags.SolverNameTag, param.getSolverDescription().getDatabaseName());
 	
 	if (param.isStopAtSpatiallyUniform()) {
 		solvertask.setAttribute(XMLTags.StopAtSpatiallyUniform, String.valueOf(param.isStopAtSpatiallyUniform()));
