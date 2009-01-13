@@ -10,6 +10,7 @@ import cbit.vcell.model.*;
 import java.io.*;
 import cbit.vcell.math.*;
 import cbit.vcell.math.gui.*;
+import cbit.vcell.matrix.RationalNumberMatrix;
 import cbit.vcell.mapping.*;
 /**
  * Insert the type's description here.
@@ -38,7 +39,7 @@ public static void main(java.lang.String[] args) {
 		// SimulationContext simContext = SimulationContextTest.getExample(2);
 		// TimeScaleAnalyzer timeScaleAnalyzer = new TimeScaleAnalyzer(simContext);
 		// MathDescription mathDesc = timeScaleAnalyzer.getMathDescription();
-		cbit.vcell.matrix.RationalMatrixFast stoichMatrix = null; // timeScaleAnalyzer.getReducedStoichMatrix();
+		RationalNumberMatrix stoichMatrix = null; // timeScaleAnalyzer.getReducedStoichMatrix();
 		
 		MatlabOdeFileCoder odeFileCoder = new MatlabOdeFileCoder(simulation, stoichMatrix);
 

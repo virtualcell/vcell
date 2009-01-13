@@ -1,4 +1,7 @@
 package cbit.vcell.math.gui;
+
+import cbit.util.EventDispatchRunWithException;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -40,17 +43,17 @@ public MathViewerPanel() {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(cbit.vcell.math.MathDescription value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJEditorPane1().setText(this.getVCMDL(getmathDescription1()));
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
+	new EventDispatchRunWithException() {
+		public Object runWithException() throws Exception {
+			try {
+				getJEditorPane1().setText(getVCMDL(getmathDescription1()));
+				return null;			
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 

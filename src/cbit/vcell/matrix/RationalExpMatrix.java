@@ -23,7 +23,7 @@ public class RationalExpMatrix implements RationalMatrix, java.io.Serializable
 			}
 		}	
 	}
-	public RationalExpMatrix(RationalMatrixFast rationalMatrixFast){
+	RationalExpMatrix(RationalMatrixFast rationalMatrixFast){
 		rows = rationalMatrixFast.getNumRows();
 		cols = rationalMatrixFast.getNumCols();
 		data = new RationalExp[rows*cols];

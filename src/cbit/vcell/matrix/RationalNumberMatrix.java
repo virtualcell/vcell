@@ -23,7 +23,7 @@ public class RationalNumberMatrix implements RationalMatrix, java.io.Serializabl
 			}
 		}	
 	}
-	public RationalNumberMatrix(RationalMatrixFast rationalMatrixFast){
+	RationalNumberMatrix(RationalMatrixFast rationalMatrixFast){
 		rows = rationalMatrixFast.getNumRows();
 		cols = rationalMatrixFast.getNumCols();
 		data = new RationalNumber[rows*cols];

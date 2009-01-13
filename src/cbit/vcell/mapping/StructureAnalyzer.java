@@ -9,8 +9,8 @@ import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.math.*;
 import cbit.vcell.matrix.RationalMatrix;
-import cbit.vcell.matrix.RationalMatrixFast;
 import cbit.vcell.matrix.RationalNumber;
+import cbit.vcell.matrix.RationalNumberMatrix;
 /**
  * class StructureAnalyzer
  * 
@@ -127,9 +127,10 @@ public void refresh() {
 			refreshFastSystem();
 			substituteIntoFastSystem();
 		}
-	}catch (Exception e){
+	} catch (Exception e){
 		System.out.println("Exception caught in StructureAnalyzer.update()");
 		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
 	}
 }
 
@@ -143,7 +144,7 @@ private void refreshFastMatrices() throws Exception {
 	//
 	// update scheme matrix for fast system
 	//
-	fastSchemeMatrix = new RationalMatrixFast(fastSpeciesContextMappings.length,fastReactionSteps.length);
+	fastSchemeMatrix = new RationalNumberMatrix(fastSpeciesContextMappings.length,fastReactionSteps.length);
 	for (int i=0;i<fastSpeciesContextMappings.length;i++){
 		for (int j=0;j<fastReactionSteps.length;j++){
 			fastSchemeMatrix.set_elem(i,j,fastReactionSteps[j].getStoichiometry(fastSpeciesContextMappings[i].getSpeciesContext()));
@@ -501,7 +502,7 @@ private void refreshTotalMatrices() throws Exception {
 	//
 	// update scheme matrix for full system (slow and fast)
 	//
-	totalSchemeMatrix = new RationalMatrixFast(speciesContextMappings.length,reactionSteps.length);
+	totalSchemeMatrix = new RationalNumberMatrix(speciesContextMappings.length,reactionSteps.length);
 	for (int i=0;i<speciesContextMappings.length;i++){
 		for (int j=0;j<reactionSteps.length;j++){
 			totalSchemeMatrix.set_elem(i,j,reactionSteps[j].getStoichiometry(speciesContextMappings[i].getSpeciesContext()));
@@ -563,7 +564,7 @@ private void refreshTotalMatrices() throws Exception {
 	// update null space matrix
 	//
 	if (totalSchemeMatrix.getNumRows()>1){
-		totalNullSpaceMatrix = (RationalMatrixFast)totalSchemeMatrix.findNullSpace();
+		totalNullSpaceMatrix = (RationalMatrix)totalSchemeMatrix.findNullSpace();
 	}else{
 		totalNullSpaceMatrix = null;
 	}

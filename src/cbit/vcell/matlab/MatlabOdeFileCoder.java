@@ -7,6 +7,8 @@ package cbit.vcell.matlab;
 import cbit.vcell.parser.*;
 import java.util.*;
 import cbit.vcell.math.*;
+import cbit.vcell.matrix.RationalMatrix;
+import cbit.vcell.matrix.RationalNumberMatrix;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -15,7 +17,7 @@ import cbit.vcell.solver.Simulation;
  */
 public class MatlabOdeFileCoder {
 	private Simulation simulation = null;
-	private cbit.vcell.matrix.RationalMatrixFast stoichMatrix = null;
+	private RationalMatrix stoichMatrix = null;
 /**
  * OdeFileCoder constructor comment.
  */
@@ -25,7 +27,7 @@ public MatlabOdeFileCoder(Simulation argSimulation) {
 /**
  * OdeFileCoder constructor comment.
  */
-public MatlabOdeFileCoder(Simulation argSimulation, cbit.vcell.matrix.RationalMatrixFast argStoichMatrix) {
+public MatlabOdeFileCoder(Simulation argSimulation, RationalNumberMatrix argStoichMatrix) {
 	this.simulation = argSimulation;
 	this.stoichMatrix = argStoichMatrix;
 }

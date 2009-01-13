@@ -1,4 +1,5 @@
 package cbit.vcell.math.gui;
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.parser.Expression;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -287,11 +288,16 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (2/14/01 3:50:24 PM)
  */
 private void refreshTree() {
-	if (getMathDescription()!=null){
-		setRoot(createBaseTree());
-	}else{
-		setRoot(new BioModelNode("empty"));
-	}
+	new EventDispatchRunWithException() {
+		public Object runWithException() throws Exception {
+			if (getMathDescription()!=null){
+				setRoot(createBaseTree());
+			}else{
+				setRoot(new BioModelNode("empty"));
+			}
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();	
 }
 
 
