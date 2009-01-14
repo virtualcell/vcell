@@ -39,12 +39,14 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	MDIManager mdiManager = (MDIManager)hashTable.get("mdiManager");
 	String oldName = documentWindowManager.getVCDocument().getName();
+	String owner = documentWindowManager.getVCDocument().getVersion().getOwner().getName();
+	String myself = documentWindowManager.getRequestManager().getConnectionStatus().getUserName();
 	String newName = mdiManager.getDatabaseWindowManager().showSaveDialog(documentWindowManager.getVCDocument().getDocumentType(), (JFrame)hashTable.get("currentDocumentWindow"), oldName);
 	if (newName == null || newName.trim().length()==0){
 		throw new Exception("A name must be given to save");
 	} else if (newName.contains("'")){
 		throw new Exception("Apostrophe is not allowed in names");
-	} else if (oldName.equals(newName)) {
+	} else if (owner.equals(myself) && oldName.equals(newName)) {
 		throw new Exception("A model with name '" + newName + "' already exists. Please give a different name.");
 	}
 	documentWindowManager.getVCDocument().setName(newName);
