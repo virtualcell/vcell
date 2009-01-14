@@ -173,11 +173,13 @@ private ReactionParticipant[] getReactionParticipants(Connection con, KeyValue r
 	return reactionParticipants; 	
 }
 
-
+public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,KeyValue reactionStepKey) throws SQLException, DataAccessException, PropertyVetoException {
+	return getReactionStep(con, user, reactionStepKey, null);
+}
 /**
  * getModels method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,KeyValue reactionStepKey) throws SQLException, DataAccessException, PropertyVetoException {
+public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,KeyValue reactionStepKey, Model model) throws SQLException, DataAccessException, PropertyVetoException {
 
 	Field[] f =
 	{
@@ -197,13 +199,12 @@ public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,K
 		
 	String sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
 	
-	ReactionStep[] rsArr = getReactionStepArray(con,sql);
+	ReactionStep[] rsArr = getReactionStepArray(con,sql, model);
 	if(rsArr != null && rsArr.length > 0){
 		return rsArr[0];
 	}
 	return null;
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -211,7 +212,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,K
  * @param rset java.sql.ResultSet
  * @exception java.sql.SQLException The exception description.
  */
-private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLException, DataAccessException, PropertyVetoException {
+private ReactionStep getReactionStep(Connection con, ResultSet rset, Model model) throws SQLException, DataAccessException, PropertyVetoException {
 
 	//
 	// try to get ReactionStep from the object cache
@@ -229,7 +230,9 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 	
 	Structure structure = getStructureHeirarchy(con, structKey);
 	rs = reactStepTable.getReactionStep(structure, rsKey, rset, log);
-
+	if (model != null) {
+		model.addReactionStep(rs);
+	}
 	//
 	// add reaction participants for this reactionStep
 	//
@@ -255,7 +258,7 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 /**
  * getModels method comment.
  */
-private cbit.vcell.model.ReactionStep[] getReactionStepArray(Connection con,String sql) throws SQLException, DataAccessException, PropertyVetoException {
+private cbit.vcell.model.ReactionStep[] getReactionStepArray(Connection con,String sql, Model model) throws SQLException, DataAccessException, PropertyVetoException {
 
 	java.util.Vector reactStepList = new java.util.Vector();
 	Statement stmt = con.createStatement();
@@ -267,7 +270,7 @@ private cbit.vcell.model.ReactionStep[] getReactionStepArray(Connection con,Stri
 		// get all objects
 		//
 		while (rset.next()) {
-			ReactionStep reactionStep = getReactionStep(con, rset);
+			ReactionStep reactionStep = getReactionStep(con, rset, model);
 			reactStepList.addElement(reactionStep);
 		}
 	} finally {
@@ -304,14 +307,14 @@ private cbit.vcell.model.ReactionStep[] getReactionStepArray(Connection con,Stri
 /**
  * getModels method comment.
  */
-cbit.vcell.model.ReactionStep[] getReactionStepsFromModel(Connection con,KeyValue modelKey) throws SQLException, DataAccessException, PropertyVetoException {
+cbit.vcell.model.ReactionStep[] getReactionStepsFromModel(Connection con, Model model) throws SQLException, DataAccessException, PropertyVetoException {
 	//log.print("ModelDbDriver.getReactionSteps(modelKey=" + modelKey + ")");
 	String sql;
 	sql = 	" SELECT " + reactStepTable.getTableName()+".*" + 
 			" FROM " + reactStepTable.getTableName() + 
-			" WHERE " + reactStepTable.getTableName() + "." + reactStepTable.modelRef + " = " + modelKey;
+			" WHERE " + reactStepTable.getTableName() + "." + reactStepTable.modelRef + " = " + model.getVersion().getVersionKey();
 			
-	return getReactionStepArray(con,sql);
+	return getReactionStepArray(con,sql, model);
 }
 
 
