@@ -314,7 +314,8 @@ public static boolean isFunctionSaved(cbit.vcell.math.Function function) {
 		!name.startsWith("VolFract_") && 
 		!name.startsWith("Kflux_") && 
 		!name.endsWith("_init") && 
-		!name.endsWith("_total")){
+		!name.endsWith("_total") &&
+		!name.equals(SimDataConstants.PSF_FUNCTION_NAME)){
 		return true;
 	}else{
 		return false;

@@ -7,6 +7,10 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 
+import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.*;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -21,6 +25,7 @@ import cbit.vcell.messaging.JmsUtils;
 public class CppClassCoderSimulation extends CppClassCoder {
 	private SimulationJob simulationJob = null;
 	private String baseDataName = null;
+	private String psfFieldDataGlobalVarName = "NULL";
 
 /**
  * VarContextCppCoder constructor comment.
@@ -38,7 +43,7 @@ protected CppClassCoderSimulation(CppCoderVCell cppCoderVCell, SimulationJob arg
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected void writeConstructor(java.io.PrintWriter out) throws Exception {
+protected void writeConstructor(java.io.PrintWriter out) throws Exception {	
 	out.println(getClassName()+"::"+getClassName()+"(CartesianMesh *mesh)");
 	out.println(": Simulation(mesh)");
 	out.println("{");
@@ -314,6 +319,7 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 	writeMain(out);
 	out.println("");
 	writeGetSimTool(out);
+	writePSFFieldDataFunction(out);
 	out.println("");
 	out.println("//---------------------------------------------");
 	out.println("//  class " + getClassName());
@@ -322,7 +328,13 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 	out.println("");
 }
 
-
+public void writePSFFieldDataFunction(PrintWriter out) {
+	out.println();
+	out.println("FieldData *getPSFFieldData() {");	
+	out.println("\treturn " + psfFieldDataGlobalVarName + ";");	
+	out.println("}");
+	out.println();
+}
 /**
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
@@ -460,6 +472,22 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("#endif");
 
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
+		FieldFunctionArguments psfFieldFunc = null;
+		
+		Variable var = simulation.getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+		if (var != null) {
+			FieldFunctionArguments[] ffas = var.getExpression().getFieldFunctionArguments();
+			if (ffas == null || ffas.length == 0) {
+				throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+			} else {				
+				Expression newexp = new Expression("field(" + ffas[0].toCSVString() + ")");
+				if (!var.getExpression().compareEqual(newexp)) {
+					throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+				}
+				psfFieldFunc = ffas[0];
+			}
+		}
+		
 		out.println();
 		out.println("\t\tchar tempString[1024];");
 			
@@ -477,8 +505,12 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 			} else {
 				varType = "VAR_UNKNOWN";
 			}
-			String constructorArg = i + "," + varType + ",\"" + fieldDataID + "\",\"" + fieldName + "\",\"" + varName + "\"," + fieldFuncArgs[i].getTime().infix() + ", tempString";		
-			out.println("\t\t" +  TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + " = new FieldData(" + constructorArg + ");");
+			String constructorArg = i + "," + varType + ",\"" + fieldDataID + "\",\"" + fieldName + "\",\"" + varName + "\"," + fieldFuncArgs[i].getTime().infix() + ", tempString";
+			String globalVarName =  TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
+			out.println("\t\t" + globalVarName + " = new FieldData(" + constructorArg + ");");
+			if (psfFieldFunc != null && psfFieldFunc.equals(fieldFuncArgs[i])) {
+				psfFieldDataGlobalVarName = globalVarName;	
+			}
 		}		
 	}
 	

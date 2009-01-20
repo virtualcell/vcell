@@ -47,4 +47,6 @@ public interface SimDataConstants {
 	public static final int PARTICLE_DATA = 2;
 	public static final int STOCH_DATA = 3; //stoch
 	
+	public static final String PSF_FUNCTION_NAME = "__PSF__";
+	
 }
