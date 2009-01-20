@@ -1,11 +1,13 @@
 package cbit.rmi.event;
 
-import java.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.rmi.*;
+import java.util.Hashtable;
+import java.util.Vector;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/13/2000 2:54:24 PM)
@@ -13,9 +15,9 @@ import java.rmi.*;
  */
 public class AsynchRemoteMessageSupport extends RemoteMessageSupport {
 	private SimpleMessageHandler simpleMessageHandler;
-	private java.util.Vector listeners;
-	private java.util.Hashtable connectedHandlerIDs = new java.util.Hashtable();
-	private java.util.Hashtable rmhMessageQueues = new java.util.Hashtable();
+	private Vector<RemoteMessageListener> listeners = new Vector<RemoteMessageListener>();
+	private Hashtable<RemoteMessageListener, Long> connectedHandlerIDs = new Hashtable<RemoteMessageListener, Long>();
+	private Hashtable<RemoteMessageListener, MessageQueue> rmhMessageQueues = new Hashtable<RemoteMessageListener, MessageQueue>();
 	private Thread remoteDispatchThread = null;
 	private boolean bClosed = false;
 
@@ -56,7 +58,7 @@ public void addRemoteMessageListener(RemoteMessageListener listener, long target
 	    connectedHandlerIDs.put(listener, new Long(targetID));
 	    rmhMessageQueues.put(listener, new MessageQueue());
 	    if (listeners == null) {
-	        listeners = new java.util.Vector();
+	        listeners = new Vector<RemoteMessageListener>();
 	    }
 	    listeners.addElement(listener);
 	}
@@ -79,19 +81,19 @@ private void dispatch() {
 		// sleep 1 second
 		//
 		try {
-			Thread.currentThread().sleep(1000);
+			Thread.sleep(1000);
 		}catch (InterruptedException e){
 		}
 
-		java.util.Vector targets;
+		Vector<RemoteMessageListener> targets;
 		synchronized (this) {
 		    if (listeners == null) {
-		    	targets = new Vector();
+		    	targets = new Vector<RemoteMessageListener>();
 		    }else{
-			    targets = (java.util.Vector) listeners.clone();
+			    targets = (Vector<RemoteMessageListener>) listeners.clone();
 		    }
 		}
-		
+
 		//
 		// go through list of targets and send all queued messages
 		//
@@ -100,8 +102,8 @@ private void dispatch() {
 				//
 				// get next target and corresponding queue
 				//
-			    RemoteMessageListener target = (RemoteMessageListener)targets.elementAt(i);
-			    MessageQueue messageQueue = (MessageQueue)rmhMessageQueues.get(target);  // atomic, no need for synchronization
+			    RemoteMessageListener target = targets.elementAt(i);
+			    MessageQueue messageQueue = rmhMessageQueues.get(target);  // atomic, no need for synchronization
 
 			    //
 			    // for this target, while more messages (and send hasn't failed more than MAX_NUM_SEND_FAILURE times), send one-by-one, skip rest if one fails
@@ -155,6 +157,8 @@ private void dispatch() {
 	}		
 	System.out.println("AsynchRemoteMessageSupport@"+Integer.toHexString(hashCode())+".dispatch(): <<<CLOSING>>>");
 	listeners.clear();
+	rmhMessageQueues.clear();
+	connectedHandlerIDs.clear();
 }
 /**
  * Insert the method's description here.
@@ -165,12 +169,12 @@ protected void fireRemoteMessageEvent(RemoteMessageEvent event) {
 	//
 	// NON-BLOCKING message posting.
 	//
-	java.util.Vector targets;
+	Vector<RemoteMessageListener> targets;
 	synchronized (this) {
 	    if (listeners == null) {
 	    	return;
 	    }
-	    targets = (java.util.Vector) listeners.clone();
+	    targets = (Vector<RemoteMessageListener>) listeners.clone();
 	}
 	//
     // we need to reset the source of the event before we queue the event
@@ -178,7 +182,7 @@ protected void fireRemoteMessageEvent(RemoteMessageEvent event) {
 	RemoteMessageEvent relayedEvent = new RemoteMessageEvent(simpleMessageHandler.getInstanceID(), event.getMessageEvent());
 	
 	for (int i = 0; i < targets.size(); i++) {
-	    RemoteMessageListener target = (RemoteMessageListener)targets.elementAt(i);
+	    RemoteMessageListener target = targets.elementAt(i);
 	    //
 	    // do not send the message back to the sender...
 	    //
@@ -245,14 +249,14 @@ protected boolean isTimeOut() {
 		return true;
 	}
 		
-	Vector targets = (Vector) listeners.clone();
+	Vector<RemoteMessageListener> targets = (Vector<RemoteMessageListener>) listeners.clone();
 		
 	//
 	// go through list of targets
 	//
 	for (int i = 0; i < targets.size(); i++) {
-	    RemoteMessageListener target = (RemoteMessageListener)targets.elementAt(i);
-	    MessageQueue messageQueue = (MessageQueue)rmhMessageQueues.get(target);
+	    RemoteMessageListener target = targets.elementAt(i);
+	    MessageQueue messageQueue = rmhMessageQueues.get(target);
 
 	    if (messageQueue != null){
 		    if (messageQueue.timeSinceLastPopAll() <= MAX_TIME_WITHOUT_POLLING_MS) {
@@ -268,12 +272,12 @@ protected boolean isTimeOut() {
  * Creation date: (11/13/2000 4:46:20 PM)
  */
 protected void poll(boolean reportPerf) {
-	java.util.Vector targets;
+	Vector<RemoteMessageListener> targets;
 	synchronized (this) {
 	    if (listeners == null) {
 	    	return;
-	    }
-	    targets = (java.util.Vector) listeners.clone();
+		}
+	    targets = (Vector<RemoteMessageListener>) listeners.clone();
 	}
 	for (int i = 0; i < targets.size(); i++) {
 	    RemoteMessageListener target = (RemoteMessageListener)targets.elementAt(i);
@@ -320,7 +324,7 @@ protected void poll(boolean reportPerf) {
  */
 public void removeRemoteMessageListener(RemoteMessageListener listener) {
     if (listeners == null) {
-        listeners = new java.util.Vector();
+        listeners = new Vector<RemoteMessageListener>();
     }
     synchronized (this){
 	    listeners.removeElement(listener);
