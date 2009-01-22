@@ -22,6 +22,7 @@ import loci.formats.meta.MetadataStore;
 import loci.formats.ome.OMEXML200706Metadata;
 import cbit.image.ImageException;
 import cbit.util.Extent;
+import cbit.util.Origin;
 
 public class ImageDatasetReader {
 // This function has been amended in Jan 2008 to calculate progress when loading zip, or single image file. Class ImageLoadingProgress has been
@@ -150,7 +151,7 @@ public class ImageDatasetReader {
 					extent = new Extent(pixelSizeX_m*sizeX,pixelSizeY_m*sizeY,pixelSizeZ_m*sizeZ);
 				}
 				System.out.println("reading image "+i+", z="+zct[0]+", channel="+zct[1]+", time="+zct[2]+", pixelType="+meta.getPixelsPixelType(0, 0)+", numSeries="+seriesCount+", size=("+((pixelSizeX_m!=null)?(pixelSizeX_m*1e6):"?")+","+((pixelSizeY_m!=null)?(pixelSizeY_m*1e6):"?")+","+((pixelSizeZ_m!=null)?(pixelSizeZ_m*1e6):"?")+") um, dim=("+sizeX+","+sizeY+","+sizeZ+"), value in ["+minValue+","+maxValue+"]");
-				images[i] = new UShortImage(pixels[0],extent,sizeX,sizeY,1);
+				images[i] = new UShortImage(pixels[0],new Origin(0,0,0),extent,sizeX,sizeY,1);
 				imageCount ++;
 				//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
 				if(status != null)
@@ -339,7 +340,7 @@ public class ImageDatasetReader {
 					extent = new Extent(pixelSizeX_m*sizeX,pixelSizeY_m*sizeY,pixelSizeZ_m*sizeZ);
 				}
 				
-				images[i] = new UShortImage(pixels[0],extent,sizeX,sizeY,1);
+				images[i] = new UShortImage(pixels[0],new Origin(0,0,0),extent,sizeX,sizeY,1);
 				imageCount ++;
 				//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
 				if(status != null)
