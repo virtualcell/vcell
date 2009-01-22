@@ -93,6 +93,7 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -687,7 +688,9 @@ public class FRAPStudy implements Matchable{
 		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
 		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
 		//
-		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false, new Boolean(bCheckSteadyState));
+		simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+		simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
 		fvSolver.startSolver();
 		
 		SolverStatus status = fvSolver.getSolverStatus();
