@@ -39,8 +39,9 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	MDIManager mdiManager = (MDIManager)hashTable.get("mdiManager");
 	String oldName = documentWindowManager.getVCDocument().getName();
-	String owner = documentWindowManager.getVCDocument().getVersion().getOwner().getName();
 	String myself = documentWindowManager.getRequestManager().getConnectionStatus().getUserName();
+	// if the version is null which means this is a new document, so the owner would be myself
+	String owner = documentWindowManager.getVCDocument().getVersion() == null ? myself : documentWindowManager.getVCDocument().getVersion().getOwner().getName();
 	String newName = mdiManager.getDatabaseWindowManager().showSaveDialog(documentWindowManager.getVCDocument().getDocumentType(), (JFrame)hashTable.get("currentDocumentWindow"), oldName);
 	if (newName == null || newName.trim().length()==0){
 		throw new Exception("A name must be given to save");
