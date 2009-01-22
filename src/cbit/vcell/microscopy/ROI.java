@@ -12,6 +12,8 @@ import cbit.image.ImageException;
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Matchable;
+import cbit.util.Origin;
+import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 
 // This represents the ROI - Region Of Interest in a given image : NOTE : subject to change!!
@@ -49,24 +51,6 @@ public class ROI implements Matchable {
 			this.roiImages[i] = new UShortImage(origROI.roiImages[i]);
 		}
 	}
-	/**
-	 * Constructor for 2D or 3D ROI.  for 3D, each sub-image must be same dimension
-	 * and numZ should be 1.
-	 * @param numX int
-	 * @param numY int
-	 * @param numZ int
-	 * @param extent Extent
-	 * @param argROIType
-	 * @throws ImageException 
-	 */
-	public ROI(int numX, int numY, int numZ, Extent extent, RoiType argROIType) throws ImageException {
-		super();
-		roiImages = new UShortImage[numZ];
-		for (int i = 1; i < numZ; i++) {
-			roiImages[i] = new UShortImage(new short[numX*numY],extent,numX,numY,1);
-		}
-		this.roiType = argROIType;
-	}	
 
 	/**
 	 * Constructor for 2D or 3D ROI.  for 3D, each sub-image must be same dimension
@@ -114,8 +98,11 @@ public class ROI implements Matchable {
 				for (int z = 0; z < argRoiImage.getNumZ(); z++) {
 					short[] slicePixels = new short[argRoiImage.getNumX()*argRoiImage.getNumY()];
 					System.arraycopy(argRoiImage.getPixels(), z*slicePixels.length, slicePixels, 0, slicePixels.length);
+					Origin newOrigin =
+						new Origin(argRoiImage.getOrigin().getX(),argRoiImage.getOrigin().getY(),
+								Image.calcOriginPosition(argRoiImage.getOrigin().getZ(), z, newExtent.getZ(), argRoiImage.getNumZ()));
 					UShortImage uShortImage =
-						new UShortImage(slicePixels,newExtent,argRoiImage.getNumX(),argRoiImage.getNumY(),1);
+						new UShortImage(slicePixels,newOrigin,newExtent,argRoiImage.getNumX(),argRoiImage.getNumY(),1);
 					roiSubImages[z] = uShortImage;
 				}
 			}catch(Exception e){

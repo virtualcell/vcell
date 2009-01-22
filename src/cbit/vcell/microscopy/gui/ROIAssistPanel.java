@@ -303,7 +303,9 @@ public class ROIAssistPanel extends JPanel {
 						short[] filledVoidsPixels = frapData.getCurrentlyDisplayedROI().getPixelsXYZ();
 						fillVoids(filledVoidsPixels, false);
 						UShortImage ushortImage =
-							new UShortImage(filledVoidsPixels,frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+							new UShortImage(filledVoidsPixels,
+									frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+									frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
 									frapData.getCurrentlyDisplayedROI().getISize().getX(),
 									frapData.getCurrentlyDisplayedROI().getISize().getY(),
 									frapData.getCurrentlyDisplayedROI().getISize().getZ());
@@ -931,7 +933,7 @@ public class ROIAssistPanel extends JPanel {
 //				}
 			}
 			UShortImage ushortImage =
-				new UShortImage(shortPixels,originalROI.getRoiImages()[0].getExtent(),
+				new UShortImage(shortPixels,originalROI.getRoiImages()[0].getOrigin(),originalROI.getRoiImages()[0].getExtent(),
 						originalROI.getISize().getX(),originalROI.getISize().getY(),originalROI.getISize().getZ());
 			ROI newCellROI = new ROI(ushortImage,frapData.getCurrentlyDisplayedROI().getROIType());
 			final ROI forceValidROI = forceROIValid(newCellROI);
@@ -1138,7 +1140,7 @@ public class ROIAssistPanel extends JPanel {
 //		}
 		
 		UShortImage ushortImage =
-			new UShortImage(validatePixels,validateROI.getRoiImages()[0].getExtent(),
+			new UShortImage(validatePixels,validateROI.getRoiImages()[0].getOrigin(),validateROI.getRoiImages()[0].getExtent(),
 					validateROI.getISize().getX(),validateROI.getISize().getY(),validateROI.getISize().getZ());
 		ROI newROI = new ROI(ushortImage,validateROI.getROIType());
 				
@@ -1308,7 +1310,9 @@ public class ROIAssistPanel extends JPanel {
 					final boolean hasInternalVoids = fillVoids(removePixels,true);
 
 					UShortImage ushortImage =
-						new UShortImage(removePixels,frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+						new UShortImage(removePixels,
+								frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+								frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
 								frapData.getCurrentlyDisplayedROI().getISize().getX(),
 								frapData.getCurrentlyDisplayedROI().getISize().getY(),
 								frapData.getCurrentlyDisplayedROI().getISize().getZ());
@@ -1366,7 +1370,9 @@ public class ROIAssistPanel extends JPanel {
 									}
 								}
 								UShortImage ushortImage =
-									new UShortImage(removePixels,originalROI.getRoiImages()[0].getExtent(),
+									new UShortImage(removePixels,
+											originalROI.getRoiImages()[0].getOrigin(),
+											originalROI.getRoiImages()[0].getExtent(),
 											originalROI.getISize().getX(),
 											originalROI.getISize().getY(),
 											originalROI.getISize().getZ());
