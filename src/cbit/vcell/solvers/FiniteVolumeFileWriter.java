@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -36,6 +37,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 	private File userDirectory = null;
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
+	private int psfFieldIndex = -1;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -760,6 +762,22 @@ private void writeFieldData() throws Exception {
 	printWriter.println("FIELD_DATA_BEGIN");
 	printWriter.println("#id, type, new name, name, varname, time, filename");
 	
+	FieldFunctionArguments psfFieldFunc = null;
+	
+	Variable var = simulation.getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+	if (var != null) {
+		FieldFunctionArguments[] ffas = var.getExpression().getFieldFunctionArguments();
+		if (ffas == null || ffas.length == 0) {
+			throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+		} else {				
+			Expression newexp = new Expression("field(" + ffas[0].toCSVString() + ")");
+			if (!var.getExpression().compareEqual(newexp)) {
+				throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+			}
+			psfFieldFunc = ffas[0];
+		}
+	}
+	
 	int index = 0;
 	HashSet<FieldDataIdentifierSpec> uniqueFieldDataIDSpecs = new HashSet<FieldDataIdentifierSpec>();
 	uniqueFieldDataNSet = new HashSet<FieldDataNumerics>();
@@ -778,6 +796,9 @@ private void writeFieldData() throws Exception {
 				varType = dataVarType;
 			} else if (!varType.equals(dataVarType)) {
 				throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
+			}			
+			if (psfFieldFunc != null && psfFieldFunc.equals(ffa)) {
+				psfFieldIndex = index;
 			}
 			String fieldDataID = "_VCell_FieldData_" + index;
 			printWriter.println(index + " " + varType.getTypeName() + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().infix() + " " + newResampledFieldDataFile);
@@ -793,6 +814,9 @@ private void writeFieldData() throws Exception {
 		}
 	}	
 	
+	if (psfFieldIndex >= 0) {
+		printWriter.println("PSF_FIELD_DATA_INDEX " + psfFieldIndex);
+	}
 	printWriter.println("FIELD_DATA_END");
 	printWriter.println();
 }
