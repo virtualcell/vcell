@@ -246,6 +246,16 @@ public org.jdom.Element getXML(Extent param) throws XmlParseException{
 	return extent;
 }
 
+public org.jdom.Element getXML(Origin param) throws XmlParseException{
+
+	org.jdom.Element origin = new org.jdom.Element(XMLTags.OriginTag);
+	//Add extent attributes
+	origin.setAttribute(XMLTags.XAttrTag, String.valueOf(param.getX()));
+	origin.setAttribute(XMLTags.YAttrTag, String.valueOf(param.getY()));
+	origin.setAttribute(XMLTags.ZAttrTag, String.valueOf(param.getZ()));
+
+	return origin;
+}
 
 /**
  * This method returns a XML representation for a Biomodel object.

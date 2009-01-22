@@ -5,15 +5,19 @@ package cbit.vcell.VirtualMicroscopy;
 ©*/
 import java.awt.Rectangle;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 
 import cbit.image.ImageException;
+import cbit.util.Extent;
 import cbit.util.Matchable;
+import cbit.util.Origin;
 
 public abstract class Image implements Serializable, Matchable {
 	private int numX = 0;
 	private int numY = 0;
 	private int numZ = 0;
 	private cbit.util.Extent extent = new cbit.util.Extent(10, 10, 10);
+	private Origin origin = new Origin(0,0,0);
 	private java.lang.String fieldName = new String();
 	private java.lang.String fieldDescription = new String("NoName");
 
@@ -43,6 +47,7 @@ protected Image(Image vci) {
 	this.numY = vci.getNumY();
 	this.numZ = vci.getNumZ();
 	this.extent = vci.getExtent();
+	this.origin = vci.getOrigin();
 	this.fieldName = vci.getName();
 	this.fieldDescription = vci.getDescription();
 }
@@ -57,7 +62,7 @@ protected Image(Image vci) {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-protected Image(cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+protected Image(Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	
 	if (aNumX<1 || aNumY<1 || aNumZ<1){
 		throw new ImageException("numPixels ("+aExtent.getX()+","+aExtent.getY()+","+aExtent.getZ()+")  must all be >= 1");
@@ -69,6 +74,7 @@ protected Image(cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throw
 	this.numY = aNumY;
 	this.numZ = aNumZ;
 	setExtent(aExtent);
+	setOrigin(aOrigin);
 }
 
 public abstract ImageStatistics getImageStatistics();
@@ -79,6 +85,8 @@ public abstract int[] getNonzeroIndices();
 
 public abstract void reverse();
 
+public abstract Object getPixelArray();
+
 public final double getPixelAreaXY(){
 	double deltaX = getExtent().getX()/getNumX();
 	double deltaY = getExtent().getX()/getNumY();
@@ -86,7 +94,45 @@ public final double getPixelAreaXY(){
 	return (deltaX*deltaY);
 }
 
+public static double calcOriginPosition(double originStart,int pixelOffset,double extentSize,int extentPixels){
+	return originStart+(pixelOffset*(extentSize/extentPixels));
+}
+static Image crop(Image origImage, Rectangle rect) throws ImageException{
 
+	Object inArray = origImage.getPixelArray();
+	Object outArray = Array.newInstance(inArray.getClass().getComponentType(), rect.width*rect.height*origImage.getNumZ());
+	for (int k = 0; k < origImage.getNumZ(); k++) {
+		for (int j = 0; j < rect.height; j++) {
+			for (int i = 0; i < rect.width; i++) {
+				int inIndex = rect.x+i+(j+rect.y)*origImage.getNumX()+k*origImage.getNumX()*origImage.getNumY();
+				int outIndex = i+j*rect.width+(k*rect.width*rect.height);
+				Array.set(outArray, outIndex, Array.get(inArray, inIndex));
+			}
+		}
+	}
+	Extent croppedExtent = null;
+	if (origImage.getExtent()!=null){
+		croppedExtent = new Extent(origImage.getExtent().getX()*rect.width/origImage.getNumX(),origImage.getExtent().getX()*rect.height/origImage.getNumY(),origImage.getExtent().getZ());
+	}
+	Origin croppedOrigin = null;
+	if(origImage.getOrigin() != null){
+		croppedOrigin =
+			new Origin(
+					calcOriginPosition(origImage.getOrigin().getX(), rect.x, origImage.getExtent().getX(), origImage.getNumX()),
+					calcOriginPosition(origImage.getOrigin().getY(), rect.y, origImage.getExtent().getY(), origImage.getNumY()),
+//					origImage.getOrigin().getX()+(rect.x*(origImage.getExtent().getX()/origImage.getNumX())),
+//					origImage.getOrigin().getY()+(rect.y*(origImage.getExtent().getY()/origImage.getNumY())),
+					origImage.getExtent().getZ());
+	}
+	if(origImage instanceof UShortImage){
+		return new UShortImage((short[])outArray,croppedOrigin,croppedExtent,rect.width,rect.height,origImage.getNumZ());
+	}else if(origImage instanceof ByteImage){
+		return new ByteImage((byte[])outArray,croppedOrigin,croppedExtent,rect.width,rect.height,origImage.getNumZ());
+	}else if(origImage instanceof FloatImage){
+		return new FloatImage((float[])outArray,croppedOrigin,croppedExtent,rect.width,rect.height,origImage.getNumZ());
+	}
+	throw new ImageException("Crop if Image type "+origImage.getClass().getName()+" not implemented.");
+}
 
 /**
  * This method was created in VisualAge.
@@ -124,6 +170,7 @@ public boolean compareEqual(Matchable obj) {
 	return true;
 }
 
+public abstract Image crop(Rectangle rect) throws ImageException;
 
 /**
  * Gets the description property (java.lang.String) value.
@@ -141,6 +188,10 @@ public final java.lang.String getDescription() {
  */
 public final cbit.util.Extent getExtent() {
 	return extent;
+}
+
+public final cbit.util.Origin getOrigin() {
+	return origin;
 }
 
 
@@ -215,13 +266,15 @@ public final void setDescription(java.lang.String description) {
 	fieldDescription = description;
 }
 
-
+public final void setExtent(Extent newExtent){
+	this.extent = newExtent;
+}
 /**
  * This method was created in VisualAge.
  * @return int
  */
-public final void setExtent(cbit.util.Extent newExtent) {
-	this.extent = newExtent;
+public final void setOrigin(Origin newOrigin) {
+	this.origin = newOrigin;
 }
 
 

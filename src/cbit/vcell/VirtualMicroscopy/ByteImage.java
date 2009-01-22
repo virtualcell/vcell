@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.zip.DeflaterOutputStream;
 
 import cbit.image.ImageException;
+import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 /**
  * This type was created in VisualAge.
@@ -33,8 +34,8 @@ public ByteImage(ByteImage image) throws ImageException {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public ByteImage(byte pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
-	super(aExtent, aNumX, aNumY, aNumZ);
+public ByteImage(byte pixels[], Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+	super(aOrigin, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
 	}
@@ -49,8 +50,8 @@ public ByteImage(byte pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, 
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public ByteImage(int sourceValues[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
-	super(aExtent, aNumX, aNumY, aNumZ);
+public ByteImage(int sourceValues[], Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+	super(aOrigin, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != sourceValues.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+sourceValues.length+" pixels");
 	}
@@ -102,6 +103,10 @@ public byte getPixel(int x, int y, int z) throws ImageException {
  */
 public byte[] getPixels() {
 	return pixels;
+}
+
+public Object getPixelArray(){
+	return getPixels();
 }
 
 @Override
@@ -248,8 +253,12 @@ public static ByteImage concatenateZSeries(ByteImage images[]) throws ImageExcep
 			bigBuffer[index++] = currPix[j];
 		}
 	}		
-	ByteImage byteImage = new ByteImage(bigBuffer,new cbit.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
+	ByteImage byteImage = new ByteImage(bigBuffer,images[0].getOrigin(), new cbit.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
 	return byteImage;
+}
+
+public ByteImage crop(Rectangle rect) throws ImageException{
+	return (ByteImage)Image.crop(this, rect);
 }
 
 @Override

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import cbit.image.ImageException;
 import cbit.util.Extent;
 import cbit.util.Matchable;
+import cbit.util.Origin;
 /**
  * This type was created in VisualAge.
  */
@@ -38,8 +39,8 @@ public class FloatImage extends Image implements Serializable {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public FloatImage(float pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
-	super(aExtent, aNumX, aNumY, aNumZ);
+public FloatImage(float pixels[], Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+	super(aOrigin, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
 	}
@@ -97,6 +98,10 @@ public int[] getNonzeroIndices() {
 public float[] getPixels() {
 	return pixels;
 }
+
+public Object getPixelArray(){
+	return getPixels();
+}
 /**
  * This method was created in VisualAge.
  * @return float
@@ -128,21 +133,6 @@ public boolean compareEqual(Matchable obj) {
 	return true;
 }
 
-public FloatImage crop(Rectangle rect) throws ImageException {
-	float[] croppedPixels = new float[rect.width*rect.height*getNumZ()];
-	for (int k = 0; k < getNumZ(); k++) {
-		for (int j = 0; j < rect.height; j++) {
-			for (int i = 0; i < rect.width; i++) {
-				croppedPixels[i+j*rect.width+(k*rect.width*rect.height)] = pixels[rect.x+i+(j+rect.y)*getNumX()+k*getNumX()*getNumY()];
-			}
-		}
-	}
-	Extent croppedExtent = null;
-	if (getExtent()!=null){
-		croppedExtent = new Extent(getExtent().getX()*rect.width/getNumX(),getExtent().getX()*rect.height/getNumY(),getExtent().getZ());
-	}
-	return new FloatImage(croppedPixels,croppedExtent,rect.width,rect.height,getNumZ());
-}
 
 @Override
 public Rectangle getNonzeroBoundingBox() {
@@ -202,6 +192,10 @@ public float[] getUniquePixelValues() throws ImageException{
 		uniquePixelValues[i] = pixelValueArray.get(i).floatValue();
 	}
 	return uniquePixelValues;
+}
+
+public FloatImage crop(Rectangle rect) throws ImageException{
+	return (FloatImage)Image.crop(this, rect);
 }
 
 public short[] getBinaryPixels(float threshold){

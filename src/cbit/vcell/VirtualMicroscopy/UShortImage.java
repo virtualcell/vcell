@@ -14,9 +14,8 @@ import java.util.ArrayList;
 //import com.sun.java.util.jar.pack.Attribute.FormatException;
 
 import cbit.image.ImageException;
-import cbit.util.Extent;
 import cbit.util.Matchable;
-import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
+import cbit.util.Origin;
 
 /**
  * This type was created in VisualAge.
@@ -45,8 +44,8 @@ public class UShortImage extends Image implements Serializable {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public UShortImage(short pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
-	super(aExtent, aNumX, aNumY, aNumZ);
+public UShortImage(short pixels[], Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+	super(aOrigin, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
 	}
@@ -120,6 +119,10 @@ public short[] getPixels() {
 	return pixels;
 }
 
+public Object getPixelArray(){
+	return getPixels();
+}
+
 public static BufferedImage Blurring(BufferedImage bi)
 {
 	BufferedImage buff = new BufferedImage(bi.getWidth(), bi.getHeight(), bi.getType());
@@ -135,6 +138,8 @@ public static BufferedImage Blurring(BufferedImage bi)
 	
 	return buff;
 }
+
+
 
 
 //Filtro Sharpening
@@ -426,22 +431,10 @@ public Rectangle getNonzeroBoundingBox() {
 	return new Rectangle(minX,minY,maxX-minX+1,maxY-minY+1);
 }
 
-
-public UShortImage crop(Rectangle rect) throws ImageException {
-	short[] croppedPixels = new short[rect.width*rect.height*getNumZ()];
-	for (int k = 0; k < getNumZ(); k++) {
-		for (int j = 0; j < rect.height; j++) {
-			for (int i = 0; i < rect.width; i++) {
-				croppedPixels[i+j*rect.width+(k*rect.width*rect.height)] = pixels[rect.x+i+(j+rect.y)*getNumX()+k*getNumX()*getNumY()];
-			}
-		}
-	}
-	Extent croppedExtent = null;
-	if (getExtent()!=null){
-		croppedExtent = new Extent(getExtent().getX()*rect.width/getNumX(),getExtent().getX()*rect.height/getNumY(),getExtent().getZ());
-	}
-	return new UShortImage(croppedPixels,croppedExtent,rect.width,rect.height,getNumZ());
+public UShortImage crop(Rectangle rect) throws ImageException{
+	return (UShortImage)Image.crop(this, rect);
 }
+
 
 @Override
 public ImageStatistics getImageStatistics() {
