@@ -181,6 +181,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 			scaledDataImages[i] =
 				new UShortImage(
 					scaledDataShort,
+					cartesianMesh.getOrigin(),
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
 			if(progressListener != null){progressListener.updateProgress(.75+(.25*(double)(i+1)/times.length));}

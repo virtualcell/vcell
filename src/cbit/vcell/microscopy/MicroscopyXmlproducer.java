@@ -71,6 +71,10 @@ private static org.jdom.Element getXML(UShortImage param,Xmlproducer vcellXMLPro
 		if (param.getExtent()!=null) {
 			image.addContent(vcellXMLProducer.getXML(param.getExtent()));
 		}
+		//Add Origin
+		if (param.getOrigin()!=null) {
+			image.addContent(vcellXMLProducer.getXML(param.getOrigin()));
+		}
 
 		final int BYTES_PER_SHORT = 2;
 		int aNumX = param.getNumX();

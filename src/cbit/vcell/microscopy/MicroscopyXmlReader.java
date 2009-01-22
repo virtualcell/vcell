@@ -14,6 +14,7 @@ import org.jdom.Element;
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
 import cbit.util.Extent;
+import cbit.util.Origin;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -161,13 +162,20 @@ private UShortImage getUShortImage(Element param) throws XmlParseException{
 		extent = vcellXMLReader.getExtent(extentElement);
 	}
 	
+	Element originElement = param.getChild(XMLTags.OriginTag);
+	Origin origin = null;
+	if (originElement!=null){
+		origin = vcellXMLReader.getOrigin(originElement);
+	}
+
+	
 //	//set attributes
 //	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 //	String annotation = param.getChildText(XMLTags.AnnotationTag);
 
 	UShortImage newimage;
 	try {
-		newimage = new UShortImage(shortPixels,extent,aNumX,aNumY,aNumZ);
+		newimage = new UShortImage(shortPixels,origin,extent,aNumX,aNumY,aNumZ);
 	} catch (ImageException e) {
 		e.printStackTrace();
 		throw new XmlParseException("error reading image: "+e.getMessage());

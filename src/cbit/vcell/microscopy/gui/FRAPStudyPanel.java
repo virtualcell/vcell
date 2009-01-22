@@ -549,7 +549,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			if(result != null && result.equals(FIX_AUTO)){
 				if(bFixedBleach){
 					UShortImage ushortImage =
-						new UShortImage(bleachPixels,getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+						new UShortImage(bleachPixels,
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getX(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getY(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getZ());
@@ -558,7 +560,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 				if(bFixedBackground){
 					UShortImage ushortImage =
-						new UShortImage(backgroundPixels,getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+						new UShortImage(backgroundPixels,
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getX(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getY(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getZ());

@@ -1065,10 +1065,10 @@ public class FRAPStudy implements Matchable{
 		planarSource = LookupDescriptor.create(planarSource, lookupTable, null).createInstance();
 		return planarSource;		
 	}
-	private UShortImage convertToUShortImage(PlanarImage source,Extent extent) throws ImageException{
+	private UShortImage convertToUShortImage(PlanarImage source,Origin origin,Extent extent) throws ImageException{
     	short[] shortData = new short[source.getWidth() * source.getHeight()];
     	source.getData().getDataElements(0, 0, source.getWidth(),source.getHeight(), shortData);
-    	return new UShortImage(shortData,extent,source.getWidth(),source.getHeight(),1);	
+    	return new UShortImage(shortData,origin,extent,source.getWidth(),source.getHeight(),1);	
 	}
 	private UShortImage erodeDilate(UShortImage source,KernelJAI dilateErodeKernel,UShortImage mask,boolean bErode) throws ImageException{
 		PlanarImage completedImage = null;
@@ -1099,7 +1099,7 @@ public class FRAPStudy implements Matchable{
 		}else{
 			completedImage = operatedImage;
 		}
-		return convertToUShortImage(completedImage, source.getExtent());
+		return convertToUShortImage(completedImage, source.getOrigin(),source.getExtent());
     	
 }
 //	private void writeUShortFile(UShortImage uShortImage,File outFile){
@@ -1170,6 +1170,7 @@ public class FRAPStudy implements Matchable{
 		}
 		UShortImage resultImage =
 			new UShortImage(targetPixels,
+					dilateSource.getOrigin(),
 					dilateSource.getExtent(),
 					dilateSource.getNumX(),
 					dilateSource.getNumY(),
@@ -1192,11 +1193,13 @@ public class FRAPStudy implements Matchable{
     	try {
     		cellROI_2D =
     			convertToUShortImage(binarize(getFrapData().getRoi(RoiType.ROI_CELL).getRoiImages()[0]),
+    				getFrapData().getRoi(RoiType.ROI_CELL).getRoiImages()[0].getOrigin(),
     				getFrapData().getRoi(RoiType.ROI_CELL).getRoiImages()[0].getExtent());
     		bleachedROI_2D =
     			convertToUShortImage(
     					AndDescriptor.create(binarize(getFrapData().getRoi(RoiType.ROI_BLEACHED).getRoiImages()[0]),
     						binarize(cellROI_2D), null).createInstance(),
+    					getFrapData().getRoi(RoiType.ROI_BLEACHED).getRoiImages()[0].getOrigin(),
     					getFrapData().getRoi(RoiType.ROI_BLEACHED).getRoiImages()[0].getExtent());
 //			writeUShortFile(cellROI_2D, new File("D:\\developer\\eclipse\\workspace\\cellROI_2D.bmp"));
 //			writeUShortFile(bleachedROI_2D, new File("D:\\developer\\eclipse\\workspace\\bleachedROI_2D.bmp"));

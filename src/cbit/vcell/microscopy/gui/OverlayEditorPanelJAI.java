@@ -646,7 +646,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			forceImage();
 			return;
 		}
-		UShortImage specialUShortImage = new UShortImage(specialData,null,width,height,1);
+		UShortImage specialUShortImage = new UShortImage(specialData,null,null,width,height,1);
 		BufferedImage specialBufferedImage = createUnderlyingImage(specialUShortImage);
 		imagePane.setUnderlyingImage(specialBufferedImage, false);
 	}
