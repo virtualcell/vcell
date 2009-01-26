@@ -313,43 +313,45 @@ private void displayOverrides() {
  * Comment
  */
 private void displayTask() {
+	SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
 	try {
-		getJLabelStartTime().setText(Double.toString(getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime()));
+		getJLabelStartTime().setText(Double.toString(solverTaskDescription.getTimeBounds().getStartingTime()));
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelStartTime().setText("");
 	}
 	try {
-		getJLabelEndTime().setText(Double.toString(getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime()));
+		getJLabelEndTime().setText(Double.toString(solverTaskDescription.getTimeBounds().getEndingTime()));
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelEndTime().setText("");
 	}
 	try {
-		StochSimOptions stochOpt = getSimulation().getSolverTaskDescription().getStochOpt();
+		StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 		if(stochOpt != null && stochOpt.getNumOfTrials() > 1 )
 		{
 			getJLabelOutput().setText("Histogram (last time point only)");
 		}
 		else
 		{
-			getJLabelOutput().setText(String.valueOf(getSimulation().getSolverTaskDescription().getOutputTimeSpec().getShortDescription()));
+			getJLabelOutput().setText(String.valueOf(solverTaskDescription.getOutputTimeSpec().getShortDescription()));
 		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelOutput().setText("");
 	}
 	try {
-		if(getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))//don't display time step for gibson solver only
-			getJLabelTimestep().setText("");
-		else
-			getJLabelTimestep().setText(Double.toString(getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep()));
+		if (solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
+			getJLabelTimestep().setText("");			
+		} else {
+			getJLabelTimestep().setText(Double.toString(solverTaskDescription.getTimeStep().getDefaultTimeStep()));
+		}			
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelTimestep().setText("");
 	}
 	try {
-		Constant param = getSimulation().getSolverTaskDescription().getSensitivityParameter();
+		Constant param = solverTaskDescription.getSensitivityParameter();
 		if (param == null) {
 			getJLabelSensitivity().setText("no analysis");
 		} else {
@@ -360,7 +362,7 @@ private void displayTask() {
 		getJLabelSensitivity().setText("");
 	}
 	try {
-		getJLabelSolver().setText(getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel());
+		getJLabelSolver().setText(solverTaskDescription.getSolverDescription().getDisplayLabel());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelSolver().setText("");

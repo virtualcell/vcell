@@ -10,6 +10,7 @@ import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
+import java.beans.PropertyVetoException;
 import cbit.util.*;
 /**
  * Insert the class' description here.
@@ -518,6 +519,7 @@ public String getVCML() {
 	if (bStopAtSpatiallyUniform) {
 		buffer.append(VCML.StopAtSpatiallyUniform + " " + bStopAtSpatiallyUniform + "\n");
 	}
+	
 	buffer.append(VCML.EndBlock+"\n");
 		
 	return buffer.toString();
@@ -577,12 +579,25 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && (evt.getPropertyName().equals("solverDescription"))) {
 		if (!getSolverDescription().supports(getOutputTimeSpec())){
 			try {
-				setOutputTimeSpec(getSolverDescription().createOutputTimeSpec(this));
+				if (getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+					TimeBounds timeBounds = getTimeBounds();
+					double outputTime = timeBounds.getEndingTime()/10;
+					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				} else { 
+					setOutputTimeSpec(getSolverDescription().createOutputTimeSpec(this));
+				}
 			} catch (java.beans.PropertyVetoException ex) {
 				ex.printStackTrace(System.out);
 			}
 		}
-		// Do something...
+		if (getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+			try {
+				setErrorTolerance(new ErrorTolerance(1e-9, 1e-7));
+			} catch (PropertyVetoException e) {
+				e.printStackTrace();
+			}
+		}		
+		
 	}
 }
 
@@ -976,7 +991,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 	}
 }
-
 
 public boolean isStopAtSpatiallyUniform() {
 	return bStopAtSpatiallyUniform;
