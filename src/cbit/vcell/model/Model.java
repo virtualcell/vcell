@@ -1,25 +1,32 @@
 package cbit.vcell.model;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.Stack;
+import java.util.Vector;
 
-import cbit.util.*;
 import cbit.sql.KeyValue;
-import cbit.vcell.server.User;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.sql.Versionable;
 import cbit.sql.Version;
-import cbit.vcell.model.Feature;
+import cbit.util.BeanUtils;
+import cbit.util.Compare;
+import cbit.util.Issue;
+import cbit.util.Matchable;
+import cbit.util.TokenMangler;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
-import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 
 public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
 	private Version version = null;
@@ -2450,40 +2457,56 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 				}
 			}
 			// use this missing model parameter (to be deleted) to determine if it is used in any reaction kinetic parameters. 
-			Vector<String> referencedRxnsVector = new Vector<String>();
 			if (missingMP != null) {
+				Vector<String> referencingRxnsVector = new Vector<String>();
 				for (int i=0;i<fieldReactionSteps.length;i++){
 					boolean bUsed = false;
 					KineticsParameter[] kParams = fieldReactionSteps[i].getKinetics().getKineticsParameters();
 					for (int k = 0; k < kParams.length; k++) {
 						if (kParams[k].getExpression().hasSymbol(missingMP.getName()) && (fieldReactionSteps[i].getKinetics().getProxyParameter(missingMP.getName()) != null)) {
-							bUsed = true;
+							referencingRxnsVector.add(fieldReactionSteps[i].getName());
 							break;
 						}
 					}
-					// if 'bUsed' is true at this point, can cannot delete model parameter.
-					if (bUsed){
-						referencedRxnsVector.add(fieldReactionSteps[i].getName());
-						// throw new PropertyVetoException("Model Parameter \'" + missingMP.getName() + "\' is used in reaction \'" + fieldReactionSteps[i].getName() + "\'. Cannot delete parameter.",e);
-					}
 				}
 				// if there are any reactionSteps referencing the global, list them all in error msg.
-				if (referencedRxnsVector.size() > 0) {
-					String msg = "Model Parameter \'" + missingMP.getName() + "\' is used in reaction(s): ";
-					for (int i = 0; i < referencedRxnsVector.size(); i++) {
-						msg = msg + "\'" + referencedRxnsVector.elementAt(i) + "\'";
-						if (i < referencedRxnsVector.size()-1) {
+				if (referencingRxnsVector.size() > 0) {
+					String msg = "Model Parameter '" + missingMP.getName() + "' is used in reaction(s): ";
+					for (int i = 0; i < referencingRxnsVector.size(); i++) {
+						msg = msg + "'" + referencingRxnsVector.elementAt(i) + "'";
+						if (i < referencingRxnsVector.size()-1) {
 							msg = msg + ", "; 
 						} else {
 							msg = msg + ". ";
 						}
 					}
-					msg = msg + "Cannot delete parameter.";
+					msg = msg + "\n\nCannot delete '" + missingMP.getName() + "'.";
+					throw new PropertyVetoException(msg,e);
+				}
+				// At this point, it is not referenced in a reactionStep, find out if the missing model is used in other model parameters
+				// Enough to check in newModelParams array
+				Vector<String> referencingModelParamsVector = new Vector<String>();
+				for (int i = 0; i < newModelParams.length; i++) {
+					if (newModelParams[i].getExpression().hasSymbol(missingMP.getName())) {
+						referencingModelParamsVector.add(newModelParams[i].getName());
+					}
+				}
+				// if there are any model parameters referencing the global, list them all in error msg.
+				if (referencingModelParamsVector.size() > 0) {
+					String msg = "Model Parameter '" + missingMP.getName() + "' is used in expression of other model parameter(s): ";
+					for (int i = 0; i < referencingModelParamsVector.size(); i++) {
+						msg = msg + "'" + referencingModelParamsVector.elementAt(i) + "'";
+						if (i < referencingModelParamsVector.size()-1) {
+							msg = msg + ", "; 
+						} else {
+							msg = msg + ". ";
+						}
+					}
+					msg = msg + "\n\nCannot delete '" + missingMP.getName() + "'.";
 					throw new PropertyVetoException(msg,e);
 				}
 			}
 		}
-
 	}
 	
 	if (e.getSource() == this && e.getPropertyName().equals("speciesContexts")){
