@@ -231,7 +231,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 		//
 		// add reactionSteps for this model
 		//
-		ReactionStep reactSteps[] = reactStepDB.getReactionStepsFromModel(con, model);
+		ReactionStep reactSteps[] = reactStepDB.getReactionStepsFromModel(con,modelKey);
 		for (int i=0;(reactSteps!=null) && (i<reactSteps.length);i++){
 			try {
 				//
@@ -262,7 +262,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 			}catch (Throwable e){
 				log.exception(e);
 			}
-			//model.addReactionStep(reactSteps[i]);
+			model.addReactionStep(reactSteps[i]);
 			try {
 				reactSteps[i].rebindAllToModel(model);
 			}catch (cbit.vcell.parser.ExpressionBindingException e){
