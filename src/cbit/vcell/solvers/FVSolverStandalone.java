@@ -37,6 +37,11 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
  */
 protected void initialize() throws SolverException {
 	try {
+		if (getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+			if (getSimulation().getMathDescription().hasFastSystems()) {
+				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " doesn't support models containing fast system. Please change the solver.");
+			}
+		}
 		initStep1();	
 	
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "PDESolver initializing"));

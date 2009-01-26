@@ -54,17 +54,17 @@ public class FieldDataWindowManager
 	public static abstract class SimInfoHolder{
 		public final SimulationInfo simInfo;
 		public final int jobIndex;
-		public final boolean isTimeUniform;
+		//public final boolean isTimeUniform;
 		public final boolean isCompartmental;
 		protected SimInfoHolder(
 				SimulationInfo argSimInfo,
 				int argJobIndex,
-				boolean argistu,
+				//boolean argistu,
 				boolean argisc
 				){
 			simInfo = argSimInfo;
 			jobIndex = argJobIndex;
-			isTimeUniform = argistu;
+			//isTimeUniform = argistu;
 			isCompartmental = argisc;
 			
 		}
@@ -75,10 +75,10 @@ public class FieldDataWindowManager
 				KeyValue mmK,
 				SimulationInfo argSI,
 				int jobIndex,
-				boolean argistu,
+				//boolean argistu,
 				boolean argisc
 				){
-			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,*/argistu,argisc);
+			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
 			mathModelKey = mmK;
 		}
 		public KeyValue getMathModelKey(){
@@ -92,10 +92,10 @@ public class FieldDataWindowManager
 				KeyValue bmK,String scName,
 				SimulationInfo argSI,
 				int jobIndex,
-				boolean argistu,
+				//boolean argistu,
 				boolean argisc
 			){
-			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,*/argistu,argisc);
+			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
 			bioModelKey = bmK;
 			simulationContextName = scName;
 		}

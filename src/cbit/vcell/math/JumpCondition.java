@@ -66,8 +66,8 @@ void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throw
  * This method was created by a SmartGuide.
  * @return java.util.Vector
  */
-protected Vector getExpressions(MathDescription mathDesc) {
-	Vector list = new Vector();
+protected Vector<Expression> getExpressions(MathDescription mathDesc) {
+	Vector<Expression> list = new Vector<Expression>();
 	list.addElement(getInFluxExpression());
 	list.addElement(getOutFluxExpression());
 	
@@ -100,8 +100,8 @@ public Expression getOutFluxExpression() {
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public Enumeration getTotalExpressions() throws ExpressionException {
-	Vector vector = new Vector();
+public Enumeration<Expression> getTotalExpressions() throws ExpressionException {
+	Vector<Expression> vector = new Vector<Expression>();
 	Expression lvalueExp = new Expression("InFlux_"+getVariable().getName());
 	Expression rvalueExp = new Expression(getInFluxExpression());
 	Expression totalExp = Expression.assign(lvalueExp,rvalueExp);

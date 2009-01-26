@@ -1,22 +1,28 @@
 package cbit.vcell.solvers;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
+import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import java.util.Enumeration;
 import java.io.File;
 import java.io.PrintWriter;
+
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.Simulation;
+
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverFileWriter;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -589,6 +595,36 @@ private void writeModelDescription() throws Exception {
 }
 
 
+private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSet<Double> discontinuityTimes) throws ExpressionException, MathException {
+	for (Discontinuity discontinuity : discontinuities) {
+		Expression rfexp = discontinuity.getRootFindingExp();
+		rfexp.bindExpression(simulation);
+		rfexp = simulation.substituteFunctions(rfexp).flatten();
+		String[] symbols = rfexp.getSymbols();
+		boolean bHasT = false;
+		for (String symbol : symbols) {
+			if (symbol.equals(ReservedVariable.TIME.getName())) {
+				bHasT = true;
+			}
+		}
+		if (bHasT) {
+			if (symbols.length != 1) {
+				throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
+						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " can only be a function of time");
+			}
+			Expression deriv = rfexp.differentiate(ReservedVariable.TIME.getName());
+			double d = deriv.evaluateConstant(); // we don't allow 5t < 3 
+			if (d != 1 && d != -1) {
+				throw new ExpressionException(simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
+						+  ": time discontinuity " + discontinuity.getDiscontinuityExp().infix() + " is not allowed.");
+			}
+			rfexp.substituteInPlace(new Expression(ReservedVariable.TIME.getName()), new Expression(0));
+			rfexp.flatten();
+			double st = Math.abs(rfexp.evaluateConstant());
+			discontinuityTimes.add(st);
+		}
+	}
+}
 /**
 # Simulation Parameters
 SIMULATION_PARAM_BEGIN
@@ -597,21 +633,52 @@ ENDING_TIME 1.0
 TIME_STEP 0.0010
 KEEP_EVERY 10
 SIMULATION_PARAM_END
+ * @throws MathException 
+ * @throws ExpressionException 
 */
-private void writeSimulationParamters() {
-	Simulation simulation = simulationJob.getWorkingSim();
-	
+private void writeSimulationParamters() throws ExpressionException, MathException {	
 	SolverTaskDescription solverTaskDesc = simulation.getSolverTaskDescription();
 	
 	printWriter.println("# Simulation Parameters");
 	printWriter.println("SIMULATION_PARAM_BEGIN");
+	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+		printWriter.println("SOLVER SUNDIALS_PDE_SOLVER " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance() 
+				+ " " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance());
+		Vector<Discontinuity> discontinuities = new Vector<Discontinuity>();
+		TreeSet<Double> discontinuityTimes = new TreeSet<Double>();
+		cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
+		Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+		while (enum1.hasMoreElements()) {		
+			SubDomain sd = enum1.nextElement();
+			Enumeration<Equation> enum_equ = sd.getEquations();
+			while (enum_equ.hasMoreElements()){
+				Equation equation = enum_equ.nextElement();
+				equation.getDiscontinuities(simulation, discontinuities);
+			}
+		}
+		getDiscontinuityTimes(discontinuities, discontinuityTimes);
+		if (discontinuityTimes.size() > 0) {
+			printWriter.print("DISCONTINUITY_TIMES " + discontinuityTimes.size());
+			for (double d : discontinuityTimes) {
+				printWriter.print(" " + d);			
+			}
+			printWriter.println();
+		}
+	} else { 
+		printWriter.println("SOLVER FV_SOLVER");
+	}
 	printWriter.println("BASE_FILE_NAME " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
-    printWriter.println("ENDING_TIME " + solverTaskDesc.getTimeBounds().getEndingTime());
-    printWriter.println("TIME_STEP " + solverTaskDesc.getTimeStep().getDefaultTimeStep());
+    printWriter.println("ENDING_TIME " + solverTaskDesc.getTimeBounds().getEndingTime());    
+    if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+    	printWriter.println("TIME_STEP " + ((UniformOutputTimeSpec)solverTaskDesc.getOutputTimeSpec()).getOutputTimeStep());
+    	printWriter.println("KEEP_EVERY 1");
+    } else {
+    	printWriter.println("TIME_STEP " + solverTaskDesc.getTimeStep().getDefaultTimeStep());
+    	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)solverTaskDesc.getOutputTimeSpec()).getKeepEvery());
+    }
     if (solverTaskDesc.isStopAtSpatiallyUniform()) {
     	printWriter.println("CHECK_SPATIALLY_UNIFORM " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance());
     }
-	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)solverTaskDesc.getOutputTimeSpec()).getKeepEvery());
 	printWriter.println("SIMULATION_PARAM_END");	
 	printWriter.println();
 }

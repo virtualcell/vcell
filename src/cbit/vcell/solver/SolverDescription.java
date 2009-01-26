@@ -13,7 +13,7 @@ package cbit.vcell.solver;
 public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
 	private int type;
 
-	private static final int NUM_SOLVERS = 14;
+	private static final int NUM_SOLVERS = 15;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -28,6 +28,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	private static final int TYPE_CVODE = 11;
 	private static final int TYPE_FINITE_VOLUME_STANDALONE = 12;
 	private static final int TYPE_SUNDIALS_STANDALONE = 13;
+	private static final int TYPE_SUNDIALS_PDE = 14;
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
 	
@@ -46,6 +47,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"CVODE (Variable Order, Variable Time Step)",
 		"Finite Volume Standalone, Regular Grid",
 		"Combined Stiff Solver (IDA/CVODE)",
+		"Sundials Stiff PDE Solver (Variable Time Step)",
 	};
 	private static final String[] DISPLAY_LABEL = {
 		"Forward Euler (First Order, Fixed Time Step)",
@@ -62,6 +64,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"CVODE (Variable Order, Variable Time Step)",
 		"Semi-Implicit Finite Volume, Regular Grid (Fixed Time Step)",
 		"Combined Stiff Solver (IDA/CVODE)",
+		"Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
 	};
 	private static final String[] FULL_DESCRIPTIONS = {
 		// Forward Euler (First Order, Fixed Time Step)
@@ -202,6 +205,18 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	     + "CVODE is used for ordinary differential equation (ODE) systems;\n" 
 	     + "IDA is used for differential-algebraic equation (DAE) systems.\n\n"
 	     + "VCell models with fast reactions (i.e. fast systems) are DAE systems. ",
+	     // Stiff PDE Solver (Variable Time Step)
+	     "This is our fully implicit, adaptive time step finite volume method. The finite volume method " 
+	     + "represents partial differential equations as algebraic discretization equations which exactly preserves conservation laws. " 
+	     + "Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.\n\n"
+	     + "This method employs Sundials stiff solver CVODE for time stepping (method of lines).\n"
+	     + "Parameters to be set for the method are,\n"
+	     + "STARTING TIME: the time when simulation starts.\n"
+	     + "ENDING TIME: the time when simulation ends.\n"
+	     + "ABSOLUTE TOLERANCE: CVODE adjusts the time step size in such a way as to keep the absolute error (due to time discretization) in a step less than absolute tolerance.\n"
+	     + "RELATIVE TOLERANCE: CVODE adjusts the time step size in such a way as to keep the fractional error (due to time discretization) in a step less than relative tolerance.\n"
+	     + "(Please note that these tolerances affect the accuracy of time descritization only, therefore spatial discritization is the only significant source of solution error.)\n"
+	     + "Output TIME STEP: output time interval.\n",
 	};
 	private static final boolean[] SOLVES_FASTSYSTEM = {
 		true,   // TYPE_FORWARD_EULER
@@ -217,7 +232,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
 		true,	// TYPE_FINITE_VOLUME_STANDALONE
-		true	// TYPE_SUNDIALS_STANDALONE
+		true,	// TYPE_SUNDIALS_STANDALONE
+		false,	// TYPE_SUNDIALS_PDE
 	};
 	private static final boolean[] IS_ODE = {
 		true,   // TYPE_FORWARD_EULER
@@ -233,7 +249,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_HYBRID_MIL_Adaptive
 		true,	// TYPE_CVODE
 		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		true	// TYPE_SUNDIALS_STANDALONE
+		true,	// TYPE_SUNDIALS_STANDALONE
+		false,	// TYPE_SUNDIALS_PDE
 	};
 	private static final boolean[] IS_STOCH = {
 		false,  // TYPE_FORWARD_EULER
@@ -249,7 +266,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
 		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		false	// TYPE_SUNDIALS_STANDALONE
+		false,	// TYPE_SUNDIALS_STANDALONE
+		false,	// TYPE_SUNDIALS_PDE
 	};
 	private static final boolean[] IS_INTERPRETED = {
 		true,   // TYPE_FORWARD_EULER
@@ -266,6 +284,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_CVODE
 		false,	// TYPE_FINITE_VOLUME_STANDALONE
 		false,	// TYPE_SUNDIALS_STANDALONE
+		false,	// TYPE_SUNDIALS_PDE
 	};
 		
 			
@@ -283,6 +302,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
 	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
 	public static final SolverDescription SUNDIALS				= new SolverDescription(TYPE_SUNDIALS_STANDALONE);
+	public static final SolverDescription SundialsPDE			= new SolverDescription(TYPE_SUNDIALS_PDE);
 
 	private static SolverDescription[] fieldODESolverDescriptions = new SolverDescription[] {
 		ForwardEuler,
@@ -298,11 +318,16 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		ForwardEuler,
 		IDA,
 		SUNDIALS,
+	};	
+	private static SolverDescription[] fieldPDEWithFastSolverDescriptions = new SolverDescription[] {
+		FiniteVolume,
+		FiniteVolumeStandalone
 	};
 	private static SolverDescription[] fieldPDESolverDescriptions = new SolverDescription[] {
 		FiniteVolume,
 		FiniteVolumeStandalone,
-	};	
+		SundialsPDE,
+	};
 	private static SolverDescription[] fieldStochSolverDescriptions = new SolverDescription[] {
 		StochGibson,
 		HybridEuler,
@@ -363,11 +388,13 @@ public static SolverDescription getDefaultStochSolverDescription() {
  * @return cbit.vcell.solver.OutputTimeSpec
  * @param solverTaskDescription cbit.vcell.solver.SolverTaskDescription
  */
-public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) {
+public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
+{
 	switch (type) {
 		case TYPE_HYBRID_EM:
 		case TYPE_HYBRID_MIL:
-		case TYPE_HYBRID_MIL_Adaptive:{
+		case TYPE_HYBRID_MIL_Adaptive:
+		case TYPE_SUNDIALS_PDE:	{
 			return new UniformOutputTimeSpec(0.1);
 		}
 		default:	
@@ -435,6 +462,7 @@ public String getDisplayLabel() {
 	return DISPLAY_LABEL[type];
 }
 
+
 /**
  * Insert the method's description here.
  * Creation date: (4/23/01 3:54:43 PM)
@@ -455,7 +483,10 @@ public boolean hasVariableTimestep() {
 		case TYPE_IDA:
 		case TYPE_RUNGE_KUTTA_FEHLBERG:
 		case TYPE_CVODE:
-		case TYPE_SUNDIALS_STANDALONE: {
+		case TYPE_SUNDIALS_STANDALONE:
+		case TYPE_STOCH_GIBSON:
+		case TYPE_HYBRID_MIL_Adaptive:
+		case TYPE_SUNDIALS_PDE: {
 			return true;
 		}
 		default: {
@@ -464,6 +495,20 @@ public boolean hasVariableTimestep() {
 	}
 }
 
+public boolean hasErrorTolerance() {
+	switch (type) {
+		case TYPE_IDA:
+		case TYPE_RUNGE_KUTTA_FEHLBERG:
+		case TYPE_CVODE:
+		case TYPE_SUNDIALS_STANDALONE:
+		case TYPE_SUNDIALS_PDE: {
+			return true;
+		}
+		default: {
+			return false;
+		}
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -526,7 +571,8 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 		}
 		case TYPE_HYBRID_EM:
 		case TYPE_HYBRID_MIL:
-		case TYPE_HYBRID_MIL_Adaptive:{
+		case TYPE_HYBRID_MIL_Adaptive:
+		case TYPE_SUNDIALS_PDE: {
 			return outputTimeSpec.isUniform();
 		}
 		default: {
@@ -561,6 +607,10 @@ public static SolverDescription[] getODESolverDescriptions() {
 
 public static SolverDescription[] getODEWithFastSystemSolverDescriptions() {
 	return (fieldODEWithFastSolverDescriptions);
+}
+
+public static SolverDescription[] getPDEWithFastSystemSolverDescriptions() {
+	return (fieldPDEWithFastSolverDescriptions);
 }
 
 /**

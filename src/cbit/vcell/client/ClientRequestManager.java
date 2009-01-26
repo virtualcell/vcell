@@ -1,6 +1,5 @@
 package cbit.vcell.client;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.*;
 import cbit.gui.DialogUtils;
 import cbit.image.*;
@@ -35,6 +34,7 @@ import cbit.vcell.biomodel.*;
 import cbit.vcell.document.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -1371,8 +1371,8 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
 						// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
 						// Will deal with multiple children of <vcml> Element when we get to model composition.
-						java.util.List childElementList = rootElement.getChildren();
-						Element modelElement = (Element)childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
+						List<Element> childElementList = rootElement.getChildren();
+						Element modelElement = childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
 						modelXmlType = modelElement.getName();
 					}
 					if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
@@ -2290,7 +2290,7 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 											bioModel.getVersion().getVersionKey(),
 											simContexts[i].getName(),sims[j].getSimulationInfo(),
 											k,
-											!sims[j].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
+											//!sims[j].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
 											simContexts[i].getGeometry().getDimension() == 0
 									);
 								simInfoHolderV.add(simInfoHolder);
@@ -2311,7 +2311,7 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 										mathModel.getVersion().getVersionKey(),
 										sims[i].getSimulationInfo(),
 										k,
-										!sims[i].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
+										//!sims[i].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
 										mathModel.getMathDescription().getGeometry().getDimension() == 0
 								);
 							simInfoHolderV.add(simInfoHolder);

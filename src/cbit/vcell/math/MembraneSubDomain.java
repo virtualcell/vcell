@@ -14,7 +14,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 public class MembraneSubDomain extends SubDomain {
-	private Vector jumpConditionList = new Vector();
+	private Vector<JumpCondition> jumpConditionList = new Vector<JumpCondition>();
 	private CompartmentSubDomain insideCompartment = null;
 	private CompartmentSubDomain outsideCompartment = null;
 
@@ -199,9 +199,9 @@ public CompartmentSubDomain getInsideCompartment() {
  * @exception java.lang.Exception The exception description.
  */
 public JumpCondition getJumpCondition(VolVariable volVar) {
-	Enumeration enum1 = jumpConditionList.elements();
+	Enumeration<JumpCondition> enum1 = jumpConditionList.elements();
 	while (enum1.hasMoreElements()){
-		JumpCondition jump = (JumpCondition)enum1.nextElement();
+		JumpCondition jump = enum1.nextElement();
 		if (jump.getVariable().getName().equals(volVar.getName())){
 			return jump;
 		}
@@ -214,7 +214,7 @@ public JumpCondition getJumpCondition(VolVariable volVar) {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.math.JumpCondition
  */
-public Enumeration getJumpConditions() {
+public Enumeration<JumpCondition> getJumpConditions() {
 	return jumpConditionList.elements();
 }
 
@@ -247,14 +247,14 @@ public String getVCML(int spatialDimension) {
 		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.toString()+"\n");
 		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.toString()+"\n");
 	}
-	Enumeration enum1 = getEquations();
+	Enumeration<Equation> enum1 = getEquations();
 	while (enum1.hasMoreElements()){
-		Equation equ = (Equation)enum1.nextElement();
+		Equation equ = enum1.nextElement();
 		buffer.append(equ.getVCML());
 	}	
-	enum1 = getJumpConditions();
-	while (enum1.hasMoreElements()){
-		JumpCondition jc = (JumpCondition)enum1.nextElement();
+	Enumeration<JumpCondition> enum2 = getJumpConditions();
+	while (enum2.hasMoreElements()){
+		JumpCondition jc = enum2.nextElement();
 		buffer.append(jc.getVCML());
 	}	
 	if (getFastSystem()!=null){

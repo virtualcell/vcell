@@ -6,18 +6,17 @@
 package cbit.vcell.solver.ode.gui;
 import cbit.gui.DialogUtils;
 import cbit.util.BeanUtils;
+import cbit.vcell.math.Constant;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.client.PopupGenerator;
-
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.beans.PropertyVetoException;
-
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
@@ -33,7 +32,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private javax.swing.JLabel ivjKeepEveryLabel = null;
 	private javax.swing.JTextField ivjKeepEveryTextField = null;
 	private javax.swing.JLabel ivjPointsLabel = null;
-	cbit.vcell.math.Constant fieldSensitivityParameter = null;
+	Constant fieldSensitivityParameter = null;
 	private javax.swing.JTextField ivjKeepAtMostTextField = null;
 	private ErrorTolerancePanel ivjErrorTolerancePanel = null;
 	private TimeBoundsPanel ivjTimeBoundsPanel = null;
@@ -1009,8 +1008,13 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	fieldSolverComboBoxModel.removeAllElements();
 	if(getSolverTaskDescription() != null) {
 		SolverDescription[] solverDescriptions = new SolverDescription[0];
-		if (getSolverTaskDescription().getSimulation().getIsSpatial()) {
-			solverDescriptions = SolverDescription.getPDESolverDescriptions();
+		if (getSolverTaskDescription().getSimulation().getIsSpatial()) 
+		{
+			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // PDE with FastSystem
+				solverDescriptions = SolverDescription.getPDEWithFastSystemSolverDescriptions();
+			} else {
+				solverDescriptions = SolverDescription.getPDESolverDescriptions();
+			}
 		} else if (getSolverTaskDescription().getSimulation().getMathDescription().isStoch()) {
 			solverDescriptions = SolverDescription.getStochSolverDescriptions();
 		} else {
@@ -1113,9 +1117,8 @@ private void enableOutputOptionPanel() {
 		}
 	}else if ((solverDesc.equals(SolverDescription.HybridEuler))
 			||(solverDesc.equals(SolverDescription.HybridMilstein))
-			||(solverDesc.equals(SolverDescription.HybridMilAdaptive))){
-	
-		//amended June 5th, 2007 to display uniformOutputTimeSpec for Hybrid methods
+			||(solverDesc.equals(SolverDescription.HybridMilAdaptive))
+			|| (solverDesc.equals(SolverDescription.SundialsPDE))){
 		getDefaultOutputRadioButton().setEnabled(false);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(false);
@@ -1126,7 +1129,7 @@ private void enableOutputOptionPanel() {
 		getKeepEveryTextField().setEnabled(false);
 		getOutputTimeStepTextField().setEnabled(true);
 		getOutputTimesTextField().setEnabled(false);
-	}else if (solverDesc.equals(SolverDescription.StochGibson)){
+	} else if (solverDesc.equals(SolverDescription.StochGibson)){
 		//amended July 9th, 2007 to enable uniformaOutputTimeSpec for gibson method
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
@@ -1184,12 +1187,15 @@ private void enableVariableTimeStepOptions() {
 	SolverDescription solverDescription = getSolverTaskDescription().getSolverDescription(); 
 	bHasVariableTS = solverDescription.hasVariableTimestep();
 	
-	cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS || getSolverTaskDescription().isStopAtSpatiallyUniform());
+	BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance() || getSolverTaskDescription().isStopAtSpatiallyUniform());
 	//for gibson method, we even don't need default time step.
 	getTimeStepPanel().enableComponents(bHasVariableTS);
-	if(solverDescription.equals(SolverDescription.StochGibson))
-	{
-		getTimeStepPanel().disableTimeStep();
+	if (solverDescription.compareEqual(SolverDescription.StochGibson) ||
+			solverDescription.compareEqual(SolverDescription.HybridEuler)||
+			solverDescription.compareEqual(SolverDescription.HybridMilstein)||
+			solverDescription.compareEqual(SolverDescription.HybridMilAdaptive)	|| 
+			solverDescription.equals(SolverDescription.SundialsPDE)) {
+		getTimeStepPanel().disableMinAndMaxTimeStep();
 	}
 }
 
@@ -2157,7 +2163,7 @@ private SolverDescription getSolverDescriptionFromDisplayLabel(String argSolverN
  * @return The solverTaskDescription property value.
  * @see #setSolverTaskDescription
  */
-public SolverTaskDescription getSolverTaskDescription() {
+private SolverTaskDescription getSolverTaskDescription() {
 	return fieldSolverTaskDescription;
 }
 
@@ -2189,7 +2195,7 @@ private TimeBoundsPanel getTimeBoundsPanel() {
  * @return cbit.vcell.solver.ode.gui.TimeStepPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public TimeStepPanel getTimeStepPanel() {
+private TimeStepPanel getTimeStepPanel() {
 	if (ivjTimeStepPanel == null) {
 		try {
 			ivjTimeStepPanel = new cbit.vcell.solver.ode.gui.TimeStepPanel();

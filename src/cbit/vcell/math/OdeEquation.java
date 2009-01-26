@@ -56,8 +56,8 @@ void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throw
  * This method was created by a SmartGuide.
  * @return java.util.Vector
  */
-protected Vector getExpressions(MathDescription mathDesc){
-	Vector list = new Vector();
+protected Vector<Expression> getExpressions(MathDescription mathDesc){
+	Vector<Expression> list = new Vector<Expression>();
 	
 	if (getRateExpression()!=null)		list.addElement(getRateExpression());
 	if (getInitialExpression()!=null)	list.addElement(getInitialExpression());
@@ -70,8 +70,8 @@ protected Vector getExpressions(MathDescription mathDesc){
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public Enumeration getTotalExpressions() throws ExpressionException {
-	Vector vector = new Vector();
+public Enumeration<Expression> getTotalExpressions() throws ExpressionException {
+	Vector<Expression> vector = new Vector<Expression>();
 	vector.addElement(getTotalRateExpression());
 	vector.addElement(getTotalInitialExpression());
 	Expression solutionExp = getTotalSolutionExpression();

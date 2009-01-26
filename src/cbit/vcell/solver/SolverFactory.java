@@ -48,6 +48,8 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 		solver = new FVSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
 		solver = new FVSolverStandalone(simJob, directory, sessionLog);
+	} else if (solverDescription.equals(SolverDescription.SundialsPDE)) {
+		solver = new FVSolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.StochGibson)) {
 		solver = new cbit.vcell.solver.stoch.GibsonSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.HybridEuler)) {
