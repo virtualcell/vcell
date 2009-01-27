@@ -4050,7 +4050,8 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 		}
 	} catch (ExpressionException e) {
 		e.printStackTrace();
-		throw new XmlParseException("An expressionException was fired when setting the InitilaConditionExpression "+ temp + ", for a SpeciesContextSpec!"+" : "+e.getMessage());
+		throw new XmlParseException("Error in InitialCondition expression for SpeciesContext '"+ specref.getName()  + "' : "+e.getMessage() + 
+			"\n\nExpressions for initial condition are presently supported only in VCell 4.7 (Alpha), please load the model in VCell 4.7.");
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());
@@ -4064,7 +4065,8 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 			specspec.getDiffusionParameter().setExpression(expression);
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when setting the diffusionExpression " + temp + " to a SpeciesContextSpec!"+" : "+e.getMessage());
+			throw new XmlParseException("Error in Diffusion expression for SpeciesContext '"+ specref.getName()  + "' : "+e.getMessage() + 
+				"\n\nExpressions for diffusion are presently supported only in VCell 4.7 (Alpha), please load the model in VCell 4.7.");
 		} catch (java.beans.PropertyVetoException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
@@ -4108,7 +4110,8 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 			}
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when Setting the boundary Expression: " + this.unMangle(temp)+" : "+e.getMessage());
+			throw new XmlParseException("Error in BoundaryCondition(s) expression for SpeciesContext '"+ specref.getName()  + "' : "+e.getMessage() + 
+				"\n\nExpressions for boundary conditions are presently supported only in VCell 4.7 (Alpha), please load the model in VCell 4.7.");
 		} catch (java.beans.PropertyVetoException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
