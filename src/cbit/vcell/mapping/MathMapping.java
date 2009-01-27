@@ -1,4 +1,5 @@
 package cbit.vcell.mapping;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
@@ -586,7 +587,11 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 			}
 		}else{
 			// model and simContext
-			throw new ExpressionBindingException("identifier '"+identifier+"' ambiguous, resolved by Model ("+modelSTE+") and Application ("+simContextSTE+")");
+			if (!modelSTE.equals(simContextSTE)) {
+				throw new ExpressionBindingException("identifier '"+identifier+"' ambiguous, resolved by Model ("+modelSTE+") and Application ("+simContextSTE+")");
+			} else {
+				return ste;
+			}
 		}
 	}else if (resolutionCount == 3){
 		// local and model and simContext
@@ -700,6 +705,14 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	if (ste instanceof Structure.StructureSize){
 		Structure structure = ((Structure.StructureSize)ste).getStructure();
 		StructureMapping.StructureMappingParameter sizeParameter = simContext.getGeometryContext().getStructureMapping(structure).getSizeParameter();
+		if (simContext.getGeometry().getDimension() == 0) {
+			// if geometry is compartmental, make sure compartment sizes are set.
+			if (!simContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
+				throw new MappingException("\nFor non-spatial applications, all structure sizes must be assigned positive values before being used in expressions.\n\nPlease go to 'StructureMapping' tab to check the sizes.");
+			}
+		} else {
+			throw new RuntimeException("\nIn spatial applications, use of compartment size ('" + structure.getStructureSize().getName() + "') in expression(s) is not allowed.");
+		}
 		return getMathSymbol(sizeParameter,structureMapping);
 	}
 	if (ste instanceof ProxyParameter){
@@ -1798,13 +1811,32 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		SpeciesContextSpec.SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		Expression initExpr = new Expression(initParm.getExpression());
 		if (initParm!=null){
 			try {
-				double value = initParm.getExpression().evaluateConstant();
+				double value = initExpr.evaluateConstant();
 				varHash.addVariable(new Constant(getMathSymbol(initParm,null), new Expression(value)));//getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
 			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(initParm,null),getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
+				String[] symbols = initExpr.getSymbols();
+				// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
+				for (int j = 0; j < symbols.length; j++) {
+					SpeciesContext spC = simContext.getModel().getSpeciesContext(symbols[j]);
+					if (spC != null) {
+						SpeciesContextSpec spcspec = simContext.getReactionContext().getSpeciesContextSpec(spC);
+						SpeciesContextSpecParameter spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+						// if initConc param expression is null, try initCount
+						if (spCInitParm.getExpression() == null) {
+							spCInitParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+						}
+						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+						Expression scsInitExpr = new Expression(getNameScope().getSymbolName(spCInitParm));
+						scsInitExpr.bindExpression(this);
+						initExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
+					}
+				}
+				// now create the appropriate function for the current speciesContextSpec.
+				varHash.addVariable(new Function(getMathSymbol(initParm,null),getIdentifierSubstitutions(initExpr,initParm.getUnitDefinition(),null)));
 			}
 		}
 	}
