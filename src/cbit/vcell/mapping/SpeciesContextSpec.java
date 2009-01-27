@@ -1,29 +1,31 @@
 package cbit.vcell.mapping;
-import cbit.util.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.Serializable;
+
+import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.util.BeanUtils;
+import cbit.util.Compare;
+import cbit.util.Matchable;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.NameScope;
 import cbit.vcell.model.BioNameScope;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.util.Matchable;
-import cbit.util.Compare;
 import cbit.vcell.model.ExpressionContainer;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
-import java.io.*;
-import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.units.VCUnitDefinition;
-import java.beans.PropertyVetoException;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 
 public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, Serializable {
 
@@ -39,7 +41,7 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 			return children;
 		}
 		public String getName() {
-			return SpeciesContextSpec.this.getSpeciesContext().getName();
+			return SpeciesContextSpec.this.getSpeciesContext().getName()+"_scs";
 		}
 		public cbit.vcell.parser.NameScope getParent() {
 			if (SpeciesContextSpec.this.simulationContext != null){
@@ -111,7 +113,19 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
-				expression.bindExpression(SpeciesContextSpec.this);
+				// Need to bind this expression, but changing the binding from SpeciesContextSpec.this to a symbolTable created on the fly.
+				// This new symbolTable is this SpeciesContextSpec, but omits its parameters, so that the SpeciesContextSpecParameter
+				// expression that is being bound cannot contain other speciesContextSpecParameters in its expression.
+				expression.bindExpression(new SymbolTable() {
+					public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+						SymbolTableEntry ste = SpeciesContextSpec.this.getEntry(identifierString);
+						if (ste instanceof SpeciesContextSpecParameter) {
+							throw new ExpressionBindingException("\nCannot use one speciesContextSpec parameter (e.g., diff, initConc, Vel_X, etc.) in another speciesContextSpec parameter expression.");
+						}
+						return ste;
+					}
+				}
+				);
 			}
 			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
@@ -153,6 +167,82 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 			return fieldParameterRole;
 		}
 	}
+	
+	public class SpeciesContextSpecProxyParameter extends ProxyParameter {
+
+		public SpeciesContextSpecProxyParameter(SymbolTableEntry target){
+			super(target);
+		}
+		
+		public NameScope getNameScope(){
+			return SpeciesContextSpec.this.getNameScope();
+		}
+
+		public boolean compareEqual(Matchable obj) {
+			if (!(obj instanceof SpeciesContextSpecProxyParameter)){
+				return false;
+			}
+			SpeciesContextSpecProxyParameter other = (SpeciesContextSpecProxyParameter)obj;
+			if (getTarget() instanceof Matchable && other.getTarget() instanceof Matchable &&
+				Compare.isEqual((Matchable)getTarget(), (Matchable)other.getTarget())){
+				return true;
+			}else{
+				return false;
+			}
+		}
+
+		
+		@Override
+		public String getDescription() {
+			if (getTarget() instanceof SpeciesContext) {
+				return "Species Concentration";
+			} else {
+				return super.getDescription();
+			}
+		}
+
+		@Override
+		public void targetPropertyChange(PropertyChangeEvent evt) {
+			super.targetPropertyChange(evt);
+			if (evt.getPropertyName().equals("name")){
+				String oldName = (String)evt.getOldValue();
+				String newName = (String)evt.getNewValue();
+				try {
+					SpeciesContextSpecParameter newParameters[] = new SpeciesContextSpecParameter[fieldParameters.length];
+					System.arraycopy(fieldParameters, 0, newParameters, 0, fieldParameters.length);
+					//
+					// go through all parameters' expressions and replace references to 'oldName' with 'newName'
+					//
+					for (int i = 0; i < newParameters.length; i++){ 
+						Expression exp = getParameter(i).getExpression();
+						if (exp != null) {
+							Expression newExp = new Expression(exp);
+							newExp.substituteInPlace(new Expression(oldName),new Expression(newName));
+							newParameters[i] = new SpeciesContextSpecParameter(newParameters[i].getName(),newExp,newParameters[i].getRole(),newParameters[i].getUnitDefinition(), newParameters[i].getDescription());
+						}
+					}
+					setParameters(newParameters);
+	
+					// 
+					// rebind all expressions
+					//
+					for (int i = 0; i < newParameters.length; i++){
+						if (newParameters[i].getExpression() != null) {
+							newParameters[i].getExpression().bindExpression(SpeciesContextSpec.this);
+						}
+					}
+					
+				}catch (ExpressionException e2){
+					e2.printStackTrace(System.out);
+				}catch (PropertyVetoException e3){
+					e3.printStackTrace(System.out);
+				}
+			} 
+		} 
+		
+	}
+
+	
 	private SpeciesContext speciesContext = null;
 	private static final boolean DEFAULT_CONSTANT = false;
 	private static final boolean DEFAULT_ENABLE_DIFFUSING = true;
@@ -160,6 +250,7 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SpeciesContextSpecParameter[] fieldParameters = null;
+	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient SimulationContext simulationContext = null;
 	private SpeciesContextSpecNameScope nameScope = new SpeciesContextSpecNameScope();
@@ -344,6 +435,20 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
+public SpeciesContextSpecProxyParameter addProxyParameter(SymbolTableEntry symbolTableEntry) {
+	if (getParameterFromName(symbolTableEntry.getName())!=null){
+		throw new RuntimeException("local parameter '"+symbolTableEntry.getName()+"' already exists");
+	}
+	if (getProxyParameter(symbolTableEntry.getName())!=null){
+		throw new RuntimeException("referenced external symbol '"+symbolTableEntry.getName()+"' already exists");
+	}
+	SpeciesContextSpecProxyParameter newProxyParameter = new SpeciesContextSpecProxyParameter(symbolTableEntry);
+	SpeciesContextSpecProxyParameter newProxyParameters[] = (SpeciesContextSpecProxyParameter[])BeanUtils.addElement(fieldProxyParameters,newProxyParameter);
+	setProxyParameters(newProxyParameters);
+	return newProxyParameter;
+}
+
+
 
 /**
  * @return boolean
@@ -507,7 +612,7 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getVelocityZParameter() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public cbit.vcell.parser.SymbolTableEntry getEntry(String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
 	
 	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
@@ -516,7 +621,19 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 			
 	ste = getNameScope().getExternalEntry(identifierString,this);
 
-	return ste;
+	if (ste!=null){
+		return addProxyParameter(ste);
+	}
+	
+	//
+	// if all else fails, try reserved symbols
+	//
+	SymbolTableEntry reservedSTE = ReservedSymbol.fromString(identifierString);
+	if (reservedSTE != null){
+		return addProxyParameter(reservedSTE);
+	}
+
+	return null;
 }
 
 /**
@@ -560,6 +677,11 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 	}
 
 	ste = getParameterFromName(identifier);
+	if (ste!=null){
+		return ste;
+	}
+
+	ste = getProxyParameter(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -703,6 +825,22 @@ public cbit.vcell.model.Parameter getParameter(int index) {
 	return param;
 }
 
+public SpeciesContextSpecProxyParameter getProxyParameter(String pName){
+	if (fieldProxyParameters == null){
+		return null;
+	}
+	for (int i=0;i<fieldProxyParameters.length;i++){
+		SpeciesContextSpecProxyParameter parm = fieldProxyParameters[i];
+		if (pName.equals(parm.getName())){
+			return parm;
+		}
+	}
+	return null;
+}
+
+public SpeciesContextSpecProxyParameter[] getProxyParameters() {
+	return fieldProxyParameters;
+}
 
 /**
  * Accessor for the propertyChange field.
@@ -969,6 +1107,17 @@ public void refreshDependencies() {
  */
 private void removeParameter(SpeciesContextSpec.SpeciesContextSpecParameter parameter) {}
 
+protected void removeProxyParameter(SpeciesContextSpecProxyParameter parameter) {
+	for (int i = 0; i < fieldProxyParameters.length; i++){
+		if (fieldProxyParameters[i] == parameter){
+			SpeciesContextSpecProxyParameter newProxyParameters[] = (SpeciesContextSpecProxyParameter[])BeanUtils.removeElement(fieldProxyParameters,parameter);
+			setProxyParameters(newProxyParameters);
+			return;
+		}
+	}
+	throw new RuntimeException(parameter.getName()+"' not found");
+}
+
 
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
@@ -1042,6 +1191,12 @@ private void setParameters(SpeciesContextSpecParameter[] parameters) throws java
 	fireVetoableChange("parameters", oldValue, parameters);
 	fieldParameters = parameters;
 	firePropertyChange("parameters", oldValue, parameters);
+}
+
+private void setProxyParameters(SpeciesContextSpecProxyParameter[] proxyParameters) {
+	SpeciesContextSpecProxyParameter[] oldValue = fieldProxyParameters;
+	fieldProxyParameters = proxyParameters;
+	firePropertyChange("proxyParameters", oldValue, proxyParameters);
 }
 
 
@@ -1135,5 +1290,6 @@ public Expression convertParticlesToConcentration(Expression iniParticles) throw
 public SimulationContext getSimulationContext() {
 	return simulationContext;
 }
+
 
 }

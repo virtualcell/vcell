@@ -1,44 +1,42 @@
 package cbit.vcell.mapping;
-import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.model.ExpressionContainer;
-import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.BioNameScope;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Vector;
 
+import cbit.sql.KeyValue;
+import cbit.sql.Version;
+import cbit.util.BeanUtils;
+import cbit.util.Compare;
+import cbit.util.Matchable;
+import cbit.util.TokenMangler;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.model.Model;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
-import cbit.vcell.model.VCMODL;
-import cbit.sql.Version;
-import cbit.util.*;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.matrix.MatrixException;
-import cbit.sql.KeyValue;
-import cbit.vcell.simdata.ExternalDataIdentifier;
-
-import java.util.*;
-
-import sun.nio.cs.ext.ISCII91;
-import cbit.vcell.parser.NameScope;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.VCMODL;
+import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.solver.Simulation;
 /**
  * This type was created in VisualAge.
  */
@@ -939,19 +937,24 @@ public KeyValue getKey() {
  * @param identifier java.lang.String
  */
 public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
+	// try reserved symbols
 	cbit.vcell.parser.SymbolTableEntry ste = cbit.vcell.model.ReservedSymbol.fromString(identifier);
 	if (ste!=null){
 		return ste;
 	}
 	
-	//
 	// if simulationContext parameter exists, then return it
-	//
 	ste = getSimulationContextParameter(identifier);
 	if (ste != null){
 		return ste;
 	}
 
+	// if not found in simulationContext, try model level
+	ste = getModel().getLocalEntry(identifier);
+	if (ste != null){
+		return ste;
+	}
+	
 	return null;
 }
 

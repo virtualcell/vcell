@@ -51,7 +51,7 @@ private void connEtoC8(java.awt.event.FocusEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.stopCellEditing();
+		// 	this.stopCellEditing();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

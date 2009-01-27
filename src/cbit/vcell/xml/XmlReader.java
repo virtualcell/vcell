@@ -43,6 +43,7 @@ import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -3660,9 +3661,10 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	}
 	// Retrieve SpeciesContextSpecs
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
-	SpeciesContextSpec specContSpecs[] = new SpeciesContextSpec[children.size()];
+//	SpeciesContextSpec specContSpecs[] = new SpeciesContextSpec[children.size()];
+	SpeciesContextSpec specContSpecs[] = newsimcontext.getReactionContext().getSpeciesContextSpecs();
 	for (int i=0;i<children.size();i++){
-		specContSpecs[i] = getSpeciesContextSpec( (Element)children.get(i));
+		specContSpecs[i] = getSpeciesContextSpec( (Element)children.get(i), newsimcontext.getReactionContext());
 	}
 	try {
 		newsimcontext.getReactionContext().setSpeciesContextSpecs( specContSpecs );
@@ -4063,7 +4065,7 @@ public SpeciesContext getSpeciesContext(Element param) throws XmlParseException{
  * @return cbit.vcell.mapping.SpeciesContextSpec
  * @param param org.jdom.Element
  */
-public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseException{
+public SpeciesContextSpec getSpeciesContextSpec(Element param, ReactionContext rxnContext) throws XmlParseException{
 	SpeciesContextSpec specspec = null;
 	//Get Atributes
 	String speccontname = unMangle( param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag) );
@@ -4079,7 +4081,8 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	}
 	
 	//*** Create new SpeciesContextSpec ****
-	specspec = new SpeciesContextSpec(specref, null);     //refreshDependencies() will re-connect SimulationContext
+//	specspec = new SpeciesContextSpec(specref, null);     //refreshDependencies() will re-connect SimulationContext
+ 	specspec = rxnContext.getSpeciesContextSpec(specref);
 	//set attributes
 	specspec.setConstant( constant);
 	try {
