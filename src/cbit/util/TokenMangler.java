@@ -476,7 +476,7 @@ public static String getRestoredStringJSCL(String inputString) {
 			int replaceIndex = inputString.indexOf(escapeSeq[i]);
 			if (replaceIndex!=-1){
 				if (replaceIndex==0){
-					inputString = "'"+inputString.substring(escapeSeq[i].length(),inputString.length());
+					inputString = escapedChar[i]+inputString.substring(escapeSeq[i].length(),inputString.length());
 				}else if (replaceIndex==inputString.length() - escapeSeq[i].length()){
 					inputString = inputString.substring(0,replaceIndex)+escapedChar[i];
 				}else{
