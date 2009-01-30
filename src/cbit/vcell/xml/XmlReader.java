@@ -3641,7 +3641,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	//
 	tempelement =  param.getChild(XMLTags.ReactionContextTag, vcNamespace);
 	// Retrieve ReactionSpecs
-	List children = tempelement.getChildren(XMLTags.ReactionSpecTag, vcNamespace);
+	List<Element> children = tempelement.getChildren(XMLTags.ReactionSpecTag, vcNamespace);
 	if (children.size()!=0) {
 		if (children.size()!= biomodel.getModel().getReactionSteps().length) {
 			throw new XmlParseException("The number of reactions is not consistant.\n"+"Model reactions="+biomodel.getModel().getReactionSteps().length+", Reaction specs="+children.size());
@@ -3650,7 +3650,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 		// A more robust code will read the reactions in the source file and replace the ones created by the default by the VirtualCell framework.
 		ReactionSpec reactionSpecs[] = new ReactionSpec[children.size()];
 		for (int i=0;i<children.size();i++){
-			reactionSpecs[i] = getReactionSpec((Element)children.get(i));
+			reactionSpecs[i] = getReactionSpec(children.get(i));
 		}
 		try {
 			newsimcontext.getReactionContext().setReactionSpecs(reactionSpecs);
@@ -3659,19 +3659,11 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 			throw new XmlParseException("A PropertyVetoException occurred while setting the ReactionSpecs to the SimContext " + name+" : "+e.getMessage());
 		}
 	}
+	
 	// Retrieve SpeciesContextSpecs
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
-//	SpeciesContextSpec specContSpecs[] = new SpeciesContextSpec[children.size()];
-	SpeciesContextSpec specContSpecs[] = newsimcontext.getReactionContext().getSpeciesContextSpecs();
-	for (int i=0;i<children.size();i++){
-		specContSpecs[i] = getSpeciesContextSpec( (Element)children.get(i), newsimcontext.getReactionContext());
-	}
-	try {
-		newsimcontext.getReactionContext().setSpeciesContextSpecs( specContSpecs );
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new XmlParseException("A PropertyVetoException occurred when setting the SpeciesContextSpecs of the SimContext " + name+" : "+e.getMessage());
-	}
+	getSpeciesContextSpecs(children, newsimcontext.getReactionContext());
+
 	//Retrieve Electrical context
 	org.jdom.Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
 	
@@ -4065,172 +4057,172 @@ public SpeciesContext getSpeciesContext(Element param) throws XmlParseException{
  * @return cbit.vcell.mapping.SpeciesContextSpec
  * @param param org.jdom.Element
  */
-public SpeciesContextSpec getSpeciesContextSpec(Element param, ReactionContext rxnContext) throws XmlParseException{
-	SpeciesContextSpec specspec = null;
-	//Get Atributes
-	String speccontname = unMangle( param.getAttributeValue(XMLTags.SpeciesContextRefAttrTag) );
-	boolean constant = Boolean.valueOf(param.getAttributeValue(XMLTags.ForceConstantAttrTag)).booleanValue();
-	boolean enabledif = Boolean.valueOf(param.getAttributeValue(XMLTags.EnableDiffusionAttrTag)).booleanValue();
-	
-	//Retrieve reference
-	Element re = XMLDict.getResolvedElement(param, XMLTags.SpeciesContextTag, XMLTags.NameAttrTag, speccontname);
-	String temp = "cbit.vcell.model.SpeciesContext:"+speccontname;
-	SpeciesContext specref = (SpeciesContext)this.dictionary.get(re, temp);
-	if (specref == null) {
-		throw new XmlParseException("The SpeciesContext " + temp +" refrence could not be resolved in the dictionnary!");
-	}
-	
-	//*** Create new SpeciesContextSpec ****
-//	specspec = new SpeciesContextSpec(specref, null);     //refreshDependencies() will re-connect SimulationContext
- 	specspec = rxnContext.getSpeciesContextSpec(specref);
-	//set attributes
-	specspec.setConstant( constant);
-	try {
-		specspec.setEnableDiffusing( enabledif );
-	} catch (MappingException e) {
-		e.printStackTrace();
-		throw new XmlParseException("error setting the 'enableDiffusing' property of a SpeciesContext: "+e.getMessage());
-	}
-	//set expressions
-	//Initial
-	String tempCon = param.getChildText(XMLTags.InitialConcentrationTag, vcNamespace);
-	String tempAmt = param.getChildText(XMLTags.InitialAmountTag, vcNamespace);
-	temp = param.getChildText(XMLTags.InitialTag, vcNamespace);
-	try {
-		if(temp != null)//old model
-		{
-			Expression expression = unMangleExpression(temp);
-			specspec.getInitialConcentrationParameter().setExpression(expression);
-			specspec.getInitialCountParameter().setExpression(null);
-		}	
-		else //new model
-		{
-			if(tempCon != null)//use concentration as initial condition
+public void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext rxnContext) throws XmlParseException{
+	for (int i = 0; i < scsChildren.size(); i++) {
+		Element scsElement = scsChildren.get(i); 
+		SpeciesContextSpec specspec = null;
+		//Get Atributes
+		String speccontname = unMangle( scsElement.getAttributeValue(XMLTags.SpeciesContextRefAttrTag) );
+		boolean constant = Boolean.valueOf(scsElement.getAttributeValue(XMLTags.ForceConstantAttrTag)).booleanValue();
+		boolean enabledif = Boolean.valueOf(scsElement.getAttributeValue(XMLTags.EnableDiffusionAttrTag)).booleanValue();
+		
+		//Retrieve reference
+		Element re = XMLDict.getResolvedElement(scsElement, XMLTags.SpeciesContextTag, XMLTags.NameAttrTag, speccontname);
+		String temp = "cbit.vcell.model.SpeciesContext:"+speccontname;
+		SpeciesContext specref = (SpeciesContext)this.dictionary.get(re, temp);
+		if (specref == null) {
+			throw new XmlParseException("The SpeciesContext " + temp +" refrence could not be resolved in the dictionnary!");
+		}
+		
+		// get SpeciesContextSpec from reactionContext & specRef
+	 	specspec = rxnContext.getSpeciesContextSpec(specref);
+		//set attributes
+		specspec.setConstant( constant);
+		try {
+			specspec.setEnableDiffusing( enabledif );
+		} catch (MappingException e) {
+			e.printStackTrace();
+			throw new XmlParseException("error setting the 'enableDiffusing' property of a SpeciesContext: "+e.getMessage());
+		}
+		//set expressions
+		//Initial
+		String tempCon = scsElement.getChildText(XMLTags.InitialConcentrationTag, vcNamespace);
+		String tempAmt = scsElement.getChildText(XMLTags.InitialAmountTag, vcNamespace);
+		temp = scsElement.getChildText(XMLTags.InitialTag, vcNamespace);
+		try {
+			if(temp != null)//old model
 			{
-				Expression expression = unMangleExpression(tempCon);
+				Expression expression = unMangleExpression(temp);
 				specspec.getInitialConcentrationParameter().setExpression(expression);
 				specspec.getInitialCountParameter().setExpression(null);
-			}
-			else if(tempAmt != null)//use number of particles as initial condition
+			}	
+			else //new model
 			{
-				Expression expression = unMangleExpression(tempAmt);
-				specspec.getInitialCountParameter().setExpression(expression);
-				specspec.getInitialConcentrationParameter().setExpression(null);
+				if(tempCon != null)//use concentration as initial condition
+				{
+					Expression expression = unMangleExpression(tempCon);
+					specspec.getInitialConcentrationParameter().setExpression(expression);
+					specspec.getInitialCountParameter().setExpression(null);
+				}
+				else if(tempAmt != null)//use number of particles as initial condition
+				{
+					Expression expression = unMangleExpression(tempAmt);
+					specspec.getInitialCountParameter().setExpression(expression);
+					specspec.getInitialConcentrationParameter().setExpression(null);
+				}
+				else
+				{
+					throw new XmlParseException("Unrecognizable initial condition when parsing VCML file.");
+				}
 			}
-			else
-			{
-				throw new XmlParseException("Unrecognizable initial condition when parsing VCML file.");
-			}
-		}
-	
-//		Expression expression = unMangleExpression(temp);
-//		specspec.getInitialConditionParameter().setExpression(expression);
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException("An expressionException was fired when setting the InitilaconditionExpression "+ temp + ", for a SpeciesContextSpec!"+" : "+e.getMessage());
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new XmlParseException(e.getMessage());
-	}
-	//diffusion (if there is no diffusion information skip it)
-	Element xmlDiffusionElement = param.getChild(XMLTags.DiffusionTag, vcNamespace);
-	if (xmlDiffusionElement != null) {
-		temp = xmlDiffusionElement.getText();
-		try {
-			Expression expression = unMangleExpression(temp);
-			specspec.getDiffusionParameter().setExpression(expression);
+		
+	//		Expression expression = unMangleExpression(temp);
+	//		specspec.getInitialConditionParameter().setExpression(expression);
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when setting the diffusionExpression " + temp + " to a SpeciesContextSpec!"+" : "+e.getMessage());
+			throw new XmlParseException("An expressionException was fired when setting the InitilaconditionExpression "+ temp + ", for a SpeciesContextSpec!"+" : "+e.getMessage());
 		} catch (java.beans.PropertyVetoException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
-	}
-	
-	//Get Boundaries if any
-	Element tempElement = param.getChild(XMLTags.BoundariesTag, vcNamespace);
-	if (tempElement != null) {
-		try {
-			//Xm
-			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
-			if (temp != null) {
-				specspec.getBoundaryXmParameter().setExpression(new Expression(unMangle(temp)));
+		//diffusion (if there is no diffusion information skip it)
+		Element xmlDiffusionElement = scsElement.getChild(XMLTags.DiffusionTag, vcNamespace);
+		if (xmlDiffusionElement != null) {
+			temp = xmlDiffusionElement.getText();
+			try {
+				Expression expression = unMangleExpression(temp);
+				specspec.getDiffusionParameter().setExpression(expression);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new XmlParseException("An ExpressionException was fired when setting the diffusionExpression " + temp + " to a SpeciesContextSpec!"+" : "+e.getMessage());
+			} catch (java.beans.PropertyVetoException e) {
+				e.printStackTrace();
+				throw new XmlParseException(e.getMessage());
 			}
-			//Xp
-			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXp);
-			if (temp != null) {
-				specspec.getBoundaryXpParameter().setExpression(new Expression(unMangle(temp)));
-			}
-			//Ym
-			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYm);
-			if (temp != null) {
-				specspec.getBoundaryYmParameter().setExpression(new Expression(unMangle(temp)));
-			}
-			//Yp
-			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYp);
-			if (temp != null) {
-				specspec.getBoundaryYpParameter().setExpression(new Expression(unMangle(temp)));
-			}
-			//Zm
-			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZm);
-			if (temp != null) {
-				specspec.getBoundaryZmParameter().setExpression(new Expression(unMangle(temp)));
-			}
-			//Zp
-			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZp);
-			if (temp != null) {
-				specspec.getBoundaryZpParameter().setExpression(new Expression(unMangle(temp)));
-			}
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new XmlParseException("An ExpressionException was fired when Setting the boundary Expression: " + unMangle(temp)+" : "+e.getMessage());
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
-			throw new XmlParseException(e.getMessage());
 		}
-	}
-	
-    // Get Velocities if any
-    Element velocityE = param.getChild(XMLTags.VelocityTag, vcNamespace);
-    if (velocityE != null) {
-        String tempStr = null;
-        boolean dummyVel = true;
-        try {
-			tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
-			if (tempStr != null) {
-				specspec.getVelocityXParameter().setExpression(new Expression(tempStr));       //all velocity dimensions are optional.
-				if (dummyVel) {
-					dummyVel = false;
+		
+		//Get Boundaries if any
+		Element tempElement = scsElement.getChild(XMLTags.BoundariesTag, vcNamespace);
+		if (tempElement != null) {
+			try {
+				//Xm
+				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
+				if (temp != null) {
+					specspec.getBoundaryXmParameter().setExpression(new Expression(unMangle(temp)));
 				}
-			}
-			tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
-			if (tempStr != null) {
-				specspec.getVelocityYParameter().setExpression(new Expression(tempStr));
-				if (dummyVel) {
-					dummyVel = false;
+				//Xp
+				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXp);
+				if (temp != null) {
+					specspec.getBoundaryXpParameter().setExpression(new Expression(unMangle(temp)));
 				}
-			}
-			tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
-			if (tempStr != null) {
-				specspec.getVelocityZParameter().setExpression(new Expression(tempStr));
-				if (dummyVel) {
-					dummyVel = false;
+				//Ym
+				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYm);
+				if (temp != null) {
+					specspec.getBoundaryYmParameter().setExpression(new Expression(unMangle(temp)));
 				}
+				//Yp
+				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYp);
+				if (temp != null) {
+					specspec.getBoundaryYpParameter().setExpression(new Expression(unMangle(temp)));
+				}
+				//Zm
+				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZm);
+				if (temp != null) {
+					specspec.getBoundaryZmParameter().setExpression(new Expression(unMangle(temp)));
+				}
+				//Zp
+				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZp);
+				if (temp != null) {
+					specspec.getBoundaryZpParameter().setExpression(new Expression(unMangle(temp)));
+				}
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new XmlParseException("An ExpressionException was fired when Setting the boundary Expression: " + unMangle(temp)+" : "+e.getMessage());
+			} catch (java.beans.PropertyVetoException e) {
+				e.printStackTrace();
+				throw new XmlParseException(e.getMessage());
 			}
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
-			throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName() + "'.\n" + e.getMessage());
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName() + "'.\n" + e.getMessage());
 		}
-        if (dummyVel) {
-        	throw new XmlParseException("Void Velocity element found under PDE for: " + specspec.getSpeciesContext().getName());
-    	} 
-    }
-
-	return specspec;
+		
+	    // Get Velocities if any
+	    Element velocityE = scsElement.getChild(XMLTags.VelocityTag, vcNamespace);
+	    if (velocityE != null) {
+	        String tempStr = null;
+	        boolean dummyVel = true;
+	        try {
+				tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
+				if (tempStr != null) {
+					specspec.getVelocityXParameter().setExpression(new Expression(tempStr));       //all velocity dimensions are optional.
+					if (dummyVel) {
+						dummyVel = false;
+					}
+				}
+				tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
+				if (tempStr != null) {
+					specspec.getVelocityYParameter().setExpression(new Expression(tempStr));
+					if (dummyVel) {
+						dummyVel = false;
+					}
+				}
+				tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
+				if (tempStr != null) {
+					specspec.getVelocityZParameter().setExpression(new Expression(tempStr));
+					if (dummyVel) {
+						dummyVel = false;
+					}
+				}
+			} catch (PropertyVetoException e) {
+				e.printStackTrace();
+				throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName() + "'.\n" + e.getMessage());
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName() + "'.\n" + e.getMessage());
+			}
+	        if (dummyVel) {
+	        	throw new XmlParseException("Void Velocity element found under PDE for: " + specspec.getSpeciesContext().getName());
+	    	} 
+	    }
+	}
 }
 
 /**
