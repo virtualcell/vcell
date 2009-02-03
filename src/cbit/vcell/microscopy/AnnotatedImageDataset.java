@@ -12,8 +12,6 @@ import cbit.image.ImageException;
 import cbit.util.Issue;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.microscopy.ROI.RoiType;
-import cbit.vcell.microscopy.gui.ROIAssistPanel;
 
 /**
  */
@@ -49,7 +47,7 @@ public abstract class AnnotatedImageDataset {
 	 * @param argImageDataset ImageDataset
 	 * @param argROITypes ROI.RoiType[]
 	 */
-	public AnnotatedImageDataset(ImageDataset argImageDataset, ROI.RoiType[] argROITypes) {
+	public AnnotatedImageDataset(ImageDataset argImageDataset, String[] argROINames) {
 		// Error checking
 		if (argImageDataset.getAllImages().length == 0) {
 			throw new RuntimeException("image dataset is empty");
@@ -58,7 +56,7 @@ public abstract class AnnotatedImageDataset {
 		this.imageDataset = argImageDataset;
 		
 		rois = new ArrayList<ROI>();
-		for (int i = 0;argROITypes!=null && i < argROITypes.length; i++) {
+		for (int i = 0;argROINames!=null && i < argROINames.length; i++) {
 			UShortImage[] roiImages = new UShortImage[imageDataset.getSizeZ()];
 			try {
 				for (int j = 0; j < roiImages.length; j++) {
@@ -70,7 +68,7 @@ public abstract class AnnotatedImageDataset {
 				throw new RuntimeException(e.getMessage());
 			}
 			//comment added in Feb, 2008. Each roi contains images, whoes size equals to size of z slices.
-			cbit.vcell.microscopy.ROI roi = new cbit.vcell.microscopy.ROI(roiImages,argROITypes[i]);
+			cbit.vcell.microscopy.ROI roi = new cbit.vcell.microscopy.ROI(roiImages,argROINames[i]);
 			rois.add(roi);//rois contains different types of roi, 11 types. 3 primary + 8 generated.
 		}
 		verifyROIdimensions(imageDataset, rois);
@@ -106,9 +104,9 @@ public abstract class AnnotatedImageDataset {
 	 * @param roiType RoiType
 	 * @return ROI
 	 */
-	public ROI getRoi(RoiType roiType) {
+	public ROI getRoi(String roiName) {
 		for (int i = 0;i<rois.size(); i++) {
-			if (rois.get(i).getROIType()==roiType){
+			if (rois.get(i).getROIName().equals(roiName)){
 				return rois.get(i);
 			}
 		}
@@ -208,7 +206,7 @@ public abstract class AnnotatedImageDataset {
 		rois = new ArrayList<ROI>();
 		boolean isCurrentlyDisplayed = false;
 		for (int i = 0; i < oldROIs.length; i++) {
-			if(!oldROIs[i].getROIType().equals(roi.getROIType())){
+			if(!oldROIs[i].getROIName().equals(roi.getROIName())){
 				rois.add(oldROIs[i]);
 			}else{
 				if(currentlyDisplayedROI == oldROIs[i]){

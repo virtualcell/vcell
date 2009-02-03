@@ -1,6 +1,5 @@
 package cbit.vcell.microscopy;
 
-import java.awt.Rectangle;
 import java.io.File;
 
 import cbit.sql.KeyValue;
@@ -9,7 +8,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -465,8 +463,8 @@ public class FRAPOptData {
 			//REORder according to roiTypes
 			double[][] fitDataInROITypeOrder = new double[newData.length][];
 			for (int i = 0; i < getExpFrapStudy().getFrapData().getRois().length; i++) {
-				for (int j = 0; j < ROI.RoiType.values().length; j++) {
-					if(getExpFrapStudy().getFrapData().getRois()[i].getROIType().equals(ROI.RoiType.values()[j])){
+				for (int j = 0; j < FRAPData.VFRAP_ROI_ENUM.values().length; j++) {
+					if(getExpFrapStudy().getFrapData().getRois()[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.values()[j].name())){
 						fitDataInROITypeOrder[j] = newData[i];
 						break;
 					}
@@ -591,8 +589,8 @@ public class FRAPOptData {
 			// REORder according to roiTypes
 			double[][] fitDataInROITypeOrder = new double[newData.length][];
 			for (int i = 0; i < getExpFrapStudy().getFrapData().getRois().length; i++) {
-				for (int j = 0; j < ROI.RoiType.values().length; j++) {
-					if(getExpFrapStudy().getFrapData().getRois()[i].getROIType().equals(ROI.RoiType.values()[j])){
+				for (int j = 0; j < FRAPData.VFRAP_ROI_ENUM.values().length; j++) {
+					if(getExpFrapStudy().getFrapData().getRois()[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.values()[j].name())){
 						fitDataInROITypeOrder[j] = newData[i];
 						break;
 					}
@@ -652,7 +650,7 @@ public class FRAPOptData {
 					std = std + (refData[i][j] - avg)*(refData[i][j] - avg);
 				}
 				std = Math.sqrt(std);
-				System.out.println("In ROI Type " + getExpFrapStudy().getFrapData().getRois()[i].getROIType().name() + ".   Max of last "+ (1-portion[k])*100+"% data is:" + max +".  Average is:" + avg +". Standard Deviation is:" + std + ".    Std is "+ ((std/max)*100) + "% of max.");
+				System.out.println("In ROI Name " + getExpFrapStudy().getFrapData().getRois()[i].getROIName() + ".   Max of last "+ (1-portion[k])*100+"% data is:" + max +".  Average is:" + avg +". Standard Deviation is:" + std + ".    Std is "+ ((std/max)*100) + "% of max.");
 			}
 		}
 		
@@ -734,7 +732,7 @@ public class FRAPOptData {
 			boolean[] errorOfInterest = new boolean[rois.length];
 			for(int i=0; i<rois.length; i++)
 			{
-				if(/*!rois[i].getROIType().equals(RoiType.ROI_BLEACHED)*/rois[i].getROIType().equals(RoiType.ROI_BACKGROUND) || rois[i].getROIType().equals(RoiType.ROI_CELL))
+				if(/*!rois[i].getROIType().equals(RoiType.ROI_BLEACHED)*/rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()) || rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()))
 				{
 					errorOfInterest[i] = false;
 				}

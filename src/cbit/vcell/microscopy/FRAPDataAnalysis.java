@@ -1,11 +1,9 @@
 package cbit.vcell.microscopy;
 
 
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
 
 /**
  */
@@ -128,7 +126,7 @@ public class FRAPDataAnalysis {
 		//the prebleachAvg has backgroud subtracted.
 		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
 		//temp_fluor has subtracted background and divided by prebleach average.
-		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(RoiType.ROI_BLEACHED),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
+		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
 		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
 
 		//get nomalized preBleachAverage under bleached area.
@@ -140,7 +138,7 @@ public class FRAPDataAnalysis {
 
 		
 		//get number of pixels in bleached region(non ROI region pixels are saved as 0)
-		ROI bleachedROI_2D = frapData.getRoi(RoiType.ROI_BLEACHED);
+		ROI bleachedROI_2D = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		long numPixelsInBleachedROI = bleachedROI_2D.getRoiImages()[0].getNumXYZ() - bleachedROI_2D.getRoiImages()[0].countPixelsByValue((short)0);
 		// assume ROI is a circle, A = Pi*R^2
 		// so R = sqrt(A/Pi)
@@ -148,7 +146,7 @@ public class FRAPDataAnalysis {
 		double bleachRadius = Math.sqrt(area/Math.PI);// Radius of ROI(assume that ROI is a circle)
 		// assume cell is a circle, A = Pi*R^2
 		// so R = sqrt(A/Pi)
-		area = frapData.getRoi(RoiType.ROI_CELL).getRoiImages()[0].getPixelAreaXY() * (frapData.getRoi(RoiType.ROI_CELL).getRoiImages()[0].getNumXYZ()- bleachedROI_2D.getRoiImages()[0].countPixelsByValue((short)0));
+		area = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0].getPixelAreaXY() * (frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0].getNumXYZ()- bleachedROI_2D.getRoiImages()[0].countPixelsByValue((short)0));
 		double cellRadius = Math.sqrt(area/Math.PI);// Radius of ROI(assume that ROI is a circle)
 		
 		
@@ -172,7 +170,7 @@ public class FRAPDataAnalysis {
 		//Bleach while monitoring fit
 		//
 		double[] tempCellROIAverage =
-			getAverageROIIntensity(frapData,frapData.getRoi(RoiType.ROI_CELL),preBleachAvgXYZ,temp_background);
+			getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
 //		for (int i = 0; i < temp_fluor.length; i++) {
 //			tempCellROIAverage[i] -= averageBackground;
 //		}
@@ -296,7 +294,7 @@ public class FRAPDataAnalysis {
 	
 	public static int getRecoveryIndex(FRAPData frapData)
 	{
-		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(RoiType.ROI_BLEACHED),null,null);
+		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),null,null);
 		
 		int startIndexForRecovery = 0;
 		double minFluorValue = Double.MAX_VALUE;
@@ -347,8 +345,8 @@ public class FRAPDataAnalysis {
 	 */
 	private static double getCellAreaBleachedFraction(FRAPData fdata)
 	{
-		ROI bleachedROI = fdata.getRoi(RoiType.ROI_BLEACHED);
-		ROI cellROI = fdata.getRoi(RoiType.ROI_CELL);
+		ROI bleachedROI = fdata.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
+		ROI cellROI = fdata.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		double fraction = 1;
 		double bleachedLen = 0;
 		double cellLen = 0;

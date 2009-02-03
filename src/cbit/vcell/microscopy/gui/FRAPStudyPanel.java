@@ -82,7 +82,6 @@ import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.StdoutSessionLog;
@@ -417,11 +416,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		ROI savedBleachROI = null;
 		ROI savedBackgroundROI = null;
 		if(frapData != null){
-			savedCellROI = frapData.getRoi(RoiType.ROI_CELL);
+			savedCellROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 			savedCellROI = (savedCellROI == null?null:new ROI(savedCellROI));
-			savedBleachROI = frapData.getRoi(RoiType.ROI_BLEACHED);
+			savedBleachROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 			savedBleachROI = (savedBleachROI == null?null:new ROI(savedBleachROI));
-			savedBackgroundROI = frapData.getRoi(RoiType.ROI_BACKGROUND);
+			savedBackgroundROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 			savedBackgroundROI = (savedBackgroundROI == null?null:new ROI(savedBackgroundROI));
 		}
 		String savedDiffusionRate = null;
@@ -523,9 +522,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 	
 	private boolean checkROIConstraints() throws Exception{
-		short[] cellPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).getPixelsXYZ();
-		short[] bleachPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).getPixelsXYZ();
-		short[] backgroundPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_BACKGROUND).getPixelsXYZ();
+		short[] cellPixels = getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
+		short[] bleachPixels = getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getPixelsXYZ();
+		short[] backgroundPixels = getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getPixelsXYZ();
 		boolean bFixedBleach = false;
 		boolean bFixedBackground = false;
 		for (int i = 0; i < cellPixels.length; i++) {
@@ -555,7 +554,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getX(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getY(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getZ());
-					ROI newBleachROI = new ROI(ushortImage,RoiType.ROI_BLEACHED);
+					ROI newBleachROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 					getFrapStudy().getFrapData().addReplaceRoi(newBleachROI);
 				}
 				if(bFixedBackground){
@@ -566,7 +565,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getX(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getY(),
 							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getZ());
-					ROI newBackgroundROI = new ROI(ushortImage,RoiType.ROI_BACKGROUND);
+					ROI newBackgroundROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 					getFrapStudy().getFrapData().addReplaceRoi(newBackgroundROI);
 				}
 			}
@@ -1124,7 +1123,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	    				ImageLoadingProgress imgProgress = new ImageLoadingProgress();
 	        			imgProgress.addPropertyChangeListener(getFRAPDataPanel());
 	        			ImageDataset imageDataset = ImageDatasetReader.readImageDatasetFromMultiFiles(inFileArr, imgProgress, multiFileImportInfo.isTimeSeries, multiFileImportInfo.timeInterval, multiFileImportInfo.zInterval);
-	        			FRAPData newFrapData = new FRAPData(imageDataset, new ROI.RoiType[] { RoiType.ROI_BLEACHED,RoiType.ROI_CELL,RoiType.ROI_BACKGROUND });
+	        			FRAPData newFrapData = new FRAPData(imageDataset, new String[] { FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
 //	        			frapData.setOriginalGlobalScaleInfo(null);
 						newFRAPStudy = new FRAPStudy();
 						newFRAPStudy.setFrapData(newFrapData);
@@ -1709,14 +1708,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 		boolean bROISameSize =
 			Compare.isEqualOrNull(
-				getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).getISize(),
+				getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getISize(),
 				(lastCellROI == null?null:lastCellROI.getISize()));
 		boolean bCellROISame =
-			Compare.isEqualOrNull(lastCellROI,getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL));
+			Compare.isEqualOrNull(lastCellROI,getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 		boolean bBleachROISame =
-			Compare.isEqualOrNull(lastBleachROI,getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED));
+			Compare.isEqualOrNull(lastBleachROI,getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()));
 		boolean bBackgroundROISame =
-			Compare.isEqualOrNull(lastBackgroundROI,getFrapStudy().getFrapData().getRoi(RoiType.ROI_BACKGROUND));
+			Compare.isEqualOrNull(lastBackgroundROI,getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()));
 		
 		return getFRAPParametersPanel().createCompleteFRAPChangeInfo(getSavedFrapModelInfo(),
 				bCellROISame,bBleachROISame,bBackgroundROISame,bROISameSize);
@@ -1765,24 +1764,24 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				throw new Exception("Secondary Diffusion Rate must be positive. ("+secDiffusionRate.doubleValue()+")");			
 			}
 
-			if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
+			if(getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).isAllPixelsZero()){
 					throw new Exception(VirtualFrapMainFrame.ROIErrorString);
 			}
-			if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_BACKGROUND).isAllPixelsZero()){
+			if(getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).isAllPixelsZero()){
 					throw new Exception(VirtualFrapMainFrame.ROIErrorString);
 			}
-			if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).isAllPixelsZero()){
+			if(getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero()){
 				throw new Exception(VirtualFrapMainFrame.ROIErrorString);
 			}
 			Point internalVoidLocation =
-				ROI.findInternalVoid(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL));
+				ROI.findInternalVoid(getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 			if(internalVoidLocation != null){
 				throw new Exception("CELL ROI has unfilled internal void area at image location "+
 						"x="+internalVoidLocation.x+",y="+internalVoidLocation.y+"\n"+
 						"Use ROI editing tools to completely define the CELL ROI");
 			}
 			Point[] distinctCellAreaLocations =
-				ROI.checkContinuity(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL));
+				ROI.checkContinuity(getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 			if(distinctCellAreaLocations != null){
 				throw new Exception("CELL ROI has at least 2 discontinuous areas at image locations \n"+
 						"x="+distinctCellAreaLocations[0].x+",y="+distinctCellAreaLocations[0].y+
@@ -2145,8 +2144,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					PopupGenerator.showErrorDialog("Error Cropping:\n"+e.getMessage());
 				}
 			}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOROI_PROPERTY)){
-				if(!getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIType().equals(RoiType.ROI_CELL) &&
-					getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).isAllPixelsZero()
+				if(!getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()) &&
+					getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero()
 					){
 					DialogUtils.showInfoDialog("Define '"+OverlayEditorPanelJAI.WHOLE_CELL_AREA_TEXT+"'"+
 							" ROI using ROI Tools or '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"'"+
@@ -2179,7 +2178,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								return true;
 							}
 							public String getUndoPresentationName() {
-								return "ROI Threshold "+finalOriginalROI.getROIType().name();
+								return "ROI Threshold "+finalOriginalROI.getROIName();
 							}
 							public void undo() throws CannotUndoException {
 								super.undo();

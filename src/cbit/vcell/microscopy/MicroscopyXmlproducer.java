@@ -147,7 +147,7 @@ private static org.jdom.Element getXML(ROI param,Xmlproducer vcellXMLProducer,bo
 	for (int i = 0; i < images.length; i++) {
 		roiNode.addContent( getXML(param.getRoiImages()[i],vcellXMLProducer,bSaveCompressed) );
 	}
-	roiNode.setAttribute(MicroscopyXMLTags.ROITypeAttrTag, param.getROIType().toString());
+	roiNode.setAttribute(MicroscopyXMLTags.ROITypeAttrTag, param.getROIName());
 	return roiNode;
 }
 

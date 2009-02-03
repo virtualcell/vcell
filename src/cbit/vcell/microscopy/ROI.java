@@ -24,28 +24,11 @@ public class ROI implements Matchable {
 	// Hence storing it in FloatImage. The extent/numX, numY, numZ will be smaller than the original image.
 	// UShortImage used as 2D here, with Z slices in the array. (not related to T, which imageDataset has to store)
 	private UShortImage[] roiImages = null;
-	/**
-	 */
-	public enum RoiType {
-		ROI_BLEACHED,
-		ROI_BACKGROUND,
-		ROI_CELL,
-		ROI_BLEACHED_RING1,
-		ROI_BLEACHED_RING2,
-		ROI_BLEACHED_RING3,
-		ROI_BLEACHED_RING4,
-		ROI_BLEACHED_RING5,
-		ROI_BLEACHED_RING6,
-		ROI_BLEACHED_RING7,
-		ROI_BLEACHED_RING8
-//		ROI_NUCLEUS,
-//		ROI_EXTRACELLULAR
-	}
-	private RoiType roiType = null;
-
+	private String roiName;
+	
 	public ROI(ROI origROI) throws ImageException{
 		super();
-		this.roiType = origROI.roiType;
+		this.roiName = origROI.roiName;
 		this.roiImages = new UShortImage[(origROI.roiImages != null?origROI.roiImages.length:0)];
 		for (int i = 0; i < this.roiImages.length; i++) {
 			this.roiImages[i] = new UShortImage(origROI.roiImages[i]);
@@ -58,12 +41,12 @@ public class ROI implements Matchable {
 	 * @param argRoiImages
 	 * @param argROIType
 	 */
-	public ROI(UShortImage[] argRoiImages, RoiType argROIType) {
+	public ROI(UShortImage[] argRoiImages, String argROIName) {
 		super();
-		init(argRoiImages,argROIType);
+		init(argRoiImages,argROIName);
 	}	
 
-	private void init(UShortImage[] argRoiImages, RoiType argROIType){
+	private void init(UShortImage[] argRoiImages, String argROIName){
 		int numX = argRoiImages[0].getNumX();
 		int numY = argRoiImages[0].getNumY();
 		int numZ = argRoiImages[0].getNumZ();
@@ -77,7 +60,7 @@ public class ROI implements Matchable {
 			}
 		}
 		this.roiImages = argRoiImages;
-		this.roiType = argROIType;
+		this.roiName = argROIName;
 
 	}
 	/**
@@ -85,7 +68,7 @@ public class ROI implements Matchable {
 	 * @param argRoiImage
 	 * @param argROIType
 	 */
-	public ROI(UShortImage argRoiImage, RoiType argROIType){
+	public ROI(UShortImage argRoiImage, String argROIName){
 		super();
 		UShortImage[] roiSubImages = new UShortImage[] { argRoiImage };
 		if(argRoiImage.getNumZ() > 1){
@@ -110,7 +93,7 @@ public class ROI implements Matchable {
 				throw new RuntimeException("Error ROI constructor. "+e.getMessage(),e);
 			}
 		}
-		init(roiSubImages,argROIType);
+		init(roiSubImages,argROIName);
 //		if (argRoiImage.getNumZ()!=1){
 //			throw new RuntimeException("ROI sub-images must be 2D");
 //		}
@@ -161,12 +144,8 @@ public class ROI implements Matchable {
 		return pixels;
 	}
 	
-	/**
-	 * Method getROIType.
-	 * @return RoiType
-	 */
-	public RoiType getROIType(){
-		return roiType;
+	public String getROIName(){
+		return roiName;
 	}
 	/**
 	 * Method crop.
@@ -179,7 +158,7 @@ public class ROI implements Matchable {
 		for (int i = 0; i < croppedImages.length; i++) {
 			croppedImages[i] = roiImages[i].crop(rect);
 		}
-		return new ROI(croppedImages,roiType);
+		return new ROI(croppedImages,roiName);
 	}
 	
 	/**
@@ -330,7 +309,7 @@ public class ROI implements Matchable {
 			if (!cbit.util.Compare.isEqualOrNull(getRoiImages(), roi.getRoiImages())){
 				return false;
 			}
-			if (!getROIType().equals(roi.getROIType())){
+			if (!getROIName().equals(roi.getROIName())){
 				return false;
 			}
 			return true;

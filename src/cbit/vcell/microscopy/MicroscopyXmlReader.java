@@ -19,7 +19,6 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -234,8 +233,7 @@ private ImageDataset getImageDataset(Element param,DataSetControllerImpl.Progres
  */
 private ROI getROI(Element param) throws XmlParseException{
 
-	String roiTypeText = param.getAttributeValue(MicroscopyXMLTags.ROITypeAttrTag);
-	RoiType roiType = RoiType.valueOf(roiTypeText);
+	String roiName = param.getAttributeValue(MicroscopyXMLTags.ROITypeAttrTag);
 	
 	List<Element> ushortImageElementList = param.getChildren(MicroscopyXMLTags.UShortImageTag);
 	Iterator<Element> imageElementIter = ushortImageElementList.iterator();
@@ -245,7 +243,7 @@ private ROI getROI(Element param) throws XmlParseException{
 		images[imageIndex++] = getUShortImage(imageElementIter.next());
 	}
 	
-	ROI roi = new ROI(images,roiType);
+	ROI roi = new ROI(images,roiName);
 
 	return roi;
 }
