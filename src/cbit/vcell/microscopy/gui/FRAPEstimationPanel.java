@@ -9,7 +9,6 @@ import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FrapDataAnalysisResults;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.ReferenceData;
@@ -523,7 +522,7 @@ public class FRAPEstimationPanel extends JPanel {
 		double[] frapDataTimeStamps = null;
 		bleachEstimationComboBox.setEnabled(false);
 		if(frapData != null){
-			if(frapData.getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
+			if(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).isAllPixelsZero()){
 				displayFit(null,null);
 				throw new Exception(
 					OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+

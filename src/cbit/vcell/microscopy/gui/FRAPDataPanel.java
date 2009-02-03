@@ -20,7 +20,6 @@ import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.ROI;
-import cbit.vcell.microscopy.ROI.RoiType;
 
 //comments added in Jan, 2008. This panel is with the first tab that users can see when VFrap is just started.
 //This panel displays the images base on time serials or Z serials. In addtion, Users can mark ROIs and manipulate
@@ -94,10 +93,10 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 						}
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 						try {
-							ROI.RoiType roiType = (ROI.RoiType)evt.getNewValue();
+							String roiName = (String)evt.getNewValue();
 							saveROI();
 							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(
-									getFrapStudy().getFrapData().getRoi(roiType));
+									getFrapStudy().getFrapData().getRoi(roiName));
 						} catch (Exception e) {
 							PopupGenerator.showErrorDialog("Error Setting Current ROI:\n"+e.getMessage());
 						}						
@@ -148,7 +147,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			(frapData==null?null:frapData.getImageDataset()),isNew,
 			(frapData==null?null:frapData.getOriginalGlobalScaleInfo()));
 		if(frapData != null){
-			frapData.setCurrentlyDisplayedROI(frapData.getRoi(RoiType.ROI_CELL));
+			frapData.setCurrentlyDisplayedROI(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 		}
 //		overlayEditorPanel.setROI((frapData==null)?null:frapData.getCurrentlyDisplayedROI());
 	}

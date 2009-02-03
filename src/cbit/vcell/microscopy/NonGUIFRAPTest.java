@@ -25,7 +25,6 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
@@ -65,17 +64,17 @@ public class NonGUIFRAPTest {
 //		}
 //	}
 
-	public static File getCanonicalFilename(String testDirectoryPath,ROI.RoiType roiType){
-		if(roiType == null){
+	public static File getCanonicalFilename(String testDirectoryPath,String roiName){
+		if(roiName == null){
 			return new File(testDirectoryPath,"testImageData.zip");
-		}else if(roiType.equals(RoiType.ROI_CELL)){
+		}else if(roiName.equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())){
 			return new File(testDirectoryPath,"testCellROI.tif");
-		}else if(roiType.equals(RoiType.ROI_BLEACHED)){
+		}else if(roiName.equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())){
 			return new File(testDirectoryPath,"testBleachROI.tif");
-		}else if(roiType.equals(RoiType.ROI_BACKGROUND)){
+		}else if(roiName.equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
 			return new File(testDirectoryPath,"testBackgroundROI.tif");
 		}
-		throw new IllegalArgumentException("unknown type "+roiType.toString());
+		throw new IllegalArgumentException("unknown name "+roiName);
 	}
 	public static ExternalDataFileContents readExternalDataContents(
 			String imageDataPathName,
@@ -95,9 +94,9 @@ public class NonGUIFRAPTest {
 	}
 	private static void checkExternalDataSameAsOriginal(FRAPStudy frapStudy,String testDirectoryPath) throws Exception{
 		ImageDataset imageDataset = frapStudy.getFrapData().getImageDataset();
-		ROI cellROI = frapStudy.getFrapData().getRoi(ROI.RoiType.ROI_CELL);
-		ROI bleachROI = frapStudy.getFrapData().getRoi(ROI.RoiType.ROI_BLEACHED);
-		ROI backgroundROI = frapStudy.getFrapData().getRoi(ROI.RoiType.ROI_BACKGROUND);
+		ROI cellROI = frapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+		ROI bleachROI = frapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
+		ROI backgroundROI = frapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 //		FileInputStream fis = new FileInputStream(getCanonicalFilename(testDirectoryPath, null));
 //		BufferedInputStream bis = new BufferedInputStream(fis);
 //		ZipInputStream zis = new ZipInputStream(bis);
@@ -115,9 +114,9 @@ public class NonGUIFRAPTest {
 		ExternalDataFileContents extDataFileContents =
 			readExternalDataContents(
 				getCanonicalFilename(testDirectoryPath, null).getAbsolutePath(),
-				getCanonicalFilename(testDirectoryPath, RoiType.ROI_CELL).getAbsolutePath(),
-				getCanonicalFilename(testDirectoryPath, RoiType.ROI_BLEACHED).getAbsolutePath(),
-				getCanonicalFilename(testDirectoryPath, RoiType.ROI_BACKGROUND).getAbsolutePath());
+				getCanonicalFilename(testDirectoryPath, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getAbsolutePath(),
+				getCanonicalFilename(testDirectoryPath, FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getAbsolutePath(),
+				getCanonicalFilename(testDirectoryPath, FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getAbsolutePath());
 		ImageDataset imageData = extDataFileContents.imageData;
 		UShortImage[] allIDiskmages = imageData.getAllImages();
 		UShortImage[] allIFrapmages = imageDataset.getAllImages();
@@ -162,9 +161,9 @@ public class NonGUIFRAPTest {
 		}
 		
 		File imageDataSetZipFile = getCanonicalFilename(testDirectoryPath,null);
-		File cellROIFile = getCanonicalFilename(testDirectoryPath,RoiType.ROI_CELL);
-		File bleachROIFile = getCanonicalFilename(testDirectoryPath,RoiType.ROI_BLEACHED);
-		File backgroundROIFile =getCanonicalFilename(testDirectoryPath,RoiType.ROI_BACKGROUND);
+		File cellROIFile = getCanonicalFilename(testDirectoryPath,FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+		File bleachROIFile = getCanonicalFilename(testDirectoryPath,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
+		File backgroundROIFile =getCanonicalFilename(testDirectoryPath,FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 		
 		FileOutputStream fos = new FileOutputStream(imageDataSetZipFile);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -193,7 +192,7 @@ public class NonGUIFRAPTest {
 		fos.close();
 		
 //		fos = new FileOutputStream(cellROIFile);
-		ROI cellROI = frapStudy.getFrapData().getRoi(ROI.RoiType.ROI_CELL);
+		ROI cellROI = frapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		File cellTempF =
 			writeTempTiff(cellROI.getRoiImages()[0].getPixels(),
 				cellROI.getRoiImages()[0].getNumX(), cellROI.getRoiImages()[0].getNumY());
@@ -203,7 +202,7 @@ public class NonGUIFRAPTest {
 //		fos.close();
 		
 //		fos = new FileOutputStream(bleachROIFile);
-		ROI bleachROI = frapStudy.getFrapData().getRoi(ROI.RoiType.ROI_BLEACHED);
+		ROI bleachROI = frapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		File bleachTempf =
 			writeTempTiff(bleachROI.getRoiImages()[0].getPixels(),
 				bleachROI.getRoiImages()[0].getNumX(), bleachROI.getRoiImages()[0].getNumY());
@@ -213,7 +212,7 @@ public class NonGUIFRAPTest {
 //		fos.close();
 		
 //		fos = new FileOutputStream(backgroundROIFile);
-		ROI backgroundROI = frapStudy.getFrapData().getRoi(ROI.RoiType.ROI_BACKGROUND);
+		ROI backgroundROI = frapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 		File backgroundTempf =
 			writeTempTiff(backgroundROI.getRoiImages()[0].getPixels(),
 					backgroundROI.getRoiImages()[0].getNumX(), backgroundROI.getRoiImages()[0].getNumY());
@@ -295,9 +294,9 @@ public class NonGUIFRAPTest {
 				inputFRAPDataFileName, inputCellROIFileName,
 				inputBleachROIFileName, inputBackgroundROIFileName);
 		
-		ROI cellROI = new ROI(extDataFileContents.cellROIData.getImage(0, 0, 0),ROI.RoiType.ROI_CELL);
-		ROI bleachROI = new ROI(extDataFileContents.bleachROIData.getImage(0, 0, 0),ROI.RoiType.ROI_BLEACHED);
-		ROI backgroundROI = new ROI(extDataFileContents.backgroundROIData.getImage(0, 0, 0),ROI.RoiType.ROI_BACKGROUND);
+		ROI cellROI = new ROI(extDataFileContents.cellROIData.getImage(0, 0, 0),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+		ROI bleachROI = new ROI(extDataFileContents.bleachROIData.getImage(0, 0, 0),FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
+		ROI backgroundROI = new ROI(extDataFileContents.backgroundROIData.getImage(0, 0, 0),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 		
 		//Insert Time information
 		double[] timeStamps = new double[extDataFileContents.imageData.getAllImages().length];

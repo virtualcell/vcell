@@ -150,14 +150,14 @@ public class OverlayEditorPanelJAI extends JPanel {
 		if(roi == null){
 			return Cursor.getDefaultCursor();
 		}
-		if(roi.getROIType().equals(ROI.RoiType.ROI_CELL)){
+		if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())){
 			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_CELLROI];
-		}else if(roi.getROIType().equals(ROI.RoiType.ROI_BLEACHED)){
+		}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())){
 			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BLEACHROI];
-		}else if(roi.getROIType().equals(ROI.RoiType.ROI_BACKGROUND)){
+		}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
 			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI];
 		}
-		throw new RuntimeException("Unknown ROI type "+roi.getROIType()+" while getting cursor");
+		throw new RuntimeException("Unknown ROI type "+roi.getROIName()+" while getting cursor");
 	}
 	/**
 	 * This method initializes this
@@ -390,7 +390,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 					firePropertyChange(FRAP_DATA_TIMEPLOTROI_PROPERTY, null,new Boolean(true));
 				}else{
 					DialogUtils.showInfoDialog(
-						"ROI for "+roi.getROIType().name()+" is empty.\n"+
+						"ROI for "+roi.getROIName()+" is empty.\n"+
 						"Paint, Fill or Import ROI using ROI tools.");
 				}
 			}
@@ -499,7 +499,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		cellBodyRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(cellBodyRadioButton.isSelected()){
-					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,ROI.RoiType.ROI_CELL);
+					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 				}
 			}
 		});
@@ -515,7 +515,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		bleachRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(bleachRadioButton.isSelected()){
-					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,ROI.RoiType.ROI_BLEACHED);
+					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 				}
 			}
 		});
@@ -530,7 +530,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		backgroundRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(backgroundRadioButton.isSelected()){
-					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,ROI.RoiType.ROI_BACKGROUND);
+					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 				}
 			}
 		});
@@ -588,11 +588,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 		roi = argROI;
 		refreshROI();
 		if(roi != null){
-			if(roi.getROIType() == ROI.RoiType.ROI_CELL){
+			if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())){
 				cellBodyRadioButton.setSelected(true);
-			}else if(roi.getROIType() == ROI.RoiType.ROI_BLEACHED){
+			}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())){
 				bleachRadioButton.setSelected(true);
-			}else if(roi.getROIType() == ROI.RoiType.ROI_BACKGROUND){
+			}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
 				backgroundRadioButton.setSelected(true);
 			}
 		}
@@ -780,7 +780,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 						return true;
 					}
 					public String getUndoPresentationName() {
-						return editType+" "+originalROI.getROIType().name();
+						return editType+" "+originalROI.getROIName();
 					}
 					public void undo() throws CannotUndoException {
 						super.undo();

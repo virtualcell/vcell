@@ -19,7 +19,6 @@ import javax.swing.JToggleButton;
 
 import cbit.util.ISize;
 import cbit.vcell.microscopy.ROI;
-import cbit.vcell.microscopy.ROI.RoiType;
 
 public class ROIImagePanel extends JPanel {
 	
@@ -79,7 +78,7 @@ public class ROIImagePanel extends JPanel {
 		
 		//fill ROIs
 		for (int i = 0; i < analysisROIs.length; i++) {
-			JLabel roiLabel = new JLabel(analysisROIs[i].getROIType().name());
+			JLabel roiLabel = new JLabel(analysisROIs[i].getROIName());
 			roiLabel.setIcon(createColorIcon(rinROIColors[i]));
 			roiLabelsJPanel.add(roiLabel);
 			short[] roiPixels = analysisROIs[i].getPixelsXYZ();

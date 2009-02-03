@@ -30,9 +30,9 @@ import cbit.gui.DialogUtils;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.NumberUtils;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.Parameter;
 
 public class FRAPInterpolationPanel extends JPanel {
@@ -999,19 +999,19 @@ public class FRAPInterpolationPanel extends JPanel {
 	
 	private static boolean[] getErrorOfInterest()
 	{
-		boolean[] errorOfInterest = new boolean[RoiType.values().length];
+		boolean[] errorOfInterest = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
 		
-		for(int i=0; i<RoiType.values().length; i++)
+		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
 		{
-			if(RoiType.values()[i].equals(RoiType.ROI_BLEACHED) || 
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING1) ||
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING2) ||
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING3) ||
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING4) ||
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING5) ||
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING6) ||
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING7) ||
-			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING8))
+			if(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED) || 
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1) ||
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2) ||
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3) ||
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4) ||
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5) ||
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6) ||
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7) ||
+			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8))
 			{
 				errorOfInterest[i] = true;
 			}

@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -45,7 +44,6 @@ import cbit.util.Issue;
 import cbit.util.Matchable;
 import cbit.util.NumberUtils;
 import cbit.util.Origin;
-import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
@@ -60,13 +58,8 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Equation;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.PdeEquation;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -77,9 +70,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.GroupAccessNone;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
@@ -92,9 +83,7 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
@@ -199,11 +188,11 @@ public class FRAPStudy implements Matchable{
 
 	public static class CurveInfo {
 		AnalysisParameters analysisParameters;
-		RoiType roiType = null;
+		String roiName = null;
 
-		public CurveInfo(AnalysisParameters analysisParameters,RoiType roi){
+		public CurveInfo(AnalysisParameters analysisParameters,String roiName){
 			this.analysisParameters = analysisParameters;
-			this.roiType = roi;
+			this.roiName = roiName;
 		}
 
 		public boolean equals(Object obj){
@@ -212,18 +201,18 @@ public class FRAPStudy implements Matchable{
 			}
 			CurveInfo ci = (CurveInfo)obj;
 			if(analysisParameters == null && ci.analysisParameters == null){
-				return ci.roiType==roiType;
+				return ci.roiName.equals(roiName);
 			}
 			if(ci.analysisParameters != null && analysisParameters != null){
 				return
 				ci.analysisParameters.equals(analysisParameters) &&
-				(ci.roiType==roiType);			
+				ci.roiName.equals(roiName);		
 			}
 			return false;
 		}
 		
 		public int hashCode(){
-			return (analysisParameters != null?analysisParameters.hashCode():0)+roiType.toString().hashCode();
+			return (analysisParameters != null?analysisParameters.hashCode():0)+roiName.hashCode();
 		}
 		public boolean isExperimentInfo(){
 			return analysisParameters == null;
@@ -231,8 +220,8 @@ public class FRAPStudy implements Matchable{
 		public AnalysisParameters getAnalysisParameters(){
 			return analysisParameters;
 		}
-		public RoiType getROIType(){
-			return roiType;
+		public String getROIName(){
+			return roiName;
 		}
 	}
 
@@ -241,17 +230,17 @@ public class FRAPStudy implements Matchable{
 		public final AnalysisParameters[] analysisParameters;
 		public final double[] shiftedSimTimes;
 		public final Hashtable<CurveInfo, double[]> curveHash;
-		public static RoiType[] ORDERED_ROITYPES =
-			new RoiType[] {
-				RoiType.ROI_BLEACHED,	
-				RoiType.ROI_BLEACHED_RING1,	
-				RoiType.ROI_BLEACHED_RING2,	
-				RoiType.ROI_BLEACHED_RING3,	
-				RoiType.ROI_BLEACHED_RING4,	
-				RoiType.ROI_BLEACHED_RING5,
-				RoiType.ROI_BLEACHED_RING6,
-				RoiType.ROI_BLEACHED_RING7,
-				RoiType.ROI_BLEACHED_RING8
+		public static String[] ORDERED_ROINAMES =
+			new String[] {
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),	
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name(),	
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name(),	
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name(),	
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name(),	
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name(),
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name(),
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name(),
+				FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()
 			};
 		
 		public static final int ANALYSISPARAMETERS_COLUMNS_COUNT = 3;
@@ -282,23 +271,23 @@ public class FRAPStudy implements Matchable{
 			Hashtable<CurveInfo, double[]> ROIInfoHash = curveHash;
 			Set<CurveInfo> roiInfoSet = ROIInfoHash.keySet();
 			Iterator<CurveInfo> roiInfoIter = roiInfoSet.iterator();
-			Hashtable<RoiType, double[]> expROIData = new Hashtable<RoiType, double[]>();
-			Hashtable<AnalysisParameters, Hashtable<RoiType, double[]>> simROIData = new Hashtable<AnalysisParameters, Hashtable<RoiType,double[]>>();
+			Hashtable<String, double[]> expROIData = new Hashtable<String, double[]>();
+			Hashtable<AnalysisParameters, Hashtable<String, double[]>> simROIData = new Hashtable<AnalysisParameters, Hashtable<String,double[]>>();
 			int roiCount = 0;
 			int analysisParametersCount = 0;
 			while(roiInfoIter.hasNext()){
 				CurveInfo roiCurveInfo = roiInfoIter.next();
 				if(roiCurveInfo.isExperimentInfo()){
-					expROIData.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
+					expROIData.put(roiCurveInfo.getROIName(), ROIInfoHash.get(roiCurveInfo));
 					roiCount++;
 				}else{
-					Hashtable<RoiType,double[]> simROIDataHash = simROIData.get(roiCurveInfo.getAnalysisParameters());
+					Hashtable<String,double[]> simROIDataHash = simROIData.get(roiCurveInfo.getAnalysisParameters());
 					if(simROIDataHash == null){
-						simROIDataHash  = new Hashtable<RoiType, double[]>();
+						simROIDataHash  = new Hashtable<String, double[]>();
 						simROIData.put(roiCurveInfo.getAnalysisParameters(), simROIDataHash);
 						analysisParametersCount++;
 					}
-					simROIDataHash.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
+					simROIDataHash.put(roiCurveInfo.getROIName(), ROIInfoHash.get(roiCurveInfo));
 				}
 			}
 
@@ -330,11 +319,11 @@ public class FRAPStudy implements Matchable{
 				tableData[analysisParametersRow][COLUMN_INDEX_MOBILE_FRACTION] = currentAnalysisParameters.mobileFraction;
 				tableData[analysisParametersRow][COLUMN_INDEX_MONITOR_BLEACH_RATE] = currentAnalysisParameters.bleachWhileMonitorRate;
 				
-				for (int roiColumn = 0; roiColumn < SpatialAnalysisResults.ORDERED_ROITYPES.length; roiColumn++) {
+				for (int roiColumn = 0; roiColumn < SpatialAnalysisResults.ORDERED_ROINAMES.length; roiColumn++) {
 					ODESolverResultSet simDataSource =
-						createODESolverResultSet(currentAnalysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn],"");
+						createODESolverResultSet(currentAnalysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[roiColumn],"");
 					ReferenceData expDataSource =
-						createReferenceData(frapDataTimeStamps,SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn],startTimeIndex,"");
+						createReferenceData(frapDataTimeStamps,SpatialAnalysisResults.ORDERED_ROINAMES[roiColumn],startTimeIndex,"");
 
 					int numSamples = expDataSource.getNumRows();
 					double sumSquaredError = MathTestingUtilities.calcWeightedSquaredError(simDataSource, expDataSource);
@@ -385,7 +374,7 @@ public class FRAPStudy implements Matchable{
 			return dataSB.toString();
 		}
 		public static String[] getSummaryReportColumnNames(){
-			String[] columnNames = new String[SpatialAnalysisResults.ORDERED_ROITYPES.length+ANALYSISPARAMETERS_COLUMNS_COUNT];
+			String[] columnNames = new String[SpatialAnalysisResults.ORDERED_ROINAMES.length+ANALYSISPARAMETERS_COLUMNS_COUNT];
 			for (int i = 0; i < columnNames.length; i++) {
 				if(i==COLUMN_INDEX_DIFFUSION_RATE){
 					columnNames[i] = "Diffusion Rate";
@@ -396,7 +385,7 @@ public class FRAPStudy implements Matchable{
 				}else{
 					final String ROI_PREFIX = "ROI_";
 					final String ROI_TYPENAME_PREFIX = ROI_PREFIX+"BLEACHED_";
-					String roiTypeName = SpatialAnalysisResults.ORDERED_ROITYPES[i-ANALYSISPARAMETERS_COLUMNS_COUNT].name();
+					String roiTypeName = SpatialAnalysisResults.ORDERED_ROINAMES[i-ANALYSISPARAMETERS_COLUMNS_COUNT];
 					if(roiTypeName.startsWith(ROI_TYPENAME_PREFIX)){
 						columnNames[i] = roiTypeName.substring(ROI_TYPENAME_PREFIX.length());
 					}else{
@@ -416,23 +405,23 @@ public class FRAPStudy implements Matchable{
 			}
 			return referenceDataArr;
 		}
-		private boolean isROITypeOK(RoiType argROIType){
+		private boolean isROITypeOK(String argROIName){
 			boolean bFound = false;
-			for (int i = 0; i < ORDERED_ROITYPES.length; i++) {
-				if(ORDERED_ROITYPES[i].equals(argROIType)){
+			for (int i = 0; i < ORDERED_ROINAMES.length; i++) {
+				if(ORDERED_ROINAMES[i].equals(argROIName)){
 					bFound = true;
 					break;
 				}
 			}
 			return bFound;
 		}
-		public ReferenceData createReferenceData(double[] frapDataTimeStamps,RoiType argROIType,int startTimeIndex,String description){
-			if(argROIType != null){
-				if(!isROITypeOK(argROIType)){
-					throw new IllegalArgumentException("couldn't find ROIType "+argROIType);
+		public ReferenceData createReferenceData(double[] frapDataTimeStamps,String argROIName,int startTimeIndex,String description){
+			if(argROIName != null){
+				if(!isROITypeOK(argROIName)){
+					throw new IllegalArgumentException("couldn't find ROIType "+argROIName);
 				}
 			}
-			final int numROITypes = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length:1);
+			final int numROITypes = (argROIName == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROINAMES.length:1);
 			String[] expRefDataLabels = new String[numROITypes+1];
 			double[] expRefDataWeights = new double[numROITypes+1];
 			double[][] expRefDataColumns = new double[numROITypes+1][];
@@ -442,10 +431,10 @@ public class FRAPStudy implements Matchable{
 			System.arraycopy(frapDataTimeStamps, startTimeIndex, truncatedTimes, 0, /*shiftedSimTimes.length*/truncatedTimes.length);
 			expRefDataColumns[0] = truncatedTimes;
 			for (int j2 = 0; j2 < numROITypes; j2++) {
-				RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j2]:argROIType);
-				expRefDataLabels[j2+1] = (description == null?"":description)+currentROIType.toString();
+				String currentROIName = (argROIName == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROINAMES[j2]:argROIName);
+				expRefDataLabels[j2+1] = (description == null?"":description)+currentROIName;
 				expRefDataWeights[j2+1] = 1.0;
-				double[] allTimesData = curveHash.get(new FRAPStudy.CurveInfo(null,currentROIType));
+				double[] allTimesData = curveHash.get(new FRAPStudy.CurveInfo(null,currentROIName));
 				double[] truncatedTimesData = new double[allTimesData.length-startTimeIndex];
 				System.arraycopy(allTimesData, startTimeIndex, truncatedTimesData, 0, truncatedTimesData.length);
 				expRefDataColumns[j2+1] = truncatedTimesData;
@@ -459,10 +448,10 @@ public class FRAPStudy implements Matchable{
 			}
 			return odeSolverResultSetArr;
 		}
-		public ODESolverResultSet createODESolverResultSet(AnalysisParameters argAnalysisParameters,RoiType argROIType,String description){
-			if(argROIType != null){
-				if(!isROITypeOK(argROIType)){
-					throw new IllegalArgumentException("couldn't find ROIType "+argROIType);
+		public ODESolverResultSet createODESolverResultSet(AnalysisParameters argAnalysisParameters,String argROIName,String description){
+			if(argROIName != null){
+				if(!isROITypeOK(argROIName)){
+					throw new IllegalArgumentException("couldn't find ROIType "+argROIName);
 				}
 			}
 			int analysisParametersIndex = -1;
@@ -475,12 +464,12 @@ public class FRAPStudy implements Matchable{
 			if(analysisParametersIndex == -1){
 				throw new IllegalArgumentException("couldn't find AnalysisParameteers "+analysisParametersIndex);
 			}
-			int numROITypes = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length:1);
+			int numROITypes = (argROIName == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROINAMES.length:1);
 			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
 			fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
 			for (int j = 0; j < numROITypes; j++) {
-				RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j]:argROIType);
-				String name = (description == null?/*"sim D="+diffusionRates[diffusionRateIndex]+"::"*/"":description)+currentROIType.toString();
+				String currentROIName = (argROIName == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROINAMES[j]:argROIName);
+				String name = (description == null?/*"sim D="+diffusionRates[diffusionRateIndex]+"::"*/"":description)+currentROIName;
 				fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
 			}
 			//
@@ -495,8 +484,8 @@ public class FRAPStudy implements Matchable{
 			// populate values
 			//
 			for (int j = 0; j < numROITypes; j++) {
-				RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j]:argROIType);
-				double[] values = curveHash.get(new FRAPStudy.CurveInfo(analysisParameters[analysisParametersIndex],currentROIType)); // get simulated data for this ROI
+				String currentROIName = (argROIName == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROINAMES[j]:argROIName);
+				double[] values = curveHash.get(new FRAPStudy.CurveInfo(analysisParameters[analysisParametersIndex],currentROIName)); // get simulated data for this ROI
 				for (int k = 0; k < values.length; k++) {
 					fitOdeSolverResultSet.setValue(k, j+1, values[k]);
 				}
@@ -600,11 +589,11 @@ public class FRAPStudy implements Matchable{
 		// preallocate arrays for all data first
 		Hashtable<CurveInfo, double[]> curveHash = new Hashtable<CurveInfo, double[]>();
 		ArrayList<int[]> nonZeroIndicesForROI = new ArrayList<int[]>();
-		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
+		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROINAMES.length; i++) {
 //			for (int j = 0; j < diffusionRates.length; j++) {
-				curveHash.put(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[i]), new double[simTimes.length]);
+				curveHash.put(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[i]), new double[simTimes.length]);
 //			}
-			ROI roi_2D = frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]);
+			ROI roi_2D = frapData.getRoi(SpatialAnalysisResults.ORDERED_ROINAMES[i]);
 			nonZeroIndicesForROI.add(roi_2D.getRoiImages()[0].getNonzeroIndices());
 		}
 		//
@@ -612,35 +601,35 @@ public class FRAPStudy implements Matchable{
 		//
 		if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalize simulation ROI average");}
 		double[] avgBkIntensity = frapData.getAvgBackGroundIntensity();
-		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
+		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROINAMES.length; i++) {
 			double[] normalizedAverageFluorAtEachTimeUnderROI = new double[frapData.getImageDataset().getImageTimeStamps().length];
 			for (int j = 0; j < normalizedAverageFluorAtEachTimeUnderROI.length; j++) {
-				normalizedAverageFluorAtEachTimeUnderROI[j] = frapData.getAverageUnderROI(j,frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]), preBleachAverageXYZ, avgBkIntensity[j]);				
+				normalizedAverageFluorAtEachTimeUnderROI[j] = frapData.getAverageUnderROI(j,frapData.getRoi(SpatialAnalysisResults.ORDERED_ROINAMES[i]), preBleachAverageXYZ, avgBkIntensity[j]);				
 			}
-			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), normalizedAverageFluorAtEachTimeUnderROI);
+			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROINAMES[i]), normalizedAverageFluorAtEachTimeUnderROI);
 		}
 		
 		//
 		// get Simulation Data
 		//
-		int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length;
+		int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length;
 		if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalize simulation data");}
 		if(progressListener != null){progressListener.updateProgress(0);}
 		for (int i = 0; i < simTimes.length; i++) {
 			for (int j = 0; j < varNames.length; j++) {
 				SimDataBlock simDataBlock = simulationDataManager.getSimDataBlock(varNames[j], simTimes[i]);
 				double[] data = simDataBlock.getData();
-				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROITYPES.length; k++) {
+				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROINAMES.length; k++) {
 					int[] roiIndices = nonZeroIndicesForROI.get(k);
 					if(roiIndices != null && roiIndices.length > 0){
 						double accum = 0.0;
 						for (int index = 0; index < roiIndices.length; index++) {
 							accum += data[roiIndices[index]];
 						}
-						double[] values = curveHash.get(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[k]));
+						double[] values = curveHash.get(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]));
 						values[i] = accum/roiIndices.length;
 					}
-					double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length + j*SpatialAnalysisResults.ORDERED_ROITYPES.length + k;
+					double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length + j*SpatialAnalysisResults.ORDERED_ROINAMES.length + k;
 					if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
 				}
 			}
@@ -838,7 +827,7 @@ public class FRAPStudy implements Matchable{
 		if (sourceFrapStudy.getFrapData().getImageDataset()==null){
 			throw new Exception("No ImageDataSet is defined");
 		}
-		ROI cellROI_2D = sourceFrapStudy.getFrapData().getRoi(RoiType.ROI_CELL);
+		ROI cellROI_2D = sourceFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		if (cellROI_2D==null){
 			throw new Exception("No Cell ROI is defined");
 		}
@@ -1192,15 +1181,15 @@ public class FRAPStudy implements Matchable{
 
     	try {
     		cellROI_2D =
-    			convertToUShortImage(binarize(getFrapData().getRoi(RoiType.ROI_CELL).getRoiImages()[0]),
-    				getFrapData().getRoi(RoiType.ROI_CELL).getRoiImages()[0].getOrigin(),
-    				getFrapData().getRoi(RoiType.ROI_CELL).getRoiImages()[0].getExtent());
+    			convertToUShortImage(binarize(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0]),
+    				getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0].getOrigin(),
+    				getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0].getExtent());
     		bleachedROI_2D =
     			convertToUShortImage(
-    					AndDescriptor.create(binarize(getFrapData().getRoi(RoiType.ROI_BLEACHED).getRoiImages()[0]),
+    					AndDescriptor.create(binarize(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getRoiImages()[0]),
     						binarize(cellROI_2D), null).createInstance(),
-    					getFrapData().getRoi(RoiType.ROI_BLEACHED).getRoiImages()[0].getOrigin(),
-    					getFrapData().getRoi(RoiType.ROI_BLEACHED).getRoiImages()[0].getExtent());
+    					getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getRoiImages()[0].getOrigin(),
+    					getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getRoiImages()[0].getExtent());
 //			writeUShortFile(cellROI_2D, new File("D:\\developer\\eclipse\\workspace\\cellROI_2D.bmp"));
 //			writeUShortFile(bleachedROI_2D, new File("D:\\developer\\eclipse\\workspace\\bleachedROI_2D.bmp"));
 
@@ -1276,60 +1265,60 @@ public class FRAPStudy implements Matchable{
     	}catch (ImageException e){
     		e.printStackTrace(System.out);
     	}
-		ROI roiBleachedRing1_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1);
+		ROI roiBleachedRing1_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
 		if (roiBleachedRing1_2D==null){
-			roiBleachedRing1_2D = new ROI(erodedROI_2D_2,RoiType.ROI_BLEACHED_RING1);
+			roiBleachedRing1_2D = new ROI(erodedROI_2D_2,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
 			getFrapData().addReplaceRoi(roiBleachedRing1_2D);
 		}else{
 			System.arraycopy(erodedROI_2D_2.getPixels(), 0, roiBleachedRing1_2D.getRoiImages()[0].getPixels(), 0, erodedROI_2D_2.getPixels().length);
 		}
-		ROI roiBleachedRing2_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING2);
+		ROI roiBleachedRing2_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
 		if (roiBleachedRing2_2D==null){
-			roiBleachedRing2_2D = new ROI(erodedROI_2D_1,RoiType.ROI_BLEACHED_RING2);
+			roiBleachedRing2_2D = new ROI(erodedROI_2D_1,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
 			getFrapData().addReplaceRoi(roiBleachedRing2_2D);
 		}else{
 			System.arraycopy(erodedROI_2D_1.getPixels(), 0, roiBleachedRing2_2D.getRoiImages()[0].getPixels(), 0, erodedROI_2D_1.getPixels().length);
 		}
-		ROI roiBleachedRing3_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING3);
+		ROI roiBleachedRing3_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name());
 		if (roiBleachedRing3_2D==null){
-			roiBleachedRing3_2D = new ROI(erodedROI_2D_0,RoiType.ROI_BLEACHED_RING3);
+			roiBleachedRing3_2D = new ROI(erodedROI_2D_0,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name());
 			getFrapData().addReplaceRoi(roiBleachedRing3_2D);
 		}else{
 			System.arraycopy(erodedROI_2D_0.getPixels(), 0, roiBleachedRing3_2D.getRoiImages()[0].getPixels(), 0, erodedROI_2D_0.getPixels().length);
 		}
-		ROI roiBleachedRing4_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING4);
+		ROI roiBleachedRing4_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name());
 		if (roiBleachedRing4_2D==null){
-			roiBleachedRing4_2D = new ROI(dilatedROI_2D_1,RoiType.ROI_BLEACHED_RING4);
+			roiBleachedRing4_2D = new ROI(dilatedROI_2D_1,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name());
 			getFrapData().addReplaceRoi(roiBleachedRing4_2D);
 		}else{
 			System.arraycopy(dilatedROI_2D_1.getPixels(), 0, roiBleachedRing4_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_1.getPixels().length);
 
 		}
-		ROI roiBleachedRing5_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING5);
+		ROI roiBleachedRing5_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name());
 		if (roiBleachedRing5_2D==null){
-			roiBleachedRing5_2D = new ROI(dilatedROI_2D_2,RoiType.ROI_BLEACHED_RING5);
+			roiBleachedRing5_2D = new ROI(dilatedROI_2D_2,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name());
 			getFrapData().addReplaceRoi(roiBleachedRing5_2D);
 		}else{
 			System.arraycopy(dilatedROI_2D_2.getPixels(), 0, roiBleachedRing5_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_2.getPixels().length);
 		}
-		ROI roiBleachedRing6_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING6);
+		ROI roiBleachedRing6_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name());
 		if (roiBleachedRing6_2D==null){
-			roiBleachedRing6_2D = new ROI(dilatedROI_2D_3,RoiType.ROI_BLEACHED_RING6);
+			roiBleachedRing6_2D = new ROI(dilatedROI_2D_3,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name());
 			getFrapData().addReplaceRoi(roiBleachedRing6_2D);
 		}else{
 			System.arraycopy(dilatedROI_2D_3.getPixels(), 0, roiBleachedRing6_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_3.getPixels().length);
 		}
-		ROI roiBleachedRing7_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING7);
+		ROI roiBleachedRing7_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name());
 		if (roiBleachedRing7_2D==null){
-			roiBleachedRing7_2D = new ROI(dilatedROI_2D_4,RoiType.ROI_BLEACHED_RING7);
+			roiBleachedRing7_2D = new ROI(dilatedROI_2D_4,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name());
 			getFrapData().addReplaceRoi(roiBleachedRing7_2D);
 		}else{
 			System.arraycopy(dilatedROI_2D_4.getPixels(), 0, roiBleachedRing7_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_4.getPixels().length);
 //			writeUShortFile(roiBleachedRing7_2D.getRoiImages()[0], new File("D:\\developer\\eclipse\\workspace\\ROI_BLEACHED_RING7.bmp"));
 		}
-		ROI roiBleachedRing8_2D = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING8);
+		ROI roiBleachedRing8_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name());
 		if (roiBleachedRing8_2D==null){
-			roiBleachedRing8_2D = new ROI(dilatedROI_2D_5,RoiType.ROI_BLEACHED_RING8);
+			roiBleachedRing8_2D = new ROI(dilatedROI_2D_5,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name());
 			getFrapData().addReplaceRoi(roiBleachedRing8_2D);
 		}else{
 			System.arraycopy(dilatedROI_2D_5.getPixels(), 0, roiBleachedRing8_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_5.getPixels().length);
@@ -1535,9 +1524,9 @@ public class FRAPStudy implements Matchable{
     		// last post-bleach image (at last time point) with background subtracted
     		pixData[0][2] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, imageDataset.getSizeT()-1), temp_background[imageDataset.getSizeT()-1], true);
     		//below are ROIs, we don't need to subtract background for them.
-    		pixData[0][3] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED).getBinaryPixelsXYZ(1), 0, false);
-    		pixData[0][4] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_CELL).getBinaryPixelsXYZ(1), 0, false);
-    		if (getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1) == null){
+    		pixData[0][3] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getBinaryPixelsXYZ(1), 0, false);
+    		pixData[0][4] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getBinaryPixelsXYZ(1), 0, false);
+    		if (getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()) == null){
     			//throw new RuntimeException("must first generate \"derived masks\"");
     			pixData[0][5] = new double[imageDataset.getISize().getXYZ()];
 	    		pixData[0][6] = new double[imageDataset.getISize().getXYZ()];
@@ -1549,14 +1538,14 @@ public class FRAPStudy implements Matchable{
 	    		pixData[0][12] = new double[imageDataset.getISize().getXYZ()];
     		}
     		else{
-    			pixData[0][5] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][6] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING2).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][7] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING3).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][8] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING4).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][9] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING5).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][10] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING6).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][11] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING7).getBinaryPixelsXYZ(1), 0, false);
-	    		pixData[0][12] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING8).getBinaryPixelsXYZ(1), 0, false);
+    			pixData[0][5] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][6] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][7] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][8] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][9] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][10] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][11] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()).getBinaryPixelsXYZ(1), 0, false);
+	    		pixData[0][12] = createDoubleArray(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()).getBinaryPixelsXYZ(1), 0, false);
     		}
     		CartesianMesh cartesianMesh = getCartesianMesh();
     		Origin origin = new Origin(0,0,0);

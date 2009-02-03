@@ -2,7 +2,6 @@ package cbit.vcell.microscopy;
 
 import java.awt.Rectangle;
 import java.io.File;
-import java.util.Arrays;
 import java.util.BitSet;
 import cbit.image.ImageException;
 import cbit.rmi.event.DataJobEvent;
@@ -14,7 +13,6 @@ import cbit.util.TimeSeriesJobSpec;
 import cbit.util.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.modeldb.NullSessionLog;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.Cachetable;
@@ -50,6 +48,23 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 		}
 	};
 	private OriginalGlobalScaleInfo originalGlobalScaleInfo;
+	
+	public static enum VFRAP_ROI_ENUM {
+	ROI_BLEACHED,
+	ROI_BACKGROUND,
+	ROI_CELL,
+	ROI_BLEACHED_RING1,
+	ROI_BLEACHED_RING2,
+	ROI_BLEACHED_RING3,
+	ROI_BLEACHED_RING4,
+	ROI_BLEACHED_RING5,
+	ROI_BLEACHED_RING6,
+	ROI_BLEACHED_RING7,
+	ROI_BLEACHED_RING8
+//	ROI_NUCLEUS,
+//	ROI_EXTRACELLULAR
+}
+
 /**
  * FRAPData constructor comment.
  * @param argImageDataset ImageDataset
@@ -62,7 +77,8 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 	public static FRAPData importFRAPDataFromImageDataSet(ImageDataset imageDataSet){
 		FRAPData frapData =
 			new FRAPData(imageDataSet,
-				new ROI.RoiType[] { RoiType.ROI_BLEACHED,RoiType.ROI_CELL,RoiType.ROI_BACKGROUND });
+				new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()}
+			);
 		frapData.setOriginalGlobalScaleInfo(null);
 		return frapData;
 	}
@@ -187,7 +203,9 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 			if(progressListener != null){progressListener.updateProgress(.75+(.25*(double)(i+1)/times.length));}
 		}
 		ImageDataset imageDataSet = new ImageDataset(scaledDataImages,times,cartesianMesh.getSizeZ());
-		FRAPData frapData = new FRAPData(imageDataSet, new ROI.RoiType[] { RoiType.ROI_BLEACHED,RoiType.ROI_CELL,RoiType.ROI_BACKGROUND});
+		FRAPData frapData = new FRAPData(imageDataSet,
+				new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()}
+		);
 		frapData.setOriginalGlobalScaleInfo(
 			new FRAPData.OriginalGlobalScaleInfo(
 				(int)(allTimesMin*linearaScaleFactor),
@@ -201,8 +219,8 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 	 * @param argImageDataset ImageDataset
 	 * @param argROITypes ROI.RoiType[]
 	 */
-	public FRAPData(ImageDataset argImageDataset, ROI.RoiType[] argROITypes) {
-		super(argImageDataset, argROITypes);
+	public FRAPData(ImageDataset argImageDataset, String[] argROINames) {
+		super(argImageDataset, argROINames);
 	}
 
 /**
@@ -239,7 +257,7 @@ public void setOriginalGlobalScaleInfo(OriginalGlobalScaleInfo originalGlobalSca
 
 public double[] getAvgBackGroundIntensity()
 {
-	return FRAPDataAnalysis.getAverageROIIntensity(this,this.getRoi(RoiType.ROI_BACKGROUND),null,null);
+	return FRAPDataAnalysis.getAverageROIIntensity(this,this.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()),null,null);
 }
 
 public boolean compareEqual(Matchable obj) 

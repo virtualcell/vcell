@@ -48,6 +48,7 @@ import cbit.gui.SimpleTransferable;
 import cbit.plot.Plot2DPanel;
 import cbit.util.BeanUtils;
 import cbit.util.Range;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.ROI;
@@ -56,7 +57,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.microscopy.gui.FRAPInterpolationPanel;
 
 public class ResultsSummaryPanel extends JPanel {
@@ -367,9 +367,9 @@ public class ResultsSummaryPanel extends JPanel {
 				ROI[] plottedROIArr = new ROI[allRoiArr.length-3];
 				int index = 0;
 				for (int i = 0; i < allRoiArr.length; i++) {
-					if(allRoiArr[i].getROIType().equals(RoiType.ROI_BACKGROUND) ||
-						allRoiArr[i].getROIType().equals(RoiType.ROI_BLEACHED) ||
-						allRoiArr[i].getROIType().equals(RoiType.ROI_CELL)){
+					if(allRoiArr[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()) ||
+						allRoiArr[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) ||
+						allRoiArr[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())){
 						continue;
 					}
 					plottedROIArr[index] = allRoiArr[i];
@@ -380,8 +380,8 @@ public class ResultsSummaryPanel extends JPanel {
 				Color[] ringROIColors = new Color[8];
 				System.arraycopy(allROIColors, 1, ringROIColors, 0, ringROIColors.length);
 				roiImagePanel.init(plottedROIArr,ringROIColors,
-					frapOptData.getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL),Color.white,
-					frapOptData.getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED),allROIColors[0]);
+					frapOptData.getExpFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),Color.white,
+					frapOptData.getExpFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),allROIColors[0]);
 				DialogUtils.showComponentCloseDialog(ResultsSummaryPanel.this, roiImagePanel, "FRAP Model ROIs");
 			}
 		});
@@ -429,21 +429,21 @@ public class ResultsSummaryPanel extends JPanel {
 
 	private void plotDerivedSimulationResults(/*boolean bBestFit*/){
 		try{
-			RoiType argROIType = null;
+			String argROIName = null;
 			String description = null;
-			int numROITypes = (argROIType == null?ROI.RoiType.values().length:1);
+			int numROITypes = (argROIName == null?FRAPData.VFRAP_ROI_ENUM.values().length:1);
 			boolean[] wantsROITypes = new boolean[numROITypes];
 			Arrays.fill(wantsROITypes, true);
-			if(argROIType == null){
-				wantsROITypes[RoiType.ROI_BACKGROUND.ordinal()] = false;
-				wantsROITypes[RoiType.ROI_CELL.ordinal()] = false;
+			if(argROIName == null){
+				wantsROITypes[FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.ordinal()] = false;
+				wantsROITypes[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()] = false;
 			}
 			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
 			fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
 			for (int j = 0; j < numROITypes; j++) {
 				if(!wantsROITypes[j]){continue;}
-				RoiType currentROIType = (argROIType == null?ROI.RoiType.values()[j]:argROIType);
-				String name = (description == null?/*"sim D="+diffusionRates[diffusionRateIndex]+"::"*/"":description)+currentROIType.toString();
+				String currentROIName = (argROIName == null?FRAPData.VFRAP_ROI_ENUM.values()[j].name():argROIName);
+				String name = (description == null?/*"sim D="+diffusionRates[diffusionRateIndex]+"::"*/"":description)+currentROIName;
 				fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
 			}
 			//
@@ -452,7 +452,7 @@ public class ResultsSummaryPanel extends JPanel {
 			double[] shiftedSimTimes = frapOptData.getReducedExpTimePoints();
 			int startIndexRecovery = Integer.parseInt(frapOptData.getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
 			for (int j = 0; j < shiftedSimTimes.length; j++) {
-				double[] row = new double[(argROIType == null?numROITypes-2:1)+1];
+				double[] row = new double[(argROIName == null?numROITypes-2:1)+1];
 				row[0] = shiftedSimTimes[j]+
 					frapOptData.getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps()[startIndexRecovery];
 				fitOdeSolverResultSet.addRow(row);
