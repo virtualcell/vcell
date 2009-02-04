@@ -703,11 +703,12 @@ public static void resampleFieldData(
 			}
 			double[] origData = simDataBlock.getData();
 			double[] newData = null;
+			CartesianMesh resampleMesh = newMesh;
 			if (psfFieldFunc != null && psfFieldFunc.equals(resampleEntry.getKey().getFieldFuncArgs())) {
 				newData = origData;
-				newMesh = origMesh;
+				resampleMesh = origMesh;
 			} else {
-				if(CartesianMesh.isSpatialDomainSame(origMesh, newMesh)){
+				if(CartesianMesh.isSpatialDomainSame(origMesh, resampleMesh)){
 					newData = origData;
 					if(simDataBlock.getVariableType().equals(VariableType.MEMBRANE)){
 						if(origData.length != simResampleMembraneDataLength){
@@ -734,11 +735,11 @@ public static void resampleFieldData(
 						);
 					}
 					if(origMesh.getSizeY() == 1 && origMesh.getSizeZ() == 1){
-						newData = cbit.vcell.solver.test.MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, newMesh);						
+						newData = cbit.vcell.solver.test.MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, resampleMesh);						
 					}else if(origMesh.getSizeZ() == 1){
-						newData = cbit.vcell.solver.test.MathTestingUtilities.resample2DSpatialSimple(origData, origMesh, newMesh);						
+						newData = cbit.vcell.solver.test.MathTestingUtilities.resample2DSpatialSimple(origData, origMesh, resampleMesh);						
 					}else{
-						newData = cbit.vcell.solver.test.MathTestingUtilities.resample3DSpatialSimple(origData, origMesh, newMesh);						
+						newData = cbit.vcell.solver.test.MathTestingUtilities.resample3DSpatialSimple(origData, origMesh, resampleMesh);						
 					}
 				}
 			}
@@ -746,7 +747,7 @@ public static void resampleFieldData(
 					resampleEntry.getValue(),
 					new String[] {resampleEntry.getKey().getFieldFuncArgs().getVariableName()},
 					new VariableType[]{simDataBlock.getVariableType()},
-					new ISize(newMesh.getSizeX(),newMesh.getSizeY(),newMesh.getSizeZ()),
+					new ISize(resampleMesh.getSizeX(),resampleMesh.getSizeY(),resampleMesh.getSizeZ()),
 					new double[][]{newData});
 		}
 	} catch (Exception ex) {
