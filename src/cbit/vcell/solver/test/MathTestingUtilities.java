@@ -12,18 +12,16 @@ import cbit.vcell.numericstest.ConstructedSolutionTemplate;
 import cbit.vcell.numericstest.TestCaseNew;
 
 import java.util.Enumeration;
+
+import org.vcell.sbml.SBMLUtils;
+
 import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.*;
-import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
@@ -474,14 +472,73 @@ public static SimulationComparisonSummary compareResultSets(cbit.vcell.solver.od
 	return simComparisonSummary;
 }
 
+public static double[] interpolateArray(double[] sampleTimes, double[] dataTimes, double[] dataValues, int interpolationOrder) {
 
+		// Resampling test data
+	double sampledData[] = new double[sampleTimes.length];
+	int k = 0; 	
+	for (int j = 0; j < sampleTimes.length; j++) {
+		while ((k < dataTimes.length-2) && (sampleTimes[j] >= dataTimes[k+1])) {
+			k++;
+		}
+		if (interpolationOrder == 1) {
+			//
+			// choose two points (testData[k] and testData[k+1]) in test data for interpolation (or extrapolation if outside the data)
+			//
+			// a)  extrapolate backward (in time) for points which are before testData
+			// b)  interpolate the values that fall within the test dataset.
+			// c)  extrapolate forward (in time) for points which are after testData
+			//
+			//
+			// apply first order linear basis for reference data interpolation.
+			//
+			sampledData[j] = dataValues[k] + (dataValues[k+1]-dataValues[k]) * ((sampleTimes[j] - dataTimes[k])/(dataTimes[k+1] - dataTimes[k]));
+		} else {
+			int minusIndex = k;
+			int plusIndex = k;
+			int count = 1; 
+			while (count < interpolationOrder + 1) {
+				if (minusIndex > 0) {
+					if (plusIndex < dataTimes.length - 1) {						
+						if (Math.abs(dataTimes[minusIndex-1] - sampleTimes[j]) < Math.abs(dataTimes[plusIndex+1] - sampleTimes[j])) {
+							minusIndex --;
+							count ++;
+						} else {
+							plusIndex ++;
+							count ++;
+						}							
+					} else {
+						minusIndex --;
+						count ++;
+					}
+				} else if (plusIndex < dataTimes.length - 1) {
+					plusIndex ++;
+					count ++;
+				} else {
+					break;
+				}
+			}
+
+			double[] neighboringTimePts = new double[count];
+			double[] neighboringValues = new double[count];
+			for (int n = minusIndex; n <= plusIndex; n ++) {
+				neighboringTimePts[n - minusIndex] = dataTimes[n];
+				neighboringValues[n - minusIndex] = dataValues[n];
+			}
+			sampledData[j] = SBMLUtils.taylorInterpolation(sampleTimes[j], neighboringTimePts, neighboringValues);
+		}
+	}
+
+	return sampledData;
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/17/2003 3:48:36 PM)
  * @param testResultSet cbit.vcell.solver.ode.ODESolverResultSet
  * @param referenceResultSet cbit.vcell.solver.ode.ODESolverResultSet
  */
-public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResultSet testResultSet, ODESolverResultSet referenceResultSet, String varsToTest[],double absErrorThreshold, double relErrorThreshold) throws Exception {
+public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResultSet testResultSet, ODESolverResultSet referenceResultSet, 
+		String varsToTest[],double absErrorThreshold, double relErrorThreshold, int interpolationOrder) throws Exception {
 	
 	if (varsToTest==null){
 		throw new IllegalArgumentException("varsToTest must not be null");
@@ -507,27 +564,10 @@ public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResu
 		double testData[] = testResultSet.extractColumn(testRSIndex);
 
 		// Resampling test data
-		double resampledTestData[] = new double[refRSTimes.length];
-		int k = 0; 	
-		for (int j = 0; j < refRSTimes.length; j++) {
-			//
-			// choose two points (testData[k] and testData[k+1]) in test data for interpolation (or extrapolation if outside the data)
-			//
-			// a)  extrapolate backward (in time) for points which are before testData
-			// b)  interpolate the values that fall within the test dataset.
-			// c)  extrapolate forward (in time) for points which are after testData
-			//
-			while ((k < testData.length-2) && (refRSTimes[j] >= testRSTimes[k+1])) {
-				k++;
-			}
-			//
-			// apply first order linear basis for reference data interpolation.
-			//
-			resampledTestData[j] = testData[k] + (testData[k+1]-testData[k]) * ((refRSTimes[j] - testRSTimes[k])/(testRSTimes[k+1] - testRSTimes[k]));
-		}
+		double resampledTestData[] = interpolateArray(refRSTimes, testRSTimes, testData, interpolationOrder);
 		DataErrorSummary tempVar = new DataErrorSummary();
 		for (int j = 0; j < refData.length; j++){
-			tempVar.addDataValues(refData[j], resampledTestData[j], refRSTimes[j], 0,absErrorThreshold,relErrorThreshold);
+			tempVar.addDataValues(refData[j], resampledTestData[j], refRSTimes[j], 0, absErrorThreshold, relErrorThreshold);
 		}
 		simComparisonSummary.addVariableComparisonSummary(new VariableComparisonSummary(refColDesc.getName(),
 			tempVar.getMinRef(),tempVar.getMaxRef(),tempVar.getMaxAbsoluteError(),tempVar.getMaxRelativeError(), tempVar.getL2Norm(),

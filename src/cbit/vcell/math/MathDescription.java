@@ -14,6 +14,8 @@ import javax.swing.event.*;
 ©*/
 import java.util.*;
 import java.io.*;
+
+import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
@@ -3099,6 +3101,32 @@ public static String testEquivalency(MathDescription mathDescription1, MathDescr
 	}
 }
 
+public boolean hasDiscontinuities() throws ExpressionException {
+	Enumeration<SubDomain> enum1 = getSubDomains();
+	while (enum1.hasMoreElements()) {		
+		SubDomain sd = enum1.nextElement();
+		Enumeration<Equation> enum_equ = sd.getEquations();
+		while (enum_equ.hasMoreElements()){
+			Equation equation = enum_equ.nextElement();
+			if (equation.hasDiscontinuities(this)) {
+				return true;
+			}
+		}
+		Expression[] exps = sd.getFastSystem().getExpressions();
+		for (int i = 0; i < exps.length; i++) {
+			if (exps[i].getDiscontinuities().size() > 0) {
+				return true;
+			}
+		}
+	}
+	for (Variable var : variableList) {
+		Expression expression = var.getExpression();
+		if (expression != null && expression.getDiscontinuities().size() > 0) {
+			return true;			
+		}
+	}
+	return false;
+}
 
 
 /**

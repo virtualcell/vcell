@@ -233,7 +233,7 @@ public class BiomodelsDB_SBMLSolverTest {
 							//
 							if (mathSBMLResults!=null && vcellResults_RT!=null){
 								try {
-									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(mathSBMLResults, vcellResults_RT, varsToTest, 1e-5, 1e-5);
+									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(mathSBMLResults, vcellResults_RT, varsToTest, 1e-5, 1e-5, 1);
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
 										relErrorVCMathSBMLString = NumberUtils.formatNumber(maxRelError,3);
@@ -259,7 +259,7 @@ public class BiomodelsDB_SBMLSolverTest {
 							//
 							if (copasiResults!=null && mathSBMLResults!=null){
 								try {
-									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, mathSBMLResults, varsToTest, 1e-5, 1e-5);
+									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, mathSBMLResults, varsToTest, 1e-5, 1e-5, 1);
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
 										relErrorCopasiMathSBMLString = NumberUtils.formatNumber(maxRelError,3);
