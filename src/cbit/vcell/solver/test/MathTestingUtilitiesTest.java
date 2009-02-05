@@ -1,5 +1,7 @@
 package cbit.vcell.solver.test;
 
+import java.util.Random;
+
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.parser.*;
@@ -65,8 +67,10 @@ public static void testOdeCompareResultSets(double epsilon) {
 		show(simCompareSummaryNoInterpolation);
 		
 		System.out.println("comparing identical result sets using interpolation");
-		SimulationComparisonSummary simCompareSummary = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR);
-		show(simCompareSummary);
+		for (int i = 0; i < 5; i ++) {
+			SimulationComparisonSummary simCompareSummary = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR, i);
+			show(simCompareSummary);
+		}
 		
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);
@@ -99,15 +103,42 @@ public static void testOdeCompareResultSetsInterpolated(double epsilon) {
 		ODESolverResultSet r2 = cbit.vcell.solver.ode.ODESolverResultSetTest.getExample(times2,names,exps2);
 		
 		System.out.println("comparing different result sets using interpolation");
-		SimulationComparisonSummary simCompareSummary1 = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR);
-		show(simCompareSummary1);
+		for (int i = 0; i < 5; i ++) {
+			SimulationComparisonSummary simCompareSummary1 = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR, i);
+			show(simCompareSummary1);
+		}
 
 		System.out.println("comparing different result sets using interpolation (Switching r1 & r2)");
-		SimulationComparisonSummary simCompareSummary2 = MathTestingUtilities.compareUnEqualResultSets(r2,r1,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR);
-		show(simCompareSummary2);		
+		for (int i = 0; i < 5; i ++) {
+			SimulationComparisonSummary simCompareSummary2 = MathTestingUtilities.compareUnEqualResultSets(r2,r1,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR, i);
+			show(simCompareSummary2);
+		}
 		
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);
 	}
+}
+
+public static void testPolynomialInterpolation() {
+	int num=100;
+	double[] times = new double[num];
+	double[] values = new double[num];
+	int num2 = 50;
+	double[] sampleTimes = new double[num2];
+
+	Random random = new Random();
+	for (int i = 0; i < num; i ++) {
+		times[i] = i + random.nextDouble();
+		values[i] = 2 * Math.pow(times[i], 5) + 1;
+	}
+
+	for (int i = 0; i < num2; i ++) {
+		sampleTimes[i] = random.nextDouble() + 0.5; 
+	}
+	double sampledData[] = MathTestingUtilities.interpolateArray(sampleTimes, times, values, 5);
+	for (int i = 0; i < num2; i ++) {
+		double error = sampledData[i] - (2 * Math.pow(sampleTimes[i],5) + 1);
+		System.out.println(error);
+	}	
 }
 }

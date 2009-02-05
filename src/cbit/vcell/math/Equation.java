@@ -334,4 +334,14 @@ public void getDiscontinuities(Simulation simulation, Vector<Discontinuity> disc
 	}
 }
 
+public boolean hasDiscontinuities(MathDescription mathDesc) throws ExpressionException {
+	Vector<Expression> expressions = getExpressions(mathDesc);
+	for (Expression exp : expressions) {
+		if (exp.getDiscontinuities().size() > 0) {
+			return true;
+		}
+	}
+	return false;	
+}
+
 }

@@ -73,7 +73,7 @@ public class VCML_SBMLSolverTest {
 								}
 								String[] varsToTest = varNames.toArray(new String[varNames.size()]);
 								ODESolverResultSet vcellResults = solveVCell(simContext, numTimeSteps, timeStep, duration);
-								SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, vcellResults, varsToTest, 1e-5, 1e-5);
+								SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, vcellResults, varsToTest, 1e-5, 1e-5, 1);
 								double maxRelError = summary.getMaxRelativeError();
 								if (maxRelError<1){
 									printWriter.println(vcmlFile.getName()+" passed, maxRelError="+maxRelError);

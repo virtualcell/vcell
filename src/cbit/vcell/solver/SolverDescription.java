@@ -286,7 +286,42 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_SUNDIALS_STANDALONE
 		false,	// TYPE_SUNDIALS_PDE
 	};
-		
+	// for all sundials solvers, the time order is variable from 1 to 5, we choose an intermediate order of 3
+	// as a compromise for accuracy during stiff and non stiff time stepping 
+	private static final int[] timeOrder = {		
+		1,   // TYPE_FORWARD_EULER
+		2,	// TYPE_RUNGE_KUTTA2
+		4,	// TYPE_RUNGE_KUTTA4
+		4,	// TYPE_RUNGE_KUTTA_FEHLBERG
+		5,	// TYPE_ADAMS_MOULTON
+		3,	// TYPE_IDA
+		1,	// TYPE_FINITE_VOLUME
+		1,	// TYPE_STOCH_GIBSON
+		1,	// TYPE_Hybrid_Euler
+		1,	// TYPE_Hybrid_Milstein
+		1,	// TYPE_HYBRID_MIL_Adaptive
+		3,	// TYPE_CVODE
+		1,	// TYPE_FINITE_VOLUME_STANDALONE
+		3,	// TYPE_SUNDIALS_STANDALONE
+		3,	// TYPE_SUNDIALS_PDE
+	};
+	private static final boolean[] resolves_discontinuties = {
+		false,   // TYPE_FORWARD_EULER
+		false,	// TYPE_RUNGE_KUTTA2
+		false,	// TYPE_RUNGE_KUTTA4
+		false,	// TYPE_RUNGE_KUTTA_FEHLBERG
+		false,	// TYPE_ADAMS_MOULTON
+		true,	// TYPE_IDA
+		false,	// TYPE_FINITE_VOLUME
+		false, 	// TYPE_STOCH_GIBSON
+		false, 	// TYPE_Hybrid_Euler
+		false, 	// TYPE_Hybrid_Milstein
+		false,  // TYPE_HYBRID_MIL_Adaptive
+		true,	// TYPE_CVODE
+		false,	// TYPE_FINITE_VOLUME_STANDALONE
+		true,	// TYPE_SUNDIALS_STANDALONE
+		true,	// TYPE_SUNDIALS_PDE
+	};		
 			
 	public static final SolverDescription ForwardEuler			= new SolverDescription(TYPE_FORWARD_EULER);
 	public static final SolverDescription RungeKutta2			= new SolverDescription(TYPE_RUNGE_KUTTA2);
@@ -630,6 +665,13 @@ public static SolverDescription[] getStochSolverDescriptions() {
 	return fieldStochSolverDescriptions;
 }
 
+public int getTimeOrder() {
+	return timeOrder[type];
+}
+
+public boolean resolvesDiscontinuties() {
+	return resolves_discontinuties[type];
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/23/01 3:52:28 PM)

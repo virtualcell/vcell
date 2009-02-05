@@ -18,7 +18,6 @@ import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelMetaData;
 
 import java.math.*;
 import cbit.vcell.server.DataAccessException;
@@ -34,6 +33,8 @@ import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import cbit.vcell.client.server.DynamicDataManager;
 import cbit.vcell.server.VCDataIdentifier;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
@@ -990,7 +991,7 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 
 	StringBuffer reportTCBuffer = new StringBuffer();
 	if (testCase == null) {
-		reportTCBuffer.append("\n\tTEST CASE : "+testCase.getAnnotation()+"\n"+"\tERROR: Test Case is NULL\n");
+		reportTCBuffer.append("\n\tTEST CASE :\tERROR: Test Case is NULL\n");
 	}else{
 
 		pp.setMessage(testCase.getVersion().getName()+" "+testCase.getType()+" Getting Simulations");
@@ -1286,13 +1287,15 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
 						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
 						DataManager refDataManager = getRequestManager().getDataManager(refVcdID, refSim.getIsSpatial());
 						ODESolverResultSet referenceResultSet = refDataManager.getODESolverResultSet();
-						double refTimeArray[] = refDataManager.getDataSetTimes();
 						SimulationComparisonSummary simCompSummary_regr = null;							
-						//if (timeArray.length != refTimeArray.length) {
-						simCompSummary_regr = MathTestingUtilities.compareUnEqualResultSets(numericalResultSet, referenceResultSet,varsToTest,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
-						//} else {
-							//simCompSummary_regr = MathTestingUtilities.compareResultSets(numericalResultSet, referenceResultSet, varsToTest);
-						//}
+						int interpolationOrder = 1;
+						SolverTaskDescription solverTaskDescription = refSim.getSolverTaskDescription();
+						if (solverTaskDescription.getOutputTimeSpec().isDefault() && ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec()).getKeepEvery() == 1) {
+							if (!solverTaskDescription.getSolverDescription().resolvesDiscontinuties() || !refSim.getMathDescription().hasDiscontinuities()) {
+								interpolationOrder = solverTaskDescription.getSolverDescription().getTimeOrder();
+							}
+						}
+						simCompSummary_regr = MathTestingUtilities.compareUnEqualResultSets(numericalResultSet, referenceResultSet,varsToTest,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError(), interpolationOrder);
 						// Get all the variable comparison summaries and the failed ones to print out report for CONSTRUCTED solution comparison.
 						failVarSummaries = simCompSummary_regr.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary_regr.getVariableComparisonSummaries();
