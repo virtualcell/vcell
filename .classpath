@@ -21,5 +21,7 @@
 	<classpathentry kind="lib" path="sonic_XA.jar"/>
 	<classpathentry kind="lib" path="sonic_Crypto.jar"/>
 	<classpathentry kind="lib" path="sonic_Selector.jar"/>
+	<classpathentry exported="true" kind="lib" path="jai_codec.jar"/>
+	<classpathentry exported="true" kind="lib" path="jai_core.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
