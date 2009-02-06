@@ -19,6 +19,7 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverFileWriter;
@@ -628,10 +629,12 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 /**
 # Simulation Parameters
 SIMULATION_PARAM_BEGIN
-BASE_FILE_NAME \\\\SAN2\\raid\\Vcell\\users\\fgao\\SimID_22489731_0_
-ENDING_TIME 1.0
-TIME_STEP 0.0010
-KEEP_EVERY 10
+SOLVER SUNDIALS_PDE_SOLVER 1.0E-7 1.0E-9
+DISCONTINUITY_TIMES 2 1.0E-4 3.0000000000000003E-4
+BASE_FILE_NAME c:/Vcell/users/fgao/SimID_31746636_0_
+ENDING_TIME 4.0E-4
+KEEP_EVERY ONE_STEP 3
+KEEP_AT_MOST 1000
 SIMULATION_PARAM_END
  * @throws MathException 
  * @throws ExpressionException 
@@ -669,12 +672,18 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	}
 	printWriter.println("BASE_FILE_NAME " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
     printWriter.println("ENDING_TIME " + solverTaskDesc.getTimeBounds().getEndingTime());    
-    if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-    	printWriter.println("TIME_STEP " + ((UniformOutputTimeSpec)solverTaskDesc.getOutputTimeSpec()).getOutputTimeStep());
-    	printWriter.println("KEEP_EVERY 1");
+    OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();
+	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+		if (outputTimeSpec.isDefault()) {
+			printWriter.println("KEEP_EVERY ONE_STEP " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery());
+			printWriter.println("KEEP_AT_MOST " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepAtMost());
+		} else {
+			printWriter.println("TIME_STEP " + ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
+			printWriter.println("KEEP_EVERY 1");
+		}
     } else {
     	printWriter.println("TIME_STEP " + solverTaskDesc.getTimeStep().getDefaultTimeStep());
-    	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)solverTaskDesc.getOutputTimeSpec()).getKeepEvery());
+    	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery());
     }
     if (solverTaskDesc.isStopAtSpatiallyUniform()) {
     	printWriter.println("CHECK_SPATIALLY_UNIFORM " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance());

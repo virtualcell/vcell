@@ -1115,10 +1115,9 @@ private void enableOutputOptionPanel() {
 			getOutputTimeStepTextField().setEnabled(false);
 			getOutputTimesTextField().setEnabled(true);
 		}
-	}else if ((solverDesc.equals(SolverDescription.HybridEuler))
+	} else if ((solverDesc.equals(SolverDescription.HybridEuler))
 			||(solverDesc.equals(SolverDescription.HybridMilstein))
-			||(solverDesc.equals(SolverDescription.HybridMilAdaptive))
-			|| (solverDesc.equals(SolverDescription.SundialsPDE))){
+			||(solverDesc.equals(SolverDescription.HybridMilAdaptive))){
 		getDefaultOutputRadioButton().setEnabled(false);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(false);
@@ -1127,6 +1126,17 @@ private void enableOutputOptionPanel() {
 		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		getKeepAtMostTextField().setEnabled(false);
 		getKeepEveryTextField().setEnabled(false);
+		getOutputTimeStepTextField().setEnabled(true);
+		getOutputTimesTextField().setEnabled(false);
+	} else if (solverDesc.equals(SolverDescription.SundialsPDE)) {
+		getDefaultOutputRadioButton().setEnabled(true);
+		getUniformOutputRadioButton().setEnabled(true);	
+		getExplicitOutputRadioButton().setEnabled(false);
+		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		getKeepAtMostTextField().setEnabled(true);
+		getKeepEveryTextField().setEnabled(true);
 		getOutputTimeStepTextField().setEnabled(true);
 		getOutputTimesTextField().setEnabled(false);
 	} else if (solverDesc.equals(SolverDescription.StochGibson)){
