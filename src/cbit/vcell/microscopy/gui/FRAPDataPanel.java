@@ -118,6 +118,10 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	public OverlayEditorPanelJAI getOverlayEditorPanelJAI(){
 		if (overlayEditorPanel==null){
 			overlayEditorPanel = new OverlayEditorPanelJAI();
+			overlayEditorPanel.setAllowAddROI(false);
+			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		}
 		return overlayEditorPanel;
 	}
