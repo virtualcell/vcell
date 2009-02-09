@@ -1,6 +1,7 @@
 package cbit.vcell.microscopy;
 
 
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

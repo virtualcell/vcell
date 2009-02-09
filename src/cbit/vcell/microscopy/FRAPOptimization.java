@@ -1,6 +1,7 @@
 package cbit.vcell.microscopy;
 
 import cbit.function.DefaultScalarFunction;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;

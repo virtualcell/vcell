@@ -11,6 +11,7 @@ import java.util.Vector;
 import cbit.image.ImageException;
 import cbit.util.Issue;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 
 /**
@@ -68,7 +69,7 @@ public abstract class AnnotatedImageDataset {
 				throw new RuntimeException(e.getMessage());
 			}
 			//comment added in Feb, 2008. Each roi contains images, whoes size equals to size of z slices.
-			cbit.vcell.microscopy.ROI roi = new cbit.vcell.microscopy.ROI(roiImages,argROINames[i]);
+			ROI roi = new ROI(roiImages,argROINames[i]);
 			rois.add(roi);//rois contains different types of roi, 11 types. 3 primary + 8 generated.
 		}
 		verifyROIdimensions(imageDataset, rois);
