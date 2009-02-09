@@ -3112,10 +3112,12 @@ public boolean hasDiscontinuities() throws ExpressionException {
 				return true;
 			}
 		}
-		Expression[] exps = sd.getFastSystem().getExpressions();
-		for (int i = 0; i < exps.length; i++) {
-			if (exps[i].getDiscontinuities().size() > 0) {
-				return true;
+		if (sd.getFastSystem() != null) {
+			Expression[] exps = sd.getFastSystem().getExpressions();
+			for (int i = 0; i < exps.length; i++) {
+				if (exps[i].getDiscontinuities().size() > 0) {
+					return true;
+				}
 			}
 		}
 	}
