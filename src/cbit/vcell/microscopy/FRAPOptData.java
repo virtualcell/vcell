@@ -4,6 +4,7 @@ import java.io.File;
 
 import cbit.sql.KeyValue;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.client.server.VCDataManager;

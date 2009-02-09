@@ -40,13 +40,14 @@ import cbit.image.VCImageUncompressed;
 import cbit.util.BeanUtils;
 import cbit.util.Extent;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.AnnotatedImageDataset;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.ROI;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
 public class ROIAssistPanel extends JPanel {

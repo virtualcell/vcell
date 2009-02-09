@@ -18,14 +18,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.Hashtable;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -40,6 +39,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
@@ -55,6 +55,7 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.PopupGenerator;
@@ -70,17 +71,16 @@ import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
-import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
@@ -333,8 +333,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	 */
 	public FRAPStudyPanel() {
 		super();
-		initialize();
 		loadROICursors();
+		initialize();
 	}
 	
 	public void addUndoableEditListener(UndoableEditListener undoableEditListener){
@@ -472,6 +472,67 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			frapDataPanel = new FRAPDataPanel();
 			frapDataPanel.setBorder(TAB_LINE_BORDER);
 			frapDataPanel.getOverlayEditorPanelJAI().addPropertyChangeListener(this);
+			
+			Hashtable<String, Cursor> cursorsForROIsHash = new Hashtable<String, Cursor>();
+			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_CELLROI]);
+			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BLEACHROI]);
+			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI]);
+			frapDataPanel.getOverlayEditorPanelJAI().setCursorsForROIs(cursorsForROIsHash);
+			
+			OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new OverlayEditorPanelJAI.CustomROIImport(){
+				public boolean importROI(File inputFile) throws Exception{
+					try{
+//						File inputFile = null;
+//						int option = VirtualFrapLoader.openFileChooser.showOpenDialog(null);
+//						if (option == JFileChooser.APPROVE_OPTION){
+//							inputFile = VirtualFrapLoader.openFileChooser.getSelectedFile();
+//						}else{
+//							throw UserCancelException.CANCEL_GENERIC;
+//						}
+						if(!VirtualFrapLoader.filter_vfrap.accept(inputFile)){
+							return false;
+						}
+						String xmlString = XmlUtil.getXMLString(inputFile.getAbsolutePath());
+						MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+						DataSetControllerImpl.ProgressListener progressListener =
+							new DataSetControllerImpl.ProgressListener(){
+								public void updateProgress(double progress) {
+									VirtualFrapMainFrame.updateProgress((int)(progress*100));
+								}
+								public void updateMessage(String message) {
+									//ignore
+								}
+							};
+						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),progressListener);
+						VirtualFrapMainFrame.updateProgress(0);
+						ROI roi = getFrapStudy().getFrapData().getCurrentlyDisplayedROI();
+						if(importedFrapStudy.getFrapData() != null && importedFrapStudy.getFrapData().getRois() != null){
+							if(!importedFrapStudy.getFrapData().getRois()[0].getISize().compareEqual(roi.getISize())){
+								throw new Exception(
+										"Imported ROI mask size ("+
+										importedFrapStudy.getFrapData().getRois()[0].getISize().getX()+","+
+										importedFrapStudy.getFrapData().getRois()[0].getISize().getY()+","+
+										importedFrapStudy.getFrapData().getRois()[0].getISize().getZ()+")"+
+										" does not match current Frap DataSet size ("+
+										roi.getISize().getX()+","+
+										roi.getISize().getY()+","+
+										roi.getISize().getZ()+
+										")");
+							}
+							for (int i = 0; i < importedFrapStudy.getFrapData().getRois().length; i++) {
+								getFrapStudy().getFrapData().addReplaceRoi(importedFrapStudy.getFrapData().getRois()[i]);
+	//							overlayEditorPanelJAI.firePropertyChange(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY, null,importedFrapStudy.getFrapData().getRois()[i]);								
+							}
+							undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
+						}
+						return true;
+					} catch (Exception e1) {
+						throw new Exception("VFRAP ROI Import - "+e1.getMessage());
+					}
+				}
+			};
+			frapDataPanel.getOverlayEditorPanelJAI().setCustomROIImport(importVFRAPROI);
+
 		}
 		return frapDataPanel;
 	}
@@ -1818,6 +1879,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public void setLocalWorkspace(LocalWorkspace arg_localWorkspace) {
 		this.localWorkspace = arg_localWorkspace;
 		getFRAPDataPanel().setLocalWorkspace(localWorkspace);
+		getFRAPDataPanel().getOverlayEditorPanelJAI().setDefaultImportDirAndFilters(
+			new File(getLocalWorkspace().getDefaultWorkspaceDirectory()),
+			new FileFilter[] {VirtualFrapLoader.filter_vfrap});
+
 		try {
 			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getPDEDataViewer());
 			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(getPDEDataViewer2());

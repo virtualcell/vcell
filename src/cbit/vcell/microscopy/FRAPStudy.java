@@ -45,6 +45,7 @@ import cbit.util.Matchable;
 import cbit.util.NumberUtils;
 import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.desktop.controls.DataManager;

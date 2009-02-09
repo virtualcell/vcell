@@ -5,6 +5,7 @@ import java.awt.Dimension;
 
 import cbit.gui.DialogUtils;
 import cbit.vcell.client.task.UserCancelException;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;

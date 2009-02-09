@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy.gui;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -7,19 +8,30 @@ import java.awt.Point;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.Hashtable;
+
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import cbit.gui.DialogUtils;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.UserCancelException;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.AnnotatedImageDataset;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.microscopy.ROI;
+import cbit.vcell.microscopy.MicroscopyXmlReader;
+import cbit.vcell.simdata.DataSetControllerImpl;
 
 //comments added in Jan, 2008. This panel is with the first tab that users can see when VFrap is just started.
 //This panel displays the images base on time serials or Z serials. In addtion, Users can mark ROIs and manipulate
@@ -149,7 +161,8 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		}
 		overlayEditorPanel.setImages(
 			(frapData==null?null:frapData.getImageDataset()),isNew,
-			(frapData==null?null:frapData.getOriginalGlobalScaleInfo()));
+			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:frapData.getOriginalGlobalScaleInfo().originalScaleFactor),
+			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:frapData.getOriginalGlobalScaleInfo().originalOffsetFactor));
 		if(frapData != null){
 			frapData.setCurrentlyDisplayedROI(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 		}

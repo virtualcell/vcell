@@ -12,6 +12,7 @@ import cbit.util.TSJobResultsSpaceStats;
 import cbit.util.TimeSeriesJobSpec;
 import cbit.util.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.modeldb.NullSessionLog;
 import cbit.vcell.server.User;
