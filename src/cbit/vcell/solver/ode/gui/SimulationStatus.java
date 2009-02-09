@@ -141,18 +141,24 @@ private cbit.vcell.messaging.db.SimulationJobStatus[] getJobStatuses() {
  */
 public Double getProgress() {
 	if (jobStatuses == null) return null;
+	boolean bAllNullProgress = true;
 	double progress = 0;
 	for (int i = 0; i < jobStatuses.length; i++){
 		if (jobStatuses[i] != null) {
 			if (jobStatuses[i].isDone()) {
 				progress += 1;
+				bAllNullProgress = false;
 			} else {
 				Double jobProgress = (Double)progressHash.get(Integer.toString(jobStatuses[i].getJobIndex()));
 				if (jobProgress != null) {
+					bAllNullProgress = false;
 					progress += jobProgress.doubleValue();
 				}
 			}
 		}
+	}
+	if (bAllNullProgress) {
+		return null;
 	}
 	return new Double(progress);
 }
