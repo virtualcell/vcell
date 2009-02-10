@@ -190,9 +190,9 @@ public class VirtualFrapMainFrame extends JFrame
 			new Thread(new Runnable(){public void run(){
 		    	  try {
 		    		  if(bSaveAs){
-		    			  frapStudyPanel.saveAs();
+		    			  frapStudyPanel.saveAs(null);
 		    		  }else{
-		    			  frapStudyPanel.save();
+		    			  frapStudyPanel.save(null);
 		    		  }
 				  }catch(UserCancelException e1){
 					  //ignore

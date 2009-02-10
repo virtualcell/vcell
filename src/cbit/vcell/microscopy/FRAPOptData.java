@@ -43,13 +43,13 @@ public class FRAPOptData {
 	
 	/*----------------reference data by diffusion rate=1, mobileFrac=1 and bwmRate = 0-------------------*/
 	public static final Parameter REF_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX], 0, 40, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX], 0, 200, 1.0, 1.0);
 	public static final Parameter REF_MOBILE_FRACTION_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX], 0, 1, 1.0,  0);
 	public static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX], 0, 20, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX], 0, 40, 1.0, 1.0);
 	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	
@@ -147,6 +147,9 @@ public class FRAPOptData {
 //			
 //		}
 		return new DefaultOutputTimeSpec(1, 10000);
+//		int startIdx = FRAPDataAnalysis.getRecoveryIndex(getExpFrapStudy().getFrapData());
+//		double[] timeStamps = getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
+//		return new UniformOutputTimeSpec(timeStamps[startIdx+1]-timeStamps[startIdx]);
 	}
 	
 	public double[][] getDimensionReducedRefData(DataSetControllerImpl.ProgressListener progressListener) throws Exception
@@ -161,9 +164,10 @@ public class FRAPOptData {
 	{
 		if(dimensionReducedExpData == null){
 			//normalize the experimental data, because the reference data is normalized
-			VCDataManager vcManager = getLocalWorkspace().getVCDataManager();
-			double[] prebleachAvg = vcManager.getSimDataBlock(getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
-			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
+//			VCDataManager vcManager = getLocalWorkspace().getVCDataManager();
+//			double[] prebleachAvg = vcManager.getSimDataBlock(getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
+			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery);
+			double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(getExpFrapStudy().getFrapData(), startRecoveryIndex);
 			dimensionReducedExpData = FRAPOptimization.dataReduction(getExpFrapStudy().getFrapData(),startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(), prebleachAvg);
 		}
 		return dimensionReducedExpData;
@@ -172,7 +176,7 @@ public class FRAPOptData {
 	public double[] getReducedExpTimePoints() {
 		if(reducedExpTimePoints == null)
 		{
-			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
+			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery);
 			reducedExpTimePoints = FRAPOptimization.timeReduction(getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps(), startRecoveryIndex); 
 		}
 		return reducedExpTimePoints;
@@ -214,7 +218,7 @@ public class FRAPOptData {
 			double[] rawRefDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
 			refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
 			System.out.println("simulation done...");
-			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
+			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery);
 			
 			DataSetControllerImpl.ProgressListener reducedRefDataProgressListener =
 				new DataSetControllerImpl.ProgressListener(){
@@ -269,18 +273,12 @@ public class FRAPOptData {
 			ExternalDataInfo oldRefDataInfo = getExpFrapStudy().getRefExternalDataInfo();
 			ExternalDataInfo refDataInfo = FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(),FRAPStudy.REF_EXTDATA_NAME);
 			
-			bioModel =
-				FRAPStudy.createNewBioModel(
-					expFrapStudy,
-					REFERENCE_DIFF_RATE_STR,
-					REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess()+"",
-					REF_MOBILE_FRACTION_PARAM.getInitialGuess()+"",
-					null,
-					null,
-					getRefTimeStep(),
-					refDataInfo.getExternalDataIdentifier().getKey(),
-					LocalWorkspace.getDefaultOwner(),
-					new Integer(expFrapStudy.getFrapModelParameters().startIndexForRecovery));
+			bioModel = FRAPStudy.createNewRefBioModel(expFrapStudy,
+													REFERENCE_DIFF_RATE_STR, 
+													getRefTimeStep(), 
+													refDataInfo.getExternalDataIdentifier().getKey(), 
+													LocalWorkspace.getDefaultOwner(), 
+													new Integer(expFrapStudy.getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
 			
 			//change time bound and time step
 			Simulation sim = bioModel.getSimulations()[0];
@@ -347,7 +345,8 @@ public class FRAPOptData {
 					                                              refDataTimePoints,
 					                                              getReducedExpTimePoints(),
 					                                              getExpFrapStudy().getFrapData().getRois().length, 
-					                                              (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery()),
+//					                                              (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery()),
+					                                              /*getRefTimeSpec().getOutputTimeStep(),*/
 					                                              eoi);
 		}
 		else if(getNumEstimatedParams() == FRAPOptData.NUM_PARAMS_FOR_TWO_DIFFUSION_RATE)
@@ -359,7 +358,8 @@ public class FRAPOptData {
 																  refDataTimePoints,
 																  getReducedExpTimePoints(),
 																  getExpFrapStudy().getFrapData().getRois().length,
-																  (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery()),
+//																  (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery()),
+																  /*getRefTimeSpec().getOutputTimeStep(),*/
 																  eoi);
 		}
 		else
@@ -407,6 +407,7 @@ public class FRAPOptData {
 		double[] reducedExpTimePoints = getReducedExpTimePoints();
 		int roiLen = getExpFrapStudy().getFrapData().getRois().length;
 		double refTimeInterval = (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery());
+//		double refTimeInterval = getRefTimeSpec().getOutputTimeStep();
 		
 		double[][] newData = new double[roiLen][reducedExpTimePoints.length];
 		double diffRate = 0;
@@ -438,8 +439,8 @@ public class FRAPOptData {
                     									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
-                    									   roiLen,
-                    									   refTimeInterval);
+                    									   roiLen
+                    									   /*refTimeInterval*/);
 			
 			// get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];
@@ -502,6 +503,7 @@ public class FRAPOptData {
 		double[] reducedExpTimePoints = getReducedExpTimePoints();
 		int roiLen = getExpFrapStudy().getFrapData().getRois().length;
 		double refTimeInterval = (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery());
+//		double refTimeInterval = getRefTimeSpec().getOutputTimeStep();
 		
 //		double diffFastOffset = 0;
 		double diffFastRate = 0;
@@ -549,8 +551,8 @@ public class FRAPOptData {
                     									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
-                    									   roiLen,
-                    									   refTimeInterval);
+                    									   roiLen
+                    									   /*refTimeInterval*/);
 			
 			slowData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffSlowRate,
@@ -558,8 +560,8 @@ public class FRAPOptData {
                     									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
-                    									   roiLen,
-                    									   refTimeInterval);
+                    									   roiLen
+                    									   /*refTimeInterval*/);
 			
 			//get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];
@@ -628,7 +630,7 @@ public class FRAPOptData {
 	{
 		double[] portion = new double[]{0.8, 0.9};
 		double[][] refData = getDimensionReducedRefData(null);
-		double[] refTimePoints = FRAPOptimization.timeReduction(refDataTimePoints, Integer.parseInt(getExpFrapStudy().getFrapModelParameters().startIndexForRecovery));
+		double[] refTimePoints = FRAPOptimization.timeReduction(refDataTimePoints, Integer.parseInt(getExpFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
 		for(int i = 0 ; i < getExpFrapStudy().getFrapData().getRois().length; i++)
 		{
 			for(int k = 0 ; k < portion.length; k++)

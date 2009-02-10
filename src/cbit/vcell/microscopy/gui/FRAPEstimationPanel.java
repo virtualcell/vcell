@@ -52,8 +52,8 @@ public class FRAPEstimationPanel extends JPanel {
 	public static final String FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY = "FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY";
 	
 	private enum FRAPParameterEstimateEnum {
-		DIFFUSION_RATE("Primary Diffusion Rate","um2/s"),
-		MOBILE_FRACTION("Primary Mobile Fraction",""),
+		DIFFUSION_RATE("Diffusion Rate","um2/s"),
+		MOBILE_FRACTION("Mobile Fraction",""),
 		IMMOBILE_FRATION("Immobile Fraction",""),
 		START_TIME_RECOVERY("Start Time Recovery","s"),
 		BLEACH_RATE_MONITOR("Monitor Bleach Rate","1/s");
@@ -125,7 +125,7 @@ public class FRAPEstimationPanel extends JPanel {
 		final JLabel frapParameterEstimatesLabel = new JLabel();
 //		frapParameterEstimatesLabel.setFont(new Font("", Font.BOLD, 14));
 		frapParameterEstimatesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		frapParameterEstimatesLabel.setText("Estimation Method");
+		frapParameterEstimatesLabel.setText("Bleaching Type ");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_1.fill = GridBagConstraints.BOTH;
@@ -473,15 +473,7 @@ public class FRAPEstimationPanel extends JPanel {
 			}
 			DataSource bleachWhileMonitorDataSource = new DataSource(bleachWhileMonitorOdeSolverResultSet, "bleachwm");
 
-
-			
-			
-			
-			
-			
-			//
 			//Recovery curve
-			//
 			double[] bleachRegionData = frapDataAnalysisResults.getBleachRegionData();
 			Expression fittedCurve = frapDataAnalysisResults.getFitExpression();
 			ReferenceData expRefData = new SimpleReferenceData(new String[] { "t", "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });

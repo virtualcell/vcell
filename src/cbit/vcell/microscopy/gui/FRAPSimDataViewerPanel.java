@@ -22,6 +22,7 @@ public class FRAPSimDataViewerPanel extends JPanel {
 		setLayout(new GridBagLayout());
 
 		final JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.setForeground(new Color(0,0,244));
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.ipadx = 20;
 		gridBagConstraints.weighty = 1;

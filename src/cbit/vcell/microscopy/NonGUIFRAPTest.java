@@ -26,10 +26,12 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.microscopy.gui.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
+import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.User;
@@ -228,12 +230,12 @@ public class NonGUIFRAPTest {
 		
 		String[] args =
 			new String[]{
-				frapStudy.getFrapModelParameters().startIndexForRecovery,
-				frapStudy.getFrapModelParameters().diffusionRate,
-				frapStudy.getFrapModelParameters().monitorBleachRate,
-				frapStudy.getFrapModelParameters().mobileFraction,
-				frapStudy.getFrapModelParameters().secondRate,
-				frapStudy.getFrapModelParameters().secondFraction,
+				frapStudy.getFrapModelParameters().getIniModelParameters().startingIndexForRecovery,
+				frapStudy.getFrapModelParameters().getIniModelParameters().diffusionRate,
+				frapStudy.getFrapModelParameters().getIniModelParameters().monitorBleachRate,
+				frapStudy.getFrapModelParameters().getIniModelParameters().mobileFraction,
+				frapStudy.getFrapModelParameters().getPureDiffModelParameters().secondaryDiffusionRate,
+				frapStudy.getFrapModelParameters().getPureDiffModelParameters().secondaryMobileFraction,
 				testDirectoryPath,
 				imageDataSetZipFile.getAbsolutePath(),
 				cellROIFile.getAbsolutePath(),
@@ -273,19 +275,23 @@ public class NonGUIFRAPTest {
 	 */
 	public static void runSolver(String[] args) throws Exception{
 		String startingIndexForRecovery = args[0];
-		String recoveryDiffusionRateString = args[1];
-		String bleachWhileMonitoringRateString = args[2];
-		String mobileFractionString = args[3];
-		String secondRateString = args[4];
-		String secondFractionString = args[5];
-		String workingDirectoryPath = args[6];
-		String inputFRAPDataFileName = args[7];
-		String inputCellROIFileName = args[8];
-		String inputBleachROIFileName = args[9];
-		String inputBackgroundROIFileName = args[10];
-		String outputXMLFileName = args[11];
-		String commaSepTimeStamps = args[12];
-		String commaSepExtentXYZ = args[13];
+		String freeDiffusionRateStr= args[1];
+		String freeMobileFractionStr = args[2];
+		String complexDiffusionRateStr = args[3];
+		String complexMobileFractionStr = args[4];
+		String bleachWhileMonitoringRateString = args[5];
+		String immobileFractionStr = args[6];
+		String bindingSiteConcentrationStr = args[7];
+		String reacOnRateStr = args[8];
+		String reacOffRateStr  = args[9];
+		String workingDirectoryPath = args[10];
+		String inputFRAPDataFileName = args[11];
+		String inputCellROIFileName = args[12];
+		String inputBleachROIFileName = args[13];
+		String inputBackgroundROIFileName = args[14];
+		String outputXMLFileName = args[15];
+		String commaSepTimeStamps = args[16];
+		String commaSepExtentXYZ = args[17];
 		
 		LocalWorkspace localWorkspace =
 			new LocalWorkspace(new File(workingDirectoryPath));
@@ -327,15 +333,12 @@ public class NonGUIFRAPTest {
 
 		FRAPStudy frapStudy = new FRAPStudy();
 		frapStudy.setFrapData(frapData);
-		FRAPStudy.FRAPModelParameters frapModelParameters =
-			new FRAPStudy.FRAPModelParameters(
-					startingIndexForRecovery,
-					recoveryDiffusionRateString,
-					bleachWhileMonitoringRateString,
-					mobileFractionString,
-					secondRateString,
-					secondFractionString
-				);
+		
+		FRAPStudy.FRAPModelParameters frapModelParameters = new FRAPStudy.FRAPModelParameters( 
+				  new FRAPStudy.InitialModelParameters(freeDiffusionRateStr, freeMobileFractionStr, bleachWhileMonitoringRateString, startingIndexForRecovery),
+				  null,
+				  null);
+		
 		frapStudy.setFrapModelParameters(frapModelParameters);
 		frapStudy.refreshDependentROIs();
 		
@@ -346,27 +349,44 @@ public class NonGUIFRAPTest {
 		
 		frapStudy.saveImageDatasetAsExternalData(
 				localWorkspace,frapStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
-				new Integer(frapModelParameters.startIndexForRecovery));
+				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery));
 		frapStudy.saveROIsAsExternalData(
 				localWorkspace, frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
-				new Integer(frapModelParameters.startIndexForRecovery));
+				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery));
 
 //		Double bleachWhileMonitoringRate =
 //			(!bleachWhileMonitoringRateString.equals("-")
 //				?Double.parseDouble(bleachWhileMonitoringRateString)
 //				:null);
+		
+		double fd,ff,bwmr,cd,cf,imf,bs,on,off;
+		Parameter[] params = null;
+		try
+		{
+			fd = Double.parseDouble(freeDiffusionRateStr);
+			ff = Double.parseDouble(freeMobileFractionStr);
+			bwmr = Double.parseDouble(bleachWhileMonitoringRateString);
+			cd = Double.parseDouble(complexDiffusionRateStr);
+			cf = Double.parseDouble(complexMobileFractionStr);
+			imf = Double.parseDouble(immobileFractionStr);
+			bs = Double.parseDouble(bindingSiteConcentrationStr);
+			on = Double.parseDouble(reacOnRateStr);
+			off = Double.parseDouble(reacOffRateStr);
+			
+		}catch(NumberFormatException e)
+		{
+			throw new Exception("Input parameters are not all valid. Check if they are empty or in illegal forms.");
+		}
+		
+
 		BioModel bioModel =
-			FRAPStudy.createNewBioModel(
+			FRAPStudy.createNewSimBioModel(
 				frapStudy,
-				recoveryDiffusionRateString,
-				bleachWhileMonitoringRateString,
-				mobileFractionString,
-				new Double(secondRateString),
-				secondFractionString,
+				createParameterArray(fd, ff, bwmr, cd, cf, imf, bs, on, off),
 				null,
 				LocalWorkspace.createNewKeyValue(),
 				LocalWorkspace.getDefaultOwner(),
-				new Integer(frapModelParameters.startIndexForRecovery));
+				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery));
 		frapStudy.setBioModel(bioModel);
 		DataSetControllerImpl.ProgressListener progressListener =
 			new DataSetControllerImpl.ProgressListener(){
@@ -402,19 +422,23 @@ public class NonGUIFRAPTest {
 		FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
 			FRAPStudy.spatialAnalysis(
 				simulationDataManager,
-				new Integer(frapModelParameters.startIndexForRecovery),
-				frapDataTimeStamps[new Integer(frapModelParameters.startIndexForRecovery)],
-				recoveryDiffusionRateString,
-				mobileFractionString,
+				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery),
+				frapDataTimeStamps[new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery)],
+				freeDiffusionRateStr,
+				freeMobileFractionStr,
+				complexDiffusionRateStr,
+				complexMobileFractionStr,
 				bleachWhileMonitoringRateString,
-				/*bioModel.getSimulations()[0].getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),*/
+				bindingSiteConcentrationStr,
+				reacOnRateStr,
+				reacOffRateStr,
 				frapData,
 				prebleachAverage,
 				progressListener);
 		dumpSummaryReport(spatialAnalysisResults, frapDataTimeStamps,
 				new Integer(startingIndexForRecovery).intValue(),
 				new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
-//		dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps, new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
+		dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps, new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
 		
 	}
 	public static void dumpSummaryReport(
@@ -491,5 +515,63 @@ public class NonGUIFRAPTest {
 			}
 		}
 		fw.close();
+	}
+	
+	private static Parameter[] createParameterArray(double freeDiffRate, double freeFraction, double monitorBleachRate, double complexDifffRate, double complexFraction, double immFraction, double bsConc, double onRate, double offRate)
+	{
+		Parameter[] params = null;
+		
+		Parameter freeDiff =
+			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_FREE_DIFF_RATE,
+					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+					                     freeDiffRate);
+		Parameter freeFrac =
+			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_FREE_FRACTION,
+					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+					                     freeFraction);
+		Parameter bleachWhileMonitoringRate =
+			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_BLEACH_MONITOR_RATE,
+					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+					                     monitorBleachRate);
+		Parameter complexdiff = new Parameter(FRAPReactionDiffusionParamPanel.STR_COMPLEX_DIFF_RATE, 
+      			                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+				                         complexDifffRate);
+		Parameter complexFrac = new Parameter(FRAPReactionDiffusionParamPanel.STR_COMPLEX_FRACTION,
+				   						 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+                                         FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+                                         FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+                                         complexFraction);
+		Parameter immFrac = new Parameter(FRAPReactionDiffusionParamPanel.STR_IMMOBILE_FRACTION,
+						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+						                 immFraction);
+		Parameter bsConcentration = new Parameter(FRAPReactionDiffusionParamPanel.STR_BINDING_SITE_CONCENTRATION,
+                                         0,
+                                         1,
+                                         1, 
+                                         bsConc);
+		Parameter onReacRate = new Parameter(FRAPReactionDiffusionParamPanel.STR_ON_RATE, 
+                                         0,
+                                         1e6,
+                                         1, 
+                                         onRate);
+		Parameter offReacRate = new Parameter(FRAPReactionDiffusionParamPanel.STR_OFF_RATE, 
+						                 0,
+						                 1e6,
+						                 1, 
+						                 offRate);
+
+		params = new Parameter[]{freeDiff, freeFrac,bleachWhileMonitoringRate, complexdiff, complexFrac, immFrac, bsConcentration, onReacRate, offReacRate};
+		
+		return params;
 	}
 }
