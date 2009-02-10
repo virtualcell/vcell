@@ -97,23 +97,105 @@ public static ExternalDataAndSimulationInfo getExternalDataAndSimulationInfo(Fil
  * @throws XmlParseException
  */
 private FRAPStudy.FRAPModelParameters getFRAPModelParameters(Element param) throws XmlParseException{
-	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
-	String recoveryDiffusionRateStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag);
-	String mobileFractionStr = param.getAttributeValue(MicroscopyXMLTags.MobileFractionAttrTag);
-	String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
-	String secondRateStr = param.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag);
-	String secondFractionStr = param.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag);
-	return
-		new FRAPStudy.FRAPModelParameters(
-				startingIndexForRecoveryStr,
-				recoveryDiffusionRateStr,
-				bleachWhileMonitoringStr,
-				mobileFractionStr,
-				secondRateStr,
-				secondFractionStr
-			);
+	//old saved models
+	if(param.getChildren().size() < 1)
+	{
+		String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
+		String diffusionRateStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag);
+		String mobileFractionStr = param.getAttributeValue(MicroscopyXMLTags.MobileFractionAttrTag);
+		String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
+		FRAPStudy.InitialModelParameters iniParameters = new FRAPStudy.InitialModelParameters(diffusionRateStr, mobileFractionStr, bleachWhileMonitoringStr, startingIndexForRecoveryStr);
+	
+		FRAPStudy.PureDiffusionModelParameters pureDiffParameters = null;
+		String secondRateStr = param.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag);
+		String secondFractionStr = param.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag);
+		if(secondRateStr != null && secondFractionStr != null)
+		{
+			pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(diffusionRateStr, mobileFractionStr, secondRateStr, secondFractionStr, bleachWhileMonitoringStr, new Boolean(true));
+		}
+		else
+		{
+			pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(diffusionRateStr, mobileFractionStr, null, null, bleachWhileMonitoringStr, new Boolean(false));
+		}
+		
+		FRAPStudy.ReactionDiffusionModelParameters reacDiffParameters = null;
+		return 	new FRAPStudy.FRAPModelParameters(iniParameters, pureDiffParameters, reacDiffParameters);
+	}
+	else // new models
+	{
+		FRAPStudy.InitialModelParameters iniParameters = null;
+		FRAPStudy.PureDiffusionModelParameters pureDiffParameters = null;
+		FRAPStudy.ReactionDiffusionModelParameters reacDiffParameters = null;
+		
+		Element iniParamElement = param.getChild(MicroscopyXMLTags.FRAPInitialParametersTag);
+		if(iniParamElement != null)
+		{
+			iniParameters = getInitialParameters(iniParamElement);
+		}
+		
+		Element pureDiffParamElement = param.getChild(MicroscopyXMLTags.FRAPPureDiffusionParametersTag);
+		if(pureDiffParamElement != null)
+		{
+			pureDiffParameters = getPureDiffModelParameters(pureDiffParamElement);
+		}
+		
+		Element reacDiffParamElement = param.getChild(MicroscopyXMLTags.FRAPReactionDiffusionParametersTag);
+		if(reacDiffParamElement != null)
+		{
+			reacDiffParameters = getReacDiffModelParameters(reacDiffParamElement);
+		}
+		
+		return new FRAPStudy.FRAPModelParameters(iniParameters, pureDiffParameters, reacDiffParameters); 
+	}
 }
 
+private FRAPStudy.InitialModelParameters getInitialParameters(Element param)
+{
+	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
+	String diffusionRateStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag);
+	String mobileFractionStr = param.getAttributeValue(MicroscopyXMLTags.MobileFractionAttrTag);
+	String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
+	FRAPStudy.InitialModelParameters iniParameters = new FRAPStudy.InitialModelParameters(diffusionRateStr, mobileFractionStr, bleachWhileMonitoringStr, startingIndexForRecoveryStr);
+	return iniParameters;
+}
+
+private FRAPStudy.PureDiffusionModelParameters getPureDiffModelParameters(Element param)
+{
+	FRAPStudy.PureDiffusionModelParameters pureDiffParameters = null;
+	
+	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
+	String primaryDiffRateStr = param.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag);
+	String primaryMFStr = param.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag);
+	Boolean isSecDiffApplied = new Boolean(param.getAttributeValue(MicroscopyXMLTags.isSecondDiffAppliedAttTag));
+	if(isSecDiffApplied.booleanValue())
+	{
+		String secondRateStr = param.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag);
+		String secondFractionStr = param.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag);
+		pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(primaryDiffRateStr, primaryMFStr, secondRateStr, secondFractionStr, bleachWhileMonitoringStr, new Boolean(true));
+	}
+	else
+	{
+		pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(primaryDiffRateStr, primaryMFStr, null, null, bleachWhileMonitoringStr, new Boolean(false));
+	}
+	return pureDiffParameters;
+}
+
+private FRAPStudy.ReactionDiffusionModelParameters getReacDiffModelParameters(Element param)
+{
+	FRAPStudy.ReactionDiffusionModelParameters reacDiffParameters = null;
+	
+	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
+	String freeDiffusionRate = param.getAttributeValue(MicroscopyXMLTags.FreeDiffusionRateAttTag);
+	String freeMobileFraction = param.getAttributeValue(MicroscopyXMLTags.FreeMobileFractionAttTag);
+	String complexDiffusionRate = param.getAttributeValue(MicroscopyXMLTags.ComplexDiffusionRateAttTag);
+	String complexMobileFraction = param.getAttributeValue(MicroscopyXMLTags.ComplexMobileFractionAttTag);
+	String bsConcentration = param.getAttributeValue(MicroscopyXMLTags.BindingSiteConcentrationAttTag);
+	String onRateStr = param.getAttributeValue(MicroscopyXMLTags.ReactionOnRateAttTag);
+	String offRateStr = param.getAttributeValue(MicroscopyXMLTags.ReactionOffRateAttTag);
+	reacDiffParameters = new FRAPStudy.ReactionDiffusionModelParameters(freeDiffusionRate, freeMobileFraction, complexDiffusionRate, complexMobileFraction, bleachWhileMonitoringStr, bsConcentration, onRateStr, offRateStr);
+	
+	return reacDiffParameters;
+}
 
 /**
  * This method returns a VCIMage object from a XML representation.

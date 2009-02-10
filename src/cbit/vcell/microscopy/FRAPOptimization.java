@@ -10,6 +10,7 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
+import cbit.vcell.server.DataAccessException;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 
@@ -57,9 +58,15 @@ public class FRAPOptimization {
 		int roiLen = expRois.length;
 		double[] simTimes = vcDataManager.getDataSetTimes(vcSimdataID);
 		double[][] newData = new double[roiLen][simTimes.length];
-
+		double[] simData = null;
 		for (int j = 0; j < simTimes.length; j++) {
-			double[] simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,simTimes[j]).getData();
+			try
+			{
+				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,simTimes[j]).getData();
+			}catch(DataAccessException e)
+			{
+				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE_OLD,simTimes[j]).getData();
+			}
 			for(int i = 0; i < roiLen; i++){
 				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
 			}
@@ -97,7 +104,7 @@ public class FRAPOptimization {
 		return result;
 	}
 	
-	public static double getErrorByNewParameters_oneDiffRate(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, double refTimeInterval, boolean[] errorOfInterest) throws Exception
+	public static double getErrorByNewParameters_oneDiffRate(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, /*double refTimeInterval,*/ boolean[] errorOfInterest) throws Exception
 	{
 		// trying 3 parameters
 		double error = 0;
@@ -117,8 +124,8 @@ public class FRAPOptimization {
                     expData,
                     refTimePoints,
                     expTimePoints,
-                    roiLen,
-                    refTimeInterval);
+                    roiLen
+                    /*refTimeInterval*/);
 			//get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];
 			if(diffData != null)
@@ -152,7 +159,7 @@ public class FRAPOptimization {
 		}
 	}
 	
-	public static double getErrorByNewParameters_twoDiffRates(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, double refTimeInterval, boolean[] errorOfInterest) throws Exception
+	public static double getErrorByNewParameters_twoDiffRates(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, /*double refTimeInterval,*/ boolean[] errorOfInterest) throws Exception
 	{
 		double error = 0;
 		// trying 5 parameters
@@ -175,8 +182,8 @@ public class FRAPOptimization {
                     expData,
                     refTimePoints,
                     expTimePoints,
-                    roiLen,
-                    refTimeInterval);
+                    roiLen
+                    /*refTimeInterval*/);
 			
 			slowData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffSlowRate,
@@ -184,8 +191,8 @@ public class FRAPOptimization {
                     expData,
                     refTimePoints,
                     expTimePoints,
-                    roiLen,
-                    refTimeInterval);
+                    roiLen
+                    /*refTimeInterval*/);
 			
 			//get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];
@@ -230,7 +237,7 @@ public class FRAPOptimization {
 		}
 	}
 	
-	public static double[][] getValueByDiffRate(double refDiffRate, double newDiffRate, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, double refTimeInterval) throws Exception
+	public static double[][] getValueByDiffRate(double refDiffRate, double newDiffRate, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen/*, double refTimeInterval*/) throws Exception
 	{
 		double[][] result = new double[roiLen][expTimePoints.length];
 		int preTimeIndex = 0;
