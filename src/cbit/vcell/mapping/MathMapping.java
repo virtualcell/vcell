@@ -1,5 +1,6 @@
 package cbit.vcell.mapping;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
@@ -786,6 +787,24 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_DiffusionRate){
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_diffusionRate";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueXm){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryXm";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueXp){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryXp";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueYm){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryYm";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueYp){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryYp";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueZm){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryZm";
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueZp){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryZp";
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityX){
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_velocityX";
@@ -1640,63 +1659,6 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}
 		}
 	}
-	//
-	// add rate term for all reactions
-	// add current source terms for each reaction step in a membrane
-	//
-	for (int i = 0; i < reactionSteps.length; i++){
-		//
-		// if "excluded" (or disabled) then go to next reaction
-		//
-		ReactionSpec rs = simContext.getReactionContext().getReactionSpec(reactionSteps[i]);
-		if (rs.isExcluded()){
-			continue;
-		}
-		boolean bAllReactionParticipantsFixed = true;
-		ReactionParticipant rp_Array[] = reactionSteps[i].getReactionParticipants();
-		for (int j = 0; j < rp_Array.length; j++) {
-			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(rp_Array[j].getSpeciesContext());
-			if (!(rp_Array[j] instanceof Catalyst) && !scs.isConstant()){
-				bAllReactionParticipantsFixed = false;  // found at least one reactionParticipant that is not fixed and needs this rate
-			}
-		}
-		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(reactionSteps[i].getStructure());
-		////
-		//// add rate function (e.g.  J_Reaction1 = Kon*F - Koff*B)
-		//// ...unless all reaction participants are "fixed"
-		////
-		//if (!bAllReactionParticipantsFixed){
-			//Expression rateExp = getIdentifierSubstitutions(reactionSteps[i].getKinetics().getRateExpression(),sm);
-			////
-			//// if of the form ABC = ABC, then don't add this function
-			//// 
-			//// it must be a GeneralKinetics where the single "requiredParameter"
-			//// is both the KineticRateName as well as the topLevel expression
-			////
-			//if (!(new Expression(reactionSteps[i].getKineticRateName()).equals(rateExp))){
-				//varHash.addVariable(new cbit.vcell.math.Function(reactionSteps[i].getKineticRateName(),rateExp));
-			//}
-		//}
-		////
-		//// add current function (e.g.  I_Reaction1 = 1e-9*_F_*z*(Kon*F - Koff*B)  ) 
-		//// ...unless equal to 0.0 (see that PotentialMapping.getTotalMembraneCurrent() doesn't include 0.0 terms)
-		////
-		//if (reactionSteps[i].getStructure() instanceof Membrane){
-			//Membrane membrane = (Membrane)reactionSteps[i].getStructure();
-			//Expression currentExp = getIdentifierSubstitutions(reactionSteps[i].getKinetics().getCurrentExpression(),sm);
-			////
-			//// if of the form ABC = ABC, then don't add this function
-			//// 
-			//// it must be a GeneralCurrentKinetics where the single "requiredParameter"
-			//// is both the CurrentSourceName as well as the topLevel expression
-			////
-			//if (!(new Expression(reactionSteps[i].getCurrentSourceName()).equals(currentExp))){
-				//if (!currentExp.compareEqual(new Expression(0.0))){
-					//varHash.addVariable(new cbit.vcell.math.Function(reactionSteps[i].getCurrentSourceName(),currentExp));
-				//}
-			//}
-		//}
-	}
 		
 	//
 	// add constants for R,F,T and Initial Voltages
@@ -1742,51 +1704,12 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	}
 
 	//
-	// kinetic constants that evaluate to constants
+	// kinetic parameters (functions or constants)
 	//
 	for (int j=0;j<reactionSteps.length;j++){
 		ReactionStep rs = reactionSteps[j];
 		Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
-		if (parameters != null){
-			for (int i=0;i<parameters.length;i++){
-				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
-					continue;
-				}
-				try {
-					double value = parameters[i].getExpression().evaluateConstant();
-					Constant constant = new Constant(getMathSymbol(parameters[i],null),new Expression(value));
-					varHash.addVariable(constant);
-				}catch (ExpressionException e){
-				}
-			}
-		}
-	}
-	//
-	// charge valences as constants
-	//
-	//for (int j=0;j<reactionSteps.length;j++){
-		//ReactionStep rs = reactionSteps[j];
-		//if (rs.getStructure() instanceof Membrane && rs.getChargeCarrierValence()!=null){
-			////Kinetics.KineticsParameter currentParm = rs.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Current);
-			////if (currentParm!=null && currentParm.getExpression()!=null && !currentParm.getExpression().isZero()){
-				//try {
-					//double value = rs.getChargeCarrierValence().getExpression().evaluateConstant();
-					//Constant constant = new Constant(getMathSymbol(rs.getChargeCarrierValence(),null),new Expression(value));
-					//varHash.addVariable(constant);
-				//}catch (ExpressionException e){
-				//}
-			////}
-		//}
-	//}
-	//
-	// kinetic constants that are functions of other constants and maybe variables (really need proper dependency analysis ... but quick and dirty)
-	//
-	for (int j=0;j<reactionSteps.length;j++){
-		ReactionStep rs = reactionSteps[j];
-		if (simContext.getReactionContext().getReactionSpec(rs).isExcluded()){
-			continue;
-		}
-		Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
+		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(rs.getStructure());
 		if (parameters != null){
 			for (int i=0;i<parameters.length;i++){
 				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
@@ -1795,14 +1718,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				if (((parameters[i].getRole() == Kinetics.ROLE_ReactionRate)||(parameters[i].getRole() == Kinetics.ROLE_LumpedReactionRate)) && reactionSteps[j].getPhysicsOptions()==ReactionStep.PHYSICS_ELECTRICAL_ONLY){
 					continue;
 				}
-				try {
-					parameters[i].getExpression().evaluateConstant();
-				}catch (ExpressionException e){
-					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(rs.getStructure());
-					Expression exp = getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),sm);
-					Function function = new Function(getMathSymbol(parameters[i],sm),exp);
-					varHash.addVariable(function);
-				}
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],sm), getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),sm)));
 			}
 		}
 	}
@@ -1814,15 +1730,17 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 		Expression initExpr = new Expression(initParm.getExpression());
 		if (initParm!=null){
-			try {
-				double value = initExpr.evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(initParm,null), new Expression(value)));//getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
-			}catch (ExpressionException e){
-				String[] symbols = initExpr.getSymbols();
-				// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
-				for (int j = 0; j < symbols.length; j++) {
-					SpeciesContext spC = simContext.getModel().getSpeciesContext(symbols[j]);
-					if (spC != null) {
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+			String[] symbols = initExpr.getSymbols();
+			// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
+			for (int j = 0; symbols != null && j < symbols.length; j++) {
+				// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+				SpeciesContext spC = null;
+				SymbolTableEntry ste = initExpr.getSymbolBinding(symbols[j]);
+				if (ste instanceof SpeciesContextSpecProxyParameter) {
+					SpeciesContextSpecProxyParameter spspp = (SpeciesContextSpecProxyParameter)ste;
+					if (spspp.getTarget() instanceof SpeciesContext) {
+						spC = (SpeciesContext)spspp.getTarget();
 						SpeciesContextSpec spcspec = simContext.getReactionContext().getSpeciesContextSpec(spC);
 						SpeciesContextSpecParameter spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 						// if initConc param expression is null, try initCount
@@ -1835,9 +1753,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 						initExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
 					}
 				}
-				// now create the appropriate function for the current speciesContextSpec.
-				varHash.addVariable(new Function(getMathSymbol(initParm,null),getIdentifierSubstitutions(initExpr,initParm.getUnitDefinition(),null)));
 			}
+			// now create the appropriate function for the current speciesContextSpec.
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParm,sm),getIdentifierSubstitutions(initExpr,initParm.getUnitDefinition(),sm)));
 		}
 	}
 	
@@ -1848,46 +1766,61 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
 		SpeciesContextSpec.SpeciesContextSpecParameter diffParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_DiffusionRate);
 		if (diffParm!=null && (scm.isPDERequired())){
-			try {
-				diffParm.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(diffParm,null),getIdentifierSubstitutions(diffParm.getExpression(),diffParm.getUnitDefinition(),null)));
-			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(diffParm,null),getIdentifierSubstitutions(diffParm.getExpression(),diffParm.getUnitDefinition(),null)));
-			}
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(diffParm,sm),getIdentifierSubstitutions(diffParm.getExpression(),diffParm.getUnitDefinition(),sm)));
 		}
 	}
 
 	//
-	// advection constants (either function or constant)
+	// Boundary conditions (either function or constant)
+	//
+	for (int i = 0; i < speciesContextSpecs.length; i++){
+		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_xm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueXm);
+		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+		if (bc_xm!=null && (bc_xm.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_xm,sm),getIdentifierSubstitutions(bc_xm.getExpression(),bc_xm.getUnitDefinition(),sm)));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_xp = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueXp);
+		if (bc_xp!=null && (bc_xp.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_xp,sm),getIdentifierSubstitutions(bc_xp.getExpression(),bc_xp.getUnitDefinition(),sm)));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_ym = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueYm);
+		if (bc_ym!=null && (bc_ym.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_ym,sm),getIdentifierSubstitutions(bc_ym.getExpression(),bc_ym.getUnitDefinition(),sm)));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_yp = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueYp);
+		if (bc_yp!=null && (bc_yp.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_yp,sm),getIdentifierSubstitutions(bc_yp.getExpression(),bc_yp.getUnitDefinition(),sm)));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_zm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueZm);
+		if (bc_zm!=null && (bc_zm.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_zm,sm),getIdentifierSubstitutions(bc_zm.getExpression(),bc_zm.getUnitDefinition(),sm)));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_zp = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueZp);
+		if (bc_zp!=null && (bc_zp.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_zp,sm),getIdentifierSubstitutions(bc_zp.getExpression(),bc_zp.getUnitDefinition(),sm)));
+		}
+	}
+
+	
+	//
+	// advection terms (either function or constant)
 	//
 	for (int i = 0; i < speciesContextSpecs.length; i++){
 		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
 		SpeciesContextSpec.SpeciesContextSpecParameter advection_velX = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityX);
+		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 		if (advection_velX!=null && (advection_velX.getExpression() != null)){
-			try {
-				advection_velX.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(advection_velX,null),getIdentifierSubstitutions(advection_velX.getExpression(),advection_velX.getUnitDefinition(),null)));
-			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(advection_velX,null),getIdentifierSubstitutions(advection_velX.getExpression(),advection_velX.getUnitDefinition(),null)));
-			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(advection_velX,sm),getIdentifierSubstitutions(advection_velX.getExpression(),advection_velX.getUnitDefinition(),sm)));
 		}
 		SpeciesContextSpec.SpeciesContextSpecParameter advection_velY = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityY);
 		if (advection_velY!=null && (advection_velY.getExpression() != null)){
-			try {
-				advection_velY.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(advection_velY,null),getIdentifierSubstitutions(advection_velY.getExpression(),advection_velY.getUnitDefinition(),null)));
-			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(advection_velY,null),getIdentifierSubstitutions(advection_velY.getExpression(),advection_velY.getUnitDefinition(),null)));
-			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(advection_velY,sm),getIdentifierSubstitutions(advection_velY.getExpression(),advection_velY.getUnitDefinition(),sm)));
 		}
 		SpeciesContextSpec.SpeciesContextSpecParameter advection_velZ = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityZ);
 		if (advection_velZ!=null && (advection_velZ.getExpression() != null)){
-			try {
-				advection_velZ.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(advection_velZ,null),getIdentifierSubstitutions(advection_velZ.getExpression(),advection_velZ.getUnitDefinition(),null)));
-			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(advection_velZ,null),getIdentifierSubstitutions(advection_velZ.getExpression(),advection_velZ.getUnitDefinition(),null)));
-			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(advection_velZ,sm),getIdentifierSubstitutions(advection_velZ.getExpression(),advection_velZ.getUnitDefinition(),sm)));
 		}
 	}
 	
@@ -1947,18 +1880,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}
 		}
 	}
-	//for (int i=0;i<structureMappings.length;i++){
-		//StructureMapping sm = structureMappings[i];
-		//if (sm instanceof MembraneMapping && !(((MembraneMapping)sm).getResolved(simContext))){
-			//Parameter outsideFluxCorrectionParameter = ((MembraneMapping)sm).getOutsideFluxCorrectionParameter();
-			//Parameter insideFluxCorrectionParameter = ((MembraneMapping)sm).getInsideFluxCorrectionParameter();
-			//varHash.addVariable(new Function(getMathSymbol(outsideFluxCorrectionParameter,null),getIdentifierSubstitutions(outsideFluxCorrectionParameter.getExpression(),null)));
-			//varHash.addVariable(new Function(getMathSymbol(insideFluxCorrectionParameter,null),getIdentifierSubstitutions(insideFluxCorrectionParameter.getExpression(),null)));
-		//}
-	//}
-	////
-	//// conserved constants  (e.g. K = A + B + C) (these are treated as functions now)
-	////
+	//
+	// conserved constants  (e.g. K = A + B + C) (these are treated as functions now)
+	//
 	for (int i = 0; i < fieldMathMappingParameters.length; i++){
 		varHash.addVariable(new Function(getMathSymbol(fieldMathMappingParameters[i],null),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),null)));
 	}
@@ -1971,13 +1895,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		if (scm.getVariable()==null && scm.getDependencyExpression()!=null){
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
-			Expression exp = getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm);
-			try {
-				double value = exp.evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(scm.getSpeciesContext(),sm),new Expression(value)));
-			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(scm.getSpeciesContext(),sm),exp));
-			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(scm.getSpeciesContext(),sm),getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm)));
 		}
 	}
 
@@ -2072,12 +1990,12 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
 						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm));
 						equation = new PdeEquation(variable,initial,rate,diffusion);
-						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXmParameter().getExpression(),scs.getBoundaryXmParameter().getUnitDefinition(),sm));
-						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXpParameter().getExpression(),scs.getBoundaryXpParameter().getUnitDefinition(),sm));
-						((PdeEquation)equation).setBoundaryYm((scs.getBoundaryYmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryYmParameter().getExpression(),scs.getBoundaryYmParameter().getUnitDefinition(),sm));
-						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryYpParameter().getExpression(),scs.getBoundaryYpParameter().getUnitDefinition(),sm));
-						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZmParameter().getExpression(),scs.getBoundaryZmParameter().getUnitDefinition(),sm));
-						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZpParameter().getExpression(),scs.getBoundaryZpParameter().getUnitDefinition(),sm));
+						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXmParameter(),sm)));
+						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXpParameter(),sm)));
+						((PdeEquation)equation).setBoundaryYm((scs.getBoundaryYmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYmParameter(),sm)));
+						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYpParameter(),sm)));
+						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),sm)));
+						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),sm)));
 						
 						((PdeEquation)equation).setVelocityX((scs.getVelocityXParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityXParameter(),sm)));
 						((PdeEquation)equation).setVelocityY((scs.getVelocityYParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityYParameter(),sm)));
@@ -2249,12 +2167,12 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
 						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),mm));
 						equation = new PdeEquation(variable,initial,rate,diffusion);
-						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXmParameter().getExpression(),scs.getBoundaryXmParameter().getUnitDefinition(),mm));
-						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXpParameter().getExpression(),scs.getBoundaryXpParameter().getUnitDefinition(),mm));
-						((PdeEquation)equation).setBoundaryYm((scs.getBoundaryYmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryYmParameter().getExpression(),scs.getBoundaryYmParameter().getUnitDefinition(),mm));
-						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryYpParameter().getExpression(),scs.getBoundaryYpParameter().getUnitDefinition(),mm));
-						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZmParameter().getExpression(),scs.getBoundaryZmParameter().getUnitDefinition(),mm));
-						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZpParameter().getExpression(),scs.getBoundaryZpParameter().getUnitDefinition(),mm));
+						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXmParameter(),mm)));
+						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXpParameter(),mm)));
+						((PdeEquation)equation).setBoundaryYm((scs.getBoundaryYmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYmParameter(),mm)));
+						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYpParameter(),mm)));
+						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),mm)));
+						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),mm)));
 						memSubDomain.replaceEquation(equation);
 					}else{
 						Expression initial = new Expression(0.0);
