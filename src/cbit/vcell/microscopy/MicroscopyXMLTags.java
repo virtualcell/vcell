@@ -43,6 +43,10 @@ public class MicroscopyXMLTags {
 	public static final String RecoveryTauAttrTag = "RecoveryTau";
 	public static final String BleachWidthAttrTag = "BleachWidth";
 	public static final String BleachTypeAttrTag = "BleachType";
+	
+	//Added in Feb 2009, to save reference simulation data into frap file.
+	public static final String ReferenceDataTag = "ReferenceData";
+	
 	//----------------------------------------------------
 	public static final String ImageDatasetTag = "ImageDataset";
 	public static final String OwnerNameAttrTag = "OwnerName";
@@ -50,7 +54,7 @@ public class MicroscopyXMLTags {
 	public static final String FilenameAttrTag = "Filename";
 	public static final String ExternalDataIdentifierTag = "ExternalDataIdentifier";
 	public static final String ROIExternalDataInfoTag = "ROIExternalDataInfo";
-	public static final String RefExternalDataInfoTag = "RefExternalDataInfo";
+//	public static final String RefExternalDataInfoTag = "RefExternalDataInfo";
 	public static final String OriginalImagePathAttrTag = "OriginalImagePath";
 	
 	public static final String FitExpressionAttrTag = "FitExpression";

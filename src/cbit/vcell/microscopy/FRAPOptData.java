@@ -10,6 +10,7 @@ import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -61,7 +62,7 @@ public class FRAPOptData {
 	private static double REF_STARTINGTIME = 0;
 	private static double REF_ENDINGTIME = 1000;
 	
-	private Boolean bRunRefSim = null;
+//	private Boolean bRunRefSim = null;
 	
 	private FRAPStudy expFrapStudy = null;
 	private LocalWorkspace localWorkspace = null;
@@ -79,17 +80,30 @@ public class FRAPOptData {
 	private static final String REFERENCE_DIFF_RATE_STR = REFERENCE_DIFF_RATE_COEFFICIENT +"*(t+"+ REFERENCE_DIFF_DELTAT +")";
 		
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
-			DataSetControllerImpl.ProgressListener progressListener, boolean bRefSim) throws Exception
+			DataSetControllerImpl.ProgressListener progressListener/*, boolean bRefSim*/) throws Exception
 	{
 		expFrapStudy = argExpFrapStudy;
 		setNumEstimatedParams(numberOfEstimatedParams);
 		localWorkspace = argLocalWorkSpace;
-		bRunRefSim = new Boolean(bRefSim); 
+//		bRunRefSim = new Boolean(bRefSim); 
 		if(progressListener != null){
 			progressListener.updateMessage("Getting experimental data ROI averages...");
 		}
 		dimensionReducedExpData = getDimensionReducedExpData();
-		dimensionReducedRefData = getDimensionReducedRefData(progressListener);
+		dimensionReducedRefData = getDimensionReducedRefData(progressListener, null);
+	}
+	
+	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace, SimpleReferenceData simRefData) throws Exception
+	{
+		if(simRefData.getNumColumns()!= (1+FRAPData.VFRAP_ROI_ENUM.values().length))
+		{
+			throw new Exception("Stored reference data is illegal. ");
+		}
+		expFrapStudy = argExpFrapStudy;
+		setNumEstimatedParams(numberOfEstimatedParams);
+		localWorkspace = argLocalWorkSpace;
+		dimensionReducedExpData = getDimensionReducedExpData();
+		dimensionReducedRefData = getDimensionReducedRefData(null, simRefData); 
 	}
 	
 	public TimeBounds getRefTimeBounds()
@@ -152,10 +166,22 @@ public class FRAPOptData {
 //		return new UniformOutputTimeSpec(timeStamps[startIdx+1]-timeStamps[startIdx]);
 	}
 	
-	public double[][] getDimensionReducedRefData(DataSetControllerImpl.ProgressListener progressListener) throws Exception
+	public double[] getRefDataTimePoints() {
+		return refDataTimePoints;
+	}
+
+	public double[][] getDimensionReducedRefData(DataSetControllerImpl.ProgressListener progressListener, SimpleReferenceData srData) throws Exception
 	{
-		if(dimensionReducedRefData == null){
-			refreshDimensionReducedRefData(progressListener);
+		if(dimensionReducedRefData == null)
+		{
+			if(srData != null)
+			{
+				getFromStoredRefData(srData);
+			}
+			else
+			{
+				refreshDimensionReducedRefData(progressListener);
+			}
 		}
 		return dimensionReducedRefData;
 	}
@@ -200,17 +226,10 @@ public class FRAPOptData {
 		};
 		System.out.println("run simulation...");
 		KeyValue referenceSimKeyValue = null;
-		if(isRunRefSim().booleanValue())
-		{
+//		if(isRunRefSim().booleanValue())
+//		{
 			referenceSimKeyValue = runRefSimulation(runSimProgressListener);
-		}
-		else
-		{
-			referenceSimKeyValue = getExpFrapStudy().getRefExternalDataInfo().getExternalDataIdentifier().getKey();
-		}
-		//loading data only if the reference data is null or a new reference simulation is done
-		if(isLoadRefDataNeeded(isRunRefSim().booleanValue()))
-		{
+			
 			VCSimulationIdentifier vcSimID =
 				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
 			VCSimulationDataIdentifier vcSimDataID =
@@ -237,7 +256,51 @@ public class FRAPOptData {
 				FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,
 						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(),reducedRefDataProgressListener);
 			System.out.println("generating dimension reduced ref data, done ....");
-		}
+			
+			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
+			getExpFrapStudy().setStoredRefData(convertToSimpleRefData());
+			//we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
+			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
+			//remove reference simulation files
+			if(referenceSimKeyValue!= null)
+			{
+				FRAPStudy.removeExternalDataAndSimulationFiles(referenceSimKeyValue, null, null, getLocalWorkspace());
+			}
+//		}
+//		else
+//		{
+//			referenceSimKeyValue = getExpFrapStudy().getRefExternalDataInfo().getExternalDataIdentifier().getKey();
+//		}
+		//loading data only if the reference data is null or a new reference simulation is done
+//		if(isLoadRefDataNeeded(isRunRefSim().booleanValue()))
+//		{
+//			VCSimulationIdentifier vcSimID =
+//				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
+//			VCSimulationDataIdentifier vcSimDataID =
+//				new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+//			double[] rawRefDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
+//			refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
+//			System.out.println("simulation done...");
+//			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery);
+//			
+//			DataSetControllerImpl.ProgressListener reducedRefDataProgressListener =
+//				new DataSetControllerImpl.ProgressListener(){
+//					public void updateProgress(double progress) {
+//						if(progressListener != null){
+//							progressListener.updateProgress(.5+progress*(1-RUNSIM_PROGRESS_FRACTION));
+//						}
+//					}
+//					public void updateMessage(String message){
+//						if(progressListener != null){
+//							progressListener.updateMessage(message);
+//						}
+//					}
+//			};
+//			dimensionReducedRefData =
+//				FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,
+//						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(),reducedRefDataProgressListener);
+//			System.out.println("generating dimension reduced ref data, done ....");
+//		}
 	}
 	
 	private double[] timeShiftForBaseDiffRate(double[] timePoints)
@@ -254,14 +317,14 @@ public class FRAPOptData {
 	}
 	
 	
-	public boolean isLoadRefDataNeeded(boolean isRunRefSim)
-	{
-		if(dimensionReducedRefData == null || isRunRefSim)
-		{
-			return true;
-		}
-		return false;
-	}
+//	public boolean isLoadRefDataNeeded(boolean isRunRefSim)
+//	{
+//		if(/*dimensionReducedRefData == null ||*/ isRunRefSim)
+//		{
+//			return true;
+//		}
+//		return false;
+//	}
 	
 	public KeyValue runRefSimulation(final DataSetControllerImpl.ProgressListener progressListener) throws Exception
 	{
@@ -270,7 +333,7 @@ public class FRAPOptData {
 			progressListener.updateMessage("Running Reference Simulation...");
 		}
 		try{
-			ExternalDataInfo oldRefDataInfo = getExpFrapStudy().getRefExternalDataInfo();
+//			ExternalDataInfo oldRefDataInfo = getExpFrapStudy().getRefExternalDataInfo();
 			ExternalDataInfo refDataInfo = FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(),FRAPStudy.REF_EXTDATA_NAME);
 			
 			bioModel = FRAPStudy.createNewRefBioModel(expFrapStudy,
@@ -314,14 +377,14 @@ public class FRAPOptData {
 				getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
 				runRefSimProgressListener, true);
 			
-			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
-			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
-			//we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
-			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
-			if(oldRefDataInfo != null && oldRefDataInfo.getExternalDataIdentifier() != null)
-			{
-				FRAPStudy.removeExternalDataAndSimulationFiles(oldRefDataInfo.getExternalDataIdentifier().getKey(), null, null, getLocalWorkspace());
-			}
+//			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
+//			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
+//			//we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
+//			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
+//			if(oldRefDataInfo != null && oldRefDataInfo.getExternalDataIdentifier() != null)
+//			{
+//				FRAPStudy.removeExternalDataAndSimulationFiles(oldRefDataInfo.getExternalDataIdentifier().getKey(), null, null, getLocalWorkspace());
+//			}
 			
 			return sim.getVersion().getVersionKey();
 		}catch(Exception e){
@@ -340,7 +403,7 @@ public class FRAPOptData {
 		{
 			error = FRAPOptimization.getErrorByNewParameters_oneDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(), 
 					                                              newParamVals,
-					                                              getDimensionReducedRefData(null),
+					                                              getDimensionReducedRefData(null, null),
 					                                              getDimensionReducedExpData(),
 					                                              refDataTimePoints,
 					                                              getReducedExpTimePoints(),
@@ -353,7 +416,7 @@ public class FRAPOptData {
 		{
 			error = FRAPOptimization.getErrorByNewParameters_twoDiffRates(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
 																  newParamVals,
-																  getDimensionReducedRefData(null),
+																  getDimensionReducedRefData(null, null),
 																  getDimensionReducedExpData(),
 																  refDataTimePoints,
 																  getReducedExpTimePoints(),
@@ -435,7 +498,7 @@ public class FRAPOptData {
 			
 			diffData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffRate,
-                    									   getDimensionReducedRefData(null),
+                    									   getDimensionReducedRefData(null, null),
                     									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
@@ -464,8 +527,8 @@ public class FRAPOptData {
 			
 			//REORder according to roiTypes
 			double[][] fitDataInROITypeOrder = new double[newData.length][];
-			for (int i = 0; i < getExpFrapStudy().getFrapData().getRois().length; i++) {
-				for (int j = 0; j < FRAPData.VFRAP_ROI_ENUM.values().length; j++) {
+			for (int j = 0; j < FRAPData.VFRAP_ROI_ENUM.values().length; j++) {
+				for (int i = 0; i < getExpFrapStudy().getFrapData().getRois().length; i++) {
 					if(getExpFrapStudy().getFrapData().getRois()[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.values()[j].name())){
 						fitDataInROITypeOrder[j] = newData[i];
 						break;
@@ -547,7 +610,7 @@ public class FRAPOptData {
 						   
 			fastData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffFastRate,
-                    									   getDimensionReducedRefData(null),
+                    									   getDimensionReducedRefData(null, null),
                     									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
@@ -556,7 +619,7 @@ public class FRAPOptData {
 			
 			slowData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffSlowRate,
-                    									   getDimensionReducedRefData(null),
+                    									   getDimensionReducedRefData(null, null),
                     									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
@@ -591,8 +654,8 @@ public class FRAPOptData {
 			}
 			// REORder according to roiTypes
 			double[][] fitDataInROITypeOrder = new double[newData.length][];
-			for (int i = 0; i < getExpFrapStudy().getFrapData().getRois().length; i++) {
-				for (int j = 0; j < FRAPData.VFRAP_ROI_ENUM.values().length; j++) {
+			for (int j = 0; j < FRAPData.VFRAP_ROI_ENUM.values().length; j++) {
+				for (int i = 0; i < getExpFrapStudy().getFrapData().getRois().length; i++) {
 					if(getExpFrapStudy().getFrapData().getRois()[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.values()[j].name())){
 						fitDataInROITypeOrder[j] = newData[i];
 						break;
@@ -629,7 +692,7 @@ public class FRAPOptData {
 	private void checkValidityOfRefData() throws Exception 
 	{
 		double[] portion = new double[]{0.8, 0.9};
-		double[][] refData = getDimensionReducedRefData(null);
+		double[][] refData = getDimensionReducedRefData(null, null);
 		double[] refTimePoints = FRAPOptimization.timeReduction(refDataTimePoints, Integer.parseInt(getExpFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
 		for(int i = 0 ; i < getExpFrapStudy().getFrapData().getRois().length; i++)
 		{
@@ -699,7 +762,7 @@ public class FRAPOptData {
 				}
 			};
 
-			FRAPOptData optData = new FRAPOptData(expFrapStudy, 5, localWorkspace,progressListener, true);
+			FRAPOptData optData = new FRAPOptData(expFrapStudy, 5, localWorkspace,progressListener/*, true*/);
 			
 			//trying 3 parameters
 //			Parameter diff = new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 100, 1.0, Double.parseDouble(expFrapStudy.getFrapModelParameters().diffusionRate));
@@ -780,7 +843,49 @@ public class FRAPOptData {
 	public void setNumEstimatedParams(int numEstimatedParams) {
 		this.numEstimatedParams = numEstimatedParams;
 	}
-	public Boolean isRunRefSim() {
-		return bRunRefSim;
+//	public Boolean isRunRefSim() {
+//		return bRunRefSim;
+//	}
+	
+	public SimpleReferenceData convertToSimpleRefData() throws Exception
+	{
+		double[][] refData =  getDimensionReducedRefData(null, null);//first dimension:11
+		if(getRefDataTimePoints() != null && refData != null)
+		{
+			ROI[] rois = getExpFrapStudy().getFrapData().getRois();//11
+			final int numROIs = rois.length; // 11
+			String[] columnNames = new String[numROIs+1];//12:t+rois
+			double[] weights = new double[numROIs+1];//12
+			columnNames[0] = "t";
+			weights[0] = 1.0;
+			double[] times = getRefDataTimePoints();
+			double[][] data = new double[numROIs+1][];//store data, the first dimension is t + rois, the second dimension is time series data according to roi.
+			data[0] = times;
+			
+			for (int i = 0; i < numROIs; i++) {
+				columnNames[i+1] = rois[i].getROIName();
+				weights[i+1] = 1.0;
+				double[] dataForEachRoi = refData[i];
+				data[i+1] = dataForEachRoi;
+			}
+			return new SimpleReferenceData(columnNames, weights, data);
+		}
+		return null;
+	}
+	
+	public void getFromStoredRefData(SimpleReferenceData argSimRefData)
+	{
+		ROI[] rois = getExpFrapStudy().getFrapData().getRois();
+		if(argSimRefData.getNumColumns() == (1+rois.length))
+		{
+			//t is in the first column of simpleReferenceData
+			refDataTimePoints = argSimRefData.getColumnData(0);
+			double[][] result = new double[rois.length][];
+			for(int i=0; i<rois.length; i++)
+			{
+				result[i]=argSimRefData.getColumnData(i+1); //first column is t, so the roi data starts from second column
+			}
+			dimensionReducedRefData = result;
+		}
 	}
 }
