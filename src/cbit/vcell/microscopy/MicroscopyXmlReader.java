@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
@@ -20,6 +21,8 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
+import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -425,9 +428,9 @@ public FRAPStudy getFrapStudy(Element param,DataSetControllerImpl.ProgressListen
 	if (roiExternalDataElement!=null){
 		frapStudy.setRoiExternalDataInfo(getExternalDataInfo(roiExternalDataElement));
 	}
-	Element refExternalDataElement = param.getChild(MicroscopyXMLTags.RefExternalDataInfoTag);
-	if (refExternalDataElement!=null){
-		frapStudy.setRefExternalDataInfo(getExternalDataInfo(refExternalDataElement));
+	Element refDataElement = param.getChild(MicroscopyXMLTags.ReferenceDataTag);
+	if (refDataElement!=null){
+		frapStudy.setStoredRefData(getSimpleReferenceData(refDataElement));
 	}
 	return frapStudy;
 }
@@ -448,4 +451,49 @@ private static ExternalDataInfo getExternalDataInfo(Element extDataInfoElement){
 private String unMangle(String str){
 	return XmlBase.unMangle(str);
 }
+
+private SimpleReferenceData getSimpleReferenceData(Element referenceDataElement/*, Namespace ns*/){
+    //
+    // read ReferenceData
+    //
+    String numRowsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumRowsAttribute);
+    String numColsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute);
+    int numCols = Integer.parseInt(numColsText);
+    //
+    // read columns
+    //    
+    String[] columnNames = new String[numCols];
+    double[] columnWeights = new double[numCols];
+    Element dataColumnListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataColumnListTag/*, ns*/);
+    List<Element> dataColumnList = dataColumnListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataColumnTag/*, ns*/);
+    for (int i = 0; i < dataColumnList.size(); i++){
+          Element dataColumnElement = dataColumnList.get(i);
+          columnNames[i] = dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NameAttribute);
+          columnWeights[i] = Double.parseDouble(dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.WeightAttribute));
+    }
+    //
+    // read rows
+    //
+    Vector<double[]> rowDataVector = new Vector<double[]>();
+    Element dataRowListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataRowListTag/*, ns*/);
+    List<Element> dataRowList = dataRowListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataRowTag/*, ns*/);
+    for (int i = 0; i < dataRowList.size(); i++){
+          Element dataRowElement = dataRowList.get(i);
+          String rowText = dataRowElement.getText();
+          cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(rowText);
+          double[] rowData = new double[numCols];
+          for (int j = 0; j < numCols; j++){
+                if (tokens.hasMoreTokens()){
+                      String token = tokens.nextToken();
+                      rowData[j] = Double.parseDouble(token);
+                }else{
+                      throw new RuntimeException("failed to read row data for ReferenceData");
+                }
+          }
+          rowDataVector.add(rowData);
+    }
+    cbit.vcell.opt.SimpleReferenceData referenceData = new cbit.vcell.opt.SimpleReferenceData(columnNames, columnWeights, rowDataVector);
+    return referenceData;
+}
+
 }

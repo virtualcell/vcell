@@ -116,7 +116,10 @@ public class FRAPStudy implements Matchable{
 	private BioModel bioModel = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
-	private ExternalDataInfo refExternalDataInfo = null;
+//	private ExternalDataInfo refExternalDataInfo = null;
+	//Added in Feb 2009, we want to store reference data together with the model in .vfrap file. 
+	private SimpleReferenceData storedRefData = null;
+	
 	public static final String IMAGE_EXTDATA_NAME = "timeData";
 	public static final String ROI_EXTDATA_NAME = "roiData";
 	public static final String REF_EXTDATA_NAME = "refData";
@@ -419,7 +422,7 @@ public class FRAPStudy implements Matchable{
 					simROIDataHash.put(roiCurveInfo.getROIName(), ROIInfoHash.get(roiCurveInfo));
 				}
 			}
-			//this is for exp data. each row of reference data contains time + intensities under 9 ROIs. totally 10 cols for each row.		
+			//this is for exp data. each row of reference data contains time + intensities under 9 ROIs(bleached + ring1..8). totally 10 cols for each row.		
 			ReferenceData referenceData = 
 				createReferenceData(frapDataTimeStamps,null,startIndexForRecovery,"");
 			//loop only 1 time, right now the analysisParameters[]'s length is 1.
@@ -1977,7 +1980,7 @@ public class FRAPStudy implements Matchable{
 			{
 				return false;
 			}
-			if (!cbit.util.Compare.isEqualOrNull(getRefExternalDataInfo(),fStudy.getRefExternalDataInfo()))
+			if (!cbit.util.Compare.isEqualOrNull(getStoredRefData(),fStudy.getStoredRefData()))
 			{
 				return false;
 			}
@@ -1987,14 +1990,14 @@ public class FRAPStudy implements Matchable{
 		return false;
 	}
 
-	public ExternalDataInfo getRefExternalDataInfo() {
-		return refExternalDataInfo;
-	}
-
-
-	public void setRefExternalDataInfo(ExternalDataInfo refExternalDataInfo) {
-		this.refExternalDataInfo = refExternalDataInfo;
-	}
+//	public ExternalDataInfo getRefExternalDataInfo() {
+//		return refExternalDataInfo;
+//	}
+//
+//
+//	public void setRefExternalDataInfo(ExternalDataInfo refExternalDataInfo) {
+//		this.refExternalDataInfo = refExternalDataInfo;
+//	}
 	
 	public FRAPModelParameters getFrapModelParameters() {
 		return frapModelParameters;
@@ -2004,5 +2007,15 @@ public class FRAPStudy implements Matchable{
 	public void setFrapModelParameters(FRAPModelParameters frapModelParameters) {
 		this.frapModelParameters = frapModelParameters;
 	}
+	
+	public SimpleReferenceData getStoredRefData() {
+		return storedRefData;
+	}
+
+	public void setStoredRefData(SimpleReferenceData storedRefData) {
+		this.storedRefData = storedRefData;
+	}
+	
+	
 
 }

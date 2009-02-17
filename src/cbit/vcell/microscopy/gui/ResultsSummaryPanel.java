@@ -714,6 +714,10 @@ public class ResultsSummaryPanel extends JPanel {
 //	}
 	
 	public void clearData(){
+		if(allDataHash != null)
+		{
+			allDataHash.clear();
+		}
 		allDataHash = null;
 	}
 	public boolean hasData(){
