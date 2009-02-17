@@ -6,20 +6,19 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-import java.awt.image.WritableRenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.LookupTableJAI;
 import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 import javax.media.jai.operator.RescaleDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
+
+import cbit.util.Range;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -40,6 +39,8 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 	
 	private static final double SCALE_MAX = Math.pow(2, 8)-1;
 
+	private Range minmaxPixelValues = null;
+	
 	public OverlayImageDisplayJAI(){
 		super();
 	}
@@ -48,7 +49,8 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 	 * Method setUnderlyingImage.
 	 * @param argUnderlyingImage BufferedImage
 	 */
-	public void setUnderlyingImage(BufferedImage argUnderlyingImage,boolean bNew){
+	public void setUnderlyingImage(BufferedImage argUnderlyingImage,boolean bNew,Range argMinMaxPixelValues){
+		this.minmaxPixelValues = argMinMaxPixelValues;
 		this.underlyingImage = argUnderlyingImage;
 		if(bNew){
 			resetGUI();
@@ -151,7 +153,12 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 			RenderedImage contrastEnhancedUnderlyingImage = underlyingImage;
 			if(contrastFactor > 0){
 				//Contrast stretch
-				double[][] minmaxArr = (double[][])ExtremaDescriptor.create(underlyingImage, null, 1, 1, false, 1, null).getProperty("extrema");
+				double[][] minmaxArr = null;
+				if(minmaxPixelValues != null){
+					minmaxArr = new double[][] {{minmaxPixelValues.getMin()},{minmaxPixelValues.getMax()}};
+				}else{
+					minmaxArr = (double[][])ExtremaDescriptor.create(underlyingImage, null, 1, 1, false, 1, null).getProperty("extrema");
+				}
 				if((minmaxArr[1][0]-minmaxArr[0][0]) != 0){
 					double offset = (SCALE_MAX*minmaxArr[0][0])/(minmaxArr[0][0]-minmaxArr[1][0]);
 					double scale = (SCALE_MAX)/(minmaxArr[1][0]-minmaxArr[0][0]);
