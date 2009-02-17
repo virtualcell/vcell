@@ -52,6 +52,10 @@ public class SimulationSummaryPanel extends JPanel {
 	private JLabel ivjJLabelOutput = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.text.Document ivjdocument1 = null;
+	private JLabel labelRelTol = null;
+	private JLabel labelAbsTol = null;
+	private JLabel labelRelTolValue = null;
+	private JLabel labelAbsTolValue = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.DocumentListener {
 		public void changedUpdate(javax.swing.event.DocumentEvent e) {
@@ -342,13 +346,25 @@ private void displayTask() {
 	}
 	try {
 		if (solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
-			getJLabelTimestep().setText("");			
+			getJLabel12().setEnabled(false);
+			getJLabelTimestep().setText("");
+			getJLabelRelTol().setEnabled(true);
+			getJLabelAbsTol().setEnabled(true);
+			getJLabelRelTolValue().setText("" + solverTaskDescription.getErrorTolerance().getRelativeErrorTolerance());
+			getJLabelAbsTolValue().setText("" + solverTaskDescription.getErrorTolerance().getAbsoluteErrorTolerance());
 		} else {
+			getJLabel12().setEnabled(true);
 			getJLabelTimestep().setText(Double.toString(solverTaskDescription.getTimeStep().getDefaultTimeStep()));
+			getJLabelRelTol().setEnabled(false);
+			getJLabelAbsTol().setEnabled(false);
+			getJLabelRelTolValue().setText("");
+			getJLabelAbsTolValue().setText("");			
 		}			
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelTimestep().setText("");
+		getJLabelRelTolValue().setText("");
+		getJLabelAbsTolValue().setText("");
 	}
 	try {
 		Constant param = solverTaskDescription.getSensitivityParameter();
@@ -367,6 +383,12 @@ private void displayTask() {
 		exc.printStackTrace(System.out);
 		getJLabelSolver().setText("");
 	}
+	if (solverTaskDescription.getSolverDescription().isSTOCHSolver()) {
+		getJLabelRelTol().setVisible(false);
+		getJLabelAbsTol().setVisible(false);
+		getJLabelRelTolValue().setText("");
+		getJLabelAbsTolValue().setText("");
+	}	
 }
 
 
@@ -463,6 +485,40 @@ private javax.swing.JLabel getJLabel10() {
 	return ivjJLabel10;
 }
 
+
+private javax.swing.JLabel getJLabelRelTol() {
+	if (labelRelTol == null) {
+		try {
+			labelRelTol = new javax.swing.JLabel("rel tol");
+			labelRelTol.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			labelRelTol.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return labelRelTol;
+}
+
+private javax.swing.JLabel getJLabelAbsTol() {
+	if (labelAbsTol == null) {
+		try {
+			labelAbsTol = new javax.swing.JLabel("abs tol");
+			labelAbsTol.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			labelAbsTol.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return labelAbsTol;
+}
 
 /**
  * Return the JLabel11 property value.
@@ -759,7 +815,43 @@ private javax.swing.JLabel getJLabelEndTime() {
 	return ivjJLabelEndTime;
 }
 
+private javax.swing.JLabel getJLabelRelTolValue() {
+	if (labelRelTolValue == null) {
+		try {
+			labelRelTolValue = new javax.swing.JLabel("");
+			labelRelTolValue.setForeground(java.awt.Color.blue);
+			labelRelTolValue.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+			labelRelTolValue.setFont(new java.awt.Font("dialog", 0, 12));
+			labelRelTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return labelRelTolValue;
+}
 
+private javax.swing.JLabel getJLabelAbsTolValue() {
+	if (labelAbsTolValue == null) {
+		try {
+			labelAbsTolValue = new javax.swing.JLabel("");
+			labelAbsTolValue.setForeground(java.awt.Color.blue);
+			labelAbsTolValue.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+			labelAbsTolValue.setFont(new java.awt.Font("dialog", 0, 12));
+			labelAbsTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return labelAbsTolValue;
+}
 /**
  * Return the JLabelGeometrySize property value.
  * @return javax.swing.JLabel
@@ -1123,7 +1215,7 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 		constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 3;
-constraintsJLabel3.gridheight = 2;
+		constraintsJLabel3.gridheight = 2;
 		constraintsJLabel3.fill = java.awt.GridBagConstraints.VERTICAL;
 		constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -1137,7 +1229,7 @@ constraintsJLabel3.gridheight = 2;
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = 1;
-		constraintsJScrollPane1.gridwidth = 5;
+		constraintsJScrollPane1.gridwidth = 7;
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.weighty = 0.2;
@@ -1178,7 +1270,7 @@ constraintsJLabel3.gridheight = 2;
 
 		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
 		constraintsMathOverridesPanel1.gridx = 0; constraintsMathOverridesPanel1.gridy = 10;
-		constraintsMathOverridesPanel1.gridwidth = 6;
+		constraintsMathOverridesPanel1.gridwidth = 8;
 		constraintsMathOverridesPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsMathOverridesPanel1.weightx = 1.0;
 		constraintsMathOverridesPanel1.weighty = 1.0;
@@ -1206,9 +1298,9 @@ constraintsJLabel3.gridheight = 2;
 		add(getJLabelSolver(), constraintsJLabelSolver);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 5; constraintsJPanel1.gridy = 3;
+		constraintsJPanel1.gridx = 7; constraintsJPanel1.gridy = 3;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 10.0;
+		constraintsJPanel1.weightx = 8.0;
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanel1(), constraintsJPanel1);
 
@@ -1271,11 +1363,40 @@ constraintsJLabel3.gridheight = 2;
 		constraintsJLabel13.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel13(), constraintsJLabel13);
 
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 5; gbc.gridy = 3;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelRelTol(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 6; gbc.gridy = 3;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelAbsTol(), gbc);
+		
 		java.awt.GridBagConstraints constraintsJLabelOutput = new java.awt.GridBagConstraints();
 		constraintsJLabelOutput.gridx = 4; constraintsJLabelOutput.gridy = 4;
 		constraintsJLabelOutput.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelOutput.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelOutput(), constraintsJLabelOutput);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 5; gbc.gridy = 4;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelRelTolValue(), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 6; gbc.gridy = 4;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelAbsTolValue(), gbc);
+
 		initConnections();
 		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {
