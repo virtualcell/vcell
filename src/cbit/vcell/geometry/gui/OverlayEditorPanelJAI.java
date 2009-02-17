@@ -159,6 +159,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JFileChooser openJFileChooser = new JFileChooser();
 	
 	private Range minmaxPixelValues = null;
+	private static final double SHORT_TO_BYTE_FACTOR = 256;
 
 
 	/**
@@ -679,7 +680,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		short[] pixels = image.getPixels();
 		byte[][] byteData = new byte[3][width*height];
 		for (int i = 0; i < byteData[0].length; i++) {
-			byteData[0][i] = (imageStats.maxValue < 256?(byte)pixels[i]:(byte)(((int)(pixels[i]&0x0000FFFF))/256));
+			byteData[0][i] = (imageStats.maxValue < SHORT_TO_BYTE_FACTOR?(byte)pixels[i]:(byte)(((int)(pixels[i]&0x0000FFFF))/SHORT_TO_BYTE_FACTOR));
 			byteData[1][i] = byteData[0][i];
 			byteData[2][i] = byteData[0][i];
 		}
@@ -822,7 +823,10 @@ public class OverlayEditorPanelJAI extends JPanel {
 			if(i==0 || imageStats.minValue < min){min = imageStats.minValue;}
 			if(i==0 || imageStats.maxValue > max){max = imageStats.maxValue;}
 		}
-		return new Range(min,max);
+		if(max < SHORT_TO_BYTE_FACTOR){
+			return new Range(min,max);
+		}
+		return new Range(min/SHORT_TO_BYTE_FACTOR,max/SHORT_TO_BYTE_FACTOR);
 //		short min = argImageDataset.getPixelsZ(0, 0)[0];
 //		short max = min;
 //		for (int c = 0; c < argImageDataset.getSizeC(); c++) {
