@@ -44,6 +44,7 @@ import cbit.gui.UtilCancelException;
 import cbit.util.BeanUtils;
 import cbit.util.ISize;
 import cbit.util.NumberUtils;
+import cbit.util.Range;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -156,6 +157,8 @@ public class OverlayEditorPanelJAI extends JPanel {
 
 	private CustomROIImport customROIImport;
 	private JFileChooser openJFileChooser = new JFileChooser();
+	
+	private Range minmaxPixelValues = null;
 
 
 	/**
@@ -690,7 +693,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		}
 		UShortImage specialUShortImage = new UShortImage(specialData,null,null,width,height,1);
 		BufferedImage specialBufferedImage = createUnderlyingImage(specialUShortImage);
-		imagePane.setUnderlyingImage(specialBufferedImage, false);
+		imagePane.setUnderlyingImage(specialBufferedImage, false,null);
 	}
 	/**
 	 * Method createHighlightImageFromROI.
@@ -780,9 +783,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 			zSlider.setMajorTickSpacing(imageDataset.getSizeZ());
 			zSlider.setEnabled(imageDataset.getSizeZ() > 1);
 			
+			minmaxPixelValues = calcMinMaxPixelValueRange(imageDataset);
 			underlyingImage = createUnderlyingImage(imageDataset.getImage((zSlider.getValue()-1),0,(timeSlider.getValue()-1)));
 			autoCropButton.setEnabled(isAutoCroppable());
 		}else{
+			minmaxPixelValues = null;
 			this.originalScaleFactor = DEFAULT_SCALE_FACTOR;
 			this.originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
 			originalISize = null;
@@ -802,12 +807,35 @@ public class OverlayEditorPanelJAI extends JPanel {
 		}
 
 		updateLabel(-1, -1);
-		getImagePane().setUnderlyingImage(underlyingImage,bNew);
+		getImagePane().setUnderlyingImage(underlyingImage,bNew,minmaxPixelValues);
 		if(imageDataset != null && bNew){
 			contrastButtonPlus.doClick();
 		}
 	}
 
+	private Range calcMinMaxPixelValueRange(ImageDataset argImageDataset){
+		UShortImage[] allImages = argImageDataset.getAllImages();
+		double min = 0;
+		double max = min;
+		for (int i = 0; i < allImages.length; i++) {
+			ImageStatistics imageStats = allImages[i].getImageStatistics();
+			if(i==0 || imageStats.minValue < min){min = imageStats.minValue;}
+			if(i==0 || imageStats.maxValue > max){max = imageStats.maxValue;}
+		}
+		return new Range(min,max);
+//		short min = argImageDataset.getPixelsZ(0, 0)[0];
+//		short max = min;
+//		for (int c = 0; c < argImageDataset.getSizeC(); c++) {
+//			for (int t = 0; t < argImageDataset.getSizeT(); t++) {
+//				short[] pixelVals = argImageDataset.getPixelsZ(c, t);
+//				for (int p = 0; p < pixelVals.length; p++) {
+//					if(pixelVals[p] < min){min = pixelVals[p];}
+//					if(pixelVals[p] > max){max = pixelVals[p];}
+//				}
+//			}
+//		}
+//		return new Range(min,max);
+	}
 	/** Gets the currently displayed image. * @return BufferedImage
 	 */
 	private BufferedImage getImage() {
@@ -1035,7 +1063,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		if(imageDataset != null){
 			BufferedImage image = getImage();
 			if (image != null){
-				imagePane.setUnderlyingImage(image,false);
+				imagePane.setUnderlyingImage(image,false,minmaxPixelValues);
 			}
 		}
 		imagePane.repaint();
@@ -1440,7 +1468,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 					updateLabel(-1, -1);
 					BufferedImage image = getImage();
 					if (image != null){
-						imagePane.setUnderlyingImage(image,false);
+						imagePane.setUnderlyingImage(image,false,minmaxPixelValues);
 					}
 					refreshROI();
 					imagePane.repaint();
