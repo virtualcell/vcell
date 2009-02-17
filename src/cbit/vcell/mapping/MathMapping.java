@@ -13,6 +13,7 @@ import cbit.vcell.units.VCUnitException;
  * All rights reserved.
 ©*/
 import cbit.gui.DialogUtils;
+import cbit.util.BeanUtils;
 import cbit.util.ISize;
 import cbit.util.Issue;
 import cbit.util.TokenMangler;
@@ -1708,14 +1709,14 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	for (int j=0;j<reactionSteps.length;j++){
 		ReactionStep rs = reactionSteps[j];
+		if (simContext.getReactionContext().getReactionSpec(rs).isExcluded()){
+			continue;
+		}
 		Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
 		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(rs.getStructure());
 		if (parameters != null){
 			for (int i=0;i<parameters.length;i++){
 				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
-					continue;
-				}
-				if (((parameters[i].getRole() == Kinetics.ROLE_ReactionRate)||(parameters[i].getRole() == Kinetics.ROLE_LumpedReactionRate)) && reactionSteps[j].getPhysicsOptions()==ReactionStep.PHYSICS_ELECTRICAL_ONLY){
 					continue;
 				}
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],sm), getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),sm)));
