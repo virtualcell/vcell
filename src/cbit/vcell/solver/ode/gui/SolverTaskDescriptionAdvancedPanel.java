@@ -1174,8 +1174,7 @@ private void enableOutputOptionPanel() {
 		}
 	}
 	
-	if (solverDesc.equals(SolverDescription.FiniteVolume)
-			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
+	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
 		stopSpatiallyUniformPanel.setVisible(true);
 		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
 	} else {

@@ -686,7 +686,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
     	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery());
     }
     if (solverTaskDesc.isStopAtSpatiallyUniform()) {
-    	printWriter.println("CHECK_SPATIALLY_UNIFORM " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance());
+    	printWriter.println("CHECK_SPATIALLY_UNIFORM " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
     }
 	printWriter.println("SIMULATION_PARAM_END");	
 	printWriter.println();
