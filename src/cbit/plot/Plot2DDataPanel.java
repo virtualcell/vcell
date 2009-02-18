@@ -5,6 +5,9 @@ package cbit.plot;
 ©*/
 import java.awt.event.*;
 import javax.swing.*;
+
+import cbit.vcell.model.ReservedSymbol;
+
 import java.util.Vector;
 /**
  * Insert the type's description here.
@@ -296,7 +299,20 @@ private synchronized void copyCells(String actionCommand) {
 			}
 		}
 		StringBuffer buffer = new StringBuffer();
-		boolean bHasTimeColumn = columns[0] == 0;
+		//check if selected first column is time.
+		boolean bHasTimeColumn = false;
+		String selectedFirstColName = getScrollPaneTable().getColumnName(columns[0]);
+		if(selectedFirstColName.equals(ReservedSymbol.TIME.getName()))
+		{
+			bHasTimeColumn = true;
+		}
+		//check if it is histogram (check name of the table first column name)
+		boolean bHistogram = false;
+		String firstColName = getScrollPaneTable().getColumnName(0);
+		if(!firstColName.equals(ReservedSymbol.TIME.getName()))
+		{
+			bHistogram = true;
+		}
 		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[c - (bHasTimeColumn?1:0)];
 		cbit.vcell.parser.Expression[] resolvedValues = new cbit.vcell.parser.Expression[symbolTableEntries.length];
 		//String[] dataNames = new String[symbolTableEntries.length];//don't include "t" for SimulationResultsSelection
@@ -304,7 +320,9 @@ private synchronized void copyCells(String actionCommand) {
 		// also include column headers in this case
 		if (r + c > 2) {
 			for (int i = 0; i < c; i++){
-				if(!bHasTimeColumn || i>0){
+				//this if condition is dangerous, because it assumes that "t" appears only on column idx 0, other column numbers should be
+				//greater than 0. However, histogram doesn't have "t" and there is sth. else in column 0 of the table.
+				if(!bHistogram && (!bHasTimeColumn || i>0)){ 
 					//dataNames[i-(bHasTimeColumn?1:0)] = getScrollPaneTable().getColumnName(columns[i]);
 					symbolTableEntries[i-(bHasTimeColumn?1:0)] = null;
 					if(getPlot2D().getSymbolTableEntries() != null){
@@ -325,7 +343,7 @@ private synchronized void copyCells(String actionCommand) {
 					Object cell = getScrollPaneTable().getValueAt(rows[i], columns[j]);
 					cell = cell != null ? cell : ""; 
 					buffer.append(cell.toString() + (j==c-1?"":"\t"));
-					if(!bHasTimeColumn || j>0){
+					if(!cell.equals("") && (!bHasTimeColumn || j>0) ){
 						resolvedValues[j-(bHasTimeColumn?1:0)] = new cbit.vcell.parser.Expression(((Double)cell).doubleValue());
 					}
 				}

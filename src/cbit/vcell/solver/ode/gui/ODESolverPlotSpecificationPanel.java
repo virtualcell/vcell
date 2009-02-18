@@ -14,6 +14,7 @@ import cbit.vcell.solver.*;
 import javax.swing.*;
 
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 
 /**
@@ -79,8 +80,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC6(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet"))) 
+			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet")))
+			{
 				connEtoC1(evt);
+				disableOrEnableFunctionButtons();
+			}
 			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("xIndex"))) 
 				connEtoC3(evt);
 			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("YIndices"))) 
@@ -2277,6 +2281,23 @@ private Point2D[] generateHistogram(double[] rawData)
         result[i] = new Point2D.Double(key,valperc);
     }
 	return result;
+}
+
+private void disableOrEnableFunctionButtons() {
+	String[] colnames = getResultSetColumnNames();
+	for(int i=0; i<colnames.length; i++)
+	{
+		//if there is "t" in column names, the result set is not histogram
+		if(colnames[i].equals(ReservedSymbol.TIME.getName()))
+		{
+			getAddFunctionButton().setEnabled(true);
+			getDeleteFunctionButton().setEnabled(true);
+			return;
+		}
+	}
+	//no "t", it's histogram. disable these buttons
+	getAddFunctionButton().setEnabled(false);
+	getDeleteFunctionButton().setEnabled(false);
 }
 
 /**
