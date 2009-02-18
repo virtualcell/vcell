@@ -23,7 +23,7 @@ public ErrorTolerance() {
 }
 
 public static ErrorTolerance getDefaultSpatiallyUniformErrorTolerance() {
-	return new ErrorTolerance(1e-3, 1e-9);
+	return new ErrorTolerance(1e-6, 1e-3);
 }
 /**
  * ErrorTolerance constructor comment.
