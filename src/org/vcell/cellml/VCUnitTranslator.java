@@ -1,6 +1,7 @@
-package cbit.vcell.units;
+package org.vcell.cellml;
 import ucar.units.RationalNumber;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitException;
 
 import ucar.units.BaseUnit;
 import ucar.units.DerivedUnitImpl;
@@ -16,7 +17,6 @@ import ucar.units.UnitName;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.cellml.CELLMLTags;
 
 import java.util.ArrayList;
 import java.util.TreeMap;

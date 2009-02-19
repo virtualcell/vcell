@@ -70,7 +70,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XMLTags;
@@ -214,7 +213,7 @@ protected void addCompartments() {
 							String unitName = unitDefn.getId();
 							if (vcUnitsHash.get(unitName) == null) {
 								sbmlModel.addUnitDefinition(unitDefn);
-								VCUnitDefinition vcUnitDef = cbit.vcell.units.SBMLUnitTranslator.getVCUnitDefinition(unitDefn);
+								VCUnitDefinition vcUnitDef = org.vcell.sbml.vcell.SBMLUnitTranslator.getVCUnitDefinition(unitDefn);
 								vcUnitsHash.put(unitName, vcUnitDef);
 							}
 							newCompartment.setUnits(unitName);
@@ -1378,7 +1377,7 @@ protected void addUnitDefinitions() {
 	for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
 		UnitDefinition ud = (org.sbml.libsbml.UnitDefinition)listofUnitDefns.get(i);
 		String unitName = ud.getId();
-		VCUnitDefinition vcUnitDef = cbit.vcell.units.SBMLUnitTranslator.getVCUnitDefinition(ud);
+		VCUnitDefinition vcUnitDef = org.vcell.sbml.vcell.SBMLUnitTranslator.getVCUnitDefinition(ud);
 		vcUnitsHash.put(unitName, vcUnitDef);
 	}
 }
@@ -1815,7 +1814,7 @@ private VCUnitDefinition getSBMLUnit(String unitSymbol, String builtInName) {
 		if (builtInName != null) {
 			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
 			if (SbmlUnit == null) {
-				SbmlUnit = cbit.vcell.units.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
+				SbmlUnit = org.vcell.sbml.vcell.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
 			}
 		} else if (builtInName == null) {
 			SbmlUnit = VCUnitDefinition.UNIT_TBD;
@@ -1828,7 +1827,7 @@ private VCUnitDefinition getSBMLUnit(String unitSymbol, String builtInName) {
 			if (builtInName != null) {
 				SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
 				if (SbmlUnit == null) { 
-					SbmlUnit = cbit.vcell.units.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
+					SbmlUnit = org.vcell.sbml.vcell.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
 				}
 			} else {
 				SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(unitSymbol);

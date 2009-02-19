@@ -1,4 +1,7 @@
-package cbit.vcell.units;
+package org.vcell.sbml.vcell;
+
+import cbit.vcell.units.VCUnitDefinition;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/28/2006 5:22:58 PM)

@@ -485,8 +485,9 @@ private static boolean equivalent(Unit ucarUnit1, Unit ucarUnit2) {
  * Creation date: (4/15/2004 1:39:26 PM)
  * @return cbit.vcell.units.VCUnitDefinition
  * @param vcUnitDefinition cbit.vcell.units.VCUnitDefinition
+ * @deprecated please don't use, we should hide the underlying implementation (CellML translator needs it now)
  */
-static VCUnitDefinition getInstance(Unit ucarUnit) {
+public static VCUnitDefinition getInstance(Unit ucarUnit) {
 	//
 	// look up in list of "standard" unit definitions
 	//
@@ -585,9 +586,9 @@ static VCUnitDefinition getInstance(Unit ucarUnit) {
 
 
 /**
- *
+ * @deprecated please don't use, CellML translator needs this, but it will be removed when possible
  */
-Unit getUcarUnit() {
+public Unit getUcarUnit() {
 	return ucarUnit;
 }
 

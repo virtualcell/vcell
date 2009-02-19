@@ -1,4 +1,4 @@
-package cbit.vcell.units;
+package org.vcell.cellml;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SimpleSymbolTable;
@@ -13,7 +13,6 @@ import cbit.vcell.units.VCUnitDefinition;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.cellml.CELLMLTags;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
