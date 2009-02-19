@@ -115,7 +115,6 @@ public String checkCompatibility(Simulation simulation) {
  */
 private boolean checkSimulationParameters(Simulation simulation, JComponent parent) {
 	String errorMessage = null;
-	String warningMessage = null;
 	long maxTimepoints = Simulation.MAX_LIMIT_ODE_TIMEPOINTS;
 	long warningTimepoints = Simulation.WARNING_ODE_TIMEPOINTS;
 	if(simulation.getIsSpatial())
@@ -147,6 +146,8 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	//
 	// check for error conditions (hard limits on resources) ... Note: each user should have it's own limits (and quotas).
 	//
+	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
+	SolverDescription solverDescription = solverTaskDescription.getSolverDescription();
 	if (expectedNumTimePoints>maxTimepoints){
 		errorMessage = "Too many timepoints to be saved ("+expectedNumTimePoints+")\n"+
 						"maximum allowed is:\n" + 
@@ -179,15 +180,15 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		{
 			if(((SimulationContext)getSimulationOwner()).isStoch())
 			{
-				if(! (simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+				if(! (solverDescription.isSTOCHSolver()))
 					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
-			               			simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a stochastic solver!";
+			               			solverDescription.getDisplayLabel()+" is not a stochastic solver!";
 			}
 			else
 			{
-				if((simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+				if((solverDescription.isSTOCHSolver()))
 					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
-					               simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a ODE/PDE solver!";
+					               solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";
 				
 			}
 		}
@@ -195,15 +196,15 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		{
 			if(((MathModel)getSimulationOwner()).getMathDescription().isStoch())
 			{
-				if(! (simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+				if(! (solverDescription.isSTOCHSolver()))
 					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
-			               			simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a stochastic solver!";	
+			               			solverDescription.getDisplayLabel()+" is not a stochastic solver!";	
 			}
 			else
 			{
-				if((simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+				if((solverDescription.isSTOCHSolver()))
 					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
-					               simulation.getSolverTaskDescription().getSolverDescription().getDisplayLabel()+" is not a ODE/PDE solver!";
+					               solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";
 			}
 		}
 	} 
@@ -215,6 +216,7 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		JOptionPane.showMessageDialog(parent, errorMessage, "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 		return false;
 	}else{
+		String warningMessage = null;
 		//
 		// no error conditions, check for warning conditions (suggested limits on resources)
 		//
@@ -222,26 +224,29 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 			warningMessage = "Warning: large number of timepoints ("+expectedNumTimePoints+"), suggested limits are:\n" + 
 							"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental simulations\n" + 
 							"     "+Simulation.WARNING_PDE_TIMEPOINTS + " for spatial simulations\n" +
-							"Try saving fewer timepoints\n"+
-							"Continue anyway?";
+							"Try saving fewer timepoints";
 		} else if (expectedSizeBytes>warningSizeBytes){
 			warningMessage = "Warning: large simulation result set ("+(expectedSizeBytes/1000000L)+"MB) exceeds suggested limits of:\n" + 
 							"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental simulations\n" + 
 							"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n" +
-							"Try saving fewer timepoints or using a smaller mesh (if spatial)\n" +
-							"Do you want to continue anyway?";
+							"Try saving fewer timepoints or using a coarser mesh if spatial.";
 		} else if (simulation.getScanCount() > Simulation.WARNING_SCAN_JOBS) {
 			warningMessage = "Warning : large number of simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
 						"suggested limit for the number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
-						"Try choosing fewer parameters or reducing the size of scan for each parameter.\n" +
-						"Do you want to continue anyway?";
-		} else {
-			warningMessage = null;
+						"Try choosing fewer parameters or reducing the size of scan for each parameter.";
+		} 
+		
+		if (solverDescription.equals(SolverDescription.SundialsPDE)) {
+			if (solverTaskDescription.getErrorTolerance().getRelativeErrorTolerance() > 1e-4) {
+				String msg = "Warning : it is not reccomended to use a relative tolerance that is greater than \n1e-4 for " 
+					+ solverDescription.getDisplayLabel() + ".";
+				warningMessage = warningMessage == null? msg : warningMessage + "\n\n" + msg;
+			}
 		}
 		if (warningMessage != null) {
-			int result = javax.swing.JOptionPane.showConfirmDialog(parent, warningMessage,"Resource Limit Warning",JOptionPane.YES_NO_OPTION);
-			if (result == javax.swing.JOptionPane.YES_OPTION) {
+			int result = JOptionPane.showConfirmDialog(parent, warningMessage + "\n\nDo you want to continue anyway?", "Warning", JOptionPane.YES_NO_OPTION);
+			if (result == JOptionPane.YES_OPTION) {
 				// continue anyway
 				return true;
 			} else {
@@ -300,7 +305,7 @@ void deleteSimulations(Simulation[] sims) throws java.beans.PropertyVetoExceptio
 /**
  * Comment
  */
-void editSimulation(Simulation simulation) {
+void editSimulation(JComponent parent, Simulation simulation) {
 	
 	String errorMessage = checkCompatibility(simulation);
 	if(errorMessage != null){
@@ -320,12 +325,11 @@ void editSimulation(Simulation simulation) {
 	String errors = null;
 	try{
 		do {
-			//int ok = JOptionPane.showOptionDialog(null, simEditor, "Edit: " + simulation.getName(), 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-			int ok = PopupGenerator.showComponentOKCancelDialog(null,scrollPane,"Edit: " + simulation.getName());
+			int ok = PopupGenerator.showComponentOKCancelDialog(parent, scrollPane,"Edit: " + simulation.getName());
 			if (ok != javax.swing.JOptionPane.OK_OPTION) {
 				return; // user cancels, we discard
 			} else {
-				acceptable = checkSimulationParameters(simEditor.getClonedSimulation(), null);
+				acceptable = checkSimulationParameters(simEditor.getClonedSimulation(), parent);
 			}
 		} while (! acceptable);
 		Simulation clonedSimulation = simEditor.getClonedSimulation();

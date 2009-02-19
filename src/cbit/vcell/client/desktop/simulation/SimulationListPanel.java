@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
@@ -28,7 +27,6 @@ public class SimulationListPanel extends JPanel {
 	private JScrollPane scrollPane;
 	private JSplitPane splitPane;
 	private JPanel ivjButtonPanel = null;
-	private java.awt.FlowLayout ivjButtonPanelFlowLayout = null;
 	private JButton ivjCopyButton = null;
 	private JButton ivjDeleteButton = null;
 	private JButton ivjEditButton = null;
@@ -40,7 +38,6 @@ public class SimulationListPanel extends JPanel {
 	private JButton ivjStopButton = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
-	private SimulationWorkspace simulationWorkspace = null;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private ListSelectionModel ivjselectionModel1 = null;
@@ -500,7 +497,7 @@ private void connPtoP2SetTarget() {
  */
 private void copySimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector v = new Vector();
+	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
@@ -532,7 +529,7 @@ private void customizeTable() {
  */
 private void deleteSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector v = new Vector();
+	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[i]]);
 		if (!simStatus.isRunning()){
@@ -560,7 +557,7 @@ private void editSimulation() {
 	if (selectedRows.length > 0) { // make sure something is selected...
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selectedRows[0]]);
 		if (!simStatus.isRunning()){
-			getSimulationWorkspace().editSimulation(getSimulationWorkspace().getSimulations()[selectedRows[0]]); // just the first one if more than one selected...
+			getSimulationWorkspace().editSimulation(this, getSimulationWorkspace().getSimulations()[selectedRows[0]]); // just the first one if more than one selected...
 		}
 	}
 }
@@ -821,7 +818,6 @@ private cbit.gui.JTableFixed getScrollPaneTable() {
 			ivjScrollPaneTable = new cbit.gui.JTableFixed();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
 			ivjScrollPaneTable.setModel(new cbit.vcell.client.desktop.simulation.SimulationListTableModel());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
@@ -1031,7 +1027,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1120,7 +1116,7 @@ private void refreshSimListTable() {
  */
 private void runSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector v = new Vector();
+	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
@@ -1261,7 +1257,7 @@ public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
  */
 private void showSimulationResults() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector v = new Vector();
+	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
@@ -1275,7 +1271,7 @@ private void showSimulationResults() {
  */
 public void showSimulationStatusDetails(java.awt.event.ActionEvent actionEvent) {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector v = new Vector();
+	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
@@ -1290,7 +1286,7 @@ public void showSimulationStatusDetails(java.awt.event.ActionEvent actionEvent) 
  */
 private void stopSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector v = new Vector();
+	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
