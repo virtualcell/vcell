@@ -480,7 +480,7 @@ private SimpleReferenceData getSimpleReferenceData(Element referenceDataElement/
     for (int i = 0; i < dataRowList.size(); i++){
           Element dataRowElement = dataRowList.get(i);
           String rowText = dataRowElement.getText();
-          cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(rowText);
+          cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(rowText);
           double[] rowData = new double[numCols];
           for (int j = 0; j < numCols; j++){
                 if (tokens.hasMoreTokens()){
