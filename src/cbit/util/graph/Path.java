@@ -72,14 +72,8 @@ public Node[] getNodesTraversed() {
 	Edge edges[] = getEdges();
 	if (edges.length==1){
 		return new Node[] { edges[0].getNode1(), edges[0].getNode2() };
-	}else if (edges.length == 2){
-		if (edges[1].getNode1().equals(edges[0].getNode2())){
-			return new Node[] { edges[0].getNode1(), edges[0].getNode2(), edges[1].getNode2() };
-		}else{
-			return new Node[] { edges[0].getNode2(), edges[0].getNode1(), edges[1].getNode2() };
-		}
 	}else{
-		Vector nodeList = new Vector();
+		Vector<Node> nodeList = new Vector<Node>();
 		//
 		// look ahead to see which node is in common with the next edge, choose the other.
 		//
@@ -106,6 +100,57 @@ public Node[] getNodesTraversed() {
 	}
 }
 
+public static void test(){
+	cbit.util.graph.Node node1 = new cbit.util.graph.Node("A");
+	cbit.util.graph.Node node2 = new cbit.util.graph.Node("B");
+	cbit.util.graph.Node node3 = new cbit.util.graph.Node("C");
+	cbit.util.graph.Node node4 = new cbit.util.graph.Node("D");
+	cbit.util.graph.Edge edge12 = new cbit.util.graph.Edge(node1,node2);
+	cbit.util.graph.Edge edge21 = new cbit.util.graph.Edge(node2,node1);
+	cbit.util.graph.Edge edge23 = new cbit.util.graph.Edge(node2,node3);
+	cbit.util.graph.Edge edge32 = new cbit.util.graph.Edge(node3,node2);
+	cbit.util.graph.Edge edge34 = new cbit.util.graph.Edge(node3,node4);
+	cbit.util.graph.Edge edge43 = new cbit.util.graph.Edge(node4,node3);
+	//
+	// edges arranged with nodes in alphabetical order, all combinations of edge reversals up to path length 4
+	//
+	cbit.util.graph.Edge[][] edges = new cbit.util.graph.Edge[][] {
+			 // ==> A,B
+			 { edge12 },
+			 // ==> A,B,C
+			 { edge12, edge23 },
+			 { edge12, edge32 },
+			 { edge21, edge23 },
+			 { edge21, edge32 },
+			 // ==> A,B,C,D
+			 { edge12, edge23, edge34 },
+			 { edge12, edge32, edge34 },
+			 { edge21, edge23, edge34 },
+			 { edge21, edge32, edge34 },
+			 { edge12, edge23, edge43 },
+			 { edge12, edge32, edge43 },
+			 { edge21, edge23, edge43 },
+			 { edge21, edge32, edge43 },
+	};
+	System.out.println("==== Path.test() ====");
+	for (int trial=0; trial<edges.length; trial++){
+		//
+		// print each path and computed nodesTraversed[] ... should be in alphabetical order
+		//
+		cbit.util.graph.Path path = new cbit.util.graph.Path();
+		cbit.util.graph.Edge[] pathEdges = edges[trial];
+		for (int i=0;i<pathEdges.length;i++){
+			System.out.print("("+pathEdges[i].getNode1().getName()+","+pathEdges[i].getNode2().getName()+") ");
+			path.addEdge(pathEdges[i]);
+		}
+		cbit.util.graph.Node[] nodesTraversed = path.getNodesTraversed();
+		System.out.print(" ==> ");
+		for (int i=0;i<nodesTraversed.length; i++){
+			System.out.print(" "+nodesTraversed[i].getName());
+		}
+		System.out.println();
+	}
+}
 
 /**
  * Insert the method's description here.
