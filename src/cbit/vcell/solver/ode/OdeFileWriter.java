@@ -4,6 +4,7 @@ package cbit.vcell.solver.ode;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
 import java.util.*;
 import java.io.*;
 import cbit.vcell.math.*;
@@ -32,6 +33,11 @@ private void addStateVariable (StateVariable variable) {
 	fieldStateVariables.addElement(variable);
 }
 
+public Discontinuity getSubsitutedAndFlattened(Discontinuity discontinuity, SymbolTable st) throws ExpressionException {		
+	Expression discontinuityExp = MathUtilities.substituteFunctions(discontinuity.getDiscontinuityExp(), st).flatten();
+	Expression rootFindingExp = MathUtilities.substituteFunctions(discontinuity.getRootFindingExp(), st).flatten();
+	return new Discontinuity(discontinuityExp,rootFindingExp);
+}
 
 /**
  * OdeFileCoder constructor comment.

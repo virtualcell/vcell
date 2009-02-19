@@ -62,7 +62,7 @@ public boolean compareEqual(Matchable object) {
  * This method was created in VisualAge.
  * @param tokens java.util.StringTokenizer
  */
-public void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) throws Exception {
+public void fromTokens(cbit.util.CommentStringTokenizer tokens) throws Exception {
 	String token = tokens.nextToken();
 	if (token.equalsIgnoreCase(VCMODL.Diagram)){
 		token = tokens.nextToken();  // get StructureName (and discard)

@@ -1,5 +1,5 @@
 package cbit.vcell.geometry.surface;
-import cbit.vcell.math.CommentStringTokenizer;
+import cbit.util.CommentStringTokenizer;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverFactory;
 import cbit.vcell.solvers.CartesianMesh;

@@ -1,4 +1,5 @@
 package cbit.vcell.solver.stoch;
+import cbit.util.CommentStringTokenizer;
 import cbit.vcell.server.DataAccessException;
 /**
  * This class is used to store some stochastic simulation

@@ -13,6 +13,7 @@ import javax.swing.event.*;
  * All rights reserved.
 ©*/
 import java.util.*;
+import java.util.Map.Entry;
 import java.io.*;
 
 import cbit.vcell.parser.Discontinuity;
@@ -1139,7 +1140,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 }
 
 public void substituteFieldFuncNames(Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID) throws MathException, ExpressionException{
-	Expression.substituteFieldFuncNames(
+	MathDescription.substituteFieldFuncNames(
 			oldFieldFuncArgsNameNewID, collectFieldFuncAndExpressions());
 }
 
@@ -3137,5 +3138,21 @@ public boolean hasDiscontinuities() throws ExpressionException {
  */
 public String toString() {
 	return "Math@"+Integer.toHexString(hashCode())+"("+version+")";
+}
+
+
+public static void substituteFieldFuncNames(
+		Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID,
+		Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash
+		) throws MathException, ExpressionException{
+
+	Set<Map.Entry<FieldFunctionArguments, Vector<Expression>>> set = fieldFuncArgsExpHash.entrySet();
+	Iterator<Entry<FieldFunctionArguments, Vector<Expression>>> iter = set.iterator();
+	while(iter.hasNext()){
+		Entry<FieldFunctionArguments, Vector<Expression>> entry = iter.next();
+		for(int i=0;i<entry.getValue().size();i+= 1){
+			entry.getValue().elementAt(i).substituteFieldFunctionFieldName(oldFieldFuncArgsNameNewID);
+		}
+	}
 }
 }

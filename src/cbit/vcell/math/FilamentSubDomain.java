@@ -6,6 +6,7 @@ package cbit.vcell.math;
 ©*/
 import java.util.Enumeration;
 
+import cbit.util.CommentStringTokenizer;
 import cbit.util.Compare;
 import cbit.util.Matchable;
 import cbit.vcell.parser.ExpressionException;

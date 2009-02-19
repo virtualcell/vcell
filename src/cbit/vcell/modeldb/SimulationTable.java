@@ -155,7 +155,7 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 //	System.out.println("taskDescriptionString '"+taskDescriptionString+"'");
 	String taskDescriptionString = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
 	taskDescriptionString = cbit.util.TokenMangler.getSQLRestoredString(taskDescriptionString);
-	cbit.vcell.math.CommentStringTokenizer solverTaskDescTokens = new cbit.vcell.math.CommentStringTokenizer(taskDescriptionString);
+	cbit.util.CommentStringTokenizer solverTaskDescTokens = new cbit.util.CommentStringTokenizer(taskDescriptionString);
 	
 	//
 	// get MathOverride Data (language) (MUST BE READ FIRST)
@@ -181,7 +181,7 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 		buffer.append("\n}\n");
 		mathOverridesString = buffer.toString();
 	}
-	cbit.vcell.math.CommentStringTokenizer mathOverrideTokens = new cbit.vcell.math.CommentStringTokenizer(mathOverridesString);
+	cbit.util.CommentStringTokenizer mathOverrideTokens = new cbit.util.CommentStringTokenizer(mathOverridesString);
 
 	//
 	// Get Version

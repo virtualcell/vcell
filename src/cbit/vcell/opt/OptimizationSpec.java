@@ -1,7 +1,6 @@
 package cbit.vcell.opt;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.parser.Expression;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

@@ -27,7 +27,6 @@ import cbit.vcell.desktop.*;
 import swingthreads.*;
 import cbit.vcell.client.desktop.geometry.ImageBrowser;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.MathDescription;
 import javax.swing.filechooser.FileFilter;
 import cbit.vcell.client.task.*;

@@ -1,6 +1,8 @@
 package cbit.vcell.math;
 import cbit.vcell.parser.Expression;
 import java.util.*;
+
+import cbit.util.CommentStringTokenizer;
 import cbit.util.Compare;
 public class JumpProcess implements cbit.util.Matchable,java.io.Serializable {
 	private String processName=null;

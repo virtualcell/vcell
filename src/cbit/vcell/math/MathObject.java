@@ -1,5 +1,7 @@
 package cbit.vcell.math;
 
+import cbit.util.CommentStringTokenizer;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

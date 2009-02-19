@@ -267,7 +267,7 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 			try {
 				String taskDesc = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
 				if (taskDesc != null) {
-					std = new cbit.vcell.solver.SolverTaskDescription(new cbit.vcell.math.CommentStringTokenizer(cbit.util.TokenMangler.getSQLRestoredString(taskDesc)));
+					std = new cbit.vcell.solver.SolverTaskDescription(new cbit.util.CommentStringTokenizer(cbit.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
 				
 			} catch (DataAccessException ex) {
