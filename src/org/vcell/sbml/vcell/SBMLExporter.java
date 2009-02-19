@@ -44,7 +44,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XMLTags;

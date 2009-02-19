@@ -196,7 +196,7 @@ public class VCQualCellTranslator extends Translator {
 			if (CELLMLTags.isCellBaseUnit(unitSymbol)) {
 				continue;
 			}
-			Element units = cbit.vcell.units.VCUnitTranslator.VCUnitToCellML(unitSymbol, tNamespace, tAttNamespace);
+			Element units = org.vcell.cellml.VCUnitTranslator.VCUnitToCellML(unitSymbol, tNamespace, tAttNamespace);
 			if (units != null) {                                          //to accomodate TBDs
 				unitList.add(unitSymbol);
 				model.addContent(units);

@@ -112,7 +112,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		addReactions(model);
 		fixStoich(model);
 		addSimSpec();
-		cbit.vcell.units.VCUnitTranslator.clearCellMLUnits();
+		org.vcell.cellml.VCUnitTranslator.clearCellMLUnits();
     }
 
 
@@ -259,7 +259,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		VCUnitDefinition cellUnit;
 		String unitSymbol = paramVar.getAttributeValue(CELLMLTags.units, sAttNamespace);
 		if (unitSymbol != null) {                   //should never be the case.
-			cellUnit = cbit.vcell.units.VCUnitTranslator.getMatchingCellMLUnitDef(paramVar.getParent(), sAttNamespace, unitSymbol);
+			cellUnit = org.vcell.cellml.VCUnitTranslator.getMatchingCellMLUnitDef(paramVar.getParent(), sAttNamespace, unitSymbol);
 			if (cellUnit != null) {
 				param.setAttribute(XMLTags.VCUnitDefinitionAttrTag, cellUnit.getSymbol());
 			}
@@ -695,9 +695,9 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		    String unitName = lou.getAttributeValue(CELLMLTags.name, sAttNamespace);
 		    String isBaseUnit = lou.getAttributeValue(CELLMLTags.baseUnits, sAttNamespace);
 		    if ("yes".equals(isBaseUnit)) {
-				unit = cbit.vcell.units.VCUnitTranslator.getBaseUnit(unitName);
+				unit = org.vcell.cellml.VCUnitTranslator.getBaseUnit(unitName);
 		    } else {
-				unit = cbit.vcell.units.VCUnitTranslator.CellMLToVCUnit(lou, sNamespace, sAttNamespace);
+				unit = org.vcell.cellml.VCUnitTranslator.CellMLToVCUnit(lou, sNamespace, sAttNamespace);
 			}
 			if (unit == null) {
 				System.err.println("Unit: " + unitName + " not well defined.");
@@ -864,7 +864,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		VCUnitDefinition cellUnit = null, VCunit = VCUnitDefinition.UNIT_uM;
 		String unitSymbol = temp.getAttributeValue(CELLMLTags.units, sAttNamespace);
 		if (unitSymbol != null) {
-			cellUnit = cbit.vcell.units.VCUnitTranslator.getMatchingCellMLUnitDef(temp.getParent(), sAttNamespace, unitSymbol);
+			cellUnit = org.vcell.cellml.VCUnitTranslator.getMatchingCellMLUnitDef(temp.getParent(), sAttNamespace, unitSymbol);
 		}
 		if (cellUnit == null) {
 			System.err.println("Unable to find a unit definition with symbol: " + unitSymbol +
@@ -1042,7 +1042,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		VCUnitDefinition cellUnit = null;
 		String unitSymbol = variable.getAttributeValue(CELLMLTags.units, sAttNamespace);
 		if (unitSymbol != null) {                   //should never be the case.
-			cellUnit = cbit.vcell.units.VCUnitTranslator.getMatchingCellMLUnitDef(variable.getParent(), sAttNamespace, unitSymbol);
+			cellUnit = org.vcell.cellml.VCUnitTranslator.getMatchingCellMLUnitDef(variable.getParent(), sAttNamespace, unitSymbol);
 		}
 		if (cellUnit == null) {
 			System.err.println("No unit for the rate variable: " + variableName);
