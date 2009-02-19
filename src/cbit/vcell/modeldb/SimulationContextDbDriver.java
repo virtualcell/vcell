@@ -337,11 +337,11 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 				double posY = rset.getBigDecimal(stimulusTable.positionY.toString()).doubleValue();
 				double posZ = rset.getBigDecimal(stimulusTable.positionZ.toString()).doubleValue();
 
-				cbit.vcell.math.CommentStringTokenizer paramsCST = null;
+				cbit.util.CommentStringTokenizer paramsCST = null;
 				String paramsS = rset.getString(StimulusTable.table.params.toString());
 				if(!rset.wasNull()){
 					paramsCST =
-						new cbit.vcell.math.CommentStringTokenizer(
+						new cbit.util.CommentStringTokenizer(
 							cbit.util.TokenMangler.getSQLRestoredString(paramsS)
 						);
 				}

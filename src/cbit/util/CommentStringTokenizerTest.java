@@ -1,4 +1,5 @@
-package cbit.vcell.math;
+package cbit.util;
+
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

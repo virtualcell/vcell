@@ -1,6 +1,6 @@
 package cbit.vcell.solver.stoch;
 
-import cbit.vcell.math.CommentStringTokenizer;
+import cbit.util.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import cbit.vcell.server.DataAccessException;
 

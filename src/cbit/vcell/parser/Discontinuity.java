@@ -29,9 +29,5 @@ public class Discontinuity {
 	public int hashCode() {
 		return discontinuityExp.infix().hashCode();
 	}
-	public void subsituteAndFlatten(SymbolTable st) throws ExpressionException {		
-		discontinuityExp = MathUtilities.substituteFunctions(discontinuityExp, st).flatten();
-		rootFindingExp = MathUtilities.substituteFunctions(rootFindingExp, st).flatten();
-	}
 	 
 }

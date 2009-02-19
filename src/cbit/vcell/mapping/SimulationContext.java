@@ -870,7 +870,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 }
 
 public void substituteFieldFuncNames(Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID) throws MathException, ExpressionException{
-	Expression.substituteFieldFuncNames(
+	MathDescription.substituteFieldFuncNames(
 			oldFieldFuncArgsNameNewID, collectFieldFuncAndExpressions());
 	
 	getMathDescription().substituteFieldFuncNames(oldFieldFuncArgsNameNewID);

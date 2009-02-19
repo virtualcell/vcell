@@ -396,7 +396,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(cbit.vcell.math.CommentStringTokenizer tokens) throws Exception {
+public void read(cbit.util.CommentStringTokenizer tokens) throws Exception {
 	refreshSpeciesContextSpecs();
 	
 	String token = null;

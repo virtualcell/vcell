@@ -14,6 +14,7 @@ import org.sbml.libsbml.XMLOutputStream;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 
 import cbit.sql.VersionableType;
+import cbit.util.CommentStringTokenizer;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
@@ -22,7 +23,6 @@ import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelInfo;

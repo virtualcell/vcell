@@ -1,9 +1,8 @@
 package cbit.vcell.parser;
 
+import cbit.util.CommentStringTokenizer;
 import cbit.util.Matchable;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.math.CommentStringTokenizer;
-import cbit.vcell.math.MathException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /*©
@@ -12,7 +11,6 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 ©*/
 import java.io.*;
 import java.util.*;
-import java.util.Map.Entry;
 
 import net.sourceforge.interval.ia_math.*;
 
@@ -111,21 +109,6 @@ public static void addFieldFuncArgsAndExpToCollection(Hashtable<FieldFunctionArg
 			
 		}
 		expV.add(expression);
-	}
-}
-
-public static void substituteFieldFuncNames(
-		Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID,
-		Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash
-		) throws MathException, ExpressionException{
-
-	Set<Map.Entry<FieldFunctionArguments, Vector<Expression>>> set = fieldFuncArgsExpHash.entrySet();
-	Iterator<Entry<FieldFunctionArguments, Vector<Expression>>> iter = set.iterator();
-	while(iter.hasNext()){
-		Entry<FieldFunctionArguments, Vector<Expression>> entry = iter.next();
-		for(int i=0;i<entry.getValue().size();i+= 1){
-			entry.getValue().elementAt(i).substituteFieldFunctionFieldName(oldFieldFuncArgsNameNewID);
-		}
 	}
 }
 

@@ -5,8 +5,8 @@ package cbit.vcell.modeldb;
 ©*/
 import java.math.BigDecimal;
 import cbit.sql.*;
+import cbit.util.CommentStringTokenizer;
 import cbit.vcell.server.User;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.MathDescription;
 import java.sql.SQLException;
 import java.sql.ResultSet;

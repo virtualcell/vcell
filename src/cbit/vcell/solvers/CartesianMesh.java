@@ -10,7 +10,6 @@ import java.io.*;
 
 import cbit.util.*;
 import cbit.vcell.geometry.*;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;

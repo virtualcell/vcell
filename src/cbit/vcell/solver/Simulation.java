@@ -10,10 +10,11 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
+
+import cbit.util.CommentStringTokenizer;
 import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.sql.*;
 /**

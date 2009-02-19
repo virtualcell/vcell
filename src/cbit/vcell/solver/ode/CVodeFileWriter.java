@@ -60,7 +60,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 		
 		Vector<Discontinuity> v = rateExpr.getDiscontinuities();		
 		for (Discontinuity od : v) {
-			od.subsituteAndFlatten(varsSymbolTable);
+			od = getSubsitutedAndFlattened(od,varsSymbolTable);
 			String dname = discontinuityNameMap.get(od);
 			if (dname == null) {
 				dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();

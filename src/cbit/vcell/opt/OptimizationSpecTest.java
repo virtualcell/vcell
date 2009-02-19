@@ -4,6 +4,7 @@ package cbit.vcell.opt;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.CommentStringTokenizer;
 import cbit.vcell.math.*;
 import java.util.*;
 import cbit.vcell.server.*;

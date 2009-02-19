@@ -836,7 +836,7 @@ private boolean isReferenced(Parameter parm, int level) throws ExpressionExcepti
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public final void parameterVCMLSet(cbit.vcell.math.CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
+public final void parameterVCMLSet(cbit.util.CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
 
 	if(tokens == null){
 		return;

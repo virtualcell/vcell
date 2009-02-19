@@ -786,7 +786,7 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public final void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) throws ExpressionException, PropertyVetoException {
+public final void fromTokens(cbit.util.CommentStringTokenizer tokens) throws ExpressionException, PropertyVetoException {
 	//
 	//  old format (version 1) (still supported for reading)
 	//

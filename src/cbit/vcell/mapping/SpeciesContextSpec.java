@@ -6,9 +6,9 @@ import java.io.Serializable;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.util.BeanUtils;
+import cbit.util.CommentStringTokenizer;
 import cbit.util.Compare;
 import cbit.util.Matchable;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;

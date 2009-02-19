@@ -5,9 +5,10 @@ package cbit.vcell.solver;
 ©*/
 import java.util.Enumeration;
 import java.util.Hashtable;
+
+import cbit.util.CommentStringTokenizer;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VCML;

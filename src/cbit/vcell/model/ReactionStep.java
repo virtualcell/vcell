@@ -259,7 +259,7 @@ public void fireVetoableChange(
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public abstract void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens, Model model) throws Exception;
+public abstract void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception;
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 10:26:42 PM)

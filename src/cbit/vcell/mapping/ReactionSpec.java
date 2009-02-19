@@ -3,7 +3,6 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.parser.*;
 import cbit.vcell.model.*;
@@ -11,6 +10,7 @@ import cbit.vcell.math.VCML;
 import cbit.vcell.units.VCUnitDefinition;
 import java.beans.PropertyVetoException;
 import cbit.util.*;
+
 import java.io.*;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
