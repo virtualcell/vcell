@@ -17,6 +17,7 @@ import cbit.vcell.model.*;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
+
 import java.util.*;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.model.Kinetics;
@@ -1145,14 +1146,23 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 		SpeciesContextSpec scs = speciesContextSpecs[i];
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
-
+		StructureMapping sm =  getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure());
 		scm.setPDERequired(isPDERequired(scs.getSpeciesContext()));
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scs.getInitialConditionParameter();
-			Expression initCond = new Expression(getMathSymbol0(initParm,null));
-			scm.setDependencyExpression(initCond);
+			Expression initCondInCount = null;
+			//initial condition is concentration
+			if(speciesContextSpecs[i].getInitialConcentrationParameter() != null && speciesContextSpecs[i].getInitialConcentrationParameter().getExpression() != null)
+			{
+				initCondInCount = getIniExpressionConcToAmt(getMathSymbol0(initParm,sm),speciesContextSpecs[i].getSpeciesContext());
+			}
+			else
+			{
+				initCondInCount = new Expression(getMathSymbol0(initParm,sm));
+			}
+			scm.setDependencyExpression(initCondInCount);
 			////
 			//// determine if a Function is necessary
 			////
