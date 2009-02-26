@@ -11,7 +11,6 @@ import javax.swing.*;
 
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
-import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.vcell.client.desktop.mathmodel.*;
 import cbit.vcell.mathmodel.MathModel;
@@ -304,6 +303,12 @@ public cbit.vcell.document.VCDocument getVCDocument() {
 	return getMathModel();
 }
 
+public boolean hasUnappliedChanges() {
+	if (vcmlEditor.hasUnappliedChanges()) {
+		return true;
+	}
+	return false;
+}
 
 /**
  * Insert the method's description here.
@@ -703,4 +708,5 @@ public void simulationsButtonPressed(boolean bSimsButtonSelected) {
 public void vcmlEditorButtonPressed(boolean bVCMLButtonSelected) {
 	showVCMLEditor(bVCMLButtonSelected);
 }
+
 }

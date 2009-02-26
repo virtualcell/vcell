@@ -15,6 +15,7 @@ public class UserCancelException extends RuntimeException {
 	public static final UserCancelException CANCEL_EDIT_IMG_ATTR = new UserCancelException("User canceled Edit Image Attributes");
 	public static final UserCancelException CANCEL_GENERIC = new UserCancelException("User canceled (Generic)");
 	public static final UserCancelException CANCEL_XML_TRANSLATION = new UserCancelException("User canceled XML translation process.");
+	public static final UserCancelException CANCEL_UNAPPLIED_CHANGES = new UserCancelException("Canceled saving due to unapplied changes to VCMDL");
 
 /**
  * UserCancelException constructor comment.

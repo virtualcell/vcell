@@ -284,4 +284,10 @@ public void setMathDescription(cbit.vcell.math.MathDescription newValue) {
 	}
 }
 
+public boolean hasUnappliedChanges() {
+	if (getApplyButton().isEnabled()) {
+		return true;
+	}	
+	return false;
+}
 }

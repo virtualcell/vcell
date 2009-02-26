@@ -4,6 +4,7 @@ import cbit.vcell.clientdb.*;
 import javax.swing.*;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.client.*;
+
 import java.beans.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;
@@ -59,6 +60,13 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
+	if (documentWindowManager.getVCDocument().getDocumentType() == VCDocument.MATHMODEL_DOC) {
+		if (((MathModelWindowManager)documentWindowManager).hasUnappliedChanges()) {
+			String msg = "Changes have been made in VCML Editor, please click \"Apply Changes\" or \"Cancel\" to proceed.";
+			PopupGenerator.showErrorDialog(documentWindowManager, msg);
+			throw UserCancelException.CANCEL_UNAPPLIED_CHANGES;			
+		}
+	}
 	boolean isChanged = true;
 	try {
 		isChanged = documentManager.isChanged(documentWindowManager.getVCDocument());
