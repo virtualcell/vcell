@@ -3644,7 +3644,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	List<Element> children = tempelement.getChildren(XMLTags.ReactionSpecTag, vcNamespace);
 	if (children.size()!=0) {
 		if (children.size()!= biomodel.getModel().getReactionSteps().length) {
-			throw new XmlParseException("The number of reactions is not consistant.\n"+"Model reactions="+biomodel.getModel().getReactionSteps().length+", Reaction specs="+children.size());
+			throw new XmlParseException("The number of reactions is not consistent.\n"+"Model reactions="+biomodel.getModel().getReactionSteps().length+", Reaction specs="+children.size());
 		}
 		//*NOTE: Importing a model from other languages does not generates reaction specs.
 		// A more robust code will read the reactions in the source file and replace the ones created by the default by the VirtualCell framework.

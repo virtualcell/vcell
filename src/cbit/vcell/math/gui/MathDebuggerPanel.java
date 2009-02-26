@@ -213,10 +213,6 @@ public class MathDebuggerPanel extends JPanel {
 	private MathDescEditor getMathDescEditor1() {
 		if (mathDescEditor1 == null) {
 			mathDescEditor1 = new MathDescEditor();
-			mathDescEditor1.setFlattenVisibility(true);
-			mathDescEditor1.setConstructedSolnButtonVisibility(false);
-			mathDescEditor1.setApproxSensSolnButtonVisibility(false);
-			mathDescEditor1.setMakeCanonicalVisibility(true);
 			mathDescEditor1
 					.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
 						public void propertyChange(java.beans.PropertyChangeEvent e) {
@@ -237,8 +233,6 @@ public class MathDebuggerPanel extends JPanel {
 	private MathDescEditor getMathDescEditor2() {
 		if (mathDescEditor2 == null) {
 			mathDescEditor2 = new MathDescEditor();
-			mathDescEditor2.setFlattenVisibility(true);
-			mathDescEditor2.setMakeCanonicalVisibility(true);
 			mathDescEditor2
 					.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
 						public void propertyChange(java.beans.PropertyChangeEvent e) {

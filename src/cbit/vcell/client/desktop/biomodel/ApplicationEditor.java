@@ -1,9 +1,11 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.gui.LineNumberedTextPanel;
 import cbit.util.EventDispatchRunWithException;
 import cbit.util.Issue;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.math.gui.MathDescEditor;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -14,6 +16,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
+import javax.swing.text.Highlighter.Highlight;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -47,9 +52,9 @@ public class ApplicationEditor extends JPanel {
 	private JRadioButton ivjViewVCMDLRadioButton = null;
 	private cbit.vcell.math.gui.MathDescPanel ivjMathDescPanel1 = null;
 	private JPanel ivjMathViewerPanel = null;
-	private JEditorPane ivjVCMLEditorPane = null;
+	
+	private LineNumberedTextPanel ivjVCMLEditorPane = null;
 	private JPanel ivjVCMLPanel = null;
-	private JScrollPane ivjVCMLScrollPane = null;
 	private cbit.vcell.math.MathDescription ivjmathDescription = null;
 	private CardLayout ivjcardLayout = null;
 	private ButtonGroup ivjbuttonGroup = null;
@@ -65,23 +70,9 @@ public class ApplicationEditor extends JPanel {
 	private cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel ivjAnalysisTaskComboBoxModel = null;
 	private boolean ivjConnPtoP8Aligning = false;
 	private ComboBoxModel ivjmodel1 = null;
-	private JButton ivjCopyButton = null;
-	private JLabel searchLabel = null;
-	private JTextField searchTextField = null;
-	private Color searchTextFieldBackground = null;
-	private Highlighter hilit =  null;
-    private Highlighter.HighlightPainter painter = null;
-    private final static String CANCEL_ACTION = "cancel-search";	
-
-    class CancelSearchAction extends AbstractAction {
-        public void actionPerformed(ActionEvent ev) {
-            hilit.removeAllHighlights();
-            searchTextField.setText("");
-            searchTextField.setBackground(searchTextFieldBackground);
-        }
-    }
-    
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, DocumentListener {
+	private JButton ivjCopyButton = null; 
+         
+class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ApplicationEditor.this.getViewModifyGeometryButton()) 
 				connEtoC3(e);
@@ -144,16 +135,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			}
 			if (evt.getSource() == ApplicationEditor.this.getAnalysisTaskComboBox() && (evt.getPropertyName().equals("model"))) 
 				connPtoP8SetTarget();
-		}
-		public void changedUpdate(DocumentEvent e) {
-			search();			
-		}
-		public void insertUpdate(DocumentEvent e) {
-			search();
-			
-		}
-		public void removeUpdate(DocumentEvent e) {
-			search();			
 		}
 	};
 
@@ -1140,12 +1121,12 @@ private javax.swing.JPanel getButtonsPanel() {
 			ivjButtonsPanel.setName("ButtonsPanel");
 			ivjButtonsPanel.setPreferredSize(new java.awt.Dimension(280, 40));
 			ivjButtonsPanel.setLayout(new java.awt.FlowLayout());
-			getButtonsPanel().add(getViewEqunsRadioButton(), getViewEqunsRadioButton().getName());
-			getButtonsPanel().add(getViewVCMDLRadioButton(), getViewVCMDLRadioButton().getName());
-			getButtonsPanel().add(getSearchLabel(), getCreateMathModelButton().getName());
-			getButtonsPanel().add(getSearchTextField(), getRefreshMathButton().getName());
-			getButtonsPanel().add(getCreateMathModelButton(), getCreateMathModelButton().getName());
-			getButtonsPanel().add(getRefreshMathButton(), getRefreshMathButton().getName());
+			ivjButtonsPanel.add(getViewEqunsRadioButton(), getViewEqunsRadioButton().getName());
+			ivjButtonsPanel.add(getViewVCMDLRadioButton(), getViewVCMDLRadioButton().getName());
+			//ivjButtonsPanel.add(getSearchLabel(), getCreateMathModelButton().getName());
+			//ivjButtonsPanel.add(getSearchTextField(), getRefreshMathButton().getName());
+			ivjButtonsPanel.add(getCreateMathModelButton(), getCreateMathModelButton().getName());
+			ivjButtonsPanel.add(getRefreshMathButton(), getRefreshMathButton().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1698,25 +1679,16 @@ public cbit.vcell.client.server.UserPreferences getUserPreferences() {
  * @return javax.swing.JEditorPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JEditorPane getVCMLEditorPane() {
+private LineNumberedTextPanel getVCMLEditorPane() {
 	if (ivjVCMLEditorPane == null) {
 		try {
-			ivjVCMLEditorPane = new javax.swing.JEditorPane();
-			ivjVCMLEditorPane.setName("VCMLEditorPane");
-			ivjVCMLEditorPane.setBounds(0, 0, 160, 120);
-			ivjVCMLEditorPane.setEditable(false);
-			ivjVCMLEditorPane.setHighlighter(getHighligher());
-			// user code begin {1}
-			// user code end
+			ivjVCMLEditorPane = new LineNumberedTextPanel(false);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjVCMLEditorPane;
 }
-
 
 /**
  * Return the VCMLPanel property value.
@@ -1729,9 +1701,7 @@ private javax.swing.JPanel getVCMLPanel() {
 			ivjVCMLPanel = new javax.swing.JPanel();
 			ivjVCMLPanel.setName("VCMLPanel");
 			ivjVCMLPanel.setLayout(new java.awt.BorderLayout());
-			getVCMLPanel().add(getVCMLScrollPane(), "Center");
-			// user code begin {1}
-			// user code end
+			ivjVCMLPanel.add(getVCMLEditorPane(), BorderLayout.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -1740,30 +1710,6 @@ private javax.swing.JPanel getVCMLPanel() {
 	}
 	return ivjVCMLPanel;
 }
-
-
-/**
- * Return the VCMLScrollPane property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getVCMLScrollPane() {
-	if (ivjVCMLScrollPane == null) {
-		try {
-			ivjVCMLScrollPane = new javax.swing.JScrollPane();
-			ivjVCMLScrollPane.setName("VCMLScrollPane");
-			getVCMLScrollPane().setViewportView(getVCMLEditorPane());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjVCMLScrollPane;
-}
-
 
 /**
  * Return the ViewEqunsRadioButton property value.
@@ -1996,9 +1942,8 @@ private void mathDescription_This() {
 		public Object runWithException() throws Exception {
 			if (getmathDescription()!=null){
 				try {
-					int value = getVCMLScrollPane().getVerticalScrollBar().getValue();
 					getVCMLEditorPane().setText(getmathDescription().getVCML_database());
-					getVCMLScrollPane().getVerticalScrollBar().setValue(value);
+					getVCMLEditorPane().setCaretPosition(0);
 					return null;
 				}catch (Exception e){
 					e.printStackTrace(System.out);
@@ -2359,115 +2304,18 @@ private boolean updateMath() {
 	}
 }
 
-
-/**
- * Comment
- */
 private void viewMath_ItemStateChanged(java.awt.event.ItemEvent itemEvent) {
 	if (itemEvent.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
 		if (itemEvent.getSource() == getViewEqunsRadioButton()) {
 			JRadioButton source = (JRadioButton)getViewEqunsRadioButton();
-			getSearchLabel().setEnabled(false);
-			getSearchTextField().setEnabled(false);
 			getcardLayout().show(getMathViewerPanel(), source.getActionCommand());
 			return;
 		}else if (itemEvent.getSource() == getViewVCMDLRadioButton()) {
 			JRadioButton source = (JRadioButton)getViewVCMDLRadioButton();
-			getSearchLabel().setEnabled(true);
-			getSearchTextField().setEnabled(true);
 			getcardLayout().show(getMathViewerPanel(), source.getActionCommand());
 			return;			
 		}
 	}
-}
-
-private JLabel getSearchLabel() {
-	if (searchLabel == null) {
-		searchLabel = new JLabel("Search");
-		searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
-		searchLabel.setEnabled(false);
-	}
-	return searchLabel;
-}
-
-private JTextField getSearchTextField() {
-	if (searchTextField == null) {
-		try {
-			searchTextField = new JTextField();
-			searchTextField.setColumns(15);
-
-	        searchTextFieldBackground = searchTextField.getBackground();
-	        searchTextField.getDocument().addDocumentListener(ivjEventHandler);
-	        
-	        InputMap im = searchTextField.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-	        ActionMap am = searchTextField.getActionMap();
-	        im.put(KeyStroke.getKeyStroke("ESCAPE"), CANCEL_ACTION);
-	        am.put(CANCEL_ACTION, new CancelSearchAction());
-	        
-	        searchTextField.setEnabled(false);
-	        
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return searchTextField;
-}
-
-private Highlighter getHighligher() {
-	if (hilit == null) {
-		try {
-			hilit = new DefaultHighlighter();
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return hilit;
-}
-
-private Highlighter.HighlightPainter getHighlighterPainter() {
-	if (painter == null) {
-		try {
-			painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return painter;
-}
-
-public void search() {
-    hilit.removeAllHighlights();
-    searchTextField.setBackground(searchTextFieldBackground);
-    
-    String s = searchTextField.getText();
-    if (s.length() <= 0) {
-        return;
-    }
-    
-    String content = getVCMLEditorPane().getText();
-    int index = content.indexOf(s, 0);
-    if (index >= 0) {   // match found                
-        //getlineNumberedTextArea1().setCaretPosition(end);
-    	while (index >= 0) {
-	        try {
-	        	int end = index + s.length();
-	            getHighligher().addHighlight(index, end, getHighlighterPainter());	            
-		        index = content.indexOf(s, end);
-	        } catch (BadLocationException e) {
-	            e.printStackTrace();
-	        }	        
-    	}
-    } else {
-    	searchTextField.setBackground(Color.PINK);
-    }
 }
 
 }
