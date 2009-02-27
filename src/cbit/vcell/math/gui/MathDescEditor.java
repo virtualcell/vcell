@@ -7,8 +7,11 @@ import javax.swing.*;
 
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import cbit.vcell.math.*;
+
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 /**
@@ -142,6 +145,7 @@ private cbit.gui.LineNumberedTextPanel getlineNumberedTextArea1() {
 	if (ivjlineNumberedTextArea1 == null) {
 		try {
 			ivjlineNumberedTextArea1 = new cbit.gui.LineNumberedTextPanel();
+			ivjlineNumberedTextArea1.setAutoCompletionWords(getAutoCompletionWords());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -259,6 +263,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
+		aMathDescEditor.getlineNumberedTextArea1().setText("PdeEquation\nOdeEquation\nRate\n");
 		frame.setVisible(true);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
@@ -289,5 +294,100 @@ public boolean hasUnappliedChanges() {
 		return true;
 	}	
 	return false;
+}
+
+public List<String> getAutoCompletionWords() {
+	 // must be ordered
+	 List<String> autoCompletionWords = new ArrayList<String>();
+	 autoCompletionWords.add(VCML.BoundaryXm);
+	 autoCompletionWords.add(VCML.CompartmentSubDomain);
+	 autoCompletionWords.add(VCML.Constant);
+	 autoCompletionWords.add(VCML.Diffusion);
+	 autoCompletionWords.add(VCML.Function);
+	 autoCompletionWords.add(VCML.InFlux);
+	 autoCompletionWords.add(VCML.Initial);
+	 autoCompletionWords.add(getTemplate_JumpCondition());
+	 autoCompletionWords.add(VCML.JumpProcess);
+	 autoCompletionWords.add(VCML.MathDescription);
+	 autoCompletionWords.add(VCML.MembraneSubDomain);
+	 autoCompletionWords.add(VCML.MembraneVariable); 
+	 autoCompletionWords.add(getTemplate_OdeEquation());
+	 autoCompletionWords.add(VCML.OutFlux);
+	 autoCompletionWords.add(getTemplate_PdeEquation()); 
+	 autoCompletionWords.add(VCML.Priority);
+	 autoCompletionWords.add(VCML.Rate);
+	 autoCompletionWords.add(VCML.Value);
+	 autoCompletionWords.add(VCML.VelocityX);
+	 autoCompletionWords.add(VCML.VolumeVariable);
+	 
+	 String functions[] = {
+	 		"abs()",
+	 		"acos()",
+	 		"acosh()",
+	 		"acot()",
+	 		"acoth()",
+	 		"acsc()",
+	 		"acsch()",
+	 		"asec()",
+	 		"asech()",
+	 		"asin()",
+	 		"asinh()",
+	 		"atan()",
+	 		"atan2(,)",
+	 		"atanh()",
+	 		"ceil()",
+	 		"cos()",
+	 		"cosh()",
+	 		"cot()",
+	 		"coth()",
+	 		"csc()",
+	 		"csch()",
+	 		"exp()",
+	 		"factorial()",
+	 		"field(,,,,)",
+	 		"floor()",
+	 		"grad(,)",
+	 		"log()",
+	 		"log10()",
+	 		"logbase(,)",
+	 		"max(,)",
+	 		"min(,)",
+	 		"pow(,)",
+	 		"sec()",
+	 		"sech()",
+	 		"sin()",
+	 		"sinh()",
+	 		"sqrt()",
+	 		"tan()",
+	 		"tanh()",
+	 };
+	 for (String f : functions) {
+	 	autoCompletionWords.add(f);
+	 }
+	 
+	 return autoCompletionWords;
+}
+
+public String getTemplate_OdeEquation() {	
+	return VCML.OdeEquation + " varName " + VCML.BeginBlock + "\n" 
+		+ "\t\t" + VCML.Rate + " 0.0;\n" 
+		+ "\t\t" + VCML.Initial + "0.0;\n"
+		+ "\t}\n";
+}
+
+public String getTemplate_PdeEquation() {	
+	return VCML.PdeEquation + " varName " + VCML.BeginBlock + "\n"
+		+ "\t\t" + VCML.BoundaryXm + " 0.0;\n"
+		+ "\t\t" + VCML.BoundaryXp + " 0.0;\n"
+		+ "\t\t" + VCML.Rate + " 0.0;\n" 
+		+ "\t\t" + VCML.Diffusion + " 0.0;\n" 
+		+ "\t\t" + VCML.Initial + " 0.0;\n"
+		+ "\t}\n";
+}
+public String getTemplate_JumpCondition() {	
+	return VCML.JumpCondition + " varName " + VCML.BeginBlock + "\n" 
+		+ "\t\t" + VCML.InFlux + " 0.0;\n" 
+		+ "\t\t" + VCML.OutFlux + " 0.0;\n" 
+		+ "\t}\n";
 }
 }
