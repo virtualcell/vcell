@@ -42,7 +42,7 @@
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
     <ROW Directory="VCell_DIR" Directory_Parent="APPDIR" DefaultDir="VCell"/>
     <ROW Directory="VFRAP_DIR" Directory_Parent="APPDIR" DefaultDir="VFRAP"/>
-    <ROW Directory="VirtualMicroscopy_1_DIR" Directory_Parent="PersonalFolder" DefaultDir="Virtua~1|VirtualMicroscopy"/>
+    <ROW Directory="VirtualMicroscopy_1_DIR" Directory_Parent="PersonalFolder" DefaultDir="Virtua~2|VirtualMicroscopyRD"/>
     <ROW Directory="VirtualMicroscopy_DIR" Directory_Parent="vcell_1_DIR" DefaultDir="Virtua~1|VirtualMicroscopy"/>
     <ROW Directory="admin_1_DIR" Directory_Parent="messaging_DIR" DefaultDir="admin"/>
     <ROW Directory="admin_DIR" Directory_Parent="util_DIR" DefaultDir="admin"/>
@@ -3617,8 +3617,7 @@
     <ATTRIBUTE name="CurrentBuild" value="DefaultBuild"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.CacheComponent">
-    <ATTRIBUTE name="CacheIndex" value="VirtualMicroscopy_2.txt"/>
-    <ATTRIBUTE name="Folder" value="\\fs3\CCAM\Public\VirtualMicroscopy\installer"/>
+    <ATTRIBUTE name="Enable" value="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
     <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
