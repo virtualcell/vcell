@@ -3613,7 +3613,7 @@
     <ROW File="zoomout.jpg" Component_="autocontrast.jpg" FileName="zoomout.jpg" Attributes="0" SourcePath="..\bin\doc\topics\Chapter3\zoomout.jpg" SelfReg="false" Sequence="169"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
-    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" PackageName="C:\VirtualMicroscopy\VMSetup_win32" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="logo_vfrap.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\install"/>
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" PackageName="C:\VirtualMicroscopy\VMRDSetup_win32" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="logo_vfrap.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\install"/>
     <ATTRIBUTE name="CurrentBuild" value="DefaultBuild"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.CacheComponent">
