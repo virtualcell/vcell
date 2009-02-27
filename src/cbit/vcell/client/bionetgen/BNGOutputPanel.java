@@ -1,4 +1,6 @@
 package cbit.vcell.client.bionetgen;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import cbit.gui.DialogUtils;
@@ -1532,6 +1534,7 @@ private cbit.gui.LineNumberedTextPanel getlineNumberedTextPanel() {
 		try {
 			ivjlineNumberedTextPanel = new cbit.gui.LineNumberedTextPanel();
 			ivjlineNumberedTextPanel.setName("lineNumberedTextPanel");
+			ivjlineNumberedTextPanel.setAutoCompletionWords(getBNGAutoCompletionWords());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1543,6 +1546,26 @@ private cbit.gui.LineNumberedTextPanel getlineNumberedTextPanel() {
 	return ivjlineNumberedTextPanel;
 }
 
+
+private List<String> getBNGAutoCompletionWords() {
+	List<String> words = new ArrayList<String>();
+    words.add("Molecules");
+    words.add("begin");
+    words.add("generate_network({overwrite=>1,max_iter=>100,max_agg=>100});\n");
+    words.add("model\nend model\n");   
+    words.add("molecule types\nend molecule types\n");   
+    words.add("observables\nend observables\n");
+    words.add("parameters\nend parameters\n");
+    words.add("reaction rules\nend reaction rules\n");
+    words.add("saveConcentrations();\n");
+    words.add("seed species\nend seed species\n");     
+    words.add("setConcentration(\" \", );"); 
+    words.add("setParameter(\" \", );"); 
+    words.add("simulate_ode({suffix=>ode,t_start=>0,t_end=>12,n_steps=>120});\n"); 
+    words.add("simulate_ssa({suffix=>ssa,t_start=>0,t_end=>12,n_steps=>120});\n"); 
+    words.add("writeSBML();\n");
+    return words;
+}
 
 /**
  * Return the OpenFileButton property value.

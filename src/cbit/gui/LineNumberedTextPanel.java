@@ -15,9 +15,9 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -35,14 +35,15 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.text.Highlighter.Highlight;
-import cbit.vcell.math.VCML;
 
 public class LineNumberedTextPanel extends JPanel implements DocumentListener, ActionListener {
     private JTextArea textArea = null;
@@ -57,7 +58,7 @@ public class LineNumberedTextPanel extends JPanel implements DocumentListener, A
     
     private static final String COMMIT_ACTION = "commit";
     private static enum Mode { INSERT, COMPLETION };
-    private List<String> words = null;
+    private List<String> autoCompletionWords = null;
     private Mode mode = Mode.INSERT;
     
     private final static String CANCEL_ACTION = "cancel-search";
@@ -104,57 +105,57 @@ public class LineNumberedTextPanel extends JPanel implements DocumentListener, A
         }
     }
     
-public class LineNumberPanel extends JPanel {
-	private int preferred_size = 50;
-
-public LineNumberPanel() {
-    super();
-    setForeground(java.awt.Color.white);
-    setBackground(java.awt.Color.gray);
-    setMinimumSize(new Dimension(preferred_size, preferred_size));
-    setPreferredSize(new Dimension(preferred_size, preferred_size));
-    setMinimumSize(new Dimension(preferred_size, preferred_size));
-}
-
-public void paint(Graphics g) {
-    super.paint(g);
-
-    // We need to properly convert the points to match the viewport 
-    // Read docs for viewport 
-    int start = getTextArea().viewToModel(scrollPane.getViewport().getViewPosition()); // starting pos in document 
-    int end = getTextArea().viewToModel(new Point(
-                scrollPane.getViewport().getViewPosition().x + getTextArea().getWidth(),
-                scrollPane.getViewport().getViewPosition().y + getTextArea().getHeight()));
-    // end pos in doc 
-
-    // translate offsets to lines 
-    Document doc = getTextArea().getDocument();
-    int startline = doc.getDefaultRootElement().getElementIndex(start) + 1;
-    int endline = doc.getDefaultRootElement().getElementIndex(end) + 1;
-
-    java.awt.FontMetrics fm = g.getFontMetrics(getTextArea().getFont());
-    int fontHeight = fm.getHeight();
-    int fontDesc = fm.getDescent();
-    int starting_y = -1;
-
-    try {
-        starting_y =  getTextArea().modelToView(start).y - scrollPane.getViewport().getViewPosition().y + fontHeight - fontDesc;
-    } catch (javax.swing.text.BadLocationException ex) {
-        ex.printStackTrace();
-    }
-
-    g.setFont(getTextArea().getFont());
-    for (int line = startline, y = starting_y;  line <= endline;  y += fontHeight, line++) {
-	    String linestr = Integer.toString(line);
-	    int width = 0;
-	    for (int i = 0; i < linestr.length(); i ++) {
-		    width += fm.charWidth(linestr.charAt(i));
-	    }
-        g.drawString(linestr, preferred_size - width - 2, y);
-    }
-
-}
-}
+	public class LineNumberPanel extends JPanel {
+		private int preferred_size = 50;
+	
+		public LineNumberPanel() {
+		    super();
+		    setForeground(java.awt.Color.white);
+		    setBackground(java.awt.Color.gray);
+		    setMinimumSize(new Dimension(preferred_size, preferred_size));
+		    setPreferredSize(new Dimension(preferred_size, preferred_size));
+		    setMinimumSize(new Dimension(preferred_size, preferred_size));
+		}
+		
+		public void paint(Graphics g) {
+		    super.paint(g);
+		
+		    // We need to properly convert the points to match the viewport 
+		    // Read docs for viewport 
+		    int start = getTextArea().viewToModel(scrollPane.getViewport().getViewPosition()); // starting pos in document 
+		    int end = getTextArea().viewToModel(new Point(
+		                scrollPane.getViewport().getViewPosition().x + getTextArea().getWidth(),
+		                scrollPane.getViewport().getViewPosition().y + getTextArea().getHeight()));
+		    // end pos in doc 
+		
+		    // translate offsets to lines 
+		    Document doc = getTextArea().getDocument();
+		    int startline = doc.getDefaultRootElement().getElementIndex(start) + 1;
+		    int endline = doc.getDefaultRootElement().getElementIndex(end) + 1;
+		
+		    java.awt.FontMetrics fm = g.getFontMetrics(getTextArea().getFont());
+		    int fontHeight = fm.getHeight();
+		    int fontDesc = fm.getDescent();
+		    int starting_y = -1;
+		
+		    try {
+		        starting_y =  getTextArea().modelToView(start).y - scrollPane.getViewport().getViewPosition().y + fontHeight - fontDesc;
+		    } catch (javax.swing.text.BadLocationException ex) {
+		        ex.printStackTrace();
+		    }
+		
+		    g.setFont(getTextArea().getFont());
+		    for (int line = startline, y = starting_y;  line <= endline;  y += fontHeight, line++) {
+			    String linestr = Integer.toString(line);
+			    int width = 0;
+			    for (int i = 0; i < linestr.length(); i ++) {
+				    width += fm.charWidth(linestr.charAt(i));
+			    }
+		        g.drawString(linestr, preferred_size - width - 2, y);
+		    }
+		
+		}
+	}
     
 
 public LineNumberedTextPanel() {
@@ -174,9 +175,7 @@ public LineNumberedTextPanel() {
 	panel.add(getSearchPrevButton());
 	panel.add(getSearchNextButton());
 	
-	add(panel, BorderLayout.SOUTH); 
-	
-	fillKeywords();	
+	add(panel, BorderLayout.SOUTH);
 }
 
 public LineNumberedTextPanel(boolean editable) {
@@ -405,6 +404,9 @@ public void insertUpdate(DocumentEvent ev) {
 	
 	clearSearchText();
 	
+	if (autoCompletionWords == null || autoCompletionWords.size() < 1) {
+		return;
+	}
     if (ev.getLength() != 1) {
         return;
     }
@@ -420,7 +422,8 @@ public void insertUpdate(DocumentEvent ev) {
     // Find where the word starts
     int w;
     for (w = pos; w >= 0; w--) {
-        if (! Character.isLetter(content.charAt(w))) {
+        char c = content.charAt(w);
+		if (! Character.isLetter(c) && c != '_') {
             break;
         }
     }
@@ -430,9 +433,9 @@ public void insertUpdate(DocumentEvent ev) {
     }
     
     String prefix = content.substring(w + 1);
-    int n = Collections.binarySearch(words, prefix);
-    if (n < 0 && -n <= words.size()) {
-        String match = words.get(-n - 1);
+    int n = Collections.binarySearch(autoCompletionWords, prefix);
+    if (n < 0 && -n <= autoCompletionWords.size()) {
+        String match = autoCompletionWords.get(-n - 1);
         if (match.startsWith(prefix)) {
             // A completion is found
             String completion = match.substring(pos - w);
@@ -611,95 +614,8 @@ public void clearSearchText() {
 	getSearchTextField().setText("");
 }
 
-public void fillKeywords() {
-	   // must be ordered
-    words = new ArrayList<String>();
-    words.add(VCML.BoundaryXm);
-    words.add(VCML.CompartmentSubDomain);
-    words.add(VCML.Constant);
-    words.add(VCML.Diffusion);
-    words.add(VCML.Function);
-    words.add(VCML.InFlux);
-    words.add(VCML.Initial);
-    words.add(getTemplate_JumpCondition());
-    words.add(VCML.JumpProcess);
-    words.add(VCML.MathDescription);
-    words.add(VCML.MembraneSubDomain);
-    words.add(VCML.MembraneVariable); 
-    words.add(getTemplate_OdeEquation());
-    words.add(VCML.OutFlux);
-    words.add(getTemplate_PdeEquation()); 
-    words.add(VCML.Priority);
-    words.add(VCML.Rate);
-    words.add(VCML.Value);
-    words.add(VCML.VelocityX);
-    words.add(VCML.VolumeVariable);
-    
-    String functions[] = {
-    		"abs()",
-    		"acos()",
-    		"acosh()",
-    		"acot()",
-    		"acoth()",
-    		"acsc()",
-    		"acsch()",
-    		"asec()",
-    		"asech()",
-    		"asin()",
-    		"asinh()",
-    		"atan()",
-    		"atan2(,)",
-    		"atanh()",
-    		"ceil()",
-    		"cos()",
-    		"cosh()",
-    		"cot()",
-    		"coth()",
-    		"csc()",
-    		"csch()",
-    		"exp()",
-    		"factorial()",
-    		"field(,,,,)",
-    		"floor()",
-    		"grad(,)",
-    		"log()",
-    		"log10()",
-    		"logbase(,)",
-    		"max(,)",
-    		"min(,)",
-    		"pow(,)",
-    		"sec()",
-    		"sech()",
-    		"sin()",
-    		"sinh()",
-    		"sqrt()",
-    		"tan()",
-    		"tanh()",
-    };
-    for (String f : functions) {
-    	words.add(f);
-    }
-}
-public String getTemplate_OdeEquation() {	
-	return VCML.OdeEquation + " varName " + VCML.BeginBlock + "\n" 
-		+ "\t\t" + VCML.Rate + " 0.0;\n" 
-		+ "\t\t" + VCML.Initial + "0.0;\n"
-		+ "\t}\n";
+public void setAutoCompletionWords(List<String> acw) {
+	this.autoCompletionWords = acw;
 }
 
-public String getTemplate_PdeEquation() {	
-	return VCML.PdeEquation + " varName " + VCML.BeginBlock + "\n"
-		+ "\t\t" + VCML.BoundaryXm + " 0.0;\n"
-		+ "\t\t" + VCML.BoundaryXp + " 0.0;\n"
-		+ "\t\t" + VCML.Rate + " 0.0;\n" 
-		+ "\t\t" + VCML.Diffusion + " 0.0;\n" 
-		+ "\t\t" + VCML.Initial + " 0.0;\n"
-		+ "\t}\n";
-}
-public String getTemplate_JumpCondition() {	
-	return VCML.JumpCondition + " varName " + VCML.BeginBlock + "\n" 
-		+ "\t\t" + VCML.InFlux + " 0.0;\n" 
-		+ "\t\t" + VCML.OutFlux + " 0.0;\n" 
-		+ "\t}\n";
-}
 }
