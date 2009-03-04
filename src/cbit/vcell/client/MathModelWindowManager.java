@@ -337,6 +337,11 @@ private void initializeInternalFrames() {
 			String vcmlEditorTitle = "VCML Editor";
 			vcmlEditor.setMathModel(getMathModel());
 			VCMLEditorFrame = new JInternalFrameEnhanced(vcmlEditorTitle, true, true, true, true);
+			JMenuBar mb = new JMenuBar();
+			JMenu menu = vcmlEditor.getEditMenu();
+			mb.add(menu);
+			VCMLEditorFrame.setJMenuBar(mb);
+			
 			VCMLEditorFrame.setContentPane(vcmlEditor);
 			VCMLEditorFrame.setSize(550, 550);
 			VCMLEditorFrame.setLocation(10, 10);

@@ -1,6 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import cbit.gui.LineNumberedTextPanel;
+import cbit.gui.MultiPurposeTextPanel;
 import cbit.util.EventDispatchRunWithException;
 import cbit.util.Issue;
 import cbit.vcell.solver.*;
@@ -53,7 +53,7 @@ public class ApplicationEditor extends JPanel {
 	private cbit.vcell.math.gui.MathDescPanel ivjMathDescPanel1 = null;
 	private JPanel ivjMathViewerPanel = null;
 	
-	private LineNumberedTextPanel ivjVCMLEditorPane = null;
+	private MultiPurposeTextPanel ivjVCMLEditorPane = null;
 	private JPanel ivjVCMLPanel = null;
 	private cbit.vcell.math.MathDescription ivjmathDescription = null;
 	private CardLayout ivjcardLayout = null;
@@ -1679,10 +1679,11 @@ public cbit.vcell.client.server.UserPreferences getUserPreferences() {
  * @return javax.swing.JEditorPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private LineNumberedTextPanel getVCMLEditorPane() {
+private MultiPurposeTextPanel getVCMLEditorPane() {
 	if (ivjVCMLEditorPane == null) {
 		try {
-			ivjVCMLEditorPane = new LineNumberedTextPanel(false);
+			ivjVCMLEditorPane = new MultiPurposeTextPanel(false);
+			ivjVCMLEditorPane.setKeywords(MathDescEditor.getkeywords());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
