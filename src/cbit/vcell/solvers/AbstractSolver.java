@@ -312,7 +312,7 @@ public static boolean isFunctionSaved(cbit.vcell.math.Function function) {
 	String name = function.getName();
 	if (!name.startsWith("SurfToVol_") && 
 		!name.startsWith("VolFract_") && 
-		!name.startsWith("Kflux_") && 
+		!name.startsWith("KFlux_") && 
 		!name.endsWith("_init") && 
 		!name.endsWith("_total") &&
 		!name.equals(SimDataConstants.PSF_FUNCTION_NAME)){
