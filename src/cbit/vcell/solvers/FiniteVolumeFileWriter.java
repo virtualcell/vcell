@@ -303,23 +303,26 @@ EQUATION_END
 private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDomain, Equation equation) throws Exception {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	printWriter.println("RATE " + subsituteExpression(equation.getRateExpression()).infix() + ";");
+	Expression rateExpression = subsituteExpression(equation.getRateExpression());
+	printWriter.println("RATE " + rateExpression.infix() + ";");
 	if (equation instanceof PdeEquation) {
 		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
-		if (((PdeEquation)equation).getVelocityX() != null) {
-			printWriter.println("VELOCITY_X " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");
-		} else {
-			printWriter.println("VELOCITY_X 0.0;");
-		}
-		if (((PdeEquation)equation).getVelocityY() != null) {
-			printWriter.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY()).infix() + ";");
-		} else if (resampledGeometry.getDimension() > 1){
-			printWriter.println("VELOCITY_Y 0.0;");
-		}
-		if (((PdeEquation)equation).getVelocityZ() != null) {
-			printWriter.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ()).infix() + ";");			
-		} else if (resampledGeometry.getDimension() > 2){
-			printWriter.println("VELOCITY_Z 0.0;");
+		if (simulation.getMathDescription().hasVelocity((VolVariable)equation.getVariable())) {
+			if (((PdeEquation)equation).getVelocityX() != null) {
+				printWriter.println("VELOCITY_X " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");
+			} else {
+				printWriter.println("VELOCITY_X 0.0;");
+			}
+			if (((PdeEquation)equation).getVelocityY() != null) {
+				printWriter.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY()).infix() + ";");
+			} else if (resampledGeometry.getDimension() > 1) {
+				printWriter.println("VELOCITY_Y 0.0;");
+			}
+			if (((PdeEquation)equation).getVelocityZ() != null) {
+				printWriter.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ()).infix() + ";");			
+			} else if (resampledGeometry.getDimension() > 2) {
+				printWriter.println("VELOCITY_Z 0.0;");
+			}
 		}
 		
 		PdeEquation pde = (PdeEquation)equation;		
@@ -334,6 +337,20 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 		writeBoundaryValues(bctypes, pde);
 	}	
 
+//	if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+//		StringBuffer rateDerivativeString = new StringBuffer(); 
+//		Variable[] vars = simulation.getVariables();
+//		int count = 0;
+//		for (Variable var : vars) {
+//			if (var instanceof VolVariable) {
+//				Expression exp = rateExpression.differentiate(var.getName());
+//				rateDerivativeString.append(exp.flatten().infix() + ";\n");
+//				count ++;
+//			}
+//		}
+//		printWriter.println("RATE_DERIVATIVES " + count);
+//		printWriter.print(rateDerivativeString);
+//	}
 	printWriter.println("EQUATION_END");
 	printWriter.println();
 }
@@ -912,7 +929,8 @@ EQUATION_END
 private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws Exception {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	printWriter.println("RATE " + subsituteExpression(equation.getRateExpression()).infix() + ";");
+	Expression rateExpression = subsituteExpression(equation.getRateExpression());
+	printWriter.println("RATE " + rateExpression.infix() + ";");
 	if (equation instanceof PdeEquation) {
 		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
 		
@@ -928,6 +946,21 @@ private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, E
 		writeBoundaryValues(bctypes, pde);		
 	}	
 
+//	if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+//		StringBuffer rateDerivativeString = new StringBuffer(); 
+//		Variable[] vars = simulation.getVariables();
+//		int count = 0;
+//		for (Variable var : vars) {
+//			if (var instanceof MemVariable) {
+//				Expression exp = rateExpression.differentiate(var.getName());
+//				rateDerivativeString.append(exp.flatten().infix() + ";\n");
+//				count ++;
+//			}
+//		}
+//		printWriter.println("RATE_DERIVATIVES " + count);
+//		printWriter.print(rateDerivativeString);
+//	}
+	
 	printWriter.println("EQUATION_END");
 	printWriter.println();
 }
