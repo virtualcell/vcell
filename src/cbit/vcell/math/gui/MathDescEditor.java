@@ -6,10 +6,12 @@ package cbit.vcell.math.gui;
 import javax.swing.*;
 
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.math.*;
 
 import javax.swing.JPanel;
@@ -23,7 +25,7 @@ public class MathDescEditor extends JPanel implements ActionListener, KeyListene
 	private MathDescription ivjMathDescription = null;
 	private JButton ivjApplyButton = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.gui.LineNumberedTextPanel ivjlineNumberedTextArea1 = null;
+	private MultiPurposeTextPanel vcmlPane = null;
 
 /**
  * Constructor
@@ -55,10 +57,10 @@ private void apply_ExceptionOccurred(java.lang.Throwable e) throws javax.swing.t
 	if (e instanceof MathFormatException){
 		int lineNumber = ((MathFormatException)e).getLineNumber();
 		if (lineNumber>=0){
-			int lineStartOffset = getlineNumberedTextArea1().getLineStartOffset(Math.max(0,lineNumber-1));
-			int lineEndOffset = getlineNumberedTextArea1().getLineEndOffset(lineNumber);
-			getlineNumberedTextArea1().setCaretPosition(lineStartOffset);
-			getlineNumberedTextArea1().select(lineStartOffset,lineEndOffset);
+			int lineStartOffset = getVCMLPane().getLineStartOffset(Math.max(0,lineNumber-1));
+			//int lineEndOffset = getVCMLPane().getLineEndOffset(lineNumber);
+			getVCMLPane().setCaretPosition(lineStartOffset);
+			//getVCMLPane().select(lineStartOffset,lineEndOffset);
 		}
 	}
 }
@@ -70,7 +72,7 @@ private void apply_ExceptionOccurred(java.lang.Throwable e) throws javax.swing.t
 private void applyChanges(java.awt.event.ActionEvent arg1) {
 	try {
 		if ((getMathDescription() != null)) {
-			setMathDescription(cbit.vcell.math.MathDescription.fromEditor(getMathDescription(), getlineNumberedTextArea1().getText()));
+			setMathDescription(MathDescription.fromEditor(getMathDescription(), getVCMLPane().getText()));
 		}
 		getCancelButton().setEnabled(false);
 		getApplyButton().setEnabled(false);
@@ -90,9 +92,9 @@ private void applyChanges(java.awt.event.ActionEvent arg1) {
 private void cancelChanges(java.awt.event.ActionEvent arg1) {
 	try {
 		if ((getMathDescription() != null)) {
-			getlineNumberedTextArea1().setText(getMathDescription().getVCML_database());
+			getVCMLPane().setText(getMathDescription().getVCML_database());
 		}
-		getlineNumberedTextArea1().setCaretPosition(0);
+		getVCMLPane().setCaretPosition(0);
 		getApplyButton().setEnabled(false);
 		getCancelButton().setEnabled(false);
 
@@ -139,18 +141,19 @@ private javax.swing.JButton getCancelButton() {
 
 /**
  * Return the lineNumberedTextPanel1 property value.
- * @return cbit.gui.LineNumberedTextPanel
+ * @return cbit.gui.MultiPurposeTextPanel
  */
-private cbit.gui.LineNumberedTextPanel getlineNumberedTextArea1() {
-	if (ivjlineNumberedTextArea1 == null) {
+private MultiPurposeTextPanel getVCMLPane() {
+	if (vcmlPane == null) {
 		try {
-			ivjlineNumberedTextArea1 = new cbit.gui.LineNumberedTextPanel();
-			ivjlineNumberedTextArea1.setAutoCompletionWords(getAutoCompletionWords());
+			vcmlPane = new cbit.gui.MultiPurposeTextPanel();
+			vcmlPane.setAutoCompletionWords(getAutoCompletionWords());
+			vcmlPane.setKeywords(getkeywords());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjlineNumberedTextArea1;
+	return vcmlPane;
 }
 
 
@@ -179,7 +182,7 @@ private void handleException(Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	getApplyButton().addActionListener(this);
 	getCancelButton().addActionListener(this);
-	getlineNumberedTextArea1().getTextArea().addKeyListener(this);
+	getVCMLPane().getTextPane().addKeyListener(this);
 }
 
 /**
@@ -211,7 +214,7 @@ private void initialize() {
 		constraintslineNumberedTextArea1.weightx = 1.0;
 		constraintslineNumberedTextArea1.weighty = 1.0;
 		constraintslineNumberedTextArea1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getlineNumberedTextArea1(), constraintslineNumberedTextArea1);
+		add(getVCMLPane(), constraintslineNumberedTextArea1);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -223,11 +226,14 @@ private void initialize() {
  * @param e java.awt.event.KeyEvent
  */
 public void keyPressed(java.awt.event.KeyEvent e) {
-	if (e.getSource() == getlineNumberedTextArea1().getTextArea()) {
-		getApplyButton().setEnabled(true);
+	if (getApplyButton().isEnabled()) {
+		return;
 	}
-	if (e.getSource() == getlineNumberedTextArea1().getTextArea()) {
-		getCancelButton().setEnabled(true);
+	if (e.getSource() == getVCMLPane().getTextPane()) {
+		if (!e.isActionKey() && e.getKeyCode() != KeyEvent.VK_CONTROL && e.getKeyCode() != KeyEvent.VK_SHIFT) {
+			getApplyButton().setEnabled(true);	
+			getCancelButton().setEnabled(true);
+		}
 	}
 }
 
@@ -254,16 +260,21 @@ public void keyTyped(java.awt.event.KeyEvent e) {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		MathDescEditor aMathDescEditor;
-		aMathDescEditor = new MathDescEditor();
+		MathDescEditor aMathDescEditor = new MathDescEditor();
 		frame.setContentPane(aMathDescEditor);
+		
+		JMenuBar mb = new JMenuBar();
+		JMenu menu = aMathDescEditor.getEditMenu();
+		mb.add(menu);
+		frame.setJMenuBar(mb);
+		
 		frame.setSize(aMathDescEditor.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
 				System.exit(0);
 			};
 		});
-		aMathDescEditor.getlineNumberedTextArea1().setText("PdeEquation\nOdeEquation\nRate\n");
+		aMathDescEditor.getVCMLPane().setText("Rate\n");
 		frame.setVisible(true);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
@@ -280,8 +291,8 @@ public void setMathDescription(cbit.vcell.math.MathDescription newValue) {
 		try {
 			MathDescription oldValue = getMathDescription();
 			ivjMathDescription = newValue;			
-			getlineNumberedTextArea1().setText(getMathDescription().getVCML_database());
-			getlineNumberedTextArea1().setCaretPosition(0);
+			getVCMLPane().setText(getMathDescription().getVCML_database());
+			getVCMLPane().setCaretPosition(0);
 			firePropertyChange("mathDescription", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -303,22 +314,36 @@ public List<String> getAutoCompletionWords() {
 	 autoCompletionWords.add(VCML.CompartmentSubDomain);
 	 autoCompletionWords.add(VCML.Constant);
 	 autoCompletionWords.add(VCML.Diffusion);
+	 autoCompletionWords.add("Effect");
+	 autoCompletionWords.add(VCML.FastInvariant);
+	 autoCompletionWords.add(VCML.FastRate);	 
+	 autoCompletionWords.add(getTemplate_FastSystem());
+	 autoCompletionWords.add("Flux");
 	 autoCompletionWords.add(VCML.Function);
 	 autoCompletionWords.add(VCML.InFlux);
 	 autoCompletionWords.add(VCML.Initial);
 	 autoCompletionWords.add(getTemplate_JumpCondition());
-	 autoCompletionWords.add(VCML.JumpProcess);
+	 autoCompletionWords.add(getTemplate_JumpProcess());
 	 autoCompletionWords.add(VCML.MathDescription);
+	 autoCompletionWords.add(VCML.MembraneRate);
+	 autoCompletionWords.add(VCML.MembraneRegionVariable);
 	 autoCompletionWords.add(VCML.MembraneSubDomain);
 	 autoCompletionWords.add(VCML.MembraneVariable); 
 	 autoCompletionWords.add(getTemplate_OdeEquation());
 	 autoCompletionWords.add(VCML.OutFlux);
 	 autoCompletionWords.add(getTemplate_PdeEquation()); 
 	 autoCompletionWords.add(VCML.Priority);
+	 autoCompletionWords.add(VCML.ProbabilityRate);
 	 autoCompletionWords.add(VCML.Rate);
+	 autoCompletionWords.add(VCML.StochVolVariable);
+	 autoCompletionWords.add(VCML.UniformRate);
 	 autoCompletionWords.add(VCML.Value);
+	 autoCompletionWords.add(VCML.VarIniCondition);
 	 autoCompletionWords.add(VCML.VelocityX);
+	 autoCompletionWords.add(VCML.VolumeRate);
+	 autoCompletionWords.add(VCML.VolumeRegionVariable);
 	 autoCompletionWords.add(VCML.VolumeVariable);
+	 
 	 
 	 String functions[] = {
 	 		"abs()",
@@ -389,5 +414,74 @@ public String getTemplate_JumpCondition() {
 		+ "\t\t" + VCML.InFlux + " 0.0;\n" 
 		+ "\t\t" + VCML.OutFlux + " 0.0;\n" 
 		+ "\t}\n";
+}
+
+public String getTemplate_FastSystem() {	
+	return VCML.FastSystem + " " + VCML.BeginBlock + "\n" 
+		+ "\t\t" + VCML.FastInvariant + " 0.0;\n" 
+		+ "\t\t" + VCML.FastRate + " 0.0;\n" 
+		+ "\t}\n";
+}
+
+public String getTemplate_JumpProcess() {	
+	return VCML.JumpProcess + " varName " + VCML.BeginBlock + "\n" 
+		+ "\t\t" + VCML.ProbabilityRate + " 0.0;\n" 
+		+ "\t\t Effect 0.0;\n" 
+		+ "\t}\n";
+}
+
+public JMenu getEditMenu() {
+	return getVCMLPane().createEditMenu();
+}
+
+
+public static List<String> getkeywords() {
+	 // must be ordered
+	 List<String> keywords = new ArrayList<String>();
+	 keywords.add(VCML.BoundaryXm);
+	 keywords.add(VCML.BoundaryXp);
+	 keywords.add(VCML.BoundaryYm);
+	 keywords.add(VCML.BoundaryYp);
+	 keywords.add(VCML.BoundaryZm);
+	 keywords.add(VCML.BoundaryZp);
+	 keywords.add(VCML.CompartmentSubDomain);
+	 keywords.add(VCML.Constant);
+	 keywords.add(VCML.Diffusion);
+	 keywords.add("Effect");
+	 keywords.add(VCML.Exact);
+	 keywords.add(VCML.FastInvariant);
+	 keywords.add(VCML.FastRate);
+	 keywords.add(VCML.FastSystem);
+	 keywords.add("Flux");
+	 keywords.add(VCML.Function);
+	 keywords.add(VCML.InFlux);
+	 keywords.add(VCML.Initial);
+	 keywords.add(VCML.JumpCondition);
+	 keywords.add(VCML.JumpProcess);
+	 keywords.add(VCML.MathDescription);
+	 keywords.add(VCML.MembraneRate);
+	 keywords.add(VCML.MembraneRegionEquation);
+	 keywords.add(VCML.MembraneRegionVariable);
+	 keywords.add(VCML.MembraneSubDomain);
+	 keywords.add(VCML.MembraneVariable); 
+	 keywords.add(VCML.OdeEquation);
+	 keywords.add(VCML.OutFlux);
+	 keywords.add(VCML.PdeEquation); 
+	 keywords.add(VCML.Priority);
+	 keywords.add(VCML.ProbabilityRate);
+	 keywords.add(VCML.Rate);
+	 keywords.add(VCML.StochVolVariable);
+	 keywords.add(VCML.UniformRate);
+	 keywords.add(VCML.Value);
+	 keywords.add(VCML.VarIniCondition);
+	 keywords.add(VCML.VelocityX);
+	 keywords.add(VCML.VelocityY);
+	 keywords.add(VCML.VelocityZ);
+	 keywords.add(VCML.VolumeRate);
+	 keywords.add(VCML.VolumeRegionEquation);
+	 keywords.add(VCML.VolumeRegionVariable);
+	 keywords.add(VCML.VolumeVariable);
+
+	 return keywords;
 }
 }

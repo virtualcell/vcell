@@ -1,4 +1,7 @@
 package cbit.vcell.client.desktop.mathmodel;
+
+import javax.swing.JMenu;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/20/2004 3:35:42 PM)
@@ -421,4 +424,7 @@ public boolean hasUnappliedChanges() {
 	return getmathDescEditor().hasUnappliedChanges();
 }
 
+public JMenu getEditMenu() {
+	return getmathDescEditor().getEditMenu();
+}
 }
