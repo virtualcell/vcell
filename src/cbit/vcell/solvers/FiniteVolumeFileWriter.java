@@ -307,22 +307,20 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 	printWriter.println("RATE " + rateExpression.infix() + ";");
 	if (equation instanceof PdeEquation) {
 		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
-		if (simulation.getMathDescription().hasVelocity((VolVariable)equation.getVariable())) {
-			if (((PdeEquation)equation).getVelocityX() != null) {
-				printWriter.println("VELOCITY_X " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");
-			} else {
-				printWriter.println("VELOCITY_X 0.0;");
-			}
-			if (((PdeEquation)equation).getVelocityY() != null) {
-				printWriter.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY()).infix() + ";");
-			} else if (resampledGeometry.getDimension() > 1) {
-				printWriter.println("VELOCITY_Y 0.0;");
-			}
-			if (((PdeEquation)equation).getVelocityZ() != null) {
-				printWriter.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ()).infix() + ";");			
-			} else if (resampledGeometry.getDimension() > 2) {
-				printWriter.println("VELOCITY_Z 0.0;");
-			}
+		if (((PdeEquation)equation).getVelocityX() != null) {
+			printWriter.println("VELOCITY_X " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");
+		} else {
+			printWriter.println("VELOCITY_X 0.0;");
+		}
+		if (((PdeEquation)equation).getVelocityY() != null) {
+			printWriter.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY()).infix() + ";");
+		} else if (resampledGeometry.getDimension() > 1) {
+			printWriter.println("VELOCITY_Y 0.0;");
+		}
+		if (((PdeEquation)equation).getVelocityZ() != null) {
+			printWriter.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ()).infix() + ";");			
+		} else if (resampledGeometry.getDimension() > 2) {
+			printWriter.println("VELOCITY_Z 0.0;");
 		}
 		
 		PdeEquation pde = (PdeEquation)equation;		
