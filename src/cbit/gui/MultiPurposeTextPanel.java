@@ -15,11 +15,16 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,9 +110,23 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
             JTextComponent target = getTextComponent(e);            
             if (target != null) {
             	int pos = target.getCaretPosition();
+            	String text = null;
+           	 	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+           	 	try {
+					Transferable content = clipboard.getContents(null);
+					if (content != null && content.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+						text = (String)content.getTransferData(DataFlavor.stringFlavor);						
+					}
+				} catch (UnsupportedFlavorException e2) {
+					e2.printStackTrace();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
                 target.paste();
                 try {
-					highlightKeywords(target.getText().substring(pos), pos);
+                	if (text.length() > 0) {
+                		highlightKeywords(text, pos);
+                	}
 				} catch (BadLocationException e1) {
 					e1.printStackTrace();
 				}
