@@ -230,7 +230,8 @@ public void keyPressed(java.awt.event.KeyEvent e) {
 		return;
 	}
 	if (e.getSource() == getVCMLPane().getTextPane()) {
-		if (!e.isActionKey() && e.getKeyCode() != KeyEvent.VK_CONTROL && e.getKeyCode() != KeyEvent.VK_SHIFT) {
+		int keyCode = e.getKeyCode();
+		if (!e.isActionKey() && keyCode != KeyEvent.VK_CONTROL && keyCode != KeyEvent.VK_SHIFT) {
 			getApplyButton().setEnabled(true);	
 			getCancelButton().setEnabled(true);
 		}
