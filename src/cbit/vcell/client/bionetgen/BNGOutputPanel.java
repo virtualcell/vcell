@@ -1539,6 +1539,7 @@ private MultiPurposeTextPanel getBNGLInputPanel() {
 		try {
 			ivjBNGLInputPanel = new cbit.gui.MultiPurposeTextPanel();
 			ivjBNGLInputPanel.setAutoCompletionWords(getBNGAutoCompletionWords());
+			ivjBNGLInputPanel.setKeywords(getBNGkeywords());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1568,6 +1569,13 @@ private List<String> getBNGAutoCompletionWords() {
     words.add("simulate_ode({suffix=>ode,t_start=>0,t_end=>12,n_steps=>120});\n"); 
     words.add("simulate_ssa({suffix=>ssa,t_start=>0,t_end=>12,n_steps=>120});\n"); 
     words.add("writeSBML();\n");
+    return words;
+}
+
+private List<String> getBNGkeywords() {
+	List<String> words = new ArrayList<String>();
+    words.add("begin");
+    words.add("end");   
     return words;
 }
 

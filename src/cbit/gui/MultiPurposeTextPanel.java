@@ -99,6 +99,22 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	
 	private MyUndoableEditListener undoListener = new MyUndoableEditListener();
 
+	class MyPasteAction extends DefaultEditorKit.PasteAction {
+	
+		public void actionPerformed(ActionEvent e) {			
+            JTextComponent target = getTextComponent(e);            
+            if (target != null) {
+            	int pos = target.getCaretPosition();
+                target.paste();
+                try {
+					highlightKeywords(target.getText().substring(pos), pos);
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+            }
+        }
+	}
+	
 	class UndoAction extends AbstractAction {
 		public UndoAction() {
 			super(UNDO_ACTION);
@@ -190,7 +206,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		public void run() {
 			try {
 				getTextPane().getDocument().insertString(position, completion, null);
-				highlightKeywards(prefix + completion, position - prefix.length());
+				highlightKeywords(prefix + completion, position - prefix.length());
 				getTextPane().setCaretPosition(position + completion.length());
 				getTextPane().moveCaretPosition(position);
 				mode = Mode.COMPLETION;
@@ -432,6 +448,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 			am.put(COMMIT_ACTION, new CommitAction());
 			am.put(UNDO_ACTION, undoAction);
 			am.put(REDO_ACTION, redoAction);
+			am.put(DefaultEditorKit.pasteAction, new MyPasteAction());
 		}
 		return textPane;
 	}
@@ -486,14 +503,17 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	 *            java.lang.String
 	 */
 	public void setText(String text) {
+		textPane.getDocument().removeDocumentListener(this);
 		textPane.getDocument().removeUndoableEditListener(undoListener);
 		textPane.setText(text);	
 		try {
-			highlightKeywards(text, 0);
+			highlightKeywords(text, 0);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
+		textPane.getDocument().addDocumentListener(this);
 		textPane.getDocument().addUndoableEditListener(undoListener);
+		getTextPane().setCharacterAttributes(getDefaultStyle(), true);
 	}
 
 	/**
@@ -515,11 +535,8 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		}
 
 		clearSearchText();
-
-		if (autoCompletionWords == null || autoCompletionWords.size() < 1) {
-			return;
-		}
-		if (ev.getLength() != 1) {
+		
+		if (autoCompletionWords == null || autoCompletionWords.size() < 1 || ev.getLength() != 1) {
 			return;
 		}
 
@@ -528,7 +545,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		try {
 			content = textPane.getText(0, pos + 1);
 			char nextChar = textPane.getText(pos + 1, 1).charAt(0);
-			if (Character.isJavaIdentifierPart(nextChar)) {
+			if (isIdentifierPart(nextChar)) {
 				return;
 			}
 		} catch (BadLocationException e) {
@@ -610,8 +627,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 			while (index >= 0) {
 				try {
 					int end = index + s.length();
-					getHighlighter().addHighlight(index, end,
-							getHighlighterPainter());
+					getHighlighter().addHighlight(index, end, getHighlighterPainter());
 					index = content.indexOf(s, end);
 				} catch (BadLocationException e) {
 					e.printStackTrace();
@@ -699,7 +715,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		public Shape paintLayer(Graphics g, int offs0, int offs1, Shape bounds,
 				JTextComponent c, View view) {
 			currentColor = super.getColor();
-			if (searchStartOffset >= offs0 && searchEndOffset <= offs1) {
+			if (searchStartOffset <= offs0 && searchEndOffset >= offs1) {
 				currentColor = selectColor;
 			}
 			Shape shape = super.paintLayer(g, offs0, offs1, bounds, c, view);
@@ -737,11 +753,12 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		
 		int pos = textPane.getCaretPosition();
 				
+		char ch = content.charAt(pos - 1);	
 		// Find where the word starts
 		int w1;
-		for (w1 = pos - 1; w1 >= 0; w1--) {
+		for (w1 = Math.min(pos, content.length() - 1); w1 >= 0; w1--) {
 			char c = content.charAt(w1);
-			if (!Character.isJavaIdentifierPart(c)) {
+			if (!isIdentifierPart(c)) {
 				break;
 			}
 		}
@@ -749,20 +766,38 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		int w2;
 		for (w2 = pos; w2 < content.length(); w2 ++) {
 			char c = content.charAt(w2);
-			if (!Character.isJavaIdentifierPart(c)) {
+			if (!isIdentifierPart(c)) {
 				break;
 			}
 		}
 		if (w2 > w1) {
 			try {
 				String substr = content.substring(w1, w2);
-				if (substr.length() >= 4) {
-					((StyledDocument)getTextPane().getDocument()).setCharacterAttributes(w1, w2 - w1, 
+				((StyledDocument)getTextPane().getDocument()).setCharacterAttributes(w1, w2 - w1, 
 								keywords.contains(substr) ? getKeywordStyle() : getDefaultStyle(), true);
-				}
 				getTextPane().setCharacterAttributes(getDefaultStyle(), true);
 			} catch (IllegalStateException ex) {
 				ex.printStackTrace();
+			}
+		}
+		if (!isIdentifierPart(ch)) {
+			w2 = pos - 1;
+			for (w1 = pos - 2 ; w1 >= 0; w1 --) {
+				char c = content.charAt(w1);
+				if (!isIdentifierPart(c)) {
+					break;
+				}
+			}
+			w1 = Math.max(0, w1+1);
+			if (w2 > w1) {
+				try {
+					String substr = content.substring(w1, w2);
+					((StyledDocument)getTextPane().getDocument()).setCharacterAttributes(w1, w2 - w1, 
+									keywords.contains(substr) ? getKeywordStyle() : getDefaultStyle(), true);
+					getTextPane().setCharacterAttributes(getDefaultStyle(), true);
+				} catch (IllegalStateException ex) {
+					ex.printStackTrace();
+				}
 			}
 		}
 	}
@@ -830,7 +865,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		return defaultStyle;		
 	}
 	
-	private void highlightKeywards(String text, int position) throws BadLocationException {
+	private void highlightKeywords(String text, int position) throws BadLocationException {
 		if (keywords.size() < 1) {
 			return;
 		}
@@ -863,16 +898,20 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		if (keywords.size() < 1) {
 			return;
 		}
-		int keyCode = e.getKeyCode();
 		int modifier = e.getModifiersEx();
 		if (modifier != 0) {
 			return;
 		}
-		if (keyCode == KeyEvent.VK_DELETE || keyCode == KeyEvent.VK_BACK_SPACE || Character.isJavaIdentifierPart(e.getKeyChar())) {
+		int keyCode = e.getKeyCode();
+		if (!e.isActionKey() && keyCode != KeyEvent.VK_CONTROL && keyCode != KeyEvent.VK_SHIFT) {
 			highlightUpdate();
 		}
 	}
 
 	public void keyTyped(KeyEvent e) {
+	}
+	
+	public static boolean isIdentifierPart(char ch) {
+		return Character.isJavaIdentifierStart(ch) || Character.isDigit(ch);
 	}
 }
