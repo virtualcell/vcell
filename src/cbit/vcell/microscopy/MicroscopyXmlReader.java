@@ -14,6 +14,7 @@ import org.jdom.Element;
 
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
+import cbit.util.CommentStringTokenizer;
 import cbit.util.Extent;
 import cbit.util.Origin;
 import cbit.util.xml.XmlUtil;
