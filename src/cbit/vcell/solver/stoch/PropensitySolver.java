@@ -203,7 +203,8 @@ public class PropensitySolver {
 			//either root is 0, or number of roots equals to order.
 			if(!((totalRootCount == 1 && expectedRootCount == totalRootCount && rootExists[i][0]) || (totalRootCount>1 && expectedRootCount == totalRootCount)))
 			{
-				throw new MathException("Species "+ speciesNames[i] + " has wrong form in propensity function. Integers in "+speciesNames[i]+" binomials should start with 0 and increase consecutively. \n e.g. species1*(species1-1)*(species1-2)*species2*(speceis2-1)...");
+				throw new MathException("\n\nSpecies \'"+ speciesNames[i] + "\' has wrong form in propensity function. Hybrid solvers require strict propensity functions which should only contain the reactants in the function. \n\nIntegers in '" + speciesNames[i] + "' binomials should start with 0 and increase consecutively." + 
+						"e.g. species1*(species1-1)*(species1-2)*species2*(speceis2-1)...");
 			}
 		}
 		//get all the constraints(for expponets vars)

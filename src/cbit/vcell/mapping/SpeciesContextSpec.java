@@ -1242,49 +1242,59 @@ public String toString() {
 
 public Expression convertConcentrationToParticles(Expression iniConcentration) throws ExpressionException
 {
-	int iniParticles = 0; 
-
+	Expression iniParticlesExpr = null; 
 	Structure structure = getSpeciesContext().getStructure();
 	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
 	double structSize = sm.getSizeParameter().getExpression().evaluateConstant();
-	if (structure instanceof Membrane)
-	{
-		
+	if (structure instanceof Membrane) {
 		// convert concentration(particles/area) to number of particles
-		// particles = iniConcentration(molecues/um2)*size(um2)
-		iniParticles = (int)Math.round(iniConcentration.evaluateConstant()* structSize); 
-	}
-	else
-	{
-		
-		// convert concentration(particles/volumn) to number of particles
-		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
-		iniParticles = (int)Math.round(1e-9 * iniConcentration.evaluateConstant() * structSize * ReservedSymbol.N_PMOLE.getExpression().evaluateConstant());
+		// particles = iniConcentration(molecules/um2)*size(um2)
+		try {
+			iniParticlesExpr = new Expression((int)Math.round(iniConcentration.evaluateConstant()* structSize));
+		} catch (ExpressionException e) {
+			iniParticlesExpr = Expression.mult(iniConcentration, new Expression(structSize)).flatten();
+		}
+	} else {
+		// convert concentration(particles/volume) to number of particles
+		// particles = [iniConcentration(uM)*size(um3)]/KMOLE
+		try {
+			iniParticlesExpr = new Expression((int)Math.round(iniConcentration.evaluateConstant() * structSize / ReservedSymbol.KMOLE.getExpression().evaluateConstant()));
+		} catch (ExpressionException e) {
+			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
+			Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getExpression().evaluateConstant());
+			iniParticlesExpr = Expression.div(numeratorExpr, denominatorExpr).flatten();
+		}
 	}
 	
-	return new Expression(iniParticles);
+	return iniParticlesExpr;
 }
 
 public Expression convertParticlesToConcentration(Expression iniParticles) throws ExpressionException
 {
-	double iniConcentration = 0;
-	
+	Expression iniConcentrationExpr = null;
 	Structure structure = getSpeciesContext().getStructure();
 	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
 	double structSize = sm.getSizeParameter().getExpression().evaluateConstant();
-	if (structure instanceof Membrane)
-	{
+	if (structure instanceof Membrane) {
 		// convert number of particles to concentration(particles/area)
-		// iniConcentration(molecues/um2) = particles/size(um2)
-		iniConcentration = (iniParticles.evaluateConstant() * 1.0) / structSize; 
+		// iniConcentration(molecules/um2) = particles/size(um2)
+		try {
+			iniConcentrationExpr = new Expression((iniParticles.evaluateConstant() * 1.0) / structSize); 
+		} catch (ExpressionException e) {
+			iniConcentrationExpr = Expression.div(iniParticles, new Expression(structSize)).flatten();
+		}
+	} else {
+		// convert concentration(particles/volume) to number of particles
+		// particles = [iniParticles(uM)/size(um3)]*KMOLE
+		try {
+			iniConcentrationExpr = new Expression((iniParticles.evaluateConstant()*ReservedSymbol.KMOLE.getExpression().evaluateConstant() / structSize));
+		} catch (ExpressionException e) {
+			Expression numeratorExpr = Expression.mult(iniParticles, new Expression(ReservedSymbol.KMOLE.getExpression().evaluateConstant()));
+			Expression denominatorExpr = new Expression(structSize);
+			iniConcentrationExpr = Expression.div(numeratorExpr, denominatorExpr).flatten();
+		}
 	}
-	else
-	{
-		// convert concentration(particles/volumn) to number of particles
-		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
-		iniConcentration = (iniParticles.evaluateConstant() * 1.0) / (1e-9 * structSize * ReservedSymbol.N_PMOLE.getExpression().evaluateConstant());
-	}
-	return new Expression(iniConcentration);
+	return iniConcentrationExpr;
 }
 
 public SimulationContext getSimulationContext() {

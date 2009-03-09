@@ -131,7 +131,7 @@ public class NetCDFWriter {
 	 * file. And then feed in the data.
 	 * Creation date: (5/22/2007 5:36:03 PM)
 	 */
-	public void writeHybridInputFile(String[] parameterNames) throws Exception,cbit.vcell.parser.ExpressionException,IOException, InvalidRangeException
+	public void writeHybridInputFile(String[] parameterNames) throws Exception,cbit.vcell.parser.ExpressionException,IOException, MathException, InvalidRangeException
 	{
 		if(initialize())
 		{

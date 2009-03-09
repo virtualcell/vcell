@@ -35,10 +35,12 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class MathMapping implements ScopedSymbolTable {
 	
-	public static final String FUNC_NAME_SUFFIX_VAR_COUNT = "_Count";
-	public static final String FUNC_NAME_SUFFIX_VAR_CONCENTRATION = "_Conc";
-	public static final String FUNC_NAME_SUFFIX_VAR_INIT_COUNT = "_initCount";
-	public static final String FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION = "_init";
+	public static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
+	public static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
+	public static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION = "_init";
 	
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
@@ -57,7 +59,9 @@ public class MathMapping implements ScopedSymbolTable {
 	public static final int PARAMETER_ROLE_KFLUX = 2;
 	public static final int PARAMETER_ROLE_P = 3;
 	public static final int PARAMETER_ROLE_P_reverse = 4;
-	public static final int NUM_PARAMETER_ROLES = 5;
+	public static final int PARAMETER_ROLE_CONCENRATION = 5;
+	public static final int PARAMETER_ROLE_COUNT = 6;
+	public static final int NUM_PARAMETER_ROLES = 7;
 		
 	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
 	
@@ -241,6 +245,33 @@ public class MathMapping implements ScopedSymbolTable {
 
 	}
 	
+	public class SpeciesConcentrationParameter extends MathMappingParameter {
+		private SpeciesContextSpec speciesContextSpec = null;
+		
+		protected SpeciesConcentrationParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContextSpec argscSpec) {
+			super(argName,argExpression,argRole,argVCUnitDefinition);
+			this.speciesContextSpec = argscSpec;
+		}
+
+		public SpeciesContextSpec getSpeciesContextSpec() {
+			return speciesContextSpec;
+		}
+	}
+	
+	public class SpeciesCountParameter extends MathMappingParameter {
+		private SpeciesContextSpec speciesContextSpec = null;
+		
+		protected SpeciesCountParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContextSpec argscSpec) {
+			super(argName,argExpression,argRole,argVCUnitDefinition);
+			this.speciesContextSpec = argscSpec;
+		}
+
+		public SpeciesContextSpec getSpeciesContextSpec() {
+			return speciesContextSpec;
+		}
+	}
+
+
 	static {
 		System.out.println("MathMapping: capacitances must not be overridden and must be constant (used as literals in KVL)");
 	};
@@ -306,6 +337,59 @@ MathMapping.ProbabilityParameter addProbabilityParameter(String name, Expression
 	return newParameter;
 }
 
+MathMapping.SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn,SpeciesContextSpec argscSpec) throws PropertyVetoException {
+
+	MathMapping.SpeciesConcentrationParameter newParameter = new MathMapping.SpeciesConcentrationParameter(name,expr,role,unitDefn,argscSpec);
+	MathMapping.MathMappingParameter previousParameter = getMathMappingParameter(name);
+	if(previousParameter != null){
+		System.out.println("MathMapping.MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
+		if(!previousParameter.compareEqual(newParameter)){
+			throw new RuntimeException("MathMapping.MathMappingParameter addConcentrationParameter found duplicate parameter for name '"+name+"'.");
+		}
+		return (MathMapping.SpeciesConcentrationParameter)previousParameter;
+	}
+	//expression.bindExpression(this);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	setMathMapppingParameters(newParameters);
+	return newParameter;
+}
+
+MathMapping.SpeciesCountParameter addSpeciesCountParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn,SpeciesContextSpec argscSpec) throws PropertyVetoException {
+
+	MathMapping.SpeciesCountParameter newParameter = new MathMapping.SpeciesCountParameter(name,expr,role,unitDefn,argscSpec);
+	MathMapping.MathMappingParameter previousParameter = getMathMappingParameter(name);
+	if(previousParameter != null){
+		System.out.println("MathMapping.MathMappingParameter addCountParameter found duplicate parameter for name "+name);
+		if(!previousParameter.compareEqual(newParameter)){
+			throw new RuntimeException("MathMapping.MathMappingParameter addCountParameter found duplicate parameter for name '"+name+"'.");
+		}
+		return (MathMapping.SpeciesCountParameter)previousParameter;
+	}
+	//expression.bindExpression(this);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	setMathMapppingParameters(newParameters);
+	return newParameter;
+}
+
+SpeciesCountParameter getSpeciesCountParameter(SpeciesContext sc) {
+	MathMappingParameter[] mmParams = getMathMappingParameters();
+	for (int i = 0; i < mmParams.length; i++) {
+		if ( (mmParams[i] instanceof SpeciesCountParameter) && (((SpeciesCountParameter)mmParams[i]).getSpeciesContextSpec().getSpeciesContext() == sc)) {
+			return (SpeciesCountParameter)mmParams[i];
+		}
+	}
+	return null;
+}
+
+SpeciesConcentrationParameter getSpeciesConcentrationParameter(SpeciesContext sc) {
+	MathMappingParameter[] mmParams = getMathMappingParameters();
+	for (int i = 0; i < mmParams.length; i++) {
+		if ( (mmParams[i] instanceof SpeciesConcentrationParameter) && (((SpeciesConcentrationParameter)mmParams[i]).getSpeciesContextSpec().getSpeciesContext() == sc)) {
+			return (SpeciesConcentrationParameter)mmParams[i];
+		}
+	}
+	return null;
+}
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -454,23 +538,23 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 	try {
 		expUnitDef = VCUnitEvaluator.getUnitDefinition(origExp);
 		if (desiredExpUnitDef == null){
-			System.out.println("...........exp='"+origExp.infix()+"', desiredUnits are null");
+			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are null");
 			issueList.add(new cbit.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",cbit.util.Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
-			System.out.println("...........exp='"+origExp.infix()+"', evaluated Units are null");
+			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', evaluated Units are null");
 			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",cbit.util.Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
-			System.out.println("...........exp='"+origExp.infix()+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(),cbit.util.Issue.SEVERITY_WARNING));
+			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
-			System.out.println("...........exp='"+origExp.infix()+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(),cbit.util.Issue.SEVERITY_WARNING));
+			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
-		System.out.println(".........exp='"+origExp.infix()+"' exception='"+e.getMessage()+"'");
+		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
 		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
-		System.out.println(".........exp='"+origExp.infix()+"' exception='"+e.getMessage()+"'");
+		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
 		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
@@ -698,6 +782,15 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 		MathMapping.ProbabilityParameter probParm = (MathMapping.ProbabilityParameter)ste;
 		return probParm.getName();
 	}
+	if (ste instanceof MathMapping.SpeciesConcentrationParameter){
+		MathMapping.SpeciesConcentrationParameter concParm = (MathMapping.SpeciesConcentrationParameter)ste;
+		return concParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
+	}
+	if (ste instanceof MathMapping.SpeciesCountParameter){
+		MathMapping.SpeciesCountParameter countParm = (MathMapping.SpeciesCountParameter)ste;
+		return countParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+	}
+
 	if (ste instanceof ReservedSymbol){
 		return ste.getName();
 	}
@@ -781,10 +874,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	if (ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)ste;
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialConcentration){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION;
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialCount){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ FUNC_NAME_SUFFIX_VAR_INIT_COUNT;
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_DiffusionRate){
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_diffusionRate";
@@ -1746,7 +1839,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 						SpeciesContextSpecParameter spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 						// if initConc param expression is null, try initCount
 						if (spCInitParm.getExpression() == null) {
-							spCInitParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+							spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
 						}
 						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
 						Expression scsInitExpr = new Expression(getNameScope().getSymbolName(spCInitParm));
@@ -1776,7 +1869,6 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	// Boundary conditions (either function or constant)
 	//
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
 		SpeciesContextSpec.SpeciesContextSpecParameter bc_xm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueXm);
 		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 		if (bc_xm!=null && (bc_xm.getExpression() != null)){
@@ -1809,7 +1901,6 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	// advection terms (either function or constant)
 	//
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
 		SpeciesContextSpec.SpeciesContextSpecParameter advection_velX = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityX);
 		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 		if (advection_velX!=null && (advection_velX.getExpression() != null)){
