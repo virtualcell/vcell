@@ -141,7 +141,6 @@ public class FRAPInterpolationPanel extends JPanel {
 							double[] adjustedVals = adjustMobileFractions(primaryFrac, secFrac, isSetPrimaryMFrac);
 							//primary				
 							double value = adjustedVals[0];
-							mobileFractionTextField.setText(value+"");
 							mobileFractionSetButton.setEnabled(false);
 							int sliderValue = (int)
 								(((value-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*(double)mobileFractionSlider.getMaximum())/
@@ -153,9 +152,9 @@ public class FRAPInterpolationPanel extends JPanel {
 								sliderValue = mobileFractionSlider.getMaximum();
 							}
 							mobileFractionSlider.setValue(sliderValue);
+							mobileFractionTextField.setText(value+"");
 							//secondary
 							value = adjustedVals[1];
-							secondMobileFracTextField.setText(value+"");
 							secondMobileFracSetButton.setEnabled(false);
 							sliderValue = (int)
 								(((value-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())*(double)secondMobileFracSlider.getMaximum())/
@@ -167,6 +166,7 @@ public class FRAPInterpolationPanel extends JPanel {
 								sliderValue = secondMobileFracSlider.getMaximum();
 							}
 							secondMobileFracSlider.setValue(sliderValue);
+							secondMobileFracTextField.setText(value+"");
 							//immobile
 							immoFracValueLabel.setText(adjustedVals[2]+"");
 						}finally{

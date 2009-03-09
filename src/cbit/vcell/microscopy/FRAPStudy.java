@@ -97,6 +97,7 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
@@ -120,19 +121,13 @@ public class FRAPStudy implements Matchable{
 	private BioModel bioModel = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
-	private ExternalDataInfo refExternalDataInfo = null;
+	//we want to store reference data together with the model in .vfrap file. 
+	private SimpleReferenceData storedRefData = null;
+	
 	public static final String IMAGE_EXTDATA_NAME = "timeData";
 	public static final String ROI_EXTDATA_NAME = "roiData";
 	public static final String REF_EXTDATA_NAME = "refData";
 	
-	public ExternalDataInfo getRefExternalDataInfo() {
-		return refExternalDataInfo;
-	}
-
-
-	public void setRefExternalDataInfo(ExternalDataInfo refExternalDataInfo) {
-		this.refExternalDataInfo = refExternalDataInfo;
-	}
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	public static class FRAPModelParameters {
@@ -651,15 +646,7 @@ public class FRAPStudy implements Matchable{
 		return spatialAnalysisResults;
 	}
 	
-	public static void runFVSolverStandalone(
-			File simulationDataDir,
-			SessionLog sessionLog,
-			Simulation sim,
-			ExternalDataIdentifier imageDataExtDataID,
-			ExternalDataIdentifier roiExtDataID,
-			ProgressListener progressListener) throws Exception{
-		runFVSolverStandalone(simulationDataDir, sessionLog, sim, imageDataExtDataID, roiExtDataID, progressListener, false);
-	}
+
 	
 	public static void runFVSolverStandalone(
 		File simulationDataDir,
@@ -688,8 +675,11 @@ public class FRAPStudy implements Matchable{
 		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
 		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
 		//
-		simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
-		simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+		if(bCheckSteadyState)
+		{
+			simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+			simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
+		}
 		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
 		fvSolver.startSolver();
 		
@@ -1034,7 +1024,7 @@ public class FRAPStudy implements Matchable{
 		newSimulation.getMeshSpecification().setSamplingSize(cellROI_2D.getISize());
 		newSimulation.getSolverTaskDescription().setTimeStep(timeStep);
 //		newSimulation.getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec(10));
-		
+//		newSimulation.getSolverTaskDescription().setSolverDescription(SolverDescription.)
 		return bioModel;
 	}
 	
@@ -1746,7 +1736,7 @@ public class FRAPStudy implements Matchable{
 			{
 				return false;
 			}
-			if (!cbit.util.Compare.isEqualOrNull(getRefExternalDataInfo(),fStudy.getRefExternalDataInfo()))
+			if (!cbit.util.Compare.isEqualOrNull(getStoredRefData(),fStudy.getStoredRefData()))
 			{
 				return false;
 			}
@@ -1756,7 +1746,14 @@ public class FRAPStudy implements Matchable{
 		return false;
 	}
 
+	public SimpleReferenceData getStoredRefData() {
+		return storedRefData;
+	}
 
+	public void setStoredRefData(SimpleReferenceData storedRefData) {
+		this.storedRefData = storedRefData;
+	}
+	
 	public FRAPModelParameters getFrapModelParameters() {
 		return frapModelParameters;
 	}

@@ -97,6 +97,7 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.opt.SimpleReferenceData;
 
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
@@ -245,7 +246,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		private final FrapChangeInfo frapChangeInfo;
 		private final boolean areSimeFilesOK;
 		private final boolean areExtDataFileOK;
-		private final boolean isRefDataFileOK;
 		public CurrentSimulationDataState() throws Exception{
 			if(getSavedFrapModelInfo() == null){
 				throw new Exception("CurrentSimulationDataState can't be determined because no savedFrapModelInfo available");
@@ -256,7 +256,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				areExternalDataOK(getLocalWorkspace(),
 				getFrapStudy().getFrapDataExternalDataInfo(),
 				getFrapStudy().getRoiExternalDataInfo());
-			isRefDataFileOK = areReferenceDataOK(getLocalWorkspace(), getFrapStudy().getRefExternalDataInfo());
 		}
 		public boolean isDataInvalidBecauseModelChanged(){
 			return frapChangeInfo.hasAnyChanges();
@@ -641,7 +640,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							return false;
 						}
 					}
-					if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null && currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
+					if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
 					{
 						runSimulation(true, false);
 					}
@@ -652,7 +651,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					return false;
 				}else{
 					if(!getResultsSummaryPanel().hasData()){
-						if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null && currentSimulationDataState.isRefDataFileOK && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
+						if(currentSimulationDataState != null && currentSimulationDataState.frapChangeInfo != null  && ! currentSimulationDataState.frapChangeInfo.hasROIChanged())
 						{
 							spatialAnalysis(null, false);//creates progress automatically if null
 						}
@@ -802,7 +801,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		newFrapStudy.setXmlFilename(getFrapStudy().getXmlFilename());
 		newFrapStudy.setFrapDataExternalDataInfo(getFrapStudy().getFrapDataExternalDataInfo());
 		newFrapStudy.setRoiExternalDataInfo(getFrapStudy().getRoiExternalDataInfo());
-		newFrapStudy.setRefExternalDataInfo(getFrapStudy().getRefExternalDataInfo());
+		newFrapStudy.setStoredRefData(getFrapStudy().getStoredRefData());
 		setFrapStudy(newFrapStudy,false);
 	}
 	
@@ -1071,10 +1070,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							if(!areExternalDataOK(getLocalWorkspace(),newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo())){
 								newFRAPStudy.setFrapDataExternalDataInfo(null);
 								newFRAPStudy.setRoiExternalDataInfo(null);
-							}
-							if(!areReferenceDataOK(getLocalWorkspace(),newFRAPStudy.getRefExternalDataInfo()))
-							{
-								newFRAPStudy.setRefExternalDataInfo(null);
 							}
 							newSavedFrapModelInfo = FRAPStudyPanel.createSavedFrapModelInfo(newFRAPStudy);
 							newVFRAPFileName = inFile.getAbsolutePath();
@@ -1452,7 +1447,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							simulation,
 							getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 							getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
-							runSimProgressListener);
+							runSimProgressListener, false);
 						
 						if(!bSpatialAnalysis){
 							pp.stop();
@@ -1952,17 +1947,18 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				"Working...",true,true)
 			);
 		if(pp != null){pp.start();}
-
+		final FRAPStudy fStudy = getFrapStudy();
 		new Thread(new Runnable(){public void run(){
 			try{
 				final double SPATIAL_ANLYSIS_PROGRESS_FRACTION = .5;
 				final double SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM = 1;
+				
 				DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
 					new DataSetControllerImpl.ProgressListener(){
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
+								if(!bRefSimulation && fStudy.getStoredRefData()!= null)
 								{
 									percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
 								}
@@ -1970,7 +1966,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
+								if(!bRefSimulation && fStudy.getStoredRefData()!= null)
 								{
 									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
 								}
@@ -2021,7 +2017,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
+								if(frapOptData != null && !bRefSimulation)
 								{
 									percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
 								}
@@ -2029,7 +2025,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								if(frapOptData != null && !frapOptData.isLoadRefDataNeeded(bRefSimulation))
+								if(frapOptData != null && !bRefSimulation)
 								{
 									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
 								}
@@ -2049,14 +2045,37 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 						}
 				};
-				if(bRefSimulation || frapOptData == null)
+//				if(bRefSimulation || frapOptData == null)
+//				{
+//					frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener, bRefSimulation);
+//				}
+//				if(progressListener != null){
+//					progressListener.updateProgress(1.0);
+//				}
+
+				if(bRefSimulation)
 				{
-					frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener, bRefSimulation);
+					frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener);
 				}
+				else
+				{
+					if(frapOptData == null)
+					{
+						if(getFrapStudy().getStoredRefData() != null)
+						{
+							frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), getFrapStudy().getStoredRefData());
+						}
+						else
+						{
+							//reference data is null, it is not stored, we have to run ref simulation then
+							frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener);
+						}
+					}
+				}
+				
 				if(progressListener != null){
 					progressListener.updateProgress(1.0);
 				}
-
 				NewFRAPFromParameters newFRAPFromParameters =
 					new NewFRAPFromParameters (){
 						public void create(Parameter[] newParameters) {

@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.zip.DeflaterOutputStream;
+
 import org.jdom.Element;
+import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
+import cbit.vcell.opt.SimpleReferenceData;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -335,12 +338,9 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 		roiEDINode.addContent( getXML(param.getRoiExternalDataInfo().getExternalDataIdentifier()) );
 		frapStudyNode.addContent( roiEDINode );
 	}
-	//Get ExternalDataIdentifier (for reference data)
-	if (param.getRefExternalDataInfo()!=null){
-		Element refEDINode = new Element(MicroscopyXMLTags.RefExternalDataInfoTag);
-		refEDINode.setAttribute(MicroscopyXMLTags.FilenameAttrTag,param.getRefExternalDataInfo().getFilename());
-		refEDINode.addContent( getXML(param.getRefExternalDataInfo().getExternalDataIdentifier()) );
-		frapStudyNode.addContent( refEDINode );
+	//Get Reference Data 
+	if (param.getStoredRefData()!=null){
+		frapStudyNode.addContent( getXML(param.getStoredRefData()) );
 	}
 	//Get BioModel
 	if (param.getBioModel()!=null){
@@ -352,5 +352,38 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 	}
 	return frapStudyNode;
 }
+
+private static org.jdom.Element getXML(SimpleReferenceData referenceData)
+{
+    Element referenceDataElement = new Element(MicroscopyXMLTags.ReferenceDataTag);
+    referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumRowsAttribute,Integer.toString(referenceData.getNumRows()));
+    referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute,Integer.toString(referenceData.getNumColumns()));
+
+    Element dataColumnListElement = new Element(ParameterEstimationTaskXMLPersistence.DataColumnListTag);
+    for (int i = 0; i < referenceData.getColumnNames().length; i++){
+          Element dataColumnElement = new Element(ParameterEstimationTaskXMLPersistence.DataColumnTag);
+          dataColumnElement.setAttribute(ParameterEstimationTaskXMLPersistence.NameAttribute,referenceData.getColumnNames()[i]);
+          dataColumnElement.setAttribute(ParameterEstimationTaskXMLPersistence.WeightAttribute,Double.toString(referenceData.getColumnWeights()[i]));
+          dataColumnListElement.addContent(dataColumnElement);
+    }
+    referenceDataElement.addContent(dataColumnListElement);
+
+    Element dataRowListElement = new Element(ParameterEstimationTaskXMLPersistence.DataRowListTag);
+    for (int i = 0; i < referenceData.getNumRows(); i++){
+          Element dataRowElement = new Element(ParameterEstimationTaskXMLPersistence.DataRowTag);
+          String rowText = "";
+          for (int j = 0; j < referenceData.getNumColumns(); j++){
+                if (j>0){
+                      rowText += " ";
+                }
+                rowText += referenceData.getRowData(i)[j];
+          }
+          dataRowElement.addContent(rowText);
+          dataRowListElement.addContent(dataRowElement);
+    }
+    referenceDataElement.addContent(dataRowListElement);
+
+    return referenceDataElement;
+}//get simple reference data element
 
 }
