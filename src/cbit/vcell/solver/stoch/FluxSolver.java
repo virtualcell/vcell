@@ -37,8 +37,8 @@ public class FluxSolver {
 	
 	}
 	public static class FluxFunction {
-		private String speciesInside;
-		private String speciesOutside;
+		private SpeciesContext speciesContextInside;
+		private SpeciesContext speciesContextOutside;
 		private Expression rateToInside = null; // the only symbols allowed in the expression are species outside and constant parameters.
 		private Expression rateToOutside = null; // the only symbols allowed in the expression are species inside and constant parameters.
 		
@@ -59,28 +59,28 @@ public class FluxSolver {
 			this.rateToOutside = rateToOutside;
 		}
 
-		public String getSpeciesInside() {
-			return speciesInside;
+		public SpeciesContext getSpeciesContextInside() {
+			return speciesContextInside;
 		}
 
-		public void setSpeciesInside(String speciesInside) {
-			this.speciesInside = speciesInside;
+		public void setSpeciesContextInside(SpeciesContext speciesInside) {
+			this.speciesContextInside = speciesInside;
 		}
 
-		public String getSpeciesOutside() {
-			return speciesOutside;
+		public SpeciesContext getSpeciesContextOutside() {
+			return speciesContextOutside;
 		}
 
-		public void setSpeciesOutside(String speciesOutside) {
-			this.speciesOutside = speciesOutside;
+		public void setSpeciesContextOutside(SpeciesContext speciesOutside) {
+			this.speciesContextOutside = speciesOutside;
 		}
 			
 		public void show()
 		{
 			System.out.println("flux rate to inside:"+ getRateToInside());
 			System.out.println("flux rate to outside:" + getRateToOutside());
-			System.out.println("species inside:" + getSpeciesInside());
-			System.out.println("species outside:" + getSpeciesOutside());
+			System.out.println("species context inside:" + getSpeciesContextInside());
+			System.out.println("species context outside:" + getSpeciesContextOutside());
 		}
 	}
 	
@@ -113,8 +113,8 @@ public class FluxSolver {
 		}
 		//get species inside the membrane where the flux happens
 		SpeciesContext sc_inside = ((FluxReaction)rs).getFlux(featureInside).getSpeciesContext();
-		ff.setSpeciesOutside(sc_outside.getName());
-		ff.setSpeciesInside(sc_inside.getName());
+		ff.setSpeciesContextOutside(sc_outside);
+		ff.setSpeciesContextInside(sc_inside);
 		
 		Expression p1 = null;//permeability for Sout
 		Expression p2 = null;//permeability for Sin

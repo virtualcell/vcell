@@ -2,6 +2,8 @@ package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 import jscl.math.Generic;
 import jscl.math.operator.Factorial;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
@@ -21,6 +23,8 @@ import cbit.vcell.parser.*;
 import java.util.*;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.math.Action;
 import cbit.util.Issue;
 /**
@@ -42,109 +46,67 @@ public class StochMathMapping extends MathMapping {
 		super(simContext);
 	}
 
-
 /**
- * Convert rate constant (k, in terms of concentration) to rate constant (c, in terms of number of particles)
- * Creation date: (10/13/2006 5:23:41 PM)
- * @return double
- * @param arg_reacPart cbit.vcell.model.ReactionParticipant[]
+ * getExpressionConcToAmt : converts the concentration expression ('concExpr') to an expression of the number of particles. 
+ * 		If argument 'speciesContext' is on a membrane, particlesExpr = concExpr * size_of_Mem. If 'speciesContext' is in 
+ * 		feature, particlesExpr = (concExpr * size_of_Feature)/KMOLE.
+ * @param concExpr
+ * @param speciesContext
+ * @return
+ * @throws MappingException
+ * @throws ExpressionException
  */
-private double concentrationRateToParticleRate(double rate_k, ReactionParticipant[] arg_reacPart) 
+public Expression getExpressionConcToAmt(Expression concExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
 {
-	int factorialStoi = 1; //multiply all the factorial of reactant's stoi together.
-	int pCount = 0; // count total number of particles needed in a reaction 
-	for(int i=0;i<arg_reacPart.length;i++)
-	{
-		if(arg_reacPart[i] instanceof Reactant)
-		{
-			factorialStoi = factorialStoi * (flanagan.math.Fmath.factorial(arg_reacPart[i].getStoichiometry()));
-			pCount = pCount +arg_reacPart[i].getStoichiometry();
-		}
-		// when the sum of reactant's stois greater than 4, the possibility for the reaction to happen is nearly 0 (since the volue is 1e-15 Liter)
-		// if the pCount is 4, the rate c is already at the level of (le-15) power -3. will be overflow soon.
-		if (pCount > 4) break;
-	}
-	if (pCount <= 4)
-	{
-		return rate_k*factorialStoi/Math.pow( StructureMapping.getDefaultAbsoluteSize(),(pCount-1));
-	}
-	System.out.println("\n Impossible reaction! The sum of reactant's stoichiometry is "+pCount+".");
-	return 0;
-}
+	Expression particlesExpr = null;	//to create an expression for number of particles 
 
-
-/**
- * Get initial particles from initial concentration. 
- * Creation date: (10/26/2006 4:40:25 PM)
- * @return cbit.vcell.parser.Expression,  initial particles expression
- * @param iniConcentration cbit.vcell.parser.Expression, initial concentration expression
- * @param speciesContext cbit.vcell.model.SpeciesContext
- */
-public Expression getIniExpressionConcToAmt(String iniConcentration, SpeciesContext speciesContext) throws MappingException, ExpressionException
-{
-	String iniParticles = "";//to create an expression for number of particles 
-
-	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContext.getStructure());
-	StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
 	if (speciesContext.getStructure() instanceof Membrane)
 	{
 		// convert concentration(particles/area) to number of particles
-		iniParticles = iniConcentration + "*" + getMathSymbol0(parm, sm); // particles = iniConcentration(molecues/um2)*size(um2)
+		particlesExpr = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize().getName())); // particles = concentration(molecues/um2) * size(um2)
 	}
 	else
 	{
-		// convert concentration(particles/volumn) to number of particles
-		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
-		iniParticles = "1e-9*"+iniConcentration + "*" + getMathSymbol0(parm, sm) + "*" + ReservedSymbol.N_PMOLE.getName();
+		// convert number of particles to concentration(particles/volume)
+		// particles = [iniConcentration(uM)*size(um3)]/KMOLE
+		Expression numeratorExpr = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize().getName()));
+		Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+		particlesExpr = Expression.div(numeratorExpr, denominatorExpr);
 	}
 	
-	return new Expression(iniParticles);
+	return particlesExpr;
 }
 
-public Expression getExpressionConcToAmt(String concentration, SpeciesContext speciesContext) throws MappingException, ExpressionException
+/**
+ * getExpressionAmtToConc : converts the particles expression ('particlesExpr') to an expression for concentration. 
+ * 		If argument 'speciesContext' is on a membrane, concExpr = particlesExpr/size_of_Mem. If 'speciesContext' is in 
+ * 		feature, concExpr = (particlesExpr/size_of_Feature)*KMOLE.
+ * @param particlesExpr
+ * @param speciesContext
+ * @return
+ * @throws MappingException
+ * @throws ExpressionException
+ */
+public Expression getExpressionAmtToConc(Expression particlesExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
 {
-	String particles = "";//to create an expression for number of particles 
+	Expression concentrationExpr = null;	//to create an expression for concentration 
 
-	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContext.getStructure());
-	StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
-	if (speciesContext.getStructure() instanceof Membrane)
-	{
-		// convert concentration(particles/area) to number of particles
-		particles = concentration + "*" + getMathSymbol0(parm, sm); // particles = concentration(molecues/um2) * size(um2)
-	}
-	else
-	{
-		// convert number of particles to concentration(particles/volumn)
-		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
-		particles = "1e-9*"+concentration + "*" + getMathSymbol0(parm, sm) + "*" + ReservedSymbol.N_PMOLE.getName();
-	}
-	
-	return new Expression(particles);
-}
-
-public Expression getExpressionAmtToConc(String particles, SpeciesContext speciesContext) throws MappingException, ExpressionException
-{
-	String concentration = "";//to create an expression for concentration 
-
-	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContext.getStructure());
-	StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
 	if (speciesContext.getStructure() instanceof Membrane)
 	{
 		// convert number of particles to concentration(particles/area) 
-		concentration = particles + "/" + getMathSymbol0(parm, sm); // particles/size(um2) = concentration(molecues/um2)
+		concentrationExpr = Expression.div(particlesExpr, new Expression(speciesContext.getStructure().getStructureSize().getName())); // particles/size(um2) = concentration(molecues/um2)
 	}
 	else
 	{
-		// convert number of particles to concentration(particles/volumn) 
-		// concentration(uM) = (particles *1e9)/(size(um3)*N_pmole)
-		concentration = "(" + particles + "* 1e9" + ")/(" + getMathSymbol0(parm, sm) + "*" + ReservedSymbol.N_PMOLE.getName() + ")";
+		// convert number of particles to concentration(particles/volume) 
+		// concentration(uM) = [particles/size(um3)]*KMOLE)
+		Expression numeratorExpr = Expression.mult(particlesExpr, new Expression(ReservedSymbol.KMOLE.getName()));
+		Expression denominatorExpr = new Expression(speciesContext.getStructure().getStructureSize().getName());
+		concentrationExpr = Expression.div(numeratorExpr, denominatorExpr);
 	}
 	
-	return new Expression(concentration);
+	return concentrationExpr;
 }
-
-
-
 
 
 	/**
@@ -171,259 +133,177 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 	Expression probExp = null;
 	//get kinetics of the reaction step
 	Kinetics kinetics = reactionStep.getKinetics();
-	String rateConstant = ""; //to compose the probability expression
-	String reacPosibility = ""; //to compose the probability expression
+	Expression rateConstantExpr = null; 	//to compose the probability expression
+	Expression rxnProbabilityExpr = null; 	//to compose the probability expression
 	//the structure where reaction happens
 	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure());
-	if(isForwardDirection) // forward reaction
-	{
-		//get the reaction rate constant and convert it to rate of Number of particles
-		//for HMMs, it's a bit complicated. Vmax/(Km+s)-->Vmaz*Size_s/(Km*Size_s+Ns)
-		
-		if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
+	try {
+		if(isForwardDirection) // forward reaction
 		{
-			rateConstant = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getName();
-			//rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward), sm);????????????
-			//System.out.println("kinetic constant name scope:"+kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getNameScope());
-		}
-		/*else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_irreversible.getName())==0)
-	    {
-			rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Vmax), sm);
-			ReactionParticipant[] tempart = reactionStep.getReactionParticipants();
-			for(int k =0; k<tempart.length; k++)
+			//get the reaction rate constant and convert it to rate of Number of particles
+			//for HMMs, it's a bit complicated. Vmax/(Km+s)-->Vmax*Size_s/(Km*Size_s+Ns)
+			if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 			{
-				if(tempart[k] instanceof Reactant)
-				{
-					StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(tempart[k].getStructure());
-					//rateconstant=Vmax/(Km+s)=Vmax*Size_s/(Km*Size_s+Ns)
-					rateConstant = rateConstant+"*"+getMathSymbol0(reactSM.getParameterFromRole(StructureMapping.ROLE_Size),reactSM)+"/("+getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Km), sm)+"*"+getMathSymbol0(reactSM.getParameterFromRole(StructureMapping.ROLE_Size),reactSM)+"+"+tempart[k].getSpeciesContext().getName()+")";
-					break; //there is only one reactant in HMM reactions
-				}
+				KineticsParameter kfp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward); 
+				rateConstantExpr = new Expression(getNameScope().getSymbolName(kfp));
+				rateConstantExpr.bindExpression(this);
 			}
-		}
-	    else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_reversible.getName())==0)
-	    {
-			rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_VmaxFwd), sm);
-			ReactionParticipant[] tempart = reactionStep.getReactionParticipants();
-			for(int k =0; k<tempart.length; k++)
-			{
-				if(tempart[k] instanceof Reactant)
-				{
-					StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(tempart[k].getStructure());
-					//rateconstant=Vmax/(Km+s)=Vmax*Size_s/(Km*Size_s+Ns)
-					rateConstant = rateConstant+"*"+getMathSymbol0(reactSM.getParameterFromRole(StructureMapping.ROLE_Size),reactSM)+"/("+getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmFwd), sm)+"*"+getMathSymbol0(reactSM.getParameterFromRole(StructureMapping.ROLE_Size),reactSM)+"+"+tempart[k].getSpeciesContext().getName()+")";
-					break; //there is only one reactant in HMM reactions
-				}
+		    // count the structure size from the product side(location where the reaction happens actually). rateConstant*(feature_size*KMole OR membrane_Size)
+		    if(sm.getStructure() instanceof Membrane) {
+		    	rateConstantExpr = Expression.mult(rateConstantExpr, new Expression(sm.getStructure().getStructureSize().getName()));
+		    } else {
+		    	Expression numeratorExpr = Expression.mult(rateConstantExpr, new Expression(sm.getStructure().getStructureSize().getName()));
+		    	Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+		    	rateConstantExpr = Expression.div(numeratorExpr, denominatorExpr);
 			}
-		}
-	    else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.General.getName())==0)
-	    {	
-		    rateConstant = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Rate).getExpression().infix();
-		}*/
-	    // count the structure size from the product side(location where the reaction happens actually). rateConstant*(feature_size*KMole OR membrane_Size)
-	    if(sm.getStructure() instanceof Membrane)
-	    {
-			rateConstant = rateConstant + "*" + sm.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-	    }
-	    else
-	    {
-		    rateConstant = rateConstant + "*" + sm.getParameterFromRole(StructureMapping.ROLE_Size).getName() + "/" + ReservedSymbol.KMOLE.getName();
-		}
-		
-		
-		//complete the probability expression by the reactants' stoichiometries if it is Mass Action rate law
-		if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
-		{
-			ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 			
-			for (int i=0; i<reacPart.length; i++)
+			//complete the probability expression by the reactants' stoichiometries if it is Mass Action rate law
+			if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 			{
-				int stoi = 0;
-				if(reacPart[i] instanceof Reactant) 
-				{ 
-					stoi = ((Reactant)reacPart[i]).getStoichiometry();
-					//******the following part is to form the s*(s-1)(s-2)..(s-stoi+1).portion of the probability rate.
-					StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(reacPart[i].getStructure());
-					String reactStructureSize ="";
-					//convert speceis' unit from moles/liter to molecues.
-					if(reactSM.getStructure() instanceof Membrane)
-					{
-						reactStructureSize = "1/" + reactSM.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-					}
-					else
-					{
-						reactStructureSize = ReservedSymbol.KMOLE.getName() + "/" + reactSM.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-					}
-					//s*(s-1)(s-2)..(s-stoi+1)
-					for(int j=0; j<stoi;j++)
-					{
-						if(j==0)
-						{
-							reacPosibility = reacPosibility + ((Reactant)reacPart[i]).getSpeciesContext().getName();
-						}
-						else
-						{
-							reacPosibility = reacPosibility + "(" +((Reactant)reacPart[i]).getSpeciesContext().getName()+"-"+j+")";
-						}
-						if(j<(stoi-1)) reacPosibility = reacPosibility + "*";	
-					}
-
-					if(stoi == 1)
-						reacPosibility = reacPosibility + "*" + reactStructureSize;
-					else if (stoi > 1)
-						reacPosibility = reacPosibility + "*" + "pow(" + reactStructureSize + "," + stoi + ")";
-					reacPosibility = reacPosibility + "*";
-				}
-			}
-			int len = reacPosibility.length();
-			if(len > 0) reacPosibility = reacPosibility.substring(0,(len-1));
-		}
-	}
-	else // reverse reaction
-	{
-		
-		if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
-		{
-			rateConstant = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getName();
-		}
-		/*else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_reversible.getName())==0)
-	    {
-			rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_VmaxRev), sm);
-			ReactionParticipant[] tempart = reactionStep.getReactionParticipants();
-			for(int k =0; k<tempart.length; k++)
-			{
-				if(tempart[k] instanceof Product)
+				ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
+				for (int i=0; i<reacPart.length; i++)
 				{
-					StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(tempart[k].getStructure());
-					//rateconstant=Vmax/(Km+s)=Vmax*Size_s/(Km*Size_s+Ns)
-					rateConstant = rateConstant+"*"+getMathSymbol0(reactSM.getParameterFromRole(StructureMapping.ROLE_Size),reactSM)+"/("+getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmRev), sm)+"*"+getMathSymbol0(reactSM.getParameterFromRole(StructureMapping.ROLE_Size),reactSM)+"+"+tempart[k].getSpeciesContext().getName()+")";
-					break; //there is only one reactant in HMM reactions
+					int stoichiometry = 0;
+					Expression tempExpr = null;
+					if(reacPart[i] instanceof Reactant) 
+					{ 
+						stoichiometry = ((Reactant)reacPart[i]).getStoichiometry();
+						//******the following part is to form the s*(s-1)(s-2)..(s-stoi+1).portion of the probability rate.
+						StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(reacPart[i].getStructure());
+						Expression reactStructSizeExpr = null;
+						//convert speceis' unit from moles/liter to molecules.
+						if(reactSM.getStructure() instanceof Membrane) {
+							reactStructSizeExpr = Expression.invert(new Expression(reactSM.getStructure().getStructureSize().getName()));
+						} else {
+							Expression numExpr = new Expression(ReservedSymbol.KMOLE.getName());
+							Expression denomExpr = new Expression(reactSM.getStructure().getStructureSize().getName());
+							reactStructSizeExpr =  Expression.div(numExpr, denomExpr);
+						}
+						//s*(s-1)(s-2)..(s-stoi+1)
+						SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[i].getSpeciesContext());
+						for(int j = 0; j < stoichiometry; j++) {
+							if(j == 0) {
+								tempExpr = new Expression(spCountParam.getName());
+							} else {
+								tempExpr = Expression.mult(tempExpr, new Expression(spCountParam.getName()+"-"+j));
+							}
+						}
+	
+						if(stoichiometry == 1) {
+							tempExpr = Expression.mult(tempExpr, reactStructSizeExpr);
+						} else if (stoichiometry > 1) {
+							// rxnProbExpr * (structSize^stoichiometry)
+							Expression powerExpr = Expression.power(reactStructSizeExpr, new Expression(stoichiometry));
+							tempExpr = Expression.mult(tempExpr, powerExpr);
+						}
+						if (rxnProbabilityExpr == null) {
+							rxnProbabilityExpr = new Expression(tempExpr);
+						} else {
+							rxnProbabilityExpr = Expression.mult(rxnProbabilityExpr, tempExpr);
+						}
+					}
 				}
 			}
-		}*/
-	    // count the structure size from the product side(location where the reaction happens actually). rateConstant*(feature_size*KMole OR membrane_Size) 
-	    if(sm.getStructure() instanceof Membrane)
-	    {
-			rateConstant = rateConstant + "*" + sm.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-	    }
-	    else
-	    {
-		    rateConstant = rateConstant + "*" + sm.getParameterFromRole(StructureMapping.ROLE_Size).getName() + "/" + ReservedSymbol.KMOLE.getName();
-		}
-				
-			
-		//complete the rest part of the probability expression by the products' stoichiometries.
-		if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
+		} 
+		else // reverse reaction
 		{
-			ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
-			
-			for (int i=0; i<reacPart.length; i++)
+			if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 			{
-				int stoi = 0;
-				if(reacPart[i] instanceof Product) 
-				{ 
-					stoi = ((Product)reacPart[i]).getStoichiometry();
-					//******the following part is to form the s*(s-1)*(s-2)...(s-stoi+1).portion of the probability rate.
-					StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(reacPart[i].getStructure());
-					String reactStructureSize ="";
-					//convert speceis' unit from moles/liter to molecues. 
-					if(reactSM.getStructure() instanceof Membrane)
-					{
-						reactStructureSize = "1/" + reactSM.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-					}
-					else
-					{
-						reactStructureSize = ReservedSymbol.KMOLE.getName() + "/" + reactSM.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-					}
-					//s*(s-1)*(s-2)...(s-stoi+1)
-					for(int j=0; j<stoi;j++)
-					{
-						if (j == 0)
-						{
-							reacPosibility = reacPosibility + ((Product)reacPart[i]).getSpeciesContext().getName();
-						}
-						else
-						{
-							reacPosibility = reacPosibility + "(" +((Product)reacPart[i]).getSpeciesContext().getName()+"-"+j+")";
-						}
-						if(j<(stoi-1)) reacPosibility = reacPosibility + "*";	
-					}
-					if(stoi == 1)
-						reacPosibility = reacPosibility + "*" + reactStructureSize;
-					else if (stoi > 1)
-						reacPosibility = reacPosibility + "*" + "pow(" + reactStructureSize + "," + stoi + ")";
-					reacPosibility = reacPosibility + "*";
-				}
+				KineticsParameter krp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse); 
+				rateConstantExpr = new Expression(getNameScope().getSymbolName(krp));
+				rateConstantExpr.bindExpression(this);
 			}
-			int len = reacPosibility.length();
-			if(len > 0) reacPosibility = reacPosibility.substring(0,(len-1));
-		}
-	}
-	try
-	{
-		if(rateConstant.length() == 0)
-		{
-			throw new MappingException("Can not find reaction rate constant in reaction: "+ reactionStep.getName());
-		}
-		else if(reacPosibility.length() == 0)
-	    {
-		 	probExp = new Expression(rateConstant);   
-		}
-	    else if((rateConstant.length() > 0) && (reacPosibility.length() > 0))
-	    {
-			probExp = new Expression(rateConstant+"*"+reacPosibility);
-	    }
-		
-		//if it is general, substitute the parameter with mathsymbol and reaction participants s with s/Size-s
-		/*if(kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.General.getName())==0)
-		{
-			ReactionParticipant[] tempart = reactionStep.getReactionParticipants();
-			//substitute parameters with mathsymbol(e.g. if there is "a" para in reaction1, subsitute it to "a_reaction1" in reaction1 if there are "a"s in different reactions )
-			String symbols[] = probExp.getSymbols();
-			for (int k = 0;symbols!=null && k < symbols.length; k++){
-				Kinetics.KineticsParameter kp = reactionStep.getKinetics().getKineticsParameter(symbols[k]);
-				if (kp != null)
-				{
-					if( getMathSymbol0(kp,sm).compareTo(symbols[k]) !=0)
-					{
-						probExp.substituteInPlace(new Expression(symbols[k]), new Expression(getMathSymbol0(kp,sm)));	
-					}
-				}
+		    // count the structure size from the product side(location where the reaction happens actually). rateConstant*(feature_size*KMole OR membrane_Size) 
+		    if(sm.getStructure() instanceof Membrane) {
+				rateConstantExpr = Expression.mult(rateConstantExpr, new Expression(sm.getStructure().getStructureSize().getName()));
+		    } else {
+		    	Expression numeratorExpr = Expression.mult(rateConstantExpr, new Expression(sm.getStructure().getStructureSize().getName()));
+		    	Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+		    	rateConstantExpr = Expression.div(numeratorExpr, denominatorExpr);
 			}
 					
-			//substitute species s with s/Size_s
-			for(int k =0; k<tempart.length; k++)
+			//complete the remaining part of the probability expression by the products' stoichiometries.
+			if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 			{
-				Expression orgExp = new Expression(tempart[k].getSpeciesContext().getName());
-				StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(tempart[k].getStructure());
-				String reactStructureSize ="";
-				try
+				ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
+				
+				for (int i=0; i<reacPart.length; i++)
 				{
-					reactStructureSize = getMathSymbol0(reactSM.getParameterFromRole(StructureMapping.ROLE_Size),reactSM);
-				}catch(MappingException e) {e.printStackTrace();}
-				Expression newExp = new Expression(tempart[k].getSpeciesContext().getName()+"/"+reactStructureSize);
-				probExp.substituteInPlace(orgExp, newExp);
+					int stoichiometry = 0;
+					Expression tempExpr = null;
+					if(reacPart[i] instanceof Product) 
+					{ 
+						stoichiometry = ((Product)reacPart[i]).getStoichiometry();
+						//******the following part is to form the s*(s-1)*(s-2)...(s-stoi+1).portion of the probability rate.
+						StructureMapping reactSM = getSimulationContext().getGeometryContext().getStructureMapping(reacPart[i].getStructure());
+						Expression reactStructSizeExpr = null;
+						//convert species' unit from moles/liter to molecules. 
+						if(reactSM.getStructure() instanceof Membrane) {
+							reactStructSizeExpr = Expression.invert(new Expression(reactSM.getStructure().getStructureSize().getName()));
+						} else {
+							Expression numExpr = new Expression(ReservedSymbol.KMOLE.getName());
+							Expression denomExpr = new Expression(reactSM.getStructure().getStructureSize().getName());
+//							Expression denomExpr = Expression.invert(new Expression(reactSM.getStructure().getStructureSize().getName()));
+							reactStructSizeExpr =  Expression.div(numExpr, denomExpr);
+						}
+						//s*(s-1)*(s-2)...(s-stoi+1)
+						SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[i].getSpeciesContext());
+						for(int j = 0; j < stoichiometry; j++) {
+							if (j == 0) {
+								tempExpr = new Expression(spCountParam.getName());
+							} else {
+								tempExpr = Expression.mult(tempExpr, new Expression(spCountParam.getName()+"-"+j));
+							}
+						}
+	
+						if(stoichiometry == 1) {
+							tempExpr = Expression.mult(tempExpr, reactStructSizeExpr);
+						} else if (stoichiometry > 1) {
+							// rxnProbExpr * (structSize^stoichiometry)
+							Expression powerExpr = Expression.power(reactStructSizeExpr, new Expression(stoichiometry));
+							tempExpr = Expression.mult(tempExpr, powerExpr);
+						}
+						if (rxnProbabilityExpr == null) {
+							rxnProbabilityExpr = new Expression(tempExpr);
+						} else {
+							rxnProbabilityExpr = Expression.mult(rxnProbabilityExpr, tempExpr);
+						}
+					}
+				}
 			}
-		}*/
+		}
+
+		// Now construct the probability expression.
+		if(rateConstantExpr == null) {
+			throw new MappingException("Can not find reaction rate constant in reaction: "+ reactionStep.getName());
+		} else if(rxnProbabilityExpr == null) {
+		 	probExp = new Expression(rateConstantExpr);   
+		} else if((rateConstantExpr != null) && (rxnProbabilityExpr != null)) {
+			probExp = Expression.mult(rateConstantExpr, rxnProbabilityExpr);
+	    }
+		
 		//flatten the expression
 		probExp.flatten();
-	}catch (ExpressionException e){e.printStackTrace();}
+	}catch (ExpressionException e) {
+		e.printStackTrace();
+	}
+
 	return probExp;
 }
 
 
-	/**
-	 * Basicly the function clears the error list and calls to get a new mathdescription.
-	 */
-	private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException{
-		issueList.clear();
-		//refreshKFluxParameters();
-		
-		refreshSpeciesContextMappings();
-		//refreshStructureAnalyzers();
-		refreshVariables();
-		refreshMathDescription();
-	}
+/**
+ * Basically the function clears the error list and calls to get a new mathdescription.
+ */
+private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException{
+	issueList.clear();
+	//refreshKFluxParameters();
+	
+	refreshSpeciesContextMappings();
+	//refreshStructureAnalyzers();
+	refreshVariables();
+	refreshMathDescription();
+}
 
 
 	/**
@@ -440,6 +320,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		//All sizes must be set for new ODE models and ratios must be set for old ones.
 		getSimulationContext().checkValidity();
 		
+
 		//
 		// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 		//
@@ -475,7 +356,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		// gather only those reactionSteps that are not "excluded"
 		//
 		ReactionSpec reactionSpecs[] = getSimulationContext().getReactionContext().getReactionSpecs();
-		Vector rsList = new Vector();
+		Vector<ReactionStep> rsList = new Vector<ReactionStep>();
 		for (int i = 0; i < reactionSpecs.length; i++){
 			if (reactionSpecs[i].isExcluded()==false){
 				rsList.add(reactionSpecs[i].getReactionStep());
@@ -551,66 +432,41 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(reactionSteps[i].getStructure());
 		}---don't think it's useful, isn't it?*/
 
-		//
-		// kinetic constants that evaluate to constants
-		//
-		for (int j=0;j<reactionSteps.length;j++){
-			ReactionStep rs = reactionSteps[j];
-			Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
-			if (rs.getKinetics() instanceof LumpedKinetics){
-				throw new RuntimeException("Lumped Kinetics not yet supported for Stochastic Math Generation");
-			}
-			if (parameters != null){
-				for (int i=0;i<parameters.length;i++){
-					if (parameters[i].getRole() == Kinetics.ROLE_CurrentDensity && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
-						continue;
-					}
-					//don't add rate, we'll do it later when creating the jump processes
-					if (parameters[i].getRole() != Kinetics.ROLE_ReactionRate)
-					{
-						try {
-							double value = parameters[i].getExpression().evaluateConstant();
-							Constant constant = new Constant(getMathSymbol(parameters[i],null),new Expression(value));
-							varHash.addVariable(constant);
-						}catch (ExpressionException e){}
-					}
-				}
-			}
+		// deals with model parameters
+		ModelParameter[] modelParameters = getSimulationContext().getModel().getModelParameters();
+		for (int j=0;j<modelParameters.length;j++){
+			Expression expr = getSubstitutedExpr(modelParameters[j].getExpression(), true, false);
+			expr = getIdentifierSubstitutions(expr,modelParameters[j].getUnitDefinition(), null);
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), expr));
 		}
 
 		//
-		// kinetic constants that are functions of other constants and maybe variables 
+		// kinetic parameters (functions or constants)
 		//
 		for (int j=0;j<reactionSteps.length;j++){
 			ReactionStep rs = reactionSteps[j];
-			
-			Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
+			if (getSimulationContext().getReactionContext().getReactionSpec(rs).isExcluded()){
+				continue;
+			}
 			if (rs.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics not yet supported for Stochastic Math Generation");
 			}
+			Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
+			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure());
 			if (parameters != null){
 				for (int i=0;i<parameters.length;i++){
-					if (parameters[i].getRole() == Kinetics.ROLE_CurrentDensity && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
-						continue;
-					}
-					if (parameters[i].getRole() == Kinetics.ROLE_ReactionRate && reactionSteps[j].getPhysicsOptions()==ReactionStep.PHYSICS_ELECTRICAL_ONLY){
+					if ((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
 						continue;
 					}
 					//don't add rate, we'll do it later when creating the jump processes
-					if(parameters[i].getRole() != Kinetics.ROLE_ReactionRate)
-					{	
-						try {
-							parameters[i].getExpression().evaluateConstant();
-						}catch (ExpressionException e){
-							StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure());
-							Expression exp = getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),sm);
-							Function function = new Function(getMathSymbol(parameters[i],null),exp);
-							varHash.addVariable(function);
-						}
+					if (parameters[i].getRole() != Kinetics.ROLE_ReactionRate) {
+						Expression expr = getSubstitutedExpr(parameters[i].getExpression(), true, false);
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],sm), getIdentifierSubstitutions(expr,parameters[i].getUnitDefinition(),sm)));
 					}
 				}
 			}
 		}
+		
 
 		//geometic mapping
 		//the parameter "Size" is already put into mathsymbolmapping in refreshSpeciesContextMapping()
@@ -638,32 +494,36 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		for (int i = 0; i < speciesContextSpecs.length; i++){
 			SpeciesContextSpec.SpeciesContextSpecParameter initParam = null;//can be concentration or amount
 			Expression iniExp = null;
-			
+			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 			if(speciesContextSpecs[i].getInitialConcentrationParameter() != null && speciesContextSpecs[i].getInitialConcentrationParameter().getExpression() != null)
 			{//use concentration, need to set up amount functions
 				initParam = speciesContextSpecs[i].getInitialConcentrationParameter();
 				iniExp = initParam.getExpression();
-				double value = iniExp.evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(initParam,null),new Expression(value)));
+				iniExp = getSubstitutedExpr(iniExp, true, !speciesContextSpecs[i].isConstant());
+				// now create the appropriate function or Constant for the speciesContextSpec.
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm)));
+
 				//add function for initial amount
 				SpeciesContextSpec.SpeciesContextSpecParameter initAmountParam = speciesContextSpecs[i].getInitialCountParameter();
-				Expression 	iniAmountExp = getIniExpressionConcToAmt(getMathSymbol(initParam,null),speciesContextSpecs[i].getSpeciesContext());
-				varHash.addVariable(new Function(getMathSymbol(initAmountParam, null),iniAmountExp));
+				Expression 	iniAmountExp = getExpressionConcToAmt(new Expression(getNameScope().getSymbolName(initParam)),speciesContextSpecs[i].getSpeciesContext());
+				iniAmountExp.bindExpression(this);
+				varHash.addVariable(new Function(getMathSymbol(initAmountParam, sm),getIdentifierSubstitutions(iniAmountExp,initAmountParam.getUnitDefinition(),sm)));
 			}
 			else if(speciesContextSpecs[i].getInitialCountParameter() != null && speciesContextSpecs[i].getInitialCountParameter().getExpression() != null)
 			{// use amount
 				initParam = speciesContextSpecs[i].getInitialCountParameter();
 				iniExp = initParam.getExpression();
-				double value = iniExp.evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(initParam,null),new Expression(value)));
+				iniExp = getSubstitutedExpr(iniExp, false, !speciesContextSpecs[i].isConstant());
+				// now create the appropriate function or Constant for the speciesContextSpec.
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm)));
 			}
-			//add function for concentration
-			String concName = speciesContextSpecs[i].getNameScope().getName() + FUNC_NAME_SUFFIX_VAR_CONCENTRATION;//cannot use getMathSymbol, because it is not initial parameter(_initConc). it uses _conc as suffix.
-			Expression concExp = getExpressionAmtToConc(speciesContextSpecs[i].getNameScope().getName(), speciesContextSpecs[i].getSpeciesContext());
-			varHash.addVariable(new Function(concName,concExp));
+
+			//add spConcentration (concentration of species) to varHash as function or constant
+			SpeciesConcentrationParameter spConcParam = getSpeciesConcentrationParameter(speciesContextSpecs[i].getSpeciesContext());
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(spConcParam,sm),getIdentifierSubstitutions(spConcParam.getExpression(), spConcParam.getUnitDefinition(), sm)));
 
 		}
-
+		
 		//
 		// constant species (either function or constant)
 		//
@@ -700,14 +560,12 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			if (scm.getVariable()==null && scm.getDependencyExpression()!=null){
 				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
 				Expression exp = scm.getDependencyExpression();
-				varHash.addVariable(new Function(getMathSymbol(scm.getSpeciesContext(),sm),exp));
+				exp.bindExpression(this);
+				SpeciesCountParameter spCountParam = getSpeciesCountParameter(scm.getSpeciesContext());
+				varHash.addVariable(new Function(getMathSymbol(spCountParam,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules, sm)));
 			}
 		}
 
-
-
-
-		
 		//
 		// create subDomains
 		//
@@ -751,16 +609,16 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			//create symbol table for jump process based on reactionStep and structure mapping
 			final ReactionStep finalRS = reactionStep;
 			final StructureMapping finalSM = sm;
-			SymbolTable symTable = new SymbolTable(){
-				public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
-					SymbolTableEntry ste = finalRS.getEntry(identifierString);
-				    if(ste == null)
-				    {
-				    	ste = finalSM.getEntry(identifierString);
-				    }
-					return ste;
-				}
-			};
+//			SymbolTable symTable = new SymbolTable(){
+//				public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+//					SymbolTableEntry ste = finalRS.getEntry(identifierString);
+//				    if(ste == null)
+//				    {
+//				    	ste = finalSM.getEntry(identifierString);
+//				    }
+//					return ste;
+//				}
+//			};
 			// Different ways to deal with simple reactions and flux reactions
 			if(reactionStep instanceof SimpleReaction) // simple reactions
 			{
@@ -840,23 +698,18 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					// reactions are mass actions
 					exp = getProbabilityRate(reactionStep, true);
 					// bind symbol table before substitute identifiers in the reaction step
-					exp.bindExpression(symTable);
+					exp.bindExpression(this);
 					
 					MathMapping.ProbabilityParameter probParm = null;
 					try{
-						probParm = addProbabilityParameter("P_"+jpName,exp,MathMapping.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_per_s,reactionSpecs[i]);
+						probParm = addProbabilityParameter("P_"+jpName, exp,MathMapping.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
 					}
 					
 					//add probability to function or constant
-					try {
-						double value = exp.evaluateConstant();
-						varHash.addVariable(new Constant(getMathSymbol(probParm,sm),new Expression(value)));
-					}catch (ExpressionException e){
-						varHash.addVariable(new Function(getMathSymbol(probParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_per_s, sm)));
-					}
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 										
 					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probParm,sm)));
 					// actions
@@ -864,13 +717,14 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					for(int j=0; j<reacPart.length; j++)
 					{
 						Action action = null;
+						SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[j].getSpeciesContext());
 						if(reacPart[j] instanceof Reactant)
 						{ 
 							// check if the reactant is a constant. If the species is a constant, there will be no action taken on this species
 							if(!getSimulationContext().getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression("-"+String.valueOf(stoi)));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression("-"+String.valueOf(stoi)));
 								jp.addAction(action);
 							}
 						}
@@ -880,7 +734,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 							if(!getSimulationContext().getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(stoi));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -897,22 +751,17 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					// reactions are mass actions
 					exp = getProbabilityRate(reactionStep, false);
 					// bind symbol table before substitute identifiers in the reaction step
-					exp.bindExpression(symTable);
+					exp.bindExpression(this);
 					
 					MathMapping.ProbabilityParameter probRevParm = null;
 					try{
-						probRevParm = addProbabilityParameter("P_"+jpName,exp,MathMapping.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_per_s,reactionSpecs[i]);
+						probRevParm = addProbabilityParameter("P_"+jpName,exp,MathMapping.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
 					}
 					//add probability to function or constant
-					try {
-						double value = exp.evaluateConstant();
-						varHash.addVariable(new Constant(getMathSymbol(probRevParm,sm),new Expression(value)));
-					}catch (ExpressionException e){
-						varHash.addVariable(new Function(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_per_s, sm)));
-					}
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 									
 					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probRevParm,sm)));
 					// actions
@@ -920,13 +769,14 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					for(int j=0; j<reacPart.length; j++)
 					{
 						Action action = null;
+						SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[j].getSpeciesContext());
 						if(reacPart[j] instanceof Reactant)
 						{ 
 							// check if the reactant is a constant. If the species is a constant, there will be no action taken on this species
 							if(!getSimulationContext().getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(stoi));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -936,7 +786,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 							if(!getSimulationContext().getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression("-"+String.valueOf(stoi)));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression("-"+String.valueOf(stoi)));
 								jp.addAction(action);
 							}
 						}
@@ -963,10 +813,11 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 						//get probability function, probExp = fluxRate*fluxCarrier*Size_membrane*602
 						//we do it here instead of fluxsolver, coz we need to use getMathSymbol0(), structuremapping...etc.
 						Expression rate = fluxFunc.getRateToInside();
-						String probExpStr = rate.infix() + "*" + fluxFunc.getSpeciesOutside() + "*" + sm.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-						probExpStr = probExpStr + "/" + ReservedSymbol.KMOLE.getName();
-						Expression probExp = new Expression(probExpStr);
-						probExp.bindExpression(symTable);//bind symbol table before substitute identifiers in the reaction step
+						Expression expr1 = Expression.mult(rate, new Expression(fluxFunc.getSpeciesContextOutside().getName()));
+						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize().getName()));
+						Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+						Expression probExp = Expression.div(numeratorExpr, denominatorExpr);
+						probExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
 						
 						MathMapping.ProbabilityParameter probParm = null;
 						try{
@@ -976,20 +827,19 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 							throw new MappingException(pve.getMessage());
 						}
 						//add probability to function or constant
-						try {
-							double value = probExp.evaluateConstant();
-							varHash.addVariable(new Constant(getMathSymbol(probParm,sm),new Expression(value)));
-						}catch (ExpressionException e){
-							varHash.addVariable(new Function(getMathSymbol(probParm,sm),getIdentifierSubstitutions(probExp, VCUnitDefinition.UNIT_per_s, sm)));
-						}
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(probExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 										
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probParm,sm)));
 						// actions
 						Action action = null;
-						action = new Action(varHash.getVariable(fluxFunc.getSpeciesOutside()),"inc", new Expression(-1));
+						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
+						SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
+						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
 						jp.addAction(action);
 							
-						action = new Action(varHash.getVariable(fluxFunc.getSpeciesInside()),"inc", new Expression(1));
+						sc = fluxFunc.getSpeciesContextInside();
+						spCountParam = getSpeciesCountParameter(sc);
+						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
 						jp.addAction(action);
 						
 						subDomain.addJumpProcess(jp);
@@ -1001,10 +851,11 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 											
 						//get probability function, probExp = fluxRate*fluxCarrier*Size_membrane*602
 						Expression rate = fluxFunc.getRateToOutside();
-						String probRevExpStr = rate.infix() + "*" + fluxFunc.getSpeciesInside() + "*" + sm.getParameterFromRole(StructureMapping.ROLE_Size).getName();
-						probRevExpStr = probRevExpStr + "/" + ReservedSymbol.KMOLE.getName();
-						Expression probRevExp = new Expression(probRevExpStr);
-						probRevExp.bindExpression(symTable);//bind symbol table before substitute identifiers in the reaction step
+						Expression expr1 = Expression.mult(rate, new Expression(fluxFunc.getSpeciesContextInside().getName()));
+						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize().getName()));
+						Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+						Expression probRevExp = Expression.div(numeratorExpr, denominatorExpr);
+						probRevExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
 						
 						MathMapping.ProbabilityParameter probRevParm = null;
 						try{
@@ -1014,20 +865,19 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 							throw new MappingException(pve.getMessage());
 						}
 						//add probability to function or constant
-						try {
-							double value = probRevExp.evaluateConstant();
-							varHash.addVariable(new Constant(getMathSymbol(probRevParm,sm),new Expression(value)));
-						}catch (ExpressionException e){
-							varHash.addVariable(new Function(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(probRevExp, VCUnitDefinition.UNIT_per_s, sm)));
-						}
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(probRevExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 										
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probRevParm,sm)));
 						// actions
 						Action action = null;
-						action = new Action(varHash.getVariable(fluxFunc.getSpeciesOutside()),"inc", new Expression(1));
+						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
+						SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
+						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
 						jp.addAction(action);
 							
-						action = new Action(varHash.getVariable(fluxFunc.getSpeciesInside()),"inc", new Expression(-1));
+						sc = fluxFunc.getSpeciesContextInside();
+						spCountParam = getSpeciesCountParameter(sc);
+						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
 						jp.addAction(action);
 						
 						subDomain.addJumpProcess(jp);
@@ -1045,7 +895,9 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		SpeciesContextSpec scSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 		for (int i = 0; i < speciesContextSpecs.length; i++){
 			//get stochastic variable by name
-			String varName = scSpecs[i].getSpeciesContext().getName();
+			SpeciesCountParameter spCountParam = getSpeciesCountParameter(speciesContextSpecs[i].getSpeciesContext());
+			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+			String varName = getMathSymbol(spCountParam, sm); 
 			if (scSpecs[i].isConstant()) {
 				continue;
 			}
@@ -1053,18 +905,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
 			if (initParm!=null){
-				//check if initial condition is constant in shochastic.
-//				Expression iniExp = initParm.getExpression();
-//				try{
-//					iniExp.bindExpression(getMathDescription());
-//					iniExp.flatten().evaluateConstant();
-//				}catch (ExpressionException e)
-//				{
-//					e.printStackTrace();
-//					throw new MathFormatException("variable "+ varName +"'s initial condition is required to be a constant.");
-//				}
-				
-				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol0(initParm, null)));
+				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol0(initParm, sm)));
 				subDomain.addVarIniCondition(varIni);
 			}
 		}
@@ -1100,16 +941,62 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			}
 		}*/
 
-
-				
 		if (!mathDesc.isValid()){
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 		}
-
-	
 	}
 
-
+/**
+ * 
+ * @param expr
+ * @param bConcentration
+ * @return
+ * @throws ExpressionException
+ */	
+private Expression getSubstitutedExpr(Expression expr, boolean bConcentration, boolean bIsInitialCondn) throws ExpressionException {
+	expr = new Expression(expr);
+	String[] symbols = expr.getSymbols();
+	// Check if 'expr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
+	for (int j = 0; symbols != null && j < symbols.length; j++) {
+		// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+		SpeciesContext spC = null;
+		SymbolTableEntry ste = expr.getSymbolBinding(symbols[j]);
+		if (ste instanceof ProxyParameter) {
+			// if expression is for speciesContextSpec or Kinetics, ste will be a ProxyParameter instance.
+			ProxyParameter spspp = (ProxyParameter)ste;
+			if (spspp.getTarget() instanceof SpeciesContext) {
+				spC = (SpeciesContext)spspp.getTarget();
+			}
+		} else if (ste instanceof SpeciesContext) {
+			// if expression is for a global parameter, ste will be a SpeciesContext instance. 
+			spC = (SpeciesContext)ste;
+		}
+		if (spC != null) {
+			SpeciesContextSpec spcspec = getSimulationContext().getReactionContext().getSpeciesContextSpec(spC);
+			Parameter spCParm = null;
+			if (bConcentration && bIsInitialCondn) {
+				// speciesContext has initConcentration set, so need to replace 'spContext' in 'expr' 'spContext_init'
+				spCParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+			} else if (!bConcentration && bIsInitialCondn) {
+				// speciesContext has initCount set, so need to replace 'spContext' in 'expr' 'spContext_initCount'
+				spCParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+			} else if (bConcentration && !bIsInitialCondn) {
+				// need to replace 'spContext' in 'expr' 'spContext_Conc'
+				spCParm = getSpeciesConcentrationParameter(spC);
+			} else if (!bConcentration && !bIsInitialCondn) {
+				// need to replace 'spContext' in 'expr' 'spContext_Count'
+				spCParm = getSpeciesCountParameter(spC);
+			}
+			// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+			Expression scsInitExpr = new Expression(getNameScope().getSymbolName(spCParm));
+			scsInitExpr.bindExpression(this);
+			expr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
+		}
+	}
+	return expr;
+}
+	
+	
 /**
  * Insert the method's description here.
  * Creation date: (10/26/2006 11:47:26 AM)
@@ -1146,35 +1033,25 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 		SpeciesContextSpec scs = speciesContextSpecs[i];
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
-		StructureMapping sm =  getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure());
 		scm.setPDERequired(isPDERequired(scs.getSpeciesContext()));
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
-			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scs.getInitialConditionParameter();
+			SpeciesContextSpec.SpeciesContextSpecParameter initCountParm = scs.getInitialCountParameter();
+			SpeciesContextSpec.SpeciesContextSpecParameter initConcParm =  scs.getInitialConcentrationParameter();
 			Expression initCondInCount = null;
 			//initial condition is concentration
-			if(speciesContextSpecs[i].getInitialConcentrationParameter() != null && speciesContextSpecs[i].getInitialConcentrationParameter().getExpression() != null)
+			if(initConcParm != null && initConcParm.getExpression() != null)
 			{
-				initCondInCount = getIniExpressionConcToAmt(getMathSymbol0(initParm,sm),speciesContextSpecs[i].getSpeciesContext());
+				initCondInCount = getExpressionConcToAmt(new Expression(getNameScope().getSymbolName(initConcParm)),speciesContextSpecs[i].getSpeciesContext());
 			}
 			else
 			{
-				initCondInCount = new Expression(getMathSymbol0(initParm,sm));
+				initCondInCount = new Expression(getNameScope().getSymbolName(initCountParm));
 			}
+			initCondInCount.bindExpression(this);
+			initCondInCount = getSubstitutedExpr(initCondInCount, true, true);
 			scm.setDependencyExpression(initCondInCount);
-			////
-			//// determine if a Function is necessary
-			////
-			//boolean bNeedFunction = false;
-			//if (initCond.getSymbols()!=null){
-				//bNeedFunction = true;
-			//}
-			//if (bNeedFunction){
-				//scm.setVariable(new Function(scm.getSpeciesContext().getName(),initCond));
-			//}else{
-				//scm.setVariable(new Constant(scm.getSpeciesContext().getName(),initCond));
-			//}
 		}
 		//
 		// test if participant in fast reaction step, request elimination if possible
@@ -1203,8 +1080,7 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
  * Creation date: (10/25/2006 8:59:43 AM)
  * @exception cbit.vcell.mapping.MappingException The exception description.
  */
-private void refreshVariables() throws MappingException 
-{
+private void refreshVariables() throws MappingException {
 	//
 	// non-constant dependant variables(means rely on other contants/functions) require a function
 	//
@@ -1226,8 +1102,29 @@ private void refreshVariables() throws MappingException
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
 		//stochastic variable is always a function of size.
+		MathMapping.SpeciesCountParameter spCountParm = null;
+		try{
+			String countName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
+			Expression countExp = new Expression(0.0);
+			spCountParm = addSpeciesCountParameter(countName, countExp, MathMapping.PARAMETER_ROLE_COUNT, VCUnitDefinition.UNIT_molecules, scs);
+		}catch(PropertyVetoException pve){
+			pve.printStackTrace();
+			throw new MappingException(pve.getMessage());
+		}
+		
+		//add concentration of species as MathMappingParameter - this will map to species concentration function
+		try{
+			String concName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
+			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm.getName()), scs.getSpeciesContext());
+			concExp.bindExpression(this);
+			addSpeciesConcentrationParameter(concName, concExp, MathMapping.PARAMETER_ROLE_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new MappingException(e.getMessage());
+		}
+
 		if (scm.getDependencyExpression() == null && !scs.isConstant()){
-			scm.setVariable(new StochVolVariable(scm.getSpeciesContext().getName()));
+			scm.setVariable(new StochVolVariable(getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()))));
 			mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
 		}
 	}

@@ -467,14 +467,6 @@ public Iterator<String> getSymbolsIterator() {
 	return Arrays.asList(rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)).iterator();
 }
 /**
- * Insert the method's description here.
- * Creation date: (5/24/2001 10:22:45 PM)
- * @return int
- */
-public int hashCode() {
-	return getNormalizedInfixString().hashCode();
-}
-/**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.String[]
  * @exception java.lang.Exception The exception description.
@@ -500,7 +492,15 @@ public boolean hasSymbol(String symbolName) {
 		 return rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT,nameScope);
 	  }
    }   
-   public String infix_C()
+   /**
+ * Insert the method's description here.
+ * Creation date: (5/24/2001 10:22:45 PM)
+ * @return int
+ */
+public int hashCode() {
+	return getNormalizedInfixString().hashCode();
+}
+public String infix_C()
    {
 	  return infix_C(SimpleNode.NAMESCOPE_DEFAULT);
    }   
@@ -690,6 +690,37 @@ public static Expression mult(Expression expression1, Expression expression2) th
 	exp.rootNode = multNode;
 	return exp;
 }
+
+public static Expression div(Expression expression1, Expression expression2) throws ExpressionException {
+	Expression exp = new Expression();
+	ASTMultNode multNode = new ASTMultNode();
+
+	SimpleNode termNode = (SimpleNode)expression1.rootNode.copyTree();
+	if (termNode instanceof ASTExpression){
+		if (termNode.jjtGetNumChildren() == 1){
+			termNode = (SimpleNode)termNode.jjtGetChild(0);
+			termNode.jjtSetParent(null);
+		}
+	}		
+	multNode.jjtAddChild(termNode);
+	
+   	
+	termNode = (SimpleNode)expression2.rootNode.copyTree();
+	if (termNode instanceof ASTExpression){
+		if (termNode.jjtGetNumChildren() == 1){
+			termNode = (SimpleNode)termNode.jjtGetChild(0);
+			termNode.jjtSetParent(null);
+		}
+	}		
+	ASTInvertTermNode inverseNode = new ASTInvertTermNode();
+	inverseNode.jjtAddChild(termNode);
+	multNode.jjtAddChild(inverseNode);
+	
+	exp.rootNode = multNode;
+	return exp;
+}
+
+
 public boolean narrow(RealInterval intervals[]) throws ExpressionException {
 	return rootNode.narrow(intervals);
 }         
