@@ -1819,7 +1819,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							private String NORM_FLUOR = "Normalized Fluor.";
 							private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,NORM_FLUOR};
 							public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
-								if(dataidentifier.getName().endsWith(MathMapping.FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION)){
+								if(dataidentifier.getName().endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION)){
 									//Temporary fix for bug that occurs with FieldFunctions in DatasetcontrollerImpl because
 									//DSCI requires a database to deal with fieldfunctions.
 									//VirtualFRAP has no database connection.
@@ -2186,7 +2186,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				"Working...",true,true)
 			);
 		if(pp != null){pp.start();}
-
+		final FRAPStudy fStudy = getFrapStudy();
 		new Thread(new Runnable(){public void run(){
 			try{
 				if(getSavedFrapModelInfo()==null)//has not been saved yet
@@ -2216,7 +2216,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						public void updateProgress(double progress) {
 							if(pp != null){
 								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
-								if(frapOptData != null && !bRefSimulation)
+								if(!bRefSimulation && fStudy.getStoredRefData()!= null)
 								{
 									percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
 								}
@@ -2224,7 +2224,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								pp.setProgress(percentProgress);
 							}
 							if(progressListener != null){
-								if(frapOptData != null && !bRefSimulation)
+								if(!bRefSimulation && fStudy.getStoredRefData()!= null)
 								{
 									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
 								}
