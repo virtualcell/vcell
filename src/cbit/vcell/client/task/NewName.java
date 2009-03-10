@@ -3,6 +3,7 @@ package cbit.vcell.client.task;
 import java.util.Hashtable;
 import javax.swing.*;
 import cbit.vcell.client.*;
+import cbit.vcell.document.VCDocument;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -37,12 +38,20 @@ public int getTaskType() {
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	if (documentWindowManager.getVCDocument().getDocumentType() == VCDocument.MATHMODEL_DOC) {
+		if (((MathModelWindowManager)documentWindowManager).hasUnappliedChanges()) {
+			String msg = "Changes have been made in VCML Editor, please click \"Apply Changes\" or \"Cancel\" to proceed.";
+			PopupGenerator.showErrorDialog(documentWindowManager, msg);
+			throw UserCancelException.CANCEL_UNAPPLIED_CHANGES;			
+		}
+	}
+
 	MDIManager mdiManager = (MDIManager)hashTable.get("mdiManager");
 	String oldName = documentWindowManager.getVCDocument().getName();
 	String myself = documentWindowManager.getRequestManager().getConnectionStatus().getUserName();
 	// if the version is null which means this is a new document, so the owner would be myself
 	String owner = documentWindowManager.getVCDocument().getVersion() == null ? myself : documentWindowManager.getVCDocument().getVersion().getOwner().getName();
-	String newName = mdiManager.getDatabaseWindowManager().showSaveDialog(documentWindowManager.getVCDocument().getDocumentType(), (JFrame)hashTable.get("currentDocumentWindow"), oldName);
+	String newName = mdiManager.getDatabaseWindowManager().showSaveDialog(documentWindowManager.getVCDocument().getDocumentType(), (JFrame)hashTable.get("currentDocumentWindow"), oldName);	
 	if (newName == null || newName.trim().length()==0){
 		throw new Exception("A name must be given to save");
 	} else if (newName.contains("'")){
