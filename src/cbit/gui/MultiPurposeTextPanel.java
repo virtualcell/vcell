@@ -775,7 +775,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		char ch = content.charAt(pos - 1);	
 		// Find where the word starts
 		int w1;
-		for (w1 = Math.min(pos, content.length() - 1); w1 >= 0; w1--) {
+		for (w1 = Math.min(pos-1, content.length() - 1); w1 >= 0; w1--) {
 			char c = content.charAt(w1);
 			if (!isIdentifierPart(c)) {
 				break;

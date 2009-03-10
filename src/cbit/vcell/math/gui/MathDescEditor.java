@@ -315,11 +315,11 @@ public List<String> getAutoCompletionWords() {
 	 autoCompletionWords.add(VCML.CompartmentSubDomain);
 	 autoCompletionWords.add(VCML.Constant);
 	 autoCompletionWords.add(VCML.Diffusion);
-	 autoCompletionWords.add("Effect");
+	 autoCompletionWords.add(VCML.Action);
 	 autoCompletionWords.add(VCML.FastInvariant);
 	 autoCompletionWords.add(VCML.FastRate);	 
 	 autoCompletionWords.add(getTemplate_FastSystem());
-	 autoCompletionWords.add("Flux");
+	 autoCompletionWords.add(BoundaryConditionType.NEUMANN_STRING);
 	 autoCompletionWords.add(VCML.Function);
 	 autoCompletionWords.add(VCML.InFlux);
 	 autoCompletionWords.add(VCML.Initial);
@@ -332,7 +332,8 @@ public List<String> getAutoCompletionWords() {
 	 autoCompletionWords.add(VCML.MembraneVariable); 
 	 autoCompletionWords.add(getTemplate_OdeEquation());
 	 autoCompletionWords.add(VCML.OutFlux);
-	 autoCompletionWords.add(getTemplate_PdeEquation()); 
+	 autoCompletionWords.add(getTemplate_PdeEquation());
+	 autoCompletionWords.add(BoundaryConditionType.PERIODIC_STRING);
 	 autoCompletionWords.add(VCML.Priority);
 	 autoCompletionWords.add(VCML.ProbabilityRate);
 	 autoCompletionWords.add(VCML.Rate);
@@ -448,12 +449,12 @@ public static List<String> getkeywords() {
 	 keywords.add(VCML.CompartmentSubDomain);
 	 keywords.add(VCML.Constant);
 	 keywords.add(VCML.Diffusion);
-	 keywords.add("Effect");
+	 keywords.add(VCML.Action);
 	 keywords.add(VCML.Exact);
 	 keywords.add(VCML.FastInvariant);
 	 keywords.add(VCML.FastRate);
 	 keywords.add(VCML.FastSystem);
-	 keywords.add("Flux");
+	 keywords.add(BoundaryConditionType.NEUMANN_STRING);
 	 keywords.add(VCML.Function);
 	 keywords.add(VCML.InFlux);
 	 keywords.add(VCML.Initial);
@@ -467,7 +468,8 @@ public static List<String> getkeywords() {
 	 keywords.add(VCML.MembraneVariable); 
 	 keywords.add(VCML.OdeEquation);
 	 keywords.add(VCML.OutFlux);
-	 keywords.add(VCML.PdeEquation); 
+	 keywords.add(VCML.PdeEquation);
+	 keywords.add(BoundaryConditionType.PERIODIC_STRING);
 	 keywords.add(VCML.Priority);
 	 keywords.add(VCML.ProbabilityRate);
 	 keywords.add(VCML.Rate);

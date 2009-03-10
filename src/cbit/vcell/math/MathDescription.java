@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.io.*;
 
-import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
@@ -27,7 +26,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.simdata.ExternalDataIdentifier;
-import cbit.sql.Version;
+ import cbit.sql.Version;
 import cbit.util.*;
 import cbit.sql.KeyValue;
 /**
@@ -1806,7 +1805,7 @@ public boolean hasFastSystems() {
 	// Check each subDomain for FastSystems
 	//
 	for (int i = 0; i < subDomainList.size(); i++) {
-		SubDomain subDomain = (SubDomain) subDomainList.elementAt(i);
+		SubDomain subDomain = subDomainList.elementAt(i);
 		if (subDomain.getFastSystem() != null) {
 			return true;
 		}
@@ -1814,6 +1813,44 @@ public boolean hasFastSystems() {
 	return false;
 }
 
+
+public boolean hasPeriodicBoundaryCondition() {
+
+	//
+	// Check each subDomain for Periodic Boundary Condition
+	//
+	for (int i = 0; i < subDomainList.size(); i++) {
+		SubDomain subDomain = subDomainList.elementAt(i);
+		BoundaryConditionType[] bctypes = new BoundaryConditionType[0];
+		if (subDomain instanceof CompartmentSubDomain) {
+			CompartmentSubDomain dom = (CompartmentSubDomain)subDomain;
+			bctypes = new BoundaryConditionType[] {
+					dom.getBoundaryConditionXm(),
+					dom.getBoundaryConditionXp(),
+					dom.getBoundaryConditionYm(),
+					dom.getBoundaryConditionYp(),
+					dom.getBoundaryConditionZm(),
+					dom.getBoundaryConditionZp()
+			};
+		} else if (subDomain instanceof MembraneSubDomain) {
+			MembraneSubDomain dom = (MembraneSubDomain)subDomain;
+			bctypes = new BoundaryConditionType[] {
+					dom.getBoundaryConditionXm(),
+					dom.getBoundaryConditionXp(),
+					dom.getBoundaryConditionYm(),
+					dom.getBoundaryConditionYp(),
+					dom.getBoundaryConditionZm(),
+					dom.getBoundaryConditionZp()
+			};
+		}
+		for (BoundaryConditionType bct : bctypes) {
+			if (bct.isPERIODIC()) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 /**
  * The hasListeners method was generated to support the propertyChange field.
