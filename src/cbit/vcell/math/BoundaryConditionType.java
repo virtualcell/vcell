@@ -16,9 +16,9 @@ public class BoundaryConditionType implements Serializable, Matchable {
 
 	private final static String OLD_DIRICHLET_STRING = "Dirichlet";
 	private final static String OLD_NEUMANN_STRING = "Neumann";
-	private final static String DIRICHLET_STRING = "Value";
-	private final static String NEUMANN_STRING = "Flux";
-	private final static String PERIODIC_STRING = "Periodic";
+	public final static String DIRICHLET_STRING = "Value";
+	public final static String NEUMANN_STRING = "Flux";
+	public final static String PERIODIC_STRING = "Periodic";
 	
 	private int type = DIRICHLET;
 

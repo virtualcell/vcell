@@ -39,7 +39,10 @@ protected void initialize() throws SolverException {
 	try {
 		if (getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 			if (getSimulation().getMathDescription().hasFastSystems()) {
-				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " doesn't support models containing fast system. Please change the solver.");
+				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " does not support models containing fast system. Please change the solver.");
+			}
+			if (getSimulation().getMathDescription().hasPeriodicBoundaryCondition()) {
+				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " does not support models containing Periodic Boundary Condition. Please change the solver.");
 			}
 		}
 		initStep1();	
