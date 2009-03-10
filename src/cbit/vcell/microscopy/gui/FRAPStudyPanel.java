@@ -1551,7 +1551,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							private String NORM_FLUOR = "Normalized Fluor.";
 							private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,NORM_FLUOR};
 							public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
-								if(dataidentifier.getName().endsWith(MathMapping.FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION)){
+								if(dataidentifier.getName().endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION)){
 									//Temporary fix for bug that occurs with FieldFunctions in DatasetcontrollerImpl because
 									//DSCI requires a database to deal with fieldfunctions.
 									//VirtualFRAP has no database connection.
