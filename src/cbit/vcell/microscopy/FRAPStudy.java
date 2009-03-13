@@ -776,9 +776,13 @@ public class FRAPStudy implements Matchable{
 		
 		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
 		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
-		//
-		simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
-		simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+		//if we need to check steady state, do the following two lines
+		if(bCheckSteadyState)
+		{
+			simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+			simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
+		}
+		
 		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
 		fvSolver.startSolver();
 		
@@ -1690,12 +1694,12 @@ public class FRAPStudy implements Matchable{
 		//for each pixel if it's grater than 0, we add 1 offset to it. 
 		//if it is smaller or equal to 0 , we set it to 1.
 		for (int i = 0; i < avgPrebleachDouble.length; i++) {
-			if(avgPrebleachDouble[i] <= 0){
+			if(avgPrebleachDouble[i] <= FRAPOptimization.epsilon){
 				avgPrebleachDouble[i] = 1;
 			}
 			else
 			{
-				avgPrebleachDouble[i]=avgPrebleachDouble[i]+1;
+				avgPrebleachDouble[i]=avgPrebleachDouble[i] - FRAPOptimization.epsilon +1;
 			}
 		}
 		return avgPrebleachDouble;
@@ -1844,13 +1848,13 @@ public class FRAPStudy implements Matchable{
 			doubleData[i] = ((0x0000FFFF&shortData[i]) - bkGround);
 			if(isOffset1ProcessNeeded)
 			{
-				if(doubleData[i] <= 0)
+				if(doubleData[i] <= FRAPOptimization.epsilon)
 				{
 					doubleData[i] = 1;
 				}
 				else
 				{
-					doubleData[i] = doubleData[i]+1;
+					doubleData[i] = doubleData[i] - FRAPOptimization.epsilon + 1;
 				}
 			}
 		}
