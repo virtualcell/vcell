@@ -453,6 +453,9 @@ public class VirtualFrapMainFrame extends JFrame
       );
 	  System.setProperty(PropertyLoader.localSimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 	  System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+	  System.setProperty(PropertyLoader.exportBaseDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+      System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());
+
 	  frapStudyPanel.setLocalWorkspace(localWorkspace);
 
       //add components to the main frame
