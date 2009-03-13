@@ -1600,13 +1600,13 @@ public class FRAPStudy implements Matchable{
 			doubleData[i] = ((0x0000FFFF&shortData[i]) - bkGround);
 			if(isOffset1ProcessNeeded)
 			{
-				if(doubleData[i] <= 0)
+				if(doubleData[i] <= FRAPOptimization.epsilon)
 				{
 					doubleData[i] = 1;
 				}
 				else
 				{
-					doubleData[i] = doubleData[i]+1;
+					doubleData[i] = doubleData[i] - FRAPOptimization.epsilon + 1;
 				}
 			}
 		}

@@ -1641,12 +1641,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				
 				ExternalDataIdentifier timeSeriesExtDataID = getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier();
 				ExternalDataIdentifier maskExtDataID = getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier();
-				VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID};
+				//add sim
+				int jobIndex = 0;
+				SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
+								
+				VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
 				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs);
+								
 				dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 				// add function to display normalized fluorence data 
-				Expression norm_fluor = new Expression("((Data2.cell_mask*((Data1.fluor+1-Data1.bg_average)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
+				Expression norm_fluor = new Expression("((Data2.cell_mask*((max((Data1.fluor-Data1.bg_average),0)+1)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
 				AnnotatedFunction[] func = {new AnnotatedFunction("norm_fluor", norm_fluor, null, VariableType.VOLUME, false)};
 				boolean isExisted = false;
 				for(int i=0; i < pdeDataContext.getFunctions().length; i++)
@@ -1725,6 +1730,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			FrapChangeInfo frapChangeInfo = getChangesSinceLastSave();
 			
 			Double bleachWhileMonitoringRate = null;
+			if(frapChangeInfo.bleachWhileMonitorRateString == null){
+				throw new Exception("bleach while monitoring rate must be set to a value equal or greater than 0.");
+			}
 			try{
 				bleachWhileMonitoringRate =
 					(frapChangeInfo.bleachWhileMonitorRateString == null?null:new Double(frapChangeInfo.bleachWhileMonitorRateString));
