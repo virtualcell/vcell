@@ -11,15 +11,14 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import loci.formats.AWTImageTools;
 import loci.formats.FormatException;
 import loci.formats.FormatReader;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
-import loci.formats.ImageTools;
 import loci.formats.MetadataTools;
 import loci.formats.meta.MetadataRetrieve;
 import loci.formats.meta.MetadataStore;
-import loci.formats.ome.OMEXML200706Metadata;
 import cbit.image.ImageException;
 import cbit.util.Extent;
 import cbit.util.Origin;
@@ -113,13 +112,13 @@ public class ImageDatasetReader {
 			int imageCount = 0;
 			for (int i = 0; i < numImages; i++) {
 				BufferedImage origBufferedImage = formatReader.openImage(i);
-				System.out.println("original image is type "+ImageTools.getPixelType(origBufferedImage));
+				System.out.println("original image is type "+AWTImageTools.getPixelType(origBufferedImage));
 //				BufferedImage ushortBufferedImage = ImageTools.makeType(origBufferedImage, DataBuffer.TYPE_USHORT);
 //				System.out.println("ushort image is type "+ImageTools.getPixelType(ushortBufferedImage));
 				int zct[] = formatReader.getZCTCoords(i);
 //				int pixelType = ImageTools.getPixelType(ushortBufferedImage);
 //				short[][] pixels = ImageTools.getShorts(ushortBufferedImage);
-				short[][] pixels = ImageTools.getShorts(origBufferedImage);
+				short[][] pixels = AWTImageTools.getShorts(origBufferedImage);
 				int minValue = ((int)pixels[0][0])&0xffff;
 				int maxValue = ((int)pixels[0][0])&0xffff;
 				for (int j = 0; j < pixels[0].length; j++) {
@@ -298,7 +297,8 @@ public class ImageDatasetReader {
 		for (int i = 0; i < numImages; i++) 
 		{		
 			ImageReader imageReader = new ImageReader();
-			OMEXML200706Metadata store = new OMEXML200706Metadata();
+			MetadataStore store = MetadataTools.createOMEXMLMetadata();
+			MetadataRetrieve meta = (MetadataRetrieve) store;
 		    store.createRoot();
 		    imageReader.setMetadataStore(store);
 		    FormatReader.debug = true;
@@ -308,16 +308,16 @@ public class ImageDatasetReader {
 			
 			try{
 				BufferedImage origBufferedImage = formatReader.openImage(0);//only one image each loop
-				short[][] pixels = ImageTools.getShorts(origBufferedImage);
+				short[][] pixels = AWTImageTools.getShorts(origBufferedImage);
 				int minValue = ((int)pixels[0][0])&0xffff;
 				int maxValue = ((int)pixels[0][0])&0xffff;
 				for (int j = 0; j < pixels[0].length; j++) {
 					minValue = Math.min(minValue,0xffff&((int)pixels[0][i]));
 					maxValue = Math.max(maxValue,0xffff&((int)pixels[0][i]));
 				}
-				Float pixelSizeX_m = store.getDimensionsPhysicalSizeX(0, 0);
-				Float pixelSizeY_m = store.getDimensionsPhysicalSizeY(0, 0);
-				Float pixelSizeZ_m = store.getDimensionsPhysicalSizeZ(0, 0);
+				Float pixelSizeX_m = meta.getDimensionsPhysicalSizeX(0, 0);
+				Float pixelSizeY_m = meta.getDimensionsPhysicalSizeY(0, 0);
+				Float pixelSizeZ_m = meta.getDimensionsPhysicalSizeZ(0, 0);
 				if (pixelSizeX_m==null || pixelSizeX_m==0f){
 					pixelSizeX_m = 0.3e-6f;
 				}
@@ -327,9 +327,9 @@ public class ImageDatasetReader {
 				if (pixelSizeZ_m==null || pixelSizeZ_m==0f || pixelSizeZ_m==1f){
 					pixelSizeZ_m = 0.9e-6f;
 				}
-				int sizeX = store.getPixelsSizeX(0, 0);
-				int sizeY = store.getPixelsSizeY(0,0);
-				int sizeZ = store.getPixelsSizeZ(0,0);
+				int sizeX = meta.getPixelsSizeX(0, 0);
+				int sizeY = meta.getPixelsSizeY(0,0);
+				int sizeZ = meta.getPixelsSizeZ(0,0);
 				
 				if (sizeZ > 1){
 //					throw new RuntimeException("3D images not yet supported");

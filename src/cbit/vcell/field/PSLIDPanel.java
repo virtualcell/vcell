@@ -42,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
+import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 
 import cbit.util.AsynchProgressPopup;
@@ -245,7 +246,7 @@ public class PSLIDPanel extends JPanel{
 //			for (int i = 0; i < compartmentShorts.length; i++) {
 //				proteinShorts[i] = proteinBytes[i];
 //			}
-			short[] proteinShorts = ImageTools.getShorts(proteinFormatReader.openImage(0))[0];
+			short[] proteinShorts = AWTImageTools.getShorts(proteinFormatReader.openImage(0))[0];
 
 			int xsize_uncrop = compartmentFormatReader.getSizeX();
 			int ysize_uncrop = compartmentFormatReader.getSizeY();
@@ -697,7 +698,7 @@ public class PSLIDPanel extends JPanel{
 							loci.formats.ImageReader generatedImageReader = new loci.formats.ImageReader();
 							loci.formats.IFormatReader generatedFormatReader = generatedImageReader.getReader(generatedImageFile.getAbsolutePath());
 							generatedFormatReader.setId(generatedImageFile.getAbsolutePath());
-							short[][] generatedChannels = ImageTools.getShorts(generatedFormatReader.openImage(0));
+							short[][] generatedChannels = AWTImageTools.getShorts(generatedFormatReader.openImage(0));
 							final int PROTEIN_CHANNEL = 1;
 							final int CELL_CHANNEL = 2;
 							final int NUCLEUS_CHANNEL = 0;
