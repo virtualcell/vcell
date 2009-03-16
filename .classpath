@@ -7,8 +7,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry exported="true" kind="lib" path="ome-java_2008Apr17.jar"/>
-	<classpathentry exported="true" kind="lib" path="bio-formats_2008May20.jar" sourcepath="D:/developer/eclipse/workspace"/>
+	<classpathentry exported="true" kind="lib" path="ome-xml_2009March15.zip"/>
+	<classpathentry exported="true" kind="lib" path="loci-common_2009March15.jar"/>
+	<classpathentry exported="true" kind="lib" path="bio-formats_2009March15.jar" sourcepath="/bio-formats"/>
 	<classpathentry kind="lib" path="sbmlj.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
 	<classpathentry kind="lib" path="xml-apis.jar"/>

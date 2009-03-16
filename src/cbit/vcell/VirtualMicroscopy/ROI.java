@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Vector;
 
+import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 
 import cbit.image.ImageException;
@@ -225,7 +226,7 @@ public class ROI implements Matchable {
 		}
 		int xSize = roi.getISize().getX();
 		int ySize = roi.getISize().getY();
-		BufferedImage roiImage = ImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize);
+		BufferedImage roiImage = AWTImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize,false);
 		Integer boundaryColor = null;
 		for (int y = 0; y < ySize; y++) {
 			for (int x = 0; x < xSize; x++) {
@@ -267,7 +268,7 @@ public class ROI implements Matchable {
 		}
 		int xSize = roi.getISize().getX();
 		int ySize = roi.getISize().getY();
-		BufferedImage roiImage = ImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize);
+		BufferedImage roiImage = AWTImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize,false);
 		Integer boundaryColor = null;
 		for (int y = 0; y < ySize; y++) {
 			for (int x = 0; x < xSize; x++) {
