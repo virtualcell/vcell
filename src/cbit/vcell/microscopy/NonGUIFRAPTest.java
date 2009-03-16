@@ -11,6 +11,8 @@ import java.util.Comparator;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 import loci.formats.out.TiffWriter;
 import cbit.sql.KeyValue;
@@ -257,7 +259,7 @@ public class NonGUIFRAPTest {
 		tifWriter.setId(tempF.getAbsolutePath());
 		tifWriter.setCompression("Uncompressed");
 		BufferedImage timePointBufferedImage =
-			ImageTools.makeImage(shortPixels, width, height);
+			AWTImageTools.makeImage(shortPixels, width, height,false);
 		tifWriter.saveImage(timePointBufferedImage, true);
 		tifWriter.close();
 		return tempF;

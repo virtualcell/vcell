@@ -1220,9 +1220,12 @@ public class FRAPPureDiffusionParamPanel extends JPanel {
 				secondDiffRateCheckBox.setSelected(false);
 				secondDiffTextField.setText("");
 				secondMobileFracTextField.setText("");
-				immFraction =1-Double.parseDouble(savedPureDiffParameters.primaryMobileFraction);
+				immoFracValueLabel.setText("");
+				if(savedPureDiffParameters.primaryMobileFraction != null){
+					immFraction =1-Double.parseDouble(savedPureDiffParameters.primaryMobileFraction);
+					immoFracValueLabel.setText(immFraction+"");
+				}
 			}
-			immoFracValueLabel.setText(immFraction+"");
 //			diffusionRateSetButton.doClick();
 		}
 		else
