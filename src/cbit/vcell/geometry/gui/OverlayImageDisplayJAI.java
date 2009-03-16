@@ -185,27 +185,6 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 				}
 			}
 			
-			System.out.println("contrastEnhancedUnderlyingImage " +
-					contrastEnhancedUnderlyingImage.getSampleModel().getNumBands()+" "+
-					contrastEnhancedUnderlyingImage.getSampleModel().getDataType()+" "+
-					contrastEnhancedUnderlyingImage.getWidth()+" " + 
-					contrastEnhancedUnderlyingImage.getHeight());
-			System.out.println("highlightImage " +
-					highlightImage.getSampleModel().getNumBands()+" "+
-					highlightImage.getSampleModel().getDataType()+" "+
-					highlightImage.getWidth()+" " + 
-					highlightImage.getHeight());
-			System.out.println("alphaImageUnderlying " +
-					alphaImageUnderlying.getSampleModel().getNumBands()+" "+
-					alphaImageUnderlying.getSampleModel().getDataType()+" "+
-					alphaImageUnderlying.getWidth()+" " + 
-					alphaImageUnderlying.getHeight());
-			System.out.println("alphaImageHightlight " +
-					alphaImageHightlight.getSampleModel().getNumBands()+" "+
-					alphaImageHightlight.getSampleModel().getDataType()+" "+
-					alphaImageHightlight.getWidth()+" " + 
-					alphaImageHightlight.getHeight());
-
 		     source =
 				CompositeDescriptor.create(
 						contrastEnhancedUnderlyingImage, highlightImage,
