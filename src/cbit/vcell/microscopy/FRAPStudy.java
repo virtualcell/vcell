@@ -30,6 +30,7 @@ import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 
+import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -1274,7 +1275,7 @@ public class FRAPStudy implements Matchable{
 		return new KernelJAI(enclosingBoxSideLength,enclosingBoxSideLength,radius,radius,kernalData);
 	}
 	private PlanarImage binarize(UShortImage source){
-		return binarize(ImageTools.makeImage(source.getPixels(), source.getNumX(), source.getNumY()));
+		return binarize(AWTImageTools.makeImage(source.getPixels(), source.getNumX(), source.getNumY(),false));
 	}
 	private PlanarImage binarize(BufferedImage source){
 		PlanarImage planarSource = PlanarImage.wrapRenderedImage(source);
