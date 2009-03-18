@@ -675,7 +675,7 @@ public class ResultsSummaryPanel extends JPanel {
 				pureDiffusionPanel.init(frapOptData);
 //				table.setModel(getTableModel(summaryReportColumnNames,tableData));				
 //				sortColumn(FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE,false);
-				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1.1));
+				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1.5));
 //				if(modelDiffusionRate != null){
 //					int matchingRow = -1;
 //					for (int i = 0; i < summaryData.length; i++) {
