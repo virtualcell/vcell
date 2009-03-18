@@ -16,6 +16,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import loci.formats.AWTImageTools;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.KernelJAI;
@@ -1044,7 +1045,7 @@ public class FRAPStudy implements Matchable{
 		return new KernelJAI(enclosingBoxSideLength,enclosingBoxSideLength,radius,radius,kernalData);
 	}
 	private PlanarImage binarize(UShortImage source){
-		return binarize(ImageTools.makeImage(source.getPixels(), source.getNumX(), source.getNumY()));
+		return binarize(AWTImageTools.makeImage(source.getPixels(), source.getNumX(), source.getNumY(),false));
 	}
 	private PlanarImage binarize(BufferedImage source){
 		PlanarImage planarSource = PlanarImage.wrapRenderedImage(source);

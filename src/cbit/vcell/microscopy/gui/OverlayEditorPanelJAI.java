@@ -31,6 +31,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEditSupport;
+import loci.formats.AWTImageTools;
 
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
@@ -611,7 +612,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		short[] roiPixels = getImagePane().getHighlightImageWritebackImageBuffer();
 		if (roiPixels!=null){
 			BufferedImage highlightImage = imagePane.getHighlightImage();
-			byte[] redChannelPixels = ImageTools.getBytes(highlightImage, false, 0);
+			byte[] redChannelPixels = AWTImageTools.getBytes(highlightImage)[0];
 			for (int i = 0; i < roiPixels.length; i++) {
 				if (redChannelPixels[i]==0){
 					roiPixels[i] = 0;
@@ -638,7 +639,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			byteData[1][i] = byteData[0][i];
 			byteData[2][i] = byteData[0][i];
 		}
-		return ImageTools.makeImage(byteData, width, height);
+		return AWTImageTools.makeImage(byteData, width, height,false);
 	}
 	
 	public void displaySpecialData(short[] specialData,int width, int height) throws Exception{
@@ -666,7 +667,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				highlightData[2][i] = (byte)highlightColor.getBlue();
 			}
 		}
-		return ImageTools.makeImage(highlightData, width, height);
+		return AWTImageTools.makeImage(highlightData, width, height,false);
 	}
 	
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset

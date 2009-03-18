@@ -14,7 +14,7 @@ import cbit.util.ISize;
 import cbit.util.Matchable;
 import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-
+import loci.formats.AWTImageTools;
 // This represents the ROI - Region Of Interest in a given image : NOTE : subject to change!!
 /**
  */
@@ -261,7 +261,7 @@ public class ROI implements Matchable {
 		}
 		int xSize = roi.getISize().getX();
 		int ySize = roi.getISize().getY();
-		BufferedImage roiImage = ImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize);
+		BufferedImage roiImage = AWTImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize,false);
 		Integer boundaryColor = null;
 		for (int y = 0; y < ySize; y++) {
 			for (int x = 0; x < xSize; x++) {
@@ -303,7 +303,7 @@ public class ROI implements Matchable {
 		}
 		int xSize = roi.getISize().getX();
 		int ySize = roi.getISize().getY();
-		BufferedImage roiImage = ImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize);
+		BufferedImage roiImage = AWTImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize,false);
 		Integer boundaryColor = null;
 		for (int y = 0; y < ySize; y++) {
 			for (int x = 0; x < xSize; x++) {

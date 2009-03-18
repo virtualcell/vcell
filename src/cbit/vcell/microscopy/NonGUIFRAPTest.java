@@ -36,6 +36,7 @@ import cbit.vcell.server.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import loci.formats.AWTImageTools;
 
 public class NonGUIFRAPTest {
 
@@ -255,7 +256,7 @@ public class NonGUIFRAPTest {
 		tifWriter.setId(tempF.getAbsolutePath());
 		tifWriter.setCompression("Uncompressed");
 		BufferedImage timePointBufferedImage =
-			ImageTools.makeImage(shortPixels, width, height);
+			AWTImageTools.makeImage(shortPixels, width, height,false);
 		tifWriter.saveImage(timePointBufferedImage, true);
 		tifWriter.close();
 		return tempF;
