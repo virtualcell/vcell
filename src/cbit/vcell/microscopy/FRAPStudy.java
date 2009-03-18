@@ -716,18 +716,30 @@ public class FRAPStudy implements Matchable{
 			int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length;
 			if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalization and data reduction");}
 			if(progressListener != null){progressListener.updateProgress(0);}
+			
+			//simulation may have different number of time points(1 more or 1 less) compare with experimental data.
+			//curveHash was intialized with exp time data length. so, we have to replace it with the real sim data length.
+			if(simTimes.length != (frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery))
+			{
+				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROINAMES.length; k++) {
+					CurveInfo ci = new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]);
+					curveHash.remove(ci);
+					curveHash.put(ci, new double[simTimes.length]);
+				}
+			}
 			for (int i = 0; i < simTimes.length; i++) {
 				for (int j = 0; j < varNames.length; j++) {
 					SimDataBlock simDataBlock = simulationDataManager.getSimDataBlock(varNames[j], simTimes[i]);
 					double[] data = simDataBlock.getData();
 					for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROINAMES.length; k++) {
+						CurveInfo ci = new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]);
 						int[] roiIndices = nonZeroIndicesForROI.get(k);
 						if(roiIndices != null && roiIndices.length > 0){
 							double accum = 0.0;
 							for (int index = 0; index < roiIndices.length; index++) {
 								accum += data[roiIndices[index]];
 							}
-							double[] values = curveHash.get(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]));
+							double[] values = curveHash.get(ci);
 							values[i] = accum/roiIndices.length;
 						}
 						double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length + j*SpatialAnalysisResults.ORDERED_ROINAMES.length + k;
