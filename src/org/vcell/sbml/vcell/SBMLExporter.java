@@ -322,7 +322,7 @@ protected void addParameters() throws ExpressionException {
 			// add assignment rule for param
 			// First check if 'paramExpr' has any references to speciesContexts. If so, the conc units should be adjusted.
 			// Get the VC (from SpeciesContextSpec) and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
-			// Replace the occurance of species in the 'paramExpr' with the new expr : species*factor.
+			// Replace the occurrence of species in the 'paramExpr' with the new expr : species*factor.
 			String[] symbols = paramExpr.getSymbols();
 			for (int j = 0; j < symbols.length; j++) {
 				SpeciesContext vcSpeciesContext = vcModel.getSpeciesContext(symbols[j]); 
@@ -683,14 +683,13 @@ protected void addSpecies() {
 		sbmlSpecies.setHasOnlySubstanceUnits(false);
 
 		// Get (and set) the initial concentration value
-		// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-		cbit.vcell.mapping.SimulationContext simContext = getOverriddenSimContext();
-		if (simContext == null) {
+
+		if (getOverriddenSimContext() == null) {
 			throw new RuntimeException("No simcontext (application) specified; Cannot proceed.");
 		}
 
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
-		SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
 		VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
@@ -717,14 +716,14 @@ protected void addSpecies() {
 						initAssignment.setMath(initAssgnMathNode);
 					} else { 	// L2V1 (or L1V2 also??)
 						// L2V1 (and L1V2?) and species is 'fixed' (constant), and not fn of x,y,z, other sp, add expr as assgn rule 
-						if (getBoundaryCondition(vcSpeciesContexts[i])) {
+//						if (getBoundaryCondition(vcSpeciesContexts[i])) {
 							ASTNode assgnRuleMathNode = getFormulaFromExpression(initConcExpr);
 							AssignmentRule assgnRule = sbmlModel.createAssignmentRule();
 							assgnRule.setId(vcSpeciesContexts[i].getName());
 							assgnRule.setMath(assgnRuleMathNode);
-						} else {
-							throw new RuntimeException("Failed to export : Unable to add species " + vcSpeciesContexts[i].getName() + " to SBML model since its initial expression \'" + initConcExpr.infix() + "\'  is a function of x, y, z or contains another species in its expression.");
-						}
+//						} else {
+//							throw new RuntimeException("Failed to export : Unable to add species " + vcSpeciesContexts[i].getName() + " to SBML model since its initial expression \'" + initConcExpr.infix() + "\'  is a function of x, y, z or contains another species in its expression.");
+//						}
 					}
 				} catch (ExpressionException e1) {
 					e.printStackTrace(System.out);

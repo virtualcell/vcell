@@ -516,7 +516,7 @@ public static String forceStringSize(String s, int size,String padChar,boolean b
  * @param objData byte[]
  */
 public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
-	long before = System.currentTimeMillis();
+//	long before = System.currentTimeMillis();
 
 	java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);
 	InflaterInputStream iis = new InflaterInputStream(bis);
@@ -525,8 +525,8 @@ public static Serializable fromCompressedSerialized(byte[] objData) throws Class
 	ois.close();
 	bis.close();
 	
-	long after = System.currentTimeMillis();
-	System.out.println("BeanUtils.fromSerialized, t="+(after-before)+" ms, ("+cacheClone+")");
+//	long after = System.currentTimeMillis();
+//	System.out.println("BeanUtils.fromCompressedSerialized, t="+(after-before)+" ms, ("+cacheClone+")");
 	
 	return cacheClone;
 }
