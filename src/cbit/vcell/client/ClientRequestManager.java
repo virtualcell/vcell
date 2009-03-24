@@ -2328,4 +2328,9 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 }
 
 
+public void checkClientServerSoftwareVersion() {
+	getClientServerManager().checkClientServerSoftwareVersion();	
+}
+
+
 }

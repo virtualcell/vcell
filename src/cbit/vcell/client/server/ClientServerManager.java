@@ -232,6 +232,25 @@ public void cleanup() {
 	setVcellConnection(null);	
 }
 
+public void checkClientServerSoftwareVersion() {
+	checkClientServerSoftwareVersion(clientServerInfo);
+}
+
+public static void checkClientServerSoftwareVersion(ClientServerInfo clientServerInfo) {
+	if (clientServerInfo.getServerType() == ClientServerInfo.SERVER_REMOTE) {
+		String[] hosts = clientServerInfo.getHosts();
+		for (int i = 0; i < hosts.length; i ++) {
+			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
+			String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
+			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
+				PopupGenerator.showWarningDialog("A new VCell client is available:\n" 
+						+ "current version : " + clientSoftwareVersion + "\n"
+						+ "new version : " + serverSoftwareVersion + "\n"
+						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");	
+			}
+		}		
+	}	
+}
 
 /**
  * Insert the method's description here.
@@ -241,6 +260,9 @@ public void cleanup() {
 public void connect(ClientServerInfo clientServerInfo) {
 	// just reconnecting ?
 	boolean reconnecting = clientServerInfo.equals(getClientServerInfo());
+	if (reconnecting) {
+		checkClientServerSoftwareVersion(clientServerInfo);
+	}
 	// store credentials
 	setClientServerInfo(clientServerInfo);
 	// get new server connection

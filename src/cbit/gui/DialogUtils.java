@@ -144,6 +144,18 @@ private static JDialog prepareErrorDialog(final Component requester,final String
 	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
+private static JDialog prepareWarningDialog(final Component requester,final String message) {
+	return (JDialog)
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			JPanel panel = createMessagePanel(message);
+			JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
+			JDialog dialog = pane.createDialog(requester, "Warning:");
+			dialog.setResizable(true);
+			return dialog;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
+}
 
 /**
  * Insert the method's description here.
@@ -432,6 +444,19 @@ public static void showErrorDialog(final String message) {
 	}.runEventDispatchThreadSafelyConsumeException();
 }
 
+public static void showWarningDialog(final String message) {
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			final JDialog dialog = prepareWarningDialog(null, message);
+			try{
+				ZEnforcer.showModalDialogOnTop(dialog);
+			}finally{
+				dialog.dispose();
+			}
+			return null;
+		}
+	}.runEventDispatchThreadSafelyConsumeException();
+}
 
 /**
  * Insert the method's description here.
