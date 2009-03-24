@@ -3057,7 +3057,7 @@ private void showEditAnnotationWindow() {
 				// initialize fields
 				String oldAnnotation = getWindowManager().getVCDocument().getDescription();
 				// show the editor
-				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(this, oldAnnotation);
+				String newAnnotation = DialogUtils.showAnnotationDialog(this, oldAnnotation);
 				if (cbit.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
 					// Update VCDocument annotation
 					getWindowManager().getVCDocument().setDescription(newAnnotation);
@@ -3079,7 +3079,8 @@ private void showEditAnnotationWindow() {
  * Comment
  */
 private void showLoginDialog() {
-	cbit.gui.ZEnforcer.showModalDialogOnTop(getLoginDialog(),this);
+	getWindowManager().getRequestManager().checkClientServerSoftwareVersion();
+	ZEnforcer.showModalDialogOnTop(getLoginDialog(),this);
 }
 
 

@@ -240,7 +240,7 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
 	}
 	// fire up the GUI
     vcellClient.createAndShowGUI(startupDoc, false);
-	String build = System.getProperty("vcell.softwareVersion");
+	String build = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	if (build != null){
 		DocumentWindowAboutBox.BUILD_NO = build;
 	}
@@ -257,9 +257,9 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
 	return vcellClient;
 }
 
-
 public static void login(final RequestManager requestManager,final ClientServerInfo clientServerInfo){
-
+	ClientServerManager.checkClientServerSoftwareVersion(clientServerInfo);
+	
 	final LoginDialog loginDialog = new LoginDialog(null);
 	loginDialog.setLoggedInUser(null);
 	loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

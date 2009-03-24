@@ -321,4 +321,6 @@ void stopSimulations(ClientSimManager clientSimManager, Simulation[] simulations
  * Creation date: (5/24/2004 12:09:57 PM)
  */
 void updateStatusNow();
+
+void checkClientServerSoftwareVersion();
 }
