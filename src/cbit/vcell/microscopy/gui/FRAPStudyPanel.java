@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.Vector;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultSingleSelectionModel;
@@ -47,10 +48,12 @@ import javax.swing.undo.UndoableEditSupport;
 import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
 import cbit.image.ImageException;
+import cbit.rmi.event.ExportEvent;
 import cbit.sql.KeyValue;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.Compare;
+import cbit.util.Range;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
@@ -68,8 +71,16 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.FormatSpecificSpecs;
+import cbit.vcell.export.server.GeometrySpecs;
+import cbit.vcell.export.server.MovieSpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
@@ -85,6 +96,7 @@ import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
@@ -94,6 +106,7 @@ import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -108,6 +121,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public static final LineBorder TAB_LINE_BORDER = new LineBorder(new Color(153, 186,243), 3);
 	
+	private static final String NORM_FLUOR_VAR = "norm_fluor";
+	private static final String NORM_SIM_VAR = "norm_sim";
+	private Expression Norm_Exp_Fluor = null;
+	private Expression Norm_Sim = null;
+	
 	private FRAPStudy frapStudy = null;
 	private FRAPOptData frapOptData = null;
 	private FRAPDataPanel frapDataPanel = null;
@@ -119,6 +137,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	final static String TABBEDVIEW = "Tabbed View";
 	private JRadioButton tabRadio = null;
 	private JRadioButton splitRadio = null;
+	private JButton showMovieButton = null;
 	private JPanel simResultsViewPanel = null;
 	private PDEDataViewer pdeDataViewer = null;
 	private PDEDataViewer flourDataViewer = null;
@@ -752,6 +771,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			bg.add(splitRadio);
 			radioPanel.add(tabRadio);
 			radioPanel.add(splitRadio);
+			showMovieButton = new JButton("Show Movie");
+			showMovieButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					showMovie();
+				}
+			});
+			radioPanel.add(showMovieButton);
 			simResultsViewPanel.setLayout(new BorderLayout());
 			simResultsViewPanel.add(radioPanel, BorderLayout.NORTH);
 			simResultsViewPanel.add(getFitSpatialModelPanel(), BorderLayout.CENTER);
@@ -1523,6 +1549,98 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}).start();
 	}	
 	
+	private void showMovie()
+	{
+		final AsynchProgressPopup pp =
+			new AsynchProgressPopup(
+				FRAPStudyPanel.this,
+				"Saving movie data...",
+				"Working...",true,false
+		);
+		pp.start();
+		
+		new Thread(new Runnable()
+		{
+			public void run()
+			{
+		
+				try{
+					//create export specs
+					Simulation sim = null;
+					if (getFrapStudy()==null || getFrapStudy().getBioModel()==null || getFrapStudy().getBioModel().getSimulations()==null){
+						return;
+					}else{
+						sim = getFrapStudy().getBioModel().getSimulations()[0];
+					}
+					FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
+					FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
+					for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
+						fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier());
+					}
+					ExternalDataIdentifier timeSeriesExtDataID = getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier();
+					ExternalDataIdentifier maskExtDataID = getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier();
+					//add sim
+					int jobIndex = 0;
+					SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
+									
+					VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
+					VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs);
+									
+					DataManager dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
+					PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+							
+					int format = ExportConstants.FORMAT_QUICKTIME;
+					String[] variableNames = new String[]{NORM_FLUOR_VAR, NORM_SIM_VAR};
+					VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
+							
+					int endTimeIndex = (int)Math.round(sim.getSolverTaskDescription().getTimeBounds().getEndingTime()/sim.getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+					TimeSpecs timeSpecs = new TimeSpecs(0, endTimeIndex, pdeDataContext.getTimePoints(), ExportConstants.TIME_RANGE);
+					int geoMode = ExportConstants.GEOMETRY_SLICE;
+					GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);
+					
+					double duration = 10000; //10s
+					DisplayPreferences pref1 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),true);
+					DisplayPreferences pref2 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),true);
+					DisplayPreferences[] displayPref = new DisplayPreferences[]{pref1, pref2};
+					MovieSpecs mSpec = new MovieSpecs(duration,
+													 true,
+													 displayPref,
+													 ExportConstants.RAW_RGB,
+													 ExportConstants.NO_MIRRORING,
+													 false);
+					ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
+					// pass the request
+					((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).setSaveAsZip(false);
+					getFlourDataViewer().getDataViewerManager().startExport(exSpecs);
+					((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).setSaveAsZip(true);
+					//show movie if successfully exported
+					if(((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).getExportEvent() != null)
+					{
+						ExportEvent expEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).getExportEvent();
+						final String fileString = System.getProperty(PropertyLoader.exportBaseURLProperty) + expEvt.getJobID() + ".mov";
+						try{
+							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+								JMFPlayer.showMovieInFrame(fileString);
+							}});
+						}catch(Exception e2){
+							e2.printStackTrace();
+						}
+					}
+				}catch(Exception e)
+				{
+					e.printStackTrace(System.out);
+					DialogUtils.showErrorDialog("Error making the movie!\n"+e.getMessage());
+					pp.stop();
+				}
+				finally
+				{
+					pp.stop();
+				}
+			}
+		}).start();
+	}
+	
+	
 	protected void refreshPDEDisplay(DisplayChoice choice) throws Exception {
 		Simulation sim = null;
 		if (getFrapStudy()==null || getFrapStudy().getBioModel()==null || getFrapStudy().getBioModel().getSimulations()==null){
@@ -1610,8 +1728,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				flourViewers[j].setSimulation(null);
 				flourViewers[j].setPdeDataContext(null);
 				
-				final String NORM_FLUOR_VAR = "norm_fluor";
-				flourViewers[j].setDataIdentifierFilter(
+					flourViewers[j].setDataIdentifierFilter(
 					new PDEPlotControlPanel.DataIdentifierFilter(){
 						private String ALL_DATAIDENTIFIERS = "All";
 						private String EXP_NORM_FLUOR = "Exp. Norm. Fluor";
@@ -1651,23 +1768,34 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 				// add function to display normalized fluorence data 
-				Expression norm_fluor = new Expression("((Data2.cell_mask*((max((Data1.fluor-Data1.bg_average),0)+1)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
-				AnnotatedFunction[] func = {new AnnotatedFunction("norm_fluor", norm_fluor, null, VariableType.VOLUME, false)};
-				boolean isExisted = false;
-				for(int i=0; i < pdeDataContext.getFunctions().length; i++)
+				Norm_Exp_Fluor = new Expression("((Data2.cell_mask*((max((Data1.fluor-Data1.bg_average),0)+1)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
+				if(sim.getVariable(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE) == null)//one diffusing component
 				{
-					if(func[0].getName().equals(pdeDataContext.getFunctions()[i].getName()))
+					Norm_Sim = new Expression("Data3.fluor_primary_mobile + Data3.fluor_immobile");
+				}
+				else // two diffusing components
+				{
+					Norm_Sim = new Expression("Data3.fluor_primary_mobile + Data3.fluor_secondary_mobile + Data3.fluor_immobile");
+				}
+				AnnotatedFunction[] func = {new AnnotatedFunction(NORM_FLUOR_VAR, Norm_Exp_Fluor, null, VariableType.VOLUME, false),
+											new AnnotatedFunction(NORM_SIM_VAR, Norm_Sim, null, VariableType.VOLUME, false)};
+				for(int k=0; k<func.length; k++)
+				{
+					boolean isExisted = false;
+					for(int i=0; i < pdeDataContext.getFunctions().length; i++)
 					{
-						isExisted = true;
-						break;
+						if(func[k].equals(pdeDataContext.getFunctions()[i]))
+						{
+							isExisted = true;
+							break;
+						}
+					}
+					if(!isExisted)
+					{
+						pdeDataContext.addFunctions(new AnnotatedFunction[]{func[k]}, new boolean[] {false});
+						pdeDataContext.refreshIdentifiers();
 					}
 				}
-				if(!isExisted)
-				{
-					pdeDataContext.addFunctions(func, new boolean[] {false});
-					pdeDataContext.refreshIdentifiers();
-				}
-				
 				flourViewers[j].setSimulation(sim);
 				flourViewers[j].setPdeDataContext(pdeDataContext);
 				SimulationModelInfo simModelInfo =
