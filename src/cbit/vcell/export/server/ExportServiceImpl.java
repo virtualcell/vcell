@@ -156,11 +156,15 @@ protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String form
 	fireExportEvent(event);
 }
 
+public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)throws DataAccessException
+{
+	return makeRemoteFile(user, dataServerImpl, exportSpecs, true);
+}
 
 /**
  * This method was created in VisualAge.
  */
-public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)
+public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip)
 						throws DataAccessException {
 	// if export completes successfully, we return the generated event for logging
 	if (user == null) {
@@ -234,7 +238,14 @@ public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, Expo
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_QUICKTIME:
 				exportOutputs = qtExporter.makeMovieData(newExportJob, user, dataServerImpl, exportSpecs);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
+				if(bSaveAsZip)
+				{
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
+				}
+				else
+				{
+					return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
+				}
 			case FORMAT_GIF:
 				exportOutputs = imgExporter.makeImageData(newExportJob, user, dataServerImpl, exportSpecs);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
@@ -332,7 +343,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 
 
 /**
- * Insert the method's description here.
+ * This function saves the remote file into a compressed zip file.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
 private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException, MalformedURLException {
@@ -363,6 +374,55 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 			else {
 				throw new DataFormatException("Export Server could not produce valid data !");
 			}
+}
+
+/**
+ * Save remote file in it original format without compression.
+ */
+private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException, MalformedURLException
+{
+	boolean exportValid = true;
+	String fileNames = "";
+	if(exportOutputs.length > 0  && exportOutputs[0].isValid())
+	{
+		//do the first file of exportOutputs separately (for VFRAP, there is only one export output)
+		String extStr = "." + fileFormat;
+		File file = new File(exportBaseDir + newExportJob.getJobID() + extStr);
+		FileOutputStream fileOut = new FileOutputStream(file);
+		BufferedOutputStream out= new BufferedOutputStream(fileOut);
+		out.write(exportOutputs[0].getData());
+		out.close();
+		fileNames = fileNames + file.getName();
+		//if there are more export outputs, loops through the second till the last.
+		for (int i=1;i<exportOutputs.length;i++)
+		{
+			if (exportOutputs[i].isValid()) 
+			{
+				File moreFile = new File(exportBaseDir + newExportJob.getJobID()+"_"+ i + extStr);
+				FileOutputStream moreFileOut = new FileOutputStream(moreFile);
+				ObjectOutputStream moreOut= new ObjectOutputStream(moreFileOut);
+				moreOut.writeObject(exportOutputs[i].getData());
+				moreOut.close();
+				fileNames = "\t"+fileNames + moreFile.getName();
+			} else {
+				exportValid = false;
+				break;
+			}
+		}
+	}
+	else
+	{
+		exportValid = false;
+	}
+	if (exportValid) {
+		completedExportRequests.put(exportSpecs, newExportJob);
+		log.print("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
+		URL url = new URL(exportBaseURL + fileNames);
+		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
+	}
+	else {
+		throw new DataFormatException("Export Server could not produce valid data !");
+	}
 }
 
 
