@@ -125,6 +125,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private static final String NORM_SIM_VAR = "norm_sim";
 	private Expression Norm_Exp_Fluor = null;
 	private Expression Norm_Sim = null;
+	private static String Norm_Exp_Fluor_Str = "((Data2.cell_mask*((max((Data1.fluor-Data1.bg_average),0)+1)/Data2.prebleach_avg))*(Data2.cell_mask > 0))";
+	private static String Norm_Sim_One_Diff_Str ="Data3.fluor_primary_mobile + Data3.fluor_immobile";
+	private static String Norm_Sim_Two_Diff_Str ="Data3.fluor_primary_mobile + Data3.fluor_secondary_mobile + Data3.fluor_immobile";
 	
 	private FRAPStudy frapStudy = null;
 	private FRAPOptData frapOptData = null;
@@ -1610,14 +1613,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 													 false);
 					ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
 					// pass the request
-					((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).setSaveAsZip(false);
-					getFlourDataViewer().getDataViewerManager().startExport(exSpecs);
-					((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).setSaveAsZip(true);
+					ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs);
 					//show movie if successfully exported
-					if(((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).getExportEvent() != null)
+					if(exportEvt != null)
 					{
-						ExportEvent expEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).getExportEvent();
-						final String fileString = System.getProperty(PropertyLoader.exportBaseURLProperty) + expEvt.getJobID() + ".mov";
+						final String fileString = System.getProperty(PropertyLoader.exportBaseURLProperty) + exportEvt.getJobID() + ".mov";
 						try{
 							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 								JMFPlayer.showMovieInFrame(fileString);
@@ -1768,14 +1768,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 				// add function to display normalized fluorence data 
-				Norm_Exp_Fluor = new Expression("((Data2.cell_mask*((max((Data1.fluor-Data1.bg_average),0)+1)/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
+				Norm_Exp_Fluor = new Expression(Norm_Exp_Fluor_Str);
 				if(sim.getVariable(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE) == null)//one diffusing component
 				{
-					Norm_Sim = new Expression("Data3.fluor_primary_mobile + Data3.fluor_immobile");
+					Norm_Sim = new Expression(Norm_Sim_One_Diff_Str);
 				}
 				else // two diffusing components
 				{
-					Norm_Sim = new Expression("Data3.fluor_primary_mobile + Data3.fluor_secondary_mobile + Data3.fluor_immobile");
+					Norm_Sim = new Expression(Norm_Sim_Two_Diff_Str);
 				}
 				AnnotatedFunction[] func = {new AnnotatedFunction(NORM_FLUOR_VAR, Norm_Exp_Fluor, null, VariableType.VOLUME, false),
 											new AnnotatedFunction(NORM_SIM_VAR, Norm_Sim, null, VariableType.VOLUME, false)};

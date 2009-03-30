@@ -31,8 +31,6 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	protected transient java.util.Vector aExportListener = null;
 	protected transient java.util.Vector aDataJobListener = null;
 	private LocalWorkspace localWorkSpace = null;
-	private boolean bSaveAsZip = true;
-	private ExportEvent exportEvt = null;
 
 	/**
 	 * Method to support listener events.
@@ -156,7 +154,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 					System.out.println(event.toString());
 				}
 			});
-			exportEvt = exportServiceImpl.makeRemoteFile(LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, bSaveAsZip);
+			exportServiceImpl.makeRemoteFile(LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs);
 		}catch (DataAccessException e){
 			e.printStackTrace(System.out);
 		} catch (FileNotFoundException e) {
@@ -165,8 +163,25 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 		}
 	}
 	
-	public ExportEvent getExportEvent()
-	{
+	public ExportEvent startExportMovie(ExportSpecs exportSpecs){
+		ExportEvent exportEvt = null;
+		try {
+			SessionLog log = new StdoutSessionLog("export");
+			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));
+			DataServerImpl dataServerImpl = new DataServerImpl(log,localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
+			exportServiceImpl.addExportListener(new ExportListener() {
+				public void exportMessage(ExportEvent event) {
+					System.out.println(event.toString());
+				}
+			});
+			//the last parameter denotes whether the saved file is comporessed or not.
+			exportEvt = exportServiceImpl.makeRemoteFile(LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false);
+		}catch (DataAccessException e){
+			e.printStackTrace(System.out);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return exportEvt;
 	}
 	
@@ -186,8 +201,5 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 		this.localWorkSpace = arg_localWorkSpace;
 	}
 	
-	public void setSaveAsZip(boolean saveAsZip) {
-		bSaveAsZip = saveAsZip;
-	}
 }
 
