@@ -246,7 +246,8 @@ public static void checkClientServerSoftwareVersion(ClientServerInfo clientServe
 				PopupGenerator.showWarningDialog("A new VCell client is available:\n" 
 						+ "current version : " + clientSoftwareVersion + "\n"
 						+ "new version : " + serverSoftwareVersion + "\n"
-						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");	
+						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
+				break;
 			}
 		}		
 	}	
