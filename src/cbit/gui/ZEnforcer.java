@@ -150,8 +150,8 @@ private static void showOnTop(Window window, Component toBeCenteredOn) {
 		windowStack.add(window);
 		window.addWindowListener(listener);
 		cbit.util.BeanUtils.centerOnComponent(window, toBeCenteredOn);
-		window.setVisible(true);
 		window.toFront();
+		window.setVisible(true);
 		timer.start(); // no need to check isRunning(), Timer checks it anyway...
 	}
 }
