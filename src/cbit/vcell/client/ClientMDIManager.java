@@ -7,6 +7,7 @@ import cbit.vcell.client.server.*;
 import java.awt.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
+
 import java.util.*;
 import java.awt.event.*;
 /**
@@ -20,8 +21,8 @@ public class ClientMDIManager implements MDIManager {
 	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
 	public final static String FIELDDATA_WINDOW_ID = "FieldDataWindow";
 	private RequestManager requestManager = null;
-	private Hashtable windowsHash = new Hashtable();
-	private Hashtable managersHash = new Hashtable();
+	private Hashtable<String, TopLevelWindow> windowsHash = new Hashtable<String, TopLevelWindow>();
+	private Hashtable<String, TopLevelWindowManager> managersHash = new Hashtable<String, TopLevelWindowManager>();
 	private int newlyCreatedDesktops = 0;
 	
 	private WindowAdapter windowListener = new WindowAdapter() {
@@ -55,7 +56,7 @@ public JFrame blockWindow(final String windowID) {
 				gp.setPaint(true);
 				f.setGlassPane(gp);
 				gp.setVisible(true);
-				f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
+				//f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
 				return f;
 			}
 		}.runEventDispatchThreadSafelyWrapRuntime();
@@ -72,9 +73,9 @@ public JFrame blockWindow(final String windowID) {
 void cleanup() {
 	if (numberOfWindowsShowing() == 0) {
 		// last window was closed, hash still contains recyclables
-		Enumeration recyclableWindowManagers = getManagersHash().elements();
+		Enumeration<TopLevelWindowManager> recyclableWindowManagers = getManagersHash().elements();
 		while (recyclableWindowManagers.hasMoreElements()) {
-			String managerID = ((TopLevelWindowManager)recyclableWindowManagers.nextElement()).getManagerID();
+			String managerID = recyclableWindowManagers.nextElement().getManagerID();
 			JFrame window = (JFrame)getWindowsHash().get(managerID);
 			getManagersHash().remove(managerID);
 			getWindowsHash().remove(managerID);
@@ -93,14 +94,14 @@ void cleanup() {
  * Creation date: (5/24/2004 11:20:58 AM)
  * @param windowID java.lang.String
  */
-public int closeWindow(java.lang.String windowID) {
+public int closeWindow(String windowID) {
 	if (haveWindow(windowID)) {
 		JFrame window = (JFrame)getWindowsHash().get(windowID);
 		if (window.isShowing()) {
 			TopLevelWindowManager manager = (TopLevelWindowManager)getManagersHash().get(windowID);
 			if (((TopLevelWindowManager)getManagersHash().get(windowID)).isRecyclable()) {
 				// just hide the window
-				window.hide();
+				window.setVisible(false);
 			} else {
 				// dispose both window and manager
 				getManagersHash().remove(windowID);
@@ -193,7 +194,7 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 			setNewlyCreatedDesktops(getNewlyCreatedDesktops() + 1);
 			getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
 			// done
-			documentWindow.show();
+			documentWindow.setVisible(true);
 			return null;
 		}
 	}.runEventDispatchThreadSafelyWrapRuntime();
@@ -332,7 +333,7 @@ public DatabaseWindowManager getDatabaseWindowManager() {
  * Creation date: (5/24/2004 12:48:08 PM)
  * @return java.util.Hashtable
  */
-private java.util.Hashtable getManagersHash() {
+private Hashtable<String, TopLevelWindowManager> getManagersHash() {
 	return managersHash;
 }
 
@@ -381,7 +382,7 @@ public TopLevelWindowManager getWindowManager(java.lang.String windowID) {
  * Creation date: (5/24/2004 8:08:49 PM)
  * @return java.util.Enumeration
  */
-public java.util.Enumeration getWindowManagers() {
+public Enumeration<TopLevelWindowManager> getWindowManagers() {
 	return getManagersHash().elements();
 }
 
@@ -391,7 +392,7 @@ public java.util.Enumeration getWindowManagers() {
  * Creation date: (5/24/2004 11:21:31 AM)
  * @return java.util.Hashtable
  */
-private java.util.Hashtable getWindowsHash() {
+private Hashtable<String, TopLevelWindow> getWindowsHash() {
 	return windowsHash;
 }
 
@@ -414,7 +415,7 @@ public boolean haveWindow(java.lang.String windowID) {
  */
 private int numberOfWindowsShowing() {
 	int i = 0;
-	Enumeration en = getWindowsHash().elements();
+	Enumeration<TopLevelWindow> en = getWindowsHash().elements();
 	while (en.hasMoreElements()) {
 		i = ((JFrame)en.nextElement()).isShowing() ? i + 1 : i;
 	}
@@ -446,31 +447,6 @@ public void setCanonicalTitle(java.lang.String windowID) {
 		windowTitle =
 			createCanonicalTitle(
 				((DocumentWindowManager)manager).getVCDocument().getDocumentType(),((DocumentWindowManager)manager).getVCDocument().getVersion());
-		//String prefix = "";
-		//switch (((DocumentWindowManager)manager).getVCDocument().getDocumentType()) {
-			//case VCDocument.BIOMODEL_DOC: {
-				//prefix = "BIOMODEL: "; 
-				//break;
-			//}
-			//case VCDocument.MATHMODEL_DOC: {
-				//prefix = "MATHMODEL: ";
-				//break;
-			//}
-			//case VCDocument.GEOMETRY_DOC: {
-				//prefix = "GEOMETRY: ";
-				//break;
-			//}
-		//}
-		//VCDocument doc = ((DocumentWindowManager)manager).getVCDocument();
-		//String infix = doc.getName();
-		//if (doc.getVersion() != null) {
-			//infix += " ("+doc.getVersion().getDate()+")";
-		//}
-		//windowTitle = prefix + infix;
-		//windowTitle =
-			//(doc.getVersion() != null && doc.getVersion().getFlag().compareEqual(cbit.sql.VersionFlag.Archived)?"(ARCHIVED) ":"")+
-			//(doc.getVersion() != null && doc.getVersion().getFlag().compareEqual(cbit.sql.VersionFlag.Published)?"(PUBLISHED) ":"")+
-			//windowTitle;
 	} else if (manager instanceof DatabaseWindowManager) {
 		windowTitle = "Database Manager";
 	} else if (manager instanceof TestingFrameworkWindowManager) {
@@ -508,7 +484,7 @@ private void setRequestManager(RequestManager newRequestManager) {
  */
 public void showWindow(java.lang.String windowID) {
 	if (haveWindow(windowID)) {
-		((JFrame)getWindowsHash().get(windowID)).show();
+		((JFrame)getWindowsHash().get(windowID)).setVisible(true);
 	}
 }
 
@@ -550,9 +526,9 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 		blockWindow(BIONETGEN_WINDOW_ID);
 		blockWindow(FIELDDATA_WINDOW_ID);
 	}
-	Enumeration windows = getWindowsHash().elements();
+	Enumeration<TopLevelWindow> windows = getWindowsHash().elements();
 	while (windows.hasMoreElements()) {
-		TopLevelWindow window = (TopLevelWindow)(windows.nextElement());
+		TopLevelWindow window = windows.nextElement();
 		window.updateConnectionStatus(connectionStatus);
 	}
 }
@@ -565,8 +541,8 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
  * @param newID java.lang.String
  */
 public void updateDocumentID(java.lang.String oldID, java.lang.String newID) {
-	Object window = windowsHash.get(oldID);
-	Object manager = managersHash.get(oldID);
+	TopLevelWindow window = windowsHash.get(oldID);
+	TopLevelWindowManager manager = managersHash.get(oldID);
 	windowsHash.remove(oldID);
 	managersHash.remove(oldID);
 	windowsHash.put(newID, window);
@@ -581,9 +557,9 @@ public void updateDocumentID(java.lang.String oldID, java.lang.String newID) {
  * @param totalBytes long
  */
 public void updateMemoryStatus(long freeBytes, long totalBytes) {
-	Enumeration windows = getWindowsHash().elements();
+	Enumeration<TopLevelWindow> windows = getWindowsHash().elements();
 	while (windows.hasMoreElements()) {
-		TopLevelWindow window = (TopLevelWindow)(windows.nextElement());
+		TopLevelWindow window = windows.nextElement();
 		window.updateMemoryStatus(freeBytes, totalBytes);
 	}
 }
@@ -595,9 +571,9 @@ public void updateMemoryStatus(long freeBytes, long totalBytes) {
  * @param progress int
  */
 public void updateWhileInitializing(int progress) {
-	Enumeration windows = getWindowsHash().elements();
+	Enumeration<TopLevelWindow> windows = getWindowsHash().elements();
 	while (windows.hasMoreElements()) {
-		TopLevelWindow window = (TopLevelWindow)(windows.nextElement());
+		TopLevelWindow window = windows.nextElement();
 		window.updateWhileInitializing(progress);
 	}
 }
