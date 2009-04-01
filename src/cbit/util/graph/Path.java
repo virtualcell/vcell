@@ -62,75 +62,75 @@ public void addEdge(Edge newEdge) {
 	super.addEdge(newEdge);
 }
 
-public Node[] getNodesTraversed_original() {
-	Edge edges[] = getEdges();
-	if (edges.length==1){
-		return new Node[] { edges[0].getNode1(), edges[0].getNode2() };
-	}else if (edges.length == 2){
-		if (edges[1].getNode1().equals(edges[0].getNode2())){
-			return new Node[] { edges[0].getNode1(), edges[0].getNode2(), edges[1].getNode2() };
-		}else{
-			return new Node[] { edges[0].getNode2(), edges[0].getNode1(), edges[1].getNode2() };
-		}
-	}else{
-		Vector<Node> nodeList = new Vector<Node>();
-		//
-		// look ahead to see which node is in common with the next edge, choose the other.
-		//
-		for (int i = 0; i < edges.length-1; i++){
-			if (edges[i+1].hasEndPoint(edges[i].getNode2())){
-				nodeList.add(edges[i].getNode1());
-			}else{
-				nodeList.add(edges[i].getNode2());
-			}
-		}
-		//
-		// look back to see which node is in common with the previous edge, choose that one.
-		//
-		if (edges[edges.length-2].hasEndPoint(edges[edges.length-1].getNode1())){
-			nodeList.add(edges[edges.length-1].getNode1());
-			nodeList.add(edges[edges.length-1].getNode2());
-		}else{
-			nodeList.add(edges[edges.length-1].getNode2());
-			nodeList.add(edges[edges.length-1].getNode1());
-		}
-		Node nodes[] = new Node[nodeList.size()];
-		nodeList.copyInto(nodes);
-		return nodes;
-	}
-}
-
-public Node[] getNodesTraversed_current() {
-	Edge edges[] = getEdges();
-	if (edges.length==1){
-		return new Node[] { edges[0].getNode1(), edges[0].getNode2() };
-	}else{
-		Vector<Node> nodeList = new Vector<Node>();
-		//
-		// look ahead to see which node is in common with the next edge, choose the other.
-		//
-		for (int i = 0; i < edges.length-1; i++){
-			if (edges[i+1].hasEndPoint(edges[i].getNode2())){
-				nodeList.add(edges[i].getNode1());
-			}else{
-				nodeList.add(edges[i].getNode2());
-			}
-		}
-		//
-		// look back to see which node is in common with the previous edge, choose that one.
-		//
-		if (edges[edges.length-2].hasEndPoint(edges[edges.length-1].getNode1())){
-			nodeList.add(edges[edges.length-1].getNode1());
-			nodeList.add(edges[edges.length-1].getNode2());
-		}else{
-			nodeList.add(edges[edges.length-1].getNode2());
-			nodeList.add(edges[edges.length-1].getNode1());
-		}
-		Node nodes[] = new Node[nodeList.size()];
-		nodeList.copyInto(nodes);
-		return nodes;
-	}
-}
+//public Node[] getNodesTraversed_original() {
+//	Edge edges[] = getEdges();
+//	if (edges.length==1){
+//		return new Node[] { edges[0].getNode1(), edges[0].getNode2() };
+//	}else if (edges.length == 2){
+//		if (edges[1].getNode1().equals(edges[0].getNode2())){
+//			return new Node[] { edges[0].getNode1(), edges[0].getNode2(), edges[1].getNode2() };
+//		}else{
+//			return new Node[] { edges[0].getNode2(), edges[0].getNode1(), edges[1].getNode2() };
+//		}
+//	}else{
+//		Vector<Node> nodeList = new Vector<Node>();
+//		//
+//		// look ahead to see which node is in common with the next edge, choose the other.
+//		//
+//		for (int i = 0; i < edges.length-1; i++){
+//			if (edges[i+1].hasEndPoint(edges[i].getNode2())){
+//				nodeList.add(edges[i].getNode1());
+//			}else{
+//				nodeList.add(edges[i].getNode2());
+//			}
+//		}
+//		//
+//		// look back to see which node is in common with the previous edge, choose that one.
+//		//
+//		if (edges[edges.length-2].hasEndPoint(edges[edges.length-1].getNode1())){
+//			nodeList.add(edges[edges.length-1].getNode1());
+//			nodeList.add(edges[edges.length-1].getNode2());
+//		}else{
+//			nodeList.add(edges[edges.length-1].getNode2());
+//			nodeList.add(edges[edges.length-1].getNode1());
+//		}
+//		Node nodes[] = new Node[nodeList.size()];
+//		nodeList.copyInto(nodes);
+//		return nodes;
+//	}
+//}
+//
+//public Node[] getNodesTraversed_current() {
+//	Edge edges[] = getEdges();
+//	if (edges.length==1){
+//		return new Node[] { edges[0].getNode1(), edges[0].getNode2() };
+//	}else{
+//		Vector<Node> nodeList = new Vector<Node>();
+//		//
+//		// look ahead to see which node is in common with the next edge, choose the other.
+//		//
+//		for (int i = 0; i < edges.length-1; i++){
+//			if (edges[i+1].hasEndPoint(edges[i].getNode2())){
+//				nodeList.add(edges[i].getNode1());
+//			}else{
+//				nodeList.add(edges[i].getNode2());
+//			}
+//		}
+//		//
+//		// look back to see which node is in common with the previous edge, choose that one.
+//		//
+//		if (edges[edges.length-2].hasEndPoint(edges[edges.length-1].getNode1())){
+//			nodeList.add(edges[edges.length-1].getNode1());
+//			nodeList.add(edges[edges.length-1].getNode2());
+//		}else{
+//			nodeList.add(edges[edges.length-1].getNode2());
+//			nodeList.add(edges[edges.length-1].getNode1());
+//		}
+//		Node nodes[] = new Node[nodeList.size()];
+//		nodeList.copyInto(nodes);
+//		return nodes;
+//	}
+//}
 
 /**
  * Insert the method's description here.
@@ -242,25 +242,25 @@ public static void test(){
 			System.out.print("("+pathEdges[i].getNode1().getName()+","+pathEdges[i].getNode2().getName()+") ");
 			path.addEdge(pathEdges[i]);
 		}
-		System.out.print(" ==original==> ");
-		try {
-			Node[] nodesTraversed2 = path.getNodesTraversed_original();
-			for (int i=0;i<nodesTraversed2.length; i++){
-				System.out.print(" "+nodesTraversed2[i].getName());
-			}
-		}catch (Exception e){
-			System.out.print(e.getMessage());
-		}
-		System.out.print(" ==current==> ");
-		try {
-			Node[] nodesTraversed3 = path.getNodesTraversed_current();
-			for (int i=0;i<nodesTraversed3.length; i++){
-				System.out.print(" "+nodesTraversed3[i].getName());
-			}
-		}catch (Exception e){
-			System.out.print(e.getMessage());
-		}
-		System.out.print(" ==new==> ");
+//		System.out.print(" ==original==> ");
+//		try {
+//			Node[] nodesTraversed2 = path.getNodesTraversed_original();
+//			for (int i=0;i<nodesTraversed2.length; i++){
+//				System.out.print(" "+nodesTraversed2[i].getName());
+//			}
+//		}catch (Exception e){
+//			System.out.print(e.getMessage());
+//		}
+//		System.out.print(" ==current==> ");
+//		try {
+//			Node[] nodesTraversed3 = path.getNodesTraversed_current();
+//			for (int i=0;i<nodesTraversed3.length; i++){
+//				System.out.print(" "+nodesTraversed3[i].getName());
+//			}
+//		}catch (Exception e){
+//			System.out.print(e.getMessage());
+//		}
+//		System.out.print(" ==new==> ");
 		try {
 			Node[] nodesTraversed1 = path.getNodesTraversed();
 			for (int i=0;i<nodesTraversed1.length; i++){
