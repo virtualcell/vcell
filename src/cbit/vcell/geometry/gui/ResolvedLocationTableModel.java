@@ -1,7 +1,7 @@
 package cbit.vcell.geometry.gui;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -35,7 +35,7 @@ public ResolvedLocationTableModel() {
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_NAME:{
 			return String.class;
@@ -165,12 +165,12 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof cbit.vcell.geometry.surface.GeometrySurfaceDescription && evt.getPropertyName().equals("geometricRegions")) {
-		new EventDispatchRunWithException (){
-			public Object runWithException() throws Exception{
+		new SwingDispatcherSync (){
+			public Object runSwing() throws Exception{
 				fireTableDataChanged();
 				return null;
 			}
-		}.runEventDispatchThreadSafelyConsumeException();
+		}.dispatchConsumeException();
 	}
 }
 

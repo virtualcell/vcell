@@ -7,7 +7,7 @@ import cbit.util.Compare;
 public class JumpProcess implements cbit.util.Matchable,java.io.Serializable {
 	private String processName=null;
 	private cbit.vcell.parser.Expression  probabilityRate=null;
-	private Vector listOfActions = null;
+	private Vector<Action> listOfActions = null;
 
 /**
  * JumpProcess constructor comment.
@@ -19,7 +19,7 @@ public JumpProcess(String name, cbit.vcell.parser.Expression probRate)
 {
 	processName = name;
 	probabilityRate = probRate;
-	listOfActions = new Vector();
+	listOfActions = new Vector<Action>();
 }
 
 
@@ -154,7 +154,7 @@ public Action getAction(String varName) //again the problem here, do we allow sa
  * Creation date: (6/27/2006 3:02:29 PM)
  * @return java.util.Vector
  */
-public java.util.Vector getActions() {
+public Vector<Action> getActions() {
 	return listOfActions;
 }
 
@@ -228,22 +228,6 @@ public void removeAction(int index)
 	if(index<listOfActions.size())
 		listOfActions.remove(index);
 }
-
-
-/**
- * Remove the action from action list by it's variable name
- * Creation date: (6/21/2006 5:26:56 PM)
- */
-public void removeAction(String varName) //one problem, actions may have the same variable names. If wanna remove all the actions with same names
-{				                         //the loop should start from biggest index.																
-	for(int i=0; i<listOfActions.size(); i++)
-	{
-		if(((Variable)listOfActions.elementAt(i)).getName().compareTo(varName)==0)
-			listOfActions.remove(i)	;
-	}
-	
-}
-
 
 /**
  * Setthe process's name.

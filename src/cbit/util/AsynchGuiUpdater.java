@@ -31,33 +31,15 @@ public abstract class AsynchGuiUpdater {
  * @param listener java.awt.event.ActionListener
  */
 public AsynchGuiUpdater() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			timer = new Timer(100, new AsynchGuiUpdater.Listener());
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/19/2004 3:09:51 AM)
- */
-public int getDelay() {
-	return (Integer)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
-			return timer.getDelay();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatch();
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/19/2004 1:57:54 AM)
- */
 
 /*
 
@@ -92,12 +74,14 @@ protected abstract void guiToDo(Object params);
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void restart() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			timer.restart();
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 
@@ -106,12 +90,14 @@ public void restart() {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void setDelay(final int millis) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			timer.setDelay(millis);
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 
@@ -120,12 +106,14 @@ public void setDelay(final int millis) {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void start() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			timer.start();
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 
@@ -143,12 +131,14 @@ public void stop() {
  * Creation date: (5/19/2004 1:58:22 AM)
  */
 public final void updateNow() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			guiToDo();
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 
@@ -157,11 +147,13 @@ public final void updateNow() {
  * Creation date: (5/19/2004 1:58:22 AM)
  */
 public final void updateNow(final Object parameter) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			guiToDo(parameter);
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 }

@@ -9,7 +9,7 @@ import java.awt.event.*;
  * @author: Ion Moraru
  */
 public class ZEnforcer {
-	private static Vector windowStack = new Vector();
+	private static Vector<Window> windowStack = new Vector<Window>();
 	private static WindowAdapter listener = new WindowAdapter() {
 		public void windowDeactivated(WindowEvent evt) {
 			if (evt.getWindow() == topWindow()) {
@@ -18,7 +18,7 @@ public class ZEnforcer {
 		}
 		public void windowIconified(WindowEvent evt) {
 			if (evt.getWindow() == topWindow()) {
-				evt.getWindow().show();
+				evt.getWindow().setVisible(true);
 			}
 		}
 		public void windowClosed(WindowEvent evt) {
@@ -37,9 +37,9 @@ public class ZEnforcer {
  * Creation date: (5/26/2004 9:18:41 PM)
  */
 private static void checkWindowStack() {
-	Iterator it = windowStack.iterator();
+	Iterator<Window> it = windowStack.iterator();
 	while (it.hasNext()) {
-		Window window = (Window)it.next();
+		Window window = it.next();
 		if (! window.isShowing()) {
 			window.removeWindowListener(listener);
 			it.remove();
@@ -47,7 +47,7 @@ private static void checkWindowStack() {
 			Window currentTop = topWindow();
 			if (currentTop != null) {
 				currentTop.setEnabled(true);
-				topWindow().show();
+				topWindow().setVisible(true);
 			}
 		}
 	}
@@ -75,7 +75,7 @@ public static void removeFromStack(Window window) {
 		Window currentTop = topWindow();
 		if (currentTop != null) {
 			currentTop.setEnabled(true);
-			topWindow().show();
+			topWindow().setVisible(true);
 		}
 	}
 	if (windowStack.isEmpty()) {
@@ -101,7 +101,7 @@ public static void showModalDialogOnTop(Dialog dialog) {
 		} catch (Exception exc) {
 			exc.printStackTrace(System.out);
 		}
-		dialog.show(); // just show it
+		dialog.setVisible(true); // just show it
 	}
 }
 
@@ -123,7 +123,7 @@ public static void showModalDialogOnTop(Dialog dialog, Component toBeCenteredOn)
 		} catch (Exception exc) {
 			exc.printStackTrace(System.out);
 		}
-		dialog.show(); // just show it
+		dialog.setVisible(true); // just show it
 	}
 }
 
@@ -150,8 +150,8 @@ private static void showOnTop(Window window, Component toBeCenteredOn) {
 		windowStack.add(window);
 		window.addWindowListener(listener);
 		cbit.util.BeanUtils.centerOnComponent(window, toBeCenteredOn);
-		window.toFront();
 		window.setVisible(true);
+		window.toFront();
 		timer.start(); // no need to check isRunning(), Timer checks it anyway...
 	}
 }

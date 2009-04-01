@@ -677,8 +677,8 @@ public void deleteSelected() {
  */
 public static VCImage editImageAttributes(final VCImage image,final AsynchProgressPopup pp,final RequestManager theRequestManager) throws Exception{
 	return (VCImage)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			VCImage editedImage = null;
 			if (image == null) {
 				PopupGenerator.showErrorDialog("No image!");
@@ -753,7 +753,7 @@ public static VCImage editImageAttributes(final VCImage image,final AsynchProgre
 			
 			return editedImage;
 		}
-	}.runEventDispatchThreadSafelyWithException();
+	}.dispatchWithException();
 
 }
 
@@ -1397,8 +1397,8 @@ public void setLatestOnly(boolean latestOnly) {
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showAccessPermissionDialog(final JComponent aclEditor,final Component requester) {
-	return new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	return new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
 			aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
 			accessPermissionDialog.setMessage("");
@@ -1409,7 +1409,7 @@ private Object showAccessPermissionDialog(final JComponent aclEditor,final Compo
 			cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
 			return accessPermissionDialog.getValue();
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 
@@ -1430,8 +1430,8 @@ private File showFileChooserDialog(FileFilter fileFilter) throws Exception {
  */
 public static File showFileChooserDialog(final FileFilter fileFilter, final UserPreferences currentUserPreferences) throws Exception{
 	return (File)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			// the boolean isXMLNotImage is true if we are trying to choose an XML file
 			// It is false if we are trying to choose an image file
 			// This is used to set the appropriate File filters.
@@ -1459,7 +1459,7 @@ public static File showFileChooserDialog(final FileFilter fileFilter, final User
 			    throw UserCancelException.CANCEL_FILE_SELECTION;
 		    }
 		}
-	}.runEventDispatchThreadSafelyWithException();
+	}.dispatchWithException();
 
 }
 
@@ -1469,8 +1469,8 @@ public static File showFileChooserDialog(final FileFilter fileFilter, final User
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private static Object showImagePropertiesDialog(final ImageAttributePanel imageAttributePanel) {
-	return new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	return new SwingDispatcherSync() {
+		public Object runSwing() throws Exception {
 			// Cannot use JOptionPane because it will not allow some children to resize
 			JDialog d = new JDialog();
 			d.setModal(true);
@@ -1482,7 +1482,7 @@ private static Object showImagePropertiesDialog(final ImageAttributePanel imageA
 			cbit.gui.ZEnforcer.showModalDialogOnTop(d,null);
 			return imageAttributePanel.getStatus();
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -1491,8 +1491,8 @@ private static Object showImagePropertiesDialog(final ImageAttributePanel imageA
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showImageSelectorDialog(final JComponent imageBrowser, final Component requester) {
-	return new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	return new SwingDispatcherSync() {
+		public Object runSwing() throws Exception {
 			JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
 			imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
 			imageSelectDialog.setMessage("");
@@ -1502,7 +1502,7 @@ private Object showImageSelectorDialog(final JComponent imageBrowser, final Comp
 			cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
 			return imageSelectDialog.getValue();
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -1511,8 +1511,8 @@ private Object showImageSelectorDialog(final JComponent imageBrowser, final Comp
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager requester) {
-	return new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	return new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
 			tree.setPreferredSize(new java.awt.Dimension(300, 600));
 			openDialog.setMessage("");
@@ -1539,7 +1539,7 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
 
 			return openDialog.getValue();
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 
@@ -1550,8 +1550,8 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
  */
 public String showSaveDialog(final int documentType, final Component requester, final String oldName) throws Exception {
 	return (String)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
 			saveDialog.setWantsInput(true);
 			saveDialog.setInitialSelectionValue(oldName);
@@ -1598,7 +1598,7 @@ public String showSaveDialog(final int documentType, final Component requester, 
 				throw UserCancelException.CANCEL_NEW_NAME;
 			}
 		}
-	}.runEventDispatchThreadSafelyWithException();
+	}.dispatchWithException();
 
 }
 

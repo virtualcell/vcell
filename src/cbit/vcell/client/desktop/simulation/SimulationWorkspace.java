@@ -1,5 +1,5 @@
 package cbit.vcell.client.desktop.simulation;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.ode.gui.*;
 
@@ -640,8 +640,8 @@ public void setSimulations(final cbit.vcell.solver.Simulation[] simulations) {
 	if (simulations == null) {
 		setStatusBars(null);
 	} else {
-		new EventDispatchRunWithException (){
-			public Object runWithException() throws Exception{
+		new SwingDispatcherSync (){
+			public Object runSwing() throws Exception{
 				setStatusBars(new JProgressBar[simulations.length]);
 				for (int i = 0; i < getStatusBars().length; i++){
 					JProgressBar bar = new JProgressBar();
@@ -650,7 +650,7 @@ public void setSimulations(final cbit.vcell.solver.Simulation[] simulations) {
 				}
 				return null;
 			}
-		}.runEventDispatchThreadSafelyWrapRuntime();
+		}.dispatchWrapRuntime();
 
 	}
 	firePropertyChange("simulations", oldValue, simulations);

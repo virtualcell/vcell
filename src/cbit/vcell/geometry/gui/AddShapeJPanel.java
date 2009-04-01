@@ -470,7 +470,7 @@ public class AddShapeJPanel extends JPanel {
 		
 		copyExpressionTextButton.setEnabled(false);
 		
-		populateShapeTypeComboBox(2);
+		populateShapeTypeComboBox(1);
 		
 		UndoableEditListener undoableEditListener = 
 			new UndoableEditListener(){

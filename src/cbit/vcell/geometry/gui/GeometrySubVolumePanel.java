@@ -770,7 +770,7 @@ private javax.swing.JPanel getJPanel1() {
 							d.setSize(300,275);
 							d.setLocation(300,200);
 //							BeanUtils.centerOnComponent(GeometrySubVolumePanel.this,null);
-							cbit.gui.ZEnforcer.showModalDialogOnTop(d,null);
+							cbit.gui.ZEnforcer.showModalDialogOnTop(d, GeometrySubVolumePanel.this);
 
 							if(acceptFlag[0]){
 								AddShapeJPanel.addSubVolumeToGeometrySpec(addShapeJPanel,getGeometrySpec());

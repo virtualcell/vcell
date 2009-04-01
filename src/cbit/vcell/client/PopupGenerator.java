@@ -1,5 +1,5 @@
 package cbit.vcell.client;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.server.*;
 import javax.swing.*;
 import java.awt.*;
@@ -22,8 +22,8 @@ public class PopupGenerator extends DialogUtils{
  */
 private static String showDialog(final Component requester, final UserPreferences preferences, final UserMessage userMessage, final String replacementText, final int jOptionPaneMessageType) {
 	return (String)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			//
 			// if userMessage is a warning that can be ignored, and the preference is to ignore it, then return default selection.
 			//
@@ -72,7 +72,7 @@ private static String showDialog(final Component requester, final UserPreference
 				dialog.dispose();
 			}
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 

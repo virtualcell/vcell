@@ -21,6 +21,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.ModelParametersDialog;
 import cbit.vcell.model.gui.ReactionCartoonEditorDialog;
 /**
@@ -36,7 +37,7 @@ public class StructureCartoonTool extends BioCartoonTool implements java.beans.P
 	//private Point movingPointWorld = null;
 	//private Point movingOffsetWorld = null;
 	private int mode = 	-1;
-	private Hashtable reactionEditorHash = new Hashtable();
+	private Hashtable<Structure, ReactionCartoonEditorDialog> reactionEditorHash = new Hashtable<Structure, ReactionCartoonEditorDialog>();
 	private ModelParametersDialog modelParametersDialog = null;
 
 	
@@ -232,7 +233,7 @@ public void mouseClicked(java.awt.event.MouseEvent event) {
 	if(getStructureCartoon() == null){return;}
 	//
 	try {
-		Point worldPoint = screenToWorld(event.getPoint());
+		//Point worldPoint = screenToWorld(event.getPoint());
 		//Shape pickedShape = getStructureCartoon().pickWorld(worldPoint);
 		//
 		// if right mouse button, then do popup menu
@@ -483,9 +484,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		//The Model (or the Structures therein) associated with our StructureCartoon have changed
 		//dispose of all ReactionCartoonEditors because they have references to
 		//the wrong Model or the structures don't match the ContainerShape heirarchy
-		Iterator iter = reactionEditorHash.values().iterator();
+		Iterator<ReactionCartoonEditorDialog> iter = reactionEditorHash.values().iterator();
 		while(iter.hasNext()){
-			disposeReactionCartoonEditorDialog((ReactionCartoonEditorDialog)iter.next());
+			disposeReactionCartoonEditorDialog(iter.next());
 		}
 		reactionEditorHash.clear();
 		// clear the model in ModelParametersPanel and ProblemsPanel thro' ModelParametersDialog
@@ -547,10 +548,16 @@ private void selectEventFromWorld(Point worldPoint) {
 	//
 	if(getStructureCartoon() == null){return;}
 	//Only 1 thing at a time can be selected in StructureCartoon
-	getStructureCartoon().clearSelection();
+	Shape selectedShape = getStructureCartoon().getSelectedShape();
 	Shape pickedShape = getStructureCartoon().pickWorld(worldPoint);
 	//	
-	if (pickedShape == null){return;}
+	if (selectedShape == pickedShape) {
+		return;
+	}
+	getStructureCartoon().clearSelection();
+	if (pickedShape == null){
+		return;
+	}
 	//
 	getStructureCartoon().select(pickedShape);
 }
@@ -721,7 +728,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 			featureShape.getModel().moveFeature(featureShape.getFeature(),finalDestination);
 
 			//Ask if cleanup wanted on SpeciesContexts of parent of moving membrane that have no other references
-			Vector cleanupWantedV = new Vector();
+			Vector<SpeciesContext> cleanupWantedV = new Vector<SpeciesContext>();
 			if(neededSCArr != null && neededSCArr.length > 0){
 				for(int i=0;i<neededSCArr.length;i+= 1){
 					boolean bFound = false;
@@ -848,8 +855,8 @@ public void showReactionCartoonEditorPanel(final StructureShape structureShape) 
 			public void propertyChange(java.beans.PropertyChangeEvent ev) {    
 				JFileChooser chooser = (JFileChooser)ev.getSource();       
 				if (JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals(ev.getPropertyName())) {      
-					java.io.File directory = (java.io.File)ev.getNewValue(); 
-					chooser.setSelectedFile(defaultFile);     
+					//java.io.File directory = (java.io.File)ev.getNewValue(); 
+					chooser.setSelectedFile(defaultFile);
 				}  
 			} 
 		}

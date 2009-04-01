@@ -1,5 +1,5 @@
 package cbit.vcell.client;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.gui.JInternalFrameEnhanced;
 
@@ -35,8 +35,8 @@ public class GeometryWindowManager extends DocumentWindowManager implements java
 public GeometryWindowManager(JPanel panel, cbit.vcell.client.RequestManager requestManager, final Geometry aGeometry, int newlyCreatedDesktops) {
 	super(panel, requestManager, aGeometry, newlyCreatedDesktops);
 
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			surfaceViewer = new SurfaceViewerPanel();
 			geoViewer = new GeometryDisplayPanel();
 			setGeometry(aGeometry);
@@ -51,7 +51,7 @@ public GeometryWindowManager(JPanel panel, cbit.vcell.client.RequestManager requ
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 

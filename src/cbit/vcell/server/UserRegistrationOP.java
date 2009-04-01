@@ -14,7 +14,7 @@ import cbit.sql.KeyValue;
 import cbit.sql.UserInfo;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.Compare;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.util.TokenMangler;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -87,12 +87,11 @@ public class UserRegistrationOP implements Serializable{
 			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager not null.");			
 		}
 
-			final RegistrationPanel registrationPanel = (RegistrationPanel)
-			new EventDispatchRunWithException (){
-				public Object runWithException() throws Exception{
+			final RegistrationPanel registrationPanel = (RegistrationPanel)	new SwingDispatcherSync (){
+				public Object runSwing() throws Exception{
 					return new RegistrationPanel();
 				}
-			}.runEventDispatchThreadSafelyWithException();
+			}.dispatchWithException();
 
 //				LocalAdminDbServer adminDbServer = null;
 //				VCellBootstrap vcellBootstrap = null;
@@ -216,12 +215,12 @@ public class UserRegistrationOP implements Serializable{
 					try{
 						pp.start();
 						originalUserInfoHolder[0] = registrationProvider.getUserInfo(clientServerManager.getUser().getID());
-						new EventDispatchRunWithException (){
-							public Object runWithException() throws Exception{
+						new SwingDispatcherSync (){
+							public Object runSwing() throws Exception{
 								registrationPanel.setUserInfo(originalUserInfoHolder[0],true);
 								return null;
 							}
-						}.runEventDispatchThreadSafelyWithException();
+						}.dispatchWithException();
 					}finally{
 						pp.stop();
 					}

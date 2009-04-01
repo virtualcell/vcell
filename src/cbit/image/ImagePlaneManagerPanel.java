@@ -1,11 +1,7 @@
 package cbit.image;
 
 import java.awt.*;
-
-import javax.swing.JOptionPane;
-
-import cbit.gui.SimpleUserMessage;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.geometry.gui.CurveRenderer;
 
@@ -78,8 +74,8 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 				connEtoC6(e);
 		};
 		public void propertyChange(final java.beans.PropertyChangeEvent evt) {
-			new EventDispatchRunWithException (){
-				public Object runWithException() throws Exception{
+			new SwingDispatcherSync (){
+				public Object runSwing() throws Exception{
 					if (evt.getSource() == ImagePlaneManagerPanel.this) 
 						connEtoC19(evt);
 					if (evt.getSource() == ImagePlaneManagerPanel.this && (evt.getPropertyName().equals("mode"))) 
@@ -114,7 +110,7 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 						connEtoM4(evt);
 					return null;
 				}
-			}.runEventDispatchThreadSafelyWrapRuntime();
+			}.dispatchWrapRuntime();
 
 		};
 	};

@@ -1,15 +1,21 @@
 package cbit.vcell.math.gui;
-import cbit.util.EventDispatchRunWithException;
-import cbit.vcell.parser.Expression;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.math.*;
-import java.util.Vector;
 import java.util.Enumeration;
-import javax.swing.tree.DefaultTreeModel;
+
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.math.Action;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniCondition;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -63,9 +69,9 @@ private BioModelNode createBaseTree() {
 	// create subTree of Constants
 	//
 	BioModelNode constantRootNode = new BioModelNode("constants",true);
-	Enumeration enum1 = getMathDescription().getConstants();
+	Enumeration<Constant> enum1 = getMathDescription().getConstants();
 	while (enum1.hasMoreElements()){
-		Constant constant = (Constant)enum1.nextElement();
+		Constant constant = enum1.nextElement();
 		BioModelNode constantNode = new BioModelNode(constant,false);
 		constantRootNode.add(constantNode);
 	}
@@ -77,9 +83,9 @@ private BioModelNode createBaseTree() {
 	// create subTree of Functions
 	//
 	BioModelNode functionRootNode = new BioModelNode("functions",true);
-	enum1 = getMathDescription().getFunctions();
-	while (enum1.hasMoreElements()){
-		Function function = (Function)enum1.nextElement();
+	Enumeration<Function> enum2 = getMathDescription().getFunctions();
+	while (enum2.hasMoreElements()){
+		Function function = enum2.nextElement();
 		BioModelNode functionNode = new BioModelNode(function,false);
 		functionRootNode.add(functionNode);
 	}
@@ -88,12 +94,13 @@ private BioModelNode createBaseTree() {
 	}
 
 	//
-	// create subTree of VolumeSubDomains
+	// create subTree of VolumeSubDomains and MembraneSubDomains
 	//
 	BioModelNode volumeRootNode = new BioModelNode("volume domains",true);
-	enum1 = getMathDescription().getSubDomains();
-	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+	BioModelNode membraneRootNode = new BioModelNode("membrane domains",true);
+	Enumeration<SubDomain> enum3 = getMathDescription().getSubDomains();
+	while (enum3.hasMoreElements()){
+		SubDomain subDomain = enum3.nextElement();
 		if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain){
 			CompartmentSubDomain volumeSubDomain = (CompartmentSubDomain)subDomain;
 			BioModelNode volumeSubDomainNode = new BioModelNode(volumeSubDomain,true);
@@ -101,28 +108,28 @@ private BioModelNode createBaseTree() {
 			{
 				//add stoch variable initial conditions
 				BioModelNode varIniConditionNode = new BioModelNode("variable_initial_conditions",true);
-				Enumeration iniConditions = volumeSubDomain.getVarIniConditions().elements();
+				Enumeration<VarIniCondition> iniConditions = volumeSubDomain.getVarIniConditions().elements();
 				while (iniConditions.hasMoreElements()){
-					VarIniCondition varIni = (VarIniCondition)iniConditions.nextElement();
+					VarIniCondition varIni = iniConditions.nextElement();
 					BioModelNode varIniNode = new BioModelNode(varIni,false);
 					varIniConditionNode.add(varIniNode);
 				}
 				volumeSubDomainNode.add(varIniConditionNode);
 				//add jump processes
-				Enumeration jumpProcesses = volumeSubDomain.getJumpProcesses().elements();
+				Enumeration<JumpProcess> jumpProcesses = volumeSubDomain.getJumpProcesses().elements();
 				while (jumpProcesses.hasMoreElements())
 				{
-					JumpProcess jp = (JumpProcess)jumpProcesses.nextElement();
+					JumpProcess jp = jumpProcesses.nextElement();
 					BioModelNode jpNode = new BioModelNode(jp,true);
 					//add probability rate.
 					String probRate = "P_"+jp.getName();
 					BioModelNode prNode = new BioModelNode("probability_rate = "+probRate,false);
 					jpNode.add(prNode);
 					//add Actions
-					Enumeration actions = jp.getActions().elements();
+					Enumeration<Action> actions = jp.getActions().elements();
 					while (actions.hasMoreElements())
 					{
-						Action action = (Action)actions.nextElement();
+						Action action = actions.nextElement();
 						BioModelNode actionNode = new BioModelNode(action,false);
 						jpNode.add(actionNode);
 					}
@@ -134,9 +141,9 @@ private BioModelNode createBaseTree() {
 				//
 				// add equation children
 				//
-				Enumeration eqnEnum = volumeSubDomain.getEquations();
+				Enumeration<Equation> eqnEnum = volumeSubDomain.getEquations();
 				while (eqnEnum.hasMoreElements()){
-					Equation equation = (Equation)eqnEnum.nextElement();
+					Equation equation = eqnEnum.nextElement();
 					BioModelNode equationNode = new BioModelNode(equation,false);
 					volumeSubDomainNode.add(equationNode);
 				}
@@ -146,50 +153,38 @@ private BioModelNode createBaseTree() {
 				FastSystem fastSystem = volumeSubDomain.getFastSystem();
 				if (fastSystem!=null){
 					BioModelNode fsNode = new BioModelNode(fastSystem,true);
-					Enumeration enumFI = fastSystem.getFastInvariants();
+					Enumeration<FastInvariant> enumFI = fastSystem.getFastInvariants();
 					while (enumFI.hasMoreElements()){
-						FastInvariant fi = (FastInvariant)enumFI.nextElement();
+						FastInvariant fi = enumFI.nextElement();
 						fsNode.add(new BioModelNode(fi,false));
 					}	
-					Enumeration enumFR = fastSystem.getFastRates();
+					Enumeration<FastRate> enumFR = fastSystem.getFastRates();
 					while (enumFR.hasMoreElements()){
-						FastRate fr = (FastRate)enumFR.nextElement();
+						FastRate fr = enumFR.nextElement();
 						fsNode.add(new BioModelNode(fr,false));
 					}	
 					volumeSubDomainNode.add(fsNode);
 				}
 			}
 			volumeRootNode.add(volumeSubDomainNode);
-		}
-	}
-	if (volumeRootNode.getChildCount()>0){
-		rootNode.add(volumeRootNode);
-	}
-	//
-	// create subTree of MembraneSubDomains
-	//
-	BioModelNode membraneRootNode = new BioModelNode("membrane domains",true);
-	enum1 = getMathDescription().getSubDomains();
-	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
-		if (subDomain instanceof MembraneSubDomain){
+		} else if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain;
 			BioModelNode membraneSubDomainNode = new BioModelNode(membraneSubDomain,true);
 			//
 			// add equation children
 			//
-			Enumeration eqnEnum = membraneSubDomain.getEquations();
+			Enumeration<Equation> eqnEnum = membraneSubDomain.getEquations();
 			while (eqnEnum.hasMoreElements()){
-				Equation equation = (Equation)eqnEnum.nextElement();
+				Equation equation = eqnEnum.nextElement();
 				BioModelNode equationNode = new BioModelNode(equation,false);
 				membraneSubDomainNode.add(equationNode);
 			}
 			//
 			// add jump condition children
 			//
-			Enumeration jcEnum = membraneSubDomain.getJumpConditions();
+			Enumeration<JumpCondition> jcEnum = membraneSubDomain.getJumpConditions();
 			while (jcEnum.hasMoreElements()){
-				JumpCondition jumpCondition = (JumpCondition)jcEnum.nextElement();
+				JumpCondition jumpCondition = jcEnum.nextElement();
 				BioModelNode jcNode = new BioModelNode(jumpCondition,false);
 				membraneSubDomainNode.add(jcNode);
 			}
@@ -199,20 +194,23 @@ private BioModelNode createBaseTree() {
 			FastSystem fastSystem = membraneSubDomain.getFastSystem();
 			if (fastSystem!=null){
 				BioModelNode fsNode = new BioModelNode(fastSystem,true);
-				Enumeration enumFI = fastSystem.getFastInvariants();
+				Enumeration<FastInvariant> enumFI = fastSystem.getFastInvariants();
 				while (enumFI.hasMoreElements()){
-					FastInvariant fi = (FastInvariant)enumFI.nextElement();
+					FastInvariant fi = enumFI.nextElement();
 					fsNode.add(new BioModelNode(fi,false));
 				}	
-				Enumeration enumFR = fastSystem.getFastRates();
+				Enumeration<FastRate> enumFR = fastSystem.getFastRates();
 				while (enumFR.hasMoreElements()){
-					FastRate fr = (FastRate)enumFR.nextElement();
+					FastRate fr = enumFR.nextElement();
 					fsNode.add(new BioModelNode(fr,false));
 				}	
 				membraneSubDomainNode.add(fsNode);
 			}
 			membraneRootNode.add(membraneSubDomainNode);
 		}
+	}
+	if (volumeRootNode.getChildCount()>0){
+		rootNode.add(volumeRootNode);
 	}
 	if (membraneRootNode.getChildCount()>0){
 		rootNode.add(membraneRootNode);
@@ -288,8 +286,8 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (2/14/01 3:50:24 PM)
  */
 private void refreshTree() {
-	new EventDispatchRunWithException() {
-		public Object runWithException() throws Exception {
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception {
 			if (getMathDescription()!=null){
 				setRoot(createBaseTree());
 			}else{
@@ -297,7 +295,7 @@ private void refreshTree() {
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();	
+	}.dispatchWrapRuntime();
 }
 
 

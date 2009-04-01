@@ -1,9 +1,7 @@
 package cbit.vcell.client;
 import javax.swing.*;
 
-import cbit.vcell.document.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.client.desktop.*;
 import java.util.*;
 public interface MDIManager {
 /**
@@ -76,7 +74,7 @@ TopLevelWindowManager getWindowManager(String windowID);
  * Creation date: (5/24/2004 8:08:38 PM)
  * @return java.util.Enumeration
  */
-Enumeration getWindowManagers();
+Enumeration<TopLevelWindowManager> getWindowManagers();
 
 
 /**

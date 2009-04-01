@@ -1,24 +1,14 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.util.EventDispatchRunWithException;
 import cbit.util.Issue;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.gui.MathDescEditor;
-
 import java.awt.*;
 import java.awt.event.*;
-
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.View;
-import javax.swing.text.Highlighter.Highlight;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -1939,13 +1929,12 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void mathDescription_This() {
-	new EventDispatchRunWithException () {
-		public Object runWithException() throws Exception {
+	new SwingDispatcherSync () {
+		public Object runSwing() throws Exception {
 			if (getmathDescription()!=null){
 				try {
 					getVCMLEditorPane().setText(getmathDescription().getVCML_database());
 					getVCMLEditorPane().setCaretPosition(0);
-					return null;
 				}catch (Exception e){
 					e.printStackTrace(System.out);
 					getVCMLEditorPane().setText("error displaying math language: "+e.getMessage());
@@ -1955,7 +1944,7 @@ private void mathDescription_This() {
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 

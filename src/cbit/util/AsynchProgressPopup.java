@@ -1,8 +1,6 @@
 package cbit.util;
+
 import java.awt.*;
-
-import javax.swing.SwingUtilities;
-
 import cbit.gui.ZEnforcer;
 
 /**
@@ -43,6 +41,11 @@ public class AsynchProgressPopup extends AsynchGuiUpdater {
 	private boolean inputBlocking = false;
 	private boolean knowsProgress = false;
 
+	private Component requester = null;
+	private String title = null;
+	private String message = null;  
+	private boolean bCancelable = false;
+	private ProgressDialogListener progressDialogListener = null;
 /**
  * Insert the method's description here.
  * Creation date: (5/19/2004 3:11:01 PM)
@@ -63,48 +66,57 @@ public AsynchProgressPopup(Component requester, String title, String message, bo
  * @param inputBlocking boolean
  * @param knowsProgress boolean
  */
-public AsynchProgressPopup(final Component requester, final String title, final String message, final boolean inputBlocking, final boolean knowsProgress,final  boolean cancelable,final  ProgressDialogListener progressDialogListener) {
-	
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
-			Frame owner = javax.swing.JOptionPane.getFrameForComponent(requester);
-			dialog = new ProgressDialog(owner);
-			if (cancelable && progressDialogListener!=null){
-				dialog.setCancelButtonVisible(true);
-				dialog.addProgressDialogListener(progressDialogListener);
-			}else{
-				dialog.setCancelButtonVisible(false);
-			}
-			dialog.setLocationRelativeTo(requester);
-			dialog.setResizable(false);
-			if (title != null) dialog.setTitle(title);
-			if (message != null) dialog.setMessage(message);
-			dialog.setModal(inputBlocking);
-			// store mode of operation
-			AsynchProgressPopup.this.inputBlocking = inputBlocking;
-			AsynchProgressPopup.this.knowsProgress = knowsProgress;
-			if (! knowsProgress) dialog.setProgressBarString("WORKING...");
-			return null;
-		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+public AsynchProgressPopup(Component requester, String title, String message, boolean inputBlocking, 
+		boolean knowsProgress, boolean cancelable, ProgressDialogListener progressDialogListener) {
+	this.requester = requester;
+	this.title = title;
+	this.message = message;
+	this.inputBlocking = inputBlocking;
+	this.knowsProgress = knowsProgress;
+	this.bCancelable = cancelable;
+	this.progressDialogListener = progressDialogListener;
 }
 
+private ProgressDialog getDialog() {
+	if (dialog == null) {
+		Frame owner = javax.swing.JOptionPane.getFrameForComponent(requester);
+		dialog = new ProgressDialog(owner);
+		if (bCancelable && progressDialogListener!=null){
+			dialog.setCancelButtonVisible(true);
+			dialog.addProgressDialogListener(progressDialogListener);
+		}else{
+			dialog.setCancelButtonVisible(false);
+		}
+		dialog.setLocationRelativeTo(requester);
+		dialog.setResizable(false);
+		if (title != null) dialog.setTitle(title);
+		if (message != null) dialog.setMessage(message);
+		dialog.setModal(inputBlocking);
+		// store mode of operation
+		//AsynchProgressPopup.this.inputBlocking = inputBlocking;
+		AsynchProgressPopup.this.knowsProgress = knowsProgress;
+		if (! knowsProgress) dialog.setProgressBarString("WORKING...");
+	}	
+	return dialog;
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/19/2004 3:08:59 PM)
  */
 protected void guiToDo() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			if (knowsProgress) {
-				dialog.setProgress(progress);
+				getDialog().setProgress(progress);
 			} else {
-				dialog.setProgress(autoProgress % 100);
+				getDialog().setProgress(autoProgress % 100);
 				autoProgress += 5;
 			}
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 
 }
 
@@ -114,16 +126,18 @@ protected void guiToDo() {
  * Creation date: (5/19/2004 3:08:59 PM)
  */
 protected void guiToDo(final Object params) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			if (params instanceof String) {
-				dialog.setMessage(params.toString());
+				getDialog().setMessage(params.toString());
 			} else if (params instanceof Integer) {
-				dialog.setProgress(((Integer)params).intValue());
+				getDialog().setProgress(((Integer)params).intValue());
 			}
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 
@@ -133,12 +147,14 @@ protected void guiToDo(final Object params) {
  * @param newMessage java.lang.String
  */
 public void setMessage(final String newMessage) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			updateNow(newMessage);
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 
 }
 
@@ -149,8 +165,8 @@ public void setMessage(final String newMessage) {
  * @param progress int
  */
 public void setProgress(final int argProgress) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			// ignore if in auto mode
 			if (knowsProgress) {
 				int localProgress = argProgress;
@@ -160,9 +176,11 @@ public void setProgress(final int argProgress) {
 				updateNow(new Integer(localProgress));
 				AsynchProgressPopup.this.progress = localProgress;
 			}
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 
 }
 /**
@@ -183,38 +201,44 @@ public int getProgress( ) {
  * Creation date: (5/19/2004 3:28:39 PM)
  */
 private void startPrivate(final boolean bKeepOnTop) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			if(bKeepOnTop){
-				SwingUtilities.invokeLater(new Runnable(){public void run(){ZEnforcer.showModalDialogOnTop(dialog);}});
+				ZEnforcer.showModalDialogOnTop(getDialog());
 			}else{
-				SwingUtilities.invokeLater(new Runnable(){public void run(){dialog.setVisible(true);}});
+				getDialog().setVisible(true);
 			}
 			// start timer for auto progress
 			if (! knowsProgress) {
 				AsynchProgressPopup.super.start();
 			}
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 public void start() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			startPrivate(false);
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 public void startKeepOnTop() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			startPrivate(true);
-			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 /**
@@ -222,15 +246,17 @@ public void startKeepOnTop() {
  * Creation date: (5/19/2004 3:28:39 PM)
  */
 public void stop() {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherAsync (){
+		public void runSwing() {
 			// stop timer for auto progress
 			if (! knowsProgress) {
 				AsynchProgressPopup.super.stop();
 			}
-			dialog.dispose();
-			return null;
+			getDialog().dispose();
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 }

@@ -32,12 +32,12 @@ import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
-import cbit.util.EventDispatchRunWithException;
 import cbit.util.Extent;
 import cbit.util.FileFilters;
 import cbit.util.ISize;
 import cbit.util.Origin;
 import cbit.util.ProgressDialogListener;
+import cbit.util.SwingDispatcherSync;
 import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -1641,8 +1641,8 @@ private void addNewExternalData(
 
 	fdos.specEDI = null;
 	
-	FieldDataInfoPanel fdip = (FieldDataInfoPanel) new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	FieldDataInfoPanel fdip = (FieldDataInfoPanel) new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			FieldDataInfoPanel fdip = new FieldDataInfoPanel();			
 			fdip.setSimulationMode(isFromSimulation);
 			fdip.initISize(fdos.isize);
@@ -1653,7 +1653,7 @@ private void addNewExternalData(
 			fdip.setAnnotation(fdos.annotation);
 			return fdip;
 		}
-	}.runEventDispatchThreadSafelyWithException();	
+	}.dispatchWithException();
 
 	while(true){
 		try{

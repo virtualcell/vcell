@@ -323,15 +323,15 @@ private TMLPanel compareDocuments(final VCDocument doc1, final VCDocument doc2, 
 		}
 	}
 	final XmlTreeDiff diffTree = XmlHelper.compareMerge(doc1XML, doc2XML, comparisonSetting, true);
-	TMLPanel aTMLPanel = (TMLPanel) new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	TMLPanel aTMLPanel = (TMLPanel) new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			TMLPanel aTMLPanel = new cbit.xml.merge.TMLPanel();
 			aTMLPanel.setXmlTreeDiff(diffTree);
 			aTMLPanel.setBaselineVersionDescription(baselineDesc);
 			aTMLPanel.setModifiedVersionDescription(modifiedDesc);
 			return aTMLPanel;
 		}
-	}.runEventDispatchThreadSafelyWithException();	
+	}.dispatchWithException();	
 	
 	return aTMLPanel;
 }
@@ -802,7 +802,7 @@ public void sendLostPassword(final String userid){
 	new Thread(new Runnable() {
 		public void run() {
 			try {
-				UserInfo registeredUserInfo =
+				UserInfo registeredUserInfo = 
 					UserRegistrationOP.registrationOperationGUI(
 							VCellClient.createClientServerInfo(
 								getClientServerManager().getClientServerInfo(), userid, null),
@@ -908,9 +908,8 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 			    }
 			    is.close();
 			    // prepare chooser
-			    File selectedFile = 
-				(File)new EventDispatchRunWithException (){
-					public Object runWithException() throws Exception{
+			    File selectedFile = (File)new SwingDispatcherSync() {
+					public Object runSwing() throws Exception{
 						final cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
 						fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 						fileChooser.setMultiSelectionEnabled(false);
@@ -938,7 +937,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 						}
 						return fileChooser.getSelectedFile();
 					}
-				}.runEventDispatchThreadSafelyWithException();
+				}.dispatchWithException();
 
 //				SwingUtilities.invokeAndWait(new Runnable() {
 //					public void run() {
@@ -1330,12 +1329,12 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
 						//((BioModelWindowManager)windowManager).preloadApps();
 						final DocumentWindowManager finalDWM = windowManager;
-						new EventDispatchRunWithException (){
-							public Object runWithException() throws Exception{
+						new SwingDispatcherSync (){
+							public Object runSwing() throws Exception{
 								((BioModelWindowManager)finalDWM).preloadApps();
 								return null;
 							}
-						}.runEventDispatchThreadSafelyWithException();
+						}.dispatchWithException();
 					}
 	//			} catch (Throwable e) {
 	//				exc = e;
@@ -1381,12 +1380,12 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
 						//((BioModelWindowManager)windowManager).preloadApps();
 						final DocumentWindowManager finalDWM = windowManager;
-						new EventDispatchRunWithException (){
-							public Object runWithException() throws Exception{
+						new SwingDispatcherSync (){
+							public Object runSwing() throws Exception{
 								((BioModelWindowManager)finalDWM).preloadApps();
 								return null;
 							}
-						}.runEventDispatchThreadSafelyWithException();
+						}.dispatchWithException();
 					} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
 						doc = XmlHelper.XMLToMathModel(xmlStr);
 						MathModel mathModel = (MathModel)doc;
@@ -1606,13 +1605,11 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 }
 
 private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
-	JPanel newJPanel =
-		(JPanel)
-		new EventDispatchRunWithException (){
-			public Object runWithException() throws Exception{
+	JPanel newJPanel = (JPanel) new SwingDispatcherSync (){
+			public Object runSwing() throws Exception{
 				return new JPanel();
 			}
-		}.runEventDispatchThreadSafelyWrapRuntime();
+		}.dispatchWrapRuntime();
 
 	if(doc instanceof BioModel){
 		return new BioModelWindowManager(newJPanel, ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
