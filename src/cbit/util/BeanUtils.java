@@ -200,7 +200,7 @@ public static void centerOnComponent(Component c, Component reference) {
 		}
 		try{
 			Point pR = reference.getLocationOnScreen();
-			if(findTypeParentOfComponent(reference, JInternalFrame.class) != null){
+			if(!(c instanceof Window) && findTypeParentOfComponent(reference, JInternalFrame.class) != null){
 				Component rootComponent = SwingUtilities.getRoot(reference);
 				SwingUtilities.convertPointFromScreen(pR,rootComponent);
 			}
@@ -855,8 +855,8 @@ public static void setCursorThroughout(final Container container, final Cursor c
 	if (container==null){
 		return;
 	}
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			Component[] components = container.getComponents();
 			for (int i=0;i<components.length;i++) {
 				components[i].setCursor(cursor);
@@ -870,7 +870,7 @@ public static void setCursorThroughout(final Container container, final Cursor c
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -890,7 +890,7 @@ public static String[] stringArrayMerge(String[] array1, String[] array2) {
 	if (array2 == null){
 		return array1;
 	}
-	java.util.Vector newVector = new java.util.Vector();
+	Vector<String> newVector = new Vector<String>();
 	for (int i=0;i<array1.length;i++){
 		newVector.addElement(array1[i]);
 	}
@@ -907,7 +907,7 @@ public static String[] stringArrayMerge(String[] array1, String[] array2) {
 	}			
 	String newArray[] = new String[newVector.size()];
 	for (int i=0;i<newVector.size();i++){
-		newArray[i] = (String)newVector.elementAt(i);
+		newArray[i] = newVector.elementAt(i);
 	}
 	return newArray;		
 }

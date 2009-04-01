@@ -2,7 +2,7 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.*;
 import java.beans.*;
 
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.data.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.document.*;
@@ -29,15 +29,15 @@ public class SimulationWindow {
  * @param dataViewer cbit.vcell.client.data.DataViewer
  */
 public SimulationWindow(final VCSimulationIdentifier vcSimulationIdentifier,final Simulation simulation,final SimulationOwner simOwner,final DataViewer dataViewer) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			setVcSimulationIdentifier(vcSimulationIdentifier);
 			setSimulation(simulation);
 			setSimOwner(simOwner);
 			initialize(dataViewer);
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 

@@ -4,7 +4,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
@@ -27,8 +27,8 @@ public class DialogUtils {
  */
 public static void browserLauncher(final String targetURL,final String messageToUserIfFail,final boolean isApplet) {
 
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			//(isApplet==true)
 			//  Do not use BrowserLauncher as it will sometimes destroy VCell Applets
 			//  depending on which browser is running the applet and which OS the
@@ -58,7 +58,7 @@ public static void browserLauncher(final String targetURL,final String messageTo
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 
 	
@@ -72,18 +72,9 @@ public static void browserLauncher(final String targetURL,final String messageTo
  * @param userMessage java.lang.String
  */
 private static void browserLauncherError(final Throwable e, final String userMessage) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
-			DialogUtils.showErrorDialog(
-					userMessage+"\n\n"+
-					"Sorry, your local WWW Browser could not be automatically launched.\n"+
-					"Error Type="+e.getClass().getName()+"\nError Info='"+e.getMessage()+"'");
-			return null;
-		}
-	}.runEventDispatchThreadSafelyConsumeException();
-	
-	
-	
+	showErrorDialog(userMessage + "\n\n" +
+			"Sorry, your local WWW Browser could not be automatically launched.\n" + 
+			"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'");
 }
 
 
@@ -95,8 +86,8 @@ private static void browserLauncherError(final Throwable e, final String userMes
 
 protected static JPanel createMessagePanel(final String message) {
 	return (JPanel)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JTextArea textArea = new JTextArea(message);
 			textArea.setEditable(false);
 			textArea.setWrapStyleWord(true);
@@ -121,7 +112,7 @@ protected static JPanel createMessagePanel(final String message) {
 			panel.add(scroller, BorderLayout.CENTER);
 			return panel;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 
@@ -132,29 +123,27 @@ protected static JPanel createMessagePanel(final String message) {
  * @param message java.lang.Object
  */
 private static JDialog prepareErrorDialog(final Component requester,final String message) {
-	return (JDialog)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	return (JDialog) new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JPanel panel = createMessagePanel(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
 			JDialog dialog = pane.createDialog(requester, "ERROR:");
 			dialog.setResizable(true);
 			return dialog;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 private static JDialog prepareWarningDialog(final Component requester,final String message) {
-	return (JDialog)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	return (JDialog) new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JPanel panel = createMessagePanel(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
 			JDialog dialog = pane.createDialog(requester, "Warning:");
 			dialog.setResizable(true);
 			return dialog;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 /**
@@ -163,16 +152,15 @@ private static JDialog prepareWarningDialog(final Component requester,final Stri
  * @param message java.lang.Object
  */
 private static JDialog prepareInfoDialog(final Component requester,final String message) {
-	return (JDialog)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	return (JDialog) new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JPanel panel = createMessagePanel(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
 			JDialog dialog = pane.createDialog(requester, "");
 			dialog.setResizable(true);
 			return dialog;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -183,8 +171,8 @@ private static JDialog prepareInfoDialog(final Component requester,final String 
  * @param bEnabled boolean
  */
 private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bEnabled) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 		  	Component[] componentsArr = jop.getComponents();
 		  	for(int i=0;i<componentsArr.length;i+= 1){
 			  	if(componentsArr[i] instanceof Container){
@@ -202,7 +190,7 @@ private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bE
 		  	}
 		  	return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -217,8 +205,8 @@ private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bE
  */
 public static String showAnnotationDialog(final Component requester, final String oldAnnotation) throws Exception{
 	return (String)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JPanel panel = new JPanel(new BorderLayout());
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			JTextArea textArea = new JTextArea(oldAnnotation, 8, 60);
@@ -247,7 +235,7 @@ public static String showAnnotationDialog(final Component requester, final Strin
 				dialog.dispose();
 			}
 		}
-	}.runEventDispatchThreadSafelyWithException();
+	}.dispatchWithException();
 
 }
 
@@ -259,8 +247,8 @@ public static String showAnnotationDialog(final Component requester, final Strin
  * @param message java.lang.Object
  */
 public static void showComponentCloseDialog(final Component requester,final Component stayOnTopComponent,final String title) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
 			final JDialog d = inputDialog.createDialog(requester, title);
 			d.setResizable(true);
@@ -271,7 +259,7 @@ public static void showComponentCloseDialog(final Component requester,final Comp
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 
@@ -287,8 +275,8 @@ public static int showComponentOKCancelDialog(final Component requester,Componen
  */
 private static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
 	return (Integer)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 			final JDialog d = inputDialog.createDialog(requester, title);
 			d.setResizable(true);
@@ -305,7 +293,7 @@ private static int showComponentOKCancelDialog(final Component requester,final C
 				d.dispose();
 			}
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 
@@ -314,8 +302,8 @@ public static int[] showComponentOKCancelTableList(final Component requester,fin
 			throws UserCancelException{
 	
 	return (int[])
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			DefaultTableModel tableModel = new DefaultTableModel(){
 			    public boolean isCellEditable(int row, int column) {
 			        return false;
@@ -364,7 +352,7 @@ public static int[] showComponentOKCancelTableList(final Component requester,fin
 			}
 			return table.getSelectedRows();
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -379,8 +367,8 @@ public static int[] showComponentOKCancelTableList(final Component requester,fin
  */
 private static String showDialog(final Component requester, final SimpleUserMessage userMessage, final String replacementText, final int JOptionPaneMessageType) {
 	return (String)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			String message = userMessage.getMessage(replacementText);
 			JPanel panel = createMessagePanel(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
@@ -399,7 +387,7 @@ private static String showDialog(final Component requester, final SimpleUserMess
 				dialog.dispose();
 			}
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -410,8 +398,8 @@ private static String showDialog(final Component requester, final SimpleUserMess
  * @param message java.lang.Object
  */
 public static void showErrorDialog(final Component requester,final  String message) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareErrorDialog(null, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog,requester);
@@ -420,7 +408,7 @@ public static void showErrorDialog(final Component requester,final  String messa
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyConsumeException();
+	}.dispatchConsumeException();
 }
 
 
@@ -431,8 +419,8 @@ public static void showErrorDialog(final Component requester,final  String messa
  * @param message java.lang.Object
  */
 public static void showErrorDialog(final String message) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareErrorDialog(null, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog);
@@ -441,12 +429,12 @@ public static void showErrorDialog(final String message) {
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyConsumeException();
+	}.dispatchConsumeException();
 }
 
 public static void showWarningDialog(final String message) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareWarningDialog(null, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog);
@@ -455,7 +443,7 @@ public static void showWarningDialog(final String message) {
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyConsumeException();
+	}.dispatchConsumeException();
 }
 
 /**
@@ -465,8 +453,8 @@ public static void showWarningDialog(final String message) {
  * @param message java.lang.Object
  */
 public static void showInfoDialog(final String message) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareInfoDialog(null, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog);
@@ -475,7 +463,7 @@ public static void showInfoDialog(final String message) {
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -490,46 +478,45 @@ public static void showInfoDialog(final String message) {
  */
 public static String showInputDialog0(final Component requester,final  String message,final  String initialValue) throws UtilCancelException{
 	try{
-	return (String)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
-			JPanel panel = new JPanel(new BorderLayout());
-			JOptionPane inputDialog = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-			if(message.indexOf('\n') == -1){
-				panel.add(new JLabel(message), BorderLayout.NORTH);
-			}else{
-				JPanel msgPanel = createMessagePanel(message);
-				panel.add(msgPanel, BorderLayout.NORTH);
-			}
-			inputDialog.setMessage(panel);
-			inputDialog.setWantsInput(true);
-			if (initialValue!=null){
-				inputDialog.setInitialSelectionValue(initialValue);
-			}
-			final JDialog d = inputDialog.createDialog(requester, "INPUT:");
-			d.setResizable(false);
-			String id = Long.toString(System.currentTimeMillis());
-			Hashtable choices  = new Hashtable();
-			try {
-				ZEnforcer.showModalDialogOnTop(d,requester);				
-				if(inputDialog.getValue() instanceof Integer && ((Integer)inputDialog.getValue()).intValue() == JOptionPane.CANCEL_OPTION){
-					throw UtilCancelException.CANCEL_GENERIC;
+		return (String) new SwingDispatcherSync() {
+			public Object runSwing() throws Exception{
+				JPanel panel = new JPanel(new BorderLayout());
+				JOptionPane inputDialog = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+				if(message.indexOf('\n') == -1){
+					panel.add(new JLabel(message), BorderLayout.NORTH);
+				}else{
+					JPanel msgPanel = createMessagePanel(message);
+					panel.add(msgPanel, BorderLayout.NORTH);
 				}
-				
-				choices.put(id, inputDialog.getInputValue());
-			} catch (Exception exc) {
-				if(exc instanceof UtilCancelException){
-					throw (UtilCancelException)exc;
+				inputDialog.setMessage(panel);
+				inputDialog.setWantsInput(true);
+				if (initialValue!=null){
+					inputDialog.setInitialSelectionValue(initialValue);
 				}
-				exc.printStackTrace(System.out);
-				choices.put(id, JOptionPane.UNINITIALIZED_VALUE);
-			} finally {
-				d.dispose();
+				final JDialog d = inputDialog.createDialog(requester, "INPUT:");
+				d.setResizable(false);
+				String id = Long.toString(System.currentTimeMillis());
+				Hashtable<String, Object> choices  = new Hashtable<String, Object>();
+				try {
+					ZEnforcer.showModalDialogOnTop(d,requester);				
+					if(inputDialog.getValue() instanceof Integer && ((Integer)inputDialog.getValue()).intValue() == JOptionPane.CANCEL_OPTION){
+						throw UtilCancelException.CANCEL_GENERIC;
+					}
+					
+					choices.put(id, inputDialog.getInputValue());
+				} catch (Exception exc) {
+					if(exc instanceof UtilCancelException){
+						throw (UtilCancelException)exc;
+					}
+					exc.printStackTrace(System.out);
+					choices.put(id, JOptionPane.UNINITIALIZED_VALUE);
+				} finally {
+					d.dispose();
+				}
+				String input = (String)choices.get(id);
+				return input == JOptionPane.UNINITIALIZED_VALUE ? null : input;
 			}
-			String input = (String)choices.get(id);
-			return input == JOptionPane.UNINITIALIZED_VALUE ? null : input;
-		}
-	}.runEventDispatchThreadSafelyWithException();
+		}.dispatchWithException();
 	}catch(Exception e){
 		if(e instanceof UtilCancelException){
 			throw (UtilCancelException)e;
@@ -568,8 +555,8 @@ public static Object showListDialog(final Component requester, Object[] names, S
 public static Object showListDialog(final Component requester,final  Object[] names,final  String dialogTitle,final  ListCellRenderer listCellRenderer) {
 	try{
 	return
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JPanel panel = new JPanel(new BorderLayout());
 			final JOptionPane pane = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -616,7 +603,7 @@ public static Object showListDialog(final Component requester,final  Object[] na
 				dialog.dispose();
 			}
 		}
-	}.runEventDispatchThreadSafelyWithException();
+	}.dispatchWithException();
 	}catch(Exception e){
 		return null;
 	}
@@ -633,8 +620,8 @@ public static Object showListDialog(final Component requester,final  Object[] na
  * @param preferenceName java.lang.String
  */
 protected static void showReportDialog(final Component requester, final String reportText) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			JPanel panel = new JPanel(new BorderLayout());
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			JTextArea textArea = new JTextArea(reportText);
@@ -650,7 +637,7 @@ protected static void showReportDialog(final Component requester, final String r
 				dialog.dispose();
 			}
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -665,15 +652,15 @@ protected static void showReportDialog(final Component requester, final String r
  */
 public static String showWarningDialog(final Component parentComponent,final  String message,final  String[] options,final  String defaultOption) {
 	return (String)
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			if (parentComponent==null){
 				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
 			}
 			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message,options,defaultOption);
 			return showDialog(parentComponent, simpleUserMessage, null,JOptionPane.WARNING_MESSAGE);
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 }

@@ -20,7 +20,7 @@ import javax.swing.JPanel;
 import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.sql.KeyValue;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
@@ -72,8 +72,8 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
  */
 public BioModelWindowManager(JPanel panel, RequestManager requestManager, final BioModel bioModel, int newlyCreatedDesktops) {
 	super(panel, requestManager, bioModel, newlyCreatedDesktops);
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			setJDesktopPane(new JDesktopPane());
 			getJPanel().setLayout(new BorderLayout());
 			getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
@@ -82,7 +82,7 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 			createBioModelFrame();
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -453,8 +453,8 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
  * @param newDocument cbit.vcell.document.VCDocument
  */
 public void resetDocument(final cbit.vcell.document.VCDocument newDocument) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			setBioModel((BioModel)newDocument);
 			setDocumentID(getBioModel());
 			getBioModelEditor().setBioModel(getBioModel());
@@ -466,7 +466,7 @@ public void resetDocument(final cbit.vcell.document.VCDocument newDocument) {
 			getRequestManager().updateStatusNow();
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 	
 }
 

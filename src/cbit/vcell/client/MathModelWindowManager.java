@@ -1,5 +1,5 @@
 package cbit.vcell.client;
-import cbit.util.EventDispatchRunWithException;
+import cbit.util.SwingDispatcherSync;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.*;
@@ -57,8 +57,8 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
  */
 public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, final MathModel aMathModel, int newlyCreatedDesktops) {
 	super(panel, aRequestManager, aMathModel, newlyCreatedDesktops);
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			equnsViewer = new EquationViewerPanel();
 			geoViewer = new GeometrySummaryViewer();
 			simsPanel = new SimulationListPanel();
@@ -71,12 +71,12 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 			createMathModelEditor();
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 	initializeInternalFrames();
 	
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			geoViewer.addActionListener(MathModelWindowManager.this);
 			getJPanel().add(getMathModelEditor(), BorderLayout.NORTH);
 			if (System.getProperty("java.version").compareTo("1.3") >= 0) {
@@ -84,7 +84,7 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 			}	
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 
@@ -331,8 +331,8 @@ cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSim
  */
 private void initializeInternalFrames() {
 
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			// Initialize VCML Editor internal frame
 			String vcmlEditorTitle = "VCML Editor";
 			vcmlEditor.setMathModel(getMathModel());
@@ -368,7 +368,7 @@ private void initializeInternalFrames() {
 			});
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 	
 	
@@ -376,8 +376,8 @@ private void initializeInternalFrames() {
 	//String geoViewerTitle = "Geometry Viewer";
 	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
 	
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync() {
+		public Object runSwing() throws Exception{
 			//disable changeGeometry and openGeometry button in geometry summary viewer if it is a stochastic app.
 			if(getMathModel().getMathDescription().isStoch())
 			{
@@ -427,7 +427,7 @@ private void initializeInternalFrames() {
 			});
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 
 }
 

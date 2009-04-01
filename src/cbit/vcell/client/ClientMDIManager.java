@@ -49,8 +49,8 @@ public ClientMDIManager(RequestManager requestManager) {
 public JFrame blockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
 		return (JFrame)
-		new EventDispatchRunWithException (){
-			public Object runWithException() throws Exception{
+		new SwingDispatcherSync (){
+			public Object runSwing() throws Exception{
 				JFrame f = (JFrame)getWindowsHash().get(windowID);
 				GlassPane gp = new GlassPane(false);  // not used for blocking, only for painting as disabled
 				gp.setPaint(true);
@@ -59,7 +59,7 @@ public JFrame blockWindow(final String windowID) {
 				//f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
 				return f;
 			}
-		}.runEventDispatchThreadSafelyWrapRuntime();
+		}.dispatchWrapRuntime();
 	} else {
 		return null;
 	}
@@ -170,8 +170,8 @@ private DocumentWindow createDocumentWindow() {
  */
 public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 
 			// used for opening new document windows
 			// assumes caller checked for having this document already open
@@ -197,7 +197,7 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 			documentWindow.setVisible(true);
 			return null;
 		}
-	}.runEventDispatchThreadSafelyWrapRuntime();
+	}.dispatchWrapRuntime();
 }
 
 
@@ -496,8 +496,8 @@ public void showWindow(java.lang.String windowID) {
  */
 public void unBlockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
-		new EventDispatchRunWithException (){
-			public Object runWithException() throws Exception{
+		new SwingDispatcherSync (){
+			public Object runSwing() throws Exception{
 				JFrame f = (JFrame)getWindowsHash().get(windowID);
 				f.setGlassPane(new JPanel());
 				f.getGlassPane().setVisible(false);
@@ -505,7 +505,7 @@ public void unBlockWindow(final String windowID) {
 				f.setEnabled(true);
 				return null;
 			}
-		}.runEventDispatchThreadSafelyWrapRuntime();
+		}.dispatchWrapRuntime();
 	}
 }
 

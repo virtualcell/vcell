@@ -177,7 +177,6 @@ public class PDEDataViewer extends DataViewer {
 	private boolean ivjConnPtoP5Aligning = false;
 	private boolean ivjConnPtoP6Aligning = false;
 	private boolean ivjConnPtoP7Aligning = false;
-	private boolean ivjConnPtoP8Aligning = false;
 	private NewPDEExportPanel ivjPDEExportPanel1 = null;
 	private cbit.vcell.export.ExportMonitorPanel ivjExportMonitorPanel1 = null;
 	private JButton ivjKymographJButton = null;
@@ -186,8 +185,6 @@ public class PDEDataViewer extends DataViewer {
 	private boolean ivjConnPtoP10Aligning = false;
 	private PDEDataContext ivjpdeDataContext1 = null;
 	private JButton ivjJButtonSnapshotROI = null;
-	private JPanel ivjJPanelSnapshotROI = null;
-	private JCheckBox ivjJCheckBoxSnapshotROI = null;
 	private BitSet volumeSnapshotROI;
 	private String volumeSnapshotROIDescription;
 	private BitSet membraneSnapshotROI;
@@ -605,7 +602,7 @@ private void roiAction(){
 	BeanUtils.setCursorThroughout(this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	try{
 	final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
-	final int AUX_INFO_INDEX = ROI_COLUMN_NAMES.length;
+	//final int AUX_INFO_INDEX = ROI_COLUMN_NAMES.length;
 	final Vector<Object> auxInfoV = new Vector<Object>();
 	
 	final boolean isVolume =
@@ -765,7 +762,7 @@ private void roiAction(){
 			if(selectedRows != null){
 				try {
 					BitSet dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-					int SNAPSHOT_INDEX = 0;
+					//int SNAPSHOT_INDEX = 0;
 					for (int i = 0; i < selectedRows.length; i++) {
 						Object auxInfo = auxInfoV.elementAt(selectedRows[i]);
 						if(auxInfo instanceof BitSet){
@@ -2528,8 +2525,8 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  * Creation date: (2/26/2006 2:24:21 PM)
  */
 protected void showComponentInFrame(final Component comp,final String title) {
-	new EventDispatchRunWithException (){
-		public Object runWithException() throws Exception{
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
 			final JDesktopPane jDesktopPane = (JDesktopPane)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPane.class);
 			if(jDesktopPane != null){
 				final JInternalFrame frame =
@@ -2550,7 +2547,7 @@ protected void showComponentInFrame(final Component comp,final String title) {
 			}
 			return null;
 		}
-	}.runEventDispatchThreadSafelyConsumeException();
+	}.dispatchConsumeException();
 
 	
 }
@@ -2699,8 +2696,8 @@ private void showSpatialPlot() {
 								final String varName = getPdeDataContext().getVariableName();
 								double timePoint = getPdeDataContext().getTimePoint();
 								final PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[finalI]);
-								new EventDispatchRunWithException (){
-									public Object runWithException() throws Exception{
+								new SwingDispatcherSync (){
+									public Object runSwing() throws Exception{
 										PlotPane plotPane = new PlotPane();
 										plotPane.setPlot2D(
 												new Plot2D(
@@ -2714,7 +2711,7 @@ private void showSpatialPlot() {
 										showComponentInFrame(plotPane, title);
 										return null;
 									}
-								}.runEventDispatchThreadSafelyWithException();
+								}.dispatchWithException();
 							}catch(Exception e){
 								pp.stop();
 								PopupGenerator.showErrorDialog("Show Spatial Plot error:\n"+e.getMessage());
@@ -2815,8 +2812,8 @@ private void showTimePlot() {
 							if(timeSeriesJobFailed != null){
 								PopupGenerator.showErrorDialog("showTimePlot failed:\n"+timeSeriesJobFailed.getMessage());
 							}else{
-								new EventDispatchRunWithException (){
-									public Object runWithException() throws Exception{
+								new SwingDispatcherSync (){
+									public Object runSwing() throws Exception{
 										PlotPane plotPane = new PlotPane();
 										plotPane.setPlot2D(
 												new SingleXPlot2D(
@@ -2832,7 +2829,7 @@ private void showTimePlot() {
 										showComponentInFrame(plotPane, title);							
 										return null;
 									}
-								}.runEventDispatchThreadSafelyConsumeException();
+								}.dispatchConsumeException();
 
 							}
 						}
