@@ -169,11 +169,14 @@ public synchronized void addPropertyChangeListener(String property,java.beans.Pr
 }
 
 
+public void addSubVolume(AnalyticSubVolume subVolume) throws PropertyVetoException {
+	addSubVolume(subVolume, false);
+}
 /**
  * This method was created in VisualAge.
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public void addSubVolume(AnalyticSubVolume subVolume) throws PropertyVetoException {
+public void addSubVolume(AnalyticSubVolume subVolume,boolean bFront) throws PropertyVetoException {
 
 	if (getSubVolumeIndex(subVolume) != -1){
 		throw new IllegalArgumentException("subVolume "+subVolume+" cannot be added, already exists");
@@ -193,15 +196,23 @@ public void addSubVolume(AnalyticSubVolume subVolume) throws PropertyVetoExcepti
 	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length+1];
 	
 	if (firstImageIndex == -1){
-	//
-	// no image subvolumes, add to end
-	//
-		// copy first N elements
-		if (fieldSubVolumes.length>0){
-			System.arraycopy(fieldSubVolumes,0,newArray,0,fieldSubVolumes.length);
+		//
+		// no image subvolumes
+		//
+		if(bFront){
+			newArray[0] = subVolume;
+			if (fieldSubVolumes.length>0){
+				System.arraycopy(fieldSubVolumes,0,newArray,1,fieldSubVolumes.length);
+			}
+		}else{
+			//add to end of analytics
+			// copy first N elements
+			if (fieldSubVolumes.length>0){
+				System.arraycopy(fieldSubVolumes,0,newArray,0,fieldSubVolumes.length);
+			}
+			// add new element to end
+			newArray[fieldSubVolumes.length] = subVolume;
 		}
-		// add new element to end
-		newArray[fieldSubVolumes.length] = subVolume;
 		
 	}else{
 	//
