@@ -15,19 +15,15 @@ public abstract class SwingDispatcherAsync {
 	public abstract void handleException(Throwable ex);
 	
 	public void dispatch() {
-		if(SwingUtilities.isEventDispatchThread()){
-			runSwing();
-		}else{
-			Runnable runnable = new Runnable(){
-				public void run(){
-					try {
-						runSwing();
-					} catch(Throwable e){
-						handleException(e);
-					}
+		Runnable runnable = new Runnable(){
+			public void run(){
+				try {
+					runSwing();
+				} catch(Throwable e){
+					handleException(e);
 				}
-			};
-			SwingUtilities.invokeLater(runnable);
-		}
+			}
+		};
+		SwingUtilities.invokeLater(runnable);
 	}
 }
