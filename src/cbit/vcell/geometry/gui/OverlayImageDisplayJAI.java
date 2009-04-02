@@ -129,15 +129,11 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 	      band = band > 3 ? 3 : band;
 
 	      // make alpha channel paramenter
-	      Integer[] bandValues = new Integer[band];
-	      for ( int i = 0 ; i < band ; i++ ) {
-	             bandValues[i] = new Integer((int)(b*SCALE_MAX));
-	      }
 
-//	      Byte[] bandValues = new Byte[band];
-//	      for ( int i = 0 ; i < band ; i++ ) {
-//	             bandValues[i] = new Byte((byte)(b*SCALE_MAX));
-//	      }
+	      Byte[] bandValues = new Byte[band];
+	      for ( int i = 0 ; i < band ; i++ ) {
+	             bandValues[i] = new Byte((byte)(b*SCALE_MAX));
+	      }
 
 	        // make alpha channel paramenter
 	        ParameterBlock pb = new ParameterBlock();
@@ -173,7 +169,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 				//enhance with gamma function
 				if(contrastFactor > 1){
 
-					int[] tableData = new int[256];
+					byte[] tableData = new byte[256];
 					for (int i = 0; i < 256; i++) {
 						double normalizedWithGamma = Math.pow((i/255.0), 1/(1.0+(contrastFactor-1)/5.0));
 						int val = (int)(normalizedWithGamma*255);
@@ -185,6 +181,27 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 				}
 			}
 			
+//			System.out.println("contrastEnhancedUnderlyingImage " +
+//					contrastEnhancedUnderlyingImage.getSampleModel().getNumBands()+" "+
+//					contrastEnhancedUnderlyingImage.getSampleModel().getDataType()+" "+
+//					contrastEnhancedUnderlyingImage.getWidth()+" " + 
+//					contrastEnhancedUnderlyingImage.getHeight());
+//			System.out.println("highlightImage " +
+//					highlightImage.getSampleModel().getNumBands()+" "+
+//					highlightImage.getSampleModel().getDataType()+" "+
+//					highlightImage.getWidth()+" " + 
+//					highlightImage.getHeight());
+//			System.out.println("alphaImageUnderlying " +
+//					alphaImageUnderlying.getSampleModel().getNumBands()+" "+
+//					alphaImageUnderlying.getSampleModel().getDataType()+" "+
+//					alphaImageUnderlying.getWidth()+" " + 
+//					alphaImageUnderlying.getHeight());
+//			System.out.println("alphaImageHightlight " +
+//					alphaImageHightlight.getSampleModel().getNumBands()+" "+
+//					alphaImageHightlight.getSampleModel().getDataType()+" "+
+//					alphaImageHightlight.getWidth()+" " + 
+//					alphaImageHightlight.getHeight());
+
 		     source =
 				CompositeDescriptor.create(
 						contrastEnhancedUnderlyingImage, highlightImage,

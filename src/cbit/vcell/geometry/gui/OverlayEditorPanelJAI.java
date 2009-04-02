@@ -7,13 +7,18 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.Hashtable;
 
@@ -35,8 +40,8 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
-
 import loci.formats.AWTImageTools;
+import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.ImageTools;
@@ -679,13 +684,29 @@ public class OverlayEditorPanelJAI extends JPanel {
 		int height = image.getNumY();
 		ImageStatistics imageStats = image.getImageStatistics();
 		short[] pixels = image.getPixels();
-		byte[][] byteData = new byte[3][width*height];
+		byte[][] byteData = new byte[1][width*height];
 		for (int i = 0; i < byteData[0].length; i++) {
 			byteData[0][i] = (imageStats.maxValue < SHORT_TO_BYTE_FACTOR?(byte)pixels[i]:(byte)(((int)(pixels[i]&0x0000FFFF))/SHORT_TO_BYTE_FACTOR));
-			byteData[1][i] = byteData[0][i];
-			byteData[2][i] = byteData[0][i];
+//			byteData[1][i] = byteData[0][i];
+//			byteData[2][i] = byteData[0][i];
 		}
-		return AWTImageTools.makeImage(byteData, width, height,false);
+//		return AWTImageTools.makeImage(byteData, width, height,false);
+		Image tempImage = AWTImageTools.makeImage(byteData, width, height,false);
+		int[] cmap = new int[256];
+		//colormap (grayscale)
+		for(int i=0;i<256;i+= 1){
+			int iv = (int)(0x000000FF&i);
+			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
+			
+		}
+		IndexColorModel indexColorModel =
+			new java.awt.image.IndexColorModel(
+				8, cmap.length,cmap,0,
+				false /*false means NOT USE alpha*/   ,
+				-1/*NO transparent single pixel*/,
+				java.awt.image.DataBuffer.TYPE_BYTE);
+
+		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
 	}
 	
 	public void displaySpecialData(short[] specialData,int width, int height) throws Exception{
@@ -705,15 +726,34 @@ public class OverlayEditorPanelJAI extends JPanel {
 		UShortImage roiImage = roi.getRoiImages()[getRoiImageIndex()];
 		int width = roiImage.getNumX();
 		int height = roiImage.getNumY();
-		byte[][] highlightData = new byte[3][width*height];
+		byte[][] highlightData = new byte[1][width*height];
 		for (int i = 0; i < highlightData[0].length; i++) {
 			if (roiImage.getPixels()[i] != 0){
 				highlightData[0][i] = (byte)highlightColor.getRed();
-				highlightData[1][i] = (byte)highlightColor.getGreen();
-				highlightData[2][i] = (byte)highlightColor.getBlue();
+//				highlightData[1][i] = (byte)highlightColor.getGreen();
+//				highlightData[2][i] = (byte)highlightColor.getBlue();
 			}
 		}
-		return AWTImageTools.makeImage(highlightData, width, height,false);
+		Image tempImage = AWTImageTools.makeImage(highlightData, width, height,false);
+		int[] cmap = new int[256];
+		//colormap (grayscale)
+		for(int i=0;i<256;i+= 1){
+//			int iv = (int)(0x000000FF&i);
+//			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
+			if(i != 0){
+				cmap[i] = 0xFFFFFF00;
+			}else{
+				cmap[1] = 0xFF000000;
+			}
+		}
+		IndexColorModel indexColorModel =
+			new java.awt.image.IndexColorModel(
+				8, cmap.length,cmap,0,
+				false /*false means NOT USE alpha*/   ,
+				-1/*NO transparent single pixel*/,
+				java.awt.image.DataBuffer.TYPE_BYTE);
+
+		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
 	}
 	
 	public void setAllowAddROI(boolean bAllowAddROI){
