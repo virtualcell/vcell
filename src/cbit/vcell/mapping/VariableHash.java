@@ -216,32 +216,16 @@ private Variable[] reorderVariables(Variable[] variables) throws VariableHash.Un
 	// add the nodes for each "Variable" (VolVariable, etc...) ... no dependencies
 	//
 	Graph variableGraph = new Graph();
-	for (int i = 0; i < variables.length; i++){
-		if (!(variables[i] instanceof cbit.vcell.math.Constant) && !(variables[i] instanceof cbit.vcell.math.Function)){
-			Node node = new Node(variables[i].getName(),variables[i]);
-			variableGraph.addNode(node);
-		}
-	}
-	Node variableNodes[] = variableGraph.getNodes();
-	//
-	// add the nodes for each Constant
-	//
 	Graph constantGraph = new Graph();
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof cbit.vcell.math.Constant){
-			Node node = new Node(variables[i].getName(),variables[i]);
-			constantGraph.addNode(node);
-		}
-	}
-	
-	//
-	// add the nodes for each Function
-	//
 	Graph functionGraph = new Graph();
 	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof cbit.vcell.math.Function){
-			Node node = new Node(variables[i].getName(),variables[i]);
+		Node node = new Node(variables[i].getName(),variables[i]);
+		if (variables[i] instanceof Constant) {
+			constantGraph.addNode(node);
+		} else if (variables[i] instanceof Function) {
 			functionGraph.addNode(node);
+		} else {			
+			variableGraph.addNode(node);			
 		}
 	}
 
@@ -250,24 +234,26 @@ private Variable[] reorderVariables(Variable[] variables) throws VariableHash.Un
 	//
 	Node constantNodes[] = constantGraph.getNodes();
 	for (int i = 0; i < constantNodes.length; i++){
-		cbit.vcell.math.Constant constant = (cbit.vcell.math.Constant)constantNodes[i].getData();
+		Constant constant = (Constant)constantNodes[i].getData();
 		String symbols[] = constant.getExpression().getSymbols();
-		for (int j = 0; symbols!=null && j < symbols.length; j++){
-			//
-			// find node that this symbol references (it better find this in the Constants).
-			//
-			Node symbolNode = constantGraph.getNode(symbols[j]);
-			if (symbolNode == null){
-				if (functionGraph.getNode(symbols[j])!=null){
-					throw new RuntimeException("Constant "+constant.getName()+" references function '"+symbols[j]+"'");
-				}else if (variableGraph.getNode(symbols[j])!=null){
-					throw new RuntimeException("Constant "+constant.getName()+" references variable '"+symbols[j]+"'");
-				}else{
-					throw new RuntimeException("Constant "+constant.getName()+" references unknown symbol '"+symbols[j]+"'");
-				}
-			} 
-			Edge dependency = new Edge(constantNodes[i],symbolNode,constant.getName()+"->"+((Variable)symbolNode.getData()).getName());
-			constantGraph.addEdge(dependency);
+		if (symbols != null) {
+			for (int j = 0; j < symbols.length; j++){
+				//
+				// find node that this symbol references (it better find this in the Constants).
+				//
+				Node symbolNode = constantGraph.getNode(symbols[j]);
+				if (symbolNode == null){
+					if (functionGraph.getNode(symbols[j])!=null){
+						throw new RuntimeException("Constant "+constant.getName()+" references function '"+symbols[j]+"'");
+					}else if (variableGraph.getNode(symbols[j])!=null){
+						throw new RuntimeException("Constant "+constant.getName()+" references variable '"+symbols[j]+"'");
+					}else{
+						throw new RuntimeException("Constant "+constant.getName()+" references unknown symbol '"+symbols[j]+"'");
+					}
+				} 
+				Edge dependency = new Edge(constantNodes[i],symbolNode,constant.getName()+"->"+((Variable)symbolNode.getData()).getName());
+				constantGraph.addEdge(dependency);
+			}
 		}
 	}
 	Node sortedConstantNodes[] = constantGraph.topologicalSort();
@@ -277,18 +263,20 @@ private Variable[] reorderVariables(Variable[] variables) throws VariableHash.Un
 	//
 	Node functionNodes[] = functionGraph.getNodes();
 	for (int i = 0; i < functionNodes.length; i++){
-		cbit.vcell.math.Function function = (cbit.vcell.math.Function)functionNodes[i].getData();
+		Function function = (Function)functionNodes[i].getData();
 		String symbols[] = function.getExpression().getSymbols();
-		for (int j = 0; symbols!=null && j < symbols.length; j++){
-			//
-			// find node that this symbol references (better find it in FunctionGraph, ConstantGraph, or VariableGraph).
-			//
-			Node symbolNode = functionGraph.getNode(symbols[j]);
-			if (symbolNode!=null){
-				Edge dependency = new Edge(functionNodes[i],symbolNode,function.getName()+"->"+((Variable)symbolNode.getData()).getName());
-				functionGraph.addEdge(dependency);
-			}else if (ReservedVariable.fromString(symbols[j])==null && constantGraph.getNode(symbols[j])==null && variableGraph.getNode(symbols[j])==null){
-				throw new VariableHash.UnresolvedException(symbols[j],"Unable to sort, unknown identifier "+symbols[j]);
+		if (symbols != null) {
+			for (int j = 0; j < symbols.length; j++){
+				//
+				// find node that this symbol references (better find it in FunctionGraph, ConstantGraph, or VariableGraph).
+				//
+				Node symbolNode = functionGraph.getNode(symbols[j]);
+				if (symbolNode!=null){
+					Edge dependency = new Edge(functionNodes[i],symbolNode,function.getName()+"->"+((Variable)symbolNode.getData()).getName());
+					functionGraph.addEdge(dependency);
+				}else if (ReservedVariable.fromString(symbols[j])==null && constantGraph.getNode(symbols[j])==null && variableGraph.getNode(symbols[j])==null){
+					throw new VariableHash.UnresolvedException(symbols[j],"Unable to sort, unknown identifier "+symbols[j]);
+				}
 			}
 		}
 	}
@@ -304,9 +292,12 @@ private Variable[] reorderVariables(Variable[] variables) throws VariableHash.Un
 	for (int i = 0; i < sortedConstantNodes.length; i++){
 		newVariableOrder.add(sortedConstantNodes[i].getData());
 	}
+	
+	Node variableNodes[] = variableGraph.getNodes();
 	for (int i = 0; i < variableNodes.length; i++){
-		if (!(variableNodes[i].getData() instanceof cbit.vcell.math.InsideVariable) && !(variableNodes[i].getData() instanceof cbit.vcell.math.OutsideVariable)){
-			newVariableOrder.add(variableNodes[i].getData());
+		Object var = variableNodes[i].getData();
+		if (!(var instanceof InsideVariable) && !(var instanceof OutsideVariable)){
+			newVariableOrder.add(var);
 		}
 	}
 	for (int i = 0; i < sortedFunctionNodes.length; i++){

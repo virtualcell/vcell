@@ -1,6 +1,9 @@
 package cbit.util;
 
 import java.awt.*;
+
+import javax.swing.SwingUtilities;
+
 import cbit.gui.ZEnforcer;
 
 /**
@@ -89,13 +92,16 @@ private ProgressDialog getDialog() {
 		}
 		dialog.setLocationRelativeTo(requester);
 		dialog.setResizable(false);
-		if (title != null) dialog.setTitle(title);
-		if (message != null) dialog.setMessage(message);
+		if (title != null) {
+			dialog.setTitle(title);
+		}
+		if (message != null) {
+			dialog.setMessage(message);
+		}
 		dialog.setModal(inputBlocking);
-		// store mode of operation
-		//AsynchProgressPopup.this.inputBlocking = inputBlocking;
-		AsynchProgressPopup.this.knowsProgress = knowsProgress;
-		if (! knowsProgress) dialog.setProgressBarString("WORKING...");
+		if (! knowsProgress) {
+			dialog.setProgressBarString("WORKING...");
+		}
 	}	
 	return dialog;
 }
@@ -220,25 +226,11 @@ private void startPrivate(final boolean bKeepOnTop) {
 }
 
 public void start() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			startPrivate(false);
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	startPrivate(false);
 }
 
 public void startKeepOnTop() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			startPrivate(true);
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	startPrivate(true);
 }
 
 /**

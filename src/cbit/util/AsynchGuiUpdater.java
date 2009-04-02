@@ -122,7 +122,14 @@ public void start() {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void stop() {
-	timer.stop();
+	new SwingDispatcherAsync (){
+		public void runSwing() {
+			timer.stop();
+		}
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();
 }
 
 
