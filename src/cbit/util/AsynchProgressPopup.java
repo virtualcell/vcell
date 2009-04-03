@@ -1,9 +1,6 @@
 package cbit.util;
 
 import java.awt.*;
-
-import javax.swing.SwingUtilities;
-
 import cbit.gui.ZEnforcer;
 
 /**
@@ -209,14 +206,14 @@ public int getProgress( ) {
 private void startPrivate(final boolean bKeepOnTop) {
 	new SwingDispatcherAsync (){
 		public void runSwing() {
+			// start timer for auto progress
+			if (! knowsProgress) {
+				AsynchProgressPopup.super.start();
+			}			
 			if(bKeepOnTop){
 				ZEnforcer.showModalDialogOnTop(getDialog());
 			}else{
 				getDialog().setVisible(true);
-			}
-			// start timer for auto progress
-			if (! knowsProgress) {
-				AsynchProgressPopup.super.start();
 			}
 		}
 		public void handleException(Throwable e) {
