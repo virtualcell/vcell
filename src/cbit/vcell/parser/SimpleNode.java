@@ -15,7 +15,7 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Node parent;
   protected Node[] children;
   protected int id;
-  protected Object info;
+  //protected Object info;
   transient private RealInterval ival = null;
 
   final static int LANGUAGE_DEFAULT = 0;
@@ -132,7 +132,7 @@ void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {
 	}	
 }
 
-  public Object getInfo() { return info; }
+//  public Object getInfo() { return info; }
 
 
 /**
@@ -217,7 +217,7 @@ public void roundToFloat() {
   /* These two methods provide a very simple mechanism for attaching
      arbitrary data to the node. */
 
-  public void setInfo(Object i) { info = i; }
+//  public void setInfo(Object i) { info = i; }
 
 
 /**

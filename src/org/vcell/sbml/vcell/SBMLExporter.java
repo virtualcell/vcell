@@ -1042,8 +1042,8 @@ public String getSBMLFile() {
 		SimulationContext clonedSimContext = (SimulationContext)cbit.util.BeanUtils.cloneSerializable(getSelectedSimContext());
 		if (getSelectedSimulation() != null && getSelectedSimulation().getMathOverrides().hasOverrides()) {
 			// need to clone simContext and apply overrides before proceeding.
-			clonedSimContext.refreshDependencies();
 			clonedSimContext.getModel().refreshDependencies();
+			clonedSimContext.refreshDependencies();			
 			cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(clonedSimContext);
 			cbit.vcell.mapping.MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
 

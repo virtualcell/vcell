@@ -38,6 +38,7 @@ public class MathDescription implements cbit.sql.Versionable, Matchable, SymbolT
 	private Version version = null;
 	private Vector<SubDomain> subDomainList = new Vector<SubDomain>();
 	private Vector<Variable> variableList = new Vector<Variable>();
+	private HashMap<String, Variable> variableHashTable = new HashMap<String, Variable>();
 	private Geometry geometry = null;
 	private transient Jacobian jacobian = null;
 	private transient RateSensitivity rateSensitivity = null;
@@ -178,6 +179,7 @@ private void addVariable0(Variable var) throws MathException, ExpressionBindingE
 		throw new MathException("variable "+var.getName()+" already exists");
 	}
 	variableList.addElement(var);
+	variableHashTable.put(var.getName(), var);
 	//var.bind(this);
 	if (var instanceof VolVariable){
 		//
@@ -185,9 +187,11 @@ private void addVariable0(Variable var) throws MathException, ExpressionBindingE
 		//
 		InsideVariable inVar = new InsideVariable(var.getName()+"_INSIDE", var.getName());
 		variableList.addElement(inVar);
+		variableHashTable.put(inVar.getName(), inVar);
 		inVar.bind(this);
 		OutsideVariable outVar = new OutsideVariable(var.getName()+"_OUTSIDE", var.getName());
 		variableList.addElement(outVar);
+		variableHashTable.put(outVar.getName(), outVar);
 		outVar.bind(this);
 	}
 }
@@ -213,9 +217,9 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * This method was created by a SmartGuide.
  */
 private void clearAll() {
-	subDomainList = new Vector<SubDomain>();
-	variableList = new Vector<Variable>();
-//	geometry = null;
+	subDomainList.clear();
+	variableList.clear();
+	variableHashTable.clear();
 }
 
 
@@ -615,7 +619,7 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 		return false;
 	}
 	for (int i = 0; i < subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
+		SubDomain subDomain = subDomainList.elementAt(i);
 		SubDomain otherSubDomain = newMathDesc.getSubDomain(subDomain.getName());
 		if (otherSubDomain==null || !otherSubDomain.getClass().equals(subDomain.getClass())){
 			System.out.println("DIFFERENT INVARIANTS: SubDomains different");
@@ -722,7 +726,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 	//
 	HashSet<String> stateVarSet = newMath.getStateVariableNames();
 	for (int i = 0; i < newMath.variableList.size(); i++){
-		Variable tmp_var = (Variable)newMath.variableList.elementAt(i);
+		Variable tmp_var = newMath.variableList.elementAt(i);
 		if (varNamesToKeep.contains(tmp_var.getName()) && tmp_var instanceof Function){
 			Function function = (Function)tmp_var;
 			//
@@ -783,8 +787,10 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 				VolVariable volVariable = new VolVariable(function.getName());
 				newMath.variableList.remove(function);
 				newMath.variableList.add(volVariable);
+				newMath.variableHashTable.remove(function.getName());
+				newMath.variableHashTable.put(volVariable.getName(), volVariable);
 				for (int j = 0; j < newMath.subDomainList.size(); j++){
-					SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(j);
+					SubDomain subDomain = newMath.subDomainList.elementAt(j);
 					if (subDomain instanceof CompartmentSubDomain){
 						//
 						// add an ODE where 
@@ -796,7 +802,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 						for (int k = 0; k < indepVarList.size(); k++){
 							Variable indepVar = indepVarList.elementAt(k);
 							Equation indepVarEqu = subDomain.getEquation(indepVar);
-							Expression coefficient = (Expression)coefficientList.elementAt(k);
+							Expression coefficient = coefficientList.elementAt(k);
 							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
 							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
 						}
@@ -814,8 +820,10 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 				MemVariable memVariable = new MemVariable(function.getName());
 				newMath.variableList.remove(function);
 				newMath.variableList.add(memVariable);
+				newMath.variableHashTable.remove(function.getName());
+				newMath.variableHashTable.put(memVariable.getName(), memVariable);				
 				for (int j = 0; j < newMath.subDomainList.size(); j++){
-					SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(j);
+					SubDomain subDomain = newMath.subDomainList.elementAt(j);
 					if (subDomain instanceof MembraneSubDomain){
 						//
 						// add an ODE where 
@@ -1086,14 +1094,15 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	
 	for(int i=0;i<variableList.size();i+=1){
-		if(variableList.elementAt(i) instanceof Function){
-			Function function = (Function)variableList.elementAt(i);
+		Variable variable = variableList.elementAt(i);
+		if(variable instanceof Function){
+			Function function = (Function)variable;
 			Expression.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,function.getExpression());
 		}
 	}
 	// go through each subdomain
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		// go through each equation
 		Enumeration<Equation> enum_equ = subDomain.getEquations();
 		while (enum_equ.hasMoreElements()){
@@ -1263,7 +1272,7 @@ public static Function[] getFlattenedFunctions(MathDescription originalMathDescr
 	Function functions[] = new Function[functionNames.length];
 	for (int i = 0; i < functionNames.length; i++){
 		for (int j = 0; j < originalMathDescription.variableList.size(); j++){
-			Variable var = (Variable)originalMathDescription.variableList.elementAt(j);
+			Variable var = originalMathDescription.variableList.elementAt(j);
 			if (var.getName().equals(functionNames[i])){
 				if (var instanceof Function){
 					Function function = (Function)var;
@@ -1478,7 +1487,7 @@ public RateSensitivity getRateSensitivity() throws MathException {
 public HashSet<String> getStateVariableNames() {
 	HashSet<String> stateVarNameSet = new HashSet<String>();
 	for (int i = 0; i < variableList.size(); i++){
-		Variable var = (Variable)variableList.elementAt(i);
+		Variable var = variableList.elementAt(i);
 		if (var instanceof VolVariable || var instanceof MemVariable || var instanceof FilamentVariable ||
 			var instanceof VolumeRegionVariable || var instanceof MembraneRegionVariable || var instanceof FilamentRegionVariable){
 			stateVarNameSet.add(var.getName());
@@ -1521,14 +1530,7 @@ public Enumeration<SubDomain> getSubDomains() {
  * @param name java.lang.String
  */
 public Variable getVariable(String name) {
-	Enumeration<Variable> enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var.getName().equals(name)){
-			return var;
-		}
-	}
-	return null;		
+	return variableHashTable.get(name);	
 }
 
 
@@ -2000,7 +2002,7 @@ public boolean isValid() {
 	
 	// check Constant are really constants
 	for (int i=0;i<variableList.size();i++){
-		Variable var = (Variable)variableList.elementAt(i);
+		Variable var = variableList.elementAt(i);
 		if (var instanceof Constant){
 			try {
 				((Constant)var).getExpression().evaluateConstant();
@@ -2023,7 +2025,7 @@ public boolean isValid() {
 	int filRegionVarCount = 0;
 	int stochVarCount = 0;
 	for (int i=0;i<variableList.size();i++){
-		Variable var = (Variable)variableList.elementAt(i);
+		Variable var = variableList.elementAt(i);
 		if (var instanceof VolVariable){
 			volVarCount++;
 		}else if (var instanceof MemVariable){
@@ -2045,7 +2047,7 @@ public boolean isValid() {
 	//
 	try {
 		for (int i = 0; i < subDomainList.size(); i++){
-			SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
+			SubDomain subDomain = subDomainList.elementAt(i);
 			Enumeration<Equation> equEnum = subDomain.getEquations();
 			while (equEnum.hasMoreElements()){
 				Equation equ = equEnum.nextElement();
@@ -2343,13 +2345,13 @@ public boolean isValid() {
 		// ... and that all PDE equations have jump conditions defined on the appropriate membranes
 		//
 		for (int i=0;i<variableList.size();i++){
-			Variable var = (Variable)variableList.elementAt(i);
+			Variable var = variableList.elementAt(i);
 			int pdeRefCount = 0;
 			int odeRefCount = 0;
 			int steadyPdeCount = 0;
 			if (var instanceof VolVariable){
 				for (int j=0;j<subDomainList.size();j++){
-					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
+					SubDomain subDomain = subDomainList.elementAt(j);
 					Equation equ = subDomain.getEquation(var);
 					if (equ instanceof PdeEquation){
 						if (((PdeEquation)equ).isSteady()) {
@@ -2361,8 +2363,9 @@ public boolean isValid() {
 						// for each PDE, make sure that a jump condition all membranes that border this compartment
 						//
 						for (int k = 0; k < subDomainList.size(); k++){
-							if (subDomainList.elementAt(k) instanceof MembraneSubDomain){
-								MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomainList.elementAt(k);
+							SubDomain subDomain2 = subDomainList.elementAt(k);
+							if (subDomain2 instanceof MembraneSubDomain){
+								MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain2;
 								if (membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
 									if (membraneSubDomain.getJumpCondition((VolVariable)var)==null){
 										setWarning("Spatial Model, PDE for '"+var.getName()+"' in '"+subDomain.getName()+"' "+
@@ -2426,13 +2429,13 @@ public boolean isValid() {
 		// Check that there is an equation (OdeEquation) for a given MembraneVariable on each membrane.
 		//
 		for (int i=0;i<variableList.size();i++){
-			Variable var = (Variable)variableList.elementAt(i);
+			Variable var = variableList.elementAt(i);
 			int pdeRefCount = 0;
 			int odeRefCount = 0;
 			int steadyPdeCount = 0;
 			if (var instanceof MemVariable){
 				for (int j=0;j<subDomainList.size();j++){
-					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
+					SubDomain subDomain = subDomainList.elementAt(j);
 					Equation equ = subDomain.getEquation(var);
 					if (equ instanceof PdeEquation){
 						if (((PdeEquation)equ).isSteady()) {
@@ -2462,10 +2465,10 @@ public boolean isValid() {
 		// Check that there is an equation (OdeEquation) for a given FilamentVariable on each FilamentSubDomain.
 		//
 		for (int i=0;i<variableList.size();i++){
-			Variable var = (Variable)variableList.elementAt(i);
+			Variable var = variableList.elementAt(i);
 			if (var instanceof FilamentVariable){
 				for (int j=0;j<subDomainList.size();j++){
-					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
+					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof FilamentSubDomain){
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof OdeEquation)){
@@ -2480,10 +2483,10 @@ public boolean isValid() {
 		// Check that there is a region equation (VolumeRegionEquation) for a given VolumeRegionVariable on each CompartmentSubDomain.
 		//
 		for (int i=0;i<variableList.size();i++){
-			Variable var = (Variable)variableList.elementAt(i);
+			Variable var = variableList.elementAt(i);
 			if (var instanceof VolumeRegionVariable){
 				for (int j=0;j<subDomainList.size();j++){
-					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
+					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof CompartmentSubDomain){
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof VolumeRegionEquation)){
@@ -2498,10 +2501,10 @@ public boolean isValid() {
 		// Check that there is a region equation (MembraneRegionEquation) for a given MembraneRegionVariable on each MembraneSubDomain.
 		//
 		for (int i=0;i<variableList.size();i++){
-			Variable var = (Variable)variableList.elementAt(i);
+			Variable var = variableList.elementAt(i);
 			if (var instanceof MembraneRegionVariable){
 				for (int j=0;j<subDomainList.size();j++){
-					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
+					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof MembraneSubDomain){
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof MembraneRegionEquation)){
@@ -2516,10 +2519,10 @@ public boolean isValid() {
 		// Check that there is a region equation (FilamentRegionEquation) for a given FilamentRegionVariable on each FilamentSubDomain.
 		//
 		for (int i=0;i<variableList.size();i++){
-			Variable var = (Variable)variableList.elementAt(i);
+			Variable var = variableList.elementAt(i);
 			if (var instanceof FilamentRegionVariable){
 				for (int j=0;j<subDomainList.size();j++){
-					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
+					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof FilamentSubDomain){
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof FilamentRegionEquation)){
@@ -2560,7 +2563,7 @@ void makeCanonical() throws MathException, ExpressionException, MappingException
 	// substitute all rates, initial conditions, boundary conditions, jump conditions
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(i);
+		SubDomain subDomain = newMath.subDomainList.elementAt(i);
 		Enumeration<Equation> equEnum = subDomain.getEquations();
 		while (equEnum.hasMoreElements()){
 			Equation equ = equEnum.nextElement();
@@ -2580,7 +2583,7 @@ void makeCanonical() throws MathException, ExpressionException, MappingException
 	// remove all Priorities (shouldn't be used in BioModels)
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(i);
+		SubDomain subDomain = newMath.subDomainList.elementAt(i);
 		subDomain.trimTrivialEquations(newMath);
 		if (subDomain instanceof CompartmentSubDomain){
 			int uniquePriority = subDomain.getName().hashCode();
@@ -2592,7 +2595,7 @@ void makeCanonical() throws MathException, ExpressionException, MappingException
 	// substitute all fast rates, fast invariants
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(i);
+		SubDomain subDomain = newMath.subDomainList.elementAt(i);
 		FastSystem fastSystem = subDomain.getFastSystem();
 		if (fastSystem != null){
 			fastSystem.flatten(tempSimulation,bRoundCoefficients);
@@ -2617,7 +2620,7 @@ void makeCanonical() throws MathException, ExpressionException, MappingException
 	// rebind all mathDescription
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(i);
+		SubDomain subDomain = newMath.subDomainList.elementAt(i);
 		FastSystem fastSystem = subDomain.getFastSystem();
 		if (fastSystem != null){
 			fastSystem.rebind();
@@ -2838,7 +2841,7 @@ public void refreshJacobian() throws MathException {
 	if (subDomainList.size() != 1){
 		throw new MathException("there are more than one subdomain, can't calculate rate sensitivities");
 	}	
-	SubDomain subDomain = (SubDomain)subDomainList.elementAt(0);
+	SubDomain subDomain = subDomainList.elementAt(0);
 	jacobian = new Jacobian(this,subDomain);
 	fireStateChanged();
 }
@@ -2852,7 +2855,7 @@ public void refreshRateSensitivity() throws MathException {
 	if (subDomainList.size() != 1){
 		throw new MathException("there are more than one subdomain, can't calculate rate sensitivities");
 	}	
-	SubDomain subDomain = (SubDomain)subDomainList.elementAt(0);
+	SubDomain subDomain = subDomainList.elementAt(0);
 	rateSensitivity = new RateSensitivity(this,subDomain);
 	fireStateChanged();
 }
@@ -2912,6 +2915,7 @@ public void setAllVariables(Variable vars[]) throws MathException, ExpressionBin
 	hash.getTopologicallyReorderedVariables();
 	
 	variableList.clear();
+	variableHashTable.clear();
 	// adding without binding
 	for (Variable var : vars){
 		if (var instanceof InsideVariable || var instanceof OutsideVariable) { // if vars has inside and outside already, ignore
@@ -2920,15 +2924,18 @@ public void setAllVariables(Variable vars[]) throws MathException, ExpressionBin
 		if (getVariable(var.getName()) != null){
 			throw new MathException("variable "+var.getName()+" already exists");
 		}
-		variableList.addElement(var);		
+		variableList.addElement(var);
+		variableHashTable.put(var.getName(), var);
 		if (var instanceof VolVariable){
 			//
 			// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
 			//
 			InsideVariable inVar = new InsideVariable(var.getName()+"_INSIDE", var.getName());
 			variableList.addElement(inVar);
+			variableHashTable.put(inVar.getName(), inVar);
 			OutsideVariable outVar = new OutsideVariable(var.getName()+"_OUTSIDE", var.getName());
 			variableList.addElement(outVar);
+			variableHashTable.put(outVar.getName(), outVar);
 		}
 	}
 	// bind each variable
@@ -3020,7 +3027,8 @@ void substituteInPlace(Function functionsToSubstitute[]) throws MathException, E
 	// make a "identity" simulation (no overrides), this will help to substitute/flatten expressions.
 	//
 	for (int i = 0; i < functionsToSubstitute.length; i++){
-		variableList.insertElementAt(functionsToSubstitute[i],0);
+		variableList.insertElementAt(functionsToSubstitute[i], 0);
+		variableHashTable.put(functionsToSubstitute[i].getName(), functionsToSubstitute[i]);
 	}
 	cbit.vcell.solver.Simulation tempSimulation = new cbit.vcell.solver.Simulation(this);
 	MathDescription newMath = this;
@@ -3029,7 +3037,7 @@ void substituteInPlace(Function functionsToSubstitute[]) throws MathException, E
 	// substitute all rates, initial conditions, boundary conditions, jump conditions, fast rates, fast invariants
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(i);
+		SubDomain subDomain = newMath.subDomainList.elementAt(i);
 		FastSystem fastSystem = subDomain.getFastSystem();
 		if (fastSystem != null){
 			fastSystem.flatten(tempSimulation,bRoundCoefficients);
@@ -3052,7 +3060,7 @@ void substituteInPlace(Function functionsToSubstitute[]) throws MathException, E
 	// rebind all mathDescription
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(i);
+		SubDomain subDomain = newMath.subDomainList.elementAt(i);
 		FastSystem fastSystem = subDomain.getFastSystem();
 		if (fastSystem != null){
 			fastSystem.rebind();
