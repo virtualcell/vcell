@@ -1587,7 +1587,7 @@ public void refreshDependencies() {
 	}catch (PropertyVetoException e){
 	}
 	refreshUnits();
-	resolveUndefinedUnits();
+	//resolveUndefinedUnits();
 }
 
 

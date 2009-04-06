@@ -466,7 +466,7 @@ public void refreshDependencies() {
 	fieldModel.removeVetoableChangeListener(this);
 	fieldModel.addVetoableChangeListener(this);
 
-	fieldModel.refreshDependencies();
+	//fieldModel.refreshDependencies();
 
 	for (int i=0;i<fieldSpeciesContextSpecs.length;i++){
 		fieldSpeciesContextSpecs[i].setSimulationContext(simContext);

@@ -759,7 +759,8 @@ private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAcces
 	try{
 		BioModel bm = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML);
 		cacheSimulations(bm.getSimulations());
-		bm.refreshDependencies();
+		// XmlHelper.XMLToBioModel() already calls BioModel.refreshDependencies()
+		//bm.refreshDependencies(); 
 		return bm;
 	}catch(cbit.vcell.xml.XmlParseException e){
 		e.printStackTrace();

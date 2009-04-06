@@ -219,14 +219,6 @@ public class SimulationContext
 	private boolean bConcentration = true;
 
 /**
- * SimulationContext constructor comment.
- * Please see new constructor with effect on March 15th, 2007
- */
-public SimulationContext(SimulationContext simulationContext) throws PropertyVetoException {
-	this(simulationContext,false);
-}
-
-/**
  * Construct a new SimulationContext from an old SimulationContext.
  * Input paras: SimulationContext (the old one), boolean (is stochastic application or not) 
  */

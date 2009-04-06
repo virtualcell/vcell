@@ -670,6 +670,7 @@ private SimulationContext getSimulationContextSQL(Connection con,User user, KeyV
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	assignAnalysisTasksSQL(con,simContextKey, simContext);
+	simContext.getModel().refreshDependencies();
 	simContext.refreshDependencies();  // really needed to calculate MembraneMapping parameters that are not stored (inside/outside flux correction factors).
 	
 	return simContext;

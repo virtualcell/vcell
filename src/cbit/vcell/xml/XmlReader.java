@@ -2747,13 +2747,15 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		}
 		
 		//Add Species (Compounds)
-		Iterator iterator = param.getChildren(XMLTags.SpeciesTag, vcNamespace).iterator();
+		Iterator<Element> iterator = param.getChildren(XMLTags.SpeciesTag, vcNamespace).iterator();
+		ArrayList<Species> speciesList = new ArrayList<Species>();
 		while (iterator.hasNext()) {
 			org.jdom.Element temp = (Element) iterator.next();
-			newmodel.addSpecies(getSpecies(temp));
+			speciesList.add(getSpecies(temp));
 		}
+		newmodel.setSpecies(speciesList.toArray(new Species[speciesList.size()]));
 		//Add Structures
-		LinkedList newstructures = new LinkedList();
+		LinkedList<Structure> newstructures = new LinkedList<Structure>();
 		//(features)
 		List children = param.getChildren(XMLTags.FeatureTag, vcNamespace);
 		for (int i = 0; i < children.size(); i++) {
@@ -2785,11 +2787,12 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		// must create new hash for each reaction and flux, since each kinetics uses new variables hash
 		VariableHash varHash;
 		iterator = param.getChildren(XMLTags.SimpleReactionTag, vcNamespace).iterator();
+		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
 		while (iterator.hasNext()) {
 			varHash = new VariableHash();
 			addResevedSymbols(varHash);
 			org.jdom.Element temp = (Element) iterator.next();
-			newmodel.addReactionStep(getSimpleReaction(temp, newmodel, varHash));
+			reactionStepList.add(getSimpleReaction(temp, newmodel, varHash));
 		}
 		//(fluxStep)
 		iterator = param.getChildren(XMLTags.FluxStepTag, vcNamespace).iterator();
@@ -2797,8 +2800,9 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 			varHash = new VariableHash();
 			addResevedSymbols(varHash);
 			org.jdom.Element temp = (Element) iterator.next();
-			newmodel.addReactionStep(getFluxReaction(temp, newmodel, varHash));
+			reactionStepList.add(getFluxReaction(temp, newmodel, varHash));
 		}
+		newmodel.setReactionSteps(reactionStepList.toArray(new ReactionStep[reactionStepList.size()]));
 		//Add Diagrams
 		children = param.getChildren(XMLTags.DiagramTag, vcNamespace);
 		if (children.size()>0) {

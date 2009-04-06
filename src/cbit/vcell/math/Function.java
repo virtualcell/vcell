@@ -10,7 +10,7 @@ import cbit.vcell.parser.*;
  */
 public class Function extends Variable {
 	private Expression exp = null;
-	private boolean bConstant = false;
+	private Boolean bConstant = null;
 
 /**
  * Constant constructor comment.
@@ -27,12 +27,6 @@ public Function(String name, Expression exp) {
 		//
 		e.printStackTrace(System.out);
 	}
-	try {
-		exp.evaluateConstant();
-		bConstant = true;
-	}catch (ExpressionException e){
-		bConstant = false;
-	}		
 }
 
 
@@ -44,12 +38,6 @@ public Function(String name, Expression exp) {
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	if (exp!=null){
 		exp.bindExpression(symbolTable);
-	}	
-	try {
-		exp.evaluateConstant();
-		bConstant = true;
-	}catch (Exception e){
-		bConstant = false;
 	}
 }
 
@@ -113,6 +101,14 @@ public String getVCML() {
  * @return boolean
  */
 public boolean isConstant() {
+	if (bConstant == null) {
+		try {
+			exp.evaluateConstant();
+			bConstant = true;
+		}catch (Exception e){
+			bConstant = false;
+		}
+	}
 	return bConstant;
 }
 

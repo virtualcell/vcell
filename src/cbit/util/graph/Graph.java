@@ -6,8 +6,11 @@ import java.util.*;
  * @author: Jim Schaff
  */
 public class Graph {
-	private Vector nodeList = new Vector();
-	private Vector edgeList = new Vector();
+	private ArrayList<Node> nodeList = new ArrayList<Node>();
+	private ArrayList<Edge> edgeList = new ArrayList<Edge>();
+	private HashMap<String, Node> nodeNameHash = new HashMap<String, Node>();
+	private HashMap<String, ArrayList<Edge> > adjacentEdgeHash = new HashMap<String, ArrayList<Edge> >();
+	private HashMap<String, Integer> nodeIndexHash = new HashMap<String, Integer>();
 
 	private class Counter {
 		private int count = 0;
@@ -36,16 +39,19 @@ public Graph() {
  * @param newNode cbit.vcell.mapping.potential.Node
  */
 public void addEdge(Edge newEdge) {
-	if (edgeList.contains(newEdge)){
+	if (contains(newEdge)){
 		throw new RuntimeException("edge "+newEdge+" already exists in list");
 	}
-	if (!nodeList.contains(newEdge.getNode1())){
+	if (!contains(newEdge.getNode1())){
 		addNode(newEdge.getNode1());
 	}
-	if (!nodeList.contains(newEdge.getNode2())){
+	if (!contains(newEdge.getNode2())){
 		addNode(newEdge.getNode2());
 	}
-	edgeList.addElement(newEdge);
+	edgeList.add(newEdge);
+	
+	adjacentEdgeHash.get(newEdge.getNode1().getName()).add(newEdge);
+	adjacentEdgeHash.get(newEdge.getNode2().getName()).add(newEdge);
 }
 
 
@@ -55,10 +61,18 @@ public void addEdge(Edge newEdge) {
  * @param newNode cbit.vcell.mapping.potential.Node
  */
 public void addNode(Node newNode) {
-	if (nodeList.contains(newNode)){
+	if (contains(newNode)){
 		throw new RuntimeException("node "+newNode+" already exists in list");
 	}
-	nodeList.addElement(newNode);
+	nodeList.add(newNode);
+	
+	if (nodeNameHash.get(newNode.getName()) != null) {
+		throw new RuntimeException("node " + newNode + " with same name already exists in list");
+	}
+	nodeNameHash.put(newNode.getName(), newNode);
+	
+	adjacentEdgeHash.put(newNode.getName(), new ArrayList<Edge>());
+	nodeIndexHash.put(newNode.getName(), nodeList.size() - 1);
 }
 
 
@@ -69,7 +83,8 @@ public void addNode(Node newNode) {
  * @param node cbit.vcell.mapping.potential.Node
  */
 public boolean contains(Edge edge) {
-	return edgeList.contains(edge);
+	ArrayList<Edge> edgeList = adjacentEdgeHash.get(edge.getNode1().getName());
+	return edgeList != null && edgeList.contains(edge);
 }
 
 
@@ -80,7 +95,11 @@ public boolean contains(Edge edge) {
  * @param node cbit.vcell.mapping.potential.Node
  */
 public boolean contains(Node node) {
-	return nodeList.contains(node);
+	Node anode = nodeNameHash.get(node.getName());
+	if (node.equals(anode)) {
+		return true;
+	}
+	return false;
 }
 
 
@@ -113,7 +132,7 @@ private void depthFirstSearchVisit(NodeInfo nodeInfos[], int index, Counter coun
 	nodeInfos[index].setColor(NodeInfo.GREY);
 	counter.increment();
 	nodeInfos[index].setDiscoverTime(counter.getCount());
-	Node thisNode = (Node)nodeList.get(index);
+	Node thisNode = nodeList.get(index);
 	Edge adjacentEdges[] = getAdjacentEdges(thisNode);
 	for (int i = 0; i < adjacentEdges.length; i++){
 		if (adjacentEdges[i].getNode1() == thisNode){
@@ -137,18 +156,15 @@ private void depthFirstSearchVisit(NodeInfo nodeInfos[], int index, Counter coun
  * @param node cbit.vcell.mapping.potential.Node
  */
 public Edge[] getAdjacentEdges(Edge edge) {
-	Vector adjacentList = new Vector();
-	for (int i = 0; i < edgeList.size(); i++){
-		Edge e = (Edge)edgeList.elementAt(i);
-		if (e.equals(edge)){
-			continue;
-		}
-		if (e.isAdjacent(edge)){
-			adjacentList.add(edge);
-		}
-	}
-	Edge adjacentArray[] = new Edge[adjacentList.size()];
-	adjacentList.copyInto(adjacentArray);
+	ArrayList<Edge> adjacentList1 = adjacentEdgeHash.get(edge.getNode1().getName());	
+	ArrayList<Edge> adjacentList2 = adjacentEdgeHash.get(edge.getNode2().getName());
+	
+	HashSet<Edge> set = new HashSet<Edge>(adjacentList1);
+	set.addAll(adjacentList2);
+	set.remove(edge);
+	
+	Edge adjacentArray[] = new Edge[set.size()];
+	set.toArray(adjacentArray);
 	
 	return adjacentArray;
 }
@@ -161,16 +177,9 @@ public Edge[] getAdjacentEdges(Edge edge) {
  * @param node cbit.vcell.mapping.potential.Node
  */
 public Edge[] getAdjacentEdges(Node node) {
-	Vector adjacentList = new Vector();
-	for (int i = 0; i < edgeList.size(); i++){
-		Edge edge = (Edge)edgeList.elementAt(i);
-		if (edge.hasEndPoint(node)){
-			adjacentList.add(edge);
-		}
-	}
+	ArrayList<Edge> adjacentList = adjacentEdgeHash.get(node.getName());
 	Edge adjacentArray[] = new Edge[adjacentList.size()];
-	adjacentList.copyInto(adjacentArray);
-	
+	adjacentList.toArray(adjacentArray);
 	return adjacentArray;
 }
 
@@ -187,7 +196,7 @@ public int getDegree(Node node) {
 	//
 	int degree = 0;
 	for (int i = 0; i < edgeList.size(); i++){
-		Edge edge = (Edge)edgeList.elementAt(i);
+		Edge edge = edgeList.get(i);
 		if (edge.hasEndPoint(node)){
 			degree++;
 			if (edge.isLoop()){
@@ -205,8 +214,8 @@ public int getDegree(Node node) {
  * @return cbit.vcell.mapping.potential.Graph
  */
 public Node[] getDigraphAttractorSet(Node seedNode) {
-	Vector availlableEdgeList = (Vector)edgeList.clone();
-	Vector attractorNodeList = new Vector();
+	ArrayList<Edge> availableEdgeList = (ArrayList<Edge>)edgeList.clone();
+	ArrayList<Node> attractorNodeList = new ArrayList<Node>();
 
 	//
 	// add seed node to includedNodeList
@@ -219,18 +228,18 @@ public Node[] getDigraphAttractorSet(Node seedNode) {
 		// add new "Attractor" node if an edge connects from this node to a node that is already "Attractor" set.
 		//
 		bFoundEdges = false;
-		for (int i = 0; i < availlableEdgeList.size(); i++){
-			Edge edge = (Edge)availlableEdgeList.elementAt(i);
+		for (int i = 0; i < availableEdgeList.size(); i++){
+			Edge edge = availableEdgeList.get(i);
 			if (attractorNodeList.contains(edge.getNode2()) && !attractorNodeList.contains(edge.getNode1())){
 				attractorNodeList.add(edge.getNode1());
-				availlableEdgeList.remove(edge);
+				availableEdgeList.remove(edge);
 				i--;
 				bFoundEdges = true;
 			}
 		}
 	}
 
-	return (Node[])cbit.util.BeanUtils.getArray(attractorNodeList,Node.class);
+	return attractorNodeList.toArray(new Node[attractorNodeList.size()]);
 }
 
 
@@ -240,8 +249,8 @@ public Node[] getDigraphAttractorSet(Node seedNode) {
  * @return cbit.vcell.mapping.potential.Graph
  */
 public Node[] getDigraphReachableSet(Node seedNode) {
-	Vector availlableEdgeList = (Vector)edgeList.clone();
-	Vector reachableNodeList = new Vector();
+	ArrayList<Edge> availableEdgeList = (ArrayList<Edge>)edgeList.clone();
+	ArrayList<Node> reachableNodeList = new ArrayList<Node>();
 
 	//
 	// add seed node to includedNodeList
@@ -254,18 +263,18 @@ public Node[] getDigraphReachableSet(Node seedNode) {
 		// add new "Reachable" node if an edge connects from this node to a node that is already "Reachable"
 		//
 		bFoundEdges = false;
-		for (int i = 0; i < availlableEdgeList.size(); i++){
-			Edge edge = (Edge)availlableEdgeList.elementAt(i);
+		for (int i = 0; i < availableEdgeList.size(); i++){
+			Edge edge = availableEdgeList.get(i);
 			if (reachableNodeList.contains(edge.getNode1()) && !reachableNodeList.contains(edge.getNode2())){
 				reachableNodeList.add(edge.getNode2());
-				availlableEdgeList.remove(edge);
+				availableEdgeList.remove(edge);
 				i--;
 				bFoundEdges = true;
 			}
 		}
 	}
 
-	return (Node[])cbit.util.BeanUtils.getArray(reachableNodeList,Node.class);
+	return reachableNodeList.toArray(new Node[reachableNodeList.size()]);
 }
 
 
@@ -276,7 +285,7 @@ public Node[] getDigraphReachableSet(Node seedNode) {
  */
 public Edge[] getEdges() {
 	Edge edges[] = new Edge[edgeList.size()];
-	edgeList.copyInto(edges);
+	edgeList.toArray(edges);
 	return edges;
 }
 
@@ -290,7 +299,7 @@ public Edge[] getEdges() {
  */
 public Path[] getFundamentalCycles() {
 	
-	Vector fundamentalCycleList = new Vector();
+	ArrayList<Path> fundamentalCycleList = new ArrayList<Path>();
 		
 	Tree spanningTrees[] = getSpanningForest();
 	//
@@ -300,7 +309,7 @@ public Path[] getFundamentalCycles() {
 	for (int i = 0; i < spanningTrees.length; i++){
 		Tree spanningTree = spanningTrees[i];
 		for (int j = 0; j < edgeList.size(); j++){
-			Edge edge = (Edge)edgeList.elementAt(j);
+			Edge edge = edgeList.get(j);
 			//
 			// check if this edge is connected to the nodes of this spanning tree.
 			// only have to check one node, both nodes of an edge are always contained in a single spanning tree.
@@ -315,7 +324,7 @@ public Path[] getFundamentalCycles() {
 		}
 	}
 	Path fundamentalCycles[] = new Path[fundamentalCycleList.size()];
-	fundamentalCycleList.copyInto(fundamentalCycles);
+	fundamentalCycleList.toArray(fundamentalCycles);
 
 	return fundamentalCycles;
 }
@@ -329,7 +338,7 @@ public Path[] getFundamentalCycles() {
  */
 public int getIndex(Edge edge) {
 	for (int i = 0; i < edgeList.size(); i++){
-		if (((Edge)edgeList.elementAt(i)).equals(edge)){
+		if (edgeList.get(i).equals(edge)){
 			return i;
 		}
 	}
@@ -344,12 +353,8 @@ public int getIndex(Edge edge) {
  * @param edge cbit.vcell.mapping.potential.Edge
  */
 public int getIndex(Node node) {
-	for (int i = 0; i < nodeList.size(); i++){
-		if (((Node)nodeList.elementAt(i)).equals(node)){
-			return i;
-		}
-	}
-	return -1;
+	Integer idx = nodeIndexHash.get(node.getName());
+	return idx == null ? -1 : idx;
 }
 
 
@@ -360,13 +365,7 @@ public int getIndex(Node node) {
  * @param name java.lang.String
  */
 public Node getNode(String name) {
-	for (int i = 0; i < nodeList.size(); i++){
-		Node node = (Node)nodeList.elementAt(i);
-		if (node.getName().equals(name)){
-			return node;
-		}
-	}
-	return null;
+	return nodeNameHash.get(name);
 }
 
 
@@ -377,7 +376,7 @@ public Node getNode(String name) {
  */
 public Node[] getNodes() {
 	Node nodes[] = new Node[nodeList.size()];
-	nodeList.copyInto(nodes);
+	nodeList.toArray(nodes);
 	return nodes;
 }
 
@@ -408,16 +407,16 @@ public int getNumNodes() {
  * @return cbit.vcell.mapping.potential.Graph
  */
 public Tree[] getSpanningForest() {
-	Vector usedEdgeList = new Vector();
-	Vector availlableNodeList = (Vector)nodeList.clone();
-	Vector spanningTreeList = new Vector();
+	ArrayList<Edge> usedEdgeList = new ArrayList<Edge>();
+	ArrayList<Node> availableNodeList = (ArrayList<Node>)nodeList.clone();
+	ArrayList<Tree> spanningTreeList = new ArrayList<Tree>();
 
-	while (availlableNodeList.size()>=1){
+	while (availableNodeList.size()>=1){
 		Tree spanningTree = new Tree();
 		//
 		// pick a node
 		//
-		spanningTree.addNode((Node)availlableNodeList.remove(0));
+		spanningTree.addNode(availableNodeList.remove(0));
 		boolean bFoundEdges = true;
 		while (bFoundEdges){
 			//
@@ -425,7 +424,7 @@ public Tree[] getSpanningForest() {
 			//
 			Edge newEdge = null;
 			for (int i = 0; i < edgeList.size(); i++){
-				Edge edge = (Edge)edgeList.elementAt(i);
+				Edge edge = edgeList.get(i);
 				int includedNodeCount = 0;
 				if (spanningTree.contains(edge.getNode1())){
 					includedNodeCount++;
@@ -441,8 +440,8 @@ public Tree[] getSpanningForest() {
 			if (newEdge!=null){
 				spanningTree.addEdge(newEdge);
 				// only one of these removes actually removes a node (other node is already removed).
-				availlableNodeList.remove(newEdge.getNode1());
-				availlableNodeList.remove(newEdge.getNode2());
+				availableNodeList.remove(newEdge.getNode1());
+				availableNodeList.remove(newEdge.getNode2());
 			}else{
 				//
 				// can't find another connected node, either done or try next component
@@ -453,7 +452,7 @@ public Tree[] getSpanningForest() {
 		spanningTreeList.add(spanningTree);
 	}
 	Tree spanningTrees[] = new Tree[spanningTreeList.size()];
-	spanningTreeList.copyInto(spanningTrees);
+	spanningTreeList.toArray(spanningTrees);
 	return spanningTrees;
 }
 
@@ -480,7 +479,7 @@ public Node[] topologicalSort() {
 
 	Node sortedNodes[] = new Node[nodeList.size()];
 	for (int i = 0; i < nodeInfos.length; i++){
-		Node node = (Node)nodeList.elementAt(nodeInfos[i].getNodeIndex());
+		Node node = nodeList.get(nodeInfos[i].getNodeIndex());
 		sortedNodes[i] = node;
 	}
 	return sortedNodes;
@@ -502,10 +501,10 @@ public String toString() {
 		}else{
 			stringBuffer.append(",");
 		}
-		stringBuffer.append((Node)nodeList.elementAt(i));
+		stringBuffer.append(nodeList.get(i));
 	}
 	for (int i = 0; i < edgeList.size(); i++){
-		stringBuffer.append(","+(Edge)edgeList.elementAt(i));
+		stringBuffer.append(","+edgeList.get(i));
 	}
 	stringBuffer.append("}");
 	return stringBuffer.toString();

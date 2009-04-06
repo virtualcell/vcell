@@ -3,6 +3,8 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 import cbit.vcell.parser.Expression;
 import java.util.Enumeration;
@@ -71,6 +73,9 @@ public class Simulation implements Versionable, cbit.util.Matchable, cbit.vcell.
 	//
 	private transient Vector<Function> localFunctions = null;
 	private transient Vector<Constant> localConstants = null;
+	
+	private transient HashMap<String, Variable> localVariableHash = null;
+	
 	private boolean fieldIsDirty = false;
 	private java.lang.String fieldWarning = null;
 	/**
@@ -619,34 +624,42 @@ public KeyValue getKey() {
 private Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
 	if (localConstants==null){
 		localConstants = new Vector<Constant>();
+	}	
+	if (localVariableHash == null) {
+		localVariableHash = new HashMap<String, Variable>();
 	}
-	for (int i = 0; i < localConstants.size(); i++){
-		Constant localConstant = (Constant)localConstants.elementAt(i);
-		if (localConstant.getName().equals(referenceConstant.getName())){
+	Variable var = localVariableHash.get(referenceConstant.getName());
+	if (var instanceof Constant) {
+		Constant localConstant = (Constant)var;
+	
+		//
+		// make sure expression for localConstant is still up to date with MathOverrides table
+		//
+		Expression exp = getMathOverrides().getActualExpression(referenceConstant.getName(), index);
+		if (exp.compareEqual(localConstant.getExpression())){
+			//localConstant.bind(this); // update bindings to latest mathOverrides
+			return localConstant;
+		} else {
 			//
-			// make sure expression for localConstant is still up to date with MathOverrides table
+			// MathOverride's Expression changed for this Constant, remove and create new one
 			//
-			Expression exp = getMathOverrides().getActualExpression(referenceConstant.getName(), index);
-			if (exp.compareEqual(localConstant.getExpression())){
-				//localConstant.bind(this); // update bindings to latest mathOverrides
-				return localConstant;
-			}else{
-				//
-				// MathOverride's Expression changed for this Constant, remove and create new one
-				//
-				localConstants.remove(localConstant);
-				break;
-			}
-		}
+			localConstants.remove(localConstant);
+			localVariableHash.remove(localConstant.getName());
+		}	
+
+		//
+		// if local Constant not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
+		//
+		String name = referenceConstant.getName();
+		Constant newLocalConstant = new Constant(name,getMathOverrides().getActualExpression(name, index));
+		//newLocalConstant.bind(this);
+		localConstants.add(newLocalConstant);
+		
+		localVariableHash.put(newLocalConstant.getName(), newLocalConstant);	
+		return newLocalConstant;
 	}
-	//
-	// if local Constant not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
-	//
-	String name = referenceConstant.getName();
-	Constant newLocalConstant = new Constant(name,getMathOverrides().getActualExpression(name, index));
-	//newLocalConstant.bind(this);
-	localConstants.add(newLocalConstant);
-	return newLocalConstant;
+	
+	return null;
 }
 
 
@@ -660,20 +673,30 @@ private Function getLocalFunction(Function referenceFunction) throws ExpressionE
 	if (localFunctions==null){
 		localFunctions = new Vector<Function>();
 	}
-	for (int i = 0; i < localFunctions.size(); i++){
-		Function localFunction = (Function)localFunctions.elementAt(i);
+	if (localVariableHash == null) {
+		localVariableHash = new HashMap<String, Variable>();
+	}
+	Variable var = localVariableHash.get(referenceFunction.getName());
+	if (var instanceof Function) {
+		Function localFunction = (Function)var;
 		if (localFunction.compareEqual(referenceFunction)){
 			//localFunction.bind(this); // update bindings to latest mathOverrides
 			return localFunction;
 		}
+	
+		//
+		// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
+		//
+		Function newLocalFunction = new Function(referenceFunction.getName(),new Expression(referenceFunction.getExpression()));
+		//newLocalFunction.bind(this);
+		localFunctions.add(newLocalFunction);
+		
+		localVariableHash.put(newLocalFunction.getName(), newLocalFunction);
+		
+		return newLocalFunction;
 	}
-	//
-	// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
-	//
-	Function newLocalFunction = new Function(referenceFunction.getName(),new Expression(referenceFunction.getExpression()));
-	//newLocalFunction.bind(this);
-	localFunctions.add(newLocalFunction);
-	return newLocalFunction;
+	
+	return null;
 }
 
 
@@ -1004,6 +1027,10 @@ private void rebindAll() {
 	if (localFunctions!=null){
 		localFunctions.removeAllElements();
 	}
+	if (localVariableHash != null) {
+		localVariableHash.clear();
+	}
+	
 	// reload
 	getVariables();
 
@@ -1013,15 +1040,6 @@ private void rebindAll() {
 	// so we need to first bind all then evaluate.
 	//
 	if (localConstants != null) {
-		for (Constant localConstant : localConstants){
-			try {
-				if (localConstant.getExpression() != null) {
-					localConstant.getExpression().bindExpression(this); // update bindings to latest mathOverrides
-				}
-			}catch (ExpressionBindingException e){
-				e.printStackTrace(System.out);
-			}
-		}
 		for (Constant localConstant : localConstants){
 			try {
 				localConstant.bind(this); // update bindings to latest mathOverrides
@@ -1034,15 +1052,6 @@ private void rebindAll() {
 	// bind all Functions
 	//
 	if (localFunctions != null) {
-		for (Function localFunction : localFunctions){			
-			try {
-				if (localFunction.getExpression() != null) {
-					localFunction.getExpression().bindExpression(this); // update bindings to latest mathOverrides
-				}
-			}catch (ExpressionBindingException e){
-				e.printStackTrace(System.out);
-			}
-		}
 		for (Function localFunction : localFunctions){			
 			try {
 				localFunction.bind(this); // update bindings to latest mathOverrides
