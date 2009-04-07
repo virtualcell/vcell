@@ -646,20 +646,19 @@ private Constant getLocalConstant(Constant referenceConstant) throws ExpressionE
 			localConstants.remove(localConstant);
 			localVariableHash.remove(localConstant.getName());
 		}	
-
-		//
-		// if local Constant not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
-		//
-		String name = referenceConstant.getName();
-		Constant newLocalConstant = new Constant(name,getMathOverrides().getActualExpression(name, index));
-		//newLocalConstant.bind(this);
-		localConstants.add(newLocalConstant);
-		
-		localVariableHash.put(newLocalConstant.getName(), newLocalConstant);	
-		return newLocalConstant;
+	} else if (var != null) {
+		throw new RuntimeException("Variable " + var + " expected to be a Constant");
 	}
+	//
+	// if local Constant not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
+	//
+	String name = referenceConstant.getName();
+	Constant newLocalConstant = new Constant(name,getMathOverrides().getActualExpression(name, index));
+	//newLocalConstant.bind(this);
+	localConstants.add(newLocalConstant);
 	
-	return null;
+	localVariableHash.put(newLocalConstant.getName(), newLocalConstant);	
+	return newLocalConstant;
 }
 
 
@@ -683,20 +682,19 @@ private Function getLocalFunction(Function referenceFunction) throws ExpressionE
 			//localFunction.bind(this); // update bindings to latest mathOverrides
 			return localFunction;
 		}
-	
-		//
-		// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
-		//
-		Function newLocalFunction = new Function(referenceFunction.getName(),new Expression(referenceFunction.getExpression()));
-		//newLocalFunction.bind(this);
-		localFunctions.add(newLocalFunction);
-		
-		localVariableHash.put(newLocalFunction.getName(), newLocalFunction);
-		
-		return newLocalFunction;
+	} else if (var != null) {
+		throw new RuntimeException("Variable " + var + " expected to be a Function");
 	}
+	//
+	// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
+	//
+	Function newLocalFunction = new Function(referenceFunction.getName(),new Expression(referenceFunction.getExpression()));
+	//newLocalFunction.bind(this);
+	localFunctions.add(newLocalFunction);
 	
-	return null;
+	localVariableHash.put(newLocalFunction.getName(), newLocalFunction);
+	
+	return newLocalFunction;
 }
 
 

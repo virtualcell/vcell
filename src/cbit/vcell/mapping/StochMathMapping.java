@@ -314,6 +314,8 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 	refreshSpeciesContextMappings();
 	//refreshStructureAnalyzers();
 	refreshVariables();
+	
+	refreshLocalNameCount();
 	refreshMathDescription();
 }
 

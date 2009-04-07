@@ -753,7 +753,7 @@ public String getMathSymbol(SymbolTableEntry ste, StructureMapping structureMapp
 	return mathSymbol;
 }
 
-private void refreshLocalNameCount() {
+protected void refreshLocalNameCount() {
 	localNameCountHash.clear();
 	ReactionStep reactionSteps[] = simContext.getModel().getReactionSteps();
 	for (int j = 0; j < reactionSteps.length; j++){
