@@ -20,7 +20,7 @@ public class VolumeStructureAnalyzer extends StructureAnalyzer {
 public VolumeStructureAnalyzer(MathMapping mathMapping, cbit.vcell.geometry.SubVolume subVolume) {
 	super(mathMapping);
 	this.subVolume = subVolume;
-	refresh();
+	//refresh();
 }
 /**
  * This method was created in VisualAge.
@@ -37,7 +37,7 @@ protected void refreshStructures() {
 	// get all structures that are mapped to this subvolume (subdomain)
 	//
 	Structure structs[] = mathMapping.getSimulationContext().getGeometryContext().getStructures(subVolume);
-	Vector structList = new Vector();
+	Vector<Structure> structList = new Vector<Structure>();
 	if (structs!=null){
 		for (int i=0;i<structs.length;i++){
 			//

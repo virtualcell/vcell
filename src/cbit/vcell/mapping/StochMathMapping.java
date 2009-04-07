@@ -1,32 +1,44 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
-import jscl.math.Generic;
-import jscl.math.operator.Factorial;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
-import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
-import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
-import cbit.vcell.mapping.potential.MembraneElectricalDevice;
-import cbit.vcell.mapping.potential.PotentialMapping;
-import cbit.vcell.mapping.potential.ElectricalDevice;
-import cbit.vcell.solver.stoch.FluxSolver;
-import cbit.vcell.solver.stoch.MassActionSolver;
-import cbit.vcell.units.VCUnitException;
-import cbit.gui.DialogUtils;
-import cbit.util.ISize;
-import cbit.vcell.math.*;
-import cbit.vcell.model.*;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
-import java.util.*;
-import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.math.Action;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.StochVolVariable;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.math.Action;
-import cbit.util.Issue;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.stoch.FluxSolver;
+import cbit.vcell.solver.stoch.MassActionSolver;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
  * for stochastic simulation. To get math description for deterministic simulation please reference @MathMapping.
@@ -296,7 +308,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
  * Basically the function clears the error list and calls to get a new mathdescription.
  */
 private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException{
-	issueList.clear();
+	localIssueList.clear();
 	//refreshKFluxParameters();
 	
 	refreshSpeciesContextMappings();
@@ -408,9 +420,9 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
 			
-		Enumeration enum1 = getSpeciesContextMappings();
+		Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 		while (enum1.hasMoreElements()){
-			SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+			SpeciesContextMapping scm = enum1.nextElement();
 			if (scm.getVariable() instanceof StochVolVariable){
 				varHash.addVariable(scm.getVariable());
 			}
@@ -607,8 +619,8 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 			// the structure where reaction happens
 			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
 			//create symbol table for jump process based on reactionStep and structure mapping
-			final ReactionStep finalRS = reactionStep;
-			final StructureMapping finalSM = sm;
+			//final ReactionStep finalRS = reactionStep;
+			//final StructureMapping finalSM = sm;
 //			SymbolTable symTable = new SymbolTable(){
 //				public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
 //					SymbolTableEntry ste = finalRS.getEntry(identifierString);
@@ -1084,9 +1096,9 @@ private void refreshVariables() throws MappingException {
 	//
 	// non-constant dependant variables(means rely on other contants/functions) require a function
 	//
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
 		if (scm.getDependencyExpression() != null && !scs.isConstant()){
 			//scm.setVariable(new Function(scm.getSpeciesContext().getName(),scm.getDependencyExpression()));

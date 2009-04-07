@@ -12,9 +12,7 @@ import cbit.vcell.units.VCUnitException;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.DialogUtils;
 import cbit.util.BeanUtils;
-import cbit.util.ISize;
 import cbit.util.Issue;
 import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
@@ -46,7 +44,7 @@ public class MathMapping implements ScopedSymbolTable {
 	protected MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
-	protected Vector<Issue> issueList = new Vector<Issue>();
+	protected Vector<Issue> localIssueList = new Vector<Issue>();
 
 	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
 	private Hashtable<ModelParameter, Hashtable<String, Expression>> globalParamVariantsHash = new Hashtable<ModelParameter, Hashtable<String,Expression>>();
@@ -66,6 +64,7 @@ public class MathMapping implements ScopedSymbolTable {
 	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
 	
 	private Vector<SpeciesContextMapping> speciesContextMappingList = new Vector<SpeciesContextMapping>();
+	private HashMap<String, Integer> localNameCountHash = new HashMap<String, Integer>();
 
 	public class MathMappingNameScope extends BioNameScope {
 		private cbit.vcell.parser.NameScope nameScopes[] = null;
@@ -539,26 +538,26 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 		expUnitDef = VCUnitEvaluator.getUnitDefinition(origExp);
 		if (desiredExpUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are null");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",cbit.util.Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', evaluated Units are null");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",cbit.util.Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
 		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
-		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
 		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
-		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
 	}
 	Expression newExp = new Expression(origExp);
 	for (int i=0;i<symbols.length;i++){
@@ -606,7 +605,11 @@ private static Expression getInsideFluxCorrectionExpression(SimulationContext si
  * Creation date: (11/8/2004 3:36:31 PM)
  * @return cbit.util.Issue
  */
-public cbit.util.Issue[] getIssues() {
+public cbit.util.Issue[] getIssues() {	
+	Vector<Issue> issueList = new Vector<Issue>();
+	getSimulationContext().gatherIssues(issueList);
+	getSimulationContext().getModel().gatherIssues(issueList);
+	issueList.addAll(localIssueList);
 	return (cbit.util.Issue[])cbit.util.BeanUtils.getArray(issueList,cbit.util.Issue.class);
 }
 
@@ -750,7 +753,48 @@ public String getMathSymbol(SymbolTableEntry ste, StructureMapping structureMapp
 	return mathSymbol;
 }
 
-
+private void refreshLocalNameCount() {
+	localNameCountHash.clear();
+	ReactionStep reactionSteps[] = simContext.getModel().getReactionSteps();
+	for (int j = 0; j < reactionSteps.length; j++){
+		KineticsParameter[] params = reactionSteps[j].getKinetics().getKineticsParameters(); 
+		for (KineticsParameter kp : params){
+			String name = kp.getName();
+			if (localNameCountHash.containsKey(name)) {
+				localNameCountHash.put(name, localNameCountHash.get(name) + 1);
+			} else {
+				localNameCountHash.put(name, 1);
+			}
+		}
+	}
+	SpeciesContext scs[] = simContext.getModel().getSpeciesContexts();
+	for (SpeciesContext sc : scs) {
+		String name = sc.getName();
+		if (localNameCountHash.containsKey(name)) {
+			localNameCountHash.put(name, localNameCountHash.get(name) + 1);
+		} else {
+			localNameCountHash.put(name, 1);
+		}
+	}
+	Species ss[] = simContext.getModel().getSpecies();
+	for (Species s : ss) {
+		String name = s.getCommonName();
+		if (localNameCountHash.containsKey(name)) {
+			localNameCountHash.put(name, localNameCountHash.get(name) + 1);
+		} else {
+			localNameCountHash.put(name, 1);
+		}
+	}
+	ModelParameter mps[] = simContext.getModel().getModelParameters();
+	for (ModelParameter mp : mps) {
+		String name = mp.getName();
+		if (localNameCountHash.containsKey(name)) {
+			localNameCountHash.put(name, localNameCountHash.get(name) + 1);
+		} else {
+			localNameCountHash.put(name, 1);
+		}
+	}
+}
 /**
  * Substitutes appropriate variables for speciesContext bindings
  *
@@ -759,23 +803,17 @@ public String getMathSymbol(SymbolTableEntry ste, StructureMapping structureMapp
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
 protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
+	String steName = ste.getName();
 	if (ste instanceof Kinetics.KineticsParameter){
-		int count = 0;
-		ReactionStep reactionSteps[] = simContext.getModel().getReactionSteps();
-		for (int j = 0; j < reactionSteps.length; j++){
-			if (reactionSteps[j].getKinetics().getKineticsParameter(ste.getName())!=null){
-				count++;
-			}
+		Integer count = localNameCountHash.get(steName);
+		if (count == null) {
+			throw new MappingException("KineticsParameter " + steName + " not found in local name count");
 		}
-		if (getSimulationContext().getModel().getSpeciesContext(ste.getName()) != null
-			|| getSimulationContext().getModel().getSpecies(ste.getName()) != null) {
-			count ++;
-		}
-		if (count>1 || ste.getName().equals("J")){
-			return ste.getName()+"_"+ste.getNameScope().getName();
+		if (count>1 || steName.equals("J")){
+			return steName+"_"+ste.getNameScope().getName();
 			//return getNameScope().getSymbolName(ste);
 		}else{
-			return ste.getName();
+			return steName;
 		}
 	}
 	if (ste instanceof MathMapping.ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
@@ -792,10 +830,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	}
 
 	if (ste instanceof ReservedSymbol){
-		return ste.getName();
+		return steName;
 	}
 	if (ste instanceof Membrane.MembraneVoltage){
-		return ste.getName();
+		return steName;
 	}
 	if (ste instanceof Structure.StructureSize){
 		Structure structure = ((Structure.StructureSize)ste).getStructure();
@@ -978,7 +1016,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			//
 			// for any SpeciesContext, replace Symbol name with Variable name
 			//				
-			if (scm.getVariable()!=null && !scm.getVariable().getName().equals(ste.getName())){
+			if (scm.getVariable()!=null && !scm.getVariable().getName().equals(steName)){
 				return scm.getVariable().getName();
 			}
 		//
@@ -992,7 +1030,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			// if the speciesContext is also within the membrane, replace SpeciesContext name with Variable name
 			//
 			if (sc.getStructure() instanceof Membrane || ((MembraneMapping)structureMapping).getResolved(simContext)==false){
-				if (scm.getVariable()!=null && !(scm.getVariable().getName().equals(ste.getName()))){
+				if (scm.getVariable()!=null && !(scm.getVariable().getName().equals(steName))){
 					return scm.getVariable().getName();
 				}
 			//
@@ -1043,9 +1081,9 @@ public MathSymbolMapping getMathSymbolMapping()  throws MappingException, MathEx
  * @param membrane cbit.vcell.model.Membrane
  */
 protected MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membrane) {
-	Enumeration enum1 = getStructureAnalyzers();
+	Enumeration<StructureAnalyzer> enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
-		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
+		StructureAnalyzer sa = enum1.nextElement();
 		if (sa instanceof MembraneStructureAnalyzer){
 			MembraneStructureAnalyzer msa = (MembraneStructureAnalyzer)sa;
 			if (msa.getMembrane()==membrane){
@@ -1102,9 +1140,9 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param species cbit.vcell.model.Species
  */
 private VolVariable getResolvedVolVariable(Species species) {
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getSpeciesContext().getSpecies()==species){
 			Variable var = scm.getVariable();
 			if (var instanceof VolVariable){
@@ -1192,9 +1230,9 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
 protected VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) {
-	Enumeration enum1 = getStructureAnalyzers();
+	Enumeration<StructureAnalyzer> enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
-		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
+		StructureAnalyzer sa = enum1.nextElement();
 		if (sa instanceof VolumeStructureAnalyzer){
 			VolumeStructureAnalyzer vsa = (VolumeStructureAnalyzer)sa;
 			if (vsa.getSubVolume()==subVolume){
@@ -1327,16 +1365,14 @@ protected Variable newFunctionOrConstant(String name, Expression exp) {
  */
 private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException {
 //System.out.println("MathMapping.refresh()");
-	issueList.clear();
-	getSimulationContext().gatherIssues(issueList);
-	getSimulationContext().getModel().gatherIssues(issueList);
+	localIssueList.clear();
 	refreshKFluxParameters();
 	refreshSpeciesContextMappings();
 	refreshStructureAnalyzers();
 	refreshVariables();
+	refreshLocalNameCount();
 	refreshMathDescription();
 }
-
 
 /**
  * Insert the method's description here.
@@ -1619,9 +1655,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	// volume variables
 	//
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getVariable() instanceof VolVariable){
 			if (!(mathDesc.getVariable(scm.getVariable().getName()) instanceof VolVariable)){
 				varHash.addVariable(scm.getVariable());
@@ -1705,8 +1741,8 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}else if (devices[j] instanceof CurrentClampElectricalDevice){
 				CurrentClampElectricalDevice currentClampDevice = (CurrentClampElectricalDevice)devices[j];
 				// total current = current source (no capacitance)
-				Parameter totalCurrentDensityParm = currentClampDevice.getParameterFromRole(currentClampDevice.ROLE_TotalCurrentDensity);
-				Parameter currentDensityParm = currentClampDevice.getParameterFromRole(currentClampDevice.ROLE_TransmembraneCurrentDensity);
+				Parameter totalCurrentDensityParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TotalCurrentDensity);
+				Parameter currentDensityParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TransmembraneCurrentDensity);
 				//Parameter dependentVoltage = currentClampDevice.getCurrentClampStimulus().getVoltageParameter();
 				
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentDensityParm,null),getIdentifierSubstitutions(totalCurrentDensityParm.getExpression(),totalCurrentDensityParm.getUnitDefinition(),null)));
@@ -1723,9 +1759,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}else if (devices[j] instanceof VoltageClampElectricalDevice){
 				VoltageClampElectricalDevice voltageClampDevice = (VoltageClampElectricalDevice)devices[j];
 				// total current = current source (no capacitance)
-				Parameter totalCurrent = voltageClampDevice.getParameterFromRole(voltageClampDevice.ROLE_TotalCurrentDensity);
-				Parameter totalCurrentDensityParm = voltageClampDevice.getParameterFromRole(voltageClampDevice.ROLE_TotalCurrentDensity);
-				Parameter voltageParm = voltageClampDevice.getParameterFromRole(voltageClampDevice.ROLE_Voltage);
+				Parameter totalCurrent = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrentDensity);
+				Parameter totalCurrentDensityParm = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrentDensity);
+				Parameter voltageParm = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_Voltage);
 				
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrent,null),getIdentifierSubstitutions(totalCurrent.getExpression(),totalCurrent.getUnitDefinition(),null)));
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentDensityParm,null),getIdentifierSubstitutions(totalCurrentDensityParm.getExpression(),totalCurrentDensityParm.getUnitDefinition(),null)));
@@ -1762,7 +1798,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			MembraneMapping membraneMapping = (MembraneMapping)structureMappings[j];
 			Membrane.MembraneVoltage membraneVoltage = membraneMapping.getMembrane().getMembraneVoltage();
 			ElectricalDevice membraneDevices[] = potentialMapping.getElectricalDevices(membraneMapping.getMembrane());
-			ElectricalDevice membraneDevice = null;
+			//ElectricalDevice membraneDevice = null;
 			for (int i = 0; i < membraneDevices.length; i++){
 				if (membraneDevices[i].hasCapacitance() && membraneDevices[i].getDependentVoltageExpression()==null){
 					if (membraneMapping.getCalculateVoltage() && bCalculatePotential){
@@ -2057,9 +2093,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		// create equations
 		//
 		VolumeStructureAnalyzer structureAnalyzer = getVolumeStructureAnalyzer(subVolume);
-		Enumeration enumSCM = getSpeciesContextMappings();
+		Enumeration<SpeciesContextMapping> enumSCM = getSpeciesContextMappings();
 		while (enumSCM.hasMoreElements()){
-			SpeciesContextMapping scm = (SpeciesContextMapping)enumSCM.nextElement();
+			SpeciesContextMapping scm = enumSCM.nextElement();
 			//
 			// if an independent volume variable, then create equation for it
 			// ...even if the speciesContext is for another subDomain (e.g. CaCyt in Extracellular)
@@ -2216,8 +2252,8 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		//
 		// get priority of subDomain
 		//
-		Feature spatialFeature = simContext.getGeometryContext().getResolvedFeature(subVolume);
-		int priority = spatialFeature.getPriority();
+		//Feature spatialFeature = simContext.getGeometryContext().getResolvedFeature(subVolume);
+		//int priority = spatialFeature.getPriority();
 		//
 		// create subDomain
 		//
@@ -2231,9 +2267,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		// create equations for membrane-bound molecular species
 		//
 		MembraneStructureAnalyzer membraneStructureAnalyzer = getMembraneStructureAnalyzer(membrane);
-		Enumeration enumSCM = getSpeciesContextMappings();
+		Enumeration<SpeciesContextMapping> enumSCM = getSpeciesContextMappings();
 		while (enumSCM.hasMoreElements()){
-			SpeciesContextMapping scm = (SpeciesContextMapping)enumSCM.nextElement();
+			SpeciesContextMapping scm = enumSCM.nextElement();
 			SpeciesContext        sc  = scm.getSpeciesContext();
 			SpeciesContextSpec    scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 			//
@@ -2302,11 +2338,11 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		//
 		// create dummy jump conditions for all volume variables that diffuse and/or advect
 		//
-		Enumeration enum_scm = getSpeciesContextMappings();
+		Enumeration<SpeciesContextMapping> enum_scm = getSpeciesContextMappings();
 		while (enum_scm.hasMoreElements()){
-			SpeciesContextMapping scm = (SpeciesContextMapping)enum_scm.nextElement();
+			SpeciesContextMapping scm = enum_scm.nextElement();
 			if (scm.isPDERequired()) {
-				Species species = scm.getSpeciesContext().getSpecies();
+				//Species species = scm.getSpeciesContext().getSpecies();
 				Variable var = scm.getVariable();
 				if (var instanceof VolVariable && (scm.isPDERequired())){
 					JumpCondition jc = memSubDomain.getJumpCondition((VolVariable)var);
@@ -2524,9 +2560,9 @@ protected void refreshStructureAnalyzers() {
 	//
 	// invoke all structuralAnalyzers
 	//
-	Enumeration enum1 = getStructureAnalyzers();
+	Enumeration<StructureAnalyzer> enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()) {
-		StructureAnalyzer sa = (StructureAnalyzer) enum1.nextElement();
+		StructureAnalyzer sa = enum1.nextElement();
 		sa.refresh();
 	}
 }
@@ -2542,9 +2578,9 @@ private void refreshVariables() throws MappingException {
 	//
 	// non-constant dependant variables require a function
 	//
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
 		if (scm.getDependencyExpression() != null && !scs.isConstant()){
 			//scm.setVariable(new Function(scm.getSpeciesContext().getName(),scm.getDependencyExpression()));

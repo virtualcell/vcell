@@ -31,7 +31,7 @@ public MembraneStructureAnalyzer(MathMapping mathMapping, Membrane membrane, Sub
 	this.innerSubVolume = innerSubVolume;
 	this.outerSubVolume = outerSubVolume;
 	this.membrane = membrane;
-	refresh();
+	//refresh();
 }
 /**
  * This method was created in VisualAge.
@@ -80,12 +80,12 @@ private void refreshResolvedFluxes() throws Exception {
 //System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes()");
 
 	GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
-	Vector resolvedFluxList = new Vector();
+	Vector<ResolvedFlux> resolvedFluxList = new Vector<ResolvedFlux>();
 
 	//
 	// for each reaction, get all fluxReactions associated with this membrane
 	//
-	Vector fluxList = new Vector();
+	Vector<ReactionStep> fluxList = new Vector<ReactionStep>();
 	ReactionSpec reactionSpecs[] = mathMapping.getSimulationContext().getReactionContext().getReactionSpecs();
 	for (int j=0;j<reactionSpecs.length;j++){
 		if (reactionSpecs[j].isExcluded()){

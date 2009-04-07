@@ -52,16 +52,9 @@ public RationalNumberMatrix (RationalNumberMatrix mat) {
 	this.rows = mat.rows;
 	this.cols = mat.cols;
 	data = new RationalNumber[rows * cols];
-	try {
-		for (int i = 0; i < rows; i ++){
-			for (int j = 0; j < cols; j ++){
-				set_elem(i, j, mat.get(i, j));
-			}
-		}
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-	}				
+	System.arraycopy(mat.data, 0, data, 0, mat.data.length);
 }
+
 public RationalMatrix findNullSpace() throws MatrixException {
 	
 	if (rows <= 1){
@@ -86,7 +79,7 @@ public RationalMatrix findNullSpace() throws MatrixException {
 	RationalNumberMatrix newK = new RationalNumberMatrix(nullity,numVars);
 	for (int i=0;i<(nullity);i++){
 		for (int j=0;j<numVars;j++){
-			newK.set_elem(i,j,K.get(rank+i,j));
+			newK.set_elem(i,j,K.get_elem(rank+i,j));
 		}
 	}
 //	newK.show();
@@ -108,7 +101,7 @@ public RationalMatrix findNullSpace() throws MatrixException {
 	RationalNumberMatrix returnMatrix = new RationalNumberMatrix(numberOfConservations,numVars);	
 	for (int i=0;i<numberOfConservations;i++){
 		for (int j=0;j<numVars;j++){
-			returnMatrix.set_elem(i,j,newK.get(i,j));
+			returnMatrix.set_elem(i,j,newK.get_elem(i,j));
 		}
 	}
 	return returnMatrix;
@@ -131,7 +124,7 @@ public int gaussianElimination() throws MatrixException {
 		RationalNumber mag = RationalNumber.ZERO;
 		int pivotRow = -1;
 		for (int j = currentRow; j < rows; j ++){
-			RationalNumber mag2 = get(j, currentCol);
+			RationalNumber mag2 = get_elem(j, currentCol);
 			if (!mag2.isZero()){
 				mag = mag2;
 				pivotRow = j;
@@ -146,9 +139,9 @@ public int gaussianElimination() throws MatrixException {
 			// rotate b matrix
 			//
 			for (int k=currentCol;k<cols;k++){
-				RationalNumber temp = get(currentRow,k);
+				RationalNumber temp = get_elem(currentRow,k);
 				for (int j = currentRow;j<rows-1;j++){
-					set_elem(j,k, get(j+1,k));
+					set_elem(j,k, get_elem(j+1,k));
 				}
 				set_elem(rows-1,k,temp);
 			}
@@ -160,8 +153,8 @@ public int gaussianElimination() throws MatrixException {
 //System.out.println("swapping row "+(pivotRow+1)+" for row "+(currentRow+1)+".....");			
 			RationalNumber temp;
 			for (int j = currentCol; j < cols; j ++){
-				temp = get(currentRow, j);
-				set_elem(currentRow, j, get(pivotRow, j));
+				temp = get_elem(currentRow, j);
+				set_elem(currentRow, j, get_elem(pivotRow, j));
 				set_elem(pivotRow, j, temp);
 			}
 		}
@@ -170,9 +163,9 @@ public int gaussianElimination() throws MatrixException {
 		// normalize pivot row
 		//
 		rank++;
-		mag = get(currentRow, currentCol);
+		mag = get_elem(currentRow, currentCol);
 		for (int j = currentCol; j < cols; j++){
-			set_elem(currentRow, j, get(currentRow, j).div(mag));
+			set_elem(currentRow, j, get_elem(currentRow, j).div(mag));
 		}	
 		//
 		// eliminate pivot row component from other rows
@@ -181,12 +174,12 @@ public int gaussianElimination() throws MatrixException {
 		for (int k = 0; k < rows; k ++){
 			if (k == currentRow) continue;
 
-			RationalNumber mag2 = get(k, currentCol);
+			RationalNumber mag2 = get_elem(k, currentCol);
 
 			for (int j = currentCol; j < cols; j ++){
-				RationalNumber r = get(currentRow, j);
+				RationalNumber r = get_elem(currentRow, j);
 				if (!r.isZero()){
-					set_elem(k, j, get(k, j).sub(mag2.mult(r)));
+					set_elem(k, j, get_elem(k, j).sub(mag2.mult(r)));
 				}
 			}	
 		}
@@ -212,10 +205,13 @@ public int gaussianElimination(RationalNumberMatrix K) throws MatrixException {
 		//
 		// find pivot row
 		//
+		int this_currentRow_offset = currentRow * cols;
+		int K_currentRow_offset = currentRow * K.cols;
+		
 		RationalNumber mag = RationalNumber.ZERO;
 		int pivotRow = -1;
 		for (int j = currentRow; j < rows; j ++){
-			RationalNumber mag2 = get(j, currentCol);
+			RationalNumber mag2 = data[j * cols + currentCol];//get(j, currentCol);
 			if (!mag2.isZero()){
 				mag = mag2;
 				pivotRow = j;
@@ -231,38 +227,48 @@ public int gaussianElimination(RationalNumberMatrix K) throws MatrixException {
 			// rotate b matrix
 			//
 			for (int k=currentCol;k<cols;k++){
-				RationalNumber temp = get(currentRow,k);
+				RationalNumber temp = data[this_currentRow_offset + k]; //get(currentRow,k);
 				for (int j = currentRow;j<rows-1;j++){
-					set_elem(j,k, get(j+1,k));
+					//set_elem(j,k, get(j+1,k));
+					data[j * cols + k] = data[(j+1) * cols + k];
 				}
-				set_elem(rows-1,k,temp);
+				//set_elem(rows-1,k,temp);
+				data[(rows - 1) * cols + k] = temp;
 			}
 			//
 			// rotate K matrix
 			//		
 			for (int k=0;k<K.cols;k++){
-				RationalNumber temp = K.get(currentRow,k);
+				RationalNumber temp = K.data[K_currentRow_offset + k];//K.get(currentRow,k);
 				for (int j = currentRow;j<K.rows-1;j++){
-					K.set_elem(j,k, K.get(j+1,k));
+					//K.set_elem(j,k, K.get(j+1,k));
+					K.data[j * K.cols + k] = K.data[(j+1) * K.cols + k];
 				}
-				K.set_elem(K.rows-1,k,temp);
+				//K.set_elem(K.rows-1,k,temp);
+				K.data[(K.rows - 1) * K.cols + k] = temp;
 			}
 			continue;
 		}else if (pivotRow != currentRow){
+			int this_pivotRow_offset = pivotRow * cols;
+			int K_pivotRow_offset = pivotRow * K.cols;
 			//
 			// move pivot row into position
 			//
 //System.out.println("swapping row "+(pivotRow+1)+" for row "+(currentRow+1)+".....");			
 			RationalNumber temp;
 			for (int j = currentCol; j < cols; j ++){
-				temp = get(currentRow, j);
-				set_elem(currentRow, j, get(pivotRow, j));
-				set_elem(pivotRow, j, temp);
+				temp = data[this_currentRow_offset + j];//get(currentRow, j);
+				//set_elem(currentRow, j, get(pivotRow, j));
+				//set_elem(pivotRow, j, temp);				
+				data[this_currentRow_offset + j] = data[this_pivotRow_offset + j];
+				data[this_pivotRow_offset + j] = temp;
 			}
 			for (int j = 0; j < K.cols; j ++){
-				temp = K.get(currentRow, j);
-				K.set_elem(currentRow, j, K.get(pivotRow, j));
-				K.set_elem(pivotRow, j, temp);
+				temp = K.data[K_currentRow_offset + j];//K.get(currentRow, j);
+				//K.set_elem(currentRow, j, K.get(pivotRow, j));
+				//K.set_elem(pivotRow, j, temp);				
+				K.data[K_currentRow_offset + j] = K.data[K_pivotRow_offset + j];
+				K.data[K_pivotRow_offset + j] = temp;
 			}
 		}
 //System.out.println("normalizing pivot row "+(currentRow+1));			
@@ -270,12 +276,14 @@ public int gaussianElimination(RationalNumberMatrix K) throws MatrixException {
 		// normalize pivot row
 		//
 		rank++;
-		mag = get(currentRow, currentCol);
+		mag = data[this_currentRow_offset + currentCol];//get(currentRow, currentCol);
 		for (int j = currentCol; j < cols; j++){
-			set_elem(currentRow, j, get(currentRow, j).div(mag));
+			//set_elem(currentRow, j, get(currentRow, j).div(mag));
+			data[this_currentRow_offset + j] = data[this_currentRow_offset + j].div(mag);
 		}	
 		for (int j = 0; j < K.cols; j++){
-			K.set_elem(currentRow, j, K.get(currentRow, j).div(mag));
+			//K.set_elem(currentRow, j, K.get(currentRow, j).div(mag));
+			K.data[K_currentRow_offset + j] =  K.data[K_currentRow_offset + j].div(mag);
 		}	
 		//
 		// eliminate pivot row component from other rows
@@ -284,18 +292,20 @@ public int gaussianElimination(RationalNumberMatrix K) throws MatrixException {
 		for (int k = 0; k < K.rows; k ++){
 			if (k == currentRow) continue;
 
-			RationalNumber mag2 = get(k, currentCol);
+			RationalNumber mag2 = data[k * cols + currentCol];//get(k, currentCol);
 
 			for (int j = currentCol; j < cols; j ++){
-				RationalNumber r = get(currentRow, j);
+				RationalNumber r = data[this_currentRow_offset + j];//get(currentRow, j);
 				if (!r.isZero()){
-					set_elem(k, j, get(k, j).sub(mag2.mult(r)));
+					//set_elem(k, j, get(k, j).sub(mag2.mult(r)));
+					data[k * cols + j] = data[k * cols + j].sub(mag2.mult(r));
 				}
 			}	
 			for (int j = 0; j < K.cols; j ++){
-				RationalNumber r = K.get(currentRow, j);
+				RationalNumber r = K.data[K_currentRow_offset + j];//K.get(currentRow, j);
 				if (!r.isZero()){
-					K.set_elem(k, j, K.get(k, j).sub(mag2.mult(r)));
+					//K.set_elem(k, j, K.get(k, j).sub(mag2.mult(r)));
+					K.data[k * K.cols + j] = K.data[k * K.cols + j].sub(mag2.mult(r));
 				}
 			}
 		}
@@ -303,15 +313,7 @@ public int gaussianElimination(RationalNumberMatrix K) throws MatrixException {
 	}		
 	return rank;
 }
-public RationalNumber get(int r, int c) {
-	if (r < 0 || r >= rows){
-		throw new IllegalArgumentException("r out of range <"+r+">");
-	}
-	if (c < 0 || c >= cols){
-		throw new IllegalArgumentException("c out of range <"+c+">");
-	}
-	return data[c + r * cols];
-}
+
 public RationalNumber get_elem(int r, int c) {
 	if (r < 0 || r >= rows){
 		throw new IllegalArgumentException("r out of range <"+r+">");
@@ -321,20 +323,7 @@ public RationalNumber get_elem(int r, int c) {
 	}
 	return data[c + r * cols];
 }
-/**
- * Insert the method's description here.
- * Creation date: (5/5/00 12:56:34 AM)
- * @return double[]
- */
-public RationalNumber[][] getDataCopy() {
-	RationalNumber D[][] = new RationalNumber[rows][cols];
-	for (int i=0;i<rows;i++){
-		for (int j=0;j<cols;j++){
-			D[i][j] = get(i,j);
-		}
-	}
-	return D;
-}
+
 /**
  * This method was created in VisualAge.
  * @return int
@@ -381,7 +370,7 @@ public void matinv(RationalNumberMatrix a) throws MatrixException {
 	}	
 
 	if (a.rows == 1)	{
-		set_elem(0, 0, a.get(0, 0).inverse());
+		set_elem(0, 0, a.get_elem(0, 0).inverse());
 		return;
 	}
 
@@ -405,7 +394,7 @@ public void matinv(RationalNumberMatrix a) throws MatrixException {
 		RationalNumber mag = RationalNumber.ZERO;
 		int pivot = -1;
 		for (int j = i; j < n; j ++){
-			RationalNumber mag2 = b.get(j, i);
+			RationalNumber mag2 = b.get_elem(j, i);
 			if (!mag2.isZero()){
 				mag = mag2;
 				pivot = j;
@@ -423,26 +412,26 @@ public void matinv(RationalNumberMatrix a) throws MatrixException {
 		if (pivot != i){
 			RationalNumber temp;
 			for (int j = i; j < n; j ++){
-				temp = b.get(i, j);
-				b.set_elem(i, j, b.get(pivot, j));
+				temp = b.get_elem(i, j);
+				b.set_elem(i, j, b.get_elem(pivot, j));
 				b.set_elem(pivot, j, temp);
 			}
 
 			for (int j = 0; j < n; j ++){
-				temp = get(i, j);
-				set_elem(i, j, get(pivot, j));
+				temp = get_elem(i, j);
+				set_elem(i, j, get_elem(pivot, j));
 				set_elem(pivot, j, temp);
 			}
 		}
 		//
 		// normalize pivot row
 		//
-		mag = b.get(i, i);
+		mag = b.get_elem(i, i);
 		for (int j = i; j < n; j ++){
-			b.set_elem(i, j, b.get(i, j).div(mag));
+			b.set_elem(i, j, b.get_elem(i, j).div(mag));
 		}	
 		for (int j = 0; j < n; j ++){
-			set_elem(i, j, get(i, j).div(mag));
+			set_elem(i, j, get_elem(i, j).div(mag));
 		}	
 		//
 		// eliminate pivot row component from other rows
@@ -450,13 +439,13 @@ public void matinv(RationalNumberMatrix a) throws MatrixException {
 		for (int k = 0; k < n; k ++){
 			if (k == i) continue;
 
-			RationalNumber mag2 = b.get(k, i);
+			RationalNumber mag2 = b.get_elem(k, i);
 
 			for (int j = i; j < n; j ++){
-				b.set_elem(k, j, b.get(k, j).sub(mag2.mult(b.get(i, j))));
+				b.set_elem(k, j, b.get_elem(k, j).sub(mag2.mult(b.get_elem(i, j))));
 			}	
 			for (int j = 0; j < n; j ++){
-				set_elem(k, j, get(k, j).sub(mag2.mult(get(i, j))));
+				set_elem(k, j, get_elem(k, j).sub(mag2.mult(get_elem(i, j))));
 			}
 		}
 	}
@@ -470,7 +459,7 @@ public void matmul(RationalNumberMatrix a, RationalNumberMatrix b) throws Matrix
 		for (int j = 0; j < cols; j ++){
 			RationalNumber s = RationalNumber.ZERO;
 			for (int k = 0; k < a.cols; k ++){
-				s = s.add(a.get(i, k).mult(b.get(k, j)));
+				s = s.add(a.get_elem(i, k).mult(b.get_elem(k, j)));
 			}	
 			set_elem(i, j, s);
 		}
@@ -522,7 +511,7 @@ public void show() {
 	for (int i = 0; i < rows; i ++){
 		StringBuffer s = new StringBuffer();
 		for (int j = 0; j < cols; j ++){
-			s.append(get(i, j).toString());
+			s.append(get_elem(i, j).toString());
 			if (j < cols - 1){
 				s.append(",\t");
 			}	
@@ -577,7 +566,7 @@ public RationalNumber[] solveLinearExpressions() throws MatrixException {
 	RationalNumber x[] = new RationalNumber[numVars];
 	
 	for (int i=0;i<numVars;i++){
-		x[i] = get(i,numVars);
+		x[i] = get_elem(i,numVars);
 	}
 
 	return x;
