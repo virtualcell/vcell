@@ -10,10 +10,16 @@ public class MergedDataInfo implements cbit.vcell.server.VCDataIdentifier, java.
 	private java.lang.String datasetName = null;
 	private User datasetUser = null;
 	private cbit.vcell.server.VCDataIdentifier[] dataIDs = null;
+	private String[] dataSetPrefix = null;
+	
 /**
  * CompositeDataInfo constructor comment.
  */
-public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdataIDs) {
+//	public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdataIDs) {
+//		this(argOwner, argdataIDs, null);
+//	}
+			
+public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdataIDs, String[] prefix) {
 	super();
 	String compDataName = argOwner.getName();
 	for (int i = 0; i < argdataIDs.length; i++) {
@@ -22,6 +28,7 @@ public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdat
 	datasetName = compDataName;
 	datasetUser = argOwner;
 	dataIDs = argdataIDs;
+	dataSetPrefix = prefix;
 }
 /**
  * Checks for internal representation of objects, not keys from database
@@ -107,5 +114,9 @@ public User getOwner() {
  */
 public int hashCode() {
 	return getID().hashCode();
+}
+
+public String[] getDataSetPrefix() {
+	return dataSetPrefix;
 }
 }

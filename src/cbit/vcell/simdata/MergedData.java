@@ -30,6 +30,7 @@ import cbit.vcell.util.ColumnDescription;
 public class MergedData extends VCData implements SymbolTable {
 
 	private double dataTimes[] = null;
+	private String[] dataSetPrefix = null;
 	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
 	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
 	private VCDataIdentifier[] datasetsIDList=null;
@@ -45,13 +46,13 @@ public class MergedData extends VCData implements SymbolTable {
  * Insert the method's description here.
  * Creation date: (9/29/2003 5:45:44 PM)
  */
-public MergedData(User argUser, File argPrimaryUserDir, File argSecondaryUserDir, DataSetControllerImpl argDatasetContrlrImpl, VCDataIdentifier[] argDatasetIDs) throws DataAccessException, IOException  {
+public MergedData(User argUser, File argPrimaryUserDir, File argSecondaryUserDir, DataSetControllerImpl argDatasetContrlrImpl, VCDataIdentifier[] argDatasetIDs, String[] dsPrefix) throws DataAccessException, IOException  {
 	dataSetControllerImpl = argDatasetContrlrImpl;
 	dataSetControllerImpl.setAllowOptimizedTimeDataRetrieval(false);
 	if (argDatasetIDs.length < 2) {
 		throw new RuntimeException("\nLess than 2 datasets, no comparison!!\n");
 	} 
-	dataInfo = new MergedDataInfo(argUser,argDatasetIDs);	
+	dataInfo = new MergedDataInfo(argUser,argDatasetIDs,dsPrefix);	
 	datasetsIDList = argDatasetIDs;
 	try {
 		userDirectory = argPrimaryUserDir;
@@ -63,10 +64,21 @@ public MergedData(User argUser, File argPrimaryUserDir, File argSecondaryUserDir
 		userDirectory = argSecondaryUserDir;
 		getFunctionsFile();
 	}
+	if(dsPrefix == null)
+	{
+		dataSetPrefix = new String[argDatasetIDs.length];
+		for (int i = 0; i < argDatasetIDs.length; i++)
+		{
+			dataSetPrefix[i] = "Data"+(i+1); 
+		}
+	}
+	else
+	{
+		dataSetPrefix = dsPrefix;
+	}
 	mergeDatasets();
 	getDataTimes();
 }
-
 
 /**
  * Insert the method's description here.
@@ -386,11 +398,20 @@ private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFou
 		// remove functions from dataIdentifiers since we are reading functions again
 		for (int i = 0; i < dataSetIdentifierList.size(); i ++) {
 			DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
-			if (dsi.isFunction() && !dsi.getName().startsWith("Data1.") && !dsi.getName().startsWith("Data2.")) {
+			if (dsi.isFunction()) {
+				boolean bTopLevelFunction = true;
+				for (int j = 0; j < dataSetPrefix.length; j++) {			
+					if (dsi.getName().startsWith(dataSetPrefix[j])) {
+						bTopLevelFunction = false;
+						break;
+					}
+				}				
 				// merged data function file only contains user-defined "merged data" functions
 				// so don't remove Data1 or Data2 functions, because rereading this function file will not repopulated those.
-				dataSetIdentifierList.removeElement(dsi);
-				i --;
+				if (bTopLevelFunction) {
+					dataSetIdentifierList.removeElement(dsi);
+					i --;
+				}
 			}
 		}
 	
@@ -526,7 +547,7 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 			if (j == 0 && newODErset.getDataColumnDescriptions()[j].getName().equals("t")) {
 				newColName = newODErset.getDataColumnDescriptions()[j].getName();
 			} else {
-				newColName = "Data"+(i+1)+"."+newODErset.getDataColumnDescriptions()[j].getName();
+				newColName = dataSetPrefix[i]+"."+newODErset.getDataColumnDescriptions()[j].getName();
 			}
 			newVarNames[j] = newColName;
 			ColumnDescription cd = newODErset.getDataColumnDescriptions()[j];
@@ -539,7 +560,7 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 		// Add function columns
 		for (int j = 0; j < newODErset.getFunctionColumnCount(); j++) {
 			try {
-				String newColName = "Data"+(i+1)+"."+newODErset.getFunctionColumnDescriptions()[j].getName();
+				String newColName = dataSetPrefix[i]+"."+newODErset.getFunctionColumnDescriptions()[j].getName();
 				FunctionColumnDescription fcd = newODErset.getFunctionColumnDescriptions()[j];
 				Expression newExp = new Expression(fcd.getExpression());
 				String symbols[] = newExp.getSymbols();
@@ -628,6 +649,9 @@ public VCDataIdentifier getResultsInfoObject() {
  */
 public SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException, IOException {
 	VCDataIdentifier vcDataID = getVCDataIdentifierFromDataId(varName);
+	if (vcDataID == null) {
+		return null;
+	}
 	DataSetIdentifier varDatasetID = getDataSetIdentifier(varName);
 
 	int actualVarNameIndx = varName.indexOf(".");
@@ -992,10 +1016,9 @@ private VCDataIdentifier getVCDataIdentifierFromDataId(String dataID){
 	//
 	int indx = dataID.indexOf(".");
 	String dataIDString = dataID.substring(0, indx);
-	int dataIDIndx = Integer.parseInt(dataIDString.substring(4));
 
 	for (int i = 0; i < datasetsIDList.length; i++){
-		if (i == dataIDIndx-1) {
+		if (dataSetPrefix[i].equals(dataIDString)) {
 			return datasetsIDList[i];
 		}
 	}
@@ -1035,7 +1058,7 @@ private void mergeDatasets() throws DataAccessException, IOException {
 	for (int i = 0; i < datasetsIDList.length; i++) {
 		DataIdentifier[] dataIDs = getDatasetControllerImpl().getDataIdentifiers(datasetsIDList[i]);
 		for (int j = 0; j < dataIDs.length; j++) {
-			String newdataIDName = "Data"+(i+1)+"."+dataIDs[j].getName();
+			String newdataIDName = dataSetPrefix[i]+"."+dataIDs[j].getName();
 			DataSetIdentifier newDataSetID = new DataSetIdentifier(newdataIDName,dataIDs[j].getVariableType(), dataIDs[j].isFunction());
 			if (!dataSetIdentifierList.contains(newDataSetID)) {
 				dataSetIdentifierList.addElement(newDataSetID);

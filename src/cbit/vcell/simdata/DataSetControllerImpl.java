@@ -2924,7 +2924,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			try {
 				User user = vcdID.getOwner();
 				VCDataIdentifier[] vcdIdentifiers = ((MergedDataInfo)vcdID).getDataIDs();
-				vcData = new MergedData(user, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()), this, vcdIdentifiers);
+				vcData = new MergedData(user, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()), this, vcdIdentifiers, ((MergedDataInfo)vcdID).getDataSetPrefix());
 			} catch (IOException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
