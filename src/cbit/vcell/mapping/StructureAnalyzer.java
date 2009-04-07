@@ -5,9 +5,7 @@ package cbit.vcell.mapping;
 ©*/
 import java.util.*;
 import cbit.vcell.model.*;
-import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.math.*;
 import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.matrix.RationalNumberMatrix;
@@ -216,8 +214,8 @@ private void refreshFastSpeciesContextMappings() {
 
 //System.out.println("StructureAnalyzer.refreshFastSpeciesContextMappings()");
 
-	GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
-	Vector scFastList = new Vector();
+	//GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
+	Vector<SpeciesContextMapping> scFastList = new Vector<SpeciesContextMapping>();
 	//
 	// for each structure, get all independent, non-constant speciesContext's
 	//
@@ -249,7 +247,7 @@ private void refreshFastSpeciesContextMappings() {
 	//
 	// for each reaction, get all reactionSteps associated with these structures
 	//
-	Vector rsFastList = new Vector();
+	Vector<ReactionStep> rsFastList = new Vector<ReactionStep>();
 	ReactionSpec reactionSpecs[] = mathMapping.getSimulationContext().getReactionContext().getReactionSpecs();
 	for (int i=0;i<reactionSpecs.length;i++){
 		ReactionStep rs = reactionSpecs[i].getReactionStep();
@@ -300,10 +298,10 @@ private void refreshFastSystem() throws Exception {
 	StructureAnalyzer.Dependency[] dependencies = refreshTotalDependancies(fastNullSpaceMatrix,fastSpeciesContextMappings,mathMapping,true);
 
 	for (int i = 0; i < dependencies.length; i++){
-		String constantName = dependencies[i].invariantSymbolName;
+		//String constantName = dependencies[i].invariantSymbolName;
 		Expression constantExp = dependencies[i].conservedMoietyExpression;
 		SpeciesContextMapping firstSCM = dependencies[i].speciesContextMapping;
-		Expression exp = dependencies[i].dependencyExpression;
+		//Expression exp = dependencies[i].dependencyExpression;
 		
 		//
 		// store fastInvariant (e.g. (K_fast_total= xyz + wzy)
@@ -329,7 +327,7 @@ protected abstract void refreshStructures();
 private void refreshTotalDependancies() throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalDependancies()");
-	SimulationContext simContext = mathMapping.getSimulationContext();
+	//SimulationContext simContext = mathMapping.getSimulationContext();
 
 	//
 	// reset dependancy relationships for all species contexts
@@ -400,7 +398,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 				
 //System.out.println("there are "+nullSpaceMatrix.rows+" dependencies");
 
-	Vector dependencyList = new Vector();
+	Vector<Dependency> dependencyList = new Vector<Dependency>();
 	
 	for (int i=0;i<nullSpaceMatrix.getNumRows();i++){
 		//
@@ -508,7 +506,11 @@ private void refreshTotalMatrices() throws Exception {
 			totalSchemeMatrix.set_elem(i,j,reactionSteps[j].getStoichiometry(speciesContextMappings[i].getSpeciesContext()));
 		}
 	}
-
+	
+	ReactionSpec[] reactionSpecs = new ReactionSpec[reactionSteps.length];
+	for (int j=0;j<reactionSteps.length;j++){
+		reactionSpecs[j] = mathMapping.getSimulationContext().getReactionContext().getReactionSpec(reactionSteps[j]);
+	}
 	//
 	// initialize rate expressions for speciesContext's due to scheme matrix
 	//
@@ -521,9 +523,8 @@ private void refreshTotalMatrices() throws Exception {
 		Expression exp = new Expression(0.0);
 		for (int j=0;j<reactionSteps.length;j++){
 			int stoichiometry = reactionSteps[j].getStoichiometry(sc);
-			ReactionSpec reactionSpec = mathMapping.getSimulationContext().getReactionContext().getReactionSpec(reactionSteps[j]);
 			if (stoichiometry != 0){
-				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !reactionSpec.isFast() && !reactionSpec.isExcluded()){
+				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
 					ReactionParticipant[] rps = reactionSteps[j].getReactionParticipants(sc);
 					Structure structure = reactionSteps[j].getStructure();
 					//
@@ -586,7 +587,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 
 //System.out.println("StructureAnalyzer.refreshSpeciesContextMappings()");
 
-	GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
+	//GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
 	Model model = mathMapping.getSimulationContext().getReactionContext().getModel();
 	//
 	// note, the order of species is specified such that the first species have priority
@@ -596,7 +597,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	//          1) Species involved with fast reactions.
 	//          2) Species not involved with fast reactions.
 	//
-	Vector scmList = new Vector();
+	Vector<SpeciesContextMapping> scmList = new Vector<SpeciesContextMapping>();
 	if (structures == null){
 		return;
 	}
@@ -643,7 +644,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	//
 	// get all reactionSteps associated with these structures
 	//
-	Vector rsList = new Vector();
+	Vector<ReactionStep> rsList = new Vector<ReactionStep>();
 	ReactionSpec allReactionSpecs[] = mathMapping.getSimulationContext().getReactionContext().getReactionSpecs();
 	for (int i=0;i<allReactionSpecs.length;i++){
 		if (allReactionSpecs[i].isExcluded()){

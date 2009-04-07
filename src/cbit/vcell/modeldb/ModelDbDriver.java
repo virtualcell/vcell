@@ -9,13 +9,10 @@ import java.util.*;
 import cbit.sql.*;
 import java.sql.Statement;
 import cbit.vcell.model.*;
-import cbit.vcell.mapping.*;
-//import cbit.vcell.parser.Expression;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
-//import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
@@ -114,7 +111,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(Connection con,KeyValue 
 			" WHERE " + diagramTable.modelRef + " = " + modelKey;
 			
 	Statement stmt = con.createStatement();
-	java.util.Vector diagramList = null;
+	Vector<Diagram> diagramList = new Vector<Diagram>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -123,7 +120,6 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(Connection con,KeyValue 
 		//
 		// get all objects
 		//
-		diagramList = new java.util.Vector();
 		while (rset.next()) {
 			Diagram diagram = getDiagram(con,rset);
 			diagramList.addElement(diagram);
@@ -205,7 +201,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 		//
 		SpeciesContext speciesContexts[] = getSpeciesContextFromModel(con,user,modelKey);
 		if (speciesContexts!=null){
-			Vector speciesList = new Vector();
+			Vector<Species> speciesList = new Vector<Species>();
 			for (int i=0;i<speciesContexts.length;i++){
 				if (!speciesList.contains(speciesContexts[i].getSpecies())){
 					speciesList.addElement(speciesContexts[i].getSpecies());
@@ -232,50 +228,52 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 		// add reactionSteps for this model
 		//
 		ReactionStep reactSteps[] = reactStepDB.getReactionStepsFromModel(con,modelKey);
-		for (int i=0;(reactSteps!=null) && (i<reactSteps.length);i++){
-			try {
-				//
-				// fix any improperly defined reactionSteps (which have parameters that should be catalysts)
-				// name space of kinetic parameters should be unique with respect to SpeciesContexts (so if they overlap, should be a catalyst).
-				//
-				Kinetics.KineticsParameter params[] = reactSteps[i].getKinetics().getKineticsParameters();
-				for (int j = 0; j < params.length; j++){
-					SpeciesContext speciesContext = model.getSpeciesContext(params[j].getName());
-					if (speciesContext!=null){
-						//
-						// if spatially coincident, then make it a catalyst (else just complain to log and let user sort it out).
-						// they are coincident if:
-						//   a) in the same structure
-						//   b) reactionStep is in membrane and speciesContext is adjacent
-						//
-						if (reactSteps[i].getStructure().getName().equals(speciesContext.getStructure().getName()) ||
-							(reactSteps[i].getStructure() instanceof Membrane &&
-								(((Membrane)reactSteps[i].getStructure()).getInsideFeature().getName().equals(speciesContext.getStructure().getName()) ||
-								 ((Membrane)reactSteps[i].getStructure()).getOutsideFeature().getName().equals(speciesContext.getStructure().getName())))) {
-							reactSteps[i].addCatalyst(speciesContext);
-							log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with SpeciesContext, added as a catalyst");
-						}else{
-							log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with non-adjacent SpeciesContext, can't fix");
+		if (reactSteps != null) {
+			model.setReactionSteps(reactSteps);
+			for (int i=0; i < reactSteps.length; i ++){
+				try {
+					//
+					// fix any improperly defined reactionSteps (which have parameters that should be catalysts)
+					// name space of kinetic parameters should be unique with respect to SpeciesContexts (so if they overlap, should be a catalyst).
+					//
+					Kinetics.KineticsParameter params[] = reactSteps[i].getKinetics().getKineticsParameters();
+					for (int j = 0; j < params.length; j++){
+						SpeciesContext speciesContext = model.getSpeciesContext(params[j].getName());
+						if (speciesContext!=null){
+							//
+							// if spatially coincident, then make it a catalyst (else just complain to log and let user sort it out).
+							// they are coincident if:
+							//   a) in the same structure
+							//   b) reactionStep is in membrane and speciesContext is adjacent
+							//
+							if (reactSteps[i].getStructure().getName().equals(speciesContext.getStructure().getName()) ||
+								(reactSteps[i].getStructure() instanceof Membrane &&
+									(((Membrane)reactSteps[i].getStructure()).getInsideFeature().getName().equals(speciesContext.getStructure().getName()) ||
+									 ((Membrane)reactSteps[i].getStructure()).getOutsideFeature().getName().equals(speciesContext.getStructure().getName())))) {
+								reactSteps[i].addCatalyst(speciesContext);
+								log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with SpeciesContext, added as a catalyst");
+							}else{
+								log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with non-adjacent SpeciesContext, can't fix");
+							}
 						}
 					}
+				}catch (Throwable e){
+					log.exception(e);
 				}
-			}catch (Throwable e){
-				log.exception(e);
-			}
-			model.addReactionStep(reactSteps[i]);
-			try {
-				reactSteps[i].rebindAllToModel(model);
-			}catch (cbit.vcell.parser.ExpressionBindingException e){
-				throw new DataAccessException("bindingException: "+e.getMessage());
-			}catch (cbit.vcell.parser.ExpressionException e){
-				throw new DataAccessException(e.getMessage());
-			}catch (PropertyVetoException e){
-				throw new DataAccessException("PropertyVetoException: "+e.getMessage());
-			}catch (cbit.vcell.model.ModelException e){
-				throw new DataAccessException(e.getMessage());
+				try {
+					reactSteps[i].rebindAllToModel(model);
+				}catch (cbit.vcell.parser.ExpressionBindingException e){
+					throw new DataAccessException("bindingException: "+e.getMessage());
+				}catch (cbit.vcell.parser.ExpressionException e){
+					throw new DataAccessException(e.getMessage());
+				}catch (PropertyVetoException e){
+					throw new DataAccessException("PropertyVetoException: "+e.getMessage());
+				}catch (cbit.vcell.model.ModelException e){
+					throw new DataAccessException(e.getMessage());
+				}
 			}
 		}
-
+		
 		//
 		// add diagrams for this model
 		//
@@ -392,7 +390,7 @@ private SpeciesContext[] getSpeciesContextFromModel(Connection con,User user, Ke
 	
 //System.out.println(sql);
 	//Connection con = conFact.getConnection();
-	Vector speciesContextList = new Vector();
+	Vector<SpeciesContext> speciesContextList = new Vector<SpeciesContext>();
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);

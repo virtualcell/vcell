@@ -9,6 +9,7 @@ import java.math.BigInteger;
 public class RationalNumber extends Number {
 	private BigInteger bignum = null;
 	private BigInteger bigden = null;
+	private boolean bZero = false;
 	public final static RationalNumber ZERO = new RationalNumber(0);
 	public final static RationalNumber ONE = new RationalNumber(1);
 /**
@@ -19,12 +20,18 @@ public RationalNumber(long integer) {
 //	this.den = 1;
 	this.bignum = BigInteger.valueOf(integer);
 	this.bigden = BigInteger.ONE;
+	if (integer == 0) {
+		bZero = true;
+	}
 }
 /**
  * RationalNumber constructor comment.
  */
 public RationalNumber(long numerator, long denominator) {
 	this(BigInteger.valueOf(numerator),BigInteger.valueOf(denominator));
+	if (numerator == 0) {
+		bZero = true;
+	}
 //	long sign = (numerator<0 != denominator<0)?(-1):(1);
 //	long gcf = getGreatestCommonFactor(numerator,denominator);
 //	this.num = Math.abs(numerator)*sign/gcf;
@@ -37,14 +44,15 @@ public RationalNumber(BigInteger numerator, BigInteger denominator) {
 	if (numerator == null || denominator == null){
 		throw new IllegalArgumentException("numerator or denominator was null");
 	}
-	if (denominator.equals(BigInteger.ZERO)){
+	int ds = denominator.signum();
+	if (ds == 0){
 		throw new IllegalArgumentException("denominator cannot be zero");
 	}
 	int ns = numerator.signum();
-	int ds = denominator.signum();
 	if (ns == 0){
 		this.bignum = BigInteger.ZERO;
 		this.bigden = BigInteger.ONE;
+		bZero = true;
 	}else{
 		if (ns*ds==1){ // positive
 			if (ds==-1){ // -/-
@@ -78,6 +86,12 @@ public RationalNumber add(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
 	}
+	if (bZero) {
+		return rational;
+	}
+	if (rational.bZero) {
+		return this;
+	}
 	// if denominators are same, just add numerators
 	if (this.bigden.equals(rational.bigden)){
 		return new RationalNumber(this.bignum.add(rational.bignum),this.bigden);
@@ -97,6 +111,12 @@ public RationalNumber div(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
 	}
+	if (rational.bZero) {
+		throw new IllegalArgumentException("denominator cannot be zero");
+	}
+	if (bZero) {
+		return RationalNumber.ZERO;
+	}
 	BigInteger newNumerator = this.bignum.multiply(rational.bigden);
 	BigInteger newDenominator = this.bigden.multiply(rational.bignum);
 	return new RationalNumber(newNumerator,newDenominator);
@@ -109,6 +129,9 @@ public RationalNumber div(RationalNumber rational) {
 	 *          to type <code>double</code>.
 	 */
 public double doubleValue() {
+	if (bZero) {
+		return 0;
+	}
 	return getNumBigInteger().doubleValue()/getDenBigInteger().doubleValue();
 }
 /**
@@ -256,10 +279,7 @@ public RationalNumber inverse() {
  * @return boolean
  */
 public boolean isZero() {
-	if (bignum.equals(BigInteger.ZERO)){
-		return true;
-	}
-	return false;
+	return bZero;
 }
 	/**
 	 * Returns the value of the specified number as a <code>long</code>.
@@ -277,6 +297,9 @@ public long longValue() {
  * @return cbit.vcell.matrixtest.RationalNumber
  */
 public RationalNumber minus() {
+	if (bZero) {
+		return this;
+	}
 	return new RationalNumber(this.bignum.negate(),this.bigden);
 }
 /**
@@ -290,7 +313,7 @@ public RationalNumber mult(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
 	}
-	if (this.equals(RationalNumber.ZERO) || rational.equals(RationalNumber.ZERO)){
+	if (bZero || rational.bZero){
 		return RationalNumber.ZERO;
 	}
 	return new RationalNumber(this.bignum.multiply(rational.bignum),this.bigden.multiply(rational.bigden));
@@ -304,6 +327,12 @@ public RationalNumber mult(RationalNumber rational) {
 public RationalNumber sub(RationalNumber rational) {
 	if (rational == null){
 		throw new IllegalArgumentException("rational argument cannot be null");
+	}
+	if (bZero) {
+		return rational.minus();
+	}
+	if (rational.bZero) {
+		return this;
 	}
 	// if denominators are same, just add numerators
 	if (this.bigden.equals(rational.bigden)){
