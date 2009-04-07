@@ -11,12 +11,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
-import loci.formats.AWTImageTools;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.KernelJAI;
@@ -32,7 +30,7 @@ import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 
-import loci.formats.ImageTools;
+import loci.formats.AWTImageTools;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -46,7 +44,6 @@ import cbit.util.Issue;
 import cbit.util.Matchable;
 import cbit.util.NumberUtils;
 import cbit.util.Origin;
-import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
@@ -61,13 +58,10 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Equation;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.PdeEquation;
-import cbit.vcell.math.SubDomain;
 import cbit.vcell.microscopy.ROI.RoiType;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -78,9 +72,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.GroupAccessNone;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
@@ -91,14 +83,13 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.VCData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
@@ -191,6 +182,10 @@ public class FRAPStudy implements Matchable{
 		public String toString(){
 			return "diffusion="+diffusionRate+", mobileFraction="+mobileFraction+", monitorBleachRate="+bleachWhileMonitorRate;
 		}
+		public double getDiffusionRate()
+		{
+			return diffusionRate;
+		}
 	};
 
 	public static class CurveInfo {
@@ -269,9 +264,12 @@ public class FRAPStudy implements Matchable{
 			this.shiftedSimTimes = shiftedSimTimes;
 			this.curveHash = curveHash;
 		}
-	
+		public AnalysisParameters[] getAnalysisParameters()
+		{
+			return analysisParameters;
+		}
 		public Hashtable<Double, DataSource[]> createSummaryReportSourceData(
-				final double[] frapDataTimeStamps,int startIndexForRecovery,final Double modelDiffusionRate) throws Exception{
+				final double[] frapDataTimeStamps,int startIndexForRecovery,final Double modelDiffusionRate, boolean bHasSimData) throws Exception{
 			
 			Hashtable<Double, DataSource[]> allDataHash = new Hashtable<Double, DataSource[]>();
 			
@@ -303,13 +301,17 @@ public class FRAPStudy implements Matchable{
 			
 			for (int analysisParametersRow = 0; analysisParametersRow < analysisParametersCount; analysisParametersRow++) {
 				AnalysisParameters currentAnalysisParameters = analysisParameters[analysisParametersRow];
-				
-				ODESolverResultSet odeSolverResultSet =
-					createODESolverResultSet(currentAnalysisParameters,null,"D="+NumberUtils.formatNumber(currentAnalysisParameters.diffusionRate, 3)+"_");
-				final DataSource expDataSource = new DataSource(referenceData,"exp");
-				final DataSource simDataSource = new DataSource(odeSolverResultSet, "sim");
 				DataSource[] newDataSourceArr = new DataSource[2];
+				final DataSource expDataSource = new DataSource(referenceData,"exp");
 				newDataSourceArr[ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
+				DataSource simDataSource = null;
+				if(bHasSimData)
+				{
+					ODESolverResultSet odeSolverResultSet =
+						createODESolverResultSet(currentAnalysisParameters,null,"D="+NumberUtils.formatNumber(currentAnalysisParameters.diffusionRate, 3)+"_");
+					simDataSource = new DataSource(odeSolverResultSet, "sim");
+				}
+				
 				newDataSourceArr[ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
 				allDataHash.put(currentAnalysisParameters.diffusionRate,newDataSourceArr);
 			}
@@ -527,82 +529,24 @@ public class FRAPStudy implements Matchable{
 		Double mobileFraction = (argMobileFraction != null?Double.parseDouble(argMobileFraction):1.0);
 		Double bleachWhileMonitorRate = (argBleachWhileMonitorRate != null?Double.parseDouble(argBleachWhileMonitorRate):0.0);
 
-//		//
-//		// get List of variable names
-//		//
-//		ArrayList<Double> diffList = new ArrayList<Double>();
-//		ArrayList<String> pdeVarNameList = new ArrayList<String>();
-//		Enumeration<Equation> equEnum = subDomain.getEquations();
-//		while (equEnum.hasMoreElements()){
-//			Equation equ = equEnum.nextElement();
-//			if (equ instanceof PdeEquation){
-//				PdeEquation pde = (PdeEquation)equ;
-//				pdeVarNameList.add(pde.getVariable().getName());
-//				try {
-//					diffList.add(pde.getDiffusionExpression().evaluateConstant());
-//				} catch (DivideByZeroException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (ExpressionException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-//		}
-//		String[] varNames = pdeVarNameList.toArray(new String[pdeVarNameList.size()]);
-//		Double[] diffusionRates = diffList.toArray(new Double[diffList.size()]);
-		
-		
-//		Double mobileDiffusionRate = null;
-//		Enumeration<Equation> equEnum = subDomain.getEquations();
-//		while (equEnum.hasMoreElements()){
-//			Equation equ = equEnum.nextElement();
-//			if (equ instanceof PdeEquation){
-//				PdeEquation pde = (PdeEquation)equ;
-////				pdeVarNameList.add(pde.getVariable().getName());
-//				if(pde.getVariable().getName().equals(SPECIES_NAME_PREFIX_MOBILE)){
-//					try {
-////						diffList.add(pde.getDiffusionExpression().evaluateConstant());
-//						mobileDiffusionRate = new Double(pde.getDiffusionExpression().evaluateConstant());
-//					} catch (DivideByZeroException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					} catch (ExpressionException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//		}
 		
 		String[] varNames = new String[] {SPECIES_NAME_PREFIX_COMBINED};
-//		Double[] diffusionRates = new Double[] {mobileDiffusionRate};
 		AnalysisParameters analysisParameters =
 			new AnalysisParameters(mobileDiffusionRate,mobileFraction,bleachWhileMonitorRate);
 		
-		
-		
-		//
-		// get timing to compare experimental data with simulated results.
-		//
-		double[] simTimes = simulationDataManager.getDataSetTimes();
-		double[] shiftedSimTimes = simTimes.clone();
-		for (int j = 0; j < simTimes.length; j++) {
-			shiftedSimTimes[j] = simTimes[j] + startingIndexForRecoveryExperimentalTimePoint;//timeStamps[startingIndexOfRecovery];
-		}
 		//
 		// for each simulation time step, get the data under each ROI <indexed by ROI, then diffusion
 		//
-		// preallocate arrays for all data first
+		// preallocate arrays for all data first, curveHash used to store sim data and exp data
+
 		Hashtable<CurveInfo, double[]> curveHash = new Hashtable<CurveInfo, double[]>();
 		ArrayList<int[]> nonZeroIndicesForROI = new ArrayList<int[]>();
 		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
-//			for (int j = 0; j < diffusionRates.length; j++) {
-				curveHash.put(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[i]), new double[simTimes.length]);
-//			}
+			curveHash.put(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[i]), new double[frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery]);
 			ROI roi_2D = frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]);
 			nonZeroIndicesForROI.add(roi_2D.getRoiImages()[0].getNonzeroIndices());
 		}
+		
 		//
 		// collect data for experiment (over all ROIs), normalize with pre-bleach average
 		//
@@ -617,31 +561,55 @@ public class FRAPStudy implements Matchable{
 		}
 		
 		//
-		// get Simulation Data
+		// get timing to compare experimental data with simulated results.
 		//
-		int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length;
-		if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalize simulation data");}
-		if(progressListener != null){progressListener.updateProgress(0);}
-		for (int i = 0; i < simTimes.length; i++) {
-			for (int j = 0; j < varNames.length; j++) {
-				SimDataBlock simDataBlock = simulationDataManager.getSimDataBlock(varNames[j], simTimes[i]);
-				double[] data = simDataBlock.getData();
+		double[] shiftedSimTimes = null;
+		if(simulationDataManager != null)
+		{
+		
+			double[] simTimes = simulationDataManager.getDataSetTimes();
+			shiftedSimTimes = simTimes.clone();
+			for (int j = 0; j < simTimes.length; j++) {
+				shiftedSimTimes[j] = simTimes[j] + startingIndexForRecoveryExperimentalTimePoint;//timeStamps[startingIndexOfRecovery];
+			}
+						
+			//
+			// get Simulation Data
+			//
+			int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length;
+			if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalize simulation data");}
+			if(progressListener != null){progressListener.updateProgress(0);}
+			//simulation may have different number of time points(1 more or 1 less) compare with experimental data.
+			//curveHash was intialized with exp time data length. so, we have to replace it with the real sim data length.
+			if(simTimes.length != (frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery))
+			{
 				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROITYPES.length; k++) {
-					int[] roiIndices = nonZeroIndicesForROI.get(k);
-					if(roiIndices != null && roiIndices.length > 0){
-						double accum = 0.0;
-						for (int index = 0; index < roiIndices.length; index++) {
-							accum += data[roiIndices[index]];
+					CurveInfo ci = new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[k]);
+					curveHash.remove(ci);
+					curveHash.put(ci, new double[simTimes.length]);
+				}
+			}
+			
+			for (int i = 0; i < simTimes.length; i++) {
+				for (int j = 0; j < varNames.length; j++) {
+					SimDataBlock simDataBlock = simulationDataManager.getSimDataBlock(varNames[j], simTimes[i]);
+					double[] data = simDataBlock.getData();
+					for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROITYPES.length; k++) {
+						int[] roiIndices = nonZeroIndicesForROI.get(k);
+						if(roiIndices != null && roiIndices.length > 0){
+							double accum = 0.0;
+							for (int index = 0; index < roiIndices.length; index++) {
+								accum += data[roiIndices[index]];
+							}
+							double[] values = curveHash.get(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[k]));
+							values[i] = accum/roiIndices.length;
 						}
-						double[] values = curveHash.get(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[k]));
-						values[i] = accum/roiIndices.length;
+						double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length + j*SpatialAnalysisResults.ORDERED_ROITYPES.length + k;
+						if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
 					}
-					double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length + j*SpatialAnalysisResults.ORDERED_ROITYPES.length + k;
-					if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
 				}
 			}
 		}
-
 		SpatialAnalysisResults spatialAnalysisResults = 
 			new SpatialAnalysisResults(new AnalysisParameters[] {analysisParameters},/*varNames,*/shiftedSimTimes,curveHash);
 		return spatialAnalysisResults;
@@ -779,7 +747,7 @@ public class FRAPStudy implements Matchable{
 			File simDataDirectory){
 			MergedDataInfo mergedDataInfo =
 				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
-					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId});
+					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId}, FRAPStudyPanel.VFRAP_DS_PREFIX);
 			return
 				new File(simDataDirectory,
 					mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);
@@ -928,10 +896,7 @@ public class FRAPStudy implements Matchable{
 		double mobileFraction = (mobileFractionString != null?Double.parseDouble(mobileFractionString):new Double(1.0));
 		//Mobile Species
 		diffusionConstants[MOBILE_SPECIES_INDEX] = new Expression(baseDiffusionRate);
-		species[MOBILE_SPECIES_INDEX] =
-				new Species(SPECIES_NAME_PREFIX_MOBILE,
-//						TokenMangler.fixTokenStrict(SPECIES_NAME_PREFIX_MOBILE+NumberUtils.formatNumber(diffusionConstants[MOBILE_SPECIES_INDEX].evaluateConstant(),3)),
-						"Mobile bleachable species");
+		species[MOBILE_SPECIES_INDEX] = new Species(SPECIES_NAME_PREFIX_MOBILE, "Mobile bleachable species");
 		speciesContexts[MOBILE_SPECIES_INDEX] = 
 				new SpeciesContext(null,species[MOBILE_SPECIES_INDEX].getCommonName(),species[MOBILE_SPECIES_INDEX],cytosol,true);
 		initialConditions[MOBILE_SPECIES_INDEX] =
@@ -942,10 +907,7 @@ public class FRAPStudy implements Matchable{
 		//If left as a function errors occur because functions involving FieldData require a database connection
 		final String IMMOBILE_DIFFUSION_KLUDGE = "1e-14";
 		diffusionConstants[IMMOBILE_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
-		species[IMMOBILE_SPECIES_INDEX] =
-				new Species(SPECIES_NAME_PREFIX_IMMOBILE,
-//						TokenMangler.fixTokenStrict(SPECIES_NAME_PREFIX_IMMOBILE+NumberUtils.formatNumber(diffusionConstants[IMMOBILE_SPECIES_INDEX].evaluateConstant(),3)),
-						"Immobile bleachable species");
+		species[IMMOBILE_SPECIES_INDEX] = new Species(SPECIES_NAME_PREFIX_IMMOBILE, "Immobile bleachable species");
 		speciesContexts[IMMOBILE_SPECIES_INDEX] = 
 				new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol,true);
 		initialConditions[IMMOBILE_SPECIES_INDEX] =
@@ -957,9 +919,7 @@ public class FRAPStudy implements Matchable{
 			double secMobileFraction = (secondFractionString != null? Double.parseDouble(secondFractionString):new Double(0));
 			diffusionConstants[SEC_MOBILE_SPECIES_INDEX] = new Expression(secDiffusionRate);
 			
-			species[SEC_MOBILE_SPECIES_INDEX] =
-					new Species(SPECIES_NAME_PREFIX_SLOW_MOBILE,
-						"Slower mobile bleachable species");
+			species[SEC_MOBILE_SPECIES_INDEX] = new Species(SPECIES_NAME_PREFIX_SLOW_MOBILE, "Slower mobile bleachable species");
 			speciesContexts[SEC_MOBILE_SPECIES_INDEX] = 
 					new SpeciesContext(null,species[SEC_MOBILE_SPECIES_INDEX].getCommonName(),species[SEC_MOBILE_SPECIES_INDEX],cytosol,true);
 			initialConditions[SEC_MOBILE_SPECIES_INDEX] =

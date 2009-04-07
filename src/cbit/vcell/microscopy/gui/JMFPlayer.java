@@ -1,9 +1,13 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.GridLayout;
+import java.awt.Label;
 import java.awt.Toolkit;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -12,6 +16,7 @@ import javax.media.ControllerListener;
 import javax.media.Manager;
 import javax.media.Player;
 import javax.media.RealizeCompleteEvent;
+import javax.print.attribute.standard.MediaName;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -104,7 +109,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
         	}catch(Exception e2){
 				e2.printStackTrace();
 			}
-            parentFrame.setTitle(mediaName);
+            parentFrame.setTitle("VFRAP Movie");
         }
     }
   }
@@ -112,16 +117,25 @@ public class JMFPlayer extends JPanel implements ControllerListener {
   public static void showMovieInFrame(String fileStr)
   {
 	  JFrame frame = new JFrame("VFRAP Movie");
+	  frame.setLayout(new BorderLayout());
+	  //add info. panel
+	  JPanel infoPanel = new JPanel(new GridLayout(0,1));
+	  File movieFile = new File(fileStr);
+	  infoPanel.add(new Label("File saved to: " + ((movieFile==null)?"":movieFile.getParent())));
+	  infoPanel.add(new Label("File name: " + ((movieFile==null)?"":movieFile.getName())));
+	  infoPanel.add(new Label("Top: Experimental Data.  Value range [0.01,1.1]"));
+	  infoPanel.add(new Label("Bottom: Simulation Data.  Value range [0.01,1.1]"));
+	  infoPanel.setBackground(new Color(184,184,190));
+	  frame.getContentPane().add(infoPanel,BorderLayout.NORTH);
+	  //add movie player in the center
 	  JMFPlayer jp = new JMFPlayer(frame, fileStr);
-	  frame.getContentPane().add(jp);
-//	  frame.getContentPane().add(new JPanel());
+	  frame.getContentPane().add(jp,BorderLayout.CENTER);
 	  frame.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width-200)/2,
 		    			(Toolkit.getDefaultToolkit().getScreenSize().height-220)/2);
-//	  frame.setSize(200, 220);
 	  frame.setVisible(true);
 	  frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	  frame.requestFocus();
-	  frame.toFront();
+//	  frame.setSize(300, 350);
+//	  frame.pack();
   }
   
   public static void main(String[] argv) {

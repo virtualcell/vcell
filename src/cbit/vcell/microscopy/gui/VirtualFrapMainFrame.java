@@ -31,6 +31,7 @@ import javax.swing.undo.UndoableEdit;
 import cbit.gui.DialogUtils;
 import cbit.util.AsynchProgressPopup;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -210,7 +211,6 @@ public class VirtualFrapMainFrame extends JFrame
 					  pp.stop();
 				  }
 			}}).start();
-
 	  }
  		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() instanceof JMenuItem)
@@ -298,9 +298,8 @@ public class VirtualFrapMainFrame extends JFrame
 		      }
 		      else if(arg.equals(EXIT_ACTION_COMMAND))
 			  {
-		    	  int result = JOptionPane.showConfirmDialog(
-		    			 VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!","Exit?", JOptionPane.YES_NO_OPTION);
-	    	      if (result == JOptionPane.YES_OPTION)
+		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!", new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
+		    	  if (result == UserMessage.OPTION_CLOSE)
 	    	      {
 	    	    	  System.exit(0);
 	    	      }

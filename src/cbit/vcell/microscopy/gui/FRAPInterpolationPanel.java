@@ -473,7 +473,7 @@ public class FRAPInterpolationPanel extends JPanel {
 				}
 			}
 		});
-		runSimbutton.setText("Create New Simulation");
+		runSimbutton.setText("Create 2D Simulation");
 		runSimbutton.setToolTipText("Create new FRAP simulation using current parameter settings");
 		secondDiffRateCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent arg0) {
