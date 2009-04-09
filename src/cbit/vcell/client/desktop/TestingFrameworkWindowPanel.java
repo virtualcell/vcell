@@ -12,6 +12,7 @@ import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 import java.awt.event.ActionEvent;
 import cbit.vcell.client.task.TFRefresh;
@@ -698,13 +699,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			} else {
 				throw new Exception("Selected Object is not a TestCriteria!");
 			}
-		}
-		
-		
-		
-		
-		
-		else if (e.getActionCommand().equals("View Results")) {
+		} else if (e.getActionCommand().equals("View Results")) {
 			if (selectedObj instanceof cbit.vcell.numericstest.TestCriteriaNew) {
 				TestCriteriaNew tCriteria = (TestCriteriaNew)selectedObj;
 				getTestingFrameworkWindowManager().viewResults(tCriteria);			
@@ -715,6 +710,11 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_USERDEFREF_TESTCRITERIA)) {
 			if (selectedObj instanceof cbit.vcell.numericstest.TestCriteriaNew) {
 				TestCriteriaNew tCriteria = (TestCriteriaNew)selectedObj;
+				SimulationStatus simStatus = getTestingFrameworkWindowManager().getRequestManager().getServerSimulationStatus(tCriteria.getSimInfo());					
+				if (simStatus.isRunning()) {
+					PopupGenerator.showErrorDialog("Selected simulation is still running!");
+					return;
+				}
 				SimulationInfo userDefinedRegrRef = null;
 				if(e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_USERDEFREF_TESTCRITERIA)){
 					try{
@@ -723,9 +723,9 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 						return;
 					}
 				}
-
 				if (tCriteria.getRegressionSimInfo() == null) {
 					PopupGenerator.showErrorDialog("Either the selected simulation does not belong to a REGRESSION test or the regression simInfo is not set!");
+					return;
 				}
 				getTestingFrameworkWindowManager().compare(tCriteria,userDefinedRegrRef);			
 			} else {
