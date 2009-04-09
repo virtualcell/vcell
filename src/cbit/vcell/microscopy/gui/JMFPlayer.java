@@ -7,7 +7,10 @@ import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -16,14 +19,15 @@ import javax.media.ControllerListener;
 import javax.media.Manager;
 import javax.media.Player;
 import javax.media.RealizeCompleteEvent;
-import javax.print.attribute.standard.MediaName;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import cbit.gui.ZEnforcer;
+import cbit.gui.DialogUtils;
+import cbit.util.FileUtils;
+import cbit.vcell.client.task.UserCancelException;
 
 /**
  * To play a movie with Java Media Framework.
@@ -51,6 +55,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
   /** The URL representing this media file. */
   URL theURL;
 
+  JButton saveButton2 = null;
   /** Construct the player object and the GUI. */
   public JMFPlayer(JFrame pf, String media) {
 	super();
@@ -59,7 +64,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
     
     cp = this;
     cp.setLayout(new BorderLayout());
-    cp.setSize(300,520);
+//    cp.setSize(350,500);
     try {
       theURL = new URL(getClass().getResource("."), mediaName);
       thePlayer = Manager.createPlayer(theURL);
@@ -70,8 +75,11 @@ public class JMFPlayer extends JPanel implements ControllerListener {
       System.err.println("JMF Player creation error: " + e);
       return;
     }
-    System.out.println("theURL = " + theURL);
-
+//    System.out.println("theURL = " + theURL);
+     
+//    saveButton = new JButton(new ImageIcon(getClass().getResource("/images/save.gif")));
+//    saveButton.setBackground(new Color(184,184,190));
+//    saveButton.setBorder(null);
     // Start the player: this will notify ControllerListener.
     thePlayer.start(); // start playing
   }
@@ -114,39 +122,87 @@ public class JMFPlayer extends JPanel implements ControllerListener {
     }
   }
 
-  public static void showMovieInFrame(String fileStr)
+  public static void showMovieInFrame(final String urlStr, final String fileStr)
   {
 	  JFrame frame = new JFrame("VFRAP Movie");
 	  frame.setLayout(new BorderLayout());
 	  //add info. panel
 	  JPanel infoPanel = new JPanel(new GridLayout(0,1));
-	  File movieFile = new File(fileStr);
-	  infoPanel.add(new Label("File saved to: " + ((movieFile==null)?"":movieFile.getParent())));
-	  infoPanel.add(new Label("File name: " + ((movieFile==null)?"":movieFile.getName())));
+	  final File movieFile = new File(fileStr);
+	  
+	  
+	  JButton saveButton2 = new JButton("  Save  Movie  ");
+	  saveButton2.setBackground(new Color(184,184,190));
+	  saveButton2.setBorderPainted(false);
+	  
+	  JPanel panel = new JPanel();
+	  panel.setBackground(new Color(184,184,190));
+	  panel.add(saveButton2);
+	  infoPanel.add(panel);
+	  
+	  
 	  infoPanel.add(new Label("Top: Experimental Data.  Value range [0.01,1.1]"));
 	  infoPanel.add(new Label("Bottom: Simulation Data.  Value range [0.01,1.1]"));
 	  infoPanel.setBackground(new Color(184,184,190));
 	  frame.getContentPane().add(infoPanel,BorderLayout.NORTH);
 	  //add movie player in the center
-	  JMFPlayer jp = new JMFPlayer(frame, fileStr);
+	  JMFPlayer jp = new JMFPlayer(frame, urlStr);
 	  frame.getContentPane().add(jp,BorderLayout.CENTER);
 	  frame.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width-200)/2,
 		    			(Toolkit.getDefaultToolkit().getScreenSize().height-220)/2);
 	  frame.setVisible(true);
 	  frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//	  frame.setSize(300, 350);
-//	  frame.pack();
+//	  frame.addWindowListener(new WindowAdapter(){
+//		  public void windowClosing(WindowEvent e)
+//	      {
+//		  	 new File(fileStr).deleteOnExit();
+//		  }
+//	  });
+	  final JFrame frameCopy = frame;
+	  saveButton2.addActionListener(new ActionListener(){
+		public void actionPerformed(ActionEvent arg0) {
+			int choice = VirtualFrapLoader.saveMovieFileChooser.showSaveDialog(frameCopy);
+			File outputFile = null;
+			if (choice == JFileChooser.APPROVE_OPTION){
+				String outputFileName = VirtualFrapLoader.saveMovieFileChooser.getSelectedFile().getPath();
+				outputFile = new File(outputFileName);
+				if(!VirtualFrapLoader.filter_qt.accept(outputFile)){
+					if(outputFile.getName().indexOf(".") == -1){
+						outputFile = new File(outputFile.getParentFile(),outputFile.getName()+"."+VirtualFrapLoader.QT_EXTENSION);
+					}else{
+						DialogUtils.showErrorDialog("Quick Time movie must have an extension of ."+VirtualFrapLoader.QT_EXTENSION);
+						return;
+					}
+				}
+				//copy saved movie file to user specified path.
+				try {
+					FileUtils.copyFile(movieFile, outputFile);
+				} catch (IOException e) {
+					DialogUtils.showErrorDialog("Fail to save movie to file: "+ outputFile.getPath()+"."+ e.getMessage());
+					return;
+				}
+			}else{
+				throw UserCancelException.CANCEL_GENERIC;
+			}			
+		}
+	  });
   }
   
   public static void main(String[] argv) {
-    JFrame f = new JFrame("JMF Player Test");
-    Container frameCP = f.getContentPane();
-    JMFPlayer p = new JMFPlayer(f,
-        argv.length == 0 ? "file:///C:/VirtualMicroscopy/test.mov"
-            : argv[0]);
-    frameCP.add(BorderLayout.CENTER, p);
-    f.setSize(200, 200);
-    f.setVisible(true);
-    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    JFrame f = new JFrame("JMF Player Test");
+//    Container frameCP = f.getContentPane();
+//    JMFPlayer p = new JMFPlayer(f,
+//        argv.length == 0 ? "file:///C:/VirtualMicroscopy/test.mov"
+//            : argv[0]);
+////    p.setSize(350, 500);
+//    frameCP.add(BorderLayout.CENTER, p);
+////    f.setSize(360, 550);
+//    f.setVisible(true);
+//    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	  VirtualFrapLoader.saveMovieFileChooser = new JFileChooser();
+	  VirtualFrapLoader.saveMovieFileChooser.addChoosableFileFilter(VirtualFrapLoader.filter_qt);
+	  VirtualFrapLoader.saveMovieFileChooser.setAcceptAllFileFilterUsed(false);
+//	  VirtualFrapLoader.saveMovieFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
+	  showMovieInFrame("file:///C:/VirtualMicroscopy/test.mov", "C:/VirtualMicroscopy/test.mov");
   }
 }

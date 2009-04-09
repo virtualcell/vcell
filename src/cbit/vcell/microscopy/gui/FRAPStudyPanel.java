@@ -1,7 +1,6 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -18,12 +17,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.net.URL;
-import java.util.Vector;
 
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -45,6 +41,7 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
+
 import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
 import cbit.image.ImageException;
@@ -73,7 +70,6 @@ import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
@@ -81,11 +77,9 @@ import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Coordinate;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -111,7 +105,6 @@ import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.opt.SimpleReferenceData;
 
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
@@ -135,6 +128,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private static String Norm_Sim_One_Diff_Str =VFRAP_PREFIX_SIM+".fluor_primary_mobile + "+VFRAP_PREFIX_SIM+".fluor_immobile";
 	private static String Norm_Sim_Two_Diff_Str =VFRAP_PREFIX_SIM+".fluor_primary_mobile + "+VFRAP_PREFIX_SIM+".fluor_secondary_mobile + "+VFRAP_PREFIX_SIM+".fluor_immobile";
 	
+	//to store movie file info. movie file will be refreshed after each simulation run.
+	private String movieURLString = null;
+	private String movieFileString = null;
+		
 	private FRAPStudy frapStudy = null;
 	private FRAPOptData frapOptData = null;
 	private FRAPDataPanel frapDataPanel = null;
@@ -792,7 +789,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			simResultsViewPanel = new JPanel();
 			JPanel radioPanel = new JPanel();
 			radioPanel.setLayout(new FlowLayout());
-			showMovieButton = new JButton("Show Movie");
+			showMovieButton = new JButton("Show Movie with Exp and Sim Comparison");
 			showMovieButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					showMovie();
@@ -1541,7 +1538,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 									pp.setMessage(message);
 								}
 						};
-						
+						//enable 2D results tab after successfully running the simulation
 						spatialAnalysis(optimizationProgressListener, false);
 						if(!jTabbedPane.isEnabledAt(jTabbedPane.indexOfTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS)) && 
 							getSavedFrapModelInfo()!= null && areSimulationFilesOKForSavedModel())
@@ -1554,12 +1551,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 							}});
 						}
-	
-//						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-//						getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_REPORT));
-//						VirtualFrapMainFrame.updateProgress(0);
-//						VirtualFrapMainFrame.updateStatus("");
-//						}});
+						
+						//remove movie file and reset movie file strings
+						if(movieFileString != null)
+						{
+							new File(movieFileString).delete();
+						}
+						movieURLString = null;
+						movieFileString = null;
 					}		
 				}catch(UserCancelException uce){
 					pp.stop();
@@ -1586,10 +1585,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	private void showMovie()
 	{
+		if(movieURLString != null && movieFileString != null)
+		{
+			JMFPlayer.showMovieInFrame(movieURLString, movieFileString);
+			return;
+		}
 		final AsynchProgressPopup pp =
 			new AsynchProgressPopup(
 				FRAPStudyPanel.this,
-				"Saving movie data...",
+				"Buffering movie data...",
 				"Working...",true,false
 		);
 		pp.start();		
@@ -1648,10 +1652,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					//show movie if successfully exported
 					if(exportEvt != null)
 					{
-						final String fileString = System.getProperty(PropertyLoader.exportBaseURLProperty) + exportEvt.getJobID() + ".mov";
+						final String fileURLString = System.getProperty(PropertyLoader.exportBaseURLProperty) + exportEvt.getJobID() + ".mov";
+						final String fileString = System.getProperty(PropertyLoader.exportBaseDirProperty) + exportEvt.getJobID() + ".mov";
+						movieURLString = fileURLString;
+						movieFileString = fileString;
 						try{
 							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-								JMFPlayer.showMovieInFrame(fileString);
+								JMFPlayer.showMovieInFrame(fileURLString, fileString);
 							}});
 						}catch(Exception e2){
 							e2.printStackTrace();
@@ -1697,7 +1704,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					private String ALL_DATAIDENTIFIERS = "All";
 					private String EXP_NORM_FLUOR = "Exp. Norm. Fluor";
 					private String SIM_NORM_FLUOR = "Sim. Norm. Fluor";
-					private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS, EXP_NORM_FLUOR, SIM_NORM_FLUOR};
+					private String DEFAULT_VIEW = "Default View (more...)";
+					private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS, EXP_NORM_FLUOR, SIM_NORM_FLUOR, DEFAULT_VIEW};
 					public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
 						if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
 							return true;
@@ -1711,12 +1719,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 									(dataidentifier.getName().indexOf(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE)!= -1) ||
 									(dataidentifier.getName().indexOf(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE)!= -1));
 							return a;
-
+						}else if(filterSetName.equals(DEFAULT_VIEW)){
+							boolean a = (dataidentifier.getName().indexOf(REACTION_RATE_PREFIX) == -1) &&
+							(//(dataidentifier.getName().indexOf(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED)!= -1) ||
+									(dataidentifier.getName().indexOf(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE)!= -1) ||
+									(dataidentifier.getName().indexOf(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE)!= -1) ||
+									(dataidentifier.getName().indexOf(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE)!= -1))||
+									(dataidentifier.getName().indexOf(NORM_FLUOR_VAR)!= -1)||
+									(dataidentifier.getName().indexOf(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED)!= -1);
+							return a;
 						}
 						throw new IllegalArgumentException("DataIdentifierFilter: Unknown filterSetName "+filterSetName);
 					}
 					public String getDefaultFilterName() {
-						return SIM_NORM_FLUOR;
+						return DEFAULT_VIEW;
 					}
 					public String[] getFilterSetNames() {
 						return filterSetNames;
