@@ -489,6 +489,13 @@ public SymbolTableEntry getEntry(String identifier) {
 		return entry;
 	}
 	
+	// refresh functions in case functions are added by other data services.
+	try {
+		getFunctionDataIdentifiers();
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+	}
+	
 	entry = getDataSetIdentifier(identifier);
 	if (entry != null){
 		return entry;
