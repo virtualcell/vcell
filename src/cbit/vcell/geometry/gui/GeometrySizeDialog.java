@@ -7,6 +7,8 @@ package cbit.vcell.geometry.gui;
 import java.util.*;
 import java.awt.event.*;
 import java.beans.*;
+
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.*;
 /**
  * This type was created in VisualAge.
@@ -80,8 +82,13 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.Ok();
-		connEtoM6();
+		try {
+			this.Ok();
+			connEtoM6();
+		} catch (Exception e) {
+			e.printStackTrace();
+			PopupGenerator.showErrorDialog("Error\n"+e.getMessage());
+		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
