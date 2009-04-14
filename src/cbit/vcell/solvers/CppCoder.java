@@ -28,9 +28,9 @@ public void code(OutputStream headerStream,OutputStream codeStream) throws Excep
    
 	PrintWriter headerFile = new PrintWriter(headerStream);
 	writeCppHeaderBegin(headerFile);
-	Enumeration enum1 = getCppClassCoders();
+	Enumeration<CppClassCoder> enum1 = getCppClassCoders();
 	while (enum1.hasMoreElements()){
-		CppClassCoder cppClassCoder = (CppClassCoder)enum1.nextElement();
+		CppClassCoder cppClassCoder = enum1.nextElement();
 //System.out.println("generating C++ header for class " + cppClassCoder.getClassName());
 		cppClassCoder.writeDeclaration(headerFile);
 		headerFile.println("");
@@ -63,7 +63,7 @@ public String getBaseFilename() {
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public Enumeration getCppClassCoders() {
+public Enumeration<CppClassCoder> getCppClassCoders() {
 	return cppClassCoderList.elements();
 }
    protected abstract String[] getHeaderClassDefines();      
@@ -79,16 +79,16 @@ public void initialize() throws Exception {
  * This method was created by a SmartGuide.
  */
 protected void initializeCppClassCoders() throws Exception {
-	Enumeration enum1 = getCppClassCoders();
+	Enumeration<CppClassCoder> enum1 = getCppClassCoders();
 	while (enum1.hasMoreElements()){
-		CppClassCoder classCoder = (CppClassCoder)enum1.nextElement();
+		CppClassCoder classCoder = enum1.nextElement();
 		classCoder.initialize();
 	}		
 }
 protected void writeCppCodeBegin(PrintWriter out) throws Exception {
 
 	out.println("//---------------------------------------------");
-	out.println("//  " + baseFilename + ".C");
+	out.println("//  " + baseFilename + ".cpp");
 	out.println("//---------------------------------------------");
 	out.println("");
 	out.println("#ifdef WIN32");

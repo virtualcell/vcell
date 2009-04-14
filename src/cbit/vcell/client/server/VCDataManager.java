@@ -319,6 +319,21 @@ public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(cbit.vcell.serv
 	}
 }
 
+public DataProcessingOutput getDataProcessingOutput(cbit.vcell.server.VCDataIdentifier vcdID) throws DataAccessException {
+	try {
+		return getDataSetController().getDataProcessingOutput(vcdID);
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		try {
+			return getDataSetController().getDataProcessingOutput(vcdID);
+		}catch (RemoteException e2){
+			handleRemoteException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
+
 
 /**
  * determines if the result set for this Simulation contains particle data.

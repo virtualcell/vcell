@@ -11,14 +11,25 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.client.PopupGenerator;
+
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.beans.PropertyVetoException;
+
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 /**
@@ -88,6 +99,8 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	
 	private JPanel stopSpatiallyUniformPanel = null;
 	private JCheckBox stopSpatiallyUniformCheckBox = null;
+	private JCheckBox dataProcessorCheckBox = null;
+	private JButton editDataProcessorButton = null;
 	
 /**
  * ODEAdvancedPanel constructor comment.
@@ -160,6 +173,84 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			}
 		} else {
 			BeanUtils.enableComponents(getErrorTolerancePanel(), false);
+		}
+	}
+	if (e.getSource() == dataProcessorCheckBox) {
+		if (dataProcessorCheckBox.isSelected()) {
+			editDataProcessor(false);
+			if (getSolverTaskDescription().getSimulation().getDataProcessingInstructions() == null) {
+				editDataProcessorButton.setEnabled(false);
+				dataProcessorCheckBox.setSelected(false);
+			} else {
+				editDataProcessorButton.setEnabled(true);
+			}
+		} else {
+			editDataProcessorButton.setEnabled(false);
+			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
+		}
+	}
+	if (e.getSource() == editDataProcessorButton) {
+		editDataProcessor(true);
+		editDataProcessorButton.setEnabled(true);
+	}
+}
+
+private void editDataProcessor(boolean bEdit) {
+	DataProcessingInstructions dpi = getSolverTaskDescription().getSimulation().getDataProcessingInstructions();
+	
+	JPanel mainPanel = new JPanel(new BorderLayout());
+	
+	JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+	JLabel nameLabel = new JLabel("Name");			
+	panel.add(nameLabel);
+	JTextField nameField = new JTextField();
+	if (dpi != null) {
+		nameField.setText(dpi.getScriptName());
+	} else {
+		nameField.setText("VFRAP");
+	}
+	nameField.setColumns(20);
+	panel.add(nameField);
+	mainPanel.add(panel, BorderLayout.NORTH);
+	
+	panel = new JPanel(new GridBagLayout());			
+	JLabel label = new JLabel("Text");
+	GridBagConstraints cbc = new GridBagConstraints();
+	cbc.gridx = 0;
+	cbc.gridy = 0;
+	cbc.insets = new Insets(4,4,4,8);
+	panel.add(label, cbc);
+	
+	JScrollPane sp = new JScrollPane();
+	sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+	sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+	JTextArea textArea = new JTextArea();
+	if (dpi != null) {
+		textArea.setText(dpi.getScriptInput());
+	}
+	textArea.setColumns(20);
+	textArea.setRows(10);
+	sp.setViewportView(textArea);			
+	
+	cbc = new GridBagConstraints();
+	cbc.gridx = 1;
+	cbc.gridy = 0;
+	cbc.weightx = 1;
+	cbc.weighty = 1;
+	cbc.fill = GridBagConstraints.BOTH;
+	panel.add(sp, cbc);			
+	mainPanel.add(panel, BorderLayout.CENTER);
+	
+	mainPanel.setMinimumSize(new Dimension(300,200));
+	mainPanel.setSize(new Dimension(300,200));
+	mainPanel.setPreferredSize(new Dimension(300,200));
+	
+	int ok = DialogUtils.showComponentOKCancelDialog(SolverTaskDescriptionAdvancedPanel.this, mainPanel, "Add Data Processor");
+	if (ok == JOptionPane.OK_OPTION && nameField.getText().length() > 0 && textArea.getText().length() > 0) {
+		getSolverTaskDescription().getSimulation().setDataProcessingInstructions(new DataProcessingInstructions(nameField.getText(), textArea.getText()));
+	} else {
+		if (!bEdit) {
+			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
 		}
 	}
 }
@@ -1180,6 +1271,14 @@ private void enableOutputOptionPanel() {
 	} else {
 		stopSpatiallyUniformPanel.setVisible(false);
 	}
+	
+	DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
+	if (dpi != null) {
+		dataProcessorCheckBox.setSelected(true);
+		editDataProcessorButton.setEnabled(true);
+	} else {
+		editDataProcessorButton.setEnabled(false);
+	}
 }
 
 
@@ -1729,6 +1828,19 @@ private javax.swing.JPanel getJPanel1() {
 			gridbag1.gridwidth = 4;
 			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
 			getJPanel1().add(stopSpatiallyUniformPanel, gridbag1);
+
+			JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));		
+			dataProcessorCheckBox = new JCheckBox("Data Processing Script");
+			panel1.add(dataProcessorCheckBox);
+			editDataProcessorButton = new JButton("Edit...");
+			panel1.add(editDataProcessorButton);
+			
+			gridbag1 = new java.awt.GridBagConstraints();
+			gridbag1.gridx = 0; gridbag1.gridy = 4;
+			gridbag1.fill = GridBagConstraints.HORIZONTAL;
+			gridbag1.gridwidth = 4;
+			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
+			getJPanel1().add(panel1, gridbag1);
 			
 			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
      	    getJPanel1().setBorder(tb);
@@ -2383,6 +2495,8 @@ private void initConnections() throws java.lang.Exception {
 	getMSRToleranceTextField().addFocusListener(this);
 	getSDEToleranceTextField().addFocusListener(this);
 	stopSpatiallyUniformCheckBox.addActionListener(this);
+	dataProcessorCheckBox.addActionListener(this);
+	editDataProcessorButton.addActionListener(this);
 	connPtoP1SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();

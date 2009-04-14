@@ -14,6 +14,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 
 import cbit.util.CommentStringTokenizer;
+import cbit.util.Compare;
 import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.server.DataAccessException;
@@ -61,6 +62,7 @@ public class Simulation implements Versionable, cbit.util.Matchable, cbit.vcell.
 	/**
 	 * Settings that override those specified in the MathDescription.
 	 */
+	private DataProcessingInstructions dataProcessingInstructions = null;
 	private MathOverrides fieldMathOverrides = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -226,6 +228,7 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
 	fieldMathOverrides.addMathOverridesListener(this);
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
+	dataProcessingInstructions = simulation.dataProcessingInstructions;
 
 	rebindAll();  // especially needed to bind Constants so that .substitute() will eliminate Constants that are functions of other Constants.
 }
@@ -337,6 +340,7 @@ private boolean compareEqualMathematically(Simulation simulation) {
 	if (!getMathOverrides().compareEqual(simulation.getMathOverrides())) return (false);
 	if (!getSolverTaskDescription().compareEqual(simulation.getSolverTaskDescription())) return (false);
 	if (!cbit.util.Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
+	if (!Compare.isEqualOrNull(dataProcessingInstructions, simulation.dataProcessingInstructions)) return (false);
 
 	return true;
 }
@@ -1251,6 +1255,9 @@ public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription
 	SolverTaskDescription oldValue = fieldSolverTaskDescription;
 	fireVetoableChange("solverTaskDescription", oldValue, solverTaskDescription);
 	fieldSolverTaskDescription = solverTaskDescription;
+	if (solverTaskDescription != null && solverTaskDescription.getSimulation() != this) {
+		throw new IllegalArgumentException("SolverTaskDescription simulation field points to wrong simulation");
+	}
 	firePropertyChange("solverTaskDescription", oldValue, solverTaskDescription);
 }
 
@@ -1349,5 +1356,17 @@ public String toString() {
 	 */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
 	TokenMangler.checkNameProperty(this, "simulation", evt);
+}
+
+
+	public DataProcessingInstructions getDataProcessingInstructions() {
+		return dataProcessingInstructions;
+	}
+
+
+	public void setDataProcessingInstructions(DataProcessingInstructions dataProcessingInstructions) {
+		DataProcessingInstructions oldValue = this.dataProcessingInstructions;
+		this.dataProcessingInstructions = dataProcessingInstructions;
+		firePropertyChange("dataProcessingInstructions", oldValue, dataProcessingInstructions);
 }
 }

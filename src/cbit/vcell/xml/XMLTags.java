@@ -134,6 +134,8 @@ public class XMLTags {
 	public final static String KeepEveryAttrTag = "KeepEvery";
 	public final static String KeepAtMostAttrTag = "KeepAtMost";
 	public final static String StopAtSpatiallyUniform = "StopAtSpatiallyUniform";
+	public final static String DataProcessingInstructionsTag = "DataProcessingInstructions";
+	public final static String DataProcessingScriptNameAttrTag = "DataProcessingScriptName";
     //End-Simulation
 
     // Begin electrical properties

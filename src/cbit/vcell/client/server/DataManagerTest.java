@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.util.Vector;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.ReservedVariable;
@@ -168,6 +169,13 @@ public cbit.vcell.solver.ode.ODESolverResultSet getODESolverResultSet() throws c
 public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(double time) throws cbit.vcell.server.DataAccessException {
 	return null;
 }
+
+public DataProcessingOutput getDataProcessingOutput() throws cbit.vcell.server.DataAccessException {
+	return null;
+}
+
+
+
 /**
  * determines if the result set for this Simulation contains particle data.
  *

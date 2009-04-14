@@ -7,9 +7,7 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.*;
@@ -296,6 +294,7 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	out.println("\t}");
 	out.println("\tcout << \"Reading mesh from file '\" << tempString << \"'\" << endl;");
 	out.println("\tmesh->initialize(ifs);");
+	out.println("\tifs.close();");
 	out.println("\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"mesh initialized\"));");
 	out.println();
 	

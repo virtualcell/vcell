@@ -119,6 +119,7 @@ import cbit.vcell.server.GroupAccessNone;
 import cbit.vcell.server.GroupAccessSome;
 import cbit.vcell.server.User;
 import cbit.vcell.solver.ConstantArraySpec;
+import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -3500,6 +3501,13 @@ public cbit.vcell.solver.Simulation getSimulation(Element param, MathDescription
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the SolverTaskDescroiption object to the Simulation object "+ name+" : "+e.getMessage());
+	}
+	
+	Element dataProcessingInstructionsElement = param.getChild(XMLTags.DataProcessingInstructionsTag, vcNamespace);
+	if (dataProcessingInstructionsElement!=null){
+		String scriptName = dataProcessingInstructionsElement.getAttributeValue(XMLTags.DataProcessingScriptNameAttrTag);
+		String scriptInput = dataProcessingInstructionsElement.getText();
+		simulation.setDataProcessingInstructions(new DataProcessingInstructions(scriptName,scriptInput));
 	}
 
 	//Retrieve MeshEspecification (if any)

@@ -97,7 +97,6 @@ public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAc
 	}
 }
 
-
 /**
  * This method was created by a SmartGuide.
  * @return double[]
@@ -352,4 +351,19 @@ public void removeFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vce
 	}
 
 }
+
+
+public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) throws DataAccessException {
+	sessionLog.print("LocalDataSetControllerMessaging.getDataProcessingOutput(vcdataID=" + vcdataID + ")");
+	try {
+		return dataServerProxy.getDataProcessingOutput(vcdataID);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
 }

@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import cbit.util.ISize;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -19,7 +20,9 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 
+import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverFileWriter;
@@ -112,10 +115,59 @@ public void write(String[] parameterNames) throws Exception {
 	writeVariables();	
 	writeParameters(parameterNames);	
 	writeFieldData();	
+	writeDataProcessor();
 	writeCompartments();	
 	writeMembranes();
 }
 
+/**
+DATA_PROCESSOR_BEGIN VFRAP
+VolumePoints 49
+2667 2676 2679 2771 2969 2877 3067 3277 3185 3283 3473 3580 3690 3687 3878 4086 3990 4182 4193 1077
+2257 1984 2269 2648 3561 2890 3116 4104 4383 3995 4561 3909 3816 3820 5024 4429 4979 5102 6011 6094
+6338 6081 6527 7705 7305 8040 7423 8105 8023
+SampleImage 41 0 32742266 field(imageFieldDataName1,mask,0.0,Volume)
+StoreEnabled false
+
+SampleImageFile mask 0.0 \\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\schaff\\SimID_32742646_0_imageFieldDataName1_mask_0_0_Volume.fdat
+DATA_PROCESSOR_END
+*/
+private void writeDataProcessor() throws Exception {
+	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
+	if (dpi == null) {
+		return;
+	}
+	
+	FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());
+	
+	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
+	CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
+	SimDataBlock simDataBlock = dsci.getSimDataBlock(fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
+	VariableType varType = fdis.getFieldFuncArgs().getVariableType();
+	VariableType dataVarType = simDataBlock.getVariableType();
+	if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
+		throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
+	}
+	double[] origData = simDataBlock.getData();	
+
+	String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simulationJob.getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
+	
+	File fdatFile = new File(userDirectory, filename);
+	
+	
+	cbit.vcell.simdata.DataSet.writeNew(fdatFile,
+			new String[] {fdis.getFieldFuncArgs().getVariableName()},
+			new VariableType[]{simDataBlock.getVariableType()},
+			new ISize(origMesh.getSizeX(),origMesh.getSizeY(),origMesh.getSizeZ()),
+			new double[][]{origData});
+	printWriter.println("DATA_PROCESSOR_BEGIN " + dpi.getScriptName());
+	printWriter.println(dpi.getScriptInput());
+	printWriter.println("SampleImageFile " + fdis.getFieldFuncArgs().getVariableName() + " " + fdis.getFieldFuncArgs().getTime().infix() + " " + fdatFile);
+	printWriter.println("DATA_PROCESSOR_END");
+	printWriter.println();
+
+	
+}
 
 /**
  * Insert the method's description here.
@@ -124,7 +176,7 @@ public void write(String[] parameterNames) throws Exception {
 private void writeCompartment_boundaryConditions(CompartmentSubDomain csd) throws Exception {
 	printWriter.print("BOUNDARY_CONDITIONS ");
 	writeFeature_boundaryConditions(csd);
-	printWriter.println();	
+	printWriter.println();
 }
 
 

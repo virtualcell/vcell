@@ -13,6 +13,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.
@@ -61,6 +62,7 @@ public abstract double[] getDataTimes() throws DataAccessException;
  */
 public abstract AnnotatedFunction getFunction(String identifier);
 
+public abstract DataProcessingOutput getDataProcessingOutput() throws DataAccessException, IOException;
 
 /**
  * Insert the method's description here.

@@ -7,6 +7,8 @@ package cbit.vcell.modeldb;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.beans.*;
+
+import cbit.util.TokenMangler;
 import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
@@ -33,8 +35,9 @@ public class SimulationTable extends cbit.sql.VersionTable {
 	public final Field meshSpecX			= new Field("meshspecx",		"integer",			"");
 	public final Field meshSpecY			= new Field("meshspecy",		"integer",			"");
 	public final Field meshSpecZ			= new Field("meshspecz",		"integer",			"");
+	public final Field dataProcInstr		= new Field("dataProcInstr",	"VARCHAR2(4000)",	"");
 	
-	private final Field fields[] = {mathRef,mathOverridesOrig,mathOverridesLarge,mathOverridesSmall,taskDescription,meshSpecX,meshSpecY,meshSpecZ };
+	private final Field fields[] = {mathRef,mathOverridesOrig,mathOverridesLarge,mathOverridesSmall,taskDescription,meshSpecX,meshSpecY,meshSpecZ,dataProcInstr };
 	
 	public static final SimulationTable table = new SimulationTable();
 
@@ -183,6 +186,12 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 	}
 	cbit.util.CommentStringTokenizer mathOverrideTokens = new cbit.util.CommentStringTokenizer(mathOverridesString);
 
+	String dataProcessingInstructionString = rset.getString(dataProcInstr.getUnqualifiedColName());
+	DataProcessingInstructions dpi = null;
+	if(!rset.wasNull() && dataProcessingInstructionString != null && dataProcessingInstructionString.length() > 0){
+		dataProcessingInstructionString = cbit.util.TokenMangler.getSQLRestoredString(dataProcessingInstructionString);
+		dpi = DataProcessingInstructions.fromDbXml(dataProcessingInstructionString);
+	}
 	//
 	// Get Version
 	//
@@ -199,6 +208,8 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 	MathDescription mathDesc = (MathDescription)mathDB.getVersionable(con,user,VersionableType.MathDescription,mathKey);
 	
 	Simulation simulation = new cbit.vcell.solver.Simulation(simulationVersion,mathDesc,mathOverrideTokens,solverTaskDescTokens);
+	simulation.setDataProcessingInstructions(dpi);
+	
 	
 	//MeshSpec (Is This Correct?????)
 	if (mathDesc != null && mathDesc.getGeometry() != null && mathDesc.getGeometry().getDimension()>0){
@@ -248,6 +259,11 @@ public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version ver
 		buffer.append(meshSpec.getSamplingSize().getX()+","+meshSpec.getSamplingSize().getY()+","+meshSpec.getSamplingSize().getZ());
 	}else{
 		buffer.append("null,null,null");
+	}
+	if (simulation.getDataProcessingInstructions()!=null){
+		buffer.append(",'"+TokenMangler.getSQLEscapedString(simulation.getDataProcessingInstructions().getDbXml())+"'");
+	}else{
+		buffer.append(",null");
 	}
 	buffer.append(")");
 	return buffer.toString();
