@@ -8,6 +8,7 @@ import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.*;
+import cbit.vcell.solver.DataProcessingOutput;
 
 /**
  * Insert the type's description here.
@@ -45,6 +46,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
  */
 public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws cbit.vcell.server.DataAccessException {
 	return (DataIdentifier[])rpc("getDataIdentifiers",new Object[]{user, vcdID});
+}
+
+public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdID) throws DataAccessException {
+	return (DataProcessingOutput)rpc("getDataProcessingOutput", new Object[]{user, vcdID});
 }
 
 

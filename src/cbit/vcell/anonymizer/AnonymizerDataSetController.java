@@ -4,6 +4,8 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.PropertyLoader;
+import cbit.vcell.solver.DataProcessingOutput;
+
 import java.lang.reflect.*;
 /**
  * Insert the type's description here.
@@ -143,6 +145,14 @@ public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(cbit.vcell.serv
 		new Class[] {cbit.vcell.server.VCDataIdentifier.class, double.class}, new Object[] {vcdataID, new Double(time)});
 }
 
+
+/**
+ * This method was created in VisualAge.
+ * @return boolean
+ */
+public DataProcessingOutput getDataProcessingOutput(cbit.vcell.server.VCDataIdentifier vcdataID) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return ((DataProcessingOutput)remoteCall("getDataProcessingOutput", new Class[] {cbit.vcell.server.VCDataIdentifier.class}, new Object[] {vcdataID}));
+}
 
 /**
  * This method was created in VisualAge.

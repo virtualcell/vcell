@@ -1,5 +1,6 @@
 package cbit.vcell.simdata;
 import cbit.rmi.event.*;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.SimulationInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -150,6 +151,14 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 	return dataServerImpl.getParticleDataBlock(user, vcdID, time);
 }
 
+
+/**
+ * This method was created in VisualAge.
+ * @return boolean
+ */
+public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdID) throws DataAccessException {
+	return dataServerImpl.getDataProcessingOutput(user, vcdID);
+}
 
 /**
  * This method was created in VisualAge.

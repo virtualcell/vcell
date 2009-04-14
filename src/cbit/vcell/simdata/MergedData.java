@@ -16,6 +16,7 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -1361,6 +1362,12 @@ private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws 
 	}
 	return referringFunctionV.toArray(new AnnotatedFunction[0]);
 	
+}
+
+
+@Override
+public DataProcessingOutput getDataProcessingOutput() throws DataAccessException,IOException {
+	throw new DataAccessException("DataProcessing is not supported for merged data");
 }
 
 

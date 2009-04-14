@@ -19,6 +19,7 @@ import cbit.vcell.server.PermissionException;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solvers.CartesianMesh;
 import java.util.zip.DataFormatException;
@@ -55,6 +56,8 @@ cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers() throws DataAccessExcept
  */
 double[] getDataSetTimes() throws DataAccessException;
 
+
+DataProcessingOutput getDataProcessingOutput() throws DataAccessException;
 
 /**
  * gets list of named Functions defined for the resultSet for this Simulation.

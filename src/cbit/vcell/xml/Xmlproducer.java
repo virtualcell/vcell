@@ -2991,32 +2991,39 @@ public org.jdom.Element getXML(cbit.vcell.solver.stoch.StochSimOptions param, bo
  * @param param cbit.vcell.solver.Simulation
  */
 public org.jdom.Element getXML(cbit.vcell.solver.Simulation param) {
-	org.jdom.Element simulation = new org.jdom.Element(XMLTags.SimulationTag);
+	org.jdom.Element simulationElement = new org.jdom.Element(XMLTags.SimulationTag);
 
 	//Add Atributes
 	String name = mangle(param.getName());
-	simulation.setAttribute(XMLTags.NameAttrTag, name);
+	simulationElement.setAttribute(XMLTags.NameAttrTag, name);
 	//simulation.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//Add annotation
 	if (param.getDescription()!=null && param.getDescription().trim().length()>0) {
 		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
-		simulation.addContent(annotationElem);
+		simulationElement.addContent(annotationElem);
+	}
+	//Add dataProcessingInstructions
+	if (param.getDataProcessingInstructions()!=null){
+		Element dataProcessingInstructionsElement = new Element(XMLTags.DataProcessingInstructionsTag);
+		dataProcessingInstructionsElement.setAttribute(XMLTags.DataProcessingScriptNameAttrTag, param.getDataProcessingInstructions().getScriptName());
+		dataProcessingInstructionsElement.setText(param.getDataProcessingInstructions().getScriptInput());
+		simulationElement.addContent(dataProcessingInstructionsElement);
 	}
 	//Add SolverTaskDescription 
-	simulation.addContent( getXML(param.getSolverTaskDescription()) );
+	simulationElement.addContent( getXML(param.getSolverTaskDescription()) );
 	//Add Math Overrides
-	simulation.addContent( getXML(param.getMathOverrides()) );
+	simulationElement.addContent( getXML(param.getMathOverrides()) );
 	//Add MeshSpecification (if there is )
 	if (param.getMeshSpecification() != null) {
-	simulation.addContent( getXML(param.getMeshSpecification()) );
+	simulationElement.addContent( getXML(param.getMeshSpecification()) );
 	}
 	//Add Metadata (Version) if there is one!
 	if ( param.getVersion() != null ) {
-		simulation.addContent( getXML(param.getVersion(), param) );
+		simulationElement.addContent( getXML(param.getVersion(), param) );
 	}
 	
-	return simulation;
+	return simulationElement;
 }
 
 

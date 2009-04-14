@@ -1,6 +1,7 @@
 package cbit.vcell.client.server;
 import cbit.vcell.client.data.NewClientPDEDataContext;
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.solver.DataProcessingOutput;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2005 5:37:29 PM)
@@ -180,6 +181,10 @@ public cbit.vcell.solver.ode.ODESolverResultSet getODESolverResultSet() throws c
  */
 public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(double time) throws cbit.vcell.server.DataAccessException {
 	return getVcDataManager().getParticleDataBlock(getVcDataIdentifier(), time);
+}
+
+public DataProcessingOutput getDataProcessingOutput() throws cbit.vcell.server.DataAccessException {
+	return getVcDataManager().getDataProcessingOutput(getVcDataIdentifier());
 }
 
 

@@ -358,6 +358,32 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
  * This method was created by a SmartGuide.
  * @return boolean
  */
+public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdID) throws DataAccessException {
+	sessionLog.print("LocalDataSetControllerProxy.getDataProcessingOutput(simID="+vcdID.getID()+")");
+	try {
+		//
+		// try once with remote reference (if it exists)
+		// if it fails with a RemoteException, invalidate the remote reference and try local
+		//
+		DataSetController rdsc = getRemoteDataSetController();
+		if (rdsc!=null){
+			try {
+				return rdsc.getDataProcessingOutput(vcdID);
+			}catch (RemoteException e){
+				sessionLog.exception(e);
+				invalidateRemoteDataSetController();
+			}
+		}
+		return getLocalDataSetController().getDataProcessingOutput(vcdID);
+	}catch (Throwable e){
+		sessionLog.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+/**
+ * This method was created by a SmartGuide.
+ * @return boolean
+ */
 public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.getParticleDataExists(simID="+vcdID.getID()+")");
 	try {

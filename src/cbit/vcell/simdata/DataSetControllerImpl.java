@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 import java.io.*;
 
 import cbit.vcell.server.*;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -577,7 +578,19 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
     throw new IllegalArgumentException("Couldn't determine format of data to return");
 }
 
+public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID) throws DataAccessException, IOException {
 
+	try {
+		//
+		// check if already cached for non-function variables
+		//
+		VCData simData = getVCData(vcdID);
+		return simData.getDataProcessingOutput();
+	}catch (IOException e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
 
 
 private double interpolateVolDataValToMemb(CartesianMesh mesh,int membraneIndex,SimDataHolder simDataHolder,boolean isInside,boolean IsRegion){

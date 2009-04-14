@@ -30,6 +30,7 @@ import javax.swing.tree.TreePath;
 import cbit.gui.DialogUtils;
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
+import cbit.sql.KeyValue;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.Extent;
@@ -142,8 +143,20 @@ public class FieldDataGUIPanel extends JPanel{
 		public FieldDataTimeList(double[] argTimes){
 			times = argTimes;
 			descr = 
-				"Times( "+times.length+" )   Beg="+times[0]+
+				"Times ( "+times.length+" )   Begin="+times[0]+
 				"   End="+times[times.length-1];
+		}
+		public String toString(){
+			return descr;
+		}
+	}
+	
+	private class FieldDataIDList {
+		public KeyValue key = null;
+		private String descr;
+		public FieldDataIDList(KeyValue k){
+			key = k;
+			descr ="Key (" + k + ")";
 		}
 		public String toString(){
 			return descr;
@@ -155,7 +168,7 @@ public class FieldDataGUIPanel extends JPanel{
 		private String descr;
 		public FieldDataISizeList(ISize arg){
 			isize = arg;
-			descr ="Size( "+
+			descr ="Size ( "+
 			isize.getX()+" , "+
 			isize.getY()+" , "+
 			isize.getZ()+" )";
@@ -170,7 +183,7 @@ public class FieldDataGUIPanel extends JPanel{
 		private String descr;
 		public FieldDataOriginList(Origin arg){
 			origin = arg;
-			descr ="Origin( "+
+			descr ="Origin ( "+
 			origin.getX()+" , "+
 			origin.getY()+" , "+
 			origin.getZ()+" )";
@@ -185,7 +198,7 @@ public class FieldDataGUIPanel extends JPanel{
 		private String descr;
 		public FieldDataExtentList(Extent arg){
 			extent = arg;
-			descr ="Extent( "+
+			descr ="Extent ( "+
 			extent.getX()+" , "+
 			extent.getY()+" , "+
 			extent.getZ()+" )";
@@ -1559,6 +1572,7 @@ private void refreshMainNode(final DefaultMutableTreeNode mainNode){
 							}
 					}
 				);
+				FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
 				final DefaultMutableTreeNode isizeNode =
 					new DefaultMutableTreeNode(new FieldDataISizeList(fieldDataFileOperationResults.iSize));
 				final DefaultMutableTreeNode originNode =
@@ -1567,10 +1581,13 @@ private void refreshMainNode(final DefaultMutableTreeNode mainNode){
 					new DefaultMutableTreeNode(new FieldDataExtentList(fieldDataFileOperationResults.extent));
 				final DefaultMutableTreeNode timeNode =
 					new DefaultMutableTreeNode(new FieldDataTimeList(fieldDataFileOperationResults.times));
+				final DefaultMutableTreeNode idNode =
+					new DefaultMutableTreeNode(new FieldDataIDList(fieldDataMainList.externalDataIdentifier.getKey()));
 				((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(isizeNode,mainNode,0);
 				((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(originNode,mainNode,1);
 				((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(extentNode,mainNode,2);
 				((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(timeNode,mainNode,3);
+				((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(idNode,mainNode,4);
 				for(int i=0;i<fieldDataFileOperationResults.dataIdentifierArr.length;i+= 1){
 				((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(
 						new DefaultMutableTreeNode(

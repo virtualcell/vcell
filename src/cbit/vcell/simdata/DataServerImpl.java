@@ -23,6 +23,7 @@ import cbit.vcell.server.DataAccessException;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.MessageEvent;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.SimulationInfo;
 
 /**
@@ -266,6 +267,22 @@ public ParticleDataBlock getParticleDataBlock(User user, VCDataIdentifier vcdID,
 	checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.getParticleDataBlock(vcdID, time);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return cbit.vcell.server.DataSet
+ * @param time double
+ */
+public DataProcessingOutput getDataProcessingOutput(User user, VCDataIdentifier vcdID) throws DataAccessException {
+	checkReadAccess(user, vcdID);
+	try {
+		return dataSetControllerImpl.getDataProcessingOutput(vcdID);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

@@ -103,6 +103,10 @@ cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdat
  * This method was created in VisualAge.
  * @return boolean
  */
+
+public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException;
+
+
 public boolean getParticleDataExists(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException;
 /**
  * This method was created by a SmartGuide.

@@ -63,17 +63,18 @@ private String applyChanges(Simulation clonedSimulation, Simulation simulation) 
 	} catch (java.beans.PropertyVetoException exc) {
 		errors += "\n" + exc.getMessage();
 	}
-	simulation.setMathOverrides(clonedSimulation.getMathOverrides());
+	simulation.setMathOverrides(new MathOverrides(simulation, clonedSimulation.getMathOverrides()));
 	try {
 		simulation.setMeshSpecification(clonedSimulation.getMeshSpecification());
 	} catch (java.beans.PropertyVetoException exc) {
 		errors += "\n" + exc.getMessage();
 	}
 	try {
-		simulation.setSolverTaskDescription(clonedSimulation.getSolverTaskDescription());
+		simulation.setSolverTaskDescription(new SolverTaskDescription(simulation, clonedSimulation.getSolverTaskDescription()));
 	} catch (java.beans.PropertyVetoException exc) {
 		errors += "\n" + exc.getMessage();
 	}
+	simulation.setDataProcessingInstructions(clonedSimulation.getDataProcessingInstructions());
 	simulation.setIsDirty(true);
 	return errors;
 }
