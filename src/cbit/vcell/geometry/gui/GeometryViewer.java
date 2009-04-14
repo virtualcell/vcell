@@ -1005,7 +1005,7 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
  */
 private void showSizeDialog() {
 	cbit.util.BeanUtils.centerOnComponent(getGeometrySizeDialog1(), this);
-	//getGeometrySizeDialog1().show();
+	getGeometrySizeDialog1().init(getGeometry());
 	cbit.gui.ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
 }
 
