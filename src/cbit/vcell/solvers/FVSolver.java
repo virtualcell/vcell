@@ -704,7 +704,11 @@ public static void resampleFieldData(
 			double[] origData = simDataBlock.getData();
 			double[] newData = null;
 			CartesianMesh resampleMesh = newMesh;
-			if (psfFieldFunc != null && psfFieldFunc.equals(resampleEntry.getKey().getFieldFuncArgs())) {
+			if (psfFieldFunc != null && psfFieldFunc.equals(resampleEntry.getKey().getFieldFuncArgs())) {				
+				if (resampleMesh.getGeometryDimension() != origMesh.getGeometryDimension()) {
+					throw new Exception("Point Spread Function field data " + psfFieldFunc.getFieldName() + " (" + origMesh.getGeometryDimension() 
+							+ "D) should have same dimension as simulation mesh (" + resampleMesh.getGeometryDimension() + "D).");
+				}
 				newData = origData;
 				resampleMesh = origMesh;
 			} else {
