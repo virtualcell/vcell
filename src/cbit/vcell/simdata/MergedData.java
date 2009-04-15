@@ -402,7 +402,7 @@ private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFou
 			if (dsi.isFunction()) {
 				boolean bTopLevelFunction = true;
 				for (int j = 0; j < dataSetPrefix.length; j++) {			
-					if (dsi.getName().startsWith(dataSetPrefix[j])) {
+					if (dsi.getName().startsWith(dataSetPrefix[j]+".")) {
 						bTopLevelFunction = false;
 						break;
 					}
