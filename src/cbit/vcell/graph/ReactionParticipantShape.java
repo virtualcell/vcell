@@ -6,9 +6,9 @@ package cbit.vcell.graph;
 import cbit.gui.graph.*;
 import cbit.vcell.model.*;
 import java.awt.Stroke;
-import java.awt.BasicStroke;
 import java.awt.geom.Point2D;
 import java.awt.geom.GeneralPath;
+import java.util.Enumeration;
 /**
  * This type was created in VisualAge.
  */
@@ -55,9 +55,9 @@ protected java.awt.geom.CubicCurve2D.Double getCurve() {
 	if (endShape instanceof ReactionStepShape){
 			
 		ReactionStepShape reactionStepShape = (ReactionStepShape)endShape;
-		java.util.Enumeration enumShapes = graphModel.getShapes();
+		Enumeration<Shape> enumShapes = graphModel.getShapes();
 		while (enumShapes.hasMoreElements()){
-			Shape shape = (Shape)enumShapes.nextElement();
+			Shape shape = enumShapes.nextElement();
 			
 			if (shape instanceof ReactionParticipantShape && 
 				((ReactionParticipantShape)shape).endShape == reactionStepShape){
@@ -75,8 +75,10 @@ protected java.awt.geom.CubicCurve2D.Double getCurve() {
 		}
 	}
 	double tangentLength = Math.sqrt(tangentX*tangentX + tangentY*tangentY);
-	tangentX = tangentX*CONTROL_WEIGHT/tangentLength;
-	tangentY = tangentY*CONTROL_WEIGHT/tangentLength;
+	if (tangentLength != 0) {
+		tangentX = tangentX*CONTROL_WEIGHT/tangentLength;
+		tangentY = tangentY*CONTROL_WEIGHT/tangentLength;
+	}
 	//tangentX = controlWeight;
 	//tangentY = 0.0;
 	if (this instanceof CatalystShape){
