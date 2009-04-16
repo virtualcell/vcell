@@ -30,7 +30,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 	public String getScriptName() {
 		return scriptName;
 	}
-	public static DataProcessingInstructions getVFrapInstructions(int[] volumePoints, int[] membranePoints, int numRegions, int zSlice, KeyValue fieldDataKey, FieldFunctionArguments fd) {
+	public static DataProcessingInstructions getVFrapInstructions(int[] volumePoints, int[] membranePoints, int numRegions, int zSlice, KeyValue fieldDataKey, FieldFunctionArguments fd, boolean bStoreEnabled) {
 		StringBuffer sb = new StringBuffer();
 		
 		sb.append("VolumePoints " + volumePoints.length + "\n");
@@ -52,6 +52,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 			sb.append("\n");
 		}
 		sb.append("SampleImage " + numRegions + " " + zSlice + " " + fieldDataKey + " " + MathMLTags.FIELD + "(" + fd.toCSVString() + ")\n");
+		sb.append("StoreEnabled " + bStoreEnabled + "\n");
 
 		return new DataProcessingInstructions("VFRAP", sb.toString());
 	}

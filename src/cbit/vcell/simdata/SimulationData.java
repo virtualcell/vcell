@@ -816,26 +816,6 @@ public synchronized ParticleDataBlock getParticleDataBlock(double time) throws D
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.simdata.ParticleDataBlock
- * @param double time
- */
-public synchronized DataProcessingOutput getDataProcessingOutput() throws DataAccessException, IOException {
-	File dataProcessingOutputFile = getDataProcessingOutputFile();
-	if (dataProcessingOutputFile==null){
-		return null;
-	}
-	FileInputStream fis = new FileInputStream(dataProcessingOutputFile);
-	byte[] byteArray = new byte[(int)dataProcessingOutputFile.length()];
-	int numRead = fis.read(byteArray);
-	if (numRead!=byteArray.length){
-		throw new IOException("read only "+numRead+" / "+byteArray.length+" bytes in DataProcessingOutput file");
-	}
-	return new DataProcessingOutput(byteArray);
-}
-
-
-/**
- * This method was created in VisualAge.
  * @return boolean
  */
 public synchronized boolean getParticleDataExists() throws DataAccessException {
@@ -854,21 +834,6 @@ private synchronized File getParticleDataFile(double time) throws DataAccessExce
 	File particleFile = new File(simFile.getPath() + PARTICLE_DATA_EXTENSION);
 	if (particleFile.exists()){
 		return particleFile;
-	}else{
-		return null;
-	}
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return File
- * @param time double
- */
-private synchronized File getDataProcessingOutputFile() throws DataAccessException, FileNotFoundException {
-	File dataProcessingOutputFile = new File(userDirectory,vcDataId.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
-	if (dataProcessingOutputFile.exists()){
-		return dataProcessingOutputFile;
 	}else{
 		return null;
 	}

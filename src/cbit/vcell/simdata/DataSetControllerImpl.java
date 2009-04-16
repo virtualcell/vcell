@@ -581,11 +581,26 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID) throws DataAccessException, IOException {
 
 	try {
-		//
-		// check if already cached for non-function variables
-		//
-		VCData simData = getVCData(vcdID);
-		return simData.getDataProcessingOutput();
+		User user = vcdID.getOwner();
+		File primaryUserDir = getPrimaryUserDir(user, false);
+		File secondaryUserDir = getSecondaryUserDir(user);
+		if ((primaryUserDir == null || !primaryUserDir.exists()) && (secondaryUserDir == null || !secondaryUserDir.exists())) {
+			throw new IOException("neither primary user dir nor secondary user dir exists");
+		}
+		File dataProcessingOutputFile = new File(primaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
+		if (!dataProcessingOutputFile.exists()){
+			dataProcessingOutputFile = new File(secondaryUserDir, vcdID.getID()+DATA_PROCESSING_OUTPUT_EXTENSION);
+		}
+		if (!dataProcessingOutputFile.exists()) {
+			return null;
+		}	 
+		FileInputStream fis = new FileInputStream(dataProcessingOutputFile);
+		byte[] byteArray = new byte[(int)dataProcessingOutputFile.length()];
+		int numRead = fis.read(byteArray);
+		if (numRead!=byteArray.length){
+			throw new IOException("read only "+numRead+" / "+byteArray.length+" bytes in DataProcessingOutput file");
+		}
+		return new DataProcessingOutput(byteArray);			
 	}catch (IOException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
