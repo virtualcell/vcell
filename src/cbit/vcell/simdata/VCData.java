@@ -62,8 +62,6 @@ public abstract double[] getDataTimes() throws DataAccessException;
  */
 public abstract AnnotatedFunction getFunction(String identifier);
 
-public abstract DataProcessingOutput getDataProcessingOutput() throws DataAccessException, IOException;
-
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 5:16:06 PM)

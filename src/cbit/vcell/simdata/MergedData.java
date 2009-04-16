@@ -1364,11 +1364,4 @@ private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws 
 	
 }
 
-
-@Override
-public DataProcessingOutput getDataProcessingOutput() throws DataAccessException,IOException {
-	throw new DataAccessException("DataProcessing is not supported for merged data");
-}
-
-
 }
