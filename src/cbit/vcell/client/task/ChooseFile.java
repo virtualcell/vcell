@@ -250,8 +250,20 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		
 					hashTable.put("selectedSimContext", chosenSimContext);
 
-					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set 
-					if (!chosenSimContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
+					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set
+					GeometryContext geoContext = chosenSimContext.getGeometryContext();
+					if ( (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
+						 (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecified()) ||
+						 (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
+						 (!geoContext.isAllSizeSpecifiedPositive() && !geoContext.isAllVolFracAndSurfVolSpecified()) ||
+						 (geoContext.isAllSizeSpecifiedNull() && !geoContext.isAllVolFracAndSurfVolSpecified()) ) {
+						cbit.gui.DialogUtils.showErrorDialog("Cannot export to SBML without compartment sizes being set. This can be automatically " +
+								" computed if the absolute size of at least one compartment and the relative sizes (Surface-to-volume-ratio/Volume-fraction) " +
+								" of all compartments are known. Sufficient information is not available to perform this computation." +
+								"\n\nThis can be fixed by going back to the application '" + chosenSimContextName + "' and setting structure sizes in the 'StructureMapping' tab.");
+						throw UserCancelException.CANCEL_XML_TRANSLATION;
+					} 
+					if (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecified()) {
 						StructureSizeSolver ssEvaluator = new StructureSizeSolver();
 						cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
 						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
@@ -283,14 +295,14 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 						} else if (simOption == JOptionPane.CANCEL_OPTION || simOption == JOptionPane.CLOSED_OPTION) {
 							// User did not choose a simulation whose overrides are required to be exported.
 							// Without that information, cannot export successfully into SBML, 
-							// Hence cancelling the entire export to SBML operation.
+							// Hence canceling the entire export to SBML operation.
 							throw UserCancelException.CANCEL_XML_TRANSLATION;
 						}
 					} 
 				} else if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
 					// User did not choose to set size for any structure.
 					// Without that information, cannot export successfully into SBML, 
-					// Hence cancelling the entire export to SBML operation.
+					// Hence canceling the entire export to SBML operation.
 					throw UserCancelException.CANCEL_XML_TRANSLATION;
 				}
 
