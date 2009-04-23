@@ -42,7 +42,7 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	getAppEditor().setUserPreferences(bioModelWindowManager.getUserPreferences());
 	setAppEditorFrame(new JInternalFrameEnhanced("APPLICATION: "+simContext.getName(), true, true, true, true));
 	getAppEditorFrame().setContentPane(getAppEditor());
-	getAppEditorFrame().setSize(800,800);
+	getAppEditorFrame().setSize(800,600);
 	getAppEditorFrame().setMinimumSize(new Dimension(500,500));
 	getAppEditorFrame().setLocation(400,200);
 	getAppEditorFrame().addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
