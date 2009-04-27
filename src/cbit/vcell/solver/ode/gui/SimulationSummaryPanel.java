@@ -1496,6 +1496,8 @@ private void refreshDisplay() {
 		getJLabelSolver().setText("");
 		getJLabelGeometrySize().setText("");
 		getJLabelMesh().setText("");
+		getJLabelRelTolValue().setText("");
+		getJLabelAbsTolValue().setText("");
 		getMathOverridesPanel1().setMathOverrides(null);
 	} else {
 		displayAnnotation();
