@@ -79,4 +79,5 @@ public class PBSConstants {
 	
 	public final static String PBS_ARCH_LINUX = "linux"; // rocks
 	public final static String PBS_ARCH_ALTIX = "altix"; // SGI
+	public final static String PBS_ARCH_OSG = "osg"; // OSG
 }

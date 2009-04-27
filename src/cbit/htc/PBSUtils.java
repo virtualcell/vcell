@@ -103,7 +103,7 @@ public static int getJobStatus(String jobid) {
 	Executable exe = null;
 	
 	try {
-		String[] cmd = new String[]{JOB_CMD_STATUS, jobid};
+		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid};
 		exe = new Executable(cmd);
 		exe.start();
 		
@@ -125,13 +125,18 @@ public static int getJobStatus(String jobid) {
 			return iStatus;
 		}
 		/*
-		Job id            Name             User              Time Use S Queue
-		----------------  ---------------- ----------------  -------- - -----
-		65.dll-2-1-1      test1.sub        fgao              00:00:00 E workq
+		
+		pbssrv: 
+		                                                            Req'd  Req'd   Elap
+		Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
+		--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
+		29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
+		   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
+
 		*/		
 		st = new StringTokenizer(strStatus, " ");
 		String token = "";
-		for (int i = 0; i < 5 && st.hasMoreTokens(); i ++) {
+		for (int i = 0; i < 10 && st.hasMoreTokens(); i ++) {
 			token = st.nextToken();
 		}
 		for (iStatus = 0; iStatus < PBS_JOB_STATUS.length; iStatus ++) {
@@ -161,34 +166,32 @@ public static String getPendingReason(String jobid) {
 		exe = new Executable(cmd);
 		exe.start();
 		
-		String output = exe.getStdoutString();
-		int index = output.indexOf(jobid);
-		if (index < 0) {
-			return pendingReason;
-		}	
-		output = output.substring(index);
-		
 		/*
-		 * old version
-		Job id            Name             User              Time Use S Queue
-		----------------  ---------------- ----------------  -------- - -----
-		65.dll-2-1-1      test1.sub        fgao              00:00:00 E workq
-		*/	
 		
-		/*
-		 * new versrion
 		pbssrv: 
-            														Req'd  Req'd   Elap
+		                                                            Req'd  Req'd   Elap
 		Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
 		--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
-		20.pbssrv       fgao     workq    STDIN       11835   1   1    --    --  E 00:00
-			--
-		*/
+		29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
+		   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
 
-		StringTokenizer st = new StringTokenizer(output, "\n");
-		st.nextToken();
-		while (st.hasMoreTokens()) {		
-			pendingReason += st.nextToken() + "\n";
+		*/		
+		String output = exe.getStdoutString();
+		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+		while (st.hasMoreTokens()) {
+			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
+				if (st.hasMoreTokens()) {
+					st.nextToken();
+				}
+				if (st.hasMoreTokens()) {
+					st.nextToken();
+				}
+				pendingReason = "";
+				while (st.hasMoreTokens()) {
+					pendingReason += st.nextToken();
+				}
+				break;
+			}			
 		}
 	} catch (ExecutableException ex) {
 		ex.printStackTrace(System.out);
@@ -227,13 +230,13 @@ public static void main(String[] args) {
 	try {		
 		PropertyLoader.loadProperties();
 		
-		String jobid = "22.pbssrv"; //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
+		String jobid = "29908"; //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
 		int status = PBSUtils.getJobStatus(jobid);
-		int code = PBSUtils.getJobExitCode(jobid);
 		System.out.println("jobid=" + jobid);
 		System.out.println("status=" + PBS_JOB_STATUS[status]);
-		System.out.println("exitcode=" + code + ":" + PBS_JOB_EXEC_STATUS[-code] + "]");
 		System.out.println("pendingreason=" + getPendingReason(jobid));
+		int code = PBSUtils.getJobExitCode(jobid);
+		System.out.println("exitcode=" + code + ":" + PBS_JOB_EXEC_STATUS[-code] + "]");
 	} catch (Exception ex) {
 		ex.printStackTrace();
 	}
