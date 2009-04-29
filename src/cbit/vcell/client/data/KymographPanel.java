@@ -5,8 +5,6 @@ import java.awt.geom.Point2D;
 import cbit.image.DisplayAdapterService;
 import cbit.util.BeanUtils;
 import cbit.util.Range;
-import cbit.util.TSJobResultsNoStats;
-import cbit.util.TimeSeriesJobResults;
 import cbit.util.VCDataJobID;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.server.DataAccessException;
@@ -14,6 +12,9 @@ import cbit.vcell.server.User;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+
+import org.vcell.util.TSJobResultsNoStats;
+import org.vcell.util.TimeSeriesJobResults;
 
 import java.awt.GridBagConstraints;
 /**
@@ -1967,8 +1968,8 @@ private void initDataManagerVariable(final String finalVarName) {
 	
 	try{
 		double[] timeValues = dataManager.getDataSetTimes();
-		cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-			new cbit.util.TimeSeriesJobSpec(
+		org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+			new org.vcell.util.TimeSeriesJobSpec(
 					new String[] {finalVarName},
 					new int[][] {dataManagerIndices},
 					(crossingMembraneIndices != null?new int[][] {crossingMembraneIndices}:null),

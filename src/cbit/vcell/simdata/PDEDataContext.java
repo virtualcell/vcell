@@ -10,6 +10,9 @@ import cbit.vcell.solvers.*;
 import java.beans.*;
 import java.util.Comparator;
 
+import org.vcell.util.TimeSeriesJobResults;
+import org.vcell.util.TimeSeriesJobSpec;
+
 import cbit.image.*;
 import cbit.util.*;
 /**

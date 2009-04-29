@@ -184,9 +184,9 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(cbit.vcell.server.VCDataI
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.TimeSeriesJobResults)remoteCall("getTimeSeriesValues", 
-		new Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.util.TimeSeriesJobSpec.class}, new Object[] {vcdataID, timeSeriesJobSpec});
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(cbit.vcell.server.VCDataIdentifier vcdataID, org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.TimeSeriesJobResults)remoteCall("getTimeSeriesValues", 
+		new Class[] {cbit.vcell.server.VCDataIdentifier.class, org.vcell.util.TimeSeriesJobSpec.class}, new Object[] {vcdataID, timeSeriesJobSpec});
 
 }
 

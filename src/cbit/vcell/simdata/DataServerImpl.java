@@ -332,7 +332,7 @@ public SimDataBlock getSimDataBlock(User user, VCDataIdentifier vcdID, String va
  * @param y int
  * @param z int
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(User user, VCDataIdentifier vcdID, cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(User user, VCDataIdentifier vcdID, org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.getTimeSeriesValues(vcdID,timeSeriesJobSpec);

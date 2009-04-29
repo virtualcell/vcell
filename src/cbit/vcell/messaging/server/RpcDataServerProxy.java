@@ -176,11 +176,11 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
 //	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 	try {
 		if(!timeSeriesJobSpec.getVcDataJobID().isBackgroundTask()){
-			return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
+			return (org.vcell.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 		}else{
 			rpc(ServiceType.DATA, "getTimeSeriesValues", new Object[]{user, vcdID,timeSeriesJobSpec}, false);
 		}

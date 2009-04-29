@@ -123,7 +123,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(VCDataIdentifier vcdataID
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdataID, cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException;
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdataID, org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2001 2:53:44 PM)

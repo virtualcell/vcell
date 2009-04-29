@@ -1,8 +1,8 @@
-package cbit.util;
+package org.vcell.util;
 
-import java.rmi.dgc.VMID;
 import java.util.BitSet;
 
+import cbit.util.VCDataJobID;
 import cbit.vcell.solvers.CartesianMesh;
 
 /**

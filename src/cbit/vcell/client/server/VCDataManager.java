@@ -399,7 +399,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(cbit.vcell.server.VCDataI
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.vcell.server.VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(cbit.vcell.server.VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	try {
 		return getDataSetController().getTimeSeriesValues(vcdID,timeSeriesJobSpec);
 	}catch (RemoteException e){

@@ -1,4 +1,4 @@
-package cbit.util;
+package org.vcell.util;
 /**
  * Insert the type's description here.
  * Creation date: (2/21/2006 1:53:02 PM)
