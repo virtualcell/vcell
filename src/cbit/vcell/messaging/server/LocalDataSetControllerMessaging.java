@@ -298,7 +298,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param varName java.lang.String
  * @param index int
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.getTimeSeriesValues(vcdID=" + vcdID + ", " + timeSeriesJobSpec + ")");
 	try {
 		return dataServerProxy.getTimeSeriesValues(vcdID,timeSeriesJobSpec);

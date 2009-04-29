@@ -4,7 +4,9 @@ package cbit.rmi.event;
  * All rights reserved.
 ©*/
 import java.rmi.dgc.VMID;
-import cbit.util.TimeSeriesJobResults;
+
+import org.vcell.util.TimeSeriesJobResults;
+
 import cbit.util.VCDataJobID;
 import cbit.vcell.server.*;
 /**

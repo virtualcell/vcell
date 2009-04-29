@@ -2,9 +2,6 @@ package cbit.vcell.simdata;
 import cbit.util.FileUtils;
 import cbit.util.ISize;
 import cbit.util.NumberUtils;
-import cbit.util.TSJobResultsNoStats;
-import cbit.util.TimeSeriesJobResults;
-import cbit.util.TimeSeriesJobSpec;
 import cbit.util.TokenMangler;
 import cbit.util.VCDataJobID;
 import cbit.vcell.field.FieldDataDBOperationDriver;
@@ -31,6 +28,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import java.io.*;
+
+import org.vcell.util.TSJobResultsNoStats;
+import org.vcell.util.TimeSeriesJobResults;
+import org.vcell.util.TimeSeriesJobSpec;
 
 import cbit.vcell.server.*;
 import cbit.vcell.solver.DataProcessingOutput;
@@ -454,7 +455,7 @@ private SpatialStatsInfo calcSpatialStatsInfo(TimeSeriesJobSpec timeSeriesJobSpe
  * Insert the method's description here.
  * Creation date: (2/16/2006 12:28:29 PM)
  */
-private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
+private org.vcell.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 	TimeSeriesJobSpec timeSeriesJobSpec,
     double[][][] timeSeriesFormatedValuesArr,
     double[] desiredTimeValues,
@@ -489,7 +490,7 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 		    }
 	    }
 	    if(!timeSeriesJobSpec.isCalcSpaceStats()){//No space stats
-	        return new cbit.util.TSJobResultsTimeStats(
+	        return new org.vcell.util.TSJobResultsTimeStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -518,7 +519,7 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 			    timeSpaceStatsUnweightedMean[i] = mean;
 			    timeSpaceStatsWeightedMean[i] = wmean;
 		    }
-	        return new cbit.util.TSJobResultsTimeStats(
+	        return new org.vcell.util.TSJobResultsTimeStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -563,7 +564,7 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 			    spaceStatsWeightedSum[i][k] = wsum;
 		    }
 	    }
-        return new cbit.util.TSJobResultsSpaceStats(
+        return new org.vcell.util.TSJobResultsSpaceStats(
             timeSeriesJobSpec.getVariableNames(),
             timeSeriesJobSpec.getIndices(),
             desiredTimeValues,
@@ -2605,7 +2606,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 
 
 
-private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+private org.vcell.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	TimeInfo timeInfo =
 		new TimeInfo(vcdID,timeSeriesJobSpec.getStartTime(),timeSeriesJobSpec.getStep(),timeSeriesJobSpec.getEndTime());
@@ -2801,7 +2802,7 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 					wsum[i][j] = timeStat[WSUM_OFFSET+1][j];
 				}
 			}
-			return new cbit.util.TSJobResultsSpaceStats(
+			return new org.vcell.util.TSJobResultsSpaceStats(
 					timeSeriesJobSpec.getVariableNames(),
 					timeSeriesJobSpec.getIndices(),
 					desiredTimeValues,
@@ -2819,7 +2820,7 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 		}else{
 			double[][][] timeSeriesFormatedValuesArr = new double[valuesV.size()][][];
 			valuesV.copyInto(timeSeriesFormatedValuesArr);
-			TSJobResultsNoStats tsJobResultsNoStats =  new cbit.util.TSJobResultsNoStats(
+			TSJobResultsNoStats tsJobResultsNoStats =  new org.vcell.util.TSJobResultsNoStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -2849,7 +2850,7 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 }
 
 
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	fireDataJobEventIfNecessary(
 			timeSeriesJobSpec.getVcDataJobID(),

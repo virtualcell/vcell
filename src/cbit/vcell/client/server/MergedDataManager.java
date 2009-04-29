@@ -252,7 +252,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double ti
  * 
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
 	if (getIsODEData()) {
 		throw new RuntimeException("Not Implemented");
 	} else {

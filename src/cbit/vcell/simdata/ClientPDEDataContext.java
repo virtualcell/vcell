@@ -135,7 +135,7 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
 	return dataManager.getTimeSeriesValues(timeSeriesJobSpec);
 }
 

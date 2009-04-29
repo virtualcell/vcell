@@ -243,11 +243,11 @@ private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDa
 		distances = ssh.getWorldCoordinateLengths();
 	}
 
-	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-		new cbit.util.TimeSeriesJobSpec(
+	org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+		new org.vcell.util.TimeSeriesJobSpec(
 				new String[]{variableName},new int[][]{pointIndexes},new int[][]{crossingMembraneIndexes},allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
-	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
+	org.vcell.util.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array
 	// variableValues[1] is values for 1st spatial point.
@@ -395,11 +395,11 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
  */
 private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	
-	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-		new cbit.util.TimeSeriesJobSpec(
+	org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+		new org.vcell.util.TimeSeriesJobSpec(
 				new String[]{variableName},new int[][]{pointIndexes},null,allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
-	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
+	org.vcell.util.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array
 	// variableValues[1] is values for 1st spatial point.

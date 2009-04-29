@@ -195,7 +195,7 @@ cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double time) thr
  * 
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException;
+org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException;
 
 
 /**

@@ -187,7 +187,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String var, double t
  * @param y int
  * @param z int
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	return dataServerImpl.getTimeSeriesValues(user,vcdID,timeSeriesJobSpec);
 }
 

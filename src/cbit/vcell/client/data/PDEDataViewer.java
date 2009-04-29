@@ -15,6 +15,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.vcell.util.TSJobResultsNoStats;
+import org.vcell.util.TSJobResultsSpaceStats;
+import org.vcell.util.TimeSeriesJobResults;
+import org.vcell.util.TimeSeriesJobSpec;
+
 import cbit.image.DisplayAdapterService;
 import cbit.plot.*;
 import cbit.rmi.event.DataJobEvent;
@@ -793,8 +798,8 @@ private void roiAction(){
 							throw new Exception("ROI table, Unknown data type: "+auxInfo.getClass().getName());
 						}
 					}
-					cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new cbit.util.TimeSeriesJobSpec(
+					org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+						new org.vcell.util.TimeSeriesJobSpec(
 							new String[] {getPdeDataContext().getDataIdentifier().getName()},
 							new BitSet[] {dataBitSet},
 							((Double)jcb_time_begin.getSelectedItem()).doubleValue(),
@@ -2938,8 +2943,8 @@ private void updateDataValueSurfaceViewer() {
 					for(int i=0;i<varNames.length;i+= 1){
 						varNames[i] = updatedVariableName;
 					}
-					final cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new cbit.util.TimeSeriesJobSpec(
+					final org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+						new org.vcell.util.TimeSeriesJobSpec(
 								varNames,indices,beginTime,1,endTime,bSpaceStats,bTimeStats,
 								VCDataJobID.createVCDataJobID(
 										getDataViewerManager().getUser(),
@@ -3006,8 +3011,8 @@ private void makeSurfaceMovie(
 		for (int i = 0; i < allIndices.length; i++) {
 			allIndices[i] = i;
 		}
-		final cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-			new cbit.util.TimeSeriesJobSpec(
+		final org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+			new org.vcell.util.TimeSeriesJobSpec(
 				varNames,
 				new int[][] {allIndices},null,
 				getPdeDataContext().getTimePoints()[beginTimeIndex],
