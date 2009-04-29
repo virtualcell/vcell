@@ -482,7 +482,8 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 	VCDataIdentifier vcSimId1 = new VCSimulationDataIdentifier(simInfo.getAuthoritativeVCSimulationIdentifier(), 0); 
 	VCDataIdentifier vcSimId2 = new VCSimulationDataIdentifier(regrSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
 	User user = simInfo.getOwner();
-	MergedDataInfo mergedDataInfo = new MergedDataInfo(user, new VCDataIdentifier[] {vcSimId2,vcSimId1}, null);
+	VCDataIdentifier[] vcIdentifierArray = new VCDataIdentifier[] {vcSimId2,vcSimId1};
+	MergedDataInfo mergedDataInfo = new MergedDataInfo(user, vcIdentifierArray, MergedDataInfo.createDefaultPrefixNames(vcIdentifierArray.length));
 
 	// get the data manager and wire it up
 	try {

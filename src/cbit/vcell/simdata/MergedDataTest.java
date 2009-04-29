@@ -3,6 +3,8 @@ package cbit.vcell.simdata;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSetTest;
 import cbit.vcell.server.StdoutSessionLog;
+import cbit.vcell.server.VCDataIdentifier;
+
 import java.io.File;
 import cbit.vcell.server.User;
 /**
@@ -55,7 +57,8 @@ public static void main(String[] args) {
 
 //	MergedData MergedData = new MergedData("MergedData1", dscImpl, new SimulationData[] {simData1, simData2});
 	try {
-		MergedDataInfo mergedInfo = new MergedDataInfo(user, new cbit.vcell.server.VCDataIdentifier[] {simData1.getResultsInfoObject(), simData2.getResultsInfoObject()},null);
+		VCDataIdentifier[] vcIdentifierArray = new cbit.vcell.server.VCDataIdentifier[] {simData1.getResultsInfoObject(), simData2.getResultsInfoObject()};
+		MergedDataInfo mergedInfo = new MergedDataInfo(user,vcIdentifierArray ,MergedDataInfo.createDefaultPrefixNames(vcIdentifierArray.length));
 		MergedData mergedData = (MergedData)dscImpl.getVCData(mergedInfo);
 		ODEDataBlock combinedODEDataBlk = mergedData.getODEDataBlock();
 		ODESimData combinedODESimData = combinedODEDataBlk.getODESimData();
