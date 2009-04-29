@@ -63,6 +63,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.microscopy.gui.FRAPReactionDiffusionParamPanel;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -889,12 +890,13 @@ public class FRAPStudy implements Matchable{
 		}
 	}
 
-	private static File getMergedFunctionFile(
-			ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
-			File simDataDirectory){
+	private static File getMergedFunctionFile(ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
+			File simDataDirectory)
+	{
+			VCDataIdentifier[] vcIdentifierArray = new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId};
 			MergedDataInfo mergedDataInfo =
-				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
-					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId});
+				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),vcIdentifierArray
+					,MergedDataInfo.createDefaultPrefixNames(vcIdentifierArray.length));
 			return
 				new File(simDataDirectory,
 					mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);

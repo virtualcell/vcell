@@ -107,7 +107,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String FRAPSTUDYPANEL_TABNAME_2DResults = "2D Results";
 	public static final String MODEL_TYPE_PURE_DIFFUSION = "Pure_Diffusion";
 	public static final String MODEL_TYPE_REACTION_DIFFUSION = "Reaction_Diffusion";
-	
 	public static final LineBorder TAB_LINE_BORDER = new LineBorder(new Color(153, 186,243), 3);
 	
 	private FRAPStudy frapStudy = null;
@@ -1916,7 +1915,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
 				
 				VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
-				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs);
+				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, MergedDataInfo.createDefaultPrefixNames(dataIDs.length));
 				dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 				
