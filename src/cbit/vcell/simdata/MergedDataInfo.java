@@ -11,16 +11,13 @@ public class MergedDataInfo implements cbit.vcell.server.VCDataIdentifier, java.
 	private User datasetUser = null;
 	private cbit.vcell.server.VCDataIdentifier[] dataIDs = null;
 	private String[] dataSetPrefix = null;
-	
-/**
- * CompositeDataInfo constructor comment.
- */
-//	public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdataIDs) {
-//		this(argOwner, argdataIDs, null);
-//	}
-			
+
 public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdataIDs, String[] prefix) {
 	super();
+	if(prefix == null)
+	{
+		throw new IllegalArgumentException("Prefixes can not be null in MergedDataInfo.");
+	}
 	String compDataName = argOwner.getName();
 	for (int i = 0; i < argdataIDs.length; i++) {
 		compDataName = compDataName+"_"+argdataIDs[i].getID();
@@ -29,6 +26,16 @@ public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdat
 	datasetUser = argOwner;
 	dataIDs = argdataIDs;
 	dataSetPrefix = prefix;
+}
+
+public static String[] createDefaultPrefixNames(int dataSetCount)
+{
+		String[] dataSetPrefix = new String[dataSetCount];
+		for (int i = 0; i < dataSetCount; i++)
+		{
+			dataSetPrefix[i] = "Data"+(i+1); 
+		}
+		return dataSetPrefix;
 }
 /**
  * Checks for internal representation of objects, not keys from database
