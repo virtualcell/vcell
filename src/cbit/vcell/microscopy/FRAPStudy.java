@@ -35,15 +35,15 @@ import loci.formats.ImageTools;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
 import cbit.sql.SimulationVersion;
 import cbit.sql.VersionFlag;
-import cbit.util.Compare;
+import org.vcell.util.Compare;
 import cbit.util.Extent;
 import cbit.util.FileUtils;
 import cbit.util.ISize;
 import cbit.util.Issue;
-import cbit.util.Matchable;
+import org.vcell.util.Matchable;
 import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -79,7 +79,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.server.GroupAccessNone;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
+import org.vcell.util.document.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -1971,15 +1971,15 @@ public class FRAPStudy implements Matchable{
 		if (obj != null && obj instanceof FRAPStudy) 
 		{
 			FRAPStudy fStudy = (FRAPStudy)obj;
-			if(!cbit.util.Compare.isEqualOrNull(name, fStudy.name))
+			if(!Compare.isEqualOrNull(name, fStudy.name))
 			{
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(description, fStudy.description))
+			if(!Compare.isEqualOrNull(description, fStudy.description))
 			{
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(originalImageFilePath, fStudy.originalImageFilePath))
+			if(!Compare.isEqualOrNull(originalImageFilePath, fStudy.originalImageFilePath))
 			{
 				return false;
 			}
@@ -1987,19 +1987,19 @@ public class FRAPStudy implements Matchable{
 			{
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(getBioModel(), fStudy.getBioModel()))
+			if(!Compare.isEqualOrNull(getBioModel(), fStudy.getBioModel()))
 			{
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(getFrapDataExternalDataInfo(),fStudy.getFrapDataExternalDataInfo()))
+			if(!Compare.isEqualOrNull(getFrapDataExternalDataInfo(),fStudy.getFrapDataExternalDataInfo()))
 			{
 				return false;
 			}
-			if (!cbit.util.Compare.isEqualOrNull(getRoiExternalDataInfo(),fStudy.getRoiExternalDataInfo()))
+			if (!Compare.isEqualOrNull(getRoiExternalDataInfo(),fStudy.getRoiExternalDataInfo()))
 			{
 				return false;
 			}
-			if (!cbit.util.Compare.isEqualOrNull(getStoredRefData(),fStudy.getStoredRefData()))
+			if (!Compare.isEqualOrNull(getStoredRefData(),fStudy.getStoredRefData()))
 			{
 				return false;
 			}

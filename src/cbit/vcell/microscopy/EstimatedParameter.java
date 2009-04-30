@@ -1,10 +1,8 @@
 package cbit.vcell.microscopy;
 
-import cbit.util.Compare;
-import cbit.util.Matchable;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class EstimatedParameter {

@@ -13,8 +13,7 @@ import java.util.zip.InflaterInputStream;
 import org.jdom.Element;
 
 import cbit.image.ImageException;
-import cbit.sql.KeyValue;
-import cbit.util.CommentStringTokenizer;
+import org.vcell.util.document.KeyValue;
 import cbit.util.Extent;
 import cbit.util.Origin;
 import cbit.util.xml.XmlUtil;
@@ -24,7 +23,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.server.User;
+import org.vcell.util.document.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.xml.XMLTags;
