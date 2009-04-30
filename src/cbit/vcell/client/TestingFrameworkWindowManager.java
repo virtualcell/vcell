@@ -5,7 +5,6 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.gui.DialogUtils;
 import cbit.rmi.event.ExportEvent;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.MergedDataInfo;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
@@ -39,7 +38,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
-import cbit.sql.KeyValue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +64,9 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableCellRenderer;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;

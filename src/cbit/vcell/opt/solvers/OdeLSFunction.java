@@ -1,11 +1,12 @@
 package cbit.vcell.opt.solvers;
 import java.io.PrintWriter;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.parser.*;
 import cbit.vcell.opt.ReferenceData;
-import cbit.sql.KeyValue;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 /**
@@ -68,7 +69,7 @@ private double calculateWeightedError(double[] x) {
 		cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
 			new KeyValue("12345"),
 			"name",
-			new cbit.vcell.server.User("user",new KeyValue("123")),
+			new org.vcell.util.document.User("user",new KeyValue("123")),
 			new cbit.vcell.server.GroupAccessNone(),
 			null, // versionBranchPointRef
 			new java.math.BigDecimal(1.0), // branchID

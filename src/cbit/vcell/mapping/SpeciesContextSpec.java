@@ -4,11 +4,12 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.util.BeanUtils;
 import cbit.util.CommentStringTokenizer;
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -27,7 +28,7 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, Serializable {
+public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, Serializable {
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -75,7 +76,7 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 			setDescription(argDescription);
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof SpeciesContextSpecParameter)){
 				return false;
 			}

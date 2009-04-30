@@ -202,7 +202,7 @@ private void connPtoP1SetTarget() {
  * Comment
  */
 private void displayAnnotation() {
-	if(cbit.util.Compare.isEqualOrNull(getJTextAreaDescription().getText(),getSimulation().getDescription())){
+	if(org.vcell.util.Compare.isEqualOrNull(getJTextAreaDescription().getText(),getSimulation().getDescription())){
 		return;
 	}
 	try {

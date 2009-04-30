@@ -11,6 +11,10 @@ import java.beans.*;
 import cbit.vcell.math.BoundaryConditionType;
 import java.sql.*;
 import java.sql.Statement;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;

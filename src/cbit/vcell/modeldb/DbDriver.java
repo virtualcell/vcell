@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.Hashtable;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 /**
  * This type was created in VisualAge.
  */

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Vector;
 
+import org.vcell.util.document.User;
+
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ReservedVariable;
@@ -13,7 +15,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.DataProcessingOutput;

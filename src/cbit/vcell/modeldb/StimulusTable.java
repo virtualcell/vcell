@@ -1,4 +1,6 @@
 package cbit.vcell.modeldb;
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.parser.Expression;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

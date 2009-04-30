@@ -9,13 +9,15 @@ import cbit.gui.graph.Shape;
 import java.awt.event.*;
 import java.awt.*;
 
-import cbit.util.Compare;
 import cbit.vcell.model.*;
 import cbit.gui.*;
 import javax.swing.*;
 import cbit.vcell.model.gui.SimpleReactionPanelDialog;
 import cbit.vcell.model.gui.FluxReaction_Dialog;
 import javax.swing.event.InternalFrameEvent;
+
+import org.vcell.util.Compare;
+
 import cbit.vcell.model.gui.EditSpeciesDialog;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellTransferable;

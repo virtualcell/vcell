@@ -9,11 +9,14 @@ import java.beans.*;
 
 import cbit.sql.*;
 import java.sql.Statement;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.server.DependencyException;
 import cbit.vcell.server.PermissionException;
 import cbit.image.*;

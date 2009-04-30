@@ -31,7 +31,7 @@ public JumpCondition(VolVariable volVar) {
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	JumpCondition equ = null;
 	if (!(object instanceof JumpCondition)){
 		return false;
@@ -41,10 +41,10 @@ public boolean compareEqual(cbit.util.Matchable object) {
 	if (!compareEqual0(equ)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(inFluxExp,equ.inFluxExp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(inFluxExp,equ.inFluxExp)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(outFluxExp,equ.outFluxExp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(outFluxExp,equ.outFluxExp)){
 		return false;
 	}
 	return true;

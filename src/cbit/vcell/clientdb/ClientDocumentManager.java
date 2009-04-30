@@ -10,15 +10,16 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.vcell.util.Compare;
+import org.vcell.util.document.KeyValue;
+
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.sql.KeyValue;
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 import cbit.sql.VersionableType;
 import cbit.util.BeanUtils;
 import cbit.util.BigString;
-import cbit.util.Compare;
 import cbit.util.ISize;
 import cbit.util.Preference;
 import cbit.vcell.biomodel.BioModel;
@@ -1370,7 +1371,7 @@ public Preference[] getPreferences() throws cbit.vcell.server.DataAccessExceptio
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:10:41 PM)
  */
-public cbit.vcell.model.ReactionStep getReactionStep(cbit.sql.KeyValue reactionStepKey) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.model.ReactionStep getReactionStep(org.vcell.util.document.KeyValue reactionStepKey) throws cbit.vcell.server.DataAccessException {
 	try {
 		ReactionStep rStep = sessionManager.getUserMetaDbServer().getReactionStep(reactionStepKey);
 		if(rStep != null){
@@ -1535,7 +1536,7 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws cbi
  * Insert the method's description here.
  * Creation date: (1/19/01 10:54:29 AM)
  */
-public cbit.vcell.server.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return sessionManager.getUser();
 }
 
@@ -1558,7 +1559,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(c
  * Insert the method's description here.
  * Creation date: (9/15/2003 3:33:10 PM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(cbit.sql.KeyValue[] reactionStepKeys) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws cbit.vcell.server.DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
 	}catch (RemoteException e){

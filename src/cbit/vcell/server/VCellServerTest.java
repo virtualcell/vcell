@@ -1,4 +1,7 @@
 package cbit.vcell.server;
+
+import org.vcell.util.document.User;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

@@ -9,8 +9,10 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.*;
-import cbit.util.Immutable;
 import java.io.Serializable;
+
+import org.vcell.util.Immutable;
+import org.vcell.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

@@ -62,7 +62,7 @@ public Object clone() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!super.compareEqual(obj)) {
 		return false;
 	}

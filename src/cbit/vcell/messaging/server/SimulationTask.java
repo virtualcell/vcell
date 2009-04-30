@@ -1,12 +1,13 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.server.User;
-import cbit.sql.KeyValue;
 
 /**
  * Insert the type's description here.
@@ -131,7 +132,7 @@ public int getTaskID() {
  * Creation date: (3/11/2004 8:51:11 AM)
  * @return java.lang.String
  */
-public cbit.vcell.server.User getUser() {
+public org.vcell.util.document.User getUser() {
 	if (getSimulationJob().getWorkingSim() == null) {
 		return null;
 	}

@@ -1,4 +1,6 @@
 package cbit.vcell.simdata;
+import org.vcell.util.document.User;
+
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.SimulationInfo;
 /*©

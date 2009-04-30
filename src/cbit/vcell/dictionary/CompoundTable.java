@@ -1,7 +1,9 @@
 package cbit.vcell.dictionary;
 
 import java.util.Vector;
-import cbit.sql.KeyValue;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.Field;
@@ -47,8 +49,8 @@ public DBFormalSpecies[] getCompounds(java.sql.ResultSet rset, SessionLog log,bo
 	String currentFormula = null;
 	String currentKeggID = null;
 	String currentPreferred = null;
-	cbit.sql.KeyValue currentCompoundID = null;
-	cbit.sql.KeyValue currentDBSpeciesID = null;
+	org.vcell.util.document.KeyValue currentCompoundID = null;
+	org.vcell.util.document.KeyValue currentDBSpeciesID = null;
 	
 	while(rset.next() || rset.isAfterLast()){
 			

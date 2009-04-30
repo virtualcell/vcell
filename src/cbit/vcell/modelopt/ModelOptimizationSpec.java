@@ -12,7 +12,7 @@ import cbit.vcell.math.*;
  * Creation date: (8/22/2005 9:21:42 AM)
  * @author: Jim Schaff
  */
-public class ModelOptimizationSpec implements java.io.Serializable, cbit.util.Matchable {
+public class ModelOptimizationSpec implements java.io.Serializable, org.vcell.util.Matchable {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -163,19 +163,19 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof ModelOptimizationSpec){
 		ModelOptimizationSpec mos = (ModelOptimizationSpec)obj;
 
-		if (!cbit.util.Compare.isEqual(fieldParameterMappingSpecs,mos.fieldParameterMappingSpecs)){
+		if (!org.vcell.util.Compare.isEqual(fieldParameterMappingSpecs,mos.fieldParameterMappingSpecs)){
 			return false;
 		}
 
-		if (!cbit.util.Compare.isEqualOrNull(fieldReferenceData,mos.fieldReferenceData)){
+		if (!org.vcell.util.Compare.isEqualOrNull(fieldReferenceData,mos.fieldReferenceData)){
 			return false;
 		}
 
-		if (!cbit.util.Compare.isEqualOrNull(fieldReferenceDataMappingSpecs,mos.fieldReferenceDataMappingSpecs)){
+		if (!org.vcell.util.Compare.isEqualOrNull(fieldReferenceDataMappingSpecs,mos.fieldReferenceDataMappingSpecs)){
 			return false;
 		}
 

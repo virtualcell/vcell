@@ -5,10 +5,12 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import com.icl.saxon.functions.UnparsedEntityURI;
 
 import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyValue;
 import cbit.util.BigString;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
@@ -23,7 +25,6 @@ import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
 import cbit.vcell.solver.Simulation;
 
 public class BioModelVisitor implements VCDatabaseVisitor {

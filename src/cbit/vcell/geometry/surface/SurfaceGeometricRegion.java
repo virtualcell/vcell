@@ -20,7 +20,7 @@ public SurfaceGeometricRegion(String argName, double size, VCUnitDefinition size
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SurfaceGeometricRegion){
 		SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)obj;
 		if (!super.compareEqual0(surfaceRegion)){

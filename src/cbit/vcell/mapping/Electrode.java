@@ -5,7 +5,7 @@ package cbit.vcell.mapping;
  * Creation date: (4/8/2002 11:10:05 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class Electrode implements java.io.Serializable, cbit.util.Matchable {
+public class Electrode implements java.io.Serializable, org.vcell.util.Matchable {
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Feature fieldFeature = null;
@@ -53,7 +53,7 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	Electrode electrode = null;
 	if (!(obj instanceof Electrode)){
 		return false;
@@ -61,10 +61,10 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		electrode = (Electrode)obj;
 	}
 
-	if (!cbit.util.Compare.isEqualOrNull(getFeature(),electrode.getFeature())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getFeature(),electrode.getFeature())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getPosition(),electrode.getPosition())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getPosition(),electrode.getPosition())){
 		return false;
 	}
 	return true;

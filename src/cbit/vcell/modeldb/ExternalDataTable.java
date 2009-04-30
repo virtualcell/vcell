@@ -5,9 +5,11 @@ package cbit.vcell.modeldb;
 ©*/
 import java.sql.*;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.util.TokenMangler;
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.server.DataAccessException;
@@ -45,7 +47,7 @@ private ExternalDataTable() {
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(KeyValue key,cbit.vcell.server.User owner,String name,String argAnnot)throws DataAccessException {
+public String getSQLValueList(KeyValue key,org.vcell.util.document.User owner,String name,String argAnnot)throws DataAccessException {
 
     StringBuffer buffer = new StringBuffer();
     buffer.append("(");

@@ -1,6 +1,7 @@
 package cbit.vcell.field;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.VCDataIdentifier;
 
 public interface SimResampleInfoProvider extends VCDataIdentifier{

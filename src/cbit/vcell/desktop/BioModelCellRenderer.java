@@ -3,10 +3,8 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.User;
 import java.awt.Font;
 import java.math.BigDecimal;
-import cbit.sql.KeyValue;
 import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
@@ -21,6 +19,9 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
  
 public class BioModelCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;

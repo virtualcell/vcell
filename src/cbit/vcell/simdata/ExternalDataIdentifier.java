@@ -1,30 +1,31 @@
 package cbit.vcell.simdata;
 import java.util.StringTokenizer;
 
-import cbit.util.Matchable;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.sql.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (9/18/2006 12:55:46 PM)
  * @author: Jim Schaff
  */
 public class ExternalDataIdentifier implements java.io.Serializable,VCDataIdentifier,Matchable{
-	private cbit.sql.KeyValue key;
-	private cbit.vcell.server.User owner;
+	private org.vcell.util.document.KeyValue key;
+	private org.vcell.util.document.User owner;
 	private String name;
 
 /**
  * FieldDataIdentifier constructor comment.
  */
-public ExternalDataIdentifier(KeyValue arg_key, cbit.vcell.server.User argOwner,String argName) {
+public ExternalDataIdentifier(KeyValue arg_key, org.vcell.util.document.User argOwner,String argName) {
 	super();
 	key = arg_key;
 	owner = argOwner;
@@ -56,7 +57,7 @@ public String getName(){
  * Creation date: (9/18/2006 12:56:35 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getKey() {
+public org.vcell.util.document.KeyValue getKey() {
 	return key;
 }
 
@@ -66,7 +67,7 @@ public cbit.sql.KeyValue getKey() {
  * Creation date: (9/21/2006 12:33:44 PM)
  * @return cbit.util.Extent
  */
-public cbit.vcell.server.User getOwner() {
+public org.vcell.util.document.User getOwner() {
 	return owner;
 }
 

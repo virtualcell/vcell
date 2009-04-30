@@ -1,4 +1,7 @@
 package cbit.util;
+
+import org.vcell.util.Matchable;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/1/2004 10:12:47 AM)

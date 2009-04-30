@@ -3,7 +3,9 @@ package cbit.vcell.messaging.server;
 import java.io.File;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import cbit.sql.KeyValue;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.util.FileUtils;
 import cbit.vcell.messaging.ControlMessageCollector;
 import cbit.vcell.messaging.ControlTopicListener;

@@ -11,6 +11,9 @@ import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.util.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.simdata.*;
 import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.export.server.*;

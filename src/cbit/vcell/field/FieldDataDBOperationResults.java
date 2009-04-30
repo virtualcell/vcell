@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 public class FieldDataDBOperationResults implements Serializable {

@@ -1765,11 +1765,11 @@ private void updateInterface() {
 			(getContextNameValueTextField().getText() != null) && (getContextNameValueTextField().getText().length() > 0) && 
 				(
 					mode == ADD_SPECIES_MODE ||
-					!cbit.util.Compare.isEqualOrNull(getNameValueJTextField().getText(),getSpeciesContext().getSpecies().getCommonName()) ||
-					!cbit.util.Compare.isEqualOrNull(getSpeciesContext().getSpecies().getDBSpecies(),getDBFormalSpecies()) ||
-					!cbit.util.Compare.isEqualOrNull(getSpeciesContext().getSpecies().getAnnotation(),getAnnotationString()) ||
+					!org.vcell.util.Compare.isEqualOrNull(getNameValueJTextField().getText(),getSpeciesContext().getSpecies().getCommonName()) ||
+					!org.vcell.util.Compare.isEqualOrNull(getSpeciesContext().getSpecies().getDBSpecies(),getDBFormalSpecies()) ||
+					!org.vcell.util.Compare.isEqualOrNull(getSpeciesContext().getSpecies().getAnnotation(),getAnnotationString()) ||
 					getSpeciesContext().getHasOverride() != getJCheckBoxHasOverride().isSelected() ||
-					!cbit.util.Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText())
+					!org.vcell.util.Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText())
 				)
 			);
 }

@@ -132,7 +132,7 @@ public static OptimizationSpec getOdeExample() throws ExpressionException, Excep
 		public int getNumColumns() {
 			return names.length;
 		}
-		public boolean compareEqual(cbit.util.Matchable obj){
+		public boolean compareEqual(org.vcell.util.Matchable obj){
 			return equals(obj);
 		}
 		public int getDataSize() {			

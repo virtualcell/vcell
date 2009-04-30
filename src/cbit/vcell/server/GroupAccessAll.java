@@ -1,5 +1,7 @@
 package cbit.vcell.server;
 
+import org.vcell.util.document.User;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/15/2001 3:34:49 PM)

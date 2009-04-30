@@ -13,7 +13,6 @@ import java.rmi.RemoteException;
 import cbit.sql.UserInfo;
 import java.sql.SQLException;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.sql.KeyValue;
 import cbit.sql.DBCacheTable;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
@@ -27,7 +26,10 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.sql.VersionableType;
 import cbit.util.BeanUtils;
 import java.io.File;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mapping.MappingException;
@@ -356,7 +358,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 	
 
-	User user = new User("Administrator", new cbit.sql.KeyValue("2"));
+	User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
 	SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
@@ -606,7 +608,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     calendar.set(2002, java.util.Calendar.JANUARY, 1);
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
-    User user = new User("Administrator", new cbit.sql.KeyValue("2"));
+    User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
     SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
         userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");
@@ -633,7 +635,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
 			con.close();
         }
 
-        KeyValue[] bmKeys = (cbit.sql.KeyValue[]) cbit.util.BeanUtils.getArray(keys, cbit.sql.KeyValue.class);
+        KeyValue[] bmKeys = (org.vcell.util.document.KeyValue[]) cbit.util.BeanUtils.getArray(keys, org.vcell.util.document.KeyValue.class);
         try {
 			// use the first biomodel...
 	        BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user, bmKeys[0]);

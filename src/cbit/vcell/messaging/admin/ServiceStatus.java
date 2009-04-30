@@ -2,8 +2,10 @@ package cbit.vcell.messaging.admin;
 
 import java.io.Serializable;
 import java.util.Date;
-import cbit.util.Compare;
-import cbit.util.Matchable;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import static cbit.vcell.messaging.admin.ManageConstants.*;
 
 public class ServiceStatus implements ComparableObject, Matchable, Serializable {

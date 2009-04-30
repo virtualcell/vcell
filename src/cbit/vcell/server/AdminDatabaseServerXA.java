@@ -1,6 +1,10 @@
 package cbit.vcell.server;
 import cbit.vcell.messaging.db.*;
 import java.sql.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 public interface AdminDatabaseServerXA {
 /**

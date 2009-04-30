@@ -1,13 +1,14 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.util.Compare;
+
 import cbit.image.VCImage;
 import cbit.vcell.geometry.*;
-import cbit.util.Compare;
 /**
  * Insert the type's description here.
  * Creation date: (5/26/2004 9:58:01 AM)
  * @author: Jim Schaff
  */
-public class GeometrySurfaceDescription implements cbit.util.Matchable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+public class GeometrySurfaceDescription implements org.vcell.util.Matchable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.util.ISize fieldVolumeSampleSize = null;
@@ -127,20 +128,20 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == this){
 		return true;
 	}
 
 	if (obj instanceof GeometrySurfaceDescription){
 		GeometrySurfaceDescription geometrySurfaceDescription = (GeometrySurfaceDescription)obj;
-		if (!cbit.util.Compare.isEqual(getFilterCutoffFrequency(),geometrySurfaceDescription.getFilterCutoffFrequency())){
+		if (!org.vcell.util.Compare.isEqual(getFilterCutoffFrequency(),geometrySurfaceDescription.getFilterCutoffFrequency())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqual(getVolumeSampleSize(),geometrySurfaceDescription.getVolumeSampleSize())){
+		if (!org.vcell.util.Compare.isEqual(getVolumeSampleSize(),geometrySurfaceDescription.getVolumeSampleSize())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(getGeometricRegions(),geometrySurfaceDescription.getGeometricRegions())){
+		if (!org.vcell.util.Compare.isEqualOrNull(getGeometricRegions(),geometrySurfaceDescription.getGeometricRegions())){
 			return false;
 		}
 		
@@ -348,8 +349,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("extent") || evt.getPropertyName().equals("origin"))){
-		cbit.util.Matchable oldExtentOrOrigin = (cbit.util.Matchable)evt.getOldValue();
-		cbit.util.Matchable newExtentOrOrigin = (cbit.util.Matchable)evt.getNewValue();
+		org.vcell.util.Matchable oldExtentOrOrigin = (org.vcell.util.Matchable)evt.getOldValue();
+		org.vcell.util.Matchable newExtentOrOrigin = (org.vcell.util.Matchable)evt.getNewValue();
 		if (!Compare.isEqual(oldExtentOrOrigin,newExtentOrOrigin)){
 			try {
 				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
@@ -404,7 +405,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		// if instances are different but content is same, then just replace instances
 		// otherwise, invalidate surfaces and regions.
 		//
-		if (oldValue==null || newValue==null || !cbit.util.Compare.isEqualOrdered(oldValue,newValue)){
+		if (oldValue==null || newValue==null || !org.vcell.util.Compare.isEqualOrdered(oldValue,newValue)){
 			try {
 				fieldRegionImage = null;
 				setSurfaceCollection(null);

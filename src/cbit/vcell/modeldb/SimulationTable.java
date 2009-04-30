@@ -12,11 +12,14 @@ import cbit.util.TokenMangler;
 import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
-import cbit.vcell.server.User;
 import cbit.vcell.math.MathDescription;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.geometry.Geometry;

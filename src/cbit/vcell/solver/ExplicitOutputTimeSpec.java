@@ -26,7 +26,7 @@ public ExplicitOutputTimeSpec(double[] arg_outputTimes) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (this == obj) {
 		return (true);
 	}

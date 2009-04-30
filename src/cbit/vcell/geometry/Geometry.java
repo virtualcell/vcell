@@ -7,13 +7,17 @@ import java.beans.*;
 import java.util.*;
 import java.io.*;
 import java.rmi.RemoteException;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.User;
+
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.DataAccessException;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.math.VCML;
-import cbit.vcell.server.User;
 import cbit.sql.Versionable;
 import cbit.sql.Version;
 import cbit.vcell.modeldb.GeomDbDriver;
@@ -198,10 +202,10 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	Geometry geometry = (Geometry) object;
-	if (!cbit.util.Compare.isEqual(getName(), geometry.getName())){
+	if (!org.vcell.util.Compare.isEqual(getName(), geometry.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(getDescription(), geometry.getDescription())){
+	if (!org.vcell.util.Compare.isEqual(getDescription(), geometry.getDescription())){
 		return false;
 	}
 	if (!Compare.isEqualOrNull(getGeometrySurfaceDescription(), geometry.getGeometrySurfaceDescription())){
@@ -301,7 +305,7 @@ public cbit.vcell.geometry.surface.GeometrySurfaceDescription getGeometrySurface
  * This method was created in VisualAge.
  * @return KeyValue
  */
-public cbit.sql.KeyValue getKey() {
+public org.vcell.util.document.KeyValue getKey() {
 	if(version != null){
 		return version.getVersionKey();
 	}

@@ -3,8 +3,9 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.KeyValue;
-import cbit.vcell.server.User;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 /**

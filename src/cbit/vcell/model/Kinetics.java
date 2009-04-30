@@ -11,6 +11,10 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 
 import java.util.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.util.*;
 import net.sourceforge.interval.ia_math.RealInterval;
 /**

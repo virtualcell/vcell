@@ -11,6 +11,9 @@ import cbit.image.*;
 import cbit.vcell.server.*;
 import java.sql.*;
 import java.util.Vector;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 /**
  * This type was created in VisualAge.
  */

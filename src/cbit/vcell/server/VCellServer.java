@@ -7,6 +7,9 @@ import cbit.vcell.solver.SimulationJob;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.simdata.CacheStatus;
 import cbit.vcell.server.ProcessStatus;
 /**

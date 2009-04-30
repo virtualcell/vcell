@@ -1,4 +1,6 @@
 package cbit.vcell.modeldb;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.*;
 /**
  * Insert the type's description here.

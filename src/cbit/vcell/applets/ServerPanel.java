@@ -6,9 +6,12 @@ import cbit.vcell.client.task.UserCancelException;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.KeyValue;
 import java.util.Vector;
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.CacheStatus;
 /**

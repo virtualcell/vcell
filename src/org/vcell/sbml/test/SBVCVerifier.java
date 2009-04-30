@@ -5,8 +5,8 @@ import java.io.PrintWriter;
 import java.util.Calendar;
 
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.util.document.KeyValue;
 
-import cbit.sql.KeyValue;
 import cbit.sql.SimulationVersion;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;

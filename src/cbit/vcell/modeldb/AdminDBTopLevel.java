@@ -14,6 +14,10 @@ import cbit.vcell.server.*;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import java.util.Vector;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;

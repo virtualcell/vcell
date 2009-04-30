@@ -5,8 +5,10 @@ import cbit.vcell.parser.ExpressionException;
  * All rights reserved.
 ©*/
 import java.util.*;
-import cbit.util.Matchable;
-import cbit.sql.KeyValue;
+
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 
 public class Feature extends Structure
 {

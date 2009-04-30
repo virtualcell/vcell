@@ -114,7 +114,7 @@ public static Geometry getImageExample2D() {
  * This method was created in VisualAge.
  * @return cbit.vcell.geometry.Geometry
  */
-public static Geometry getImageExample2D(cbit.vcell.server.User user) throws Exception {
+public static Geometry getImageExample2D(org.vcell.util.document.User user) throws Exception {
 
 	byte pixelValue1 = (byte)50;
 	byte pixelValue2 = (byte)200;

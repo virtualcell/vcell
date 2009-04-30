@@ -6,6 +6,10 @@ package cbit.vcell.modeldb;
 ©*/
 import java.beans.*;
 import java.sql.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.geometry.*;

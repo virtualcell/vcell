@@ -16,6 +16,10 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.image.*;
 import java.util.Vector;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.mathmodel.MathModelMetaData;
@@ -721,7 +725,7 @@ public cbit.util.Preference[] getPreferences(User user,boolean bEnableRetry) thr
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:16:48 PM)
  */
-cbit.vcell.model.ReactionStep getReactionStep(User user,cbit.sql.KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+cbit.vcell.model.ReactionStep getReactionStep(User user,org.vcell.util.document.KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {

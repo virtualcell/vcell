@@ -10,6 +10,10 @@ import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.math.VCML;
 import java.beans.PropertyVetoException;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.util.*;
 /**
  * Insert the class' description here.

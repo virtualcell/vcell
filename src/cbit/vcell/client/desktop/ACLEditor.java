@@ -34,7 +34,7 @@ public class ACLEditor extends javax.swing.JPanel {
 			}else if(argGroupAccess instanceof cbit.vcell.server.GroupAccessAll){
 				isPrivate = false;
 			}else if(argGroupAccess instanceof cbit.vcell.server.GroupAccessSome){
-				cbit.vcell.server.User[] users = ((cbit.vcell.server.GroupAccessSome)argGroupAccess).getNormalGroupMembers();
+				org.vcell.util.document.User[] users = ((cbit.vcell.server.GroupAccessSome)argGroupAccess).getNormalGroupMembers();
 				aclList = new String[users.length];
 				for(int i=0;i<users.length;i+= 1){
 					aclList[i] = users[i].getName();

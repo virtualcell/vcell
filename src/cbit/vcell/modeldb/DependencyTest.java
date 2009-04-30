@@ -21,7 +21,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		String versionableTypeS = args[0];
 		String keyValueS = args[1];
-		cbit.sql.KeyValue rootKey = new cbit.sql.KeyValue(keyValueS); //new cbit.sql.KeyValue("1368");
+		org.vcell.util.document.KeyValue rootKey = new org.vcell.util.document.KeyValue(keyValueS); //new cbit.sql.KeyValue("1368");
 		cbit.sql.VersionableType rootType = null; //cbit.sql.VersionableType.VCImage;
 		if (VersionableType.VCImage.toString().equals(versionableTypeS)) {
 			rootType = VersionableType.VCImage;

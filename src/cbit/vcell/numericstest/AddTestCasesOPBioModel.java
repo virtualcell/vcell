@@ -1,7 +1,8 @@
 package cbit.vcell.numericstest;
 
-import cbit.sql.KeyValue;
 import java.math.BigDecimal;
+
+import org.vcell.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/10/2004 12:01:58 PM)
@@ -85,14 +86,14 @@ public cbit.vcell.numericstest.AddTestCriteriaOPBioModel[] getAddTestCriteriaOPs
  * Insert the method's description here.
  * Creation date: (11/10/2004 12:03:14 PM)
  */
-public cbit.sql.KeyValue getBioModelKey() {
+public org.vcell.util.document.KeyValue getBioModelKey() {
 	return bioModelKey;
 }
 /**
  * Insert the method's description here.
  * Creation date: (11/10/2004 12:03:14 PM)
  */
-public cbit.sql.KeyValue getSimContextKey() {
+public org.vcell.util.document.KeyValue getSimContextKey() {
 	return simContextKey;
 }
 }

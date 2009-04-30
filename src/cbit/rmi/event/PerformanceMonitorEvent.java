@@ -1,4 +1,6 @@
 package cbit.rmi.event;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
@@ -67,7 +69,7 @@ public PerformanceData getPerfData() {
  * Creation date: (9/17/2004 12:51:09 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return user;
 }
 

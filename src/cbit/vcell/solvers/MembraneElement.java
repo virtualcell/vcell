@@ -7,7 +7,7 @@ import cbit.vcell.math.*;
 /**
  * This type was created in VisualAge.
  */
-public class MembraneElement implements java.io.Serializable, cbit.util.Matchable {
+public class MembraneElement implements java.io.Serializable, org.vcell.util.Matchable {
 	private int memIndex;
 	private int insideIndex;
 	private int outsideIndex;
@@ -57,7 +57,7 @@ public MembraneElement(int argMembraneIndex, int argInsideIndex, int argOutsideI
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object){
 		return true;
 	}

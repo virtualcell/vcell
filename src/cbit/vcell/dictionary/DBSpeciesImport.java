@@ -6,6 +6,8 @@ import cbit.vcell.modeldb.DictionaryDBTopLevel;
 import java.util.Vector;
 import java.io.BufferedReader;
 import java.io.FileReader;
+
+import org.vcell.util.document.KeyValue;
 /**
  * This Class reads in Kegg's flatfile databases for Enzymes and Compounds and inserts them into a database
  * Creation date: (6/24/2002 10:23:18 AM)

@@ -7,9 +7,10 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 
+import org.vcell.util.Matchable;
+
 import cbit.image.ImageException;
 import cbit.util.Extent;
-import cbit.util.Matchable;
 import cbit.util.Origin;
 
 public abstract class Image implements Serializable, Matchable {
@@ -145,14 +146,14 @@ public boolean compareEqual(Matchable obj) {
 	}
 	Image vci = (Image)obj;
 
-	if(!cbit.util.Compare.isEqualOrNull(getName(),vci.getName())){
+	if(!org.vcell.util.Compare.isEqualOrNull(getName(),vci.getName())){
 		return false;
 	}
-	if(!cbit.util.Compare.isEqualOrNull(getDescription(),vci.getDescription())){
+	if(!org.vcell.util.Compare.isEqualOrNull(getDescription(),vci.getDescription())){
 		return false;
 	}
 	
-	if(!cbit.util.Compare.isEqualOrNull(getExtent(),vci.getExtent())){
+	if(!org.vcell.util.Compare.isEqualOrNull(getExtent(),vci.getExtent())){
 		return false;
 	}
 

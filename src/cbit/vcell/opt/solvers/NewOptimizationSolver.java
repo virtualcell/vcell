@@ -9,8 +9,8 @@ import org.jdom.CDATA;
 import org.jdom.Element;
 import org.vcell.optimization.OptXmlReader;
 import org.vcell.optimization.OptXmlTags;
+import org.vcell.util.document.KeyValue;
 
-import cbit.sql.KeyValue;
 import cbit.util.BeanUtils;
 import cbit.util.ISize;
 import cbit.util.xml.XmlUtil;
@@ -386,7 +386,7 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 	cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
 			new KeyValue("12345"),
 			"name",
-			new cbit.vcell.server.User("user",new KeyValue("123")),
+			new org.vcell.util.document.User("user",new KeyValue("123")),
 			new cbit.vcell.server.GroupAccessNone(),
 			null, // versionBranchPointRef
 			new java.math.BigDecimal(1.0), // branchID
@@ -459,7 +459,7 @@ public static Element getModelXML(PdeObjectiveFunction pdeObjectiveFunction, Str
 		cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
 				new KeyValue("12345"),
 				"name",
-				new cbit.vcell.server.User("user",new KeyValue("123")),
+				new org.vcell.util.document.User("user",new KeyValue("123")),
 				new cbit.vcell.server.GroupAccessNone(),
 				null, // versionBranchPointRef
 				new java.math.BigDecimal(1.0), // branchID

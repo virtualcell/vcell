@@ -3,11 +3,12 @@ package cbit.vcell.VirtualMicroscopy;
 import java.awt.Rectangle;
 import java.util.Arrays;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.image.ImageException;
-import cbit.util.Compare;
 import cbit.util.Extent;
 import cbit.util.ISize;
-import cbit.util.Matchable;
 
 /**
  * Insert the type's description here.

@@ -1,5 +1,6 @@
 package cbit.vcell.model;
-import cbit.util.Compare;
+import org.vcell.util.Compare;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 /**
@@ -7,7 +8,7 @@ import cbit.vcell.parser.NameScope;
  * Creation date: (2/20/2002 4:16:31 PM)
  * @author: Jim Schaff
  */
-public abstract class ModelQuantity implements EditableSymbolTableEntry, java.io.Serializable, cbit.util.Matchable {
+public abstract class ModelQuantity implements EditableSymbolTableEntry, java.io.Serializable, org.vcell.util.Matchable {
 	private java.lang.String fieldName = new String();
 	private transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private transient java.beans.PropertyChangeSupport propertyChange;
@@ -57,7 +58,7 @@ public final synchronized void addVetoableChangeListener(java.lang.String proper
  * @return boolean
  * @param obj java.lang.Object
  */
-public final boolean compareEqual(cbit.util.Matchable obj){
+public final boolean compareEqual(org.vcell.util.Matchable obj){
 	if (obj==null){
 		return false;
 	}

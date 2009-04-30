@@ -2,6 +2,9 @@ package cbit.vcell.export.server;
 import GIFUtils.*;
 import java.io.*;
 import java.rmi.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.simdata.gui.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;

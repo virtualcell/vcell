@@ -236,7 +236,7 @@ public static Model getExample_Bound() throws Exception {
 	double FRACTIONAL_VOLUME_CYTOSOL   = 0.15;
 	double SURFACE_TO_VOLUME_CYTOSOL   = 0.25;
 
-	cbit.sql.Version version = new cbit.sql.Version("boundModel",new cbit.vcell.server.User("frm",new cbit.sql.KeyValue("227")));
+	cbit.sql.Version version = new cbit.sql.Version("boundModel",new org.vcell.util.document.User("frm",new org.vcell.util.document.KeyValue("227")));
 	Model model = new Model(version);
 
 	FormalSpeciesInfo fsi = null;
@@ -246,15 +246,15 @@ public static Model getExample_Bound() throws Exception {
 	String[] names1 = new String[1];
 	names1[0] = "IP3";
 	fsi = new CompoundInfo(names1[0]+"_KeggID",names1,names1[0]+"_Formula",names1[0]+"_casID",null);
-	dbfs = new FormalCompound(new cbit.sql.KeyValue("0"),(CompoundInfo)fsi);
-	dbs = new BoundCompound(new cbit.sql.KeyValue("1"),(FormalCompound)dbfs);
+	dbfs = new FormalCompound(new org.vcell.util.document.KeyValue("0"),(CompoundInfo)fsi);
+	dbs = new BoundCompound(new org.vcell.util.document.KeyValue("1"),(FormalCompound)dbfs);
 	model.addSpecies(new Species(names1[0],null,dbs));
 	
 	String[] names2 = new String[1];
 	names2[0] = "Calcium";
 	fsi = new CompoundInfo(names2[0]+"_KeggID",names2,names2[0]+"_Formula",names2[0]+"_casID",null);
-	dbfs = new FormalCompound(new cbit.sql.KeyValue("2"),(CompoundInfo)fsi);
-	dbs = new BoundCompound(new cbit.sql.KeyValue("3"),(FormalCompound)dbfs);
+	dbfs = new FormalCompound(new org.vcell.util.document.KeyValue("2"),(CompoundInfo)fsi);
+	dbs = new BoundCompound(new org.vcell.util.document.KeyValue("3"),(FormalCompound)dbfs);
 	model.addSpecies(new Species(names2[0],null,dbs));
 
 	String keywords = "keword1,keyword2";
@@ -262,8 +262,8 @@ public static Model getExample_Bound() throws Exception {
 	String[] names3 = new String[1];
 	names3[0] = "IP3_Receptor";
 	fsi = new ProteinInfo(names3[0]+"_SwissProtID",names3,names3[0]+"_Organism",names3[0]+"_Accession",keywords,descr);
-	dbfs = new FormalProtein(new cbit.sql.KeyValue("4"),(ProteinInfo)fsi);
-	dbs = new BoundProtein(new cbit.sql.KeyValue("5"),(FormalProtein)dbfs);
+	dbfs = new FormalProtein(new org.vcell.util.document.KeyValue("4"),(ProteinInfo)fsi);
+	dbs = new BoundProtein(new org.vcell.util.document.KeyValue("5"),(FormalProtein)dbfs);
 	model.addSpecies(new Species(names3[0],null,dbs));
 
 	//names[0] = "IP3_Receptor_Activated";

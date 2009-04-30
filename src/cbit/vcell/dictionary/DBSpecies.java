@@ -9,13 +9,13 @@ import java.util.Vector;
  */
 public abstract class DBSpecies extends DBFormalSpecies implements cbit.sql.Cacheable{
 
-	private cbit.sql.KeyValue dbSpeciesKey = null;
+	private org.vcell.util.document.KeyValue dbSpeciesKey = null;
 	
 /**
  * Create a new Species object based on the given info
  * Creation date: (6/24/2002 12:10:41 PM)
  */
-public DBSpecies(cbit.sql.KeyValue argDBSpeciesKey,cbit.sql.KeyValue argFormalSpeciesKey, FormalSpeciesInfo argFormalSpeciesInfo) {
+public DBSpecies(org.vcell.util.document.KeyValue argDBSpeciesKey,org.vcell.util.document.KeyValue argFormalSpeciesKey, FormalSpeciesInfo argFormalSpeciesInfo) {
 
 	super(argFormalSpeciesKey,argFormalSpeciesInfo);
 	
@@ -30,7 +30,7 @@ public DBSpecies(cbit.sql.KeyValue argDBSpeciesKey,cbit.sql.KeyValue argFormalSp
  * Create a new Species object based on the given info
  * Creation date: (6/24/2002 12:10:41 PM)
  */
-public DBSpecies(cbit.sql.KeyValue argDBSpeciesKey,DBFormalSpecies argDBFormalSpecies) {
+public DBSpecies(org.vcell.util.document.KeyValue argDBSpeciesKey,DBFormalSpecies argDBFormalSpecies) {
 
 	super(argDBFormalSpecies.getDBFormalSpeciesKey(),argDBFormalSpecies.getFormalSpeciesInfo());
 	
@@ -46,7 +46,7 @@ public DBSpecies(cbit.sql.KeyValue argDBSpeciesKey,DBFormalSpecies argDBFormalSp
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 	if(!super.compareEqual(obj)){
 		return false;
@@ -68,7 +68,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
  * Creation date: (2/18/2003 4:45:54 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getDBSpeciesKey() {
+public org.vcell.util.document.KeyValue getDBSpeciesKey() {
 	return dbSpeciesKey;
 }
 /**

@@ -1,7 +1,6 @@
 package cbit.vcell.modeldb;
 import cbit.vcell.dictionary.*;
 import cbit.vcell.model.ReactionStepInfo;
-import cbit.vcell.server.User;
 import java.util.Vector;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -9,6 +8,10 @@ import java.util.Vector;
 ©*/
 
 import java.sql.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.dictionary.CompoundTable;
@@ -246,7 +249,7 @@ public FormalCompound getCompoundFromKeggID(Connection con, String keggID) throw
  * @param user cbit.vcell.server.User
  * @param bOnlyUser boolean
  */
-public DBFormalSpecies[] getDatabaseSpecies(Connection con, cbit.vcell.server.User user, String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws SQLException{
+public DBFormalSpecies[] getDatabaseSpecies(Connection con, org.vcell.util.document.User user, String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws SQLException{
 
 	
 	//isBound - 	if true find FormalSpecies(Dictionary) that have binding table entries, if false find any FormalSpecies(Dictionary)
@@ -713,7 +716,7 @@ public String[] getProteinKeyWords(Connection con, String likeString) throws SQL
  * Insert the method's description here.
  * Creation date: (4/18/2003 10:23:37 AM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,cbit.vcell.server.User user,KeyValue reactionStepKeys[]) throws SQLException{
+public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,org.vcell.util.document.User user,KeyValue reactionStepKeys[]) throws SQLException{
 	String sql = ReactStepTable.table.getSQLReactionStepInfosQuery(reactionStepKeys,user);
 	Statement stmt = con.createStatement();
 	Vector<ReactionStepInfo> reactionStepInfoList = new Vector<ReactionStepInfo>();
@@ -745,7 +748,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,c
  * Insert the method's description here.
  * Creation date: (4/18/2003 10:23:37 AM)
  */
-public ReactionDescription[] getUserReactionDescriptions(Connection con,cbit.vcell.server.User user,ReactionQuerySpec reactionQuerySpec) throws SQLException{
+public ReactionDescription[] getUserReactionDescriptions(Connection con,org.vcell.util.document.User user,ReactionQuerySpec reactionQuerySpec) throws SQLException{
 
 	String sql = ReactStepTable.table.getSQLUserReactionListQuery(reactionQuerySpec,user);
 

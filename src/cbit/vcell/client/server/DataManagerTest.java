@@ -210,8 +210,8 @@ public static DataManagerTest getPDEExample1() {
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size10241024.mesh");
 		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
 		cbit.vcell.server.VCDataIdentifier vcDataIdentifier = new cbit.vcell.server.VCDataIdentifier() {
-										public cbit.vcell.server.User getOwner() {
-											return new cbit.vcell.server.User("anu",new cbit.sql.KeyValue("123"));
+										public org.vcell.util.document.User getOwner() {
+											return new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("123"));
 										}
 										public String getID() {
 											return "PDEExample1";
@@ -247,8 +247,8 @@ public static DataManagerTest getPDEExample2() {
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size44.mesh");
 		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
 		cbit.vcell.server.VCDataIdentifier vcDataIdentifier = new cbit.vcell.server.VCDataIdentifier() {
-										public cbit.vcell.server.User getOwner() {
-											return new cbit.vcell.server.User("anu",new cbit.sql.KeyValue("123"));
+										public org.vcell.util.document.User getOwner() {
+											return new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("123"));
 										}
 										public String getID() {
 											return "PDEExample2";

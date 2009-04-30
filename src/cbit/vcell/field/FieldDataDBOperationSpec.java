@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Vector;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.modeldb.VersionableTypeVersion;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 public class FieldDataDBOperationSpec implements Serializable {

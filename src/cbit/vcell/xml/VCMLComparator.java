@@ -1,11 +1,11 @@
 package cbit.vcell.xml;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.biomodel.BioModel;
-import cbit.util.Matchable;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
+import org.vcell.util.Matchable;
 
 import java.io.PrintStream;
 import java.util.ArrayList;

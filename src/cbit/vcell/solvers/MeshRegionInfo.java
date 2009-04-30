@@ -10,7 +10,7 @@ import java.util.Vector;
  * Creation date: (7/4/2001 5:04:16 PM)
  * @author: Frank Morgan
  */
-public class MeshRegionInfo implements cbit.util.Matchable, java.io.Serializable {
+public class MeshRegionInfo implements org.vcell.util.Matchable, java.io.Serializable {
 	//
 	private Vector<MeshRegionInfo.VolumeRegionMapSubvolume> volumeRegionMapSubvolume = new Vector<MeshRegionInfo.VolumeRegionMapSubvolume>();
 	private Vector<MembraneRegionMapVolumeRegion> membraneRegionMapVolumeRegion = new Vector<MembraneRegionMapVolumeRegion>();
@@ -57,7 +57,7 @@ public MeshRegionInfo() {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return false;
 }
 

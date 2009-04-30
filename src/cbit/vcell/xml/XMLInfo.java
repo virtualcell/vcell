@@ -20,7 +20,7 @@ public XMLInfo(String newXMLString) {
  */
 public cbit.sql.Version getVersion() {
 	// throw new RuntimeException("Not yet implemented!!");
-	return new cbit.sql.Version("DummyVersion", new cbit.vcell.server.User("anu", new cbit.sql.KeyValue("123")));
+	return new cbit.sql.Version("DummyVersion", new org.vcell.util.document.User("anu", new org.vcell.util.document.KeyValue("123")));
 }
 /**
  * Insert the method's description here.

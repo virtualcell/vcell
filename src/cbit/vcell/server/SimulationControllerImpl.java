@@ -10,7 +10,6 @@ import cbit.vcell.messaging.db.VCellServerID;
 import java.io.File;
 import cbit.vcell.server.*;
 import java.rmi.*;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.*;
@@ -19,9 +18,12 @@ import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.rmi.event.*;
-import cbit.sql.KeyValue;
 import cbit.vcell.messaging.MessageConstants;
 import javax.swing.event.EventListenerList;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.messaging.server.DispatcherDbManager;
 import cbit.vcell.messaging.server.LocalDispatcherDbManager;
 

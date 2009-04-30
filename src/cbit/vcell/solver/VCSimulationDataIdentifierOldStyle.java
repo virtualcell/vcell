@@ -1,6 +1,7 @@
 package cbit.vcell.solver;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.field.SimResampleInfoProvider;
 
 /**
@@ -84,7 +85,7 @@ public int getJobIndex() {
  * @return cbit.vcell.server.User
  * @deprecated
  */
-public cbit.vcell.server.User getOwner() {
+public org.vcell.util.document.User getOwner() {
 	return vcSimID.getOwner();
 }
 

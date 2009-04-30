@@ -6,13 +6,14 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.vcell.util.Matchable;
+
 import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 
 import cbit.image.ImageException;
 import cbit.util.Extent;
 import cbit.util.ISize;
-import cbit.util.Matchable;
 import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -307,7 +308,7 @@ public class ROI implements Matchable {
 		if (obj != null && obj instanceof ROI) 
 		{
 			ROI roi = (ROI) obj;
-			if (!cbit.util.Compare.isEqualOrNull(getRoiImages(), roi.getRoiImages())){
+			if (!org.vcell.util.Compare.isEqualOrNull(getRoiImages(), roi.getRoiImages())){
 				return false;
 			}
 			if (!getROIName().equals(roi.getROIName())){

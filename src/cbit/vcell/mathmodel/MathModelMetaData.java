@@ -5,6 +5,8 @@ package cbit.vcell.mathmodel;
 ©*/
 import cbit.sql.*;
 import java.util.*;
+
+import org.vcell.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 3:26:20 PM)
@@ -75,24 +77,24 @@ public void clearVersion() {
  * @return boolean
  * @param matchable cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable matchable) {
+public boolean compareEqual(org.vcell.util.Matchable matchable) {
 	if (!(matchable instanceof MathModelMetaData)){
 		return false;
 	}
 	MathModelMetaData obj = (MathModelMetaData)matchable;
-	if (!cbit.util.Compare.isEqual(getName(),obj.getName())){
+	if (!org.vcell.util.Compare.isEqual(getName(),obj.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(getDescription(),obj.getDescription())){
+	if (!org.vcell.util.Compare.isEqual(getDescription(),obj.getDescription())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(version,obj.version)){
+	if (!org.vcell.util.Compare.isEqual(version,obj.version)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(simulationKeyList,obj.simulationKeyList)){
+	if (!org.vcell.util.Compare.isEqual(simulationKeyList,obj.simulationKeyList)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(mathKey,obj.mathKey)){
+	if (!org.vcell.util.Compare.isEqual(mathKey,obj.mathKey)){
 		return false;
 	}
 	return true;

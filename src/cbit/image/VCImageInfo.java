@@ -4,8 +4,9 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.User;
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 import cbit.util.ISize;

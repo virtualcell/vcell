@@ -2,7 +2,6 @@ package cbit.vcell.xml;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
-import cbit.sql.KeyValue;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.sql.UserInfo;
@@ -23,10 +22,8 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.StdoutSessionLog;
-import cbit.vcell.server.User;
 import cbit.vcell.solver.Simulation;
 import cbit.util.BeanUtils;
-import cbit.util.Matchable;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Attribute;
@@ -34,6 +31,9 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;

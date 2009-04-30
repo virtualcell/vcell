@@ -30,7 +30,6 @@ import javax.swing.tree.TreePath;
 import cbit.gui.DialogUtils;
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
-import cbit.sql.KeyValue;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.Extent;
@@ -68,6 +67,8 @@ import java.awt.event.ActionEvent;
 import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import javax.swing.JMenuItem;
+
+import org.vcell.util.document.KeyValue;
 
 public class FieldDataGUIPanel extends JPanel{
 

@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/10/2004 12:01:58 PM)
@@ -18,7 +18,7 @@ public class AddTestCasesOPMathModel extends AddTestCasesOP {
  * @param argAnnot java.lang.String
  * @param argAddTestCriteriaOPs cbit.vcell.numericstest.AddTestCriteriaOP[]
  */
-public AddTestCasesOPMathModel(cbit.sql.KeyValue argMMKey, String argType, String argAnnot, cbit.vcell.numericstest.AddTestCriteriaOPMathModel[] argAddTestCriteriaOPs) {
+public AddTestCasesOPMathModel(org.vcell.util.document.KeyValue argMMKey, String argType, String argAnnot, cbit.vcell.numericstest.AddTestCriteriaOPMathModel[] argAddTestCriteriaOPs) {
 	this(null,argMMKey,argType,argAnnot,argAddTestCriteriaOPs);
 }
 /**
@@ -31,7 +31,7 @@ public AddTestCasesOPMathModel(cbit.sql.KeyValue argMMKey, String argType, Strin
  */
 public AddTestCasesOPMathModel(
     java.math.BigDecimal argTSKey,
-    cbit.sql.KeyValue argMMKey,
+    org.vcell.util.document.KeyValue argMMKey,
     String argType,
     String argAnnot,
     AddTestCriteriaOPMathModel[] argAddTestCriteriaOPsMathModel) {
@@ -69,7 +69,7 @@ public cbit.vcell.numericstest.AddTestCriteriaOPMathModel[] getAddTestCriteriaOP
  * Insert the method's description here.
  * Creation date: (11/10/2004 12:03:14 PM)
  */
-public cbit.sql.KeyValue getMathModelKey() {
+public org.vcell.util.document.KeyValue getMathModelKey() {
 	return mathModelKey;
 }
 }

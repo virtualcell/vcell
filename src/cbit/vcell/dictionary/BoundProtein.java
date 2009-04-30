@@ -14,7 +14,7 @@ public class BoundProtein extends DBSpecies {
  * @param argKey cbit.sql.KeyValue
  * @param argDBFormalSpeciesInfo DBFormalSpeciesInfo
  */
-public BoundProtein(cbit.sql.KeyValue argDBSpeciesKey,FormalProtein argFormalProtein) {
+public BoundProtein(org.vcell.util.document.KeyValue argDBSpeciesKey,FormalProtein argFormalProtein) {
 	
 	super(argDBSpeciesKey,argFormalProtein);
 
@@ -43,7 +43,7 @@ public ProteinInfo getProteinInfo() {
  * Creation date: (2/18/2003 6:51:31 PM)
  * @return cbit.vcell.dictionary.FormalSpeciesInfo
  */
-public cbit.sql.KeyValue getProteinKey() {
+public org.vcell.util.document.KeyValue getProteinKey() {
 	return formalProtein.getDBFormalSpeciesKey();
 }
 }

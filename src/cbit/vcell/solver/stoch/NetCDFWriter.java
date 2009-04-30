@@ -6,6 +6,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.Compare;
+
 import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayDouble;
 import ucar.ma2.ArrayInt;
@@ -15,7 +17,6 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 
-import cbit.util.Compare;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;

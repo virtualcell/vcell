@@ -13,6 +13,8 @@ import cbit.util.*;
 
 import java.io.*;
 
+import org.vcell.util.Matchable;
+
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
 	private ReactionStep reactionStep = null;
 
@@ -90,7 +92,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			setDescription(argDescription);
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof ReactionSpecParameter)){
 				return false;
 			}

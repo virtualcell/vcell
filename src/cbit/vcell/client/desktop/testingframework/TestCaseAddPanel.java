@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.testingframework;
 import cbit.gui.DialogUtils;
-import cbit.sql.KeyValue;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
@@ -9,6 +8,8 @@ import cbit.vcell.client.task.UserCancelException;
 
 import javax.swing.JRadioButton;
 import javax.swing.ListSelectionModel;
+
+import org.vcell.util.document.KeyValue;
 
 import java.awt.GridBagConstraints;
 /**
@@ -111,7 +112,7 @@ private void applyTestCaseInfo() throws Exception{
 			throw new Exception("BioModel/App test case must be of type 'REGRESSION'");
 		}
 
-		cbit.sql.KeyValue[] appKeyArr = null;
+		org.vcell.util.document.KeyValue[] appKeyArr = null;
 		try {
 			for (int i = 0; i < getappNameArr().length; i++) {
 				if(appKeyArr == null){

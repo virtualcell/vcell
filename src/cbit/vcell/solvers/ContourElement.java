@@ -8,7 +8,7 @@ import cbit.vcell.geometry.Coordinate;
 /**
  * This type was created in VisualAge.
  */
-public class ContourElement implements java.io.Serializable, cbit.util.Matchable {
+public class ContourElement implements java.io.Serializable, org.vcell.util.Matchable {
 	private int contourIndex = NULL_INDEX;
 	private int volumeIndex = NULL_INDEX;
 	private Coordinate begin = null;
@@ -34,7 +34,7 @@ public ContourElement(int argIndex, int argVolIndex, Coordinate argBegin, Coordi
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object){
 		return true;
 	}
@@ -55,10 +55,10 @@ public boolean compareEqual(cbit.util.Matchable object) {
 	if (this.neighborNext != contourElement.neighborNext){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(begin,contourElement.begin)){
+	if (!org.vcell.util.Compare.isEqualOrNull(begin,contourElement.begin)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(end,contourElement.end)){
+	if (!org.vcell.util.Compare.isEqualOrNull(end,contourElement.end)){
 		return false;
 	}
 	return true;

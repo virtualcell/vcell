@@ -8,7 +8,7 @@ import cbit.vcell.server.DataAccessException;
  * Creation date: (9/6/2005 3:00:40 PM)
  * @author: Jim Schaff
  */
-public abstract class OutputTimeSpec implements cbit.util.Matchable, java.io.Serializable {
+public abstract class OutputTimeSpec implements org.vcell.util.Matchable, java.io.Serializable {
 
 /**
  * OutputTimeSpec constructor comment.

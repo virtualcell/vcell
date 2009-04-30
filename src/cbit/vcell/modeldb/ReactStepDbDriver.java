@@ -9,12 +9,15 @@ import java.sql.*;
 import java.util.*;
 import cbit.sql.*;
 import java.sql.Statement;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.server.DependencyException;
 import cbit.vcell.server.PermissionException;
 import cbit.vcell.xml.MIRIAMAnnotation;

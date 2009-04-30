@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
 
+import org.vcell.util.Matchable;
+
 import com.sun.java_cup.internal.lexer;
 
-import cbit.util.Matchable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;

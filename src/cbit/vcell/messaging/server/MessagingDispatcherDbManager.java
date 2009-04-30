@@ -1,4 +1,6 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -6,7 +8,6 @@ import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.sql.KeyValue;
 
 /**
  * Insert the type's description here.

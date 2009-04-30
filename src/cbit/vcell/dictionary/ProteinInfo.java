@@ -52,7 +52,7 @@ public ProteinInfo(String argFormalID,String[] argNames,String argOrganism,Strin
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 	if(!super.compareEqual(obj)){
 		return false;
@@ -60,13 +60,13 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	
 	if (obj instanceof ProteinInfo){
 		ProteinInfo proteinInfo = (ProteinInfo)obj;
-		if (!cbit.util.Compare.isEqualOrNull(accession,proteinInfo.getAccession())){
+		if (!org.vcell.util.Compare.isEqualOrNull(accession,proteinInfo.getAccession())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(organism,proteinInfo.getOrganism())){
+		if (!org.vcell.util.Compare.isEqualOrNull(organism,proteinInfo.getOrganism())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(keyWords,proteinInfo.getKeyWords())){
+		if (!org.vcell.util.Compare.isEqualOrNull(keyWords,proteinInfo.getKeyWords())){
 			return false;
 		}
 	}else{

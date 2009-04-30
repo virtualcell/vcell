@@ -1,6 +1,8 @@
 package cbit.vcell.server;
 
 import java.util.Vector;
+
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (11/15/2001 3:34:49 PM)
@@ -26,7 +28,7 @@ public GroupAccessSome(java.math.BigDecimal parmGroupid,java.math.BigDecimal par
 		(parmGroupMembers.length != parmHiddenMembers.length)){
 			throw new IllegalArgumentException("GroupAccessSome Constructor Error");
 	}
-	cbit.sql.KeyValue[] userRef = new cbit.sql.KeyValue[parmGroupMembers.length];
+	org.vcell.util.document.KeyValue[] userRef = new org.vcell.util.document.KeyValue[parmGroupMembers.length];
 	for(int i = 0;i<parmGroupMembers.length;i+= 1){
 		userRef[i] = parmGroupMembers[i].getID();
 	}
@@ -44,7 +46,7 @@ public GroupAccessSome(java.math.BigDecimal parmGroupid,java.math.BigDecimal par
  * @param user cbit.vcell.server.User
  */
 public java.math.BigDecimal calculateHashWithNewMember(User newMember,boolean isHiddenFromOwner) {
-	cbit.sql.KeyValue[] newMemberSet = new cbit.sql.KeyValue[groupMembers.length+1];
+	org.vcell.util.document.KeyValue[] newMemberSet = new org.vcell.util.document.KeyValue[groupMembers.length+1];
 	boolean[] newHidden = new boolean[newMemberSet.length];
 	newMemberSet[0] = newMember.getID();
 	newHidden[0] = isHiddenFromOwner;
@@ -68,7 +70,7 @@ public java.math.BigDecimal calculateHashWithoutMember(User newMember,boolean bH
 	if(!bHidden && !isNormalMember(newMember)){
 		throw new IllegalArgumentException("This group id="+getGroupid().toString()+" does not contain normal user="+newMember);
 	}
-	cbit.sql.KeyValue[] newMemberSet = new cbit.sql.KeyValue[groupMembers.length-1];
+	org.vcell.util.document.KeyValue[] newMemberSet = new org.vcell.util.document.KeyValue[groupMembers.length-1];
 	boolean[] newHidden = new boolean[newMemberSet.length];
 	int count = 0;
 	for(int i = 0;i<groupMembers.length;i+= 1){

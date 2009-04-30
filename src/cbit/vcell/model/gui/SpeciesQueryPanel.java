@@ -937,7 +937,7 @@ private void createDBSpecies(javax.swing.event.ListSelectionEvent listSelectionE
 						if(getDocumentManager().getUser() == null){
 							throw new RuntimeException("Query results for 'My Model' can't be bound to null user");
 						}
-						cbit.vcell.server.User user = (bOnlyUser?getDocumentManager().getUser():null);
+						org.vcell.util.document.User user = (bOnlyUser?getDocumentManager().getUser():null);
 						dqr = new DictionaryQueryResults(query,user,(DBSpecies[])dbFormalSpecies,selection);
 						
 					}else{

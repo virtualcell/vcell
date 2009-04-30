@@ -9,6 +9,9 @@ import cbit.vcell.simdata.*;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
+
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.*;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer

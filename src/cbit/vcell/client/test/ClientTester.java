@@ -109,7 +109,7 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 	}
 	cbit.vcell.server.VCellConnectionFactory vcConnFactory = null;
 	new cbit.vcell.server.PropertyLoader();		
-	cbit.vcell.server.User user = null;
+	org.vcell.util.document.User user = null;
 	if (args[0].startsWith("-")) {
 		String userid = args[1];
 		String password = args[2];
@@ -144,12 +144,12 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 	}
 	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
 	cbit.vcell.server.PropertyLoader.loadProperties();
-	cbit.vcell.server.User user = null;
+	org.vcell.util.document.User user = null;
 	if (!args[0].equalsIgnoreCase("-local")) {
 		String host = args[0];
 		String userid = args[1];
-		cbit.sql.KeyValue userKey = new cbit.sql.KeyValue(args[2]);
-		user = new cbit.vcell.server.User(userid, userKey);
+		org.vcell.util.document.KeyValue userKey = new org.vcell.util.document.KeyValue(args[2]);
+		user = new org.vcell.util.document.User(userid, userKey);
 		String password = args[3];
 		System.setSecurityManager(new java.rmi.RMISecurityManager());
 		vcServerFactory = new cbit.vcell.server.RMIVCellServerFactory(host, user, password);

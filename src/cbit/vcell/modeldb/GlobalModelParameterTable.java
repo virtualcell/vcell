@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jdom.Element;
+import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
-import cbit.sql.KeyValue;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModelMetaData;

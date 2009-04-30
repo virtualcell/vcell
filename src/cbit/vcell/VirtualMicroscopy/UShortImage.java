@@ -11,10 +11,11 @@ import java.awt.image.Kernel;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.vcell.util.Matchable;
+
 //import com.sun.java.util.jar.pack.Attribute.FormatException;
 
 import cbit.image.ImageException;
-import cbit.util.Matchable;
 import cbit.util.Origin;
 
 /**
@@ -69,7 +70,7 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 
-	if(!cbit.util.Compare.isEqual(pixels,usImage.pixels)){
+	if(!org.vcell.util.Compare.isEqual(pixels,usImage.pixels)){
 		return false;
 	}
 	return true;

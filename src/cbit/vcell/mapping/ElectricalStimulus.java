@@ -19,7 +19,7 @@ import cbit.vcell.model.VCMODL;
  * Creation date: (4/8/2002 11:14:58 AM)
  * @author: Anuradha Lakshminarayana
  */
-public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
 
 	private static final String GENERAL_PROTOCOL = "General_Protocol";
 	
@@ -68,7 +68,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			this.fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof ElectricalStimulusParameter)){
 				return false;
 			}
@@ -184,7 +184,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			setDescription("unresolved");
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof UnresolvedParameter)){
 				return false;
 			}
@@ -422,17 +422,17 @@ private final void cleanupParameters() throws ExpressionException, PropertyVetoE
  * @return boolean
  * @param obj java.lang.Object
  */
-protected final boolean compareEqual0(cbit.util.Matchable obj) {
+protected final boolean compareEqual0(org.vcell.util.Matchable obj) {
 	if (obj instanceof ElectricalStimulus){
 		ElectricalStimulus es = (ElectricalStimulus)obj;
 		
-		if (!cbit.util.Compare.isEqual(getName(),es.getName())){
+		if (!org.vcell.util.Compare.isEqual(getName(),es.getName())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(getAnnotation(),es.getAnnotation())){
+		if (!org.vcell.util.Compare.isEqualOrNull(getAnnotation(),es.getAnnotation())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqual(getElectrode(),es.getElectrode())){
+		if (!org.vcell.util.Compare.isEqual(getElectrode(),es.getElectrode())){
 			return false;
 		}
 		

@@ -3,7 +3,8 @@ package cbit.vcell.xml;
 import java.io.PrintStream;
 import java.util.Vector;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.SimulationVersion;
 import cbit.util.BeanUtils;
 import cbit.util.xml.VCLogger;

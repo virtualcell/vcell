@@ -5,10 +5,12 @@ package cbit.vcell.modeldb;
 ©*/
 import java.rmi.*;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -86,7 +88,7 @@ public java.util.List getSimulationJobStatus(java.lang.String conditions) throws
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, cbit.vcell.server.User userOnly) throws DataAccessException {
+public SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, org.vcell.util.document.User userOnly) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(bActiveOnly,userOnly,true);
 	}catch (Throwable e){
@@ -128,7 +130,7 @@ public User getUser(String userid, String password) throws DataAccessException {
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-public cbit.vcell.server.User getUserFromSimulationKey(cbit.sql.KeyValue simKey) throws DataAccessException {
+public org.vcell.util.document.User getUserFromSimulationKey(org.vcell.util.document.KeyValue simKey) throws DataAccessException {
 	try {
 		return adminDbTop.getUserFromSimulationKey(simKey,true);
 	} catch (Throwable e){

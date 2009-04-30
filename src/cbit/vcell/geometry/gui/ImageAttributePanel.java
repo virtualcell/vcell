@@ -1510,7 +1510,7 @@ private void synchronize() throws Exception{
 		try{
 			String newAnnot = getAnnotationJTextArea().getText();
 			if(newAnnot != null && newAnnot.length() == 0){newAnnot = null;}
-			if(!cbit.util.Compare.isEqualOrNull(newAnnot,getImage().getDescription())){
+			if(!org.vcell.util.Compare.isEqualOrNull(newAnnot,getImage().getDescription())){
 				getImage().setDescription(newAnnot);
 			}
 		}catch(Throwable e){

@@ -82,7 +82,7 @@ public EnzymeInfo(
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 	if(!super.compareEqual(obj)){
 		return false;
@@ -90,10 +90,10 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	
 	if (obj instanceof EnzymeInfo){
 		EnzymeInfo enzymeInfo = (EnzymeInfo)obj;
-		if (!cbit.util.Compare.isEqualOrNull(reaction,enzymeInfo.getReaction())){
+		if (!org.vcell.util.Compare.isEqualOrNull(reaction,enzymeInfo.getReaction())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(sysname,enzymeInfo.getSysname())){
+		if (!org.vcell.util.Compare.isEqualOrNull(sysname,enzymeInfo.getSysname())){
 			return false;
 		}
 	}else{

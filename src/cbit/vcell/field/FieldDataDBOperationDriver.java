@@ -12,7 +12,10 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 import javax.swing.Timer;
-import cbit.sql.KeyValue;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.VersionableType;
 import cbit.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
@@ -32,7 +35,6 @@ import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 public class FieldDataDBOperationDriver{

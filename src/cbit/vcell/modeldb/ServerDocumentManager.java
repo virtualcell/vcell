@@ -3,8 +3,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.image.VCImage;
-import cbit.sql.KeyValue;
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 import cbit.sql.Versionable;
@@ -24,7 +26,6 @@ import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.User;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;

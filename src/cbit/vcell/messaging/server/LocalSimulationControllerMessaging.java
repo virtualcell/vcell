@@ -1,4 +1,6 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;

@@ -1,5 +1,7 @@
 package cbit.vcell.server;
 
+import org.vcell.util.document.User;
+
 import cbit.sql.DBCacheTable;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

@@ -1,5 +1,8 @@
 package cbit.vcell.client.server;
 import java.lang.reflect.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;

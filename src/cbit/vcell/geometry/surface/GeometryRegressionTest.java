@@ -9,8 +9,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 
 /**
@@ -31,7 +32,7 @@ public class GeometryRegressionTest {
 	String old_dataDir = "d:\\vcell\\geometrytest\\old";
 	String old_faillistfile = "D:\\VCell\\geometrytest\\faillist_old.txt";
 
-	User adminUser = new User("Administrator", new cbit.sql.KeyValue("1"));	
+	User adminUser = new User("Administrator", new org.vcell.util.document.KeyValue("1"));	
 
 /**
  * GeometryRegressionTest constructor comment.
@@ -85,7 +86,7 @@ public void compareMesh(String startKey) {
 			} 
 			
 			try {				
-				cbit.vcell.solver.VCSimulationIdentifier simid = new cbit.vcell.solver.VCSimulationIdentifier(new cbit.sql.KeyValue(line), adminUser);
+				cbit.vcell.solver.VCSimulationIdentifier simid = new cbit.vcell.solver.VCSimulationIdentifier(new org.vcell.util.document.KeyValue(line), adminUser);
 				File meshfile_old = new File(file_old, simid.getID() +"_0_.mesh");
 				File meshfile_new = new File(file_new, simid.getID() +"_0_.mesh");				
 				File meshmetricsfile_old = new File(file_old, simid.getID() +"_0_.meshmetrics");
@@ -258,7 +259,7 @@ public void runSimulations(boolean bNew, String startKey) {
 			System.out.println("--------------------------" + count + ": Running simulation " + line + "-----------------------------");
 			
 			try {
-				cbit.util.BigString simxml = dbServerImpl.getSimulationXML(adminUser, new cbit.sql.KeyValue(line));
+				cbit.util.BigString simxml = dbServerImpl.getSimulationXML(adminUser, new org.vcell.util.document.KeyValue(line));
 				cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
 				sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(0.001, 0.001, 0.001));
 				sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0,0.001));

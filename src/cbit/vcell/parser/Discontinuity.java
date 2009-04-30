@@ -1,6 +1,7 @@
 package cbit.vcell.parser;
 
-import cbit.util.Compare;
+import org.vcell.util.Compare;
+
 import cbit.vcell.math.MathUtilities;
 
 public class Discontinuity {

@@ -1,4 +1,6 @@
 package cbit.rmi.event;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.*;
 /**
  * Insert the type's description here.

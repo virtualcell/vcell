@@ -5,6 +5,10 @@ package cbit.vcell.server;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;

@@ -7,7 +7,7 @@ package cbit.vcell.geometry;
 /**
  * This is an immutable class for storing points in 3-space.
  */
-public class Coordinate implements java.io.Serializable,Cloneable,cbit.util.Matchable {
+public class Coordinate implements java.io.Serializable,Cloneable,org.vcell.util.Matchable {
 	private double x;
 	private double y;
 	private double z;
@@ -131,7 +131,7 @@ public Object clone() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == null) {
 		return false;
 	}

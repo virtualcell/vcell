@@ -4,8 +4,9 @@ package cbit.vcell.mathmodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Version;
-import cbit.sql.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 4:54:24 PM)
@@ -43,7 +44,7 @@ public boolean equals(Object object) {
  * Creation date: (11/13/00 4:57:53 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getMathKey() {
+public org.vcell.util.document.KeyValue getMathKey() {
 	return mathKey;
 }
 /**

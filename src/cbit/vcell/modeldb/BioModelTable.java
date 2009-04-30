@@ -9,10 +9,13 @@ import java.beans.*;
 import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
-import cbit.vcell.server.User;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
 /**

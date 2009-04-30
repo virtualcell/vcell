@@ -14,6 +14,8 @@ import java.awt.*;
 import cbit.vcell.document.*;
 import javax.swing.*;
 
+import org.vcell.util.document.User;
+
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.

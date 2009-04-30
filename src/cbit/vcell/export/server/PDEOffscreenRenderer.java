@@ -17,6 +17,9 @@ import cbit.image.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.simdata.gui.*;
 import java.awt.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.*;
 /**
  * Insert the type's description here.

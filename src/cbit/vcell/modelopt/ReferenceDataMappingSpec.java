@@ -4,7 +4,7 @@ package cbit.vcell.modelopt;
  * Creation date: (11/28/2005 5:48:28 PM)
  * @author: Jim Schaff
  */
-public class ReferenceDataMappingSpec implements java.io.Serializable, cbit.util.Matchable {
+public class ReferenceDataMappingSpec implements java.io.Serializable, org.vcell.util.Matchable {
 	private java.lang.String referenceDataColumnName = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -66,11 +66,11 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof ReferenceDataMappingSpec){
 		ReferenceDataMappingSpec rdms = (ReferenceDataMappingSpec)obj;
 
-		if (!cbit.util.Compare.isEqual(referenceDataColumnName,rdms.referenceDataColumnName)){
+		if (!org.vcell.util.Compare.isEqual(referenceDataColumnName,rdms.referenceDataColumnName)){
 			return false;
 		}
 
@@ -84,9 +84,9 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		// if both are non-null, then check for equivalence.
 		//
 		if (fieldModelObject != null && rdms.fieldModelObject != null){
-			if (fieldModelObject instanceof cbit.util.Matchable){
-				if (rdms.fieldModelObject instanceof cbit.util.Matchable){
-					if (!cbit.util.Compare.isEqualOrNull((cbit.util.Matchable)this.fieldModelObject,(cbit.util.Matchable)rdms.fieldModelObject)){
+			if (fieldModelObject instanceof org.vcell.util.Matchable){
+				if (rdms.fieldModelObject instanceof org.vcell.util.Matchable){
+					if (!org.vcell.util.Compare.isEqualOrNull((org.vcell.util.Matchable)this.fieldModelObject,(org.vcell.util.Matchable)rdms.fieldModelObject)){
 						return false;
 					}
 				}else{

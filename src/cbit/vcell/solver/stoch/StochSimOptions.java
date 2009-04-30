@@ -12,7 +12,7 @@ import cbit.vcell.server.DataAccessException;
  */
 import cbit.vcell.math.*;
 
-public class StochSimOptions implements java.io.Serializable, cbit.util.Matchable {
+public class StochSimOptions implements java.io.Serializable, org.vcell.util.Matchable {
 	private boolean useCustomSeed = false;
 	private int customSeed = 0;
 	private long numOfTrials = 1;
@@ -47,7 +47,7 @@ public StochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_n
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) 
+public boolean compareEqual(org.vcell.util.Matchable obj) 
 {
 	if (this == obj) {
 		return true;

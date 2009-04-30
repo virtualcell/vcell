@@ -11,10 +11,12 @@ import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
 import java.util.Vector;
 import java.io.File;
-import cbit.vcell.server.User;
 import java.beans.PropertyVetoException;
 import cbit.vcell.server.PermissionException;
 import java.sql.SQLException;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.server.DataAccessException;
 

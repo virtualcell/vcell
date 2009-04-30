@@ -14,7 +14,7 @@ public class FormalCompound extends DBFormalSpecies {
  * @param argKey cbit.sql.KeyValue
  * @param argDBFormalSpeciesInfo DBFormalSpeciesInfo
  */
-public FormalCompound(cbit.sql.KeyValue argCompoundInfoKey, CompoundInfo argCompoundInfo) {
+public FormalCompound(org.vcell.util.document.KeyValue argCompoundInfoKey, CompoundInfo argCompoundInfo) {
 	
 	super(argCompoundInfoKey,argCompoundInfo);
 

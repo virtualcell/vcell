@@ -5,6 +5,9 @@ package cbit.vcell.math;
  * All rights reserved.
 ©*/
 import java.io.*;
+
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 /**

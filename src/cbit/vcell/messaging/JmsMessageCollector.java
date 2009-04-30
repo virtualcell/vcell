@@ -1,7 +1,9 @@
 package cbit.vcell.messaging;
 import cbit.vcell.solver.*;
 import javax.swing.event.EventListenerList;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.rmi.event.*;

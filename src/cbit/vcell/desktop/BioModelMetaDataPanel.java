@@ -1,11 +1,12 @@
 package cbit.vcell.desktop;
 
-import cbit.sql.KeyValue;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.biomodel.BioModelInfo;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.JTextArea;
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.util.BeanUtils;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.sql.VersionableType;

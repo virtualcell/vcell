@@ -4,13 +4,15 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.KeyValue;
-import cbit.vcell.server.User;
 import cbit.vcell.server.GroupAccess;
 import java.util.Date;
 import java.math.BigDecimal;
-import cbit.util.Compare;
-import cbit.util.Matchable;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 /**
  * This type was created in VisualAge.
  */

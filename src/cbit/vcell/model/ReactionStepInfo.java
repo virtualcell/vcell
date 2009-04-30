@@ -5,8 +5,8 @@ package cbit.vcell.model;
  * @author: Jim Schaff
  */
 public class ReactionStepInfo implements java.io.Serializable {
-	private cbit.sql.KeyValue reactionKey = null;
-	private cbit.vcell.server.User owner = null;
+	private org.vcell.util.document.KeyValue reactionKey = null;
+	private org.vcell.util.document.User owner = null;
 	private String bioModelName = null;
 	private String reactionName = null;
 	private java.util.Date bioModelVersionDate = null;
@@ -15,7 +15,7 @@ public class ReactionStepInfo implements java.io.Serializable {
 /**
  * ReactionStepInfo constructor comment.
  */
-public ReactionStepInfo(cbit.sql.KeyValue argReactionKey, cbit.vcell.server.User argOwner, String argBioModelName, String argReactionName, java.util.Date argBioModelVersionDate) {
+public ReactionStepInfo(org.vcell.util.document.KeyValue argReactionKey, org.vcell.util.document.User argOwner, String argBioModelName, String argReactionName, java.util.Date argBioModelVersionDate) {
 	super();
 	this.reactionKey = argReactionKey;
 	this.owner = argOwner;
@@ -61,7 +61,7 @@ public String getDescriptiveText() {
  * Creation date: (9/15/2003 3:08:12 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getOwner() {
+public org.vcell.util.document.User getOwner() {
 	return owner;
 }
 
@@ -71,7 +71,7 @@ public cbit.vcell.server.User getOwner() {
  * Creation date: (9/15/2003 3:08:12 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getReactionKey() {
+public org.vcell.util.document.KeyValue getReactionKey() {
 	return reactionKey;
 }
 

@@ -1,10 +1,10 @@
-package cbit.sql;
+package org.vcell.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Matchable;
+import org.vcell.util.Matchable;
 /**
  * This class is Immutable (must stay immutable).
  *

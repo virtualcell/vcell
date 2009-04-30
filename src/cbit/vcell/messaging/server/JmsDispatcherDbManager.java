@@ -6,10 +6,12 @@ import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.sql.KeyValue;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import java.util.Date;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.messaging.MessageConstants;
 
 /**

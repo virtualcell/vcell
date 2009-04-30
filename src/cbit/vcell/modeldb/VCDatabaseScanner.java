@@ -7,10 +7,12 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
-import cbit.sql.KeyValue;
 import cbit.sql.UserInfo;
 import cbit.sql.VersionableType;
 import cbit.util.BigString;
@@ -24,7 +26,6 @@ import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
 import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.

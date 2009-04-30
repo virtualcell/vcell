@@ -1,7 +1,6 @@
 package cbit.vcell.parser;
 
 import cbit.util.CommentStringTokenizer;
-import cbit.util.Matchable;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
@@ -12,9 +11,11 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 import java.io.*;
 import java.util.*;
 
+import org.vcell.util.Matchable;
+
 import net.sourceforge.interval.ia_math.*;
 
-public class Expression implements java.io.Serializable, cbit.util.Matchable {
+public class Expression implements java.io.Serializable, org.vcell.util.Matchable {
 
 //   private String expString = null;
 	private SimpleNode rootNode = null;

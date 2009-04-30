@@ -1,8 +1,8 @@
-package cbit.util;
+package org.vcell.util.document;
 
 import java.io.Serializable;
 import java.rmi.dgc.VMID;
-import cbit.vcell.server.User;
+
 
 public class VCDataJobID implements Serializable{
 

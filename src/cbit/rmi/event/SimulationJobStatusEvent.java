@@ -1,8 +1,9 @@
 package cbit.rmi.event;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.sql.KeyValue;
 
 /**
  * Insert the type's description here.
@@ -74,7 +75,7 @@ public Double getTimepoint() {
  * Creation date: (2/10/2004 1:30:21 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return null;
 }
 /**

@@ -11,8 +11,8 @@ import java.net.*;
 public class ExportLogEntry implements java.io.Serializable {
 	private String format = null;
 	private URL location = null;
-	private cbit.sql.KeyValue simulationRef = null;
-	private cbit.sql.KeyValue eleKey = null;
+	private org.vcell.util.document.KeyValue simulationRef = null;
+	private org.vcell.util.document.KeyValue eleKey = null;
 /**
  * Insert the method's description here.
  * Creation date: (10/19/2001 4:14:08 PM)
@@ -48,7 +48,7 @@ public ExportLogEntry(String lineEntry) {
  * Creation date: (10/19/2001 4:19:58 PM)
  * @param lineEntry java.lang.String
  */
-public ExportLogEntry(String argFormat,URL argLocation,cbit.sql.KeyValue argSimulationRef,cbit.sql.KeyValue argELEKey) {
+public ExportLogEntry(String argFormat,URL argLocation,org.vcell.util.document.KeyValue argSimulationRef,org.vcell.util.document.KeyValue argELEKey) {
 	
 	setFormat(argFormat);
 	setLocation(argLocation);
@@ -60,7 +60,7 @@ public ExportLogEntry(String argFormat,URL argLocation,cbit.sql.KeyValue argSimu
  * Creation date: (10/13/2003 4:40:18 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getELEKey() {
+public org.vcell.util.document.KeyValue getELEKey() {
 	return eleKey;
 }
 /**
@@ -84,7 +84,7 @@ public URL getLocation() {
  * Creation date: (10/13/2003 4:39:20 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getSimulationRef() {
+public org.vcell.util.document.KeyValue getSimulationRef() {
 	return simulationRef;
 }
 /**

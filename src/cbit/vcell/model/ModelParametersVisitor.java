@@ -2,6 +2,8 @@ package cbit.vcell.model;
 
 import java.io.PrintStream;
 
+import org.vcell.util.document.User;
+
 import cbit.sql.ConnectionFactory;
 import cbit.util.BigString;
 import cbit.vcell.biomodel.BioModel;
@@ -20,7 +22,6 @@ import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
 import cbit.vcell.solver.Simulation;
 
 public class ModelParametersVisitor implements VCDatabaseVisitor {

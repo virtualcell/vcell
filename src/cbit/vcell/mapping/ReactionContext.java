@@ -6,9 +6,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.util.BeanUtils;
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.Feature;

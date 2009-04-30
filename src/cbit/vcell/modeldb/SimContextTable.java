@@ -7,7 +7,10 @@ import cbit.vcell.math.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
 import java.sql.*;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.server.SessionLog;
 /**

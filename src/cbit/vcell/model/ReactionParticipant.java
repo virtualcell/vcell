@@ -3,13 +3,14 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.KeyValue;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.parser.*;
-import cbit.util.Matchable;
-import cbit.util.Compare;
 import cbit.sql.Cacheable;
 
-public abstract class ReactionParticipant implements cbit.sql.Cacheable, cbit.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
+public abstract class ReactionParticipant implements cbit.sql.Cacheable, org.vcell.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
 	private KeyValue key = null;
 	protected SpeciesContext speciesContext = null;
 	protected ReactionStep parent = null;

@@ -1,12 +1,12 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.server.User;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (10/7/2003 4:21:41 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class MergedDataInfo implements cbit.vcell.server.VCDataIdentifier, java.io.Serializable, cbit.util.Matchable {
+public class MergedDataInfo implements cbit.vcell.server.VCDataIdentifier, java.io.Serializable, org.vcell.util.Matchable {
 	private java.lang.String datasetName = null;
 	private User datasetUser = null;
 	private cbit.vcell.server.VCDataIdentifier[] dataIDs = null;
@@ -42,7 +42,7 @@ public static String[] createDefaultPrefixNames(int dataSetCount)
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	MergedDataInfo mergedDataInfo = null;
 	if (obj == null) {
 		return false;
@@ -95,7 +95,7 @@ public java.lang.String getDatasetName() {
  * Creation date: (10/22/2003 11:22:01 AM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getDatasetUser() {
+public org.vcell.util.document.User getDatasetUser() {
 	return datasetUser;
 }
 /**

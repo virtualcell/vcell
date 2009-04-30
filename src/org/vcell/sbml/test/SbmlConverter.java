@@ -18,8 +18,8 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.document.KeyValue;
 
-import cbit.sql.KeyValue;
 import cbit.util.Executable;
 import cbit.util.TokenMangler;
 import cbit.util.xml.VCLogger;
@@ -129,7 +129,7 @@ public static void main(String[] args) {
 				cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
 						new KeyValue("12345"),
 						"name",
-						new cbit.vcell.server.User("user",new KeyValue("123")),
+						new org.vcell.util.document.User("user",new KeyValue("123")),
 						new cbit.vcell.server.GroupAccessNone(),
 						null, // versionBranchPointRef
 						new java.math.BigDecimal(1.0), // branchID

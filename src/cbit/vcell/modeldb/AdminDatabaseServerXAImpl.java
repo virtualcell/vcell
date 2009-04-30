@@ -72,7 +72,7 @@ public SimulationJobStatus getNextObsoleteSimulation(java.sql.Connection con, lo
  * @param jobIndex int
  * @exception cbit.vcell.server.DataAccessException The exception description.
  */
-public SimulationJobStatus getSimulationJobStatus(java.sql.Connection con, cbit.sql.KeyValue simKey, int jobIndex) throws DataAccessException {
+public SimulationJobStatus getSimulationJobStatus(java.sql.Connection con, org.vcell.util.document.KeyValue simKey, int jobIndex) throws DataAccessException {
 	try {
 		SimulationJobStatus jobStatus = adminDbTop.getSimulationJobStatus(con, simKey, jobIndex);
 		return jobStatus;
@@ -91,7 +91,7 @@ public SimulationJobStatus getSimulationJobStatus(java.sql.Connection con, cbit.
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus[] getSimulationJobStatus(java.sql.Connection con, boolean bActiveOnly, cbit.vcell.server.User userOnly) throws DataAccessException {
+public SimulationJobStatus[] getSimulationJobStatus(java.sql.Connection con, boolean bActiveOnly, org.vcell.util.document.User userOnly) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(con, bActiveOnly,userOnly);
 	}catch (Throwable e){

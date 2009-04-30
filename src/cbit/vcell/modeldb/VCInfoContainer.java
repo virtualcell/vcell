@@ -1,7 +1,6 @@
 package cbit.vcell.modeldb;
 import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
-import cbit.vcell.server.User;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
@@ -16,6 +15,8 @@ import java.io.IOException;
 import cbit.util.BigString;
 import java.io.ByteArrayInputStream;
 import java.util.zip.InflaterInputStream;
+
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.
@@ -91,7 +92,7 @@ public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos() {
  * Creation date: (9/24/2003 12:50:51 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getUser() {
+public org.vcell.util.document.User getUser() {
 	if (user == null) {
 		inflate();
 	}

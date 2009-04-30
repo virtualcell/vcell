@@ -19,6 +19,7 @@ import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TSJobResultsSpaceStats;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
+import org.vcell.util.document.VCDataJobID;
 
 import cbit.image.DisplayAdapterService;
 import cbit.plot.*;

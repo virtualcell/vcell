@@ -7,7 +7,7 @@ import cbit.vcell.math.VCML;
  * Creation date: (9/23/2005 1:25:30 PM)
  * @author: Ion Moraru
  */
-public class ConstantArraySpec implements cbit.util.Matchable, java.io.Serializable {
+public class ConstantArraySpec implements org.vcell.util.Matchable, java.io.Serializable {
 	public static final int TYPE_LIST = 1000;
 	public static final int TYPE_INTERVAL = 1001;
 	private int type;
@@ -52,12 +52,12 @@ public static ConstantArraySpec clone(ConstantArraySpec spec) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj != null || obj instanceof ConstantArraySpec) {
 		ConstantArraySpec spec = (ConstantArraySpec)obj;
 		if (type != spec.type ||
-			!cbit.util.Compare.isEqual(name, spec.name) ||
-			!cbit.util.Compare.isEqual(getConstants(), spec.getConstants())){
+			!org.vcell.util.Compare.isEqual(name, spec.name) ||
+			!org.vcell.util.Compare.isEqual(getConstants(), spec.getConstants())){
 			return false;
 		}
 		return true;
