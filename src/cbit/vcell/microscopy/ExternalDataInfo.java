@@ -1,6 +1,8 @@
 package cbit.vcell.microscopy;
 
-import cbit.util.Matchable;
+import org.vcell.util.Compare;
+
+import org.vcell.util.Matchable;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /**
@@ -42,10 +44,10 @@ public class ExternalDataInfo implements Matchable {
 		}
 		if (obj != null && obj instanceof ExternalDataInfo) {
 			ExternalDataInfo exInfo = (ExternalDataInfo) obj;
-			if (!cbit.util.Compare.isEqualOrNull(getExternalDataIdentifier(), exInfo.getExternalDataIdentifier())){
+			if (!Compare.isEqualOrNull(getExternalDataIdentifier(), exInfo.getExternalDataIdentifier())){
 				return false;
 			}
-			if (!cbit.util.Compare.isEqualOrNull(getFilename(),exInfo.getFilename())){
+			if (!Compare.isEqualOrNull(getFilename(),exInfo.getFilename())){
 				return false;
 			}
 			return true;

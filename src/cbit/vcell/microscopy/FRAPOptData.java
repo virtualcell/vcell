@@ -2,7 +2,7 @@ package cbit.vcell.microscopy;
 
 import java.io.File;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;

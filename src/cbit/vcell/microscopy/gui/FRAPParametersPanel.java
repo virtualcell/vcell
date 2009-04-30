@@ -2,12 +2,8 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.Color;
 
-import cbit.gui.DialogUtils;
-import cbit.util.Compare;
-import cbit.util.NumberUtils;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -22,12 +18,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import cbit.vcell.microscopy.gui.FRAPEstimationPanel;
-import cbit.vcell.opt.Parameter;
 
 public class FRAPParametersPanel extends JPanel {
 	private FRAPEstimationPanel estimationPanel;

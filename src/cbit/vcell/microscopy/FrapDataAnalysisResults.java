@@ -3,7 +3,9 @@
  */
 package cbit.vcell.microscopy;
 
-import cbit.util.Matchable;
+import org.vcell.util.Compare;
+
+import org.vcell.util.Matchable;
 import cbit.vcell.parser.Expression;
 
 /**
@@ -231,18 +233,18 @@ public class FrapDataAnalysisResults implements Matchable {
 				return false;
 			}
 			
-			if(!cbit.util.Compare.isEqualOrNull(getFitExpression(), fdar.getFitExpression()))
+			if(!Compare.isEqualOrNull(getFitExpression(), fdar.getFitExpression()))
 			{
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(getBleachRegionData(), fdar.getBleachRegionData()))
+			if(!Compare.isEqualOrNull(getBleachRegionData(), fdar.getBleachRegionData()))
 			{
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(getFitBleachWhileMonitorExpression(), fdar.getFitBleachWhileMonitorExpression())){
+			if(!Compare.isEqualOrNull(getFitBleachWhileMonitorExpression(), fdar.getFitBleachWhileMonitorExpression())){
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(getCellRegionData(), fdar.getCellRegionData())){
+			if(!Compare.isEqualOrNull(getCellRegionData(), fdar.getCellRegionData())){
 				return false;
 			}
 
