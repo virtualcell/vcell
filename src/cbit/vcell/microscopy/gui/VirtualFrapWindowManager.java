@@ -1,15 +1,12 @@
 package cbit.vcell.microscopy.gui;
 
-import java.awt.Component;
 import java.io.FileNotFoundException;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
-import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.SimStatusEvent;
-import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
@@ -19,7 +16,7 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.StdoutSessionLog;
-import cbit.vcell.server.User;
+import org.vcell.util.document.User;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 

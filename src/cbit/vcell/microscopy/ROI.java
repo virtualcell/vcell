@@ -11,7 +11,9 @@ import loci.formats.ImageTools;
 import cbit.image.ImageException;
 import cbit.util.Extent;
 import cbit.util.ISize;
-import cbit.util.Matchable;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import loci.formats.AWTImageTools;
@@ -342,7 +344,7 @@ public class ROI implements Matchable {
 		if (obj != null && obj instanceof ROI) 
 		{
 			ROI roi = (ROI) obj;
-			if (!cbit.util.Compare.isEqualOrNull(getRoiImages(), roi.getRoiImages())){
+			if (!Compare.isEqualOrNull(getRoiImages(), roi.getRoiImages())){
 				return false;
 			}
 			if (!getROIType().equals(roi.getROIType())){

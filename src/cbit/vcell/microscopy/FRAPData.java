@@ -5,20 +5,21 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.BitSet;
 
+import org.vcell.util.Compare;
 import org.vcell.util.TSJobResultsSpaceStats;
 import org.vcell.util.TimeSeriesJobSpec;
 
 import cbit.image.ImageException;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
-import cbit.sql.KeyValue;
-import cbit.util.Matchable;
-import cbit.util.VCDataJobID;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.modeldb.NullSessionLog;
-import cbit.vcell.server.User;
+import org.vcell.util.document.User;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -252,10 +253,10 @@ public boolean compareEqual(Matchable obj)
 	if (obj != null && obj instanceof FRAPData) 
 	{
 		FRAPData fData = (FRAPData) obj;
-		if (!cbit.util.Compare.isEqualOrNull(getImageDataset(), fData.getImageDataset())){
+		if (!Compare.isEqualOrNull(getImageDataset(), fData.getImageDataset())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(getRois(), fData.getRois())){
+		if (!Compare.isEqualOrNull(getRois(), fData.getRois())){
 			return false;
 		}
 		return true;

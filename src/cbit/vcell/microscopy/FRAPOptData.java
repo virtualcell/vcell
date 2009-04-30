@@ -3,7 +3,7 @@ package cbit.vcell.microscopy;
 import java.awt.Rectangle;
 import java.io.File;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
