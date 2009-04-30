@@ -3,6 +3,8 @@ package cbit.rmi.event;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.*;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.

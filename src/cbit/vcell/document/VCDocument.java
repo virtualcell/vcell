@@ -7,7 +7,7 @@ import cbit.sql.*;
  * Creation date: (5/6/2004 12:53:51 PM)
  * @author: Ion Moraru
  */
-public interface VCDocument extends java.io.Serializable, cbit.util.Matchable {
+public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchable {
 	// document types
 	public static final int BIOMODEL_DOC = 0;
 		public static final int BIO_OPTION_DEFAULT = 0;

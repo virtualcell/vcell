@@ -9,6 +9,9 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
  * All rights reserved.
 ©*/
 import java.sql.*;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
 import cbit.sql.*;

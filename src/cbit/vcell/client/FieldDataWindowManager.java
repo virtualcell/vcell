@@ -14,11 +14,13 @@ import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.ListSelectionModel;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
-import cbit.sql.KeyValue;
 import cbit.sql.VersionableType;
 import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModelInfo;
@@ -37,7 +39,6 @@ import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.SimulationInfo;

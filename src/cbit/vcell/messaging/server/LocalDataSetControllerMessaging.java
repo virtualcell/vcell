@@ -15,6 +15,9 @@ import java.util.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.io.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.*;

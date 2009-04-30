@@ -13,8 +13,10 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.Compare;
+import org.vcell.util.document.KeyValue;
+
 import cbit.util.CommentStringTokenizer;
-import cbit.util.Compare;
 import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.server.DataAccessException;
@@ -26,7 +28,7 @@ import cbit.sql.*;
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-public class Simulation implements Versionable, cbit.util.Matchable, cbit.vcell.parser.SymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
+public class Simulation implements Versionable, org.vcell.util.Matchable, cbit.vcell.parser.SymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
@@ -300,7 +302,7 @@ public void clearVersion() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {
 		return (true);
 	}
@@ -315,10 +317,10 @@ public boolean compareEqual(cbit.util.Matchable object) {
 		//
 		// check for true equality
 		//
-		if (!cbit.util.Compare.isEqual(getName(),simulation.getName())){
+		if (!org.vcell.util.Compare.isEqual(getName(),simulation.getName())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(getDescription(),simulation.getDescription())){
+		if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),simulation.getDescription())){
 			return false;
 		}
 		return true;
@@ -339,7 +341,7 @@ private boolean compareEqualMathematically(Simulation simulation) {
 	if (!getMathDescription().compareEqual(simulation.getMathDescription())) return (false);
 	if (!getMathOverrides().compareEqual(simulation.getMathOverrides())) return (false);
 	if (!getSolverTaskDescription().compareEqual(simulation.getSolverTaskDescription())) return (false);
-	if (!cbit.util.Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
+	if (!org.vcell.util.Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
 	if (!Compare.isEqualOrNull(dataProcessingInstructions, simulation.dataProcessingInstructions)) return (false);
 
 	return true;
@@ -1318,7 +1320,7 @@ public static boolean testEquivalency(Simulation memorySimulation, Simulation da
 		if (!memorySimulation.getSolverTaskDescription().compareEqual(databaseSimulation.getSolverTaskDescription())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())){
+		if (!org.vcell.util.Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())){
 			return false;
 		}
 		//

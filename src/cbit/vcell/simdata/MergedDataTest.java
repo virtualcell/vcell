@@ -6,7 +6,8 @@ import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.VCDataIdentifier;
 
 import java.io.File;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (10/10/2003 11:48:54 AM)
@@ -20,13 +21,13 @@ public class MergedDataTest {
  */
 public static void main(String[] args) {
 
-	final User user = new cbit.vcell.server.User("anu",new cbit.sql.KeyValue("2302355"));
+	final User user = new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("2302355"));
 	File userFile = new File("\\\\fs2\\RAID\\vcell\\users");
 	cbit.vcell.server.VCDataIdentifier vcData1 = new cbit.vcell.server.VCDataIdentifier() {
 		public String getID() {
 			return "SimID_6389673";
 		}
-		public cbit.vcell.server.User getOwner() {
+		public org.vcell.util.document.User getOwner() {
 			return user;
 		}
 	};
@@ -34,7 +35,7 @@ public static void main(String[] args) {
 		public String getID() {
 			return "SimID_6383968";
 		}
-		public cbit.vcell.server.User getOwner() {
+		public org.vcell.util.document.User getOwner() {
 			return user;
 		}
 	};

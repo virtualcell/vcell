@@ -30,7 +30,7 @@ public OdeEquation(Variable var, Expression initialExp, Expression rateExp) {
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	OdeEquation equ = null;
 	if (!(object instanceof OdeEquation)){
 		return false;

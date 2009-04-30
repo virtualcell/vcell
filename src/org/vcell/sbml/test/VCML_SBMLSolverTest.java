@@ -110,7 +110,7 @@ public class VCML_SBMLSolverTest {
 	    simContext.setMathDescription(mathDesc);
 	    cbit.sql.SimulationVersion simVersion =
 	        new cbit.sql.SimulationVersion(
-	            new cbit.sql.KeyValue("100"),
+	            new org.vcell.util.document.KeyValue("100"),
 	            "simulation1",
 	            null,
 	            null,

@@ -4,7 +4,7 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.User;
+import org.vcell.util.document.User;
 /**
  * This type was created in VisualAge.
  */

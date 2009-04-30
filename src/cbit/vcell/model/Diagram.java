@@ -5,6 +5,10 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.util.*;
 /**
  * This type was created in VisualAge.

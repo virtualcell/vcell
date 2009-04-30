@@ -6,6 +6,9 @@ import cbit.vcell.simdata.gui.*;
 import java.io.*;
 import java.util.zip.*;
 import java.rmi.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;
 import cbit.vcell.geometry.*;

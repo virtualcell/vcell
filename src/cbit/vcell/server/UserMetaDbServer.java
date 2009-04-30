@@ -18,10 +18,12 @@ import cbit.image.VCImage;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
 import java.rmi.*;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.VersionInfo;
 import cbit.sql.Versionable;
 import cbit.sql.VersionableType;
-import cbit.sql.KeyValue;
 
 /**
  * This type was created in VisualAge.
@@ -76,7 +78,7 @@ void deleteMathModel(KeyValue mathModelKey) throws DataAccessException, ObjectNo
  * Insert the method's description here.
  * Creation date: (10/13/2003 5:37:35 PM)
  */
-public void deleteResultSetExport(cbit.sql.KeyValue eleKey) throws DataAccessException,java.rmi.RemoteException;
+public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException,java.rmi.RemoteException;
 
 
 /**

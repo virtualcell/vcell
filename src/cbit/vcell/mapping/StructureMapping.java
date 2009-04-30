@@ -7,6 +7,10 @@ import net.sourceforge.interval.ia_math.RealInterval;
 ©*/
 import java.beans.PropertyVetoException;
 import java.util.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
@@ -69,7 +73,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 			this(structureMappingParameter.getName(),structureMappingParameter.getExpression() == null ? null : new Expression(structureMappingParameter.getExpression()),structureMappingParameter.getRole(),structureMappingParameter.getUnitDefinition());			
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof StructureMappingParameter)){
 				return false;
 			}

@@ -4,7 +4,7 @@ package cbit.vcell.modelopt;
  * Creation date: (5/2/2006 4:35:02 PM)
  * @author: Jim Schaff
  */
-public abstract class AnalysisTask implements cbit.util.Matchable, java.io.Serializable {
+public abstract class AnalysisTask implements org.vcell.util.Matchable, java.io.Serializable {
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String();

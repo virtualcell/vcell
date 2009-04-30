@@ -8,9 +8,10 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.vcell.util.Matchable;
+
 import cbit.image.ImageException;
 import cbit.util.Extent;
-import cbit.util.Matchable;
 import cbit.util.Origin;
 /**
  * This type was created in VisualAge.
@@ -127,7 +128,7 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 
-	if(!cbit.util.Compare.isEqual(pixels,usImage.pixels)){
+	if(!org.vcell.util.Compare.isEqual(pixels,usImage.pixels)){
 		return false;
 	}
 	return true;

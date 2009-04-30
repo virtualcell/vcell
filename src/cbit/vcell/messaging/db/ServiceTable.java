@@ -5,6 +5,8 @@ import cbit.vcell.messaging.admin.ServiceStatus;
 import cbit.sql.*;
 import java.sql.*;
 
+import org.vcell.util.document.KeyValue;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

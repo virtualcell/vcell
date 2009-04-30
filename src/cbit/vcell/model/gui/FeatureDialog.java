@@ -508,11 +508,11 @@ private void updateInterface() {
 		
 	boolean bChildNameChanged =
 		getChildFeature() == null ||
-		!cbit.util.Compare.isEqualOrNull(getChildFeature().getName(),getNameJTextField().getText());
+		!org.vcell.util.Compare.isEqualOrNull(getChildFeature().getName(),getNameJTextField().getText());
 	
 	boolean bStructureSizeNameChanged =
 		getChildFeature() == null ||
-		!cbit.util.Compare.isEqualOrNull(getChildFeature().getStructureSize().getName(),getFeatureSizeNameJTextField().getText());
+		!org.vcell.util.Compare.isEqualOrNull(getChildFeature().getStructureSize().getName(),getFeatureSizeNameJTextField().getText());
 	//
 	boolean bOKEnabled =
 		(	

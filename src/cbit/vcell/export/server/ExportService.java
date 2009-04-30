@@ -6,6 +6,9 @@ import cbit.vcell.simdata.DataServerImpl;
 ©*/
 import cbit.vcell.solver.*;
 import java.rmi.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.*;
 import cbit.rmi.event.*;
 /**

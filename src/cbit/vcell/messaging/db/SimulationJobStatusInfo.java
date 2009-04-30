@@ -1,5 +1,5 @@
 package cbit.vcell.messaging.db;
-import cbit.vcell.server.User;
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.

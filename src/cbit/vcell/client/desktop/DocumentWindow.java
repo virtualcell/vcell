@@ -3116,7 +3116,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 
 	// other updates
 	String status = "";
-	cbit.vcell.server.User user = getWindowManager().getUser();
+	org.vcell.util.document.User user = getWindowManager().getUser();
 	boolean isTestUser = (user!=null)?(user.isTestAccount()):(false);
 	switch (connStatus.getStatus()) {
 		case ConnectionStatus.NOT_CONNECTED: {

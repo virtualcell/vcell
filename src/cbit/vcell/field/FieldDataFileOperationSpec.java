@@ -1,10 +1,11 @@
 package cbit.vcell.field;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Origin;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
@@ -26,7 +27,7 @@ public class FieldDataFileOperationSpec implements java.io.Serializable{
 	public String[] varNames;
 	public VariableType[] variableTypes;
 	public double[] times;
-	public cbit.vcell.server.User owner;
+	public org.vcell.util.document.User owner;
 	public Origin origin;
 	public Extent extent;
 	public ISize isize;

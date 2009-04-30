@@ -12,6 +12,9 @@ import cbit.sql.*;
 
 import java.sql.*;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;

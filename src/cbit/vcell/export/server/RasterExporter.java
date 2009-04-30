@@ -2,6 +2,9 @@ package cbit.vcell.export.server;
 import java.util.*;
 import java.io.*;
 import java.rmi.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;
 import cbit.vcell.export.nrrd.*;

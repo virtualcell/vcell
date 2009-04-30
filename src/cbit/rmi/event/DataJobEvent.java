@@ -6,8 +6,9 @@ package cbit.rmi.event;
 import java.rmi.dgc.VMID;
 
 import org.vcell.util.TimeSeriesJobResults;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataJobID;
 
-import cbit.util.VCDataJobID;
 import cbit.vcell.server.*;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.

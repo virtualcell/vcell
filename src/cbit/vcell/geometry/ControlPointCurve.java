@@ -111,7 +111,7 @@ public Object clone() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!super.compareEqual(obj)) {
 		return false;
 	}
@@ -125,7 +125,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	for (int c = 0; c < controlPoints.size(); c += 1) {
 		Coordinate thisCoord = (Coordinate) controlPoints.elementAt(c);
 		Coordinate cpcCoord = (Coordinate) cpc.controlPoints.elementAt(c);
-		if (!cbit.util.Compare.isEqual(thisCoord, cpcCoord)) {
+		if (!org.vcell.util.Compare.isEqual(thisCoord, cpcCoord)) {
 			return false;
 		}
 	}

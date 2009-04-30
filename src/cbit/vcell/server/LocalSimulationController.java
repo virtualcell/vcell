@@ -5,6 +5,9 @@ import cbit.util.BigString;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.solver.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 /**

@@ -7,13 +7,14 @@ import cbit.vcell.messaging.db.VCellServerID;
 
 import javax.jms.*;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.User;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.transaction.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.sql.KeyValue;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.sql.KeyFactory;

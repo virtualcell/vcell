@@ -5,13 +5,13 @@ package cbit.vcell.solver;
  * @author: Jim Schaff
  */
 public class VCSimulationIdentifier implements java.io.Serializable {
-	private cbit.sql.KeyValue simulationKey = null;
-	private cbit.vcell.server.User owner = null;
+	private org.vcell.util.document.KeyValue simulationKey = null;
+	private org.vcell.util.document.User owner = null;
 
 /**
  * VCSimulationIdentifier constructor comment.
  */
-public VCSimulationIdentifier(cbit.sql.KeyValue argSimulationKey, cbit.vcell.server.User argOwner) {
+public VCSimulationIdentifier(org.vcell.util.document.KeyValue argSimulationKey, org.vcell.util.document.User argOwner) {
 	super();
 	this.simulationKey = argSimulationKey;
 	this.owner = argOwner;
@@ -49,7 +49,7 @@ public java.lang.String getID() {
  * Creation date: (8/24/2004 11:12:39 AM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getOwner() {
+public org.vcell.util.document.User getOwner() {
 	return owner;
 }
 
@@ -59,7 +59,7 @@ public cbit.vcell.server.User getOwner() {
  * Creation date: (8/24/2004 10:59:23 AM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getSimulationKey() {
+public org.vcell.util.document.KeyValue getSimulationKey() {
 	return simulationKey;
 }
 

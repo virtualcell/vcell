@@ -5,7 +5,9 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import java.io.*;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.User;
+
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 /**

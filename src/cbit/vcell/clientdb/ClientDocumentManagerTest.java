@@ -3,6 +3,8 @@ package cbit.vcell.clientdb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.mathmodel.*;
 import cbit.sql.*;
 import cbit.vcell.biomodel.*;

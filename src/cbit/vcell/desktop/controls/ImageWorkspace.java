@@ -5,7 +5,6 @@ package cbit.vcell.desktop.controls;
 ©*/
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.sql.KeyValue;
 import cbit.util.Origin;
 import cbit.util.Extent;
 import cbit.vcell.parser.ExpressionException;
@@ -14,6 +13,9 @@ import cbit.sql.Version;
 import cbit.vcell.server.ObjectNotFoundException;
 import java.awt.Point;
 import javax.swing.JOptionPane;
+
+import org.vcell.util.document.KeyValue;
+
 import java.beans.PropertyVetoException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.model.gui.VCellNames;

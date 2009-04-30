@@ -34,7 +34,7 @@ public VolumeRegionEquation(VolumeRegionVariable var, Expression initialExp) {
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	VolumeRegionEquation equ = null;
 	if (!(object instanceof VolumeRegionEquation)){
 		return false;
@@ -44,13 +44,13 @@ public boolean compareEqual(cbit.util.Matchable object) {
 	if (!compareEqual0(equ)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(volumeRateExpression,equ.volumeRateExpression)){
+	if (!org.vcell.util.Compare.isEqualOrNull(volumeRateExpression,equ.volumeRateExpression)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(membraneRateExpression,equ.membraneRateExpression)){
+	if (!org.vcell.util.Compare.isEqualOrNull(membraneRateExpression,equ.membraneRateExpression)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(uniformRateExpression,equ.uniformRateExpression)){
+	if (!org.vcell.util.Compare.isEqualOrNull(uniformRateExpression,equ.uniformRateExpression)){
 		return false;
 	}
 	return true;

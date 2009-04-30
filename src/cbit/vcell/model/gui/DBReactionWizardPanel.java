@@ -406,9 +406,9 @@ private void configureRXParameterList(javax.swing.event.ListSelectionEvent listS
 		if(getReactionsJList().getSelectedValue() instanceof String){//User Reactions
 			java.util.Vector rxIDV = (java.util.Vector)mapRXStringtoRXIDs.get(getReactionsJList().getSelectedValue());
 			//String[] rxIDArr = (String[])rxIDV.toArray(new String[rxIDV.size()]);
-			cbit.sql.KeyValue rxKeys[] = new cbit.sql.KeyValue[rxIDV.size()];
+			org.vcell.util.document.KeyValue rxKeys[] = new org.vcell.util.document.KeyValue[rxIDV.size()];
 			for (int i = 0; i < rxKeys.length; i++){
-				rxKeys[i] = new cbit.sql.KeyValue((String)rxIDV.elementAt(i));
+				rxKeys[i] = new org.vcell.util.document.KeyValue((String)rxIDV.elementAt(i));
 			}
 			try{
 				ReactionStepInfo reactionStepInfos[] = getDocumentManager().getUserReactionStepInfos(rxKeys);
@@ -1206,7 +1206,7 @@ private void done() {
 				Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
 				Species changedSpecies = (Species)sbc[SPECIES_INDEX];
 				cbit.vcell.dictionary.DBSpecies originalDBSpecies = (cbit.vcell.dictionary.DBSpecies)sbc[ORIG_DBS_INDEX];
-				if(!cbit.util.Compare.isEqualOrNull(originalDBSpecies,changedSpecies.getDBSpecies())){
+				if(!org.vcell.util.Compare.isEqualOrNull(originalDBSpecies,changedSpecies.getDBSpecies())){
 					changedSpecies.setDBSpecies(originalDBSpecies);
 				}
 			}catch(Exception ee){
@@ -2540,7 +2540,7 @@ private boolean lastSearchIsSameAsCurrent() {
 		s = null;
 	}
 	if(lastSearchChangeInfo[2] instanceof String){
-		if(!cbit.util.Compare.isEqualOrNull(s,((String)lastSearchChangeInfo[2]))){
+		if(!org.vcell.util.Compare.isEqualOrNull(s,((String)lastSearchChangeInfo[2]))){
 			return false;
 		}
 	}
@@ -2620,7 +2620,7 @@ private void parameterNameSelectionChanged() {
 			final cbit.vcell.clientdb.DocumentManager docManager = getDocumentManager();
 			final javax.swing.JList jlist = getReactionsJList();
 			final MapStringToObject parameNameMSO = (MapStringToObject)getParameterNamesJList().getSelectedValue();
-			final cbit.sql.KeyValue reactionStepKey = ((cbit.vcell.model.ReactionStepInfo)parameNameMSO.getToObject()).getReactionKey();
+			final org.vcell.util.document.KeyValue reactionStepKey = ((cbit.vcell.model.ReactionStepInfo)parameNameMSO.getToObject()).getReactionKey();
 			//
 			final String RXSTEP_HASH_VALUE_KEY = "rxStep";
 			

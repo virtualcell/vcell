@@ -7,9 +7,11 @@ package cbit.vcell.geometry;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
-import cbit.sql.KeyValue;
-import cbit.util.Compare;
-import cbit.util.Matchable;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 import cbit.util.TokenMangler;
 import cbit.sql.Cacheable;
 /**

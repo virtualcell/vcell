@@ -1,4 +1,6 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.document.User;
+
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.util.BigString;
 import cbit.vcell.solver.SolverResultSetInfo;
@@ -8,7 +10,6 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.messaging.JmsClientMessaging;
@@ -55,7 +56,7 @@ public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistr
  * @param bioModelKey cbit.sql.KeyValue
  * @exception java.rmi.RemoteException The exception description.
  */
-public void deleteBioModel(cbit.sql.KeyValue bioModelKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public void deleteBioModel(org.vcell.util.document.KeyValue bioModelKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	rpc("deleteBioModel",new Object[]{user, bioModelKey});
 }
 
@@ -77,7 +78,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
  * @param bioModelKey cbit.sql.KeyValue
  * @exception java.rmi.RemoteException The exception description.
  */
-public void deleteGeometry(cbit.sql.KeyValue geometryKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public void deleteGeometry(org.vcell.util.document.KeyValue geometryKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	rpc("deleteGeometry",new Object[]{user, geometryKey});
 }
 
@@ -88,7 +89,7 @@ public void deleteGeometry(cbit.sql.KeyValue geometryKey) throws cbit.vcell.serv
  * @param bioModelKey cbit.sql.KeyValue
  * @exception java.rmi.RemoteException The exception description.
  */
-public void deleteMathModel(cbit.sql.KeyValue mathModelKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public void deleteMathModel(org.vcell.util.document.KeyValue mathModelKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	rpc("deleteMathModel",new Object[]{user, mathModelKey});
 }
 
@@ -97,7 +98,7 @@ public void deleteMathModel(cbit.sql.KeyValue mathModelKey) throws cbit.vcell.se
 * Insert the method's description here.
 * Creation date: (10/22/2003 10:28:00 AM)
 */
-public void deleteResultSetExport(cbit.sql.KeyValue eleKey) throws cbit.vcell.server.DataAccessException {
+public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws cbit.vcell.server.DataAccessException {
 	rpc("deleteResultSetExport",new Object[]{user, eleKey});
 }
 
@@ -108,7 +109,7 @@ public void deleteResultSetExport(cbit.sql.KeyValue eleKey) throws cbit.vcell.se
  * @param bioModelKey cbit.sql.KeyValue
  * @exception java.rmi.RemoteException The exception description.
  */
-public void deleteVCImage(cbit.sql.KeyValue imageKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public void deleteVCImage(org.vcell.util.document.KeyValue imageKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	rpc("deleteVCImage",new Object[]{user, imageKey});
 }
 
@@ -144,7 +145,7 @@ public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (VersionableFamily)rpc("getAllReferences",new Object[]{user, vType,key});
 }
 
@@ -156,7 +157,7 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.Versionabl
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.vcell.biomodel.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
 }
 
@@ -180,7 +181,7 @@ public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws 
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelMetaData getBioModelMetaData(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.biomodel.BioModelMetaData getBioModelMetaData(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (BioModelMetaData)rpc("getBioModelMetaData",new Object[]{user, key});
 }
 
@@ -204,7 +205,7 @@ public cbit.vcell.biomodel.BioModelMetaData[] getBioModelMetaDatas(boolean bAll)
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString getBioModelXML(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException {
+public BigString getBioModelXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException {
 	return (BigString)rpc("getBioModelXML",new Object[]{user, key});
 }
 
@@ -239,7 +240,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(Reacti
  * @return cbit.vcell.export.server.ExportLog
  * @param simKey cbit.sql.KeyValue
  */
-public cbit.vcell.export.server.ExportLog getExportLog(cbit.sql.KeyValue simulationKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.export.server.ExportLog getExportLog(org.vcell.util.document.KeyValue simulationKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.vcell.export.server.ExportLog)rpc("getExportLog",new Object[]{user, simulationKey});
 }
 
@@ -262,7 +263,7 @@ public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws c
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.geometry.GeometryInfo getGeometryInfo(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.vcell.geometry.GeometryInfo)rpc("getGeometryInfo",new Object[]{user,key});
 }
 
@@ -286,7 +287,7 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws 
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString getGeometryXML(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException {
+public BigString getGeometryXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException {
 	return (BigString)rpc("getGeometryXML",new Object[]{user, key});
 }
 
@@ -298,7 +299,7 @@ public BigString getGeometryXML(cbit.sql.KeyValue key) throws cbit.vcell.server.
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.vcell.mathmodel.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
 }
 
@@ -322,7 +323,7 @@ public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean bAll) thro
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelMetaData getMathModelMetaData(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.mathmodel.MathModelMetaData getMathModelMetaData(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (MathModelMetaData)rpc("getMathModelMetaData",new Object[]{user, key});
 }
 
@@ -346,7 +347,7 @@ public cbit.vcell.mathmodel.MathModelMetaData[] getMathModelMetaDatas(boolean bA
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString getMathModelXML(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException {
+public BigString getMathModelXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException {
 	return (BigString)rpc("getMathModelXML",new Object[]{user, key});
 }
 
@@ -366,7 +367,7 @@ public cbit.util.Preference[] getPreferences() throws cbit.vcell.server.DataAcce
 /**
  * getReactionStep method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(cbit.sql.KeyValue rxID) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.model.ReactionStep getReactionStep(org.vcell.util.document.KeyValue rxID) throws cbit.vcell.server.DataAccessException {
 	return (cbit.vcell.model.ReactionStep)rpc("getReactionStep",new Object[]{user, rxID});
 }
 
@@ -374,7 +375,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(cbit.sql.KeyValue rxID) thr
 /**
  * getReactionStepInfos method comment.
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(cbit.sql.KeyValue[] reactionStepKeys) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws cbit.vcell.server.DataAccessException {
 	return (cbit.vcell.model.ReactionStepInfo[])rpc("getReactionStepInfos",new Object[]{user, reactionStepKeys});
 }
 
@@ -397,7 +398,7 @@ public cbit.vcell.solver.SolverResultSetInfo[] getResultSetInfos(boolean bAll) t
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationStatus[] getSimulationStatus(cbit.sql.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatus[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
 	return (SimulationStatus[])rpc("getSimulationStatus",new Object[]{simulationKeys});
 }
 
@@ -409,7 +410,7 @@ public SimulationStatus[] getSimulationStatus(cbit.sql.KeyValue simulationKeys[]
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationStatus getSimulationStatus(cbit.sql.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatus getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
 	return (SimulationStatus)rpc("getSimulationStatus",new Object[]{simulationKey});
 }
 
@@ -421,7 +422,7 @@ public SimulationStatus getSimulationStatus(cbit.sql.KeyValue simulationKey) thr
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString getSimulationXML(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException {
+public BigString getSimulationXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException {
 	return (BigString)rpc("getSimulationXML",new Object[]{user, key});
 }
 
@@ -467,7 +468,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(R
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.image.VCImageInfo getVCImageInfo(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.image.VCImageInfo)rpc("getVCImageInfo",new Object[]{user,key});
 }
 
@@ -494,7 +495,7 @@ public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll)
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString getVCImageXML(cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException {
+public BigString getVCImageXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException {
 	return (BigString)rpc("getVCImageXML",new Object[]{user, key});
 }
 
@@ -514,7 +515,7 @@ public VCInfoContainer getVCInfoContainer() throws cbit.vcell.server.DataAccessE
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, cbit.sql.KeyValue key, java.lang.String addUserToGroup, boolean isHidden) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String addUserToGroup, boolean isHidden) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.sql.VersionInfo)rpc("groupAddUser",new Object[]{user, vType,key,addUserToGroup,new Boolean(isHidden)});
 }
 
@@ -526,7 +527,7 @@ public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, cbit.sq
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, cbit.sql.KeyValue key, java.lang.String userRemoveFromGroup, boolean isHiddenFromOwner) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String userRemoveFromGroup, boolean isHiddenFromOwner) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.sql.VersionInfo)rpc("groupRemoveUser",new Object[]{user, vType,key,userRemoveFromGroup,new Boolean(isHiddenFromOwner)});
 }
 
@@ -538,7 +539,7 @@ public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, cbit
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.sql.VersionInfo)rpc("groupSetPrivate",new Object[]{user, vType,key});
 }
 
@@ -550,7 +551,7 @@ public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, cbit
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (cbit.sql.VersionInfo)rpc("groupSetPublic",new Object[]{user, vType,key});
 }
 

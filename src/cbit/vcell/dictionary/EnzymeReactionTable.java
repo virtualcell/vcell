@@ -1,7 +1,9 @@
 package cbit.vcell.dictionary;
 
 import java.util.Vector;
-import cbit.sql.KeyValue;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.Field;
@@ -102,7 +104,7 @@ public ReactionDescription[] getReactions(java.sql.ResultSet rset) throws java.s
 			enzymeFID = rset.getString(RXQ_ENZYMEFID_ALIAS);
 		}
 		
-		if(!reactionID.equals(currentReactionID) || !cbit.util.Compare.isEqualOrNull(enzymeFID,currentEnzymeFID)){
+		if(!reactionID.equals(currentReactionID) || !org.vcell.util.Compare.isEqualOrNull(enzymeFID,currentEnzymeFID)){
 			java.math.BigDecimal enzymeID = rset.getBigDecimal(RXQ_ENZYMEID_ALIAS);
 			if(enzymeID != null){
 				String enzymeName = rset.getString(RXQ_ENZYMENAME_ALIAS);

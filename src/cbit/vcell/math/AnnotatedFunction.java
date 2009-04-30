@@ -7,7 +7,7 @@ import cbit.vcell.simdata.VariableType;
  * Creation date: (1/29/2004 11:48:16 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class AnnotatedFunction extends Function implements cbit.util.Matchable {
+public class AnnotatedFunction extends Function implements org.vcell.util.Matchable {
 	private java.lang.String fieldErrorString = null;
 	private VariableType fieldFunctionType = null;
 	private boolean bIsUserDefined = false;

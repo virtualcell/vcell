@@ -5,10 +5,8 @@ package cbit.vcell.desktop;
 ©*/
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.server.User;
 import java.awt.Font;
 import java.math.BigDecimal;
-import cbit.sql.KeyValue;
 import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
@@ -23,6 +21,9 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
  
 public class MathModelCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;

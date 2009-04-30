@@ -1,7 +1,8 @@
 package cbit.vcell.messaging.server;
 
+import org.vcell.util.document.User;
+
 import cbit.vcell.messaging.MessageConstants.ServiceType;
-import cbit.vcell.server.User;
 
 /**
  * Insert the type's description here.
@@ -54,7 +55,7 @@ public ServiceType getRequestedServiceType() {
  * Creation date: (3/11/2004 8:50:08 AM)
  * @return java.lang.String
  */
-public cbit.vcell.server.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return user;
 }
 /**

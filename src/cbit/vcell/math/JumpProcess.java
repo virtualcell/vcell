@@ -2,9 +2,10 @@ package cbit.vcell.math;
 import cbit.vcell.parser.Expression;
 import java.util.*;
 
+import org.vcell.util.Compare;
+
 import cbit.util.CommentStringTokenizer;
-import cbit.util.Compare;
-public class JumpProcess implements cbit.util.Matchable,java.io.Serializable {
+public class JumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName=null;
 	private cbit.vcell.parser.Expression  probabilityRate=null;
 	private Vector<Action> listOfActions = null;
@@ -60,7 +61,7 @@ public void addAction(Action newAction) throws MathException
  * @return boolean
  * @param object java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable object) 
+public boolean compareEqual(org.vcell.util.Matchable object) 
 {
 	if (object == null) {
 		return false;

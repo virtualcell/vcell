@@ -20,7 +20,7 @@ import cbit.vcell.parser.ExpressionBindingException;
  * Creation date: (8/17/2000 3:47:33 PM)
  * @author: John Wagner
  */
-public class MathOverrides implements cbit.util.Matchable, java.io.Serializable {
+public class MathOverrides implements org.vcell.util.Matchable, java.io.Serializable {
 	private Simulation simulation = null;
 	//
 	// key = constant name (String)
@@ -29,7 +29,7 @@ public class MathOverrides implements cbit.util.Matchable, java.io.Serializable 
 	private java.util.Hashtable overridesHash = new java.util.Hashtable();
 	protected transient cbit.vcell.solver.MathOverridesListener aMathOverridesListener = null;
 	
-	class Element implements java.io.Serializable, cbit.util.Matchable {
+	class Element implements java.io.Serializable, org.vcell.util.Matchable {
 		private Expression actualValue;
 		private String name;
 		private ConstantArraySpec spec;
@@ -44,12 +44,12 @@ public class MathOverrides implements cbit.util.Matchable, java.io.Serializable 
 			this.name = argName;
 			this.spec = ConstantArraySpec.clone(argSpec);
 		}
-		public boolean compareEqual(cbit.util.Matchable obj){
+		public boolean compareEqual(org.vcell.util.Matchable obj){
 			if (obj instanceof MathOverrides.Element){
 				MathOverrides.Element element = (MathOverrides.Element)obj;
-				if (!cbit.util.Compare.isEqualOrNull(actualValue,element.actualValue) ||
-					!cbit.util.Compare.isEqual(name,element.name) ||
-					!cbit.util.Compare.isEqualOrNull(spec,element.spec)){
+				if (!org.vcell.util.Compare.isEqualOrNull(actualValue,element.actualValue) ||
+					!org.vcell.util.Compare.isEqual(name,element.name) ||
+					!org.vcell.util.Compare.isEqualOrNull(spec,element.spec)){
 					return false;
 				}
 				return true;
@@ -162,14 +162,14 @@ private void checkUnresolved(Expression exp, MathDescription mathDescription, St
  * Creation date: (10/24/00 1:23:14 PM)
  * @return boolean
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof MathOverrides)){
 		return false;
 	}
 	//
 	// use the superclass definition of equals(), it compares contents not references.
 	//
-	boolean returnValue = cbit.util.Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
+	boolean returnValue = org.vcell.util.Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
 	return returnValue;
 }
 

@@ -8,13 +8,16 @@ import java.beans.*;
 import java.sql.*;
 import java.sql.Statement;
 import java.util.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 /**
  * This type was created in VisualAge.
  */

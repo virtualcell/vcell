@@ -32,7 +32,7 @@ public FilamentRegionEquation(FilamentRegionVariable var, Expression initialExp)
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	FilamentRegionEquation equ = null;
 	if (!(object instanceof FilamentRegionEquation)){
 		return false;
@@ -42,7 +42,7 @@ public boolean compareEqual(cbit.util.Matchable object) {
 	if (!compareEqual0(equ)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(filamentRateExpression,equ.filamentRateExpression)){
+	if (!org.vcell.util.Compare.isEqualOrNull(filamentRateExpression,equ.filamentRateExpression)){
 		return false;
 	}
 	return true;

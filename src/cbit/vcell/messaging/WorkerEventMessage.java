@@ -1,9 +1,11 @@
 package cbit.vcell.messaging;
-import cbit.vcell.server.User;
 import cbit.vcell.messaging.server.SimulationDispatcher;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.sql.KeyValue;
 import javax.jms.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
 import cbit.rmi.event.WorkerEvent;

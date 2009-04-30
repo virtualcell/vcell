@@ -4,7 +4,7 @@ package cbit.vcell.opt;
  * Creation date: (8/3/2005 12:16:18 PM)
  * @author: Jim Schaff
  */
-public interface ReferenceData extends cbit.util.Matchable {
+public interface ReferenceData extends org.vcell.util.Matchable {
 /**
  * Insert the method's description here.
  * Creation date: (8/5/2005 11:49:26 AM)

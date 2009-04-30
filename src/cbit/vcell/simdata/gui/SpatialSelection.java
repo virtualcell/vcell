@@ -13,7 +13,7 @@ import cbit.vcell.geometry.CurveSelectionInfo;
  * Creation date: (2/26/2001 3:48:34 PM)
  * @author: Jim Schaff
  */
-public abstract class SpatialSelection implements java.io.Serializable, cbit.util.Matchable {
+public abstract class SpatialSelection implements java.io.Serializable, org.vcell.util.Matchable {
 	
 	private CurveSelectionInfo curveSelectionInfo = null;
 	transient private CartesianMesh mesh = null;
@@ -129,7 +129,7 @@ protected SpatialSelection(CurveSelectionInfo argCurveSelectionInfo, VariableTyp
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (this == obj) {
 		return true;
 	}
@@ -255,7 +255,7 @@ public boolean isPoint() {
  * @return cbit.vcell.solvers.CartesianMesh
  */
 public void setMesh(CartesianMesh argMesh) {
-	if(cbit.util.Compare.isEqual(mesh,argMesh)){
+	if(org.vcell.util.Compare.isEqual(mesh,argMesh)){
 		return;
 	}
 	if(mesh != null){

@@ -9,6 +9,8 @@ import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.gui.JInternalFrameEnhanced;

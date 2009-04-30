@@ -1,8 +1,10 @@
 package cbit.vcell.messaging.server;
 import cbit.htc.PBSUtils;
-import cbit.sql.KeyValue;
 import java.io.File;
 import javax.jms.*;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.DataAccessException;
 import java.io.FileNotFoundException;

@@ -8,7 +8,7 @@ import java.io.Serializable;
  * Creation date: (1/31/2003 11:21:39 AM)
  * @author: Jim Schaff
  */
-public class SimulationQueueEntryStatus implements cbit.util.Matchable, java.io.Serializable {
+public class SimulationQueueEntryStatus implements org.vcell.util.Matchable, java.io.Serializable {
 	private int fieldQueuePriority = 0;
 	private Date fieldQueueDate = null;
 	private int fieldQueueID;
@@ -32,7 +32,7 @@ public SimulationQueueEntryStatus(Date queueDate, int queuePriority, int queueID
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SimulationQueueEntryStatus){
 		SimulationQueueEntryStatus entryStatus = (SimulationQueueEntryStatus)obj;
 		if (entryStatus.fieldQueueDate != null && fieldQueueDate != null && entryStatus.fieldQueueDate.getTime()/1000 != fieldQueueDate.getTime()/1000) {

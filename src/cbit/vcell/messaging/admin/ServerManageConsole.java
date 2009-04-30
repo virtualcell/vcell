@@ -5,11 +5,9 @@ import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.sql.KeyValue;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.messaging.server.RpcDbServerProxy;
 import cbit.util.BigString;
-import cbit.vcell.server.User;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
@@ -24,6 +22,9 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.jms.*;
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.MessageConstants.ServiceType;
@@ -2766,7 +2767,7 @@ public void removeFromListButton_ActionPerformed(java.awt.event.ActionEvent acti
  * Creation date: (7/19/2004 3:32:52 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public void resubmitSimulation(String userid, cbit.sql.KeyValue simKey) {
+public void resubmitSimulation(String userid, org.vcell.util.document.KeyValue simKey) {
 	try {
 		User user = adminDbTop.getUser(userid, true);
 		RpcDbServerProxy dbProxy = getDbProxy(user);
@@ -3017,7 +3018,7 @@ private void stopService(ServiceSpec ss) {
  * Creation date: (7/19/2004 3:32:52 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public void stopSimulation(String userid, cbit.sql.KeyValue simKey) {
+public void stopSimulation(String userid, org.vcell.util.document.KeyValue simKey) {
 	try {
 		User user = adminDbTop.getUser(userid, true);
 		RpcDbServerProxy dbProxy = getDbProxy(user);

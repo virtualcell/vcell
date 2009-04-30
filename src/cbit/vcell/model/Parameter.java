@@ -6,6 +6,10 @@ package cbit.vcell.model;
 ©*/
 import java.util.*;
 import java.io.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 

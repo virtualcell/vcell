@@ -8,7 +8,7 @@ import cbit.vcell.parser.*;
  * Creation date: (6/27/2006 9:26:32 AM)
  * @author: Tracy LI
  */
-public class VarIniCondition implements cbit.util.Matchable,java.io.Serializable
+public class VarIniCondition implements org.vcell.util.Matchable,java.io.Serializable
 {
 	Variable var = null;
 	cbit.vcell.parser.Expression iniVal = null;
@@ -38,7 +38,7 @@ public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingExce
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj)
+public boolean compareEqual(org.vcell.util.Matchable obj)
 {
 	if (obj == null) {
 		return false;

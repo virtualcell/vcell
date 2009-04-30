@@ -7,13 +7,15 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
+import org.vcell.util.Compare;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.gui.DialogUtils;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.sql.KeyValue;
 import cbit.sql.UserInfo;
 import cbit.util.AsynchProgressPopup;
-import cbit.util.Compare;
 import cbit.util.SwingDispatcherSync;
 import cbit.util.TokenMangler;
 import cbit.vcell.client.PopupGenerator;

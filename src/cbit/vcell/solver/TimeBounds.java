@@ -12,7 +12,7 @@ import cbit.vcell.math.*;
  * Creation date: (11/2/2000 3:58:31 PM)
  * @author: 
  */
-public class TimeBounds implements java.io.Serializable, cbit.util.Matchable {
+public class TimeBounds implements java.io.Serializable, org.vcell.util.Matchable {
 	private double fieldStartingTime = 0.0;
 	private double fieldEndingTime = 1.0;
 /**
@@ -42,7 +42,7 @@ public TimeBounds(TimeBounds timeBounds) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {
 		return (true);
 	}

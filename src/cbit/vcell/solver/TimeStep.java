@@ -12,7 +12,7 @@ import cbit.vcell.math.*;
  * Creation date: (11/2/2000 3:59:34 PM)
  * @author: 
  */
-public class TimeStep implements java.io.Serializable, cbit.util.Matchable {
+public class TimeStep implements java.io.Serializable, org.vcell.util.Matchable {
 	private double fieldMinimumTimeStep = 1.0E-8;
 	private double fieldDefaultTimeStep = 0.1;
 	private double fieldMaximumTimeStep = 1.0;
@@ -45,7 +45,7 @@ public TimeStep(TimeStep timeStep) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {
 		return (true);
 	}

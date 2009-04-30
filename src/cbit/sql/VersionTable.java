@@ -9,6 +9,9 @@ import cbit.vcell.server.DataAccessException;
 import java.text.ParseException;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Version;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.server.ObjectNotFoundException;
@@ -287,7 +290,7 @@ public static Version getVersion(ResultSet rset, cbit.vcell.server.GroupAccess g
 	String name = rset.getString(VersionTable.name_ColumnName);
 	String ownerName = rset.getString(cbit.vcell.modeldb.UserTable.table.userid.toString());
 	KeyValue ownerID = new KeyValue(rset.getBigDecimal(VersionTable.ownerRef_ColumnName));
-	cbit.vcell.server.User owner = new cbit.vcell.server.User(ownerName, ownerID);
+	org.vcell.util.document.User owner = new org.vcell.util.document.User(ownerName, ownerID);
 	//cbit.vcell.server.AccessInfo privacy = new cbit.vcell.server.AccessInfo(rset.getInt(VersionTable.privacy_ColumnName));
 	//
 	if (bFoundParentSimRefColumn){

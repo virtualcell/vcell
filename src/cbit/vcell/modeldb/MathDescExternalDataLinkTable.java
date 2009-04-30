@@ -3,8 +3,9 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
-import cbit.sql.KeyValue;
 import cbit.sql.Table;
 
 public class MathDescExternalDataLinkTable extends Table {

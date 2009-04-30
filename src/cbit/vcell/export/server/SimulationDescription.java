@@ -8,6 +8,8 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;
 import java.rmi.*;
 
+import org.vcell.util.document.User;
+
 /**
  * This type was created in VisualAge.
  */

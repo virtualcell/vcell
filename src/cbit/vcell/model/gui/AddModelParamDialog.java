@@ -834,9 +834,9 @@ private void updateInterface() {
 			(getNameValueJTextField().getText() != null) && (getNameValueJTextField().getText().length() > 0) && 
 			(getExpressionValueTextField().getText() != null) && (getExpressionValueTextField().getText().length() > 0) && 
 				(
-					!cbit.util.Compare.isEqualOrNull(getNameValueJTextField().getText(),getModelParameter().getName()) ||
-					!cbit.util.Compare.isEqualOrNull(getModelParameter().getDescription(),getAnnotationString()) ||
-					!cbit.util.Compare.isEqualOrNull(getModelParameter().getExpression().infix(),getExpressionValueTextField().getText())
+					!org.vcell.util.Compare.isEqualOrNull(getNameValueJTextField().getText(),getModelParameter().getName()) ||
+					!org.vcell.util.Compare.isEqualOrNull(getModelParameter().getDescription(),getAnnotationString()) ||
+					!org.vcell.util.Compare.isEqualOrNull(getModelParameter().getExpression().infix(),getExpressionValueTextField().getText())
 				)
 			);
 }

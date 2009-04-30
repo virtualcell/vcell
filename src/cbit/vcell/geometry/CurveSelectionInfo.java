@@ -9,7 +9,7 @@ package cbit.vcell.geometry;
  * Creation date: (10/15/00 1:10:11 PM)
  * @author: 
  */
-public class CurveSelectionInfo implements java.io.Serializable, cbit.util.Matchable {
+public class CurveSelectionInfo implements java.io.Serializable, org.vcell.util.Matchable {
 	//
 	public static final int NONE_SELECTED = -1;
 	//
@@ -88,7 +88,7 @@ public CurveSelectionInfo(Curve curve,int argBeginSegment,int argEndSegment,bool
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (this == obj) {
 		return true;
 	}

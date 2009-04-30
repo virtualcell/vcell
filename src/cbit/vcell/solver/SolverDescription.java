@@ -10,7 +10,7 @@ package cbit.vcell.solver;
  * @author: Jim Schaff
  * Stochastic description is added on 12th July 2006.
  */
-public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
+public class SolverDescription implements java.io.Serializable, org.vcell.util.Matchable {
 	private int type;
 
 	private static final int NUM_SOLVERS = 15;
@@ -383,7 +383,7 @@ private SolverDescription(int argSolverType) {
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return equals(obj);
 }
 

@@ -7,7 +7,6 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.sql.KeyValue;
 import cbit.sql.DBCacheTable;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
@@ -21,7 +20,6 @@ import cbit.vcell.solver.Simulation;
 import java.io.File;
 import java.io.PrintWriter;
 
-import cbit.vcell.server.User;
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
 import cbit.vcell.server.PermissionException;
@@ -29,6 +27,9 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 
 import java.sql.SQLException;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 
 /**

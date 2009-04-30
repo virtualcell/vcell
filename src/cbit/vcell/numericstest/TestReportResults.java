@@ -1,5 +1,6 @@
 package cbit.vcell.numericstest;
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Version;
 /**
  * Insert the type's description here.

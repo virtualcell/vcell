@@ -4,7 +4,9 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.util.Vector;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.User;
+
 import cbit.sql.Table;
 import cbit.sql.Field;
 import cbit.sql.VersionTable;
@@ -58,27 +60,27 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 	sb.append(vTable.getSQLColumnList());
 	sb.append(" VALUES ");
 	if (vTable instanceof GeometryTable) {
-		sb.append(((GeometryTable) vTable).getSQLValueList(	(cbit.sql.KeyValue) valueData[0], 
+		sb.append(((GeometryTable) vTable).getSQLValueList(	(org.vcell.util.document.KeyValue) valueData[0], 
 															(cbit.vcell.geometry.Geometry) valueData[1], 
-															(cbit.sql.KeyValue) valueData[2], 
+															(org.vcell.util.document.KeyValue) valueData[2], 
 															version));
 	}else if (vTable instanceof ImageTable) {
 		sb.append(((ImageTable) vTable).getSQLValueList(	(cbit.image.VCImage) valueData[0], 
-															(cbit.sql.KeyValue) valueData[1], 
+															(org.vcell.util.document.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimContextTable) {
 		sb.append(((SimContextTable) vTable).getSQLValueList(	(cbit.vcell.mapping.SimulationContext) valueData[0], 
-																(cbit.sql.KeyValue) valueData[1],
-																(cbit.sql.KeyValue) valueData[2],
-																(cbit.sql.KeyValue) valueData[3],
+																(org.vcell.util.document.KeyValue) valueData[1],
+																(org.vcell.util.document.KeyValue) valueData[2],
+																(org.vcell.util.document.KeyValue) valueData[3],
 																version));
 	}else if (vTable instanceof MathDescTable) {
 		sb.append(((MathDescTable) vTable).getSQLValueList(	(cbit.vcell.math.MathDescription) valueData[0], 
-															(cbit.sql.KeyValue) valueData[1], 
+															(org.vcell.util.document.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimulationTable) {
 		sb.append(((SimulationTable) vTable).getSQLValueList(	(cbit.vcell.solver.Simulation) valueData[0], 
-															(cbit.sql.KeyValue) valueData[1], 
+															(org.vcell.util.document.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof BioModelTable) {
 		sb.append(((BioModelTable) vTable).getSQLValueList(	(cbit.vcell.biomodel.BioModelMetaData) valueData[0],
@@ -120,7 +122,7 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
  */ 
 public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, String conditions, String special, boolean bCheckPermission) {
 
-	boolean isAdministrator = user.getName().equals(cbit.vcell.server.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new cbit.sql.KeyValue("2"));
+	boolean isAdministrator = user.getName().equals(cbit.vcell.server.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue("2"));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
 	}

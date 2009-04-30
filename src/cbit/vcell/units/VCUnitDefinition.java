@@ -3,6 +3,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.vcell.util.Matchable;
+
 import ucar.units.Base;
 import ucar.units.BaseQuantity;
 import ucar.units.BaseUnit;
@@ -20,7 +22,6 @@ import ucar.units.Unit;
 import ucar.units.UnitDimension;
 import ucar.units.UnitException;
 import ucar.units.UnitName;
-import cbit.util.Matchable;
 
 /**
  The wrapper around a ucar unit.

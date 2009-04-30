@@ -4,17 +4,17 @@ import java.io.Serializable;
 import java.util.StringTokenizer;
 
 import org.jdom.Element;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
-import cbit.sql.KeyValue;
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.xml.XMLTags;
 

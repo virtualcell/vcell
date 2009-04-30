@@ -7,13 +7,17 @@ import java.beans.*;
 import java.util.*;
 import java.io.*;
 import java.rmi.RemoteException;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.User;
+
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.DataAccessException;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.math.VCML;
-import cbit.vcell.server.User;
 import cbit.sql.Versionable;
 import cbit.sql.Version;
 import cbit.vcell.modeldb.GeomDbDriver;
@@ -328,11 +332,11 @@ public boolean compareEqual(Matchable object) {
 	if (dimension != geometrySpec.dimension){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(getExtent(), geometrySpec.getExtent())){
+	if (!org.vcell.util.Compare.isEqual(getExtent(), geometrySpec.getExtent())){
 		return false;
 	}
 
-	if (!cbit.util.Compare.isEqual(getOrigin(), geometrySpec.getOrigin())){
+	if (!org.vcell.util.Compare.isEqual(getOrigin(), geometrySpec.getOrigin())){
 		return false;
 	}
 	
@@ -355,7 +359,7 @@ public boolean compareEqual(Matchable object) {
 	//
 	// FilamentGroup
 	//
-	if(!cbit.util.Compare.isEqual(fieldFilamentGroup,geometrySpec.fieldFilamentGroup)){
+	if(!org.vcell.util.Compare.isEqual(fieldFilamentGroup,geometrySpec.fieldFilamentGroup)){
 		return false;
 	}
 	return true;

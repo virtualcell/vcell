@@ -6,7 +6,6 @@ import cbit.vcell.mathmodel.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.User;
 import java.util.Vector;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.SimulationInfo;
@@ -15,6 +14,9 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.clientdb.DatabaseListener;
 import javax.swing.tree.DefaultTreeModel;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.biomodel.BioModelMetaData;
 /**

@@ -94,15 +94,15 @@ public SimpleReferenceData(cbit.vcell.util.RowColumnResultSet rowColumnResultSet
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SimpleReferenceData){
 		SimpleReferenceData srd = (SimpleReferenceData)obj;
 
-		if (!cbit.util.Compare.isEqual(dataNames,srd.dataNames)){
+		if (!org.vcell.util.Compare.isEqual(dataNames,srd.dataNames)){
 			return false;
 		}
 		
-		if (!cbit.util.Compare.isEqual(columnWeights,srd.columnWeights)){
+		if (!org.vcell.util.Compare.isEqual(columnWeights,srd.columnWeights)){
 			return false;
 		}
 
@@ -113,7 +113,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		for (int i = 0; i < rowData.size(); i++){
 			double[] thisData = (double[])rowData.get(i);
 			double[] otherData = (double[])srd.rowData.get(i);
-			if (!cbit.util.Compare.isEqual(thisData,otherData)){
+			if (!org.vcell.util.Compare.isEqual(thisData,otherData)){
 				return false;
 			}
 		}

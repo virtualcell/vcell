@@ -4,6 +4,8 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.document.User;
+
 import cbit.vcell.math.*;
 import cbit.plot.*;
 import cbit.vcell.solvers.*;

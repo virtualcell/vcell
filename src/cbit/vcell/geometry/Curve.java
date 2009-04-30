@@ -14,7 +14,7 @@ import java.io.Serializable;
  *  decision reflecting immutability from the standpoint of
  *  the user.
  */
-public abstract class Curve implements cbit.util.Matchable, java.io.Serializable, Cloneable {
+public abstract class Curve implements org.vcell.util.Matchable, java.io.Serializable, Cloneable {
 	//Leave false by default
 	private boolean bClosed = false;
 	//
@@ -106,7 +106,7 @@ public Object clone() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == null) {
 		return false;
 	}

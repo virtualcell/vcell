@@ -1,5 +1,4 @@
 package cbit.vcell.biomodel;
-import cbit.util.Compare;
 import cbit.vcell.export.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -12,6 +11,9 @@ import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.sql.*;
 import java.util.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 3:26:20 PM)
@@ -102,27 +104,27 @@ public void clearVersion() {
  * @return boolean
  * @param matchable cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable matchable) {
+public boolean compareEqual(org.vcell.util.Matchable matchable) {
 	if (!(matchable instanceof BioModelMetaData)){
 		return false;
 	}
 	BioModelMetaData obj = (BioModelMetaData)matchable;
-	if (!cbit.util.Compare.isEqual(getName(),obj.getName())){
+	if (!org.vcell.util.Compare.isEqual(getName(),obj.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(getDescription(),obj.getDescription())){
+	if (!org.vcell.util.Compare.isEqual(getDescription(),obj.getDescription())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(version,obj.version)){
+	if (!org.vcell.util.Compare.isEqual(version,obj.version)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(simulationKeyList,obj.simulationKeyList)){
+	if (!org.vcell.util.Compare.isEqual(simulationKeyList,obj.simulationKeyList)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(simulationContextKeyList,obj.simulationContextKeyList)){
+	if (!org.vcell.util.Compare.isEqual(simulationContextKeyList,obj.simulationContextKeyList)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(modelKey,obj.modelKey)){
+	if (!org.vcell.util.Compare.isEqual(modelKey,obj.modelKey)){
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), obj.getMIRIAMAnnotation())){

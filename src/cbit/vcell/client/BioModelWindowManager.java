@@ -17,9 +17,10 @@ import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
-import cbit.sql.KeyValue;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;

@@ -3,7 +3,6 @@ import cbit.util.FileUtils;
 import cbit.util.ISize;
 import cbit.util.NumberUtils;
 import cbit.util.TokenMangler;
-import cbit.util.VCDataJobID;
 import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -12,7 +11,6 @@ import cbit.vcell.field.FieldDataParameterVariable;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.rmi.event.*;
-import cbit.sql.KeyValue;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.simdata.gui.SpatialSelectionContour;
@@ -32,6 +30,9 @@ import java.io.*;
 import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.server.*;
 import cbit.vcell.solver.DataProcessingOutput;
@@ -2669,7 +2670,7 @@ private org.vcell.util.TimeSeriesJobResults getTimeSeriesValues_private(final VC
 	
 	try{
 
-		timeSeriesJobSpec.initIndices(getMesh(vcdID));
+		timeSeriesJobSpec.initIndices(getMesh(vcdID).getNumVolumeElements());
 
 		//See if we need special processing
 		TimeSeriesJobResults specialTSJR = getSpecialTimeSeriesValues(vcdID,timeSeriesJobSpec,timeInfo);

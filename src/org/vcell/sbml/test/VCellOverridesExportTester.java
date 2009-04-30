@@ -4,7 +4,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Vector;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.SimulationVersion;
 import cbit.util.BeanUtils;
 import cbit.util.xml.VCLogger;

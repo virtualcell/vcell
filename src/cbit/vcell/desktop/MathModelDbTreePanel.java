@@ -14,12 +14,14 @@ import cbit.sql.VersionInfo;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
-import cbit.util.Matchable;
 import javax.swing.tree.*;
 import java.lang.reflect.*;
 import cbit.vcell.biomodel.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import org.vcell.util.Matchable;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)

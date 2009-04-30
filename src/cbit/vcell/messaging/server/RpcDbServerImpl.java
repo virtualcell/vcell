@@ -12,9 +12,11 @@ import cbit.sql.KeyFactory;
 import cbit.sql.DBCacheTable;
 import cbit.vcell.server.DataAccessException;
 import java.sql.SQLException;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.VersionableType;
-import cbit.sql.KeyValue;
 import cbit.sql.VersionInfo;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.sql.OracleKeyFactory;

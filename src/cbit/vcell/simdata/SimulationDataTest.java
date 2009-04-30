@@ -11,12 +11,12 @@ public class SimulationDataTest {
  * @param args java.lang.String[]
  */
 public static void main(String[] args) {
-	final cbit.vcell.server.User user = new cbit.vcell.server.User("fgao15",new cbit.sql.KeyValue("4123431"));	
+	final org.vcell.util.document.User user = new org.vcell.util.document.User("fgao15",new org.vcell.util.document.KeyValue("4123431"));	
 	cbit.vcell.server.VCDataIdentifier vcData1 = new cbit.vcell.server.VCDataIdentifier() {
 		public String getID() {
 			return "SimID_8483780";
 		}
-		public cbit.vcell.server.User getOwner() {
+		public org.vcell.util.document.User getOwner() {
 			return user;
 		}
 	};

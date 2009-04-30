@@ -1,8 +1,9 @@
 package cbit.vcell.messaging.db;
 import java.sql.*;
-import cbit.sql.KeyValue;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ServiceStatus;

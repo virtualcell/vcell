@@ -1,7 +1,9 @@
 package cbit.vcell.dictionary;
 
 import java.util.Vector;
-import cbit.sql.KeyValue;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.Field;

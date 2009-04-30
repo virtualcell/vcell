@@ -5,16 +5,16 @@ import java.awt.geom.Point2D;
 import cbit.image.DisplayAdapterService;
 import cbit.util.BeanUtils;
 import cbit.util.Range;
-import cbit.util.VCDataJobID;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 
 import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TimeSeriesJobResults;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataJobID;
 
 import java.awt.GridBagConstraints;
 /**

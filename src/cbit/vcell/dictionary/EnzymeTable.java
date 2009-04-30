@@ -1,7 +1,9 @@
 package cbit.vcell.dictionary;
 
 import java.util.Vector;
-import cbit.sql.KeyValue;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.Field;
@@ -50,8 +52,8 @@ public DBFormalSpecies[] getEnzymes(java.sql.ResultSet rset, SessionLog log,bool
 	String currentPreferred = null;
 	String currentCasID = null;
 	
-	cbit.sql.KeyValue currentEnzymeID = null;
-	cbit.sql.KeyValue currentDBSpeciesID = null;
+	org.vcell.util.document.KeyValue currentEnzymeID = null;
+	org.vcell.util.document.KeyValue currentDBSpeciesID = null;
 	
 	while(rset.next() || rset.isAfterLast()){
 			

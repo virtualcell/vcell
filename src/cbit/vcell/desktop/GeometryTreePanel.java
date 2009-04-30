@@ -6,11 +6,14 @@ package cbit.vcell.desktop;
 import cbit.sql.VersionInfo;
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
-import cbit.util.Matchable;
 import javax.swing.tree.*;
 import java.lang.reflect.*;
 import cbit.vcell.biomodel.*;
 import javax.swing.*;
+
+import org.vcell.util.Matchable;
+import org.vcell.util.document.User;
+
 import java.awt.event.*;
 /**
  * Insert the type's description here.

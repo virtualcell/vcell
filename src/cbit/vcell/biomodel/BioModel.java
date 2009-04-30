@@ -19,6 +19,7 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import org.jdom.Element;
+import org.vcell.util.Compare;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.stoch.FluxSolver;
@@ -28,7 +29,6 @@ import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.util.BeanUtils;
-import cbit.util.Compare;
 import cbit.util.TokenMangler;
 import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.parser.Expression;
@@ -40,7 +40,7 @@ import cbit.vcell.parser.ExpressionException;
  */
 public class BioModel
 	implements
-		cbit.vcell.document.VCDocument, cbit.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener,
+		cbit.vcell.document.VCDocument, org.vcell.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener,
 		MIRIAMAnnotatable
 {
 	private cbit.sql.Version fieldVersion = null;
@@ -176,24 +176,24 @@ public void clearVersion(){
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof BioModel)){
 		return false;
 	}
 	BioModel bioModel = (BioModel)obj;
-	if (!cbit.util.Compare.isEqualOrNull(getName(),bioModel.getName())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getName(),bioModel.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getDescription(),bioModel.getDescription())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),bioModel.getDescription())){
 		return false;
 	}
 	if (!getModel().compareEqual(bioModel.getModel())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), bioModel.getMIRIAMAnnotation())){

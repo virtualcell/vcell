@@ -2831,7 +2831,7 @@ public org.jdom.Element getXML(cbit.vcell.server.GroupAccess groupAccess) {
 		groupElement.setAttribute(XMLTags.HashAttrTag, ((cbit.vcell.server.GroupAccessSome)groupAccess).getHash().toString());
 		//*users+hidden value
 		//get normal users
-		cbit.vcell.server.User[] users = ((cbit.vcell.server.GroupAccessSome)groupAccess).getNormalGroupMembers();
+		org.vcell.util.document.User[] users = ((cbit.vcell.server.GroupAccessSome)groupAccess).getNormalGroupMembers();
 		for (int i = 0; i < users.length; i++){
 			org.jdom.Element userElement = new org.jdom.Element(XMLTags.UserTag);
 			//add name

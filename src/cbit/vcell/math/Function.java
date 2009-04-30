@@ -47,7 +47,7 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof Function)){
 		return false;
 	}
@@ -55,7 +55,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		return false;
 	}
 	Function v = (Function)obj;
-	if (!cbit.util.Compare.isEqualOrNull(exp,v.exp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(exp,v.exp)){
 		return false;
 	}
 	

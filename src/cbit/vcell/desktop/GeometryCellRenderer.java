@@ -4,9 +4,7 @@ package cbit.vcell.desktop;
  * All rights reserved.
 ©*/
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.server.User;
 import java.math.BigDecimal;
-import cbit.sql.KeyValue;
 import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
@@ -22,6 +20,9 @@ import java.awt.Font;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
  
 public class GeometryCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;

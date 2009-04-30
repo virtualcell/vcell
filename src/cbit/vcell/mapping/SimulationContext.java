@@ -8,11 +8,12 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Version;
 import cbit.util.BeanUtils;
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import cbit.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -524,10 +525,10 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	 
-	if (!cbit.util.Compare.isEqual(getName(),simContext.getName())){
+	if (!org.vcell.util.Compare.isEqual(getName(),simContext.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(getDescription(),simContext.getDescription())){
+	if (!org.vcell.util.Compare.isEqual(getDescription(),simContext.getDescription())){
 		return false;
 	}
 	

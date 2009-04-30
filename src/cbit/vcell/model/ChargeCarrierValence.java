@@ -6,7 +6,7 @@ import cbit.vcell.parser.*;
  * Creation date: (2/20/2002 4:16:31 PM)
  * @author: Jim Schaff
  */
-public class ChargeCarrierValence implements cbit.util.Matchable, SymbolTableEntry, java.io.Serializable {
+public class ChargeCarrierValence implements org.vcell.util.Matchable, SymbolTableEntry, java.io.Serializable {
 	private java.lang.String fieldName = null;
 	private cbit.vcell.parser.NameScope fieldNameScope = null;
 	private cbit.vcell.parser.Expression fieldExpression = null;
@@ -39,7 +39,7 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof ChargeCarrierValence){
 		ChargeCarrierValence ccv = (ChargeCarrierValence)obj;
 		if (!ccv.getName().equals(getName())){

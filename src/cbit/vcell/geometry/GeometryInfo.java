@@ -5,8 +5,10 @@ package cbit.vcell.geometry;
  * All rights reserved.
 ©*/
 import java.io.*;
-import cbit.sql.KeyValue;
-import cbit.vcell.server.User;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 import cbit.util.Origin;

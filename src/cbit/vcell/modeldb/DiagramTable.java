@@ -5,6 +5,9 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.sql.*;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.*;
 import cbit.vcell.model.*;
 import cbit.vcell.server.*;

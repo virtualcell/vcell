@@ -8,7 +8,7 @@ package cbit.vcell.solver;
  * Creation date: (8/17/2000 9:10:20 PM)
  * @author: John Wagner
  */
-public class SolverResultSetInfo implements java.io.Serializable, cbit.util.Matchable {
+public class SolverResultSetInfo implements java.io.Serializable, org.vcell.util.Matchable {
 	/**
 	 * The date and time the solver began.
 	 */
@@ -71,20 +71,20 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SolverResultSetInfo){
 		SolverResultSetInfo otherRSI = (SolverResultSetInfo)obj;
 
-		if (!cbit.util.Compare.isEqual(getDataFilePath(),otherRSI.getDataFilePath())){
+		if (!org.vcell.util.Compare.isEqual(getDataFilePath(),otherRSI.getDataFilePath())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqual(getEndingDate(),otherRSI.getEndingDate())){
+		if (!org.vcell.util.Compare.isEqual(getEndingDate(),otherRSI.getEndingDate())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqual(getStartingDate(),otherRSI.getStartingDate())){
+		if (!org.vcell.util.Compare.isEqual(getStartingDate(),otherRSI.getStartingDate())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqual(getVCSimulationDataIdentifier().getID(),otherRSI.getVCSimulationDataIdentifier().getID())){
+		if (!org.vcell.util.Compare.isEqual(getVCSimulationDataIdentifier().getID(),otherRSI.getVCSimulationDataIdentifier().getID())){
 			return false;
 		}		
 		return true;

@@ -22,7 +22,7 @@ public FilamentRegionVariable(String name) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof FilamentRegionVariable)){
 		return false;
 	}

@@ -7,10 +7,9 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.*;
-import javax.swing.JButton;
+
+import org.vcell.util.document.User;
 
 import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
@@ -19,7 +18,6 @@ import cbit.sql.UserInfo;
 import cbit.util.*;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
-import cbit.vcell.server.User;
 import cbit.vcell.server.UserRegistrationOP;
 
 /**

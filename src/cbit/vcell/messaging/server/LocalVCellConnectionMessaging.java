@@ -7,6 +7,9 @@ import java.net.URL;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
+
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.*;
 import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.event.*;

@@ -4,9 +4,7 @@ import cbit.vcell.mathmodel.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.User;
 import java.math.BigDecimal;
-import cbit.sql.KeyValue;
 import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
@@ -22,6 +20,9 @@ import java.awt.Font;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
  
 public class ResultSetCellRenderer extends VCellBasicCellRenderer {
 /**

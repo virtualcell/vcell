@@ -7,6 +7,10 @@ package cbit.vcell.mapping;
 import java.util.*;
 import java.beans.*;
 import java.io.Serializable;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.Model;

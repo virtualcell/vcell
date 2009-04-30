@@ -138,7 +138,7 @@ public class MathMapping implements ScopedSymbolTable {
 			this.fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof MathMappingParameter)){
 				return false;
 			}

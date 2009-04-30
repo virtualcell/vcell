@@ -5,8 +5,11 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.util.BigString;
 import cbit.rmi.event.WorkerEvent;
-import cbit.sql.KeyValue;
 import javax.jms.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
@@ -35,7 +38,6 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.server.User;
 import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.StatusMessage;
 import java.util.HashSet;

@@ -1,11 +1,12 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.MessageConstants.ServiceType;
-import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.DataProcessingOutput;

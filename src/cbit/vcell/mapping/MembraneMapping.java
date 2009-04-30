@@ -10,6 +10,9 @@ import cbit.vcell.math.VCML;
 import cbit.vcell.math.Function;
 import cbit.vcell.parser.*;
 import java.util.*;
+
+import org.vcell.util.Matchable;
+
 import cbit.util.*;
 import cbit.vcell.units.VCUnitDefinition;
 /**

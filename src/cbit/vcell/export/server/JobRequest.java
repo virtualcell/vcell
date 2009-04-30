@@ -6,6 +6,8 @@ package cbit.vcell.export.server;
 ©*/
 import cbit.vcell.server.*;
 import java.util.*;
+
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (4/3/2001 3:01:34 PM)

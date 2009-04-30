@@ -12,6 +12,10 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.image.*;
 import java.util.Vector;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.math.MathDescription;
 /**
  * This type was created in VisualAge.

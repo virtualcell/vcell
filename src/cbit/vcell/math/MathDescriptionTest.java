@@ -598,7 +598,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 					reasonForDecision.append(DIFFERENT_NUMBER_OF_VARIABLES);
 					return false;
 				}
-				if (!cbit.util.Compare.isEqual(oldVars,newVars)){
+				if (!org.vcell.util.Compare.isEqual(oldVars,newVars)){
 					//
 					// variable names are not equivalent (nothing much we can do)
 					//
@@ -622,7 +622,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 						{
 						Equation oldEqu = subDomainsOld[i].getEquation(oldVars[j]);
 						Equation newEqu = subDomainsNew[i].getEquation(oldVars[j]);
-						if (!cbit.util.Compare.isEqualOrNull(oldEqu,newEqu)){
+						if (!org.vcell.util.Compare.isEqualOrNull(oldEqu,newEqu)){
 							boolean bFoundDifference = false;
 							//
 							// equation didn't compare exactly, lets try to evaluate some instead
@@ -685,7 +685,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 						if (subDomainsOld[i] instanceof MembraneSubDomain && oldVars[j] instanceof VolVariable){
 							JumpCondition oldJumpCondition = ((MembraneSubDomain)subDomainsOld[i]).getJumpCondition((VolVariable)oldVars[j]);
 							JumpCondition newJumpCondition = ((MembraneSubDomain)subDomainsNew[i]).getJumpCondition((VolVariable)oldVars[j]);
-							if (!cbit.util.Compare.isEqualOrNull(oldJumpCondition,newJumpCondition)){
+							if (!org.vcell.util.Compare.isEqualOrNull(oldJumpCondition,newJumpCondition)){
 								boolean bFoundDifference = false;
 								//
 								// equation didn't compare exactly, lets try to evaluate some instead
@@ -748,7 +748,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 					//
 					FastSystem oldFastSystem = subDomainsOld[i].getFastSystem();
 					FastSystem newFastSystem = subDomainsNew[i].getFastSystem();
-					if (!cbit.util.Compare.isEqualOrNull(oldFastSystem,newFastSystem)){
+					if (!org.vcell.util.Compare.isEqualOrNull(oldFastSystem,newFastSystem)){
 						boolean bFoundDifference = false;
 						//
 						// fastSystems didn't compare exactly, lets try to evaluate some expressions instead

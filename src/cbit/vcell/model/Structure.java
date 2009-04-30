@@ -9,10 +9,10 @@ import java.beans.*;
 import java.util.*;
 
 import org.jdom.Element;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
 
-import cbit.sql.KeyValue;
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import cbit.util.TokenMangler;
 import cbit.sql.Cacheable;
 import cbit.vcell.parser.NameScope;
@@ -29,7 +29,7 @@ public abstract class Structure
 	private String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.sql.KeyValue fieldKey = null;
+	private org.vcell.util.document.KeyValue fieldKey = null;
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
 	private MIRIAMAnnotation miriamAnnotation;
@@ -200,7 +200,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return The key property value.
  * @see #setKey
  */
-public cbit.sql.KeyValue getKey() {
+public org.vcell.util.document.KeyValue getKey() {
 	return fieldKey;
 }
 /**

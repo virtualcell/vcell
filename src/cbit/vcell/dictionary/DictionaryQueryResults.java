@@ -8,7 +8,7 @@ package cbit.vcell.dictionary;
 public class DictionaryQueryResults implements java.io.Serializable{
 
 	private String fieldQuery;
-	private cbit.vcell.server.User fieldUser;
+	private org.vcell.util.document.User fieldUser;
 	private DBFormalSpecies[] fieldDBFormalSpecies;
 	private boolean fieldBound;
 	private int[] fieldSelection;
@@ -29,7 +29,7 @@ public DictionaryQueryResults(String argQuery,DBFormalSpecies[] argDBFormalSpeci
 /**
  * DictionaryQueryResults constructor comment.
  */
-private DictionaryQueryResults(String argQuery,cbit.vcell.server.User argUser,DBFormalSpecies[] argDBFormalSpecies,int[] argSelection) {
+private DictionaryQueryResults(String argQuery,org.vcell.util.document.User argUser,DBFormalSpecies[] argDBFormalSpecies,int[] argSelection) {
 
 	if(argQuery == null || argQuery.length() == 0){
 		throw new IllegalArgumentException(this.getClass().getName());
@@ -56,14 +56,14 @@ private DictionaryQueryResults(String argQuery,cbit.vcell.server.User argUser,DB
 /**
  * DictionaryQueryResults constructor comment.
  */
-public DictionaryQueryResults(String argQuery,cbit.vcell.server.User argUser,DBSpecies[] argDBSpecies) {
+public DictionaryQueryResults(String argQuery,org.vcell.util.document.User argUser,DBSpecies[] argDBSpecies) {
 
 	this(argQuery,argUser,(DBFormalSpecies[])argDBSpecies,null);
 }
 /**
  * DictionaryQueryResults constructor comment.
  */
-public DictionaryQueryResults(String argQuery,cbit.vcell.server.User argUser,DBSpecies[] argDBSpecies,int[] argSelection) {
+public DictionaryQueryResults(String argQuery,org.vcell.util.document.User argUser,DBSpecies[] argDBSpecies,int[] argSelection) {
 
 	this(argQuery,argUser,(DBFormalSpecies[])argDBSpecies,argSelection);
 }
@@ -96,7 +96,7 @@ public int[] getSelection() {
  * Creation date: (2/22/2003 3:12:11 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return fieldUser;
 }
 /**

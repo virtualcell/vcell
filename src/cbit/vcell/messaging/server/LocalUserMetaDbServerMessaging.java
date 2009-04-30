@@ -14,8 +14,11 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.solver.SolverResultSetInfo;
 import java.rmi.*;
 import java.sql.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
-import cbit.vcell.server.User;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.UserRegistrationOP;
@@ -92,7 +95,7 @@ public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistr
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
  */
-public void deleteBioModel(cbit.sql.KeyValue key) throws DataAccessException {
+public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteBioModel(Key="+key+")");
 		dbServerProxy.deleteBioModel(key);
@@ -128,7 +131,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
  */
-public void deleteGeometry(cbit.sql.KeyValue key) throws DataAccessException {
+public void deleteGeometry(org.vcell.util.document.KeyValue key) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteGeometry(Key="+key+")");
 		dbServerProxy.deleteGeometry(key);
@@ -146,7 +149,7 @@ public void deleteGeometry(cbit.sql.KeyValue key) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
  */
-public void deleteMathModel(cbit.sql.KeyValue key) throws DataAccessException {
+public void deleteMathModel(org.vcell.util.document.KeyValue key) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteMathModel(Key="+key+")");
 		dbServerProxy.deleteMathModel(key);
@@ -164,7 +167,7 @@ public void deleteMathModel(cbit.sql.KeyValue key) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
  */
-public void deleteResultSetExport(cbit.sql.KeyValue eleKey) throws DataAccessException {
+public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteResultSetExport(Key="+eleKey+")");
 		dbServerProxy.deleteResultSetExport(eleKey);
@@ -182,7 +185,7 @@ public void deleteResultSetExport(cbit.sql.KeyValue eleKey) throws DataAccessExc
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
  */
-public void deleteVCImage(cbit.sql.KeyValue key) throws DataAccessException {
+public void deleteVCImage(org.vcell.util.document.KeyValue key) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteVCImage(Key="+key+")");
 		dbServerProxy.deleteVCImage(key);
@@ -241,7 +244,7 @@ public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb
 /**
  * getVersionable method comment.
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
 		log.alert("LocalUserMetaDbServerMessaging.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
@@ -263,7 +266,7 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.Versionabl
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(cbit.sql.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelInfo(key="+bioModelKey+")");
 		return dbServerProxy.getBioModelInfo(bioModelKey);
@@ -453,7 +456,7 @@ public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.geometry.GeometryInfo getGeometryInfo(cbit.sql.KeyValue geoKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue geoKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getGeometryInfo(key="+geoKey+")");
 		return dbServerProxy.getGeometryInfo(geoKey);
@@ -514,7 +517,7 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(cbit.sql.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelInfo(key="+mathModelKey+")");
 		return dbServerProxy.getMathModelInfo(mathModelKey);
@@ -631,7 +634,7 @@ public cbit.util.Preference[] getPreferences() throws DataAccessException {
 /**
  * getReactionStep method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(cbit.sql.KeyValue rxID) throws DataAccessException {
+public cbit.vcell.model.ReactionStep getReactionStep(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getReactionStep()");
 		return dbServerProxy.getReactionStep(rxID);
@@ -648,7 +651,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(cbit.sql.KeyValue rxID) thr
 /**
  * getReactionStepInfos method comment.
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(cbit.sql.KeyValue[] reactionStepKeys) throws DataAccessException {
+public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getReactionStepInfos()");
 		return dbServerProxy.getReactionStepInfos(reactionStepKeys);
@@ -687,7 +690,7 @@ public SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessEx
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationStatus[] getSimulationStatus(cbit.sql.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatus[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationStatus(key="+simulationKeys+")");
 		SimulationStatus simulationStatus[] = dbServerProxy.getSimulationStatus(simulationKeys);
@@ -709,7 +712,7 @@ public SimulationStatus[] getSimulationStatus(cbit.sql.KeyValue simulationKeys[]
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationStatus getSimulationStatus(cbit.sql.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatus getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationStatus(key="+simulationKey+")");
 		SimulationStatus simulationStatus = dbServerProxy.getSimulationStatus(simulationKey);
@@ -813,7 +816,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(R
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.image.VCImageInfo getVCImageInfo(cbit.sql.KeyValue imgKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue imgKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getVCImageInfo(key="+imgKey+")");
 		return dbServerProxy.getVCImageInfo(imgKey);
@@ -893,7 +896,7 @@ public VCInfoContainer getVCInfoContainer() throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, cbit.sql.KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
+public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupAddUser(vType,key,addUserToGroup,isHidden);
@@ -915,7 +918,7 @@ public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, cbit.sq
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, cbit.sql.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
+public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupRemoveUser(vType,key,userRemoveFromGroup,isHiddenFromOwner);
@@ -937,7 +940,7 @@ public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, cbit
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPrivate(vType,key);
@@ -959,7 +962,7 @@ public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, cbit
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPublic(vType,key);

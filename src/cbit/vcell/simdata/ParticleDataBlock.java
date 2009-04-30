@@ -9,6 +9,9 @@ import cbit.util.CommentStringTokenizer;
 import java.util.*;
 import cbit.vcell.server.*;
 import java.io.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.geometry.*;
 /**
  * This type was created in VisualAge.

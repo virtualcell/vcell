@@ -27,7 +27,7 @@ public SensVariable(VolVariable volVariable, Constant parameter) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof SensVariable)){
 		return false;
 	}
@@ -36,10 +36,10 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	}
 	SensVariable v = (SensVariable)obj;
 	
-	if (!cbit.util.Compare.isEqual(volVar,v.volVar)){
+	if (!org.vcell.util.Compare.isEqual(volVar,v.volVar)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(parameter,v.parameter)){
+	if (!org.vcell.util.Compare.isEqual(parameter,v.parameter)){
 		return false;
 	}
 	

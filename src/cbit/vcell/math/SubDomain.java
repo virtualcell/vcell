@@ -5,6 +5,10 @@ package cbit.vcell.math;
 ©*/
 import java.util.*;
 import java.io.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.util.*;
 import cbit.vcell.parser.Expression;
 /**

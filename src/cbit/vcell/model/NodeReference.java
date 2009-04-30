@@ -4,6 +4,9 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.util.*;
 /**
  * This type was created in VisualAge.

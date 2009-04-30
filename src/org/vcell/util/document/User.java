@@ -1,11 +1,11 @@
-package cbit.vcell.server;
+package org.vcell.util.document;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.KeyValue;
-import cbit.util.Matchable;
-import cbit.util.Immutable;
+import org.vcell.util.Immutable;
+import org.vcell.util.Matchable;
+
 /**
  * This type was created in VisualAge.
  */
@@ -48,7 +48,7 @@ public boolean compareEqual(Matchable obj) {
 //		return false;
 //	}
 
-	if (!cbit.util.Compare.isEqual(key,user.key)){
+	if (!org.vcell.util.Compare.isEqual(key,user.key)){
 		return false;
 	}
 	

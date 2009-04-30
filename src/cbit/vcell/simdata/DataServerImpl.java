@@ -8,13 +8,15 @@ import java.util.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.io.*;
+
+import org.vcell.util.document.User;
+
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.CoordinateIndex;

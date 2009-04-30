@@ -1,9 +1,10 @@
 package cbit.vcell.messaging.server;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.MessageConstants.ServiceType;
-import cbit.vcell.server.User;
 import cbit.vcell.server.SessionLog;
 import javax.jms.JMSException;
+
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.
@@ -12,7 +13,7 @@ import javax.jms.JMSException;
  */
 public abstract class AbstractRpcServerProxy implements RpcServerProxy {
 	private cbit.vcell.messaging.JmsClientMessaging clientMessaging = null;
-	protected cbit.vcell.server.User user;
+	protected org.vcell.util.document.User user;
 	private java.lang.String queueName = null;
 	protected cbit.vcell.server.SessionLog log = null;
 

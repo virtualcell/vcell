@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;

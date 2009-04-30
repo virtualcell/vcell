@@ -17,7 +17,7 @@ import cbit.vcell.model.gui.VCellNames;
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class MathModel implements cbit.vcell.document.SimulationOwner, cbit.vcell.document.VCDocument, cbit.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
+public class MathModel implements cbit.vcell.document.SimulationOwner, cbit.vcell.document.VCDocument, org.vcell.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
 	private cbit.sql.Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -152,21 +152,21 @@ public void clearVersion(){
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof MathModel)){
 		return false;
 	}
 	MathModel mathModel = (MathModel)obj;
-	if (!cbit.util.Compare.isEqualOrNull(getName(),mathModel.getName())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getName(),mathModel.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getDescription(),mathModel.getDescription())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),mathModel.getDescription())){
 		return false;
 	}
 	if (!getMathDescription().compareEqual(mathModel.getMathDescription())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getSimulations(),mathModel.getSimulations())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getSimulations(),mathModel.getSimulations())){
 		return false;
 	}
 

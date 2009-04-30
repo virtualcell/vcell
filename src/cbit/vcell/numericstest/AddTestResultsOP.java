@@ -1,7 +1,9 @@
 package cbit.vcell.numericstest;
 
-import cbit.sql.KeyValue;
 import java.math.BigDecimal;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.

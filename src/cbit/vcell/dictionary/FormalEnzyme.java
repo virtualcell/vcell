@@ -14,7 +14,7 @@ public class FormalEnzyme extends DBFormalSpecies implements cbit.sql.Cacheable{
  * @param argKey cbit.sql.KeyValue
  * @param argDBFormalSpeciesInfo DBFormalSpeciesInfo
  */
-public FormalEnzyme(cbit.sql.KeyValue argEnzymeInfoKey, EnzymeInfo argEnzymeInfo) {
+public FormalEnzyme(org.vcell.util.document.KeyValue argEnzymeInfoKey, EnzymeInfo argEnzymeInfo) {
 	
 	super(argEnzymeInfoKey,argEnzymeInfo);
 

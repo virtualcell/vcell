@@ -10,6 +10,9 @@ import cbit.vcell.server.*;
 import cbit.sql.*;
 import java.sql.*;
 import java.sql.Statement;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 /**
  * This type was created in VisualAge.
  */

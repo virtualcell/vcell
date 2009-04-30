@@ -24,15 +24,15 @@ public class SpatialReferenceData implements ReferenceData, java.io.Serializable
 		this.rowData = argRowData;
 	}
 
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SpatialReferenceData){
 		SpatialReferenceData srd = (SpatialReferenceData)obj;
 
-		if (!cbit.util.Compare.isEqual(variableNames, srd.variableNames)){
+		if (!org.vcell.util.Compare.isEqual(variableNames, srd.variableNames)){
 			return false;
 		}
 		
-		if (!cbit.util.Compare.isEqual(variableWeights,srd.variableWeights)){
+		if (!org.vcell.util.Compare.isEqual(variableWeights,srd.variableWeights)){
 			return false;
 		}
 
@@ -43,7 +43,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		for (int i = 0; i < rowData.size(); i++){
 			double[] thisData = rowData.get(i);
 			double[] otherData = srd.rowData.get(i);
-			if (!cbit.util.Compare.isEqual(thisData,otherData)){
+			if (!org.vcell.util.Compare.isEqual(thisData,otherData)){
 				return false;
 			}
 		}

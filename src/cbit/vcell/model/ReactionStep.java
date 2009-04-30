@@ -15,7 +15,10 @@ import cbit.vcell.parser.Expression;
 import java.io.*;
 import java.util.*;
 
-import cbit.sql.KeyValue;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Cacheable;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
@@ -213,7 +216,7 @@ protected boolean compareEqual0(ReactionStep rs) {
 		return false;
 	}
 	
-	if (!cbit.util.Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
+	if (!org.vcell.util.Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getAnnotation(), rs.getAnnotation())){

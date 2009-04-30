@@ -22,6 +22,9 @@ import cbit.vcell.simdata.gui.*;
 import cbit.vcell.export.quicktime.*;
 import cbit.vcell.export.quicktime.atoms.*;
 import java.util.*;
+
+import org.vcell.util.document.User;
+
 import cbit.util.*;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.simdata.*;

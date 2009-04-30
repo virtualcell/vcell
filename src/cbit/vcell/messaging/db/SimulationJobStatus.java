@@ -1,16 +1,17 @@
 package cbit.vcell.messaging.db;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.sql.KeyValue;
 import java.util.Date;
 import java.io.Serializable;
+
+import org.vcell.util.document.KeyValue;
 
 /**
  * Insert the type's description here.
  * Creation date: (1/31/2003 11:02:54 AM)
  * @author: Jim Schaff
  */
-public class SimulationJobStatus implements cbit.util.Matchable, Serializable {
+public class SimulationJobStatus implements org.vcell.util.Matchable, Serializable {
 	//
 	// mandatory fields - not null
 	//
@@ -58,7 +59,7 @@ public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimI
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SimulationJobStatus){
 		SimulationJobStatus jobStatus = (SimulationJobStatus)obj;
 		if (jobStatus.fieldSchedulerStatus != fieldSchedulerStatus){

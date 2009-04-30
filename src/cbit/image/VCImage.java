@@ -5,10 +5,12 @@ package cbit.image;
 ©*/
 import java.io.Serializable;
 import java.util.*;
-import cbit.vcell.server.User;
-import cbit.sql.KeyValue;
-import cbit.util.Compare;
-import cbit.util.Matchable;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.Version;
 
 public abstract class VCImage implements Serializable, cbit.sql.Versionable, java.beans.VetoableChangeListener {
@@ -135,14 +137,14 @@ public boolean compareEqual(Matchable obj) {
 	}
 	VCImage vci = (VCImage)obj;
 
-	if(!cbit.util.Compare.isEqual(getName(),vci.getName())){
+	if(!org.vcell.util.Compare.isEqual(getName(),vci.getName())){
 		return false;
 	}
-	if(!cbit.util.Compare.isEqual(getDescription(),vci.getDescription())){
+	if(!org.vcell.util.Compare.isEqual(getDescription(),vci.getDescription())){
 		return false;
 	}
 	
-	if(!cbit.util.Compare.isEqual(getExtent(),vci.getExtent())){
+	if(!org.vcell.util.Compare.isEqual(getExtent(),vci.getExtent())){
 		return false;
 	}
 
@@ -158,7 +160,7 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 
-	if(!cbit.util.Compare.isEqual(fieldPixelClasses,vci.fieldPixelClasses)){
+	if(!org.vcell.util.Compare.isEqual(fieldPixelClasses,vci.fieldPixelClasses)){
 		return false;
 	}
 

@@ -2,7 +2,8 @@ package org.vcell.util;
 
 import java.util.BitSet;
 
-import cbit.util.VCDataJobID;
+import org.vcell.util.document.VCDataJobID;
+
 import cbit.vcell.solvers.CartesianMesh;
 
 /**
@@ -105,19 +106,15 @@ public int getCombinedIndicesCount(){
 	}
 	return total;
 }
-public void initIndices(CartesianMesh mesh){
+public void initIndices(int meshSizeXYZ){
 	if(roi == null){
 		return;
 	}
-	int meshSize = mesh.getNumVolumeElements();
 	int[][] meshIndices = new int[variableNames.length][];
 	for(int i=0;i<meshIndices.length;i+= 1){
-//		if(roi[i].length() != meshSize){
-//			throw new IllegalArgumentException("Mesh size does not match BitSet size");
-//		}
 		meshIndices[i] = new int[roi[i].cardinality()];
 		int counter = 0;
-		for(int j=0;j<meshSize;j+= 1){
+		for(int j=0;j<meshSizeXYZ;j+= 1){
 			if(roi[i].get(j)){
 				meshIndices[i][counter] = j;
 				counter+= 1;

@@ -7,6 +7,9 @@ import cbit.sql.*;
 import cbit.image.*;
 import cbit.vcell.server.*;
 import java.sql.*;
+
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.modeldb.*;
 
 /*©
@@ -71,7 +74,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	KeyValue userKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.ownerRef.toString()));
 	//userKey
 	String userid = rset.getString(UserTable.table.userid.toString());
-	cbit.vcell.server.User owner = new cbit.vcell.server.User(userid,userKey);
+	org.vcell.util.document.User owner = new org.vcell.util.document.User(userid,userKey);
 	//submitDate
 	java.util.Date parsedSubmitDate = rset.getTimestamp(submitDate.toString());
 	//taskID

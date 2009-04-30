@@ -1,7 +1,9 @@
 package cbit.vcell.clientdb;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.sql.KeyValue;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -21,7 +23,6 @@ import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;

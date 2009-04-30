@@ -2,15 +2,15 @@ package cbit.vcell.model;
 import java.beans.*;
 
 import org.jdom.Element;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.KeyValue;
 import cbit.sql.DbDictionary;
-import cbit.util.Matchable;
-import cbit.util.Compare;
-import cbit.vcell.server.User;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
 

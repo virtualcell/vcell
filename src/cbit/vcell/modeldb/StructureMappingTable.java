@@ -5,6 +5,8 @@ package cbit.vcell.modeldb;
 ©*/
 import java.util.StringTokenizer;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.*;
 import cbit.util.BeanUtils;
 import cbit.util.TokenMangler;

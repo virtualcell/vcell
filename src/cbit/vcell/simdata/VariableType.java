@@ -9,7 +9,7 @@ package cbit.vcell.simdata;
  * Creation date: (10/3/00 2:07:11 PM)
  * @author: 
  */
-public class VariableType implements java.io.Serializable, cbit.util.Matchable {
+public class VariableType implements java.io.Serializable, org.vcell.util.Matchable {
 
 	private int type = -1;
 
@@ -106,7 +106,7 @@ public static cbit.vcell.simdata.DataIdentifier[] collectSimilarDataTypes(String
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return equals(obj);
 }
 /**

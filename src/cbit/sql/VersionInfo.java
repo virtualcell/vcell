@@ -5,7 +5,8 @@ package cbit.sql;
  * All rights reserved.
 ©*/
 import java.io.Serializable;
-import cbit.util.Immutable;
+
+import org.vcell.util.Immutable;
 /**
  * This type was created in VisualAge.
  */

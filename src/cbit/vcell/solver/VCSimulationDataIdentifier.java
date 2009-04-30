@@ -68,7 +68,7 @@ public int getJobIndex() {
  * Creation date: (8/24/2004 11:12:39 AM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getOwner() {
+public org.vcell.util.document.User getOwner() {
 	return vcSimID.getOwner();
 }
 
@@ -78,7 +78,7 @@ public cbit.vcell.server.User getOwner() {
  * Creation date: (8/24/2004 10:59:23 AM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getSimulationKey() {
+public org.vcell.util.document.KeyValue getSimulationKey() {
 	return vcSimID.getSimulationKey();
 }
 

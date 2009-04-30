@@ -12,7 +12,7 @@ import cbit.vcell.server.DataAccessException;
  * Creation date: (11/2/2000 4:01:40 PM)
  * @author: 
  */
-public class ErrorTolerance implements java.io.Serializable, cbit.util.Matchable {
+public class ErrorTolerance implements java.io.Serializable, org.vcell.util.Matchable {
 	private double fieldAbsoluteErrorTolerance = 1.0E-09;
 	private double fieldRelativeErrorTolerance = 1.0E-09;
 /**
@@ -46,7 +46,7 @@ public ErrorTolerance(ErrorTolerance errorTolerance) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {
 		return (true);
 	}

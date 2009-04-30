@@ -6,7 +6,7 @@ package cbit.util;
 /**
  * Contains public double variables min and max. 
  */
-public class Range implements java.io.Serializable, Cloneable, cbit.util.Matchable{
+public class Range implements java.io.Serializable, Cloneable, org.vcell.util.Matchable{
 	private double min = 0;
 	private double max = 0;
 
@@ -55,7 +55,7 @@ public boolean isValid(){
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return equals(obj);
 }
 

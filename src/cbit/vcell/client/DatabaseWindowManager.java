@@ -29,6 +29,10 @@ import cbit.vcell.client.desktop.geometry.ImageBrowser;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import javax.swing.filechooser.FileFilter;
+
+import org.vcell.util.Compare;
+import org.vcell.util.document.User;
+
 import cbit.vcell.client.task.*;
 /**
  * Insert the type's description here.

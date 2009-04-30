@@ -10,11 +10,12 @@ import cbit.sql.DBCacheTable;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
-import cbit.vcell.server.User;
-import cbit.sql.KeyValue;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.xml.XmlHelper;
 import java.awt.PrintJob;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (12/8/2004 2:28:38 PM)

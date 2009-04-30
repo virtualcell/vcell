@@ -3,6 +3,9 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;

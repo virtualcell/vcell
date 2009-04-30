@@ -103,7 +103,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 		    simContext.setMathDescription(mathDesc);
 		    cbit.sql.SimulationVersion simVersion =
 		        new cbit.sql.SimulationVersion(
-		            new cbit.sql.KeyValue("100"),
+		            new org.vcell.util.document.KeyValue("100"),
 		            "unnamed",
 		            null,
 		            null,
