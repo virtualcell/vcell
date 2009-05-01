@@ -4,8 +4,8 @@ import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.util.RowColumnResultSet;
 /**

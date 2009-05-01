@@ -8,9 +8,9 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 
-import cbit.sql.Version;
-import cbit.sql.VersionInfo;
 /**
  * This type was created in VisualAge.
  */

@@ -18,20 +18,24 @@ import org.vcell.util.ISize;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.sql.Version;
-import cbit.sql.VersionInfo;
-import cbit.sql.VersionableType;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelChildSummary;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationResults;
@@ -45,14 +49,10 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelChildSummary;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.CurateSpec;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.Simulation;
@@ -310,7 +310,7 @@ private void cacheSimulations(Simulation[] sims) throws DataAccessException{
 public void curate(CurateSpec curateSpec) throws DataAccessException{
 	
 	try{
-		cbit.vcell.document.VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
+		org.vcell.util.document.VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
 		
 		xmlHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
 		
@@ -1812,7 +1812,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
  * @return boolean
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public boolean isChanged(cbit.vcell.document.VCDocument vcDocument) throws DataAccessException {
+public boolean isChanged(org.vcell.util.document.VCDocument vcDocument) throws DataAccessException {
 	if (vcDocument instanceof BioModel) {
 		return isChanged((BioModel)vcDocument,null);
 	} else if (vcDocument instanceof MathModel) {

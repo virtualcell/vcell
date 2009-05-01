@@ -13,11 +13,13 @@ import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.XMLOutputStream;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 
-import cbit.sql.VersionableType;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.geometry.Geometry;
@@ -25,10 +27,8 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 

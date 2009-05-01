@@ -5,7 +5,6 @@ package cbit.vcell.desktop;
 ©*/
 import java.awt.Font;
 import java.math.BigDecimal;
-import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
@@ -20,8 +19,10 @@ import cbit.vcell.geometry.GeometryInfo;
  */
 import javax.swing.*;
 
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
  
 public class BioModelCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;
@@ -95,9 +96,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 			}else if(node.getUserObject() instanceof BioModelInfo){
 				BioModelInfo biomodelInfo = (BioModelInfo)node.getUserObject();
-				if(biomodelInfo.getVersion().getFlag().compareEqual(cbit.sql.VersionFlag.Archived)){
+				if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)){
 					component.setText("(Archived) "+component.getText());
-				}else if(biomodelInfo.getVersion().getFlag().compareEqual(cbit.sql.VersionFlag.Published)){
+				}else if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)){
 					component.setText("(Published) "+component.getText());
 				}
 			}

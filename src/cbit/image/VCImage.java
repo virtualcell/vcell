@@ -10,10 +10,10 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
 
-import cbit.sql.Version;
 
-public abstract class VCImage implements Serializable, cbit.sql.Versionable, java.beans.VetoableChangeListener {
+public abstract class VCImage implements Serializable, org.vcell.util.document.Versionable, java.beans.VetoableChangeListener {
 	//	private KeyValue key = null; //Deprecated
 	//	private User owner = null; //Deprecated
 	private int numX = 0;

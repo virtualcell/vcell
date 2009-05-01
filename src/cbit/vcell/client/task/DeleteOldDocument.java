@@ -1,5 +1,8 @@
 package cbit.vcell.client.task;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
 
 import cbit.sql.*;
 import cbit.util.*;

@@ -1,4 +1,4 @@
-package cbit.vcell.server;
+package org.vcell.util.document;
 /**
  * Insert the type's description here.
  * Creation date: (5/23/2006 9:32:49 AM)
@@ -14,13 +14,13 @@ public class CurateSpec implements java.io.Serializable{
 	public static final String[] CURATE_TYPE_STATES = {"ARCHIVED","PUBLISHED"};
 	
 	private int curateType;
-	private cbit.vcell.document.VCDocumentInfo vcDocumentInfo;
+	private org.vcell.util.document.VCDocumentInfo vcDocumentInfo;
 
 /**
  * CurateSpec constructor comment.
  */
-public CurateSpec(cbit.vcell.biomodel.BioModelInfo bioModelInfo,int argCurateType) {
-	this((cbit.vcell.document.VCDocumentInfo)bioModelInfo,argCurateType);
+public CurateSpec(org.vcell.util.document.BioModelInfo bioModelInfo,int argCurateType) {
+	this((org.vcell.util.document.VCDocumentInfo)bioModelInfo,argCurateType);
 	
 }
 
@@ -28,7 +28,7 @@ public CurateSpec(cbit.vcell.biomodel.BioModelInfo bioModelInfo,int argCurateTyp
 /**
  * CurateSpec constructor comment.
  */
-private CurateSpec(cbit.vcell.document.VCDocumentInfo argVCDocumentInfo,int argCurateType) {
+private CurateSpec(org.vcell.util.document.VCDocumentInfo argVCDocumentInfo,int argCurateType) {
 	curateType = argCurateType;
 	vcDocumentInfo = argVCDocumentInfo;
 	
@@ -38,8 +38,8 @@ private CurateSpec(cbit.vcell.document.VCDocumentInfo argVCDocumentInfo,int argC
 /**
  * CurateSpec constructor comment.
  */
-public CurateSpec(cbit.vcell.mathmodel.MathModelInfo mathModelInfo,int argCurateType) {
-	this((cbit.vcell.document.VCDocumentInfo)mathModelInfo,argCurateType);
+public CurateSpec(org.vcell.util.document.MathModelInfo mathModelInfo,int argCurateType) {
+	this((org.vcell.util.document.VCDocumentInfo)mathModelInfo,argCurateType);
 	
 }
 
@@ -59,7 +59,7 @@ public int getCurateType() {
  * Creation date: (5/23/2006 10:19:10 AM)
  * @return cbit.vcell.document.VCDocumentInfo
  */
-public cbit.vcell.document.VCDocumentInfo getVCDocumentInfo() {
+public org.vcell.util.document.VCDocumentInfo getVCDocumentInfo() {
 	return vcDocumentInfo;
 }
 }

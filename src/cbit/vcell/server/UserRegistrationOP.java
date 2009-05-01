@@ -15,11 +15,11 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
 import cbit.gui.DialogUtils;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.sql.UserInfo;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.PopupGenerator;

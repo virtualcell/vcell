@@ -17,6 +17,8 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;

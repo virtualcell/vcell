@@ -9,14 +9,14 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
  */
 public class ReferenceQuerySpec implements java.io.Serializable{
 
-	private cbit.sql.VersionableType versionableType;
+	private org.vcell.util.document.VersionableType versionableType;
 	private org.vcell.util.document.KeyValue versionableKeyValue;
 	private ExternalDataIdentifier extDataID;
 
 /**
  * ReferenceQuesrySpec constructor comment.
  */
-public ReferenceQuerySpec(cbit.sql.VersionableType vType,org.vcell.util.document.KeyValue key) {
+public ReferenceQuerySpec(org.vcell.util.document.VersionableType vType,org.vcell.util.document.KeyValue key) {
 	
 	versionableType = vType;
 	versionableKeyValue = key;
@@ -55,7 +55,7 @@ public org.vcell.util.document.KeyValue getKeyValue() {
  * Creation date: (11/6/2005 10:31:20 AM)
  * @return cbit.sql.VersionableType
  */
-public cbit.sql.VersionableType getVersionableType() {
+public org.vcell.util.document.VersionableType getVersionableType() {
 	return versionableType;
 }
 }

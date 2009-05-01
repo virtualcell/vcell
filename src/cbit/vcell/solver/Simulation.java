@@ -18,6 +18,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.Versionable;
 
 import cbit.vcell.math.*;
 import cbit.vcell.solver.SimulationInfo;
@@ -48,7 +50,7 @@ public class Simulation implements Versionable, org.vcell.util.Matchable, cbit.v
 	/**
 	 * Database version of the Simulation.
 	 */
-	private cbit.sql.SimulationVersion fieldSimulationVersion = null;
+	private org.vcell.util.document.SimulationVersion fieldSimulationVersion = null;
 	/**
 	 * Mathematical description of the physiological model.
 	 */
@@ -803,7 +805,7 @@ public cbit.vcell.solver.SimulationInfo getSimulationInfo() {
  * Creation date: (10/24/00 1:34:10 PM)
  * @return cbit.sql.Version
  */
-public cbit.sql.SimulationVersion getSimulationVersion() {
+public org.vcell.util.document.SimulationVersion getSimulationVersion() {
 	return fieldSimulationVersion;
 }
 
@@ -929,7 +931,7 @@ public String getVCML() throws MathException {
  * Creation date: (10/24/00 1:34:10 PM)
  * @return cbit.sql.Version
  */
-public cbit.sql.Version getVersion() {
+public org.vcell.util.document.Version getVersion() {
 	return fieldSimulationVersion;
 }
 
@@ -1269,7 +1271,7 @@ public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(cbit.sql.SimulationVersion simulationVersion) throws PropertyVetoException {
+private void setVersion(org.vcell.util.document.SimulationVersion simulationVersion) throws PropertyVetoException {
 	this.fieldSimulationVersion = simulationVersion;
 	if (simulationVersion != null){
 		setName(simulationVersion.getName());

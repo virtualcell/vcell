@@ -10,16 +10,17 @@ import javax.swing.ListSelectionModel;
 
 import java.util.*;
 
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.FieldDataWindowManager.FDSimBioModelInfo;
 import cbit.vcell.client.FieldDataWindowManager.FDSimMathModelInfo;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model.ModelParameter;
 
 import javax.swing.JButton;
+
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;

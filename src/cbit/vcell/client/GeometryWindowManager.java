@@ -139,7 +139,7 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (5/25/2004 2:46:07 AM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.vcell.document.VCDocument getVCDocument() {
+public org.vcell.util.document.VCDocument getVCDocument() {
 	return getGeometry();
 }
 
@@ -225,7 +225,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Creation date: (6/2/2004 2:00:39 PM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.vcell.document.VCDocument newDocument) {
+public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	setGeometry((Geometry)newDocument);
 	setDocumentID(getGeometry());
 	geoViewer.setGeometry(getGeometry());

@@ -1,15 +1,15 @@
 package cbit.vcell.desktop;
 
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.biomodel.BioModelInfo;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VersionableType;
 
 import cbit.vcell.mapping.SimulationContext;
-import cbit.sql.VersionableType;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -32,7 +32,7 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 	private BioModelInfoCellRenderer ivjbioModelInfoCellRenderer = null;
 	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
 	private BioModelInfoTreeModel ivjbioModelInfoTreeModel = null;
-	private cbit.vcell.biomodel.BioModelInfo fieldBioModelInfo = null;
+	private org.vcell.util.document.BioModelInfo fieldBioModelInfo = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 /**
  * BioModelMetaDataPanel constructor comment.
@@ -190,7 +190,7 @@ public void expandAllRows() {
  * @return The bioModelInfo property value.
  * @see #setBioModelInfo
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo() {
+public org.vcell.util.document.BioModelInfo getBioModelInfo() {
 	return fieldBioModelInfo;
 }
 /**
@@ -376,8 +376,8 @@ public void refresh() {
  * @param bioModelInfo The new value for the property.
  * @see #getBioModelInfo
  */
-public void setBioModelInfo(cbit.vcell.biomodel.BioModelInfo bioModelInfo) {
-	cbit.vcell.biomodel.BioModelInfo oldValue = fieldBioModelInfo;
+public void setBioModelInfo(org.vcell.util.document.BioModelInfo bioModelInfo) {
+	org.vcell.util.document.BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
 }

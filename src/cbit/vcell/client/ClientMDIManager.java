@@ -9,6 +9,7 @@ import cbit.vcell.client.desktop.*;
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.VCDocument;
 
 import java.util.*;
 import java.awt.event.*;
@@ -129,14 +130,14 @@ public int closeWindow(String windowID) {
  * @return java.lang.String
  * @param version cbit.sql.Version
  */
-public static String createCanonicalTitle(int docType,cbit.sql.Version version) {
+public static String createCanonicalTitle(int docType,org.vcell.util.document.Version version) {
 	
 	String docName = (version != null?version.getName():"NoName");
 	java.util.Date docDate = (version != null?version.getDate():null);
-	cbit.sql.VersionFlag versionFlag = (version != null?version.getFlag():null);
+	org.vcell.util.document.VersionFlag versionFlag = (version != null?version.getFlag():null);
 	return
-		(versionFlag != null && versionFlag.compareEqual(cbit.sql.VersionFlag.Archived)? "("+cbit.vcell.server.CurateSpec.CURATE_TYPE_STATES[cbit.vcell.server.CurateSpec.ARCHIVE]+") ":"")+
-		(versionFlag != null && versionFlag.compareEqual(cbit.sql.VersionFlag.Published)?"("+cbit.vcell.server.CurateSpec.CURATE_TYPE_STATES[cbit.vcell.server.CurateSpec.PUBLISH]+") ":"")+
+		(versionFlag != null && versionFlag.compareEqual(org.vcell.util.document.VersionFlag.Archived)? "("+org.vcell.util.document.CurateSpec.CURATE_TYPE_STATES[org.vcell.util.document.CurateSpec.ARCHIVE]+") ":"")+
+		(versionFlag != null && versionFlag.compareEqual(org.vcell.util.document.VersionFlag.Published)?"("+org.vcell.util.document.CurateSpec.CURATE_TYPE_STATES[org.vcell.util.document.CurateSpec.PUBLISH]+") ":"")+
 		(docType == VCDocument.BIOMODEL_DOC?"BIOMODEL: ":"")+
 		(docType == VCDocument.MATHMODEL_DOC?"MATHMODEL: ":"")+
 		(docType == VCDocument.GEOMETRY_DOC?"GEOMETRY: ":"")+

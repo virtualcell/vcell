@@ -2,8 +2,10 @@ package org.vcell.cellml;
 
 import java.io.File;
 import java.io.StringReader;
+
+import org.vcell.util.document.VCDocument;
+
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.xml.XmlHelper;
 

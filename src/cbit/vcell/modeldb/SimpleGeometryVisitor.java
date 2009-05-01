@@ -2,12 +2,13 @@ package cbit.vcell.modeldb;
 
 import java.io.PrintStream;
 
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 
 public class SimpleGeometryVisitor implements VCDatabaseVisitor {
 

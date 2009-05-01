@@ -1,8 +1,11 @@
 package cbit.vcell.client.task;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VersionableRelationship;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.rmi.event.*;
-import cbit.sql.VersionableType;
 import cbit.vcell.geometry.surface.*;
 import cbit.vcell.client.*;
 import cbit.vcell.client.desktop.*;
@@ -12,8 +15,6 @@ import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;
-import cbit.vcell.modeldb.VersionableRelationship;
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.document.*;

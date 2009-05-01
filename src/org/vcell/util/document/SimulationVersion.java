@@ -1,6 +1,5 @@
-package cbit.sql;
+package org.vcell.util.document;
 
-import org.vcell.util.document.KeyValue;
 
 /**
  * Insert the type's description here.
@@ -22,7 +21,7 @@ public class SimulationVersion extends Version {
  * @param versionFlagNew cbit.sql.VersionFlag
  * @param versionAnnotNew java.lang.String
  */
-public SimulationVersion(KeyValue versionKeyNew, String versionNameNew, org.vcell.util.document.User versionOwnerNew, cbit.vcell.server.GroupAccess versionGroupAccessNew, KeyValue versionBranchPointRefNew, java.math.BigDecimal versionBranchIDNew, java.util.Date versionDateNew, VersionFlag versionFlagNew, String versionAnnotNew, KeyValue argParentSimulationReference) {
+public SimulationVersion(KeyValue versionKeyNew, String versionNameNew, org.vcell.util.document.User versionOwnerNew, org.vcell.util.document.GroupAccess versionGroupAccessNew, KeyValue versionBranchPointRefNew, java.math.BigDecimal versionBranchIDNew, java.util.Date versionDateNew, VersionFlag versionFlagNew, String versionAnnotNew, KeyValue argParentSimulationReference) {
 	super(versionKeyNew, versionNameNew, versionOwnerNew, versionGroupAccessNew, versionBranchPointRefNew, versionBranchIDNew, versionDateNew, versionFlagNew, versionAnnotNew);
 	this.parentSimulationReference = argParentSimulationReference;
 }

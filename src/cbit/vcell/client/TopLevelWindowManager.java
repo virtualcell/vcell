@@ -2,7 +2,6 @@ package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.desktop.controls.DataEvent;
-import cbit.vcell.document.VCDocument;
 
 import java.io.*;
 import java.net.*;
@@ -14,6 +13,9 @@ import cbit.util.AsynchProgressPopup;
 import cbit.util.FileFilters;
 
 import javax.swing.*;
+
+import org.vcell.util.document.VCDocument;
+
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.*;
 /**

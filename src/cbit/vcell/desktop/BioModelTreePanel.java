@@ -4,7 +4,6 @@ package cbit.vcell.desktop;
  * All rights reserved.
 ©*/
 import cbit.vcell.client.PopupGenerator;
-import cbit.sql.VersionInfo;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
@@ -15,8 +14,9 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import org.vcell.util.Matchable;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.Versionable;
 
-import cbit.sql.Versionable;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -55,7 +55,7 @@ public class BioModelTreePanel extends JPanel {
 	private JMenuItem ivjEditAnnotationMenuItem = null;
 	private JPopupMenu ivjEditAnnotationPopupMenu = null;
 	private JMenuItem ivjNewApplnMenuItem = null;
-	private cbit.sql.Versionable fieldSelectedVersionable = null;
+	private org.vcell.util.document.Versionable fieldSelectedVersionable = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1234,7 +1234,7 @@ public Object getSelectedObject(BioModelNode selectedBioModelNode) {
  * @return The selectedVersionable property value.
  * @see #setSelectedVersionable
  */
-public cbit.sql.Versionable getSelectedVersionable() {
+public org.vcell.util.document.Versionable getSelectedVersionable() {
 	return fieldSelectedVersionable;
 }
 
@@ -1449,8 +1449,8 @@ private void setBioModelCellRendererFactory(BioModelCellRenderer newValue) {
  * @param selectedVersionable The new value for the property.
  * @see #getSelectedVersionable
  */
-private void setSelectedVersionable(cbit.sql.Versionable selectedVersionable) {
-	cbit.sql.Versionable oldValue = fieldSelectedVersionable;
+private void setSelectedVersionable(org.vcell.util.document.Versionable selectedVersionable) {
+	org.vcell.util.document.Versionable oldValue = fieldSelectedVersionable;
 	fieldSelectedVersionable = selectedVersionable;
 	firePropertyChange("selectedVersionable", oldValue, selectedVersionable);
 }
@@ -1516,8 +1516,8 @@ private Versionable treeSelection() {
 	}
 	BioModelNode bioModelNode = (BioModelNode)treePath.getLastPathComponent();
 	Object object = bioModelNode.getUserObject();
-	if (object instanceof cbit.sql.Versionable){
-		setSelectedVersionable((cbit.sql.Versionable)object);
+	if (object instanceof org.vcell.util.document.Versionable){
+		setSelectedVersionable((org.vcell.util.document.Versionable)object);
 		return (Versionable)object;
 	}else{
 		setSelectedVersionable(null);

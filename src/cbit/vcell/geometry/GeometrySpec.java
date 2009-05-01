@@ -16,14 +16,14 @@ import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
 
 import cbit.vcell.parser.ExpressionException;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.math.VCML;
-import cbit.sql.Versionable;
-import cbit.sql.Version;
 import cbit.vcell.modeldb.GeomDbDriver;
 import cbit.util.*;
 /**

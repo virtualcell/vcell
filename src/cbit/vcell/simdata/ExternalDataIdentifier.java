@@ -3,10 +3,10 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.Matchable;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.parser.MathMLTags;

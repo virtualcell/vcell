@@ -6,9 +6,10 @@ import java.io.PrintStream;
 import java.util.Vector;
 
 import org.vcell.util.Issue;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.FeatureMapping;
@@ -21,7 +22,6 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.Expression;

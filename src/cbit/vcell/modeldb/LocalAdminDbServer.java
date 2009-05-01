@@ -10,6 +10,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -188,7 +189,7 @@ public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulat
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public cbit.sql.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException {
+public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException {
 	try {
 		KeyValue key = adminDbTop.insertUserInfo(newUserInfo,true);
 		return adminDbTop.getUserInfo(key,true);

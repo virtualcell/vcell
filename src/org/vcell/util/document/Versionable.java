@@ -1,4 +1,4 @@
-package cbit.sql;
+package org.vcell.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

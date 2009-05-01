@@ -21,7 +21,10 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.ReferenceQueryResult;
 import org.vcell.util.ReferenceQuerySpec;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
 
 import cbit.sql.*;
 import cbit.vcell.server.UserRegistrationOP;
@@ -91,7 +94,7 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, D
  * Insert the method's description here.
  * Creation date: (11/6/2005 10:04:45 AM)
  */
-public cbit.vcell.document.VCDocumentInfo curate(User user,cbit.vcell.server.CurateSpec curateSpec) throws DataAccessException{
+public org.vcell.util.document.VCDocumentInfo curate(User user,org.vcell.util.document.CurateSpec curateSpec) throws DataAccessException{
 	
 	try {
 		log.print("DatabaseServerImpl.curate(user="+user+" curateSpec="+curateSpec+")");
@@ -115,7 +118,7 @@ public cbit.vcell.document.VCDocumentInfo curate(User user,cbit.vcell.server.Cur
 /**
  * delete method comment.
  */
-void delete(User user, cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+void delete(User user, org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.delete(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.deleteVersionable(user, vType, key, true);
@@ -265,7 +268,7 @@ public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) th
 /**
  * getVersionable method comment.
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(User user, cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionableFamily getAllReferences(User user, org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
 		log.alert("DatabaseServerImpl.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
@@ -290,8 +293,8 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(User user, cbit.sql
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(User user, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return ((cbit.vcell.biomodel.BioModelInfo[])getVersionInfos(user, key, VersionableType.BioModelMetaData, true, true))[0];
+public org.vcell.util.document.BioModelInfo getBioModelInfo(User user, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return ((org.vcell.util.document.BioModelInfo[])getVersionInfos(user, key, VersionableType.BioModelMetaData, true, true))[0];
 }
 
 
@@ -302,8 +305,8 @@ public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(User user, org.vcell.uti
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.biomodel.BioModelInfo[])getVersionInfos(user, null, VersionableType.BioModelMetaData, bAll, true);
+public org.vcell.util.document.BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws org.vcell.util.DataAccessException {
+	return (org.vcell.util.document.BioModelInfo[])getVersionInfos(user, null, VersionableType.BioModelMetaData, bAll, true);
 }
 
 
@@ -509,8 +512,8 @@ public BigString getGeometryXML(User user, org.vcell.util.document.KeyValue key)
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(User user, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return ((cbit.vcell.mathmodel.MathModelInfo[])getVersionInfos(user, key, VersionableType.MathModelMetaData, false, true))[0];
+public org.vcell.util.document.MathModelInfo getMathModelInfo(User user, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return ((org.vcell.util.document.MathModelInfo[])getVersionInfos(user, key, VersionableType.MathModelMetaData, false, true))[0];
 }
 
 
@@ -521,8 +524,8 @@ public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(User user, org.vcell.
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(User user, boolean bAll) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.mathmodel.MathModelInfo[])getVersionInfos(user, null, VersionableType.MathModelMetaData, bAll, true);
+public org.vcell.util.document.MathModelInfo[] getMathModelInfos(User user, boolean bAll) throws org.vcell.util.DataAccessException {
+	return (org.vcell.util.document.MathModelInfo[])getVersionInfos(user, null, VersionableType.MathModelMetaData, bAll, true);
 }
 
 
@@ -874,7 +877,7 @@ private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType v
 		log.print("DatabaseServerImpl.getVersionInfos(User="+user+",vType="+vType+",bAll="+bAll+")");
 		Vector vector = dbTop.getVersionableInfos(user, key, vType, bAll, bCheckPermission, true);
 		if (vType.equals(VersionableType.BioModelMetaData)) {
-			cbit.vcell.biomodel.BioModelInfo[] bioModelInfos = new cbit.vcell.biomodel.BioModelInfo[vector.size()];
+			org.vcell.util.document.BioModelInfo[] bioModelInfos = new org.vcell.util.document.BioModelInfo[vector.size()];
 			vector.copyInto(bioModelInfos);
 			return bioModelInfos;
 		} else if (vType.equals(VersionableType.Geometry)) {
@@ -913,7 +916,7 @@ private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType v
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupAddUser(User user, cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key,String addUserToGroup, boolean isHidden) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupAddUser(User user, org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key,String addUserToGroup, boolean isHidden) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
 		dbTop.groupAddUser(user,vType,key,true,addUserToGroup,isHidden);
@@ -939,7 +942,7 @@ public cbit.sql.VersionInfo groupAddUser(User user, cbit.sql.VersionableType vTy
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupRemoveUser(User user, cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) 
+public org.vcell.util.document.VersionInfo groupRemoveUser(User user, org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) 
 			throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
@@ -966,7 +969,7 @@ public cbit.sql.VersionInfo groupRemoveUser(User user, cbit.sql.VersionableType 
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPrivate(User user, cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupSetPrivate(User user, org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.groupSetPrivate(user,vType,key,true);
@@ -992,7 +995,7 @@ public cbit.sql.VersionInfo groupSetPrivate(User user, cbit.sql.VersionableType 
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPublic(User user, cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupSetPublic(User user, org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.groupSetPublic(user,vType,key,true);

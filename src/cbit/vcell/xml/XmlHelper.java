@@ -12,12 +12,12 @@ import org.vcell.cellml.Translator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.util.Extent;
+import org.vcell.util.document.VCDocument;
 
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;

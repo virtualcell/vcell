@@ -3,7 +3,8 @@ package pool;
 import java.sql.*;
 import java.util.*;
 
-import cbit.sql.UserInfo;
+import org.vcell.util.document.UserInfo;
+
 import cbit.vcell.modeldb.UserTable;
 
 public class JDCConnection implements Connection {

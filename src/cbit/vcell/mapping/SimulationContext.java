@@ -13,8 +13,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.Version;
 
-import cbit.sql.Version;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
@@ -43,7 +43,7 @@ import cbit.vcell.solver.Simulation;
  */
 public class SimulationContext
 	implements
-		cbit.sql.Versionable, Matchable, cbit.vcell.document.SimulationOwner,
+		org.vcell.util.document.Versionable, Matchable, cbit.vcell.document.SimulationOwner,
 		cbit.vcell.parser.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener,
 		java.io.Serializable,FieldFunctionContainer {
 
@@ -1678,7 +1678,7 @@ public void setTemperatureKelvin(double temperatureKelvin) throws java.beans.Pro
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(cbit.sql.Version newVersion) throws PropertyVetoException {
+private void setVersion(org.vcell.util.document.Version newVersion) throws PropertyVetoException {
 	this.version = newVersion;
 	if (newVersion != null){
 		setName(newVersion.getName());

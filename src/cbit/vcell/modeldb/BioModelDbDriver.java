@@ -12,8 +12,13 @@ import java.util.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
 import cbit.sql.*;
 import cbit.vcell.model.*;

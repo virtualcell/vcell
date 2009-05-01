@@ -20,9 +20,9 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.BioModelInfo;
 
 import cbit.gui.DialogUtils;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;

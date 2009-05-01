@@ -1,6 +1,8 @@
 package cbit.vcell.messaging.admin;
 import java.util.*;
 
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/28/2003 1:38:32 PM)

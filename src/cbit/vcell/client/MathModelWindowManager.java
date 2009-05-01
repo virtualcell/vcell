@@ -3,13 +3,13 @@ import cbit.util.SwingDispatcherSync;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.*;
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.sql.*;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
@@ -301,7 +301,7 @@ public void setCopyFromBioModelAppVersionableTypeVersion(VersionableTypeVersion 
  * Creation date: (5/17/2004 4:56:56 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.vcell.document.VCDocument getVCDocument() {
+public org.vcell.util.document.VCDocument getVCDocument() {
 	return getMathModel();
 }
 
@@ -472,7 +472,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.vcell.document.VCDocument newDocument) {
+public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	setMathModel((MathModel)newDocument);
 	setDocumentID(getMathModel());
 	setMathModel((MathModel)newDocument);

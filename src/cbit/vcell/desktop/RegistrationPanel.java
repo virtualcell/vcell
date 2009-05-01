@@ -13,7 +13,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import cbit.sql.UserInfo;
+import org.vcell.util.document.UserInfo;
+
 
 public class RegistrationPanel extends JPanel {
 	

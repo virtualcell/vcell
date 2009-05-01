@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -31,7 +32,6 @@ import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometryFileWriter;

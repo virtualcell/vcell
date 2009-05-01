@@ -126,15 +126,15 @@ public static void main(String[] args) {
 				simContext.setMathDescription(mathDesc);
 
 				// Create basic simulation, with IDA solver (set in solve method) and other defaults, and end time 'Te'
-				cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
+				org.vcell.util.document.SimulationVersion simVersion = new org.vcell.util.document.SimulationVersion(
 						new KeyValue("12345"),
 						"name",
 						new org.vcell.util.document.User("user",new KeyValue("123")),
-						new cbit.vcell.server.GroupAccessNone(),
+						new org.vcell.util.document.GroupAccessNone(),
 						null, // versionBranchPointRef
 						new java.math.BigDecimal(1.0), // branchID
 						new java.util.Date(),
-						cbit.sql.VersionFlag.Archived,
+						org.vcell.util.document.VersionFlag.Archived,
 						"",
 						null);
 

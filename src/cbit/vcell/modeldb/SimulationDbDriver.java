@@ -17,7 +17,12 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 /**
  * This type was created in VisualAge.
  */

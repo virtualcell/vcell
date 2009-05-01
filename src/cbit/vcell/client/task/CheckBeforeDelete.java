@@ -6,6 +6,9 @@ import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
 
 import cbit.vcell.client.*;
 import cbit.vcell.solver.*;

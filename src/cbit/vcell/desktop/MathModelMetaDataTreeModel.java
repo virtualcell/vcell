@@ -9,11 +9,13 @@ import java.util.Vector;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.SimulationInfo;
 import java.util.Enumeration;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.clientdb.DatabaseListener;
 import javax.swing.tree.DefaultTreeModel;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.clientdb.DocumentManager;
@@ -25,7 +27,7 @@ import cbit.vcell.biomodel.BioModelMetaData;
  */
 public class MathModelMetaDataTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mathmodel.MathModelInfo fieldMathModelInfo = null;
+	private org.vcell.util.document.MathModelInfo fieldMathModelInfo = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -121,7 +123,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The mathModelInfo property value.
  * @see #setMathModelInfo
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo() {
+public org.vcell.util.document.MathModelInfo getMathModelInfo() {
 	return fieldMathModelInfo;
 }
 /**
@@ -171,7 +173,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param mathModelInfo The new value for the property.
  * @see #getMathModelInfo
  */
-public void setMathModelInfo(cbit.vcell.mathmodel.MathModelInfo mathModelInfo) {
+public void setMathModelInfo(org.vcell.util.document.MathModelInfo mathModelInfo) {
 	MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);

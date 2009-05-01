@@ -8,15 +8,15 @@ import java.util.Vector;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.SimulationInfo;
 import java.util.Enumeration;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.clientdb.DatabaseListener;
 import javax.swing.tree.DefaultTreeModel;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.biomodel.BioModelChildSummary;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -24,7 +24,7 @@ import cbit.vcell.biomodel.BioModelChildSummary;
  */
 public class BioModelInfoTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.biomodel.BioModelInfo fieldBioModelInfo = null;
+	private org.vcell.util.document.BioModelInfo fieldBioModelInfo = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -156,7 +156,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The bioModelInfo property value.
  * @see #setBioModelInfo
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo() {
+public org.vcell.util.document.BioModelInfo getBioModelInfo() {
 	return fieldBioModelInfo;
 }
 /**
@@ -206,8 +206,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param bioModelInfo The new value for the property.
  * @see #getBioModelInfo
  */
-public void setBioModelInfo(cbit.vcell.biomodel.BioModelInfo bioModelInfo) {
-	cbit.vcell.biomodel.BioModelInfo oldValue = fieldBioModelInfo;
+public void setBioModelInfo(org.vcell.util.document.BioModelInfo bioModelInfo) {
+	org.vcell.util.document.BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
 	refreshTree();

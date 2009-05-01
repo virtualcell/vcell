@@ -468,7 +468,7 @@ private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLExcepti
 	File userDirs[] = dataRootDir.listFiles();
 	log.print("Total user directories: " + userDirs.length);
 
-	cbit.sql.UserInfo userInfos[] = adminDbServer.getUserInfos();	
+	org.vcell.util.document.UserInfo userInfos[] = adminDbServer.getUserInfos();	
 	DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log,dbCacheTable);
 
 	File userDir = null;
@@ -503,7 +503,7 @@ private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLExcepti
 			}
 			
 			// find all the user simulations
-			Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.sql.VersionableType.Simulation,false,false, true);
+			Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,org.vcell.util.document.VersionableType.Simulation,false,false, true);
 			SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
 			ExternalDataIdentifier[] extDataIDArr = adminDbServer.getExternalDataIdentifiers(user);
 			scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);
@@ -542,7 +542,7 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
 		DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log,dbCacheTable);
 		
 		// find all the user simulations
-		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.sql.VersionableType.Simulation,false,false, true);
+		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,org.vcell.util.document.VersionableType.Simulation,false,false, true);
 		SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
 		ExternalDataIdentifier[] extDataIDArr = adminDbServer.getExternalDataIdentifiers(user);
 		scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);

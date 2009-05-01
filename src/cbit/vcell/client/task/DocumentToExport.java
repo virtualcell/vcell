@@ -6,6 +6,10 @@ import cbit.vcell.client.*;
 import java.util.*;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.mapping.*;

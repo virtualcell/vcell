@@ -158,7 +158,7 @@ public org.jdom.Element getXML(cbit.image.VCPixelClass param) {
  * @return org.jdom.Element
  * @param param cbit.sql.Version
  */
-public org.jdom.Element getXML(cbit.sql.Version version, cbit.sql.Versionable versionable) {
+public org.jdom.Element getXML(org.vcell.util.document.Version version, org.vcell.util.document.Versionable versionable) {
 	return getXML(version, versionable.getName(), versionable.getDescription());
 }
 
@@ -169,7 +169,7 @@ public org.jdom.Element getXML(cbit.sql.Version version, cbit.sql.Versionable ve
  * @return org.jdom.Element
  * @param param cbit.sql.Version
  */
-public org.jdom.Element getXML(cbit.sql.Version version, String nameParam, String descriptionParam) {
+public org.jdom.Element getXML(org.vcell.util.document.Version version, String nameParam, String descriptionParam) {
 	//** Dump the content to the 'Version' object **
 	org.jdom.Element versionElement = new org.jdom.Element(XMLTags.VersionTag);
 	
@@ -220,8 +220,8 @@ public org.jdom.Element getXML(cbit.sql.Version version, String nameParam, Strin
 			annotationElem.setText(mangle(version.getAnnot()));
 			versionElement.addContent(annotationElem);
 		}
-		if (version instanceof cbit.sql.SimulationVersion){
-			cbit.sql.SimulationVersion simVersion = (cbit.sql.SimulationVersion)version;
+		if (version instanceof org.vcell.util.document.SimulationVersion){
+			org.vcell.util.document.SimulationVersion simVersion = (org.vcell.util.document.SimulationVersion)version;
 			if (simVersion.getParentSimulationReference()!=null){
 				org.jdom.Element parentSimRefElem = new org.jdom.Element(XMLTags.ParentSimRefTag);
 				parentSimRefElem.setAttribute(XMLTags.KeyValueAttrTag, simVersion.getParentSimulationReference().toString());
@@ -2819,24 +2819,24 @@ public org.jdom.Element getXML(Structure structure) throws XmlParseException {
  * @return org.jdom.Element
  * @param groupAccess cbit.vcell.server.GroupAccess
  */
-public org.jdom.Element getXML(cbit.vcell.server.GroupAccess groupAccess) {
+public org.jdom.Element getXML(org.vcell.util.document.GroupAccess groupAccess) {
 	org.jdom.Element groupElement = new org.jdom.Element(XMLTags.GroupAccessTag);
 	
-	if (groupAccess instanceof cbit.vcell.server.GroupAccessAll) {
+	if (groupAccess instanceof org.vcell.util.document.GroupAccessAll) {
 		//case: ALL
-		groupElement.setAttribute(XMLTags.TypeAttrTag, cbit.vcell.server.GroupAccess.GROUPACCESS_ALL.toString());		
-	} else if (groupAccess instanceof cbit.vcell.server.GroupAccessNone) {
+		groupElement.setAttribute(XMLTags.TypeAttrTag, org.vcell.util.document.GroupAccess.GROUPACCESS_ALL.toString());		
+	} else if (groupAccess instanceof org.vcell.util.document.GroupAccessNone) {
 		//case: NONE
-		groupElement.setAttribute(XMLTags.TypeAttrTag, cbit.vcell.server.GroupAccess.GROUPACCESS_NONE.toString());		
+		groupElement.setAttribute(XMLTags.TypeAttrTag, org.vcell.util.document.GroupAccess.GROUPACCESS_NONE.toString());		
 	} else {
 		//case: SOME
 		//*groupid
 		groupElement.setAttribute(XMLTags.TypeAttrTag, groupAccess.getGroupid().toString());
 		//*hash
-		groupElement.setAttribute(XMLTags.HashAttrTag, ((cbit.vcell.server.GroupAccessSome)groupAccess).getHash().toString());
+		groupElement.setAttribute(XMLTags.HashAttrTag, ((org.vcell.util.document.GroupAccessSome)groupAccess).getHash().toString());
 		//*users+hidden value
 		//get normal users
-		org.vcell.util.document.User[] users = ((cbit.vcell.server.GroupAccessSome)groupAccess).getNormalGroupMembers();
+		org.vcell.util.document.User[] users = ((org.vcell.util.document.GroupAccessSome)groupAccess).getNormalGroupMembers();
 		for (int i = 0; i < users.length; i++){
 			org.jdom.Element userElement = new org.jdom.Element(XMLTags.UserTag);
 			//add name
@@ -2850,7 +2850,7 @@ public org.jdom.Element getXML(cbit.vcell.server.GroupAccess groupAccess) {
 		}
 		
 		//get hidden users
-		users = ((cbit.vcell.server.GroupAccessSome)groupAccess).getHiddenGroupMembers();
+		users = ((org.vcell.util.document.GroupAccessSome)groupAccess).getHiddenGroupMembers();
 		
 		if (users != null) {
 			for (int i = 0; i < users.length; i++){

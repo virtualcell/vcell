@@ -6,7 +6,7 @@ package cbit.vcell.modelopt.gui;
  */
 public class ParameterMappingPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjScrollPaneTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjScrollPaneTable = null;
 	private ParameterMappingTableModel ivjparameterMappingTableModel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.modelopt.ParameterEstimationTask fieldParameterEstimationTask = null;
@@ -16,7 +16,7 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuCopyPaste = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjJSortTableThis = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjJSortTableThis = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -442,7 +442,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getJSortTableThis() {
+private org.vcell.util.gui.sorttable.JSortTable getJSortTableThis() {
 	// user code begin {1}
 	// user code end
 	return ivjJSortTableThis;
@@ -507,10 +507,10 @@ private ParameterMappingTableModel getparameterMappingTableModel() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
+private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
@@ -887,7 +887,7 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
  * @param newValue cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setJSortTableThis(cbit.vcell.messaging.admin.sorttable.JSortTable newValue) {
+private void setJSortTableThis(org.vcell.util.gui.sorttable.JSortTable newValue) {
 	if (ivjJSortTableThis != newValue) {
 		try {
 			/* Stop listening for events from the current object */

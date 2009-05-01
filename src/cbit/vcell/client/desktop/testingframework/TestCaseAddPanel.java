@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.testingframework;
 import cbit.gui.DialogUtils;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNew;
@@ -10,6 +9,7 @@ import javax.swing.ListSelectionModel;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 
 import java.awt.GridBagConstraints;
 /**
@@ -37,7 +37,7 @@ public class TestCaseAddPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjBioModelAppLabel = null;
 	private javax.swing.JButton ivjSelectBMAppButton = null;
 	private String[] ivjappNameArr = null;
-	private cbit.vcell.biomodel.BioModelInfo ivjbioModelInfo = null;  //  @jve:decl-index=0:
+	private org.vcell.util.document.BioModelInfo ivjbioModelInfo = null;  //  @jve:decl-index=0:
 	private JRadioButton ivjExactRadioButtonSteady = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
@@ -278,7 +278,7 @@ private void connEtoC7(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(cbit.vcell.biomodel.BioModelInfo value) {
+private void connEtoC8(org.vcell.util.document.BioModelInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -397,7 +397,7 @@ private javax.swing.JLabel getBioModelAppLabel() {
  * @return cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.biomodel.BioModelInfo getbioModelInfo() {
+private org.vcell.util.document.BioModelInfo getbioModelInfo() {
 	// user code begin {1}
 	// user code end
 	return ivjbioModelInfo;
@@ -828,7 +828,7 @@ public static void main(java.lang.String[] args) {
  */
 private void refreshBioModelAppLabel() {
 	if (getbioModelInfo()!=null && getappNameArr()!=null){
-		cbit.sql.Version bmVersion = getbioModelInfo().getVersion();
+		org.vcell.util.document.Version bmVersion = getbioModelInfo().getVersion();
 		getBioModelAppLabel().setText(bmVersion.getName()+" "+bmVersion.getDate()+" App="+(getappNameArr().length == 1?getappNameArr()[0]:"Multi-Select"));
 	}else{
 		getBioModelAppLabel().setText("");
@@ -837,7 +837,7 @@ private void refreshBioModelAppLabel() {
 
 private void refreshMathModelAppLabel() {
 	if (getMathModelInfo()!=null){
-		cbit.sql.Version bmVersion = getMathModelInfo().getVersion();
+		org.vcell.util.document.Version bmVersion = getMathModelInfo().getVersion();
 		getMathmodelLabel().setText(getMathModelInfo().getVersion().getName());
 	}else{
 		getMathmodelLabel().setText("");
@@ -868,7 +868,7 @@ public void resetTextFields() {
  * Comment
  */
 private void selectBMApp() {
-	cbit.vcell.biomodel.BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
+	org.vcell.util.document.BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
 	if (bmInfo != null) {
 		getBioModelAppLabel().setText(bmInfo.getVersion().getName());
 		String simContextNames[] = bmInfo.getBioModelChildSummary().getSimulationContextNames();
@@ -904,7 +904,7 @@ private void selectBMApp() {
  * Comment
  */
 private void selectMathModel(java.awt.event.ActionEvent actionEvent) {
-	cbit.vcell.mathmodel.MathModelInfo mmInfo = getTestingFrameworkWindowManager().selectMathModelInfo();
+	org.vcell.util.document.MathModelInfo mmInfo = getTestingFrameworkWindowManager().selectMathModelInfo();
 	if (mmInfo != null) {
 		getMathmodelLabel().setText(mmInfo.getVersion().getName());
 		setMathModelInfo(mmInfo);
@@ -943,7 +943,7 @@ private void setappNameArr(java.lang.String[] newValue) {
  * @param newValue cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbioModelInfo(cbit.vcell.biomodel.BioModelInfo newValue) {
+private void setbioModelInfo(org.vcell.util.document.BioModelInfo newValue) {
 	if (ivjbioModelInfo != newValue) {
 		try {
 			ivjbioModelInfo = newValue;
@@ -968,8 +968,8 @@ private void setbioModelInfo(cbit.vcell.biomodel.BioModelInfo newValue) {
  * @param mathModelInfo The new value for the property.
  * @see #getMathModelInfo
  */
-private void setMathModelInfo(cbit.vcell.mathmodel.MathModelInfo mathModelInfo) {
-	cbit.vcell.mathmodel.MathModelInfo oldValue = fieldMathModelInfo;
+private void setMathModelInfo(org.vcell.util.document.MathModelInfo mathModelInfo) {
+	org.vcell.util.document.MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
 	refreshMathModelAppLabel();

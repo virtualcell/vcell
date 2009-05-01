@@ -11,20 +11,20 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VersionableType;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
-import cbit.sql.UserInfo;
-import cbit.sql.VersionableType;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.xml.XmlParseException;
 /**

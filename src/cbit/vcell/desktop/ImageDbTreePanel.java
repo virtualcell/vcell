@@ -7,7 +7,6 @@ package cbit.vcell.desktop;
 import cbit.image.VCImageInfo;
 import java.awt.Image;
 import cbit.vcell.clientdb.DatabaseEvent;
-import cbit.sql.VersionInfo;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
@@ -19,6 +18,7 @@ import javax.swing.*;
 
 import org.vcell.util.Matchable;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -32,10 +32,10 @@ public class ImageDbTreePanel extends JPanel implements cbit.vcell.clientdb.Data
 	private JScrollPane ivjJScrollPane1 = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
-	private cbit.sql.VersionInfo fieldSelectedVersionInfo = null;
+	private org.vcell.util.document.VersionInfo fieldSelectedVersionInfo = null;
 	private VariableHeightLayoutCache ivjLocalSelectionModelVariableHeightLayoutCache = null;
 	private boolean ivjConnPtoP5Aligning = false;
-	private cbit.sql.VersionInfo ivjselectedVersionInfo1 = null;
+	private org.vcell.util.document.VersionInfo ivjselectedVersionInfo1 = null;
 	private JPopupMenu ivjJPopupMenu1 = null;
 	private JMenuItem ivjJMenuItemDelete = null;
 	protected transient ActionListener aActionListener = null;
@@ -96,7 +96,7 @@ private void actionsOnClick(MouseEvent mouseEvent) {
 		getJTree1().setSelectionPath(tp);
 		
 		if(getSelectedVersionInfo() != null){
-			cbit.sql.Version version = getSelectedVersionInfo().getVersion();
+			org.vcell.util.document.Version version = getSelectedVersionInfo().getVersion();
 			getJMenuItemDelete().setEnabled(version.getOwner().equals(getDocumentManager().getUser()));
 			getJPopupMenu1().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 		}
@@ -322,7 +322,7 @@ private void connEtoM4() {
  * @param value cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.sql.VersionInfo value) {
+private void connEtoM6(org.vcell.util.document.VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -823,7 +823,7 @@ private javax.swing.tree.VariableHeightLayoutCache getLocalSelectionModelVariabl
  * @return The selectedVersionInfo property value.
  * @see #setSelectedVersionInfo
  */
-public cbit.sql.VersionInfo getSelectedVersionInfo() {
+public org.vcell.util.document.VersionInfo getSelectedVersionInfo() {
 	return fieldSelectedVersionInfo;
 }
 /**
@@ -831,7 +831,7 @@ public cbit.sql.VersionInfo getSelectedVersionInfo() {
  * @return cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.sql.VersionInfo getselectedVersionInfo1() {
+private org.vcell.util.document.VersionInfo getselectedVersionInfo1() {
 	// user code begin {1}
 	// user code end
 	return ivjselectedVersionInfo1;
@@ -1089,8 +1089,8 @@ public void setLatestVersionOnly(boolean arg1) {
  * @param selectedVersionInfo The new value for the property.
  * @see #getSelectedVersionInfo
  */
-private void setSelectedVersionInfo(cbit.sql.VersionInfo selectedVersionInfo) {
-	cbit.sql.VersionInfo oldValue = fieldSelectedVersionInfo;
+private void setSelectedVersionInfo(org.vcell.util.document.VersionInfo selectedVersionInfo) {
+	org.vcell.util.document.VersionInfo oldValue = fieldSelectedVersionInfo;
 	fieldSelectedVersionInfo = selectedVersionInfo;
 	firePropertyChange("selectedVersionInfo", oldValue, selectedVersionInfo);
 }
@@ -1099,10 +1099,10 @@ private void setSelectedVersionInfo(cbit.sql.VersionInfo selectedVersionInfo) {
  * @param newValue cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setselectedVersionInfo1(cbit.sql.VersionInfo newValue) {
+private void setselectedVersionInfo1(org.vcell.util.document.VersionInfo newValue) {
 	if (ivjselectedVersionInfo1 != newValue) {
 		try {
-			cbit.sql.VersionInfo oldValue = getselectedVersionInfo1();
+			org.vcell.util.document.VersionInfo oldValue = getselectedVersionInfo1();
 			ivjselectedVersionInfo1 = newValue;
 			connEtoM6(ivjselectedVersionInfo1);
 			firePropertyChange("selectedVersionInfo", oldValue, newValue);

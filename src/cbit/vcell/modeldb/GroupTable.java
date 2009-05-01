@@ -38,10 +38,10 @@ public static final String getCreateGroupPrivateSQL(KeyValue key) {
 	boolean isHiddenFromOwner = false;
 	String sql = "INSERT INTO "+GroupTable.table.getTableName()+
 			" VALUES ("+key.toString()+","+
-						cbit.vcell.server.GroupAccess.GROUPACCESS_NONE+","+	//groupID
+						org.vcell.util.document.GroupAccess.GROUPACCESS_NONE+","+	//groupID
 						UserTable.VOID_ID+","+								//userRef
 						(isHiddenFromOwner?"1":"0")+","+					//hiddenFromOwner
-						cbit.vcell.server.GroupAccess.GROUPACCESS_NONE+")";	//hash
+						org.vcell.util.document.GroupAccess.GROUPACCESS_NONE+")";	//hash
 	return sql;
 }
 /**
@@ -53,10 +53,10 @@ public static final String getCreateGroupPublicSQL(KeyValue key) {
 	boolean isHiddenFromOwner = false;
 	String sql = "INSERT INTO "+cbit.vcell.modeldb.GroupTable.table.getTableName()+
 			" VALUES ("+key.toString()+","+
-						cbit.vcell.server.GroupAccess.GROUPACCESS_ALL+","+	//groupID
+						org.vcell.util.document.GroupAccess.GROUPACCESS_ALL+","+	//groupID
 						UserTable.VOID_ID+","+								//userRef
 						(isHiddenFromOwner?"1":"0")+","+					//hiddenFromOwner
-						cbit.vcell.server.GroupAccess.GROUPACCESS_ALL+")";	//hash
+						org.vcell.util.document.GroupAccess.GROUPACCESS_ALL+")";	//hash
 	return sql;
 }
 }

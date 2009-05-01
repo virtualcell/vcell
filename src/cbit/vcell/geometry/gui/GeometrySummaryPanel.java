@@ -613,7 +613,7 @@ public java.lang.String getGeometryVersionString(Geometry geometry) {
 	}else if (geometry.getVersion()==null){
 		return "Unsaved";
 	}else{
-		cbit.sql.Version version = geometry.getVersion();
+		org.vcell.util.document.Version version = geometry.getVersion();
 		return version.getName()+" ("+version.getDate()+")";
 	}
 }

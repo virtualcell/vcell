@@ -5,13 +5,14 @@ import java.io.StringWriter;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.SimulationVersion;
 
-import cbit.sql.SimulationVersion;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MathMapping;
@@ -19,7 +20,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;

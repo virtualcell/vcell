@@ -3,11 +3,9 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.mathmodel.MathModel;
 import java.awt.Font;
 import java.math.BigDecimal;
-import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
@@ -23,7 +21,9 @@ import cbit.vcell.geometry.GeometryInfo;
 import javax.swing.*;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
  
 public class MathModelCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;
@@ -68,9 +68,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 			}else if(node.getUserObject() instanceof MathModelInfo){
 				MathModelInfo mathModelInfo = (MathModelInfo)node.getUserObject();
-				if(mathModelInfo.getVersion().getFlag().compareEqual(cbit.sql.VersionFlag.Archived)){
+				if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)){
 					component.setText("(Archived) "+component.getText());
-				}else if(mathModelInfo.getVersion().getFlag().compareEqual(cbit.sql.VersionFlag.Published)){
+				}else if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)){
 					component.setText("(Published) "+component.getText());
 				}
 			}

@@ -19,6 +19,9 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;

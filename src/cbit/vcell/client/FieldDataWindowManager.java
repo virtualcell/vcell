@@ -17,15 +17,17 @@ import javax.swing.ListSelectionModel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
-import cbit.sql.VersionableType;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.UserPreferences;
@@ -37,8 +39,6 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.SimulationInfo;
@@ -328,7 +328,7 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 
 	org.vcell.util.ReferenceQueryResult rqr =
 		getRequestManager().getDocumentManager().findReferences(rqs);
-	cbit.vcell.modeldb.VersionableTypeVersion[] dependants = null;
+	org.vcell.util.document.VersionableTypeVersion[] dependants = null;
 	Hashtable<VersionableTypeVersion,String[]> choices = new Hashtable<VersionableTypeVersion,String[]>();
 	boolean bDanglingReferences = false;
 	if(rqr != null){
@@ -339,7 +339,7 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 				boolean isBioModel = dependants[i].getVType().equals(VersionableType.BioModelMetaData);
 				boolean isTop = isBioModel || dependants[i].getVType().equals(VersionableType.MathModelMetaData);
 				if(isTop){
-					cbit.vcell.modeldb.VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
+					org.vcell.util.document.VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
 					for(int j=0;j<vrArr2.length;j+= 1){
 						if( (vrArr2[j].from() == dependants[i]) &&
 							vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){

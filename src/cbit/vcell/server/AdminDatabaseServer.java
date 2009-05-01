@@ -9,6 +9,7 @@ import java.rmi.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
 import cbit.vcell.messaging.admin.SimpleJobStatus;
@@ -91,7 +92,7 @@ SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobS
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-cbit.sql.UserInfo insertUserInfo(cbit.sql.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:30:21 PM)
@@ -106,7 +107,7 @@ SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJ
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-cbit.sql.UserInfo updateUserInfo(cbit.sql.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+org.vcell.util.document.UserInfo updateUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 
 void sendLostPassword(String userid) throws RemoteException,DataAccessException;
 void updateUserStat(String userID) throws RemoteException,DataAccessException;

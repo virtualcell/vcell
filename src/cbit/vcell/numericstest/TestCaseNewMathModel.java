@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import cbit.vcell.mathmodel.MathModelInfo;
+import org.vcell.util.document.MathModelInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/10/2004 9:55:10 AM)
@@ -18,7 +18,7 @@ public class TestCaseNewMathModel extends TestCaseNew {
  * @param argAnnot java.lang.String
  * @param argTestCriterias cbit.vcell.numericstest.TestCriteriaNew[]
  */
-public TestCaseNewMathModel(java.math.BigDecimal argTCKey, cbit.vcell.mathmodel.MathModelInfo argMMInfo, String argType, String argAnnot, cbit.vcell.numericstest.TestCriteriaNew[] argTestCriterias) {
+public TestCaseNewMathModel(java.math.BigDecimal argTCKey, org.vcell.util.document.MathModelInfo argMMInfo, String argType, String argAnnot, cbit.vcell.numericstest.TestCriteriaNew[] argTestCriterias) {
 	super(argTCKey,argMMInfo.getVersion(),argType,argAnnot, argTestCriterias);
 
 	mathModelInfo = argMMInfo;
@@ -27,7 +27,7 @@ public TestCaseNewMathModel(java.math.BigDecimal argTCKey, cbit.vcell.mathmodel.
  * Insert the method's description here.
  * Creation date: (11/10/2004 9:59:54 AM)
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo() {
+public org.vcell.util.document.MathModelInfo getMathModelInfo() {
 	return mathModelInfo;
 }
 }

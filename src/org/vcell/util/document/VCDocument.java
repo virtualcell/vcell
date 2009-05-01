@@ -1,4 +1,5 @@
-package cbit.vcell.document;
+package org.vcell.util.document;
+
 
 import cbit.image.VCImage;
 import cbit.sql.*;

@@ -11,6 +11,7 @@ import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;

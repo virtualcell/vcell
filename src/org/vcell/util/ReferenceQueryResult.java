@@ -1,6 +1,6 @@
 package org.vcell.util;
 
-import cbit.vcell.modeldb.VersionableFamily;
+import org.vcell.util.document.VersionableFamily;
 
 /**
  * Insert the type's description here.

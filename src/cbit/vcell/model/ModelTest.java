@@ -236,7 +236,7 @@ public static Model getExample_Bound() throws Exception {
 	double FRACTIONAL_VOLUME_CYTOSOL   = 0.15;
 	double SURFACE_TO_VOLUME_CYTOSOL   = 0.25;
 
-	cbit.sql.Version version = new cbit.sql.Version("boundModel",new org.vcell.util.document.User("frm",new org.vcell.util.document.KeyValue("227")));
+	org.vcell.util.document.Version version = new org.vcell.util.document.Version("boundModel",new org.vcell.util.document.User("frm",new org.vcell.util.document.KeyValue("227")));
 	Model model = new Model(version);
 
 	FormalSpeciesInfo fsi = null;

@@ -5,6 +5,9 @@ import cbit.vcell.mathmodel.*;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.util.document.MathModelInfo;
+
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.*;

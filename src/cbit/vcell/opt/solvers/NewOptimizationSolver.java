@@ -383,15 +383,15 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 	//
 	// post the problem either as an IDA or CVODE model
 	//
-	cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
+	org.vcell.util.document.SimulationVersion simVersion = new org.vcell.util.document.SimulationVersion(
 			new KeyValue("12345"),
 			"name",
 			new org.vcell.util.document.User("user",new KeyValue("123")),
-			new cbit.vcell.server.GroupAccessNone(),
+			new org.vcell.util.document.GroupAccessNone(),
 			null, // versionBranchPointRef
 			new java.math.BigDecimal(1.0), // branchID
 			new java.util.Date(),
-			cbit.sql.VersionFlag.Archived,
+			org.vcell.util.document.VersionFlag.Archived,
 			"",
 			null);
 	Simulation simulation = new Simulation(simVersion,odeObjectiveFunction.getMathDescription());
@@ -456,15 +456,15 @@ public static Element getModelXML(PdeObjectiveFunction pdeObjectiveFunction, Str
 		//
 		// post the problem either as an IDA or CVODE model
 		//
-		cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
+		org.vcell.util.document.SimulationVersion simVersion = new org.vcell.util.document.SimulationVersion(
 				new KeyValue("12345"),
 				"name",
 				new org.vcell.util.document.User("user",new KeyValue("123")),
-				new cbit.vcell.server.GroupAccessNone(),
+				new org.vcell.util.document.GroupAccessNone(),
 				null, // versionBranchPointRef
 				new java.math.BigDecimal(1.0), // branchID
 				new java.util.Date(),
-				cbit.sql.VersionFlag.Archived,
+				org.vcell.util.document.VersionFlag.Archived,
 				"",
 				null);
 		Simulation simulation = new Simulation(simVersion,pdeObjectiveFunction.getMathDescription());

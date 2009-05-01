@@ -24,8 +24,14 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.ReferenceQueryResult;
 import org.vcell.util.ReferenceQuerySpec;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.VersionableRelationship;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -73,7 +79,7 @@ DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog, DBCacheTable argDBC
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-cbit.vcell.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
+org.vcell.util.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
 	return curate0(user,curateSpec,true);
 }
 
@@ -85,12 +91,12 @@ cbit.vcell.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throw
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-private cbit.vcell.document.VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
+private org.vcell.util.document.VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		cbit.vcell.document.VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,dbCacheTable);
+		org.vcell.util.document.VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,dbCacheTable);
 		con.commit();
 		return newVCDocumentInfo;
 	} catch (Throwable e) {
@@ -1188,7 +1194,7 @@ KeyValue insertVersionable(User user, VCImage vcImage, String name, boolean bVer
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,cbit.vcell.biomodel.BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,org.vcell.util.document.BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1348,7 +1354,7 @@ KeyValue insertVersionable(User user, MathDescription mathDescription, KeyValue 
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, cbit.vcell.mathmodel.MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, org.vcell.util.document.MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1653,7 +1659,7 @@ KeyValue updateVersionable(User user, VCImage vcImage, boolean bVersion, boolean
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, cbit.vcell.biomodel.BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, org.vcell.util.document.BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();
@@ -1813,7 +1819,7 @@ KeyValue updateVersionable(User user, MathDescription mathDescription, KeyValue 
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, cbit.vcell.mathmodel.MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, org.vcell.util.document.MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();

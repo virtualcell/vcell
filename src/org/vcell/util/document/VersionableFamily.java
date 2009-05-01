@@ -1,4 +1,4 @@
-package cbit.vcell.modeldb;
+package org.vcell.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -318,7 +318,7 @@ public VersionableTypeVersion[] getUniqueDependants() {
  * This method was created in VisualAge.
  * @return cbit.vcell.modeldb.VersionableTypeVersion[]
  */
-public VersionableTypeVersion[] getUniqueDependantsByType(cbit.sql.VersionableType vType) {
+public VersionableTypeVersion[] getUniqueDependantsByType(org.vcell.util.document.VersionableType vType) {
 	Vector ud = new Vector();
 	// Get "from" and "to" from all dependent realtionships and put them in a list
 	// making sure each VersionableRelationship appears only once

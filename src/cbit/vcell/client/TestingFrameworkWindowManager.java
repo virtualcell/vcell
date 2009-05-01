@@ -1,6 +1,5 @@
 package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataManager;
-import cbit.vcell.document.VCDocumentInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.gui.DialogUtils;
@@ -15,7 +14,6 @@ import javax.swing.ListSelectionModel;
 
 import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.data.DataViewer;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.biomodel.BioModel;
 
 import java.math.*;
@@ -50,9 +48,6 @@ import cbit.vcell.solver.SimulationInfo;
 import java.util.Vector;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.messaging.admin.ManageTableModel;
-import cbit.vcell.messaging.admin.sorttable.JSortTable;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
@@ -66,8 +61,13 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.gui.sorttable.JSortTable;
+import org.vcell.util.gui.sorttable.ManageTableModel;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -1714,7 +1714,7 @@ public boolean isRecyclable() {
  */
 public void loadModel(TestCaseNew testCase) throws DataAccessException{
 	
-	cbit.vcell.document.VCDocumentInfo vcDocInfo = null;
+	org.vcell.util.document.VCDocumentInfo vcDocInfo = null;
 	if (testCase instanceof TestCaseNewMathModel) {
 		TestCaseNewMathModel mathTestCase = (TestCaseNewMathModel)testCase;
 		vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(mathTestCase.getMathModelInfo().getVersion().getVersionKey());
@@ -1989,7 +1989,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRows[i], XREFDATA_OFFSET);
 						if(xrefData != null && (actionEvent.getActionCommand().equals(OPEN_REGRREFMODEL)?xrefData.regressionModelID != null:true)){
 							openCount+= 1;
-							cbit.vcell.document.VCDocumentInfo vcDocInfo = null;
+							org.vcell.util.document.VCDocumentInfo vcDocInfo = null;
 							if(xrefData.isBioModel){
 								vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(new KeyValue((actionEvent.getActionCommand().equals(OPEN_REGRREFMODEL)?xrefData.regressionModelID:xrefData.modelID)));
 							}else{

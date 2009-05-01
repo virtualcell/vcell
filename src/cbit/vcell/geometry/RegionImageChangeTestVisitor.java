@@ -7,11 +7,12 @@ import java.util.Vector;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 
 import com.sun.java_cup.internal.lexer;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
@@ -30,7 +31,6 @@ import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.parser.ExpressionException;

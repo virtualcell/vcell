@@ -11,12 +11,12 @@ import java.io.*;
 
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.ODEStateVariable;
 import cbit.vcell.parser.*;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.*;
 /**
  * Insert the type's description here.

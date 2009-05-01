@@ -3,9 +3,10 @@ package cbit.vcell.server.test;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.document.BioModelInfo;
+
 import cbit.vcell.model.*;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.util.*;
 /**
