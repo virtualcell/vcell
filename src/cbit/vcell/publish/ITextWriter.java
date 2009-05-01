@@ -17,9 +17,6 @@ import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
-import cbit.util.Extent;
-import cbit.util.ISize;
-import cbit.util.Origin;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -57,6 +54,10 @@ import com.lowagie.text.Watermark;
 import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
+
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 
 /**
 This is the root class that handles publishing of models in the Virtual Cell. It supports the publishing of BioModels, MathModels, 
@@ -402,7 +403,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		// Getting rid of species so that the image created will not have a problem being added to the document
 		// when there are more than 15 species in the model.
 		Model sparseModel = new Model(model.getName());
-		Structure[] oldStructures = (Structure[])cbit.util.BeanUtils.cloneSerializable(model.getStructures());
+		Structure[] oldStructures = (Structure[])org.vcell.util.BeanUtils.cloneSerializable(model.getStructures());
 		sparseModel.setStructures(oldStructures);
 		 
 		StructureCartoon scartoon = new StructureCartoon();

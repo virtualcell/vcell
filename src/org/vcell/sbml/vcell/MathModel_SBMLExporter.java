@@ -14,8 +14,8 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.libsbml;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.TokenMangler;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;

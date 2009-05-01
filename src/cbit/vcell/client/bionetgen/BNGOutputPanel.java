@@ -3,9 +3,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.gui.DialogUtils;
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.util.BeanUtils;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Parameter;
@@ -744,8 +745,8 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 				fwdProductsVector.addElement(rps[j].getSpeciesContext());
 			}
 		}
-		SpeciesContext[] fwdReactants = (SpeciesContext[])cbit.util.BeanUtils.getArray(fwdReactantsVector, SpeciesContext.class);
-		SpeciesContext[] fwdProducts = (SpeciesContext[])cbit.util.BeanUtils.getArray(fwdProductsVector, SpeciesContext.class);
+		SpeciesContext[] fwdReactants = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(fwdReactantsVector, SpeciesContext.class);
+		SpeciesContext[] fwdProducts = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(fwdProductsVector, SpeciesContext.class);
 
 		boolean bReverseReactionFound = false;
 

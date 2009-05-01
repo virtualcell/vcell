@@ -9,7 +9,6 @@ import cbit.vcell.xml.NameManager;
 import cbit.vcell.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.util.TokenMangler;
 import cbit.vcell.xml.XMLTags;
 
 import org.jdom.Comment;
@@ -17,6 +16,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
+import org.vcell.util.TokenMangler;
 
 import java.io.IOException;
 import java.util.ArrayList;

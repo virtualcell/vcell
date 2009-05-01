@@ -587,7 +587,7 @@ public BigString getMathModelXML(User user, org.vcell.util.document.KeyValue key
 /**
  * publish method comment.
  */
-public cbit.util.Preference[] getPreferences(User user) throws DataAccessException {
+public org.vcell.util.Preference[] getPreferences(User user) throws DataAccessException {
 	try {
 		log.print("DatabaseServerImpl.getPreferences(User="+user.getName()+")");
 		return dbTop.getPreferences(user,true);
@@ -1052,7 +1052,7 @@ void insertVersionableXML(User user, VersionableType vType,KeyValue vKey,String 
 /**
  * publish method comment.
  */
-public void replacePreferences(User user, cbit.util.Preference[] preferences) throws DataAccessException {
+public void replacePreferences(User user, org.vcell.util.Preference[] preferences) throws DataAccessException {
 	try {
 		log.print("DatabaseServerImpl.replacePreferences(User="+user.getName()+",preferenceCount="+preferences.length+")");
 		dbTop.replacePreferences(user,preferences,true);

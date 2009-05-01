@@ -60,19 +60,19 @@ public String getSQLValueList(String argUserid, java.util.Date argDate, String a
 	buffer.append(Table.NewSEQ + ",");
 	buffer.append("(SELECT id from "+UserTable.table.getTableName()+" where "+UserTable.table.userid.getUnqualifiedColName()+" = '"+argUserid+"')" + ",");
 	buffer.append(VersionTable.formatDateToOracle(argDate) + ",");
-	buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(argText,255)+"'"+",");
+	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(argText,255)+"'"+",");
 	if (argFilePath!=null){
-		buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(argFilePath,255)+"'"+",");
+		buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(argFilePath,255)+"'"+",");
 	}else{
 		buffer.append("null,");
 	}
-	buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(argEventType,10)+"'"+",");
+	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(argEventType,10)+"'"+",");
 	if (argSWVersion!=null){
-		buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(argSWVersion,10)+"'"+",");
+		buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(argSWVersion,10)+"'"+",");
 	}else{
 		buffer.append("null,");
 	}
-	buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(argIPAddress,40)+"'");	
+	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(argIPAddress,40)+"'");	
 	buffer.append(")");
 	
 	return buffer.toString();

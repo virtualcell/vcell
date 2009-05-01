@@ -18,8 +18,8 @@ import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.TokenMangler;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MembraneMapping;
@@ -182,7 +182,7 @@ protected void addCompartments() {
 			sbmlCompartment.setSpatialDimensions(2);
 			sbmlCompartment.setOutside(TokenMangler.mangleToSName(vcMembrane.getOutsideFeature().getName()));
 			sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
-			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
+			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
 
 		StructureMapping vcStructMapping = getOverriddenSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
@@ -273,7 +273,7 @@ private void addKineticAndGlobalParameterUnits(ArrayList<String> unitsList) {
 		if (paramUnitDefn == null || paramUnitDefn.isTBD()) {
 			continue;
 		}
-		String unitSymbol = cbit.util.TokenMangler.mangleToSName(paramUnitDefn.getSymbol());
+		String unitSymbol = org.vcell.util.TokenMangler.mangleToSName(paramUnitDefn.getSymbol());
 		// If this unit is present in the unitsList (already in the list of unitDefinitions for SBML model), continue.
 		if (unitSymbol == null || unitsList.contains(unitSymbol)) {
 			continue;
@@ -380,7 +380,7 @@ protected void addReactions() {
 		//Create sbml reaction
 		String rxnName = vcReactionStep.getName();
 		org.sbml.libsbml.Reaction sbmlReaction = sbmlModel.createReaction();
-		sbmlReaction.setId(cbit.util.TokenMangler.mangleToSName(rxnName));
+		sbmlReaction.setId(org.vcell.util.TokenMangler.mangleToSName(rxnName));
 		sbmlReaction.setName(rxnName);
 			
 		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
@@ -414,7 +414,7 @@ protected void addReactions() {
 			if (vcRxnKinetics instanceof DistributedKinetics) {
 				// If DistributedKinetics, multiply by compartmentSize & divide by KMOLE to convert to molecules/sec for feature reaction and membrane flux
 				// for membrane reaction, we just need to multiply by compartmentSize to convert units to molecules/sec. 
-				Compartment sbmlCompartment = sbmlModel.getCompartment(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
+				Compartment sbmlCompartment = sbmlModel.getCompartment(org.vcell.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
 				correctedRateExpr = Expression.mult(((DistributedKinetics)vcRxnKinetics).getReactionRateParameter().getExpression(), new Expression(sbmlCompartment.getId()));
 				if ( (vcReactionStep.getStructure() instanceof Feature) || ((vcReactionStep.getStructure() instanceof Membrane) && (vcReactionStep instanceof FluxReaction)) ) {
 					correctedRateExpr = Expression.mult(correctedRateExpr, Expression.invert(new Expression("KMOLE")));
@@ -744,7 +744,7 @@ protected void addSpecies() {
 		Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 		Element vcellInfoTag = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
 		Element speciesElement = new Element(XMLTags.SpeciesTag, sbml_vcml_ns);
-		speciesElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
+		speciesElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
 		vcellInfoTag.addContent(speciesElement);
 		annotationElement.addContent(vcellInfoTag);
 		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
@@ -821,9 +821,9 @@ protected void addUnitDefinitions() {
 
 	// Add units from paramater list in kinetics
 	ArrayList<String> unitList = new ArrayList<String>();
-	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
-	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_um3_per_L.getSymbol()));
-	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_um3_per_L.getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
 	addKineticAndGlobalParameterUnits(unitList);
 }
 
@@ -1039,7 +1039,7 @@ public String getSBMLFile() {
 	// Obtain the overrides from simulation, check which type of parameter and set the expression from mathOverrides object
 	//
 	try {
-		SimulationContext clonedSimContext = (SimulationContext)cbit.util.BeanUtils.cloneSerializable(getSelectedSimContext());
+		SimulationContext clonedSimContext = (SimulationContext)org.vcell.util.BeanUtils.cloneSerializable(getSelectedSimContext());
 		if (getSelectedSimulation() != null && getSelectedSimulation().getMathOverrides().hasOverrides()) {
 			// need to clone simContext and apply overrides before proceeding.
 			clonedSimContext.getModel().refreshDependencies();
@@ -1111,20 +1111,20 @@ public String getSBMLFile() {
 		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 		Element vcellInfoElement = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
 		Element biomodelElement = new Element(XMLTags.BioModelTag, sbml_vcml_ns);
-		biomodelElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(vcBioModel.getName())); 
+		biomodelElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(vcBioModel.getName())); 
 		if (vcBioModel.getVersion() != null) {
 			biomodelElement.setAttribute(XMLTags.KeyValueAttrTag, vcBioModel.getVersion().getVersionKey().toString());
 		}
 		vcellInfoElement.addContent(biomodelElement);
 		Element simSpecElement = new Element(XMLTags.SimulationSpecTag, sbml_vcml_ns);
-		simSpecElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(getSelectedSimContext().getName()));
+		simSpecElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(getSelectedSimContext().getName()));
 		if (getSelectedSimContext().getVersion() != null) {
 			simSpecElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimContext().getVersion().getVersionKey().toString());
 		}
 		vcellInfoElement.addContent(simSpecElement);
 		if (getSelectedSimulation() != null) {
 			Element simElement = new Element(XMLTags.SimulationTag, sbml_vcml_ns);
-			simElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(getSelectedSimulation().getName()));
+			simElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(getSelectedSimulation().getName()));
 			if (getSelectedSimulation().getVersion() != null) {
 				simElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimulation().getVersion().getVersionKey().toString());
 			}

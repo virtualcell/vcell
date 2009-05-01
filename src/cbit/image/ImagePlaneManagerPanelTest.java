@@ -1,5 +1,5 @@
 package cbit.image;
-import cbit.util.Range;
+import org.vcell.util.Range;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

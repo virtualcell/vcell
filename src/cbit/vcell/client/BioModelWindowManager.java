@@ -515,7 +515,7 @@ private void setJDesktopPane(javax.swing.JDesktopPane newJDesktopPane) {
  */
 public void showApplicationFrame(SimulationContext simContext) {
 	try {
-		cbit.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		if (! getApplicationsHash().containsKey(simContext)) {
 			// create components
 			createAppComponents(simContext);
@@ -523,7 +523,7 @@ public void showApplicationFrame(SimulationContext simContext) {
 		JInternalFrameEnhanced editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getAppEditorFrame();
 		showFrame(editorFrame);
 	} finally {	
-		cbit.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 }
 

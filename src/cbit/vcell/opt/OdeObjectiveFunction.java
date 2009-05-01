@@ -38,7 +38,7 @@ public OdeObjectiveFunction(MathDescription argMathDescription, ReferenceData ar
  * Creation date: (8/3/2005 1:17:52 PM)
  * @param tokens cbit.vcell.math.CommentStringTokenizer
  */
-public static OdeObjectiveFunction fromVCML(cbit.util.CommentStringTokenizer tokens) throws DataAccessException {
+public static OdeObjectiveFunction fromVCML(org.vcell.util.CommentStringTokenizer tokens) throws DataAccessException {
 	try {
 		String token = tokens.nextToken();
 		if (!token.equalsIgnoreCase("{")){

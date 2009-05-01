@@ -2,9 +2,6 @@ package cbit.vcell.field;
 
 import javax.swing.JPanel;
 
-import cbit.util.BeanUtils;
-import cbit.util.Extent;
-import cbit.util.Origin;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.UserCancelException;
 
@@ -25,6 +22,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.Font;
 import javax.swing.BorderFactory;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+
 import java.awt.Color;
 
 public class FieldDataInfoPanel extends JPanel {
@@ -167,7 +169,7 @@ public void setAnnotation(String newAnnotation){
 
 
 public Extent getExtent(){
-	return 	new cbit.util.Extent(
+	return 	new org.vcell.util.Extent(
 			Double.parseDouble(getXMicronJTextField().getText()),
 			Double.parseDouble(getYMicronJTextField().getText()),
 			Double.parseDouble(getZMicronJTextField().getText())
@@ -734,7 +736,7 @@ private javax.swing.JLabel getMicronJLabel1() {
 
 
 public Origin getOrigin(){
-	return new cbit.util.Origin(
+	return new org.vcell.util.Origin(
 			Double.parseDouble(getXOriginJTextField1().getText()),
 			Double.parseDouble(getYOriginJTextField1().getText()),
 			Double.parseDouble(getZOriginJTextField1().getText())
@@ -1184,7 +1186,7 @@ public void initNames(String argFieldName,String[] argVarNames){
  * Insert the method's description here.
  * Creation date: (3/18/2007 2:03:43 PM)
  */
-public void initISize(cbit.util.ISize isize) {
+public void initISize(org.vcell.util.ISize isize) {
 	
 	getPixelSizeXJLabel().setText(isize.getX()+"");
 	getPixelSizeYJLabel().setText(isize.getY()+"");

@@ -4,8 +4,10 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import java.awt.Color;
+
+import org.vcell.util.Range;
+
 import cbit.vcell.simdata.gui.DisplayPreferences;
-import cbit.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (10/3/00 6:07:06 PM)

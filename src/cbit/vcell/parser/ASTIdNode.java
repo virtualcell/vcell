@@ -5,7 +5,8 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import cbit.util.TokenMangler;
+import org.vcell.util.TokenMangler;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTIdNode extends SimpleNode {
@@ -271,11 +272,11 @@ public String infixString(int lang, NameScope nameScope) {
 	} else if (lang == LANGUAGE_C){
 		return TokenMangler.getEscapedLocalVariableName_C(idName);
 	} else if (lang == LANGUAGE_MATLAB){	
-		return cbit.util.TokenMangler.getEscapedTokenMatlab(idName);
+		return org.vcell.util.TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
-		return cbit.util.TokenMangler.getEscapedTokenJSCL(idName);
+		return org.vcell.util.TokenMangler.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
-		return cbit.util.TokenMangler.getEscapedTokenECLiPSe(idName);
+		return org.vcell.util.TokenMangler.getEscapedTokenECLiPSe(idName);
 	}else{
 		throw new RuntimeException("Lanaguage '"+lang+" not supported");
 	}

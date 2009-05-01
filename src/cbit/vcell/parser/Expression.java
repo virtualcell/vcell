@@ -1,6 +1,5 @@
 package cbit.vcell.parser;
 
-import cbit.util.CommentStringTokenizer;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
@@ -11,6 +10,7 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 import java.io.*;
 import java.util.*;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
 
 import net.sourceforge.interval.ia_math.*;

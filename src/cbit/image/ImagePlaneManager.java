@@ -4,9 +4,10 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Extent;
+
 import cbit.vcell.math.CoordinateIndex;
 import cbit.vcell.geometry.Coordinate;
-import cbit.util.Extent;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 10:14:12 AM)
@@ -346,7 +347,7 @@ private void updateImagePlaneData() {
 	int startIndex = getSourceDataInfo().getStartIndex();
 	SourceDataInfo sdiSource = getSourceDataInfo();
 	//
-	cbit.util.Origin org = sdiSource.getOrigin();
+	org.vcell.util.Origin org = sdiSource.getOrigin();
 	Extent ext = sdiSource.getExtent();
 	//
 	int startDelta = worldSlice() * (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.Z_AXIS,getNormalAxis()) ;

@@ -7,6 +7,8 @@ package cbit.vcell.math;
 import java.util.*;
 import java.io.*;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 

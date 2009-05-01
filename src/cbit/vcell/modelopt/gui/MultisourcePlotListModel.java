@@ -150,7 +150,7 @@ private void refreshAll() {
 			}
 		}
 	}
-	setContents((dataReferenceList.size() > 0?cbit.util.BeanUtils.getArray(dataReferenceList,DataReference.class):null));
+	setContents((dataReferenceList.size() > 0?org.vcell.util.BeanUtils.getArray(dataReferenceList,DataReference.class):null));
 }
 
 

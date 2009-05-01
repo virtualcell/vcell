@@ -5,7 +5,8 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.*;
 
-import cbit.util.TokenMangler;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
@@ -82,7 +83,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 		}
 	}
 
-	return (Variable[])cbit.util.BeanUtils.getArray(uniqueVarList,Variable.class);
+	return (Variable[])org.vcell.util.BeanUtils.getArray(uniqueVarList,Variable.class);
 }
 
 

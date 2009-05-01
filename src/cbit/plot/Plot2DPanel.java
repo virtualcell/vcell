@@ -7,6 +7,11 @@ import java.awt.event.*;
 import java.awt.*;
 
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+import org.vcell.util.Range;
+
 import java.awt.geom.*;
 import java.text.*;
 import java.util.Arrays;

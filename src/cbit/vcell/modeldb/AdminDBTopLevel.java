@@ -215,7 +215,7 @@ SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnabl
 			if (v.isEmpty()) {
 				simStatuses[i] = null;
 			} else {
-				simStatuses[i] = new SimulationStatus((SimulationJobStatus[])cbit.util.BeanUtils.getArray(v, SimulationJobStatus.class));
+				simStatuses[i] = new SimulationStatus((SimulationJobStatus[])org.vcell.util.BeanUtils.getArray(v, SimulationJobStatus.class));
 			}
 		}
 		return simStatuses;

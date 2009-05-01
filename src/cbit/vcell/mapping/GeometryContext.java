@@ -8,6 +8,7 @@ import java.util.*;
 import java.beans.*;
 import java.io.Serializable;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 

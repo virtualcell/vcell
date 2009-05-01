@@ -1,6 +1,6 @@
 package cbit.vcell.math;
 
-import cbit.util.CommentStringTokenizer;
+import org.vcell.util.CommentStringTokenizer;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

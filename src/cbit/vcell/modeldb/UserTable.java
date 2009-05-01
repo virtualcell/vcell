@@ -6,10 +6,10 @@ package cbit.vcell.modeldb;
 ©*/
 import java.sql.*;
 
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
-import cbit.util.TokenMangler;
 /**
  * This type was created in VisualAge.
  */

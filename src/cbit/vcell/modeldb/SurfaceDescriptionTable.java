@@ -1,5 +1,4 @@
 package cbit.vcell.modeldb;
-import cbit.util.ISize;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -7,6 +6,7 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 ©*/
 import java.sql.*;
 
+import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.server.SessionLog;
@@ -50,7 +50,7 @@ public String getSQLValueList(KeyValue key, GeometrySurfaceDescription geometryS
 	buffer.append("(");
 	buffer.append(key + ",");
 	buffer.append(geomKey + ",");
-	cbit.util.ISize sampleSize = geometrySurfaceDescription.getVolumeSampleSize();
+	org.vcell.util.ISize sampleSize = geometrySurfaceDescription.getVolumeSampleSize();
 	if (sampleSize==null){
 		throw new DataAccessException("sampleSize is null in GeometrySurfaceDescription, cannot save");
 	}

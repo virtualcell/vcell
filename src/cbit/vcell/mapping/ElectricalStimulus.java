@@ -3,6 +3,9 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.model.ModelException;
 import java.util.Vector;
 import java.beans.PropertyVetoException;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.model.BioNameScope;
@@ -12,7 +15,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.util.BeanUtils;
 import cbit.vcell.model.VCMODL;
 /**
  * Insert the type's description here.
@@ -32,7 +34,7 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cb
 			return children;
 		}
 		public String getName() {
-			return cbit.util.TokenMangler.fixTokenStrict(ElectricalStimulus.this.getName());
+			return org.vcell.util.TokenMangler.fixTokenStrict(ElectricalStimulus.this.getName());
 		}
 		public cbit.vcell.parser.NameScope getParent() {
 			return ElectricalStimulus.this.simulationContext.getNameScope();
@@ -836,7 +838,7 @@ private boolean isReferenced(Parameter parm, int level) throws ExpressionExcepti
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public final void parameterVCMLSet(cbit.util.CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
+public final void parameterVCMLSet(org.vcell.util.CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
 
 	if(tokens == null){
 		return;

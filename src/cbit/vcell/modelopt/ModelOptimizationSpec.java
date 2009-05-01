@@ -309,7 +309,7 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 				}
 			}
 			if (!bHasStateVariables){
-				spanningTrees = (cbit.util.graph.Tree[])cbit.util.BeanUtils.removeElement(spanningTrees,spanningTrees[i]);
+				spanningTrees = (cbit.util.graph.Tree[])org.vcell.util.BeanUtils.removeElement(spanningTrees,spanningTrees[i]);
 				i--;
 			}
 		}
@@ -337,7 +337,7 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 		throw new RuntimeException(e.getMessage());
 	}
 	
-	cbit.vcell.model.Parameter[] modelParameters = (cbit.vcell.model.Parameter[])cbit.util.BeanUtils.getArray(modelParameterList,cbit.vcell.model.Parameter.class);
+	cbit.vcell.model.Parameter[] modelParameters = (cbit.vcell.model.Parameter[])org.vcell.util.BeanUtils.getArray(modelParameterList,cbit.vcell.model.Parameter.class);
 	return modelParameters;
 }
 
@@ -455,7 +455,7 @@ private void initializeParameterMappingSpecs() throws cbit.vcell.parser.Expressi
 	java.util.Vector issueList = new java.util.Vector();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
-	org.vcell.util.Issue[] issues = (org.vcell.util.Issue[])cbit.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
+	org.vcell.util.Issue[] issues = (org.vcell.util.Issue[])org.vcell.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
 	
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		parameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);

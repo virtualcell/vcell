@@ -278,7 +278,7 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 				userList.add(allUsers[i]);
 			}
 		}
-		User users[] = (User[])cbit.util.BeanUtils.getArray(userList,User.class);
+		User users[] = (User[])org.vcell.util.BeanUtils.getArray(userList,User.class);
 
 		//
 		// Redirect output to the logfile (append if exists)

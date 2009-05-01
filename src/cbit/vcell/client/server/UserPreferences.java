@@ -3,6 +3,9 @@ package cbit.vcell.client.server;
 import cbit.util.*;
 import java.util.*;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Preference;
+
 /**
 User preferences, for now, fall under two different categories: warning messages and general preferences. 
 Consider doing the following: (09/02/04):

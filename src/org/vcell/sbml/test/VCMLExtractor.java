@@ -12,9 +12,9 @@ import org.sbml.libsbml.OStream;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.XMLOutputStream;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.util.CommentStringTokenizer;
 
 import cbit.sql.VersionableType;
-import cbit.util.CommentStringTokenizer;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;

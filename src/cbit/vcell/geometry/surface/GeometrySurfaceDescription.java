@@ -11,7 +11,7 @@ import cbit.vcell.geometry.*;
 public class GeometrySurfaceDescription implements org.vcell.util.Matchable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.util.ISize fieldVolumeSampleSize = null;
+	private org.vcell.util.ISize fieldVolumeSampleSize = null;
 	private java.lang.Double fieldFilterCutoffFrequency = null;
 	private transient cbit.vcell.geometry.RegionImage fieldRegionImage = null;
 	private transient SurfaceCollection fieldSurfaceCollection = null;
@@ -39,7 +39,7 @@ public GeometrySurfaceDescription(cbit.vcell.geometry.Geometry geometry) {
 	//
 	// set default volumeSampling
 	//
-	cbit.util.ISize sampleSize = geometry.getGeometrySpec().getDefaultSampledImageSize();
+	org.vcell.util.ISize sampleSize = geometry.getGeometrySpec().getDefaultSampledImageSize();
 	//if (geometry.getGeometrySpec().getImage()!=null){
 		//VCImage image = geometry.getGeometrySpec().getImage();
 		//sampleSize = new cbit.util.ISize(image.getNumX(),image.getNumY(),image.getNumZ());
@@ -304,7 +304,7 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  * @return The volumeSampleSize property value.
  * @see #setVolumeSampleSize
  */
-public cbit.util.ISize getVolumeSampleSize() {
+public org.vcell.util.ISize getVolumeSampleSize() {
 	return fieldVolumeSampleSize;
 }
 
@@ -324,8 +324,8 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource()==this && evt.getPropertyName().equals("volumeSampleSize")){
-		cbit.util.ISize oldValue = (cbit.util.ISize)evt.getOldValue();
-		cbit.util.ISize newValue = (cbit.util.ISize)evt.getNewValue();
+		org.vcell.util.ISize oldValue = (org.vcell.util.ISize)evt.getOldValue();
+		org.vcell.util.ISize newValue = (org.vcell.util.ISize)evt.getNewValue();
 		if (!oldValue.compareEqual(newValue)){
 			try {
 				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
@@ -561,20 +561,20 @@ private void setSurfaceCollection(SurfaceCollection surfaceCollection) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getVolumeSampleSize
  */
-public void setVolumeSampleSize(cbit.util.ISize volumeSampleSize) throws java.beans.PropertyVetoException {
+public void setVolumeSampleSize(org.vcell.util.ISize volumeSampleSize) throws java.beans.PropertyVetoException {
 	if (fieldVolumeSampleSize == volumeSampleSize) {
 		return;
 	}
 	
-	cbit.util.ISize oldValue = fieldVolumeSampleSize;
+	org.vcell.util.ISize oldValue = fieldVolumeSampleSize;
 	fireVetoableChange("volumeSampleSize", oldValue, volumeSampleSize);
 	
 	switch (fieldGeometry.getDimension()) {
 		case 1:
-			fieldVolumeSampleSize = new cbit.util.ISize(volumeSampleSize.getX(), 1, 1);
+			fieldVolumeSampleSize = new org.vcell.util.ISize(volumeSampleSize.getX(), 1, 1);
 			break;
 		case 2:
-			fieldVolumeSampleSize = new cbit.util.ISize(volumeSampleSize.getX(), volumeSampleSize.getY(), 1);
+			fieldVolumeSampleSize = new org.vcell.util.ISize(volumeSampleSize.getX(), volumeSampleSize.getY(), 1);
 			break;
 		case 3:
 			fieldVolumeSampleSize = volumeSampleSize;

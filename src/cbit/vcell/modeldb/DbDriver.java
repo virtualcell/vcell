@@ -6,7 +6,6 @@ package cbit.vcell.modeldb;
 import java.math.BigDecimal;
 import java.sql.*;
 import cbit.sql.*;
-import cbit.util.Preference;
 import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -22,6 +21,7 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.Hashtable;
 
+import org.vcell.util.Preference;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -726,7 +726,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 	} finally {
 		stmt.close();
 	}
-	return (KeyValue[])cbit.util.BeanUtils.getArray(keyList,KeyValue.class);
+	return (KeyValue[])org.vcell.util.BeanUtils.getArray(keyList,KeyValue.class);
 }
 
 
@@ -952,7 +952,7 @@ public static KeyValue getNewKey(Connection con) throws java.sql.SQLException {
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public static cbit.util.Preference[] getPreferences(Connection con, User user) throws SQLException {
+public static org.vcell.util.Preference[] getPreferences(Connection con, User user) throws SQLException {
 	
 	String sql =
 		"SELECT " + 
@@ -2038,7 +2038,7 @@ private static Version permissionInit(Connection con,VersionableType vType,KeyVa
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public static void replacePreferences(Connection con, User user, cbit.util.Preference[] preferences) throws SQLException {
+public static void replacePreferences(Connection con, User user, org.vcell.util.Preference[] preferences) throws SQLException {
 
 	String sql =
 		"DELETE FROM " +
@@ -2059,8 +2059,8 @@ public static void replacePreferences(Connection con, User user, cbit.util.Prefe
 		for (int i = 0; i < preferences.length; i++){
 			String key = preferences[i].getKey();
 			String value = preferences[i].getValue();
-			pstmt.setString(1,cbit.util.TokenMangler.getSQLEscapedString(key));
-			pstmt.setString(2,cbit.util.TokenMangler.getSQLEscapedString(value));
+			pstmt.setString(1,org.vcell.util.TokenMangler.getSQLEscapedString(key));
+			pstmt.setString(2,org.vcell.util.TokenMangler.getSQLEscapedString(value));
 			pstmt.executeUpdate();
 		}
 	}finally{
@@ -2264,7 +2264,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				reportStatusMessage = null;
 			}
 			if(reportStatusMessage != null && reportStatusMessage.length() > 0){
-				reportStatusMessage = cbit.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
+				reportStatusMessage = org.vcell.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
 			}
 			Vector v = (Vector)tcritH.get(tcaseRef);
 			if(v == null){
@@ -2392,7 +2392,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				reportStatusMessage = null;
 			}
 			if(reportStatusMessage != null && reportStatusMessage.length() > 0){
-				reportStatusMessage = cbit.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
+				reportStatusMessage = org.vcell.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
 			}
 			Vector v = (Vector)tcritH.get(tcaseRef);
 			if(v == null){
@@ -2544,7 +2544,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			if(rset.wasNull()){
 				tcAnnot = "";
 			}else{
-				tcAnnot = cbit.util.TokenMangler.getSQLRestoredString(tcAnnot);
+				tcAnnot = org.vcell.util.TokenMangler.getSQLRestoredString(tcAnnot);
 			}
 			java.util.Date tcDate = VersionTable.getDate(rset,TFTestCaseTable.table.creationDate.getUnqualifiedColName());
 
@@ -2719,7 +2719,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				if(annotation.length() == 0){
 					annotation = null;
 				}else{
-					annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+					annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 				}
 			}
 
@@ -2784,7 +2784,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			BigDecimal tcKey = keyFactory.getUniqueBigDecimal(con);
 			String annotation = addtc_tsop.getAnnotation();
 			if(annotation != null){
-				annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+				annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 			}
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
@@ -2811,7 +2811,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			KeyValue mmKey = addtc_tsop.getMathModelKey();
 			String annotation = addtc_tsop.getAnnotation();
 			if(annotation != null){
-				annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+				annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 			}
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
@@ -3177,7 +3177,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			}
 			String reportStatusMessage = edittcrit_tsop.getNewReportStatusMessage();
 			if(reportStatusMessage != null){
-				reportStatusMessage = cbit.util.TokenMangler.getSQLEscapedString(reportStatusMessage);
+				reportStatusMessage = org.vcell.util.TokenMangler.getSQLEscapedString(reportStatusMessage);
 				reportStatusMessage =
 					reportStatusMessage.substring(0,Math.min(TFTestCriteriaTable.MAX_MESSAGE_SIZE,reportStatusMessage.length()));
 			}
@@ -3375,7 +3375,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 						if(annotation.length() == 0){
 							annotation = null;
 						}else{
-							annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+							annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 						}
 					}
 					stmt.executeUpdate(
@@ -3456,7 +3456,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 						if(annotation.length() == 0){
 							annotation = null;
 						}else{
-							annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+							annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 						}
 					}
 					stmt.executeUpdate(
@@ -3785,7 +3785,7 @@ public static void updateAnnotation(Connection con,SessionLog newLog,User user,
 	if (!version.getOwner().compareEqual(user)){
 		throw new PermissionException("Cannot unpublish "+vType.getTypeName()+" \""+version.getName()+"\" ("+vKey+"), not owned by "+user.getName());
 	}
-	annot = cbit.util.TokenMangler.getSQLEscapedString(annot);
+	annot = org.vcell.util.TokenMangler.getSQLEscapedString(annot);
 	newLog.print("GeomDbDriver.updateAnnotation(user=" + user + ", key=" + vKey + "Annot="+annot+")");
 	VersionTable vTable = VersionTable.getVersionTable(vType);
 	String set = vTable.versionAnnot.getQualifiedColName() + " = " + "'" + annot + "'";
@@ -3970,7 +3970,7 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
 			results = null;
 		}else{
 			//Strings have to be SQL unmangled
-			results = cbit.util.TokenMangler.getSQLRestoredString(temp);
+			results = org.vcell.util.TokenMangler.getSQLRestoredString(temp);
 		}
 	}else{
 		//CLOBs do not have to be SQL unmangled
@@ -3990,7 +3990,7 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
  */
 public static boolean varchar2_CLOB_is_Varchar2_OK(String data) {
 
-	return (cbit.util.TokenMangler.getSQLEscapedString(data).length() <= ORACLE_VARCHAR2_SIZE_LIMIT);
+	return (org.vcell.util.TokenMangler.getSQLEscapedString(data).length() <= ORACLE_VARCHAR2_SIZE_LIMIT);
 	
 }
 
@@ -4033,7 +4033,7 @@ public static void varchar2_CLOB_update(
         sb.replace(
             marker_index,
             marker_index + INSERT_VARCHAR2_HERE.length(),
-            "'" + cbit.util.TokenMangler.getSQLEscapedString(data) + "'");
+            "'" + org.vcell.util.TokenMangler.getSQLEscapedString(data) + "'");
         updateCleanSQL(con, sb.toString());
     }else{
 	    throw new RuntimeException("Expected charchar2_CLOB Marker Not Found in sql");

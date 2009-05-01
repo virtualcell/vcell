@@ -5,7 +5,6 @@
 
 package cbit.vcell.solver.ode.gui;
 import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
@@ -32,6 +31,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+
+import org.vcell.util.BeanUtils;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:25 PM)
@@ -127,7 +128,7 @@ private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) t
 		getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec());
 	} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isUniform()){
 		TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
-		cbit.util.Range outputTimeRange = cbit.util.NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
+		org.vcell.util.Range outputTimeRange = org.vcell.util.NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
 		double outputTime = outputTimeRange.getMax();
 		getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 	} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isExplicit()){
@@ -1175,9 +1176,9 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(false);
 		getUniformOutputRadioButton().setEnabled(false);	
 		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		return;
 	}
 
@@ -1187,9 +1188,9 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(true);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), true);
 		if (solverTaskDescription.getOutputTimeSpec().isDefault()){
 			getKeepAtMostTextField().setEnabled(true);
 			getKeepEveryTextField().setEnabled(true);
@@ -1212,9 +1213,9 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(false);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		getKeepAtMostTextField().setEnabled(false);
 		getKeepEveryTextField().setEnabled(false);
 		getOutputTimeStepTextField().setEnabled(true);
@@ -1223,9 +1224,9 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		getKeepAtMostTextField().setEnabled(true);
 		getKeepEveryTextField().setEnabled(true);
 		getOutputTimeStepTextField().setEnabled(true);
@@ -1235,9 +1236,9 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		if (solverTaskDescription.getOutputTimeSpec().isDefault()){
 			getKeepAtMostTextField().setText("");
 			getKeepAtMostTextField().setEnabled(false);
@@ -1254,9 +1255,9 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(false);	
 		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		if (solverDesc.equals(SolverDescription.FiniteVolume)
 			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
 			getKeepAtMostLabel().setEnabled(false);
@@ -2940,7 +2941,7 @@ private void solverTaskDescriptionAdvancedPanel_Initialize() {
 	//trial radio button group
 	getButtonGroupTrials().add(getTrajectoryButton());
 	getButtonGroupTrials().add(getHistogramButton());
-	cbit.util.BeanUtils.enableComponents(getJPanelStoch(),false);
+	org.vcell.util.BeanUtils.enableComponents(getJPanelStoch(),false);
 }
 
 /**
@@ -3194,7 +3195,7 @@ private void updateStochOptionsDisplay()
 }
 
 private void displayStochPanel() {
-	cbit.util.BeanUtils.enableComponents(getJPanelStoch(),true);
+	org.vcell.util.BeanUtils.enableComponents(getJPanelStoch(),true);
 	StochSimOptions sso = getSolverTaskDescription().getStochOpt();	
 	
 	long numTrials = sso.getNumOfTrials();

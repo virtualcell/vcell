@@ -12,7 +12,7 @@ public class DataSelectRetrieve extends javax.swing.JPanel implements java.awt.e
 		public final int selectionMode;
 		public final int selectionType;
 		public final int selectAreaRadius;
-		public final cbit.util.Range selectAreaRange;
+		public final org.vcell.util.Range selectAreaRange;
 		public final cbit.vcell.parser.Expression selectAreaAnalytic;
 		public final String selectAreaRegionName;
 		public final boolean bRetrieveTimeData;
@@ -34,9 +34,9 @@ public class DataSelectRetrieve extends javax.swing.JPanel implements java.awt.e
 
 			selectAreaRadius = getJComboBoxAreaRadius().getSelectedIndex();
 
-			cbit.util.Range rangeTemp = null;
+			org.vcell.util.Range rangeTemp = null;
 				try{
-					rangeTemp = new cbit.util.Range(Double.parseDouble(getJTextFieldAreaMinRange().getText()),Double.parseDouble(getJTextFieldAreaMaxRange().getText()));
+					rangeTemp = new org.vcell.util.Range(Double.parseDouble(getJTextFieldAreaMinRange().getText()),Double.parseDouble(getJTextFieldAreaMaxRange().getText()));
 				}catch(Throwable e){
 					//Do nothing
 				}

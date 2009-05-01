@@ -501,7 +501,7 @@ private void copySimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toCopy = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toCopy = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
 	try {
 		index = getSimulationWorkspace().copySimulations(toCopy);
@@ -536,7 +536,7 @@ private void deleteSimulations() {
 			v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 		}
 	}
-	Simulation[] toDelete = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toDelete = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	try {
 		getSimulationWorkspace().deleteSimulations(toDelete);
 	} catch (Throwable exc) {
@@ -1120,7 +1120,7 @@ private void runSimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toRun = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toRun = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().runSimulations(toRun);
 }
 
@@ -1261,7 +1261,7 @@ private void showSimulationResults() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toShow = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toShow = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationResults(toShow);
 }
 
@@ -1275,7 +1275,7 @@ public void showSimulationStatusDetails(java.awt.event.ActionEvent actionEvent) 
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] sims = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] sims = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationStatusDetails(sims);
 	return;
 }
@@ -1290,7 +1290,7 @@ private void stopSimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toStop = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toStop = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
 

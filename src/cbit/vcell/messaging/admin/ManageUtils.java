@@ -2,7 +2,8 @@ package cbit.vcell.messaging.admin;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 
-import cbit.util.Executable;
+import org.vcell.util.Executable;
+
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.PropertyLoader;
 

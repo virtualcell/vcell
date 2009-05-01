@@ -129,7 +129,7 @@ public static VCUnitDefinition getDefaultSBMLUnit(String builtInName) {
 
 public static org.sbml.libsbml.UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn) {
 	org.sbml.libsbml.UnitDefinition sbmlUnitDefn = null;
-	String sbmlUnitSymbol = cbit.util.TokenMangler.mangleToSName(vcUnitDefn.getSymbol());
+	String sbmlUnitSymbol = org.vcell.util.TokenMangler.mangleToSName(vcUnitDefn.getSymbol());
 
 	// If VC unit is DIMENSIONLESS ...
 	if (vcUnitDefn.isTBD()) {
@@ -137,7 +137,7 @@ public static org.sbml.libsbml.UnitDefinition getSBMLUnitDefinition(VCUnitDefini
 	} else if (vcUnitDefn.isCompatible(VCUnitDefinition.UNIT_DIMENSIONLESS)) {
 		double scale = 1.0;
 		scale = vcUnitDefn.convertTo(scale, VCUnitDefinition.UNIT_DIMENSIONLESS);
-		sbmlUnitDefn = new org.sbml.libsbml.UnitDefinition(cbit.util.TokenMangler.mangleToSName(vcUnitDefn.getSymbol()));
+		sbmlUnitDefn = new org.sbml.libsbml.UnitDefinition(org.vcell.util.TokenMangler.mangleToSName(vcUnitDefn.getSymbol()));
 		sbmlUnitDefn.addUnit(new org.sbml.libsbml.Unit(SBMLUnitTranslator.DIMENSIONLESS, 1, 0, scale));
 	} else {
 		// Translate the VCUnitDef into libSBML UnitDef : convert the units of VCUnitDef into libSBML units and add them to sbmlUnitDefn

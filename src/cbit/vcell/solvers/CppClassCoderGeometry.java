@@ -6,6 +6,9 @@ package cbit.vcell.solvers;
 import cbit.image.*;
 import cbit.util.*;
 import java.util.*;
+
+import org.vcell.util.ISize;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.geometry.*;

@@ -2,6 +2,9 @@ package cbit.vcell.client.task;
 import cbit.vcell.solver.*;
 import cbit.vcell.client.server.*;
 import java.util.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.client.*;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.clientdb.*;

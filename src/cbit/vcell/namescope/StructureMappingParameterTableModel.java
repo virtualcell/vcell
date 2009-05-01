@@ -1,5 +1,7 @@
 package cbit.vcell.namescope;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.model.Parameter;
 import cbit.vcell.units.VCUnitException;
 import cbit.vcell.mapping.StructureMapping;
@@ -13,7 +15,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics;
 /**
  * Insert the type's description here.

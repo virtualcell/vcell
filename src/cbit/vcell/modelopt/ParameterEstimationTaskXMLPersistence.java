@@ -126,7 +126,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 		for (int i = 0; i < dataRowList.size(); i++){
 			Element dataRowElement = dataRowList.get(i);
 			String rowText = dataRowElement.getText();
-			cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(rowText);
+			org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(rowText);
 			double[] rowData = new double[numCols];
 			for (int j = 0; j < numCols; j++){
 				if (tokens.hasMoreTokens()){

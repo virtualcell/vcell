@@ -6,9 +6,14 @@ package cbit.vcell.solvers;
 import java.util.*;
 import java.io.*;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
 import org.vcell.util.Hex;
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
+import org.vcell.util.Origin;
 
 //import org.apache.commons.httpclient.methods.GetMethod;
 
@@ -915,7 +920,7 @@ private void inflate() {
 
 	try {
 		//Object objArray[] =  { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements};
-		Object objArray[] = (Object[])cbit.util.BeanUtils.fromCompressedSerialized(compressedBytes);
+		Object objArray[] = (Object[])org.vcell.util.BeanUtils.fromCompressedSerialized(compressedBytes);
 		version = (String)objArray[0];
 		size = (ISize)objArray[1];
 		origin = (Origin)objArray[2];
@@ -1540,7 +1545,7 @@ private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundEx
  * This method was created in VisualAge.
  * @param extent cbit.util.Extent
  */
-private void setExtent(cbit.util.Extent argExtent) {
+private void setExtent(org.vcell.util.Extent argExtent) {
 	this.extent = argExtent;
 }
 
@@ -1549,7 +1554,7 @@ private void setExtent(cbit.util.Extent argExtent) {
  * This method was created in VisualAge.
  * @param extent cbit.util.Extent
  */
-private void setOrigin(cbit.util.Origin origin) {
+private void setOrigin(org.vcell.util.Origin origin) {
 	this.origin = origin;
 }
 
@@ -1575,7 +1580,7 @@ private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements};
 
 	if (compressedBytes == null) {
-		compressedBytes = cbit.util.BeanUtils.toCompressedSerialized(objArray);
+		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
 	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);

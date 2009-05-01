@@ -3,7 +3,8 @@ package cbit.vcell.field;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
-import cbit.util.TokenMangler;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.MathMLTags;

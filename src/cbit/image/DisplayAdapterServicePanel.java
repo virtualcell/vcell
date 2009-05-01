@@ -2,7 +2,8 @@ package cbit.image;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import javax.swing.*;
-import cbit.util.Range;
+
+import org.vcell.util.Range;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -28,8 +29,8 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 	private JLabel ivjMinRangeJLabel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JPanel ivjScalePanel = null;
-	private cbit.util.Range ivjactiveScaleRange1 = null;
-	private cbit.util.Range ivjvalueDomain1 = null;
+	private org.vcell.util.Range ivjactiveScaleRange1 = null;
+	private org.vcell.util.Range ivjvalueDomain1 = null;
 	private JPanel ivjJPanel1 = null;
 	private JLabel ivjColorMapJLabel = null;
 	private JLabel ivjSCAboveMaxJLabel = null;
@@ -168,7 +169,7 @@ private void connEtoC12(java.awt.event.ActionEvent arg1) {
  * @param value cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(cbit.util.Range value) {
+private void connEtoC13(org.vcell.util.Range value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -247,7 +248,7 @@ private void connEtoC17(java.awt.event.FocusEvent arg1) {
  * @param value cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(cbit.util.Range value) {
+private void connEtoC2(org.vcell.util.Range value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -305,7 +306,7 @@ private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(cbit.util.Range value) {
+private void connEtoC6(org.vcell.util.Range value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -344,7 +345,7 @@ private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(cbit.util.Range value) {
+private void connEtoC8(org.vcell.util.Range value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -609,7 +610,7 @@ private void ensureMinMaxDisplay() {
  * @return cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.Range getactiveScaleRange1() {
+private org.vcell.util.Range getactiveScaleRange1() {
 	// user code begin {1}
 	// user code end
 	return ivjactiveScaleRange1;
@@ -1194,7 +1195,7 @@ private javax.swing.JPanel getSpecialColorsJPanel() {
  * @return cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.Range getvalueDomain1() {
+private org.vcell.util.Range getvalueDomain1() {
 	// user code begin {1}
 	// user code end
 	return ivjvalueDomain1;
@@ -1311,7 +1312,7 @@ private boolean notIsAutosclaeSelected() {
  * @param newValue cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setactiveScaleRange1(cbit.util.Range newValue) {
+private void setactiveScaleRange1(org.vcell.util.Range newValue) {
 	if (ivjactiveScaleRange1 != newValue) {
 		try {
 			ivjactiveScaleRange1 = newValue;
@@ -1356,7 +1357,7 @@ private void setButtonModel1(javax.swing.ButtonModel newValue) {
  * @param newValue cbit.image.Range
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setvalueDomain1(cbit.util.Range newValue) {
+private void setvalueDomain1(org.vcell.util.Range newValue) {
 	if (ivjvalueDomain1 != newValue) {
 		try {
 			ivjvalueDomain1 = newValue;

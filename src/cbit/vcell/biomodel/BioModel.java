@@ -19,7 +19,9 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import org.jdom.Element;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.TokenMangler;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.stoch.FluxSolver;
@@ -28,8 +30,6 @@ import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.util.BeanUtils;
-import cbit.util.TokenMangler;
 import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

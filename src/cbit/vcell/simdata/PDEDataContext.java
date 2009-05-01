@@ -10,6 +10,8 @@ import cbit.vcell.solvers.*;
 import java.beans.*;
 import java.util.Comparator;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Range;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
 
@@ -253,7 +255,7 @@ public DataIdentifier[] getDataIdentifiers() {
  * Creation date: (5/22/2001 4:32:00 PM)
  * @return cbit.image.Range
  */
-private cbit.util.Range getDataRange() {
+private org.vcell.util.Range getDataRange() {
 	return dataRange;
 }
 
@@ -646,7 +648,7 @@ protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws Da
  * Creation date: (5/22/2001 4:32:00 PM)
  * @param newDataRange cbit.image.Range
  */
-protected void setDataRange(cbit.util.Range newDataRange) {
+protected void setDataRange(org.vcell.util.Range newDataRange) {
 	dataRange = newDataRange;
 }
 

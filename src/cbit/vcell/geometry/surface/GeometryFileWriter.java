@@ -1,12 +1,14 @@
 package cbit.vcell.geometry.surface;
 import java.io.Writer;
 import cbit.vcell.geometry.RegionImage;
-import cbit.util.ISize;
 
 import java.util.Comparator;
 import java.util.Vector;
 import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
+
+import org.vcell.util.ISize;
+
 import cbit.vcell.geometry.Geometry;
 /**
  * Insert the type's description here.
@@ -45,8 +47,8 @@ public static int write(Writer writer, Geometry resampledGeometry) throws Except
 	//	
 	writer.write("name "+resampledGeometry.getName()+"\n");
 	writer.write("dimension "+resampledGeometry.getDimension()+"\n");
-	cbit.util.Extent extent = resampledGeometry.getExtent();
-	cbit.util.Origin origin = resampledGeometry.getOrigin();
+	org.vcell.util.Extent extent = resampledGeometry.getExtent();
+	org.vcell.util.Origin origin = resampledGeometry.getOrigin();
 	switch (resampledGeometry.getDimension()) {
 		case 1:			
 			writer.write("size "+extent.getX()+"\n");
@@ -100,7 +102,7 @@ public static int write(Writer writer, Geometry resampledGeometry) throws Except
 		}
 	});
 
-	VolumeGeometricRegion volRegions[] = (VolumeGeometricRegion[])cbit.util.BeanUtils.getArray(volRegionList,VolumeGeometricRegion.class);
+	VolumeGeometricRegion volRegions[] = (VolumeGeometricRegion[])org.vcell.util.BeanUtils.getArray(volRegionList,VolumeGeometricRegion.class);
 	
 	writer.write("volumeRegions "+numVolumeRegions +"\n");
 	for (int i = 0; i < volRegions.length; i++){

@@ -18,7 +18,8 @@ import javax.media.jai.operator.LookupDescriptor;
 import javax.media.jai.operator.RescaleDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 
-import cbit.util.Range;
+import org.vcell.util.Range;
+
 
 import com.sun.media.jai.widget.DisplayJAI;
 

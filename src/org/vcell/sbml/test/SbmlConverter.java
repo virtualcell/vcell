@@ -18,10 +18,10 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.Executable;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.Executable;
-import cbit.util.TokenMangler;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MathMapping;

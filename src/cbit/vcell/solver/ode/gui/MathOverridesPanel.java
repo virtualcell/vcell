@@ -538,9 +538,9 @@ private synchronized void copyCells(String actionCommand) {
 			}
 			cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
 				new cbit.gui.SimpleTransferable.ResolvedValuesSelection(
-					(cbit.vcell.parser.SymbolTableEntry[])cbit.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
+					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					null,
-					(cbit.vcell.parser.Expression[])cbit.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
+					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
 					buffer.toString());
 
 			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);

@@ -317,11 +317,11 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 		}			
 	}
 	if (equExpList.size()>0){
-		Expression exps[] = (Expression[])cbit.util.BeanUtils.getArray(equExpList,Expression.class);
+		Expression exps[] = (Expression[])org.vcell.util.BeanUtils.getArray(equExpList,Expression.class);
 		equalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
 	if (inequExpList.size()>0){
-		Expression exps[] = (Expression[])cbit.util.BeanUtils.getArray(inequExpList,Expression.class);
+		Expression exps[] = (Expression[])org.vcell.util.BeanUtils.getArray(inequExpList,Expression.class);
 		inequalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
 	

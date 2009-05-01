@@ -4,10 +4,11 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.parser.*;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.mapping.*;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

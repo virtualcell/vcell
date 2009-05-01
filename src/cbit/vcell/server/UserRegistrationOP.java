@@ -8,6 +8,7 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 
 import org.vcell.util.Compare;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -17,7 +18,6 @@ import cbit.sql.KeyFactory;
 import cbit.sql.UserInfo;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.SwingDispatcherSync;
-import cbit.util.TokenMangler;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerInfo;

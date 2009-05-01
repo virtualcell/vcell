@@ -90,11 +90,11 @@ public void insertMIRIAM(Connection con,MIRIAMAnnotatable miriamAnnotatable,KeyV
 	for(int i=0;i<maxLength;i+= MAX_CHARS){
 		String annotS = (i<annotLength?miriamAnnotation.substring(i,i+Math.min(MAX_CHARS, annotLength-i)):null);
 		if(annotS != null){
-			annotS = cbit.util.TokenMangler.getSQLEscapedString(annotS);
+			annotS = org.vcell.util.TokenMangler.getSQLEscapedString(annotS);
 		}
 		String notesS = (i<notesLength?miriamNotes.substring(i,i+Math.min(MAX_CHARS, notesLength-i)):null);
 		if(notesS != null){
-			notesS = cbit.util.TokenMangler.getSQLEscapedString(notesS);
+			notesS = org.vcell.util.TokenMangler.getSQLEscapedString(notesS);
 		}
 		
 		String miriamTableValues = MIRIAMTable.table.getSQLValueList(miriamAnnotatable, referenceKey,annotS,notesS);
@@ -130,12 +130,12 @@ public void setMIRIAMAnnotation(Connection con,MIRIAMAnnotatable miriamAnnotatab
 		while(rset.next()){
 			String annotation = rset.getString(MIRIAMTable.table.annotation.toString());
 			if(!rset.wasNull()){
-				annotation = cbit.util.TokenMangler.getSQLRestoredString(annotation);
+				annotation = org.vcell.util.TokenMangler.getSQLRestoredString(annotation);
 				annotSB.append(annotation);
 			}
 			String notes = rset.getString(MIRIAMTable.table.userNotes.toString());
 			if(!rset.wasNull()){
-				notes = cbit.util.TokenMangler.getSQLRestoredString(notes);
+				notes = org.vcell.util.TokenMangler.getSQLRestoredString(notes);
 				notesSB.append(notes);
 			}
 		}

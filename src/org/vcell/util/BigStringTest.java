@@ -1,6 +1,5 @@
 package org.vcell.util;
 
-import cbit.util.BeanUtils;
 
 /**
  * Insert the type's description here.
@@ -44,7 +43,7 @@ public static void main(String[] args) {
 	    for (int i = 0; i < 15; i++) {
 	        long t1 = System.currentTimeMillis();
 		    bs = new org.vcell.util.BigString(str);
-	        org.vcell.util.BigString bs2 = (org.vcell.util.BigString)cbit.util.BeanUtils.cloneSerializable(bs);
+	        org.vcell.util.BigString bs2 = (org.vcell.util.BigString)org.vcell.util.BeanUtils.cloneSerializable(bs);
 	        //bs2.toString();
 	        if (i==14){
 		        bs2.toString();

@@ -202,7 +202,7 @@ public User[] getConnectedUsers() {
 				userList.addElement(vcConn.getUser());
 			}
 		}
-		return (User[])cbit.util.BeanUtils.getArray(userList,User.class);
+		return (User[])org.vcell.util.BeanUtils.getArray(userList,User.class);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
@@ -361,7 +361,7 @@ public ServerInfo[] getSlaveServerInfos() {
 			sessionLog.alert("failure retrieving ServerInfo for active computeHost "+activeHosts[i].getHostName());
 		}
 	}
-	return (ServerInfo[])cbit.util.BeanUtils.getArray(slaveServerInfoList,ServerInfo.class);
+	return (ServerInfo[])org.vcell.util.BeanUtils.getArray(slaveServerInfoList,ServerInfo.class);
 }
 
 

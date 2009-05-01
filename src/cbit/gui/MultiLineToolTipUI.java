@@ -60,7 +60,7 @@ public String[] getLinesInTipText(String tiptext) {
 		j++;
 	}
 
-	String[] linesArray = (String[])cbit.util.BeanUtils.getArray(linesVector, String.class);
+	String[] linesArray = (String[])org.vcell.util.BeanUtils.getArray(linesVector, String.class);
 
 	return linesArray;
 }

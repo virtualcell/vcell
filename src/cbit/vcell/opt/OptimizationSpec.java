@@ -8,6 +8,8 @@ import cbit.vcell.parser.Expression;
 ©*/
 import java.util.*;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Issue;
 
 import cbit.util.*;

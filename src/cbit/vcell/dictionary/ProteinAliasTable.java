@@ -46,7 +46,7 @@ public class ProteinAliasTable extends Table {
         StringBuffer buffer = new StringBuffer();
 		buffer.append(id + "=" + newKey + "'");
         buffer.append(proteinRef + "=" + argProteinRef + ",");
-        buffer.append(name + "='" + cbit.util.TokenMangler.getSQLEscapedString(argName) + "',");
+        buffer.append(name + "='" + org.vcell.util.TokenMangler.getSQLEscapedString(argName) + "',");
         buffer.append(preferred + "='" + (bPreferred?"T":"F") + "'");
         return buffer.toString();
     }
@@ -68,7 +68,7 @@ public String getSQLValueList(
     buffer.append("(");
     buffer.append(newKey + ",");
     buffer.append(argProteinRef + ",");
-    buffer.append("'" + cbit.util.TokenMangler.getSQLEscapedString(argName) + "',");
+    buffer.append("'" + org.vcell.util.TokenMangler.getSQLEscapedString(argName) + "',");
     buffer.append("'" + (bPreferred?"T":"F") + "'");
     buffer.append(")");
     return buffer.toString();

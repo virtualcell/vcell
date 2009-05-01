@@ -1,6 +1,7 @@
 package cbit.vcell.geometry.gui;
 
-import cbit.util.Extent;
+import org.vcell.util.Extent;
+
 import cbit.image.VCPixelClass;
 import cbit.image.VCImage;
 /**

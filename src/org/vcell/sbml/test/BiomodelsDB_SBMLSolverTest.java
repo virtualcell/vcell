@@ -15,8 +15,8 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.copasi.CopasiSBMLSolver;
 import org.vcell.sbml.mathsbml.MathSBMLSolver;
 import org.vcell.sbml.vcell.VCellSBMLSolver;
+import org.vcell.util.NumberUtils;
 
-import cbit.util.NumberUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.resource.ResourceUtil;

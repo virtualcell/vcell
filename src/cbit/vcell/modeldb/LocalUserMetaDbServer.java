@@ -340,7 +340,7 @@ public BigString getMathModelXML(org.vcell.util.document.KeyValue key) throws Da
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.Preference[] getPreferences() throws DataAccessException {
+public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 	
 	return dbServerImpl.getPreferences(user);
 }
@@ -537,7 +537,7 @@ public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, org.v
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(cbit.util.Preference[] preferences) throws DataAccessException {
+public void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException {
 
 	dbServerImpl.replacePreferences(user,preferences);	
 }

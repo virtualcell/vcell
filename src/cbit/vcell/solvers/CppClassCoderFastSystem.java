@@ -6,7 +6,8 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.*;
 
-import cbit.util.TokenMangler;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.*;

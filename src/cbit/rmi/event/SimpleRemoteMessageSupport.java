@@ -89,7 +89,7 @@ protected void fireRemoteMessageEvent(RemoteMessageEvent event) {
  */
 public synchronized RemoteMessageEvent[] flushMessageQueue(RemoteMessageListener destination) {
 	Vector vector = (Vector)rmhMessageQueues.get(destination);
-	RemoteMessageEvent[] queuedMessages = (RemoteMessageEvent[])cbit.util.BeanUtils.getArray(vector, RemoteMessageEvent.class);
+	RemoteMessageEvent[] queuedMessages = (RemoteMessageEvent[])org.vcell.util.BeanUtils.getArray(vector, RemoteMessageEvent.class);
 	vector.clear();
 	return queuedMessages;
 }

@@ -5,9 +5,9 @@ import cbit.vcell.biomodel.BioModelInfo;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.*;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.BeanUtils;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.sql.VersionableType;
 /*©

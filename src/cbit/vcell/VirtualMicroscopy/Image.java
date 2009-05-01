@@ -7,17 +7,17 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 
+import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
+import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
-import cbit.util.Extent;
-import cbit.util.Origin;
 
 public abstract class Image implements Serializable, Matchable {
 	private int numX = 0;
 	private int numY = 0;
 	private int numZ = 0;
-	private cbit.util.Extent extent = new cbit.util.Extent(10, 10, 10);
+	private org.vcell.util.Extent extent = new org.vcell.util.Extent(10, 10, 10);
 	private Origin origin = new Origin(0,0,0);
 	private java.lang.String fieldName = new String();
 	private java.lang.String fieldDescription = new String("NoName");
@@ -63,7 +63,7 @@ protected Image(Image vci) {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-protected Image(Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+protected Image(Origin aOrigin, org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	
 	if (aNumX<1 || aNumY<1 || aNumZ<1){
 		throw new ImageException("numPixels ("+aExtent.getX()+","+aExtent.getY()+","+aExtent.getZ()+")  must all be >= 1");
@@ -187,11 +187,11 @@ public final java.lang.String getDescription() {
  * This method was created in VisualAge.
  * @return int
  */
-public final cbit.util.Extent getExtent() {
+public final org.vcell.util.Extent getExtent() {
 	return extent;
 }
 
-public final cbit.util.Origin getOrigin() {
+public final org.vcell.util.Origin getOrigin() {
 	return origin;
 }
 

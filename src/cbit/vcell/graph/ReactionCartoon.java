@@ -419,7 +419,7 @@ public void setPositionsFromReactionCartoon(Diagram diagram) {
 			nodeList.addElement(new NodeReference(NodeReference.SPECIES_CONTEXT_NODE,((cbit.vcell.model.SpeciesContext)shape.getModelObject()).getName(),shape.getLocation()));
 		}
 	}
-	diagram.setNodeReferences((NodeReference[])cbit.util.BeanUtils.getArray(nodeList,NodeReference.class));
+	diagram.setNodeReferences((NodeReference[])org.vcell.util.BeanUtils.getArray(nodeList,NodeReference.class));
 }
 
 

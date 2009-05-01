@@ -16,12 +16,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import org.vcell.util.BeanUtils;
+
 import java.beans.*;
 
 import cbit.gui.DialogUtils;
 import cbit.image.ImagePlaneManager;
 import cbit.image.ImagePlaneManagerPanel;
-import cbit.util.BeanUtils;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 /**

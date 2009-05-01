@@ -30,7 +30,7 @@ public ExplicitObjectiveFunction(cbit.vcell.parser.Expression argExpression) {
  * Creation date: (8/2/2005 2:07:28 PM)
  * @param tokens java.io.StreamTokenizer
  */
-public static ExplicitObjectiveFunction fromVCML(cbit.util.CommentStringTokenizer tokens) throws ExpressionException {
+public static ExplicitObjectiveFunction fromVCML(org.vcell.util.CommentStringTokenizer tokens) throws ExpressionException {
 	Expression exp = new Expression(tokens);
 	return new ExplicitObjectiveFunction(exp);
 }

@@ -23,7 +23,7 @@ public class Experiment implements org.vcell.util.Matchable, java.io.Serializabl
 			return children;
 		}
 		public String getName() {
-			return cbit.util.TokenMangler.fixTokenStrict(Experiment.this.getName());
+			return org.vcell.util.TokenMangler.fixTokenStrict(Experiment.this.getName());
 		}
 		public cbit.vcell.parser.NameScope getParent() {
 			//System.out.println("ExperimentNameScope.getParent() returning null ... no parent");

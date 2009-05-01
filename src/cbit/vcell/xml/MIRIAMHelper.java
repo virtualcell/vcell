@@ -20,9 +20,9 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
+import org.vcell.util.BeanUtils;
 
 import cbit.gui.ZEnforcer;
-import cbit.util.BeanUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.ReactionStep;

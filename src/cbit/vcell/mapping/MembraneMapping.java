@@ -12,6 +12,7 @@ import cbit.vcell.parser.*;
 import java.util.*;
 
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
 import cbit.util.*;
 import cbit.vcell.units.VCUnitDefinition;

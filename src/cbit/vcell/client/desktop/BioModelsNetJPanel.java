@@ -19,8 +19,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DocumentWindowManager;

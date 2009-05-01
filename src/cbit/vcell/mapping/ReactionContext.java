@@ -6,10 +6,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.util.BeanUtils;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.Feature;
@@ -397,7 +397,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(cbit.util.CommentStringTokenizer tokens) throws Exception {
+public void read(org.vcell.util.CommentStringTokenizer tokens) throws Exception {
 	refreshSpeciesContextSpecs();
 	
 	String token = null;

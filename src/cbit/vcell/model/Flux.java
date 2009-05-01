@@ -38,7 +38,7 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception {
+public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
 
 	throw new Exception("not implemented");
 }

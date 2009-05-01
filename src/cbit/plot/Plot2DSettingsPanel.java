@@ -4,7 +4,8 @@ package cbit.plot;
  * All rights reserved.
 ©*/
 import javax.swing.*;
-import cbit.util.Range;
+
+import org.vcell.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (2/15/2001 10:12:19 AM)

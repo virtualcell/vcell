@@ -36,7 +36,7 @@ public ExportLog(File exportLogFile) throws FileNotFoundException, IOException {
 			entries.add(new ExportLogEntry(line));
 			line = reader.readLine();
 		}
-		setExportLogEntries((ExportLogEntry[])cbit.util.BeanUtils.getArray(entries, ExportLogEntry.class));
+		setExportLogEntries((ExportLogEntry[])org.vcell.util.BeanUtils.getArray(entries, ExportLogEntry.class));
 		String fileName = exportLogFile.getName();
 		String prefix = "SimID_";
 		String suffix = ".export";

@@ -1,5 +1,4 @@
 package cbit.vcell.geometry.surface;
-import cbit.util.CommentStringTokenizer;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverFactory;
 import cbit.vcell.solvers.CartesianMesh;
@@ -9,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.document.User;
 
 import cbit.vcell.server.SessionLog;

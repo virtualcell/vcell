@@ -171,7 +171,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
  * Creation date: (7/20/2004 1:13:06 PM)
  */
 private void checkValidSimulationDataViewerFrames() {
-	SimulationWindow[] simWindows = (SimulationWindow[])cbit.util.BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
+	SimulationWindow[] simWindows = (SimulationWindow[])org.vcell.util.BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
 	Simulation[] sims = getMathModel().getSimulations();
 	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<VCSimulationIdentifier, Simulation>();
 	for (int i = 0; i < sims.length; i++){

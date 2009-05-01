@@ -14,6 +14,7 @@ import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.ListSelectionModel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -22,7 +23,6 @@ import cbit.gui.JInternalFrameEnhanced;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.sql.VersionableType;
-import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
@@ -192,7 +192,7 @@ public class FieldDataWindowManager
 			}
 			String[][] rows = new String[rowsV.size()][];
 			rowsV.copyInto(rows);
-			cbit.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			org.vcell.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
 					getComponent(), "Select Simulation for Field Data",
 					colNames, rows, ListSelectionModel.SINGLE_SELECTION);
@@ -201,7 +201,7 @@ public class FieldDataWindowManager
 			}
 			throw UserCancelException.CANCEL_GENERIC;
 		} finally {
-			cbit.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			org.vcell.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
 	

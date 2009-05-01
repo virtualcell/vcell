@@ -1,5 +1,6 @@
 package cbit.vcell.solver;
-import cbit.util.CommentStringTokenizer;
+import org.vcell.util.CommentStringTokenizer;
+
 import cbit.vcell.math.Token;
 import cbit.vcell.math.VCML;
 import cbit.vcell.server.DataAccessException;

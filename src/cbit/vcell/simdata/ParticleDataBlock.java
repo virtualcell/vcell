@@ -4,12 +4,12 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.CommentStringTokenizer;
 
 import java.util.*;
 import cbit.vcell.server.*;
 import java.io.*;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.document.User;
 
 import cbit.vcell.geometry.*;

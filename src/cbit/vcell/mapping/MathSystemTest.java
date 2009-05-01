@@ -29,15 +29,15 @@ public static MathSystemHash fromMath(cbit.vcell.math.MathDescription mathDesc) 
 	hash.addSymbol(new MathSystemHash.IndependentVariable("y"));
 	hash.addSymbol(new MathSystemHash.IndependentVariable("z"));
 
-	cbit.vcell.math.Variable vars[] = (cbit.vcell.math.Variable[])cbit.util.BeanUtils.getArray(mathDesc.getVariables(),cbit.vcell.math.Variable.class);
+	cbit.vcell.math.Variable vars[] = (cbit.vcell.math.Variable[])org.vcell.util.BeanUtils.getArray(mathDesc.getVariables(),cbit.vcell.math.Variable.class);
 	for (int i = 0; i < vars.length; i++){
 		hash.addSymbol(new MathSystemHash.Variable(vars[i].getName(),vars[i].getExpression()));
 	}
 
-	cbit.vcell.math.SubDomain subDomains[] = (cbit.vcell.math.SubDomain[])cbit.util.BeanUtils.getArray(mathDesc.getSubDomains(),cbit.vcell.math.SubDomain.class);
+	cbit.vcell.math.SubDomain subDomains[] = (cbit.vcell.math.SubDomain[])org.vcell.util.BeanUtils.getArray(mathDesc.getSubDomains(),cbit.vcell.math.SubDomain.class);
 	for (int i = 0; i < subDomains.length; i++){
 
-		cbit.vcell.math.Equation[] equations = (cbit.vcell.math.Equation[])cbit.util.BeanUtils.getArray(subDomains[i].getEquations(),cbit.vcell.math.Equation.class);
+		cbit.vcell.math.Equation[] equations = (cbit.vcell.math.Equation[])org.vcell.util.BeanUtils.getArray(subDomains[i].getEquations(),cbit.vcell.math.Equation.class);
 		for (int j = 0; j < equations.length; j++){
 			MathSystemHash.Variable var = (MathSystemHash.Variable)hash.getSymbol(equations[j].getVariable().getName());
 			hash.addSymbol(new MathSystemHash.VariableInitial(var,equations[j].getInitialExpression()));

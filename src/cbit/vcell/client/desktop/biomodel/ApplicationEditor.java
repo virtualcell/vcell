@@ -1963,7 +1963,7 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 		boolean found = true;
 		while (found) {
 			found = false;
-			parameterEstimationName = cbit.util.TokenMangler.getNextEnumeratedToken(parameterEstimationName);
+			parameterEstimationName = org.vcell.util.TokenMangler.getNextEnumeratedToken(parameterEstimationName);
 			for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
 				if (analysisTasks[i].getName().equals(parameterEstimationName)){
 					found = true;

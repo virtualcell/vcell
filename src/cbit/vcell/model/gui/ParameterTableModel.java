@@ -4,6 +4,8 @@ import java.beans.PropertyVetoException;
 
 import javax.swing.JTable;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -23,7 +25,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;

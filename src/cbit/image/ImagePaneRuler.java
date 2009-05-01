@@ -1,6 +1,6 @@
 package cbit.image;
 
-import cbit.util.NumberUtils;
+import org.vcell.util.NumberUtils;
 
 /**
  * Insert the type's description here.
@@ -207,7 +207,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						String val = "";
 						if(coord != null){
 							double doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
-							val = cbit.util.NumberUtils.formatNumber(doubleVal);
+							val = org.vcell.util.NumberUtils.formatNumber(doubleVal);
 						}
 						java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
 						java.awt.font.LineMetrics lm = getFont().getLineMetrics(val,((java.awt.Graphics2D)g).getFontRenderContext());

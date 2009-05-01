@@ -341,12 +341,12 @@ protected static final java.awt.Container getDialogOwner(GraphPane graphPaneSeek
 		return null;
 	}
 	
-	Container dialogOwner = (JDesktopPane)cbit.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JDesktopPane.class);
+	Container dialogOwner = (JDesktopPane)org.vcell.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JDesktopPane.class);
 	if (dialogOwner!=null){
 		return dialogOwner;
 	}
 	
-	dialogOwner = (JFrame)cbit.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JFrame.class);
+	dialogOwner = (JFrame)org.vcell.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JFrame.class);
 	if (dialogOwner!=null){
 		return ((JFrame)dialogOwner).getContentPane();
 	}
@@ -381,7 +381,7 @@ protected JDesktopPane getJDesktopPane() {
 	if(getGraphPane() == null){
 		return null;
 	}
-	return (JDesktopPane)cbit.util.BeanUtils.findTypeParentOfComponent(getGraphPane(),javax.swing.JDesktopPane.class);
+	return (JDesktopPane)org.vcell.util.BeanUtils.findTypeParentOfComponent(getGraphPane(),javax.swing.JDesktopPane.class);
 }
 
 

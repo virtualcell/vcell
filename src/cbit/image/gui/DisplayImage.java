@@ -4,11 +4,13 @@ package cbit.image.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Extent;
 import java.lang.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
+
+import org.vcell.util.Extent;
+
 import cbit.image.*;
 
 

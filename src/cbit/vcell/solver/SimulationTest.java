@@ -44,7 +44,7 @@ public static void testEquivalenceCapability(){
 		int numIterations = 500;
 		// copy by cloneSerializable()
 		for (int i = 0; i < numIterations; i++){
-			sim2 = (cbit.vcell.solver.Simulation)cbit.util.BeanUtils.cloneSerializable(sim);
+			sim2 = (cbit.vcell.solver.Simulation)org.vcell.util.BeanUtils.cloneSerializable(sim);
 		}
 		long time_2 = System.currentTimeMillis();
 		// copy by copy-constructor
@@ -106,8 +106,8 @@ public static boolean testIfEquilavent(Simulation sim, cbit.vcell.math.MathDescr
 			System.out.println("-------MathDesc 1 and MathDesc 2 are same object ------------");
 			return false;
 		}
-		mathDesc1 = (cbit.vcell.math.MathDescription)cbit.util.BeanUtils.cloneSerializable(mathDesc1);
-		mathDesc2 = (cbit.vcell.math.MathDescription)cbit.util.BeanUtils.cloneSerializable(mathDesc2);
+		mathDesc1 = (cbit.vcell.math.MathDescription)org.vcell.util.BeanUtils.cloneSerializable(mathDesc1);
+		mathDesc2 = (cbit.vcell.math.MathDescription)org.vcell.util.BeanUtils.cloneSerializable(mathDesc2);
 		sim.applyOverrides(mathDesc1);
 		sim.applyOverrides(mathDesc2);
 		StringBuffer reasonForDecision = new StringBuffer();

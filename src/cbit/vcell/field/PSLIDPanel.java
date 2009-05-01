@@ -42,15 +42,16 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.Preference;
+
 import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 
 import cbit.util.AsynchProgressPopup;
-import cbit.util.BeanUtils;
-import cbit.util.Extent;
-import cbit.util.ISize;
-import cbit.util.Origin;
-import cbit.util.Preference;
 import cbit.util.ProgressDialogListener;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.UserPreferences;

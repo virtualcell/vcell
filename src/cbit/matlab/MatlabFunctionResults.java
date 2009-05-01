@@ -52,7 +52,7 @@ public double[][] getValue(String varName) {
  * @return java.lang.String[]
  */
 public String[] getVariableNames() {
-	return (String[])cbit.util.BeanUtils.getArray(varHash.keys(),String.class);
+	return (String[])org.vcell.util.BeanUtils.getArray(varHash.keys(),String.class);
 }
 /**
  * Insert the method's description here.

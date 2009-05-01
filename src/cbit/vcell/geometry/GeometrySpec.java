@@ -9,7 +9,10 @@ import java.io.*;
 import java.rmi.RemoteException;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
+import org.vcell.util.Origin;
 import org.vcell.util.document.User;
 
 import cbit.vcell.parser.ExpressionException;

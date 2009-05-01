@@ -2261,7 +2261,7 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
  * Comment
  */
 private void splitPaneResizeWeight() {
-	cbit.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
+	org.vcell.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
 }
 
 

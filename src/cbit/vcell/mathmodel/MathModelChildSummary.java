@@ -64,7 +64,7 @@ public static MathModelChildSummary fromDatabaseSerialization(String databaseSer
 	//Assumes there is a non-empty string for every element
 	java.util.StringTokenizer st = new java.util.StringTokenizer(databaseSerialization,"\n",false);
 
-	mmcs.geoName = (String)cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
+	mmcs.geoName = (String)org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
 	mmcs.geoDim = Integer.parseInt((String)st.nextElement());
 	
 	Vector simNamesV = new Vector();
@@ -73,8 +73,8 @@ public static MathModelChildSummary fromDatabaseSerialization(String databaseSer
 
 	while(st.hasMoreElements()){
 		for(int j=0;j<numSims;j+= 1){
-			simNamesV.add(cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
-			simAnnotsV.add(cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+			simNamesV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+			simAnnotsV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
 		}
 	}
 
@@ -137,14 +137,14 @@ public String toDatabaseSerialization() {
 	
 	StringBuffer sb = new StringBuffer();
 	
-	sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(geoName))+"\n");
+	sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(geoName))+"\n");
 	sb.append(geoDim+"\n");
 	
 	//Simulations
 	sb.append(simNames.length+"\n");//num simulations
 	for(int j=0;j<simNames.length;j+= 1){
-		sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(simNames[j]))+"\n");
-		sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(simAnnots[j]))+"\n");
+		sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(simNames[j]))+"\n");
+		sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(simAnnots[j]))+"\n");
 	}
 	
 	return sb.toString();

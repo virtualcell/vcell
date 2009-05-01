@@ -4,9 +4,9 @@ import java.io.File;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.FileUtils;
 import cbit.vcell.messaging.ControlMessageCollector;
 import cbit.vcell.messaging.ControlTopicListener;
 import cbit.vcell.messaging.JmsConnection;

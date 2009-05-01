@@ -1,12 +1,14 @@
 package cbit.vcell.geometry.gui;
 import java.awt.Rectangle;
 import cbit.vcell.geometry.surface.Polygon;
-import cbit.util.Origin;
-import cbit.util.Extent;
 import cbit.vcell.render.Trackball;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.render.Vect3d;
 import java.awt.geom.AffineTransform;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+
 import cbit.vcell.geometry.surface.Surface;
 /**
  * Insert the type's description here.
@@ -25,8 +27,8 @@ public class SurfaceRenderer {
 		public double yScale;
 		public double yOffset;
 	}
-	public cbit.util.Origin fieldOrigin = null;
-	public cbit.util.Extent fieldExtent = null;
+	public org.vcell.util.Origin fieldOrigin = null;
+	public org.vcell.util.Extent fieldExtent = null;
 	public cbit.vcell.render.Trackball fieldTrackball = null;
 	private java.awt.Font axisLabelFont = null;
 
@@ -204,7 +206,7 @@ private java.awt.Polygon createScreenPolygon(cbit.vcell.geometry.surface.Polygon
  * Creation date: (7/20/2004 11:35:26 AM)
  * @return cbit.util.Extent
  */
-public cbit.util.Extent getExtent() {
+public org.vcell.util.Extent getExtent() {
 	return fieldExtent;
 }
 
@@ -214,7 +216,7 @@ public cbit.util.Extent getExtent() {
  * Creation date: (7/20/2004 11:35:12 AM)
  * @return cbit.util.Origin
  */
-public cbit.util.Origin getOrigin() {
+public org.vcell.util.Origin getOrigin() {
 	return fieldOrigin;
 }
 

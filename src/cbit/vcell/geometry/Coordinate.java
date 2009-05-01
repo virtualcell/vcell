@@ -313,7 +313,7 @@ public int hashCode() {
  * @param extent cbit.util.Extent
  * @param delta cbit.vcell.geometry.Coordinate
  */
-public static final boolean isCoordinateInBounds(Coordinate coord, cbit.util.Origin origin, cbit.util.Extent extent, Coordinate deltaCoord) {
+public static final boolean isCoordinateInBounds(Coordinate coord, org.vcell.util.Origin origin, org.vcell.util.Extent extent, Coordinate deltaCoord) {
 	Coordinate w0 = new Coordinate(origin.getX(), origin.getY(), origin.getZ());
 	Coordinate w1 = new Coordinate(w0.getX() + extent.getX(), w0.getY() + extent.getY(), w0.getZ() + extent.getZ());
 	//

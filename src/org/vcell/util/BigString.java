@@ -8,7 +8,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-import cbit.util.BeanUtils;
 
 /**
  * Insert the type's description here.

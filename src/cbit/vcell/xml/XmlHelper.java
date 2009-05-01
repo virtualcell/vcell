@@ -11,9 +11,9 @@ import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.cellml.Translator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.util.Extent;
 
 import cbit.image.VCImage;
-import cbit.util.Extent;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;

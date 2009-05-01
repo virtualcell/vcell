@@ -13,11 +13,11 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.CommentStringTokenizer;
-import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.SimulationInfo;
@@ -278,7 +278,7 @@ public void applyOverrides(MathDescription newMath) throws ExpressionException, 
 	//
 	// replace original constants with "Simulation" constants
 	//
-	Variable newVarArray[] = (Variable[])cbit.util.BeanUtils.getArray(newMath.getVariables(),Variable.class);
+	Variable newVarArray[] = (Variable[])org.vcell.util.BeanUtils.getArray(newMath.getVariables(),Variable.class);
 	for (int i = 0; i < newVarArray.length; i++){
 		if (newVarArray[i] instanceof Constant){
 			Constant origConstant = (Constant)newVarArray[i];
@@ -560,7 +560,7 @@ public Function[] getFunctions() {
 		}
 	}
 
-	return (Function[])cbit.util.BeanUtils.getArray(functList,Function.class);
+	return (Function[])org.vcell.util.BeanUtils.getArray(functList,Function.class);
 }
 
 
@@ -879,7 +879,7 @@ public Variable[] getVariables() {
 		}
 	}
 
-	Variable variables[] = (Variable[])cbit.util.BeanUtils.getArray(varList,Variable.class);
+	Variable variables[] = (Variable[])org.vcell.util.BeanUtils.getArray(varList,Variable.class);
 
 	return variables;
 }

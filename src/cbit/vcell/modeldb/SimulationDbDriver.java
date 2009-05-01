@@ -348,7 +348,7 @@ SolverResultSetInfo[] getResultSetInfos(Connection con, User user, KeyValue simK
 		stmt.close(); // Release resources include resultset
 	}
 	
-	return (SolverResultSetInfo[])cbit.util.BeanUtils.getArray(rsetInfos, SolverResultSetInfo.class);
+	return (SolverResultSetInfo[])org.vcell.util.BeanUtils.getArray(rsetInfos, SolverResultSetInfo.class);
 }
 
 

@@ -1,7 +1,5 @@
 package cbit.vcell.desktop;
-import cbit.util.ISize;
 import cbit.image.VCImageInfo;
-import cbit.util.Extent;
 import cbit.vcell.mathmodel.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -24,6 +22,8 @@ import cbit.vcell.geometry.GeometryInfo;
  */
 import javax.swing.*;
 
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
  
@@ -518,7 +518,7 @@ protected void setComponentProperties(JLabel component, cbit.vcell.desktop.Annot
 	component.setIcon(fieldTextIcon);
 	
 	component.setToolTipText(annot.toString());
-	component.setText(cbit.util.TokenMangler.replaceSubString(annot.toString(),"\n"," "));
+	component.setText(org.vcell.util.TokenMangler.replaceSubString(annot.toString(),"\n"," "));
 }
 
 

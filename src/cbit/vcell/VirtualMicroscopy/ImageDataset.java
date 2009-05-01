@@ -4,11 +4,11 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 
 import cbit.image.ImageException;
-import cbit.util.Extent;
-import cbit.util.ISize;
 
 /**
  * Insert the type's description here.

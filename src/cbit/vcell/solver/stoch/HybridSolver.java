@@ -53,7 +53,7 @@ public HybridSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File 
  */
 public void cleanup() 
 {
-	if (getMathExecutable()==null || !getMathExecutable().getStatus().equals(cbit.util.ExecutableStatus.COMPLETE)) {
+	if (getMathExecutable()==null || !getMathExecutable().getStatus().equals(org.vcell.util.ExecutableStatus.COMPLETE)) {
 		return;
 	}
 	try

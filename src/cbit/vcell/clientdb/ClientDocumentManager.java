@@ -10,8 +10,11 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
+import org.vcell.util.ISize;
+import org.vcell.util.Preference;
 import org.vcell.util.document.KeyValue;
 
 import cbit.image.VCImage;
@@ -19,9 +22,6 @@ import cbit.image.VCImageInfo;
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 import cbit.sql.VersionableType;
-import cbit.util.BeanUtils;
-import cbit.util.ISize;
-import cbit.util.Preference;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelChildSummary;
 import cbit.vcell.biomodel.BioModelInfo;

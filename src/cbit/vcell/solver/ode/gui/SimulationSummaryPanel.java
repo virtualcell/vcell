@@ -220,7 +220,7 @@ private void displayAnnotation() {
 private void displayMesh() {
     try {
         if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
-            cbit.util.ISize samplingSize =
+            org.vcell.util.ISize samplingSize =
                 getSimulation().getMeshSpecification().getSamplingSize();
             String labelText = "";
             switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
@@ -273,7 +273,7 @@ private void displayOther() {
 		getJLabelSpatial().setText("");
 	}
 	try {
-		cbit.util.Extent extent = getSimulation().getMathDescription().getGeometry().getExtent();
+		org.vcell.util.Extent extent = getSimulation().getMathDescription().getGeometry().getExtent();
 		String labelText = "";
 		switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
 			case 0: {

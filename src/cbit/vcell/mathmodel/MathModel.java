@@ -8,9 +8,11 @@ import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.solver.Simulation;
-import cbit.util.BeanUtils;
-import cbit.util.TokenMangler;
 import cbit.vcell.model.gui.VCellNames;
 /**
  * Insert the type's description here.

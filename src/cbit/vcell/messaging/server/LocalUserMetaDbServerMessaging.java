@@ -616,10 +616,10 @@ public BigString getMathModelXML(KeyValue mathModelKey) throws DataAccessExcepti
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.Preference[] getPreferences() throws DataAccessException {
+public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getPreferences()");
-		cbit.util.Preference[] preferences = dbServerProxy.getPreferences();
+		org.vcell.util.Preference[] preferences = dbServerProxy.getPreferences();
 		return preferences;
 	} catch (DataAccessException e) {
 		log.exception(e);
@@ -983,7 +983,7 @@ public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, org.v
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(cbit.util.Preference[] preferences) throws DataAccessException {
+public void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.replacePreferences()");
 		dbServerProxy.replacePreferences(preferences);

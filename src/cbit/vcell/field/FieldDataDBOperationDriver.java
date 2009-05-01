@@ -13,11 +13,11 @@ import java.util.Hashtable;
 import java.util.Vector;
 import javax.swing.Timer;
 
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.VersionableType;
-import cbit.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.db.SimulationJobTable;

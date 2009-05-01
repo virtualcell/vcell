@@ -600,7 +600,7 @@ private String getTextFromContent2(org.w3c.dom.Node siteNode,ElementToTextIndex 
 			}
 			result = result.replace('\n',',');
 			if(result.length() < 20){
-				result = cbit.util.BeanUtils.forceStringSize(result,20," ",true);
+				result = org.vcell.util.BeanUtils.forceStringSize(result,20," ",true);
 			}else{
 				result = " "+result+" ";
 			}

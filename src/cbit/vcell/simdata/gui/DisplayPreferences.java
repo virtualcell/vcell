@@ -3,8 +3,9 @@ package cbit.vcell.simdata.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Range;
+
 import cbit.image.*;
-import cbit.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (2/28/2001 10:06:01 AM)
@@ -12,7 +13,7 @@ import cbit.util.Range;
  */
 public class DisplayPreferences implements java.io.Serializable {
 	private String colorMode;
-	private cbit.util.Range scaleSettings;
+	private org.vcell.util.Range scaleSettings;
 	private boolean isDefaultScale;
 
 /**

@@ -6,8 +6,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
-import cbit.util.Executable;
-import cbit.util.ExecutableException;
+
+import org.vcell.util.Executable;
+import org.vcell.util.ExecutableException;
+
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.StdoutSessionLog;
@@ -23,7 +25,7 @@ public class PBSUtils {
  * @param jobid java.lang.String
  */
 public static String checkServerStatus() throws ExecutableException {
-	cbit.util.Executable exe = new Executable(new String[] {SERVER_CMD_STATUS, "-B"});
+	org.vcell.util.Executable exe = new Executable(new String[] {SERVER_CMD_STATUS, "-B"});
 	exe.start();
 	
 	String output = exe.getStdoutString();

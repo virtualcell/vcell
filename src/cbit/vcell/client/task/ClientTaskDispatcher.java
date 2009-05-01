@@ -6,6 +6,10 @@ import cbit.vcell.desktop.controls.*;
 import swingthreads.*;
 import cbit.util.*;
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Range;
+
 import cbit.vcell.client.*;
 /**
  * Insert the type's description here.

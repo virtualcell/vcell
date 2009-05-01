@@ -1,4 +1,4 @@
-package cbit.util;
+package org.vcell.util;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;

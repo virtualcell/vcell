@@ -330,7 +330,7 @@ public void setServerMonitorInfos(String hostName, ServerMonitorInfo serverMonit
 	if (index>=0){
 		fieldServerMonitorInfos[index] = serverMonitorInfos;
 	}else{
-		fieldServerMonitorInfos = (ServerMonitorInfo[])cbit.util.BeanUtils.addElement(fieldServerMonitorInfos,serverMonitorInfos);
+		fieldServerMonitorInfos = (ServerMonitorInfo[])org.vcell.util.BeanUtils.addElement(fieldServerMonitorInfos,serverMonitorInfos);
 		index = fieldServerMonitorInfos.length-1;
 	}
 	if (oldValue == null || !oldValue.equals(serverMonitorInfos)){

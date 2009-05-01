@@ -6,15 +6,15 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
+import org.vcell.util.Origin;
 
 import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 
 import cbit.image.ImageException;
-import cbit.util.Extent;
-import cbit.util.ISize;
-import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 

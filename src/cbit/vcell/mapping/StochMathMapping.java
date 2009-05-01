@@ -705,7 +705,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 				if ((isForwardRateNonZero) /*|| ((forwardRate == null) && (reverseRate == null))*/)
 				{
 					// get jump process name
-					String jpName = cbit.util.TokenMangler.mangleToSName(reactionStep.getName());
+					String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName());
 					// get probability
 					Expression exp = null;
 									
@@ -759,7 +759,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 				if (isReverseRateNonZero) // one more jump process for a reversible reaction
 				{
 					// get jump process name
-					String jpName = cbit.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
+					String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
 					Expression exp = null;
 					
 					// reactions are mass actions
@@ -822,7 +822,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 					if(fluxFunc.getRateToInside() != null && !fluxFunc.getRateToInside().isZero()) 
 					{
 						//jump process name
-						String jpName = cbit.util.TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
+						String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
 											
 						//get probability function, probExp = fluxRate*fluxCarrier*Size_membrane*602
 						//we do it here instead of fluxsolver, coz we need to use getMathSymbol0(), structuremapping...etc.
@@ -861,7 +861,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 					if(fluxFunc.getRateToOutside() != null && !fluxFunc.getRateToOutside().isZero()) 
 					{
 						//jump process name
-						String jpName = cbit.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
+						String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
 											
 						//get probability function, probExp = fluxRate*fluxCarrier*Size_membrane*602
 						Expression rate = fluxFunc.getRateToOutside();

@@ -1,7 +1,5 @@
 package cbit.vcell.geometry;
 import cbit.sql.ObjectReferenceWrapper;
-import cbit.util.Extent;
-import cbit.util.Origin;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Tree;
@@ -20,6 +18,9 @@ import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 ©*/
 import java.io.Serializable;
 import java.util.*;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -1297,7 +1298,7 @@ private static RegionMask[] calculateRegions3D(byte[] imageArray, int sliceOffse
 		}
 	}
 			
-	return (RegionMask[])cbit.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
 }
 
 
@@ -1345,7 +1346,7 @@ private static RegionMask[] calculateRegions3Dfaster(byte[] imageArray, int slic
 		}
 	}
 			
-	return (RegionMask[])cbit.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
 }
 
 

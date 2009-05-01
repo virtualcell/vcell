@@ -1,4 +1,4 @@
-package cbit.util;
+package org.vcell.util;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.io.ByteArrayInputStream;
@@ -12,6 +12,8 @@ import java.awt.geom.*;
 import java.awt.*;
 import java.util.Vector;
 import javax.swing.*;
+
+import cbit.util.SwingDispatcherSync;
 
 import java.io.Serializable;
 /**

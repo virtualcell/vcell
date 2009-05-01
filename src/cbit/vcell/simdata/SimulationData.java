@@ -19,6 +19,9 @@ import cbit.vcell.solvers.*;
 import cbit.vcell.parser.*;
 import cbit.util.*;
 import java.util.zip.*;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.FileUtils;
 /**
  * This type was created in VisualAge.
  */

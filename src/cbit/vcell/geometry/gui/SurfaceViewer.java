@@ -504,10 +504,10 @@ private void connPtoP2SetTarget() {
 private cbit.vcell.geometry.surface.SurfaceCollection createQuadSurface(cbit.vcell.geometry.Geometry geometry) throws cbit.image.ImageException, cbit.vcell.parser.ExpressionException, cbit.vcell.geometry.GeometryException {
 	cbit.vcell.geometry.GeometrySpec geometrySpec = geometry.getGeometrySpec();
 	if (geometrySpec.getDimension()>0){
-		cbit.util.ISize sampleSize = geometrySpec.getDefaultSampledImageSize();
+		org.vcell.util.ISize sampleSize = geometrySpec.getDefaultSampledImageSize();
 		// force to be 3D if at all spatial
 		if (geometrySpec.getDimension()<3){
-			sampleSize = new cbit.util.ISize(Math.max(2,sampleSize.getX()),Math.max(2,sampleSize.getY()),Math.max(2,sampleSize.getZ()));
+			sampleSize = new org.vcell.util.ISize(Math.max(2,sampleSize.getX()),Math.max(2,sampleSize.getY()),Math.max(2,sampleSize.getZ()));
 			System.out.println("SurfaceViewer.createSurface(): padding geometry from "+geometrySpec.getDimension()+"D to 3D for surface generation - region determination");
 		}
 		System.out.println("SurfaceViewer.createSurface(): size = "+sampleSize);
@@ -539,7 +539,7 @@ private cbit.vcell.geometry.surface.SurfaceCollection getCentroidSurface(cbit.vc
 		cbit.vcell.geometry.surface.OrigSurface quadSurface = (cbit.vcell.geometry.surface.OrigSurface)quadSurfaceCollection.getSurfaces(0);
 		cbit.vcell.geometry.surface.OrigSurface quadSurfaceCopy = null;
 		try {
-			quadSurfaceCopy = (cbit.vcell.geometry.surface.OrigSurface)cbit.util.BeanUtils.cloneSerializable(quadSurface);
+			quadSurfaceCopy = (cbit.vcell.geometry.surface.OrigSurface)org.vcell.util.BeanUtils.cloneSerializable(quadSurface);
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());

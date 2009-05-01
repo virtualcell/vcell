@@ -423,7 +423,7 @@ private void connPtoP1SetTarget() {
  */
 private cbit.vcell.geometry.gui.GeometrySizeDialog createGeometrySizeDialog() {
 	//cbit.vcell.desktop.controls.ClientDisplayManager.getClientDisplayManager().getMainClientWindow()
-	Frame frame = (Frame)cbit.util.BeanUtils.findTypeParentOfComponent(this,Frame.class);
+	Frame frame = (Frame)org.vcell.util.BeanUtils.findTypeParentOfComponent(this,Frame.class);
 	GeometrySizeDialog gsd = new cbit.vcell.geometry.gui.GeometrySizeDialog(frame,false);
 	gsd.setName("GeometrySizeDialog1");
 	gsd.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -1004,7 +1004,7 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
  * Comment
  */
 private void showSizeDialog() {
-	cbit.util.BeanUtils.centerOnComponent(getGeometrySizeDialog1(), this);
+	org.vcell.util.BeanUtils.centerOnComponent(getGeometrySizeDialog1(), this);
 	getGeometrySizeDialog1().init(getGeometry());
 	cbit.gui.ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
 }

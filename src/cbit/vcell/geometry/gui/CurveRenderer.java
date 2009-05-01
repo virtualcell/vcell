@@ -12,6 +12,8 @@ import cbit.vcell.geometry.*;
 import java.awt.geom.*;
 import java.util.Hashtable;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.image.DisplayAdapterService;
 import cbit.util.*;
 

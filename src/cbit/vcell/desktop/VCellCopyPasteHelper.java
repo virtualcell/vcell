@@ -297,9 +297,9 @@ public static void chooseApplyPaste_NOT_USED(
  */
 public static String formatPasteList(String s1, String s2, String s3,String s4) {
 	return 
-		cbit.util.BeanUtils.forceStringSize(s1,25," ",false)+" "+
-		cbit.util.BeanUtils.forceStringSize(s2,25," ",false)+" "+
-		cbit.util.BeanUtils.forceStringSize("'"+s3+"'",25," ",true)+
+		org.vcell.util.BeanUtils.forceStringSize(s1,25," ",false)+" "+
+		org.vcell.util.BeanUtils.forceStringSize(s2,25," ",false)+" "+
+		org.vcell.util.BeanUtils.forceStringSize("'"+s3+"'",25," ",true)+
 		" -> "+
 		"'"+s4+"'";
 }

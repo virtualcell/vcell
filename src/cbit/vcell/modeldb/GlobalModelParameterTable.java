@@ -60,7 +60,7 @@ public void insertModelParameters(Connection con,Model.ModelParameter[] modelPar
 	for(int i=0;i<modelParameeterXML.length();i+= MAX_CHARS){
 		String modelParameeterXMLS = modelParameeterXML.substring(i,i+Math.min(MAX_CHARS, modelParameeterXML.length()-i));
 		if(modelParameeterXMLS != null){
-			modelParameeterXMLS = cbit.util.TokenMangler.getSQLEscapedString(modelParameeterXMLS);
+			modelParameeterXMLS = org.vcell.util.TokenMangler.getSQLEscapedString(modelParameeterXMLS);
 		}
 		String modelParameeterXMLValues =
 			GlobalModelParameterTable.table.getSQLValueList(modelKey,modelParameeterXMLS);
@@ -99,7 +99,7 @@ public void setModelParameters(Connection con,Model model) throws SQLException,D
 		while(rset.next()){
 			String modelParameeterXMLS = rset.getString(GlobalModelParameterTable.table.xmlFragment.toString());
 			if(!rset.wasNull()){
-				modelParameeterXMLS = cbit.util.TokenMangler.getSQLRestoredString(modelParameeterXMLS);
+				modelParameeterXMLS = org.vcell.util.TokenMangler.getSQLRestoredString(modelParameeterXMLS);
 				modelParameeterXMLSB.append(modelParameeterXMLS);
 			}
 		}

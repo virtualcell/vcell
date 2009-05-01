@@ -1814,7 +1814,7 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
  * Comment
  */
 private void splitPaneResizeWeight() {
-	cbit.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
+	org.vcell.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
 }
 
 
@@ -1833,7 +1833,7 @@ private void treeSelection() {
 
 
 	try {
-		cbit.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 		
 		if (object instanceof VersionInfo){
 			setSelectedVersionInfo((VersionInfo)object);
@@ -1847,7 +1847,7 @@ private void treeSelection() {
 	} catch (Exception exc) {
 		handleException(exc);
 	} finally {
-		cbit.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 	}
 
 }

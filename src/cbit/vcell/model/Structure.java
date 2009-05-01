@@ -11,9 +11,9 @@ import java.util.*;
 import org.jdom.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.TokenMangler;
 import cbit.sql.Cacheable;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -49,7 +49,7 @@ public abstract class Structure
 			return children;
 		}
 		public String getName() {
-			return cbit.util.TokenMangler.fixTokenStrict(Structure.this.getName());
+			return org.vcell.util.TokenMangler.fixTokenStrict(Structure.this.getName());
 		}
 		public cbit.vcell.parser.NameScope getParent() {
 			if (Structure.this.fieldModel != null){
@@ -132,7 +132,7 @@ public StructureSize getStructureSize(){
 }
 
 public static String getDefaultStructureSizeName(String structureName){
-	return cbit.util.TokenMangler.fixTokenStrict(structureName);
+	return org.vcell.util.TokenMangler.fixTokenStrict(structureName);
 }
 
 

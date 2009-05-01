@@ -3,6 +3,9 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import java.util.*;
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.client.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.mathmodel.*;

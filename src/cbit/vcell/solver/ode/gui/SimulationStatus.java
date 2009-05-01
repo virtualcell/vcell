@@ -532,7 +532,7 @@ public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, Si
 	}
 	if (oldJobStatus == null) {
 		// we have nothing for this job, update
-		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[])cbit.util.BeanUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
+		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[])org.vcell.util.BeanUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
 		newSimStatus = new SimulationStatus(newJobStatuses);
 		newSimStatus.progressHash = oldStatus.progressHash;
 		newSimStatus.progressHash.put(Integer.toString(newJobStatus.getJobIndex()), simJobStatusEvent.getProgress());

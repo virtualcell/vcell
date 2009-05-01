@@ -4,7 +4,8 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 
-import cbit.util.TokenMangler;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;

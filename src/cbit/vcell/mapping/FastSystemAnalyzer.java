@@ -6,7 +6,8 @@ package cbit.vcell.mapping;
 ©*/
 import java.util.*;
 
-import cbit.util.BeanUtils;
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.math.Constant;

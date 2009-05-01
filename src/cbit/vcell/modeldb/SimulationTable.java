@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.beans.*;
 
-import cbit.util.TokenMangler;
 import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
@@ -17,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
 
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -77,8 +77,8 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])cbit.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])cbit.util.BeanUtils.addElement(f,vTable.mathRef);
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.mathRef);
 
 	Table[] t = {vTable,userTable};
 
@@ -129,9 +129,9 @@ public String getResultSetInfoSQL(User user,String extraConditions,String specia
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),
 		         //rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])cbit.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])cbit.util.BeanUtils.addElement(f,vTable.mathRef);
-	f = (Field[])cbit.util.BeanUtils.addElements(f,new Field[] {rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate,rsetTable.jobIndex});
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.mathRef);
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,new Field[] {rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate,rsetTable.jobIndex});
 	
 	Table[] t = {vTable,userTable,rsetTable};
 	
@@ -160,8 +160,8 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 	//
 //	System.out.println("taskDescriptionString '"+taskDescriptionString+"'");
 	String taskDescriptionString = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
-	taskDescriptionString = cbit.util.TokenMangler.getSQLRestoredString(taskDescriptionString);
-	cbit.util.CommentStringTokenizer solverTaskDescTokens = new cbit.util.CommentStringTokenizer(taskDescriptionString);
+	taskDescriptionString = org.vcell.util.TokenMangler.getSQLRestoredString(taskDescriptionString);
+	org.vcell.util.CommentStringTokenizer solverTaskDescTokens = new org.vcell.util.CommentStringTokenizer(taskDescriptionString);
 	
 	//
 	// get MathOverride Data (language) (MUST BE READ FIRST)
@@ -187,12 +187,12 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 		buffer.append("\n}\n");
 		mathOverridesString = buffer.toString();
 	}
-	cbit.util.CommentStringTokenizer mathOverrideTokens = new cbit.util.CommentStringTokenizer(mathOverridesString);
+	org.vcell.util.CommentStringTokenizer mathOverrideTokens = new org.vcell.util.CommentStringTokenizer(mathOverridesString);
 
 	String dataProcessingInstructionString = rset.getString(dataProcInstr.getUnqualifiedColName());
 	DataProcessingInstructions dpi = null;
 	if(!rset.wasNull() && dataProcessingInstructionString != null && dataProcessingInstructionString.length() > 0){
-		dataProcessingInstructionString = cbit.util.TokenMangler.getSQLRestoredString(dataProcessingInstructionString);
+		dataProcessingInstructionString = org.vcell.util.TokenMangler.getSQLRestoredString(dataProcessingInstructionString);
 		dpi = DataProcessingInstructions.fromDbXml(dataProcessingInstructionString);
 	}
 	//
@@ -220,7 +220,7 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 		int msY = rset.getInt(SimulationTable.table.meshSpecY.getUnqualifiedColName());
 		int msZ = rset.getInt(SimulationTable.table.meshSpecZ.getUnqualifiedColName());
 		cbit.vcell.solver.MeshSpecification meshSpec = new cbit.vcell.solver.MeshSpecification(simulation.getMathDescription().getGeometry());
-		meshSpec.setSamplingSize(new cbit.util.ISize(msX,msY,msZ));
+		meshSpec.setSamplingSize(new org.vcell.util.ISize(msX,msY,msZ));
 		simulation.getMeshSpecification().copyFrom(meshSpec);
 	}
 	
@@ -254,7 +254,7 @@ public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version ver
 		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
 	}
 	
-	buffer.append((solverTD != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
+	buffer.append((solverTD != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
 	if (simulation.getMathDescription() != null &&
 		simulation.getMathDescription().getGeometry() != null &&
 		simulation.getMathDescription().getGeometry().getDimension()>0){

@@ -3,11 +3,12 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Origin;
-import cbit.util.Extent;
 import cbit.util.SwingDispatcherSync;
 
 import java.awt.image.MemoryImageSource;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
 
 import cbit.vcell.geometry.*;
 import cbit.image.*;
@@ -436,7 +437,7 @@ public javax.swing.Icon createIcon(VCImage sampledImage, Geometry geom) throws c
 			for (int c = 0; c < compartmentalXY; c += 1) {
 				compartmentalPixels[c] = ((byte[]) (sampledImage.getPixels()))[0];
 			}
-			sampledGeometryHandles = new cbit.image.VCImageUncompressed(null, compartmentalPixels, new cbit.util.Extent(1, 1, 1), COMPARTMENT_SIZE_X, COMPARTMENT_SIZE_Y, 1);
+			sampledGeometryHandles = new cbit.image.VCImageUncompressed(null, compartmentalPixels, new org.vcell.util.Extent(1, 1, 1), COMPARTMENT_SIZE_X, COMPARTMENT_SIZE_Y, 1);
 		}
 		MemoryImageSource mis = new MemoryImageSource(	sampledGeometryHandles.getNumX(), 
 														sampledGeometryHandles.getNumY(), 
@@ -1020,8 +1021,8 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 			byte[] pixels = vcImage.getPixels();
 			
 			cbit.image.DisplayAdapterService das = new cbit.image.DisplayAdapterService();
-			das.setActiveScaleRange(new cbit.util.Range(0, 255));
-			das.setValueDomain(new cbit.util.Range(0, 255));
+			das.setActiveScaleRange(new org.vcell.util.Range(0, 255));
+			das.setValueDomain(new org.vcell.util.Range(0, 255));
 			das.addColorModelForValues(cbit.image.DisplayAdapterService.createContrastColorModel(), cbit.image.DisplayAdapterService.createGraySpecialColors(), "Contrast");
 			das.setActiveColorModelID("Contrast");
 			int[] rgb = new int[pixels.length];
@@ -1035,7 +1036,7 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 					rgb,
 					getGeometry().getExtent(),
 					getGeometry().getOrigin(),
-					new cbit.util.Range(0,255),
+					new org.vcell.util.Range(0,255),
 					0,
 					vcImage.getNumX(),1,
 					vcImage.getNumY(),vcImage.getNumX(),

@@ -693,12 +693,12 @@ Model getModel(User user, KeyValue key) throws DataAccessException, java.sql.SQL
 /**
  * publish method comment.
  */
-public cbit.util.Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAccessException,SQLException {
+public org.vcell.util.Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAccessException,SQLException {
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		cbit.util.Preference[] preferences = DbDriver.getPreferences(con,user);
+		org.vcell.util.Preference[] preferences = DbDriver.getPreferences(con,user);
 		return preferences;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -1568,7 +1568,7 @@ boolean isNameUsed(User owner, VersionableType vType, String vName, boolean bEna
 /**
  * publish method comment.
  */
-public void replacePreferences(User user,cbit.util.Preference[] preferences,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException {
+public void replacePreferences(User user,org.vcell.util.Preference[] preferences,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException {
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);

@@ -87,17 +87,17 @@ public DBFormalSpecies[] getEnzymes(java.sql.ResultSet rset, SessionLog log,bool
 			currentEnzymeID = enzymeID;
 			currentECNumber = 	rset.getString(EnzymeTable.table.ecNumber.toString());
 			currentSysname = 	rset.getString(EnzymeTable.table.sysname.toString());
-				currentSysname = (currentSysname != null?cbit.util.TokenMangler.getSQLRestoredString(currentSysname):null);
+				currentSysname = (currentSysname != null?org.vcell.util.TokenMangler.getSQLRestoredString(currentSysname):null);
 			currentReaction = 	rset.getString(EnzymeTable.table.reaction.toString());
-				currentReaction = (currentReaction != null?cbit.util.TokenMangler.getSQLRestoredString(currentReaction):null);
+				currentReaction = (currentReaction != null?org.vcell.util.TokenMangler.getSQLRestoredString(currentReaction):null);
 			currentCasID = 	rset.getString(EnzymeTable.table.casID.toString());
-				currentCasID = (currentCasID != null?cbit.util.TokenMangler.getSQLRestoredString(currentCasID):null);
+				currentCasID = (currentCasID != null?org.vcell.util.TokenMangler.getSQLRestoredString(currentCasID):null);
 			if(createBound){
 				currentDBSpeciesID =	new KeyValue(rset.getBigDecimal("dbspecies_id"));
 			}
 		}
 		currentPreferred = rset.getString(EnzymeAliasTable.table.preferred.toString());
-		currentAliasName = 	cbit.util.TokenMangler.getSQLRestoredString(rset.getString(EnzymeAliasTable.table.name.toString()));
+		currentAliasName = 	org.vcell.util.TokenMangler.getSQLRestoredString(rset.getString(EnzymeAliasTable.table.name.toString()));
 		if(currentPreferred.compareToIgnoreCase("T") == 0){
 			aliasNames.add(0,currentAliasName);
 		}else{
@@ -128,10 +128,10 @@ public DBFormalSpecies[] getEnzymes(java.sql.ResultSet rset, SessionLog log,bool
  */
 public String getSQLUpdateList(EnzymeInfo enzyme) {
     StringBuffer buffer = new StringBuffer();
-    buffer.append(reaction + "='" + cbit.util.TokenMangler.getSQLEscapedString(enzyme.getReaction()) + "',");
+    buffer.append(reaction + "='" + org.vcell.util.TokenMangler.getSQLEscapedString(enzyme.getReaction()) + "',");
     buffer.append(ecNumber + "='" + enzyme.getFormalID() + "',");
-    buffer.append(sysname + "='" + cbit.util.TokenMangler.getSQLEscapedString(enzyme.getSysname()) + "',");
-    buffer.append(casID + "='" + cbit.util.TokenMangler.getSQLEscapedString(enzyme.getCasID()) + "'");
+    buffer.append(sysname + "='" + org.vcell.util.TokenMangler.getSQLEscapedString(enzyme.getSysname()) + "',");
+    buffer.append(casID + "='" + org.vcell.util.TokenMangler.getSQLEscapedString(enzyme.getCasID()) + "'");
     return buffer.toString();
 }
 /**
@@ -155,7 +155,7 @@ public String getSQLValueList(KeyValue key, EnzymeInfo enzyme) {
     if (enzyme.getReaction() == null) {
         buffer.append("null" +",");
     } else {
-        buffer.append("'" + cbit.util.TokenMangler.getSQLEscapedString(enzyme.getReaction()) + "',");
+        buffer.append("'" + org.vcell.util.TokenMangler.getSQLEscapedString(enzyme.getReaction()) + "',");
     }
     //
     // insert ECNumber
@@ -175,7 +175,7 @@ public String getSQLValueList(KeyValue key, EnzymeInfo enzyme) {
     if (enzyme.getSysname() == null) {
         buffer.append("null");
     } else {
-        buffer.append("'" + cbit.util.TokenMangler.getSQLEscapedString(enzyme.getSysname()) + "',");
+        buffer.append("'" + org.vcell.util.TokenMangler.getSQLEscapedString(enzyme.getSysname()) + "',");
     }
 
      //
@@ -184,7 +184,7 @@ public String getSQLValueList(KeyValue key, EnzymeInfo enzyme) {
     if (enzyme.getCasID() == null) {
         buffer.append("null");
     } else {
-        buffer.append("'" + cbit.util.TokenMangler.getSQLEscapedString(enzyme.getCasID()) + "'");
+        buffer.append("'" + org.vcell.util.TokenMangler.getSQLEscapedString(enzyme.getCasID()) + "'");
     }
     
    buffer.append(")");

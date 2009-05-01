@@ -297,7 +297,7 @@ private void updateScanParamChoices(){
 	}
 	int jobIndex = -1;
 	try {
-		jobIndex = cbit.util.BeanUtils.coordinateToIndex(indices, bounds);
+		jobIndex = org.vcell.util.BeanUtils.coordinateToIndex(indices, bounds);
 	} catch (RuntimeException exc) {}
 	
 	// update viewer
@@ -334,7 +334,7 @@ private void updateScanParamChoices(){
 			}
 		}
 		if (pdeDataViewer.getPdeDataContext().getDataValues() == null) {
-			JInternalFrame frame = (JInternalFrame)cbit.util.BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
+			JInternalFrame frame = (JInternalFrame)org.vcell.util.BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
 			frame.setSize(frame.getWidth(), frame.getHeight() - 1);
 			frame.setSize(frame.getWidth(), frame.getHeight() + 1);
 			cbit.gui.DialogUtils.showErrorDialog(pdeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n");
