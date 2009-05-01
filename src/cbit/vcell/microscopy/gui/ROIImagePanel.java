@@ -17,7 +17,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
-import cbit.util.ISize;
+import org.vcell.util.ISize;
+
 import cbit.vcell.VirtualMicroscopy.ROI;
 
 public class ROIImagePanel extends JPanel {

@@ -29,9 +29,10 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Range;
+
 import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
-import cbit.util.Range;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;

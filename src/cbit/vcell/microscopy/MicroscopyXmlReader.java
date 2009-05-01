@@ -13,9 +13,10 @@ import java.util.zip.InflaterInputStream;
 import org.jdom.Element;
 
 import cbit.image.ImageException;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
 import org.vcell.util.document.KeyValue;
-import cbit.util.Extent;
-import cbit.util.Origin;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -480,7 +481,7 @@ private SimpleReferenceData getSimpleReferenceData(Element referenceDataElement/
     for (int i = 0; i < dataRowList.size(); i++){
           Element dataRowElement = dataRowList.get(i);
           String rowText = dataRowElement.getText();
-          cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(rowText);
+          org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(rowText);
           double[] rowData = new double[numCols];
           for (int j = 0; j < numCols; j++){
                 if (tokens.hasMoreTokens()){

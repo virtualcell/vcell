@@ -50,7 +50,8 @@ import cbit.gui.ZEnforcer;
 import cbit.image.ImageException;
 import org.vcell.util.document.KeyValue;
 import cbit.util.AsynchProgressPopup;
-import cbit.util.BeanUtils;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
