@@ -129,6 +129,16 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JPanel ivjStatusBarPane = null;
 	private JMenuItem ivjTile_HorizontallyMenuItem = null;
 	private JMenuItem ivjTile_VerticallyMenuItem = null;
+	//--------add application menu to main menu bar------
+	private JMenu appMenu = null;
+	private JMenu newAppMenu = null;
+	private JMenuItem newNonStochMenuItem = null;
+	private JMenuItem newStochMenuItem = null;
+	private JMenuItem appCopyMenuItem = null;
+	private JMenuItem appOpenMenuItem = null;
+	private JMenuItem appDeleteMenuItem = null;
+	private JMenuItem appRenameMenuItem = null;
+	//--------------------------------------
 	private JMenu ivjViewMenu = null;
 	private JMenu ivjWindowMenu = null;
 	private JSeparator ivjJSeparator6 = null;
@@ -252,6 +262,17 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
 				getWindowManager().getRequestManager().updateUserRegistration(false);
 			}
+			//added 'Application Menu' to main menu bar. May 2009
+			if (e.getSource() == DocumentWindow.this.getJMenuItemNonStochApp() ||
+				e.getSource() == DocumentWindow.this.getJMenuItemStochApp() ||
+				e.getSource() == DocumentWindow.this.getCopyMenuItem() ||
+				e.getSource() == DocumentWindow.this.getOpenAppMenuItem() ||
+				e.getSource() == DocumentWindow.this.getDeleteMenuItem() ||
+				e.getSource() == DocumentWindow.this.getRenameMenuItem()) 
+			{
+				applicationMenuAction(e);
+			}
+			
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem()) 
@@ -261,6 +282,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 	private JMenuItem ivjJMenuItemFieldData = null;
 	private JMenuItem jMenuItemMIRIAM = null;
 
+private void applicationMenuAction(ActionEvent e)
+{
+	if(getWindowManager() instanceof BioModelWindowManager)
+	{
+		((BioModelWindowManager)getWindowManager()).BioModelEditor_ApplicationMenu_ActionPerformed(e);
+	}	
+}	
 /**
  * DocumentWindow constructor comment.
  */
@@ -1373,6 +1401,7 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar = new javax.swing.JMenuBar();
 			ivjDocumentWindowJMenuBar.setName("DocumentWindowJMenuBar");
 			ivjDocumentWindowJMenuBar.add(getFileMenu());
+			ivjDocumentWindowJMenuBar.add(getApplicationMenu());
 			ivjDocumentWindowJMenuBar.add(getViewMenu());
 			ivjDocumentWindowJMenuBar.add(getServerMenu());
 			ivjDocumentWindowJMenuBar.add(getWindowMenu());
@@ -2689,7 +2718,166 @@ public TopLevelWindowManager getTopLevelWindowManager() {
 	return getWindowManager();
 }
 
+private JMenu getApplicationMenu() {
+	if (appMenu == null) {
+		try {
+			appMenu = new JMenu();
+			appMenu.setName("ApplicationMenu");
+			appMenu.setMnemonic('a');
+			appMenu.setText("Applications");
+			appMenu.add(getJMenuNew());
+			appMenu.add(getCopyMenuItem());
+			appMenu.add(getJSeparator1());
+			appMenu.add(getOpenAppMenuItem());
+			appMenu.add(getDeleteMenuItem());
+			appMenu.add(getRenameMenuItem());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return appMenu;
+}
 
+private JMenu getJMenuNew() {
+	if (newAppMenu == null) {
+		try {
+			newAppMenu = new javax.swing.JMenu();
+			newAppMenu.setName("JMenuNew");
+			newAppMenu.setMnemonic('N');
+			newAppMenu.setText("New");
+			newAppMenu.add(getJMenuItemNonStochApp());
+			newAppMenu.add(getJMenuItemStochApp());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return newAppMenu;
+}
+
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private JMenuItem getJMenuItemNonStochApp() {
+	if (newNonStochMenuItem == null) {
+		try {
+			newNonStochMenuItem = new javax.swing.JMenuItem();
+			newNonStochMenuItem.setName("JMenuItemNonStochApp");
+			newNonStochMenuItem.setText("Deterministic Application");
+			newNonStochMenuItem.setActionCommand("Create Non-stochastic Application");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return newNonStochMenuItem;
+}
+
+/**
+ * Return the NewMenuItem property value.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private JMenuItem getJMenuItemStochApp() {
+	if (newStochMenuItem == null) {
+		try {
+			newStochMenuItem = new javax.swing.JMenuItem();
+			newStochMenuItem.setName("JMenuItemStochApp");
+			newStochMenuItem.setMnemonic('n');
+			newStochMenuItem.setText("Stochastic Application");
+			newStochMenuItem.setActionCommand("Create Stochastic Application");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return newStochMenuItem;
+}
+
+private JMenuItem getCopyMenuItem() {
+	if (appCopyMenuItem == null) {
+		try {
+			appCopyMenuItem = new javax.swing.JMenuItem();
+			appCopyMenuItem.setName("CopyMenuItem");
+			appCopyMenuItem.setMnemonic('c');
+			appCopyMenuItem.setText("Copy");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return appCopyMenuItem;
+}
+
+
+private JMenuItem getOpenAppMenuItem() {
+	if (appOpenMenuItem == null) {
+		try {
+			appOpenMenuItem = new javax.swing.JMenuItem();
+			appOpenMenuItem.setName("OpenAppMenuItem");
+			appOpenMenuItem.setMnemonic('o');
+			appOpenMenuItem.setText("Open");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return appOpenMenuItem;
+}
+
+private JMenuItem getDeleteMenuItem() {
+	if (appDeleteMenuItem == null) {
+		try {
+			appDeleteMenuItem = new javax.swing.JMenuItem();
+			appDeleteMenuItem.setName("DeleteMenuItem");
+			appDeleteMenuItem.setMnemonic('d');
+			appDeleteMenuItem.setText("Delete");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return appDeleteMenuItem;
+}
+
+
+private JMenuItem getRenameMenuItem() {
+	if (appRenameMenuItem == null) {
+		try {
+			appRenameMenuItem = new javax.swing.JMenuItem();
+			appRenameMenuItem.setName("RenameMenuItem");
+			appRenameMenuItem.setMnemonic('r');
+			appRenameMenuItem.setText("Rename");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return appRenameMenuItem;
+}
 /**
  * Return the ViewMenu property value.
  * @return javax.swing.JMenu
@@ -2820,6 +3008,13 @@ private void initConnections() throws java.lang.Exception {
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
+	//added application menu to main menubar
+	getJMenuItemNonStochApp().addActionListener(ivjEventHandler);
+	getJMenuItemStochApp().addActionListener(ivjEventHandler);
+	getCopyMenuItem().addActionListener(ivjEventHandler);
+	getOpenAppMenuItem().addActionListener(ivjEventHandler);
+	getDeleteMenuItem().addActionListener(ivjEventHandler);
+	getRenameMenuItem().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -2977,7 +3172,15 @@ private void saveDocumentAsNew() {
 public void setWindowManager(DocumentWindowManager windowManager) {
 	DocumentWindowManager oldValue = fieldWindowManager;
 	fieldWindowManager = windowManager;
-	firePropertyChange("windowManager", oldValue, windowManager);
+	if(windowManager instanceof BioModelWindowManager)
+	{
+		getApplicationMenu().setVisible(true);
+	}
+	else
+	{
+		getApplicationMenu().setVisible(false);
+	}
+	firePropertyChange("windowManager", oldValue, windowManager);//May 2009,found it doesn't fire to any where.
 }
 
 

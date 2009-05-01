@@ -85,7 +85,7 @@ public BioModelEditor() {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:44:15 PM)
  */
-private void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
+public void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
 	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
 	if (e.getActionCommand().equals("Open")) {
 		openApplication();
