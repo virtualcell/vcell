@@ -2,8 +2,9 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.io.IOException;
 
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
+
 import cbit.vcell.opt.ExplicitFitObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;

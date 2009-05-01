@@ -48,6 +48,8 @@ import javax.swing.undo.UndoableEditSupport;
 import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
 import cbit.image.ImageException;
+
+import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.KeyValue;
 import cbit.util.AsynchProgressPopup;
 
@@ -73,7 +75,6 @@ import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.server.MergedDataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.desktop.controls.DataManager;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.MathMapping;
