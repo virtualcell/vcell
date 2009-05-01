@@ -1,12 +1,8 @@
-package cbit.vcell.document;
-import cbit.sql.Version;
-import cbit.sql.VersionInfo;
+package org.vcell.util.document;
 import java.io.*;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 public interface VCDocumentInfo extends VersionInfo {
 

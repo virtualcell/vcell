@@ -4,7 +4,7 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.Version;
+import org.vcell.util.document.Version;
 /**
  * This type was created in VisualAge.
  */

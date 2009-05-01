@@ -10,11 +10,11 @@ import java.util.Vector;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.SimulationInfo;
 import java.util.Enumeration;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.clientdb.DatabaseListener;
 import javax.swing.tree.DefaultTreeModel;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.clientdb.DocumentManager;

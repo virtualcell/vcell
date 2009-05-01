@@ -5,7 +5,6 @@ import cbit.vcell.mathmodel.*;
  * All rights reserved.
 ©*/
 import java.math.BigDecimal;
-import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
@@ -21,8 +20,11 @@ import java.awt.Font;
  */
 import javax.swing.*;
 
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
  
 public class ResultSetCellRenderer extends VCellBasicCellRenderer {
 /**

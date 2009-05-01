@@ -1,7 +1,6 @@
 package cbit.vcell.publish;
 import java.awt.print.PageFormat;
 import java.io.*;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.sql.DBCacheTable;
@@ -14,6 +13,7 @@ import java.awt.PrintJob;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 /**

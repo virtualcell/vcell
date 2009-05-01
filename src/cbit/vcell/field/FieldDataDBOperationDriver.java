@@ -18,8 +18,8 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionableType;
 
-import cbit.sql.VersionableType;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.db.SimulationJobTable;

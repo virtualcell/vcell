@@ -19,8 +19,6 @@ import cbit.vcell.mapping.*;
 import java.beans.*;
 import java.io.File;
 
-import cbit.sql.UserInfo;
-import cbit.sql.VersionableType;
 import cbit.util.*;
 import swingthreads.*;
 import java.awt.*;
@@ -29,7 +27,6 @@ import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.document.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
@@ -44,6 +41,14 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.vcell.xml.XMLTags;
 /**

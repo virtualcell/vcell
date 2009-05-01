@@ -4,8 +4,6 @@ import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.sql.UserInfo;
-import cbit.sql.VersionableType;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.mapping.SimulationContext;
@@ -34,6 +32,8 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VersionableType;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;

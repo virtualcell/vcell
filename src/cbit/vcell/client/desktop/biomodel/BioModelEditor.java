@@ -6,6 +6,9 @@ import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.sql.*;
 import javax.swing.*;
+
+import org.vcell.util.document.Versionable;
+
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.client.*;
 import cbit.vcell.client.server.*;

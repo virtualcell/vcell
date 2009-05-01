@@ -49,7 +49,7 @@ public static String enforceOwnershipDelete(User user, VersionTable vTable, Stri
  * @param conditions java.lang.String[]
  * @param special java.lang.String
  */
-public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, cbit.sql.Version version) 
+public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, org.vcell.util.document.Version version) 
 									throws org.vcell.util.DataAccessException {
 	//
 	if (!version.getOwner().compareEqual(user)) {
@@ -287,7 +287,7 @@ static String getVTableDirectSelectClause(VersionTable vTable,User user) {
 							//
 							// the object is public
 							//
-							vTable.privacy.getQualifiedColName() + " = " + cbit.vcell.server.GroupAccess.GROUPACCESS_ALL +
+							vTable.privacy.getQualifiedColName() + " = " + org.vcell.util.document.GroupAccess.GROUPACCESS_ALL +
 							" OR " +
 							//
 							// this user is in the access control list for this object

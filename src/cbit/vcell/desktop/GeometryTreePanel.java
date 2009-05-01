@@ -3,7 +3,6 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.VersionInfo;
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
 import javax.swing.tree.*;
@@ -13,7 +12,9 @@ import javax.swing.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionInfo;
 
 import java.awt.event.*;
 /**
@@ -27,7 +28,7 @@ public class GeometryTreePanel extends JPanel {
 	private boolean ivjConnPtoP2Aligning = false;
 	private cbit.vcell.clientdb.DocumentManager ivjDocumentManager = null;
 	private JScrollPane ivjJScrollPane1 = null;
-	private cbit.sql.VersionInfo fieldSelectedVersionInfo = null;
+	private org.vcell.util.document.VersionInfo fieldSelectedVersionInfo = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
 	private JLabel ivjJLabel1 = null;
@@ -45,7 +46,7 @@ public class GeometryTreePanel extends JPanel {
 	private boolean ivjConnPtoP3Aligning = false;
 	private GeometryMetaDataPanel ivjgeometryMetaDataPanel = null;
 	private JPanel ivjJPanel1 = null;
-	private cbit.sql.VersionInfo ivjselectedVersionInfo1 = null;
+	private org.vcell.util.document.VersionInfo ivjselectedVersionInfo1 = null;
 	private JLabel ivjJLabel2 = null;
 	private JPanel ivjJPanel2 = null;
 	private JScrollPane ivjJScrollPane2 = null;
@@ -162,7 +163,7 @@ private void actionsOnClick(MouseEvent mouseEvent) {
 		return;
 	}
 	if (SwingUtilities.isRightMouseButton(mouseEvent) && (! getPopupMenuDisabled()) && getSelectedVersionInfo() instanceof GeometryInfo) {
-		cbit.sql.Version version = getSelectedVersionInfo().getVersion();
+		org.vcell.util.document.Version version = getSelectedVersionInfo().getVersion();
 		boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
 		getJMenuItemPermission().setEnabled(isOwner);
 		getJMenuItemDelete().setEnabled(isOwner);
@@ -580,7 +581,7 @@ private void connEtoM3(cbit.vcell.clientdb.DocumentManager value) {
  * @param value cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.sql.VersionInfo value) {
+private void connEtoM5(org.vcell.util.document.VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -1436,7 +1437,7 @@ public boolean getPopupMenuDisabled() {
 /**
  * Comment
  */
-public cbit.vcell.biomodel.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
+public org.vcell.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
 	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
 		return (BioModelInfo)selectedBioModelNode.getUserObject();
 	}
@@ -1481,7 +1482,7 @@ public Object getSelectedObject(BioModelNode selectedBioModelNode) {
  * @return The selectedVersionInfo property value.
  * @see #setSelectedVersionInfo
  */
-public cbit.sql.VersionInfo getSelectedVersionInfo() {
+public org.vcell.util.document.VersionInfo getSelectedVersionInfo() {
 	return fieldSelectedVersionInfo;
 }
 
@@ -1491,7 +1492,7 @@ public cbit.sql.VersionInfo getSelectedVersionInfo() {
  * @return cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.sql.VersionInfo getselectedVersionInfo1() {
+private org.vcell.util.document.VersionInfo getselectedVersionInfo1() {
 	// user code begin {1}
 	// user code end
 	return ivjselectedVersionInfo1;
@@ -1748,8 +1749,8 @@ public void setPopupMenuDisabled(boolean popupMenuDisabled) {
  * @param selectedVersionInfo The new value for the property.
  * @see #getSelectedVersionInfo
  */
-private void setSelectedVersionInfo(cbit.sql.VersionInfo selectedVersionInfo) {
-	cbit.sql.VersionInfo oldValue = fieldSelectedVersionInfo;
+private void setSelectedVersionInfo(org.vcell.util.document.VersionInfo selectedVersionInfo) {
+	org.vcell.util.document.VersionInfo oldValue = fieldSelectedVersionInfo;
 	fieldSelectedVersionInfo = selectedVersionInfo;
 	firePropertyChange("selectedVersionInfo", oldValue, selectedVersionInfo);
 }
@@ -1760,10 +1761,10 @@ private void setSelectedVersionInfo(cbit.sql.VersionInfo selectedVersionInfo) {
  * @param newValue cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setselectedVersionInfo1(cbit.sql.VersionInfo newValue) {
+private void setselectedVersionInfo1(org.vcell.util.document.VersionInfo newValue) {
 	if (ivjselectedVersionInfo1 != newValue) {
 		try {
-			cbit.sql.VersionInfo oldValue = getselectedVersionInfo1();
+			org.vcell.util.document.VersionInfo oldValue = getselectedVersionInfo1();
 			ivjselectedVersionInfo1 = newValue;
 			connEtoM5(ivjselectedVersionInfo1);
 			firePropertyChange("selectedVersionInfo", oldValue, newValue);

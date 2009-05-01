@@ -4,6 +4,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionableFamily;
 
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.SolverResultSetInfo;
@@ -41,8 +42,8 @@ public RpcDbServerProxy(User argUser, JmsClientMessaging clientMessaging, org.vc
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec curateSpec) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.document.VCDocumentInfo)rpc("curate",new Object[]{user,curateSpec});
+public org.vcell.util.document.VCDocumentInfo curate(org.vcell.util.document.CurateSpec curateSpec) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (org.vcell.util.document.VCDocumentInfo)rpc("curate",new Object[]{user,curateSpec});
 }
 
 
@@ -145,7 +146,7 @@ public org.vcell.util.ReferenceQueryResult findReferences(org.vcell.util.Referen
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
 	return (VersionableFamily)rpc("getAllReferences",new Object[]{user, vType,key});
 }
 
@@ -157,8 +158,8 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.Versionabl
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return (cbit.vcell.biomodel.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
+public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return (org.vcell.util.document.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
 }
 
 
@@ -169,8 +170,8 @@ public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(org.vcell.util.document.
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.biomodel.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
+public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws org.vcell.util.DataAccessException {
+	return (org.vcell.util.document.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -299,8 +300,8 @@ public BigString getGeometryXML(org.vcell.util.document.KeyValue key) throws org
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return (cbit.vcell.mathmodel.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
+public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return (org.vcell.util.document.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
 }
 
 
@@ -311,8 +312,8 @@ public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(org.vcell.util.docume
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean bAll) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.mathmodel.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
+public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws org.vcell.util.DataAccessException {
+	return (org.vcell.util.document.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -515,8 +516,8 @@ public VCInfoContainer getVCInfoContainer() throws org.vcell.util.DataAccessExce
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String addUserToGroup, boolean isHidden) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return (cbit.sql.VersionInfo)rpc("groupAddUser",new Object[]{user, vType,key,addUserToGroup,new Boolean(isHidden)});
+public org.vcell.util.document.VersionInfo groupAddUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String addUserToGroup, boolean isHidden) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return (org.vcell.util.document.VersionInfo)rpc("groupAddUser",new Object[]{user, vType,key,addUserToGroup,new Boolean(isHidden)});
 }
 
 
@@ -527,8 +528,8 @@ public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType vType, org.vce
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String userRemoveFromGroup, boolean isHiddenFromOwner) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return (cbit.sql.VersionInfo)rpc("groupRemoveUser",new Object[]{user, vType,key,userRemoveFromGroup,new Boolean(isHiddenFromOwner)});
+public org.vcell.util.document.VersionInfo groupRemoveUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String userRemoveFromGroup, boolean isHiddenFromOwner) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return (org.vcell.util.document.VersionInfo)rpc("groupRemoveUser",new Object[]{user, vType,key,userRemoveFromGroup,new Boolean(isHiddenFromOwner)});
 }
 
 
@@ -539,8 +540,8 @@ public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, org.
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return (cbit.sql.VersionInfo)rpc("groupSetPrivate",new Object[]{user, vType,key});
+public org.vcell.util.document.VersionInfo groupSetPrivate(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return (org.vcell.util.document.VersionInfo)rpc("groupSetPrivate",new Object[]{user, vType,key});
 }
 
 
@@ -551,8 +552,8 @@ public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, org.
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return (cbit.sql.VersionInfo)rpc("groupSetPublic",new Object[]{user, vType,key});
+public org.vcell.util.document.VersionInfo groupSetPublic(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
+	return (org.vcell.util.document.VersionInfo)rpc("groupSetPublic",new Object[]{user, vType,key});
 }
 
 

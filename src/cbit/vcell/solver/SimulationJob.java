@@ -1,5 +1,5 @@
 package cbit.vcell.solver;
-import cbit.vcell.field.FieldDataIdentifierSpec;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
 public class SimulationJob implements java.io.Serializable {
 	private Simulation workingSim = null;

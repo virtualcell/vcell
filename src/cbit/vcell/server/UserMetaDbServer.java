@@ -21,11 +21,13 @@ import java.rmi.*;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
-import cbit.sql.VersionInfo;
-import cbit.sql.Versionable;
-import cbit.sql.VersionableType;
 
 /**
  * This type was created in VisualAge.
@@ -35,7 +37,7 @@ public interface UserMetaDbServer extends java.rmi.Remote {
  * Insert the method's description here.
  * Creation date: (5/23/2006 9:42:56 AM)
  */
-cbit.vcell.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException;
@@ -118,7 +120,7 @@ org.vcell.util.ReferenceQueryResult findReferences(org.vcell.util.ReferenceQuery
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-cbit.vcell.modeldb.VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws RemoteException, DataAccessException, ObjectNotFoundException;
+org.vcell.util.document.VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws RemoteException, DataAccessException, ObjectNotFoundException;
 
 
 /**
@@ -128,7 +130,7 @@ cbit.vcell.modeldb.VersionableFamily getAllReferences(VersionableType vType, Key
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -138,7 +140,7 @@ cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccess
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
+org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -405,7 +407,7 @@ cbit.vcell.modeldb.VCInfoContainer getVCInfoContainer() throws DataAccessExcepti
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.sql.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -415,7 +417,7 @@ cbit.sql.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String add
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.sql.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -425,7 +427,7 @@ cbit.sql.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String 
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.sql.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -435,7 +437,7 @@ cbit.sql.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.sql.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**

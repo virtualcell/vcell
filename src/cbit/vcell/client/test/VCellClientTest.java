@@ -39,7 +39,7 @@ public static void main(java.lang.String[] args) {
 	}
 	String user = null;
 	String password = null;
-	cbit.vcell.document.VCDocument initialDocument = null;
+	org.vcell.util.document.VCDocument initialDocument = null;
 	if (args.length == 3) {
 		hosts[0] = args[0];
 		user = args[1];

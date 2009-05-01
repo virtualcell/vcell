@@ -1,17 +1,14 @@
-package cbit.sql;
+package org.vcell.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.GroupAccess;
 import java.util.Date;
 import java.math.BigDecimal;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 /**
  * This type was created in VisualAge.

@@ -3,11 +3,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.image.VCImageInfo;
-import cbit.sql.VersionInfo;
-import cbit.sql.VersionableType;
 import cbit.vcell.export.server.ExportLog;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
@@ -16,7 +12,11 @@ import java.io.ByteArrayInputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.vcell.util.BigString;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
 
 /**
  * Insert the type's description here.
@@ -53,7 +53,7 @@ public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos() {
+public org.vcell.util.document.BioModelInfo[] getBioModelInfos() {
 	if (bioModelInfos == null) {
 		inflate();
 	}
@@ -79,7 +79,7 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos() {
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.mathmodel.MathModelInfo[]
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos() {
+public org.vcell.util.document.MathModelInfo[] getMathModelInfos() {
 	if (mathModelInfos == null) {
 		inflate();
 	}

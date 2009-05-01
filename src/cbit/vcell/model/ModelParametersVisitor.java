@@ -4,11 +4,12 @@ import java.io.PrintStream;
 
 import org.vcell.util.BigString;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.test.ClientTester;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.geometry.Geometry;
@@ -18,7 +19,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.test.LumpedKineticsTester;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;

@@ -2,7 +2,8 @@ package cbit.vcell.server;
 
 import java.io.Serializable;
 
-import cbit.sql.UserInfo;
+import org.vcell.util.document.UserInfo;
+
 
 public class UserRegistrationResults implements Serializable{
 	private UserInfo userInfo;

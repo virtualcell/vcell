@@ -1,4 +1,4 @@
-package cbit.vcell.messaging.admin.sorttable;
+package org.vcell.util.gui.sorttable;
 
 /*
 =====================================================================

@@ -2,7 +2,6 @@ package cbit.xml.merge;
 import cbit.gui.ZEnforcer;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.xml.XmlHelper;
@@ -12,6 +11,7 @@ import cbit.vcell.xml.XMLTags;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.util.document.VCDocument;
 
 import java.awt.Component;
 import java.util.Enumeration;

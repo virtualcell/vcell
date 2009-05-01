@@ -4,6 +4,9 @@ package cbit.vcell.desktop;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.util.document.BioModelInfo;
+
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.*;

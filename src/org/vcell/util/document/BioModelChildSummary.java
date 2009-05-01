@@ -1,5 +1,7 @@
-package cbit.vcell.biomodel;
+package org.vcell.util.document;
 import java.util.Vector;
+
+import cbit.vcell.biomodel.BioModel;
 /**
  * Insert the type's description here.
  * Creation date: (8/20/2004 2:11:48 PM)

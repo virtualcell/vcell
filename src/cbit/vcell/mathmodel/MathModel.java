@@ -1,5 +1,4 @@
 package cbit.vcell.mathmodel;
-import cbit.sql.Version;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,6 +10,7 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.Version;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.model.gui.VCellNames;
@@ -19,8 +19,8 @@ import cbit.vcell.model.gui.VCellNames;
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class MathModel implements cbit.vcell.document.SimulationOwner, cbit.vcell.document.VCDocument, org.vcell.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
-	private cbit.sql.Version fieldVersion = null;
+public class MathModel implements cbit.vcell.document.SimulationOwner, org.vcell.util.document.VCDocument, org.vcell.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
+	private org.vcell.util.document.Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -313,7 +313,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (3/18/2004 1:54:51 PM)
  * @param newVersion cbit.sql.Version
  */
-public void forceNewVersionAnnotation(cbit.sql.Version newVersion) throws PropertyVetoException {
+public void forceNewVersionAnnotation(org.vcell.util.document.Version newVersion) throws PropertyVetoException {
 	if (getVersion().getVersionKey().equals(newVersion.getVersionKey())) {
 		setVersion(newVersion);
 	} else {
@@ -439,7 +439,7 @@ public java.lang.String getVCML() throws Exception {
  * Gets the version property (cbit.sql.Version) value.
  * @return The version property value.
  */
-public cbit.sql.Version getVersion() {
+public org.vcell.util.document.Version getVersion() {
 	return fieldVersion;
 }
 
@@ -658,7 +658,7 @@ public void setSimulations(cbit.vcell.solver.Simulation[] simulations) throws ja
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(cbit.sql.Version version) throws PropertyVetoException {
+private void setVersion(org.vcell.util.document.Version version) throws PropertyVetoException {
 	this.fieldVersion = version;
 	if (version != null){
 		setName(version.getName());

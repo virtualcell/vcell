@@ -12,8 +12,12 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
-import cbit.sql.Version;
 import cbit.vcell.modeldb.*;
 /**
  * This type was created in VisualAge.
@@ -230,7 +234,7 @@ public static java.util.Vector getReferencingVersionableTypes(VersionableType vT
  * @param rset ResultSet
  * @param log SessionLog
  */
-public static Version getVersion(ResultSet rset, cbit.vcell.server.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
+public static Version getVersion(ResultSet rset, org.vcell.util.document.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
 	KeyValue vBranchPointRef = null;
 	java.math.BigDecimal vBranchID = null;
 	java.util.Date vDate = null;

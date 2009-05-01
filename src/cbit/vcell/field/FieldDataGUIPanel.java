@@ -44,7 +44,6 @@ import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -69,6 +68,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCDocument;
 
 public class FieldDataGUIPanel extends JPanel{
 

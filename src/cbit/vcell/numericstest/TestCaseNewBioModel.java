@@ -1,8 +1,8 @@
 package cbit.vcell.numericstest;
 
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.biomodel.BioModelInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/10/2004 9:55:10 AM)

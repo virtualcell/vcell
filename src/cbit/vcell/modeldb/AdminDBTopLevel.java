@@ -20,6 +20,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;

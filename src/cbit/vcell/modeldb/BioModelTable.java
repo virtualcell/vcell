@@ -15,8 +15,11 @@ import java.sql.Connection;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 
 /**
  * This type was created in VisualAge.
@@ -122,7 +125,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 
 		
-	return new cbit.vcell.biomodel.BioModelInfo(version, modelRef, bioModelChildSummary);
+	return new org.vcell.util.document.BioModelInfo(version, modelRef, bioModelChildSummary);
 }
 /**
  * This method was created in VisualAge.

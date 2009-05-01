@@ -4,7 +4,6 @@ import cbit.gui.UtilCancelException;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TestingFrameworkWindowManager;
@@ -25,6 +24,8 @@ import java.util.Vector;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.client.task.TFRunSims;
@@ -36,7 +37,6 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.document.VCDocumentInfo;
 /**
  * Insert the type's description here.
  * Creation date: (7/15/2004 2:36:18 PM)

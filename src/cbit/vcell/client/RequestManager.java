@@ -1,6 +1,5 @@
 package cbit.vcell.client;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.xml.merge.TMLPanel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
@@ -8,6 +7,10 @@ import javax.swing.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
 
 import java.awt.*;
 
@@ -21,7 +24,6 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.gui.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.server.*;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestSuiteNew;

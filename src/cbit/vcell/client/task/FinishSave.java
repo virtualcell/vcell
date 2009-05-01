@@ -4,6 +4,7 @@ import cbit.vcell.client.*;
 import java.beans.*;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;

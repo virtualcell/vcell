@@ -7,21 +7,21 @@ import java.util.Iterator;
 
 import org.vcell.util.BigString;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 
 import com.icl.saxon.functions.UnparsedEntityURI;
 
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.test.ClientTester;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.test.LumpedKineticsTester;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;

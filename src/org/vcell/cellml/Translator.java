@@ -1,5 +1,4 @@
 package org.vcell.cellml;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.xml.XmlParseException;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -7,6 +6,7 @@ import cbit.util.xml.XmlUtil;
 import org.jdom.Document;
 import org.jdom.Element; 
 import org.jdom.output.XMLOutputter; 
+import org.vcell.util.document.VCDocument;
 
 import java.io.IOException;
 import java.io.Reader;

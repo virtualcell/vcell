@@ -1,5 +1,4 @@
 package org.vcell.cellml;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
@@ -14,6 +13,7 @@ import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.VCDocument;
 
 import java.io.IOException;
 import java.util.Iterator;

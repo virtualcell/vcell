@@ -6,11 +6,11 @@ import java.util.StringTokenizer;
 import org.jdom.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

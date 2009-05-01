@@ -3,7 +3,8 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.biomodel.BioModelInfo;
+import org.vcell.util.document.BioModelInfo;
+
 import cbit.vcell.clientdb.DocumentManager;
 /**
  * This type was created in VisualAge.

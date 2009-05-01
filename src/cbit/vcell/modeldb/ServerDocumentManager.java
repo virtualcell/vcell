@@ -7,23 +7,23 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
 import cbit.image.VCImage;
-import cbit.sql.Version;
-import cbit.sql.VersionInfo;
-import cbit.sql.Versionable;
-import cbit.sql.VersionableType;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelChildSummary;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelChildSummary;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
 import cbit.vcell.solver.Simulation;
@@ -594,7 +594,7 @@ boolean isChanged(User user, Geometry geometry) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-private boolean isChanged0(User user, cbit.sql.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
+private boolean isChanged0(User user, org.vcell.util.document.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
 	/*
 	//
 	// identify versionable as it was last loaded from the database

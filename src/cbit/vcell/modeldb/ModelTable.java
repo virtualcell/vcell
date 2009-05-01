@@ -9,6 +9,8 @@ import java.sql.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.*;
 import cbit.vcell.model.*;

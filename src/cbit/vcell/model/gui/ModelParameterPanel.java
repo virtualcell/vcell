@@ -39,7 +39,7 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private ModelParameterTableModel ivjmodelParameterTableModel = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjScrollPaneTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjScrollPaneTable = null;
 	private cbit.vcell.model.Model fieldModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private cbit.vcell.model.Model ivjmodel1 = null;
@@ -52,7 +52,7 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjthis12 = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjthis12 = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -418,10 +418,10 @@ private ModelParameterTableModel getmodelParameterTableModel() {
  * Return the ScrollPaneTable property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
+private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
@@ -439,7 +439,7 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
  
-private cbit.vcell.messaging.admin.sorttable.JSortTable getthis12() {
+private org.vcell.util.gui.sorttable.JSortTable getthis12() {
 	return ivjthis12;
 }
 
@@ -1042,7 +1042,7 @@ private void setmodel1(cbit.vcell.model.Model newValue) {
  * Set the this12 to a new value.
  * @param newValue cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-private void setthis12(cbit.vcell.messaging.admin.sorttable.JSortTable newValue) {
+private void setthis12(org.vcell.util.gui.sorttable.JSortTable newValue) {
 	if (ivjthis12 != newValue) {
 		try {
 			/* Stop listening for events from the current object */

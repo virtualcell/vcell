@@ -6,8 +6,8 @@ import java.util.Vector;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionableTypeVersion;
 
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 public class FieldDataDBOperationSpec implements Serializable {

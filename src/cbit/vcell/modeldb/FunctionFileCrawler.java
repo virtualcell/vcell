@@ -245,7 +245,7 @@ private void scanAllUsers() throws SQLException, DataAccessException, java.rmi.R
 	File userDirs[] = dataRootDir.listFiles();
 	log.print("Total user directories: " + userDirs.length);
 
-	cbit.sql.UserInfo userInfos[] = adminDbServer.getUserInfos();	
+	org.vcell.util.document.UserInfo userInfos[] = adminDbServer.getUserInfos();	
 
 	File userDir = null;
 	File outputDir = getOutputDirectory();

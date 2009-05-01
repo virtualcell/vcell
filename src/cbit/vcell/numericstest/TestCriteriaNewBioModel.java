@@ -1,7 +1,8 @@
 package cbit.vcell.numericstest;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+
 import cbit.vcell.solver.test.*;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.solver.SimulationInfo;
 /**
  * Insert the type's description here.

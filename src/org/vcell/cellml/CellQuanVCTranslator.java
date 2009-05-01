@@ -1,7 +1,6 @@
 package org.vcell.cellml;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.dictionary.MolMassTable;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryTest;
@@ -36,6 +35,7 @@ import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.VCDocument;
 
 import java.util.ArrayList;
 import java.util.Hashtable;

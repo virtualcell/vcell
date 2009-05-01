@@ -25,16 +25,16 @@ public class ACLEditor extends javax.swing.JPanel {
 				aclList = argACLList;
 			}
 		}
-		public ACLState(cbit.vcell.server.GroupAccess argGroupAccess) {
+		public ACLState(org.vcell.util.document.GroupAccess argGroupAccess) {
 			if(argGroupAccess == null){
 				throw new IllegalArgumentException("GroupAccess cannot be null");
 			}
-			if(argGroupAccess instanceof cbit.vcell.server.GroupAccessNone){
+			if(argGroupAccess instanceof org.vcell.util.document.GroupAccessNone){
 				isPrivate = true;
-			}else if(argGroupAccess instanceof cbit.vcell.server.GroupAccessAll){
+			}else if(argGroupAccess instanceof org.vcell.util.document.GroupAccessAll){
 				isPrivate = false;
-			}else if(argGroupAccess instanceof cbit.vcell.server.GroupAccessSome){
-				org.vcell.util.document.User[] users = ((cbit.vcell.server.GroupAccessSome)argGroupAccess).getNormalGroupMembers();
+			}else if(argGroupAccess instanceof org.vcell.util.document.GroupAccessSome){
+				org.vcell.util.document.User[] users = ((org.vcell.util.document.GroupAccessSome)argGroupAccess).getNormalGroupMembers();
 				aclList = new String[users.length];
 				for(int i=0;i<users.length;i+= 1){
 					aclList[i] = users[i].getName();

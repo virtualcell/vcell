@@ -36,7 +36,17 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessSome;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
 
 import cbit.vcell.client.task.*;
 /**
@@ -790,7 +800,7 @@ public void findModelsUsingSelectedGeometry() {
 	try{
 		org.vcell.util.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
 		//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
-		cbit.vcell.modeldb.VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
+		org.vcell.util.document.VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
 		//System.out.println("\n");
 		//if(children != null){
 			//for(int i=0;i<children.length;i+= 1){
@@ -825,7 +835,7 @@ public void findModelsUsingSelectedGeometry() {
 				boolean isBioModel = dependants[i].getVType().equals(VersionableType.BioModelMetaData);
 				boolean isTop = isBioModel || dependants[i].getVType().equals(VersionableType.MathModelMetaData);
 				if(isTop){
-					cbit.vcell.modeldb.VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
+					org.vcell.util.document.VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
 					for(int j=0;j<vrArr2.length;j+= 1){
 						if( (vrArr2[j].from() == dependants[i]) &&
 							vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){
@@ -851,7 +861,7 @@ public void findModelsUsingSelectedGeometry() {
 			Object[] listObj = choices.keySet().toArray();
 			Object o = cbit.gui.DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
 			if(o != null){
-				cbit.vcell.modeldb.VersionableTypeVersion v = (cbit.vcell.modeldb.VersionableTypeVersion)choices.get(o);
+				org.vcell.util.document.VersionableTypeVersion v = (org.vcell.util.document.VersionableTypeVersion)choices.get(o);
 				//System.out.println(v);
 				if(v.getVType().equals(VersionableType.BioModelMetaData)){
 					BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());

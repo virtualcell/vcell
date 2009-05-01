@@ -5,7 +5,7 @@ package cbit.vcell.xml;
  * Creation date: (6/13/2004 1:37:46 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class XMLInfo implements cbit.vcell.document.VCDocumentInfo{
+public class XMLInfo implements org.vcell.util.document.VCDocumentInfo{
 	private String xmlString = null;
 /**
  * XMLInfo constructor comment.
@@ -18,9 +18,9 @@ public XMLInfo(String newXMLString) {
  * This method was created in VisualAge.
  * @return cbit.sql.Version
  */
-public cbit.sql.Version getVersion() {
+public org.vcell.util.document.Version getVersion() {
 	// throw new RuntimeException("Not yet implemented!!");
-	return new cbit.sql.Version("DummyVersion", new org.vcell.util.document.User("anu", new org.vcell.util.document.KeyValue("123")));
+	return new org.vcell.util.document.Version("DummyVersion", new org.vcell.util.document.User("anu", new org.vcell.util.document.KeyValue("123")));
 }
 /**
  * Insert the method's description here.

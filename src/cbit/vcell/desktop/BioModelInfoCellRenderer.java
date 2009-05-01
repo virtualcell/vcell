@@ -7,7 +7,6 @@ import cbit.util.*;
 ©*/
 import java.awt.Font;
 import java.math.BigDecimal;
-import cbit.sql.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
@@ -25,6 +24,7 @@ import javax.swing.*;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
  
 public class BioModelInfoCellRenderer extends VCellBasicCellRenderer {
 /**

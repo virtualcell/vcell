@@ -1,18 +1,16 @@
-package cbit.vcell.biomodel;
+package org.vcell.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import org.vcell.util.document.KeyValue;
 
-import cbit.sql.Version;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 4:54:24 PM)
  * @author: Jim Schaff
  */
-public class BioModelInfo implements cbit.vcell.document.VCDocumentInfo {
+public class BioModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private Version version = null;
 	private KeyValue modelKey = null;
 	private BioModelChildSummary bioModelChildSummary = null;
@@ -59,7 +57,7 @@ public org.vcell.util.document.KeyValue getModelKey() {
  * This method was created in VisualAge.
  * @return cbit.sql.Version
  */
-public cbit.sql.Version getVersion() {
+public org.vcell.util.document.Version getVersion() {
 	return version;
 }
 /**

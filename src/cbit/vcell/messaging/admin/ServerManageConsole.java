@@ -27,9 +27,9 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.messaging.*;
-import cbit.vcell.messaging.admin.sorttable.JSortTable;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.messaging.server.RpcSimServerProxy;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -107,7 +107,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JButton ivjRemoveFromListButton = null;
 	private JTextField ivjQueryServerIDField = null;
 	private JPanel ivjUserConnectionPage = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjUserConnectionTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjUserConnectionTable = null;
 	private JLabel ivjNumUserConnectionLabel = null;
 	private JPanel ivjBroadcastPanel = null;
 	private JButton ivjMessageResetButton = null;
@@ -1282,10 +1282,10 @@ private javax.swing.JButton getQueryResetButton() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getQueryResultTable() {
+private org.vcell.util.gui.sorttable.JSortTable getQueryResultTable() {
 	if (ivjQueryResultTable == null) {
 		try {
-			ivjQueryResultTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjQueryResultTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjQueryResultTable.setName("QueryResultTable");
 			//getJScrollPane2().setColumnHeaderView(ivjQueryResultTable.getTableHeader());
 			ivjQueryResultTable.setModel(new cbit.vcell.messaging.admin.JobTableModel());
@@ -1783,10 +1783,10 @@ private javax.swing.JPanel getServiceStatusPage() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getConfigTable() {
+private org.vcell.util.gui.sorttable.JSortTable getConfigTable() {
 	if (ivjConfigTable == null) {
 		try {
-			ivjConfigTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjConfigTable = new org.vcell.util.gui.sorttable.JSortTable();
 			//getConfigScrollPane().setColumnHeaderView(ivjConfigTable.getTableHeader());
 			ivjConfigTable.setModel(new ServiceStatusTableModel());
 			//ivjConfigTable.setBounds(0, 0, 200, 200);
@@ -1806,10 +1806,10 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getConfigTable() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getServiceStatusTable() {
+private org.vcell.util.gui.sorttable.JSortTable getServiceStatusTable() {
 	if (ivjServiceStatusTable == null) {
 		try {
-			ivjServiceStatusTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjServiceStatusTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjServiceStatusTable.setModel(new ServiceInstanceStatusTableModel());
 			//ivjServiceStatusTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
@@ -2057,10 +2057,10 @@ private javax.swing.JPanel getUserConnectionPage() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getUserConnectionTable() {
+private org.vcell.util.gui.sorttable.JSortTable getUserConnectionTable() {
 	if (ivjUserConnectionTable == null) {
 		try {
-			ivjUserConnectionTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjUserConnectionTable = new org.vcell.util.gui.sorttable.JSortTable();
 			//getJScrollPane4().setColumnHeaderView(ivjUserConnectionTable.getTableHeader());
 			//ivjUserConnectionTable.setBounds(0, 0, 200, 200);
 			getUserConnectionTable().setModel(new cbit.vcell.messaging.admin.UserConnectionTableModel());
@@ -2881,7 +2881,7 @@ public void setSelectedReturnedSimulationJobStatus(int selectedRow) {
  * Method generated to support the promotion of the userConnectionTableModel attribute.
  * @param arg1 cbit.vcell.messaging.admin.sorttable.SortTableModel
  */
-public void setUserConnectionTableModel(cbit.vcell.messaging.admin.sorttable.SortTableModel arg1) {
+public void setUserConnectionTableModel(org.vcell.util.gui.sorttable.SortTableModel arg1) {
 	getUserConnectionTable().setModel(arg1);
 }
 

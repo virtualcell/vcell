@@ -108,8 +108,8 @@ public class VCML_SBMLSolverTest {
 	    cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
 	    cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
 	    simContext.setMathDescription(mathDesc);
-	    cbit.sql.SimulationVersion simVersion =
-	        new cbit.sql.SimulationVersion(
+	    org.vcell.util.document.SimulationVersion simVersion =
+	        new org.vcell.util.document.SimulationVersion(
 	            new org.vcell.util.document.KeyValue("100"),
 	            "simulation1",
 	            null,

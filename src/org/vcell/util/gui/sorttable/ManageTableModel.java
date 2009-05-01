@@ -1,4 +1,4 @@
-package cbit.vcell.messaging.admin;
+package org.vcell.util.gui.sorttable;
 import java.util.*;
 
 /**
@@ -6,7 +6,7 @@ import java.util.*;
  * Creation date: (9/2/2003 8:54:09 AM)
  * @author: Fei Gao
  */
-public abstract class ManageTableModel extends cbit.vcell.messaging.admin.sorttable.DefaultSortTableModel  {
+public abstract class ManageTableModel extends org.vcell.util.gui.sorttable.DefaultSortTableModel  {
 	protected List rows = Collections.synchronizedList(new ArrayList());
 	protected String columns[] = null;		
 

@@ -7,7 +7,6 @@ import cbit.vcell.math.MathDescription;
  * All rights reserved.
 ©*/
 import java.rmi.RemoteException;
-import cbit.sql.UserInfo;
 import java.sql.SQLException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.sql.DBCacheTable;
@@ -18,7 +17,6 @@ import java.util.Vector;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.sql.VersionableType;
 import java.io.File;
 
 import org.vcell.util.BeanUtils;
@@ -27,10 +25,12 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VersionableType;
 
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.ModelException;

@@ -339,7 +339,7 @@ public cbit.vcell.opt.solvers.OptimizationService getOptimizationService() {
  * Creation date: (5/14/2004 3:41:06 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.vcell.document.VCDocument getVCDocument() {
+public org.vcell.util.document.VCDocument getVCDocument() {
 	return getBioModel();
 }
 
@@ -453,7 +453,7 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(final cbit.vcell.document.VCDocument newDocument) {
+public void resetDocument(final org.vcell.util.document.VCDocument newDocument) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			setBioModel((BioModel)newDocument);

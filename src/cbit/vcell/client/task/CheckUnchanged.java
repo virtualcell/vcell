@@ -5,6 +5,7 @@ import javax.swing.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.client.*;

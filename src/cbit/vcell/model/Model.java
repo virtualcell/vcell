@@ -19,8 +19,8 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.Version;
 
-import cbit.sql.Version;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
@@ -29,7 +29,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
+public class Model implements org.vcell.util.document.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
 	private Version version = null;
 	protected transient PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String("NoName");

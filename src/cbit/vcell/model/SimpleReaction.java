@@ -8,9 +8,9 @@ import java.io.*;
 import java.util.*;
 
 import org.vcell.util.Matchable;
+import org.vcell.util.document.Version;
 
 import cbit.vcell.parser.*;
-import cbit.sql.Version;
 import cbit.util.*;
 
 

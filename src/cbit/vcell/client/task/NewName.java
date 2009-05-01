@@ -4,9 +4,9 @@ import java.util.Hashtable;
 import javax.swing.*;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.client.*;
-import cbit.vcell.document.VCDocument;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

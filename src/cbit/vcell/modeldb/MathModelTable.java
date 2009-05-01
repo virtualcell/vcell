@@ -15,11 +15,13 @@ import java.sql.Connection;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.mathmodel.MathModelChildSummary;
 /**
  * This type was created in VisualAge.
  */

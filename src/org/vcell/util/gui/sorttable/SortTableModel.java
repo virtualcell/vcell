@@ -1,4 +1,4 @@
-package cbit.vcell.messaging.admin.sorttable;
+package org.vcell.util.gui.sorttable;
 /**
  * Insert the type's description here.
  * Creation date: (9/11/2003 10:50:03 AM)

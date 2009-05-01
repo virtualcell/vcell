@@ -16,9 +16,9 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
 
-import cbit.sql.VersionableType;
-import cbit.sql.VersionInfo;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.sql.OracleKeyFactory;
 /**

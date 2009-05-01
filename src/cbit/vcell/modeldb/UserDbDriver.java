@@ -21,9 +21,9 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
-import cbit.sql.UserInfo;
 /**
  * This type was created in VisualAge.
  */

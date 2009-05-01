@@ -1,16 +1,18 @@
 package cbit.vcell.clientdb;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.document.VCDocument;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -20,8 +22,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -84,7 +84,7 @@ MathModelInfo addUserToGroup(MathModelInfo mathModelInfo,String user) throws org
  * @param vcDocumentInfo cbit.vcell.document.VCDocumentInfo
  * @param curateFunction int
  */
-void curate(cbit.vcell.server.CurateSpec curateSpec) throws org.vcell.util.DataAccessException;
+void curate(org.vcell.util.document.CurateSpec curateSpec) throws org.vcell.util.DataAccessException;
 
 
 /**
