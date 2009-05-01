@@ -14,6 +14,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
+import org.vcell.util.StdoutSessionLog;
 
 import loci.formats.out.TiffWriter;
 import cbit.util.xml.XmlUtil;
@@ -30,7 +31,6 @@ import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
 import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
