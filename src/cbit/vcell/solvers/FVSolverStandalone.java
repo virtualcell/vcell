@@ -1,8 +1,10 @@
 package cbit.vcell.solvers;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
-import cbit.vcell.server.PropertyLoader;
 import java.io.*;
+
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

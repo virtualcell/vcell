@@ -16,6 +16,11 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.io.*;
 
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solvers.CartesianMesh;
@@ -51,10 +56,10 @@ public LocalDataSetControllerMessaging (SessionLog sLog, User argUser, cbit.vcel
  * Insert the method's description here.
  * Creation date: (2/26/2004 1:05:01 PM)
  * @param function cbit.vcell.math.Function[]
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+public void addFunctions(org.vcell.util.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.addFunctions(vcdID=" + vcdID);
 	try {
 		dataServerProxy.addFunctions(vcdID, functionArr,bReplaceArr);
@@ -122,10 +127,10 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  * Insert the method's description here.
  * Creation date: (2/26/2004 1:05:01 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions(cbit.vcell.server.VCDataIdentifier vcdataID) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.math.AnnotatedFunction[] getFunctions(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.getFunctions(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getFunctions(vcdataID);
@@ -220,7 +225,7 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException 
  * Insert the method's description here.
  * Creation date: (1/14/00 11:20:51 AM)
  * @return cbit.vcell.export.data.ODESimData
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
@@ -318,7 +323,7 @@ public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier 
 /**
  * This method was created in VisualAge.
  * @param simInfo cbit.vcell.solver.SimulationInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.makeRemoteFile(vcdID=" + exportSpecs.getVCDataIdentifier() + ")");
@@ -338,10 +343,10 @@ public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessExce
  * Insert the method's description here.
  * Creation date: (2/26/2004 1:05:01 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void removeFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
+public void removeFunction(org.vcell.util.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.removeFunction(vcdataID=" + vcdataID + ", function=" + function + ")");
 	try {
 		dataServerProxy.removeFunction(vcdataID, function);

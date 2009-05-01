@@ -50,10 +50,10 @@ public static String enforceOwnershipDelete(User user, VersionTable vTable, Stri
  * @param special java.lang.String
  */
 public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, cbit.sql.Version version) 
-									throws cbit.vcell.server.DataAccessException {
+									throws org.vcell.util.DataAccessException {
 	//
 	if (!version.getOwner().compareEqual(user)) {
-		throw new cbit.vcell.server.DataAccessException("enforceOwnershipInsert User " + user + " Not Equal to Version owner " + version.getOwner());
+		throw new org.vcell.util.DataAccessException("enforceOwnershipInsert User " + user + " Not Equal to Version owner " + version.getOwner());
 	}
 	StringBuffer sb = new StringBuffer();
 	sb.append("INSERT INTO " + vTable.getTableName() + " ");
@@ -122,7 +122,7 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
  */ 
 public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, String conditions, String special, boolean bCheckPermission) {
 
-	boolean isAdministrator = user.getName().equals(cbit.vcell.server.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue("2"));
+	boolean isAdministrator = user.getName().equals(org.vcell.util.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue("2"));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
 	}

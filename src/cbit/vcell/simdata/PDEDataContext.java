@@ -4,13 +4,13 @@ import cbit.vcell.simdata.gui.SpatialSelection;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.solvers.*;
 import java.beans.*;
 import java.util.Comparator;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
@@ -93,9 +93,9 @@ public PDEDataContext() {
  *
  * @param function named expression that is to be bound to dataset and whose name is added to variable list.
  *
- * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
-public abstract void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException;
+public abstract void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException;
 
 
 /**
@@ -275,7 +275,7 @@ public double[] getDataValues() {
  *
  * @returns array of functions, or null if no functions.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see Function
  */
@@ -287,11 +287,11 @@ public abstract cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAc
  *
  * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see Function
  */
-public abstract boolean getIsODEData() throws cbit.vcell.server.DataAccessException;
+public abstract boolean getIsODEData() throws org.vcell.util.DataAccessException;
 
 
 /**
@@ -303,11 +303,11 @@ public abstract boolean getIsODEData() throws cbit.vcell.server.DataAccessExcept
  *
  * @returns annotated array of 'concentration vs. distance' in a plot ready format.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see PlotData
  */
-public abstract cbit.plot.PlotData getLineScan(String variable, double time, SpatialSelection spatialSelection) throws cbit.vcell.server.DataAccessException;
+public abstract cbit.plot.PlotData getLineScan(String variable, double time, SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException;
 
 /**
  * Gets the particleDataBlock property (cbit.vcell.simdata.ParticleDataBlock) value.
@@ -326,7 +326,7 @@ public ParticleDataBlock getParticleDataBlock() {
  * @param varName java.lang.String
  * @param time double
  */
-protected abstract ParticleDataBlock getParticleDataBlock(double time) throws cbit.vcell.server.DataAccessException;
+protected abstract ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.util.DataAccessException;
 
 
 /**
@@ -347,7 +347,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param varName java.lang.String
  * @param time double
  */
-protected abstract SimDataBlock getSimDataBlock(String varName, double time) throws cbit.vcell.server.DataAccessException;
+protected abstract SimDataBlock getSimDataBlock(String varName, double time) throws org.vcell.util.DataAccessException;
 
 
 /**
@@ -388,11 +388,11 @@ public double[] getTimePoints() {
  *
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public abstract TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException;
+public abstract TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException;
 
 
 /**
@@ -431,7 +431,7 @@ public java.lang.String[] getVariableNames() {
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public abstract cbit.vcell.server.VCDataIdentifier getVCDataIdentifier();
+public abstract org.vcell.util.VCDataIdentifier getVCDataIdentifier();
 
 
 /**
@@ -457,7 +457,7 @@ public boolean hasParticleData() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException;
+public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException;
 
 
 	/**
@@ -575,10 +575,10 @@ public abstract void refreshTimes() throws DataAccessException;
  *
  * @param function function to be removed.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
- * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.PermissionException if not the owner of this dataset.
  */
-public abstract void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.PermissionException;
+public abstract void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException, org.vcell.util.PermissionException;
 
 
 /**

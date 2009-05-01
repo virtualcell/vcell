@@ -15,6 +15,7 @@ import cbit.vcell.document.*;
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.*;

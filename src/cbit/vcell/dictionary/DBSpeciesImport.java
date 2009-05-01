@@ -7,6 +7,8 @@ import java.util.Vector;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 /**
  * This Class reads in Kegg's flatfile databases for Enzymes and Compounds and inserts them into a database
@@ -302,7 +304,7 @@ public class DBSpeciesImport {
 			
 			//this.lock = new Object();
 			//this.con = conFactory.getConnection(lock);
-			this.dictDb = new cbit.vcell.modeldb.DictionaryDbDriver(new cbit.vcell.modeldb.NullSessionLog(),new DBCacheTable(100000,1000000));
+			this.dictDb = new cbit.vcell.modeldb.DictionaryDbDriver(new org.vcell.util.NullSessionLog(),new DBCacheTable(100000,1000000));
 		}
 		public java.sql.Connection getConnection() throws java.sql.SQLException{
 			if(this.con == null){

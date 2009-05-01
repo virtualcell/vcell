@@ -4,12 +4,12 @@ import java.awt.geom.Point2D;
 
 import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.server.DataAccessException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
 import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TimeSeriesJobResults;
@@ -1857,7 +1857,7 @@ public void initDataManager(
 	double argInitialLineScanTime,
 	cbit.vcell.parser.SymbolTable argSymbolTable,
 	PDEDataViewer.TimeSeriesJobStarter argTimeSeriesJobStarter)
-				throws cbit.vcell.server.DataAccessException{
+				throws org.vcell.util.DataAccessException{
 
 	timeSeriesJobStarter = argTimeSeriesJobStarter;
 	userRequestingData = argUserRequestingData;
@@ -2346,7 +2346,7 @@ private void scaleImageModeFromMenu(java.awt.event.ActionEvent actionEvent) {
 				return;
 			}
 			scaleImageMode = SCALE_IMAGE_USERDEFINED;
-		}catch(cbit.vcell.client.task.UserCancelException e){
+		}catch(org.vcell.util.UserCancelException e){
 			//getimagePaneView1().getImagePaneModel().updateViewPortImage();
 			getimagePaneView1().repaint();
 			return;

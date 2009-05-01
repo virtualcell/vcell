@@ -5,6 +5,10 @@ import cbit.xml.merge.TMLPanel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 import javax.swing.*;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import java.awt.*;
 
 import cbit.vcell.document.*;

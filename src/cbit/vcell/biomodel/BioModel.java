@@ -13,7 +13,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
@@ -21,6 +20,7 @@ import java.util.Vector;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.solver.Simulation;

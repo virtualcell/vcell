@@ -400,7 +400,7 @@ private void copyApplication(ActionEvent evt) {
 				//get valid application name
 				try{
 					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(cbit.vcell.client.task.UserCancelException e){
+				}catch(org.vcell.util.UserCancelException e){
 					return;
 				}
 				if (newApplicationName != null) {
@@ -423,7 +423,7 @@ private void copyApplication(ActionEvent evt) {
 				//get valid application name
 				try{
 					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(cbit.vcell.client.task.UserCancelException e){
+				}catch(org.vcell.util.UserCancelException e){
 					return;
 				}
 				if (newApplicationName != null) {
@@ -440,7 +440,7 @@ private void copyApplication(ActionEvent evt) {
 				//get valid application name
 				try{
 					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(cbit.vcell.client.task.UserCancelException e){
+				}catch(org.vcell.util.UserCancelException e){
 					return;
 				}
 				if (newApplicationName != null) {
@@ -1079,7 +1079,7 @@ private void newApplication(java.awt.event.ActionEvent event) {
 		String newApplicationName = null;
 		try{
 			newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the new application:");
-		}catch(cbit.vcell.client.task.UserCancelException e){
+		}catch(org.vcell.util.UserCancelException e){
 			return;
 		}
 		if (newApplicationName != null) {
@@ -1127,7 +1127,7 @@ private void renameApplication() {
 			String newApplicationName = null;
 			try{
 				newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "New name for the application:");
-			}catch(cbit.vcell.client.task.UserCancelException e){
+			}catch(org.vcell.util.UserCancelException e){
 				return;
 			}
 			if (newApplicationName != null) {

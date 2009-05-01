@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (2/18/2003 6:10:04 PM)
  * @author: Frank Morgan
  */
-public class BoundEnzyme extends DBSpecies implements cbit.sql.Cacheable{
+public class BoundEnzyme extends DBSpecies implements org.vcell.util.Cacheable{
 
 	private FormalEnzyme formalEnzyme = null;
 

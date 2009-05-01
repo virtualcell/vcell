@@ -1,5 +1,5 @@
 package cbit.vcell.opt;
-import cbit.vcell.server.DataAccessException;
+import org.vcell.util.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 3:07:17 PM)

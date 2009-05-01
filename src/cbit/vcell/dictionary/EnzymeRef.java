@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (6/24/2002 11:03:01 AM)
  * @author: Steven Woolley
  */
-public class EnzymeRef implements cbit.sql.Cacheable{
+public class EnzymeRef implements org.vcell.util.Cacheable{
     //type indicates how the compound is related to the enzyme. 
     //The type includes R for a reactant, I for an inhibitor, C for a cofactor, and E for an effector.
 

@@ -13,11 +13,11 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */
@@ -107,7 +107,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,Sessi
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.vcell.server.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 
 	String serialDbChildSummary =
 		DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge);

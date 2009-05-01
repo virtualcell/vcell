@@ -1,6 +1,9 @@
 package cbit.vcell.client.server;
 import cbit.rmi.event.*;
 import java.rmi.*;
+
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.server.*;
 import cbit.vcell.export.server.*;
 /**

@@ -16,6 +16,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException; 
 import cbit.vcell.units.VCUnitDefinition;
 import org.jdom.Element;
+import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;

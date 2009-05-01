@@ -1,7 +1,7 @@
 package cbit.vcell.opt;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.util.RowColumnResultSet;
 /**
@@ -65,7 +65,7 @@ public static OdeObjectiveFunction fromVCML(org.vcell.util.CommentStringTokenize
 		throw e;
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
-		throw new cbit.vcell.server.DataAccessException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
+		throw new org.vcell.util.DataAccessException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
 	}
 }
 

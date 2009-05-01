@@ -6,8 +6,10 @@ import java.sql.SQLException;
 import oracle.jdbc.xa.client.OracleXADataSource;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
+
+import org.vcell.util.PropertyLoader;
+
 import java.sql.DriverManager;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * Insert the type's description here.

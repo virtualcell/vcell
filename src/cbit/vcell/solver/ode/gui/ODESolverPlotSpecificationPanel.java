@@ -8,11 +8,12 @@ import java.util.*;
 ©*/
 import cbit.vcell.util.*;
 import cbit.plot.*;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.*;
 import javax.swing.*;
+
+import org.vcell.util.DataAccessException;
 
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.ReservedSymbol;

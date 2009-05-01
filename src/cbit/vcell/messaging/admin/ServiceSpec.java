@@ -3,9 +3,10 @@ package cbit.vcell.messaging.admin;
 import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STARTUP_TYPES;
 import java.io.Serializable;
 
+import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
+import org.vcell.util.MessageConstants.ServiceType;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 
 public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	private String serverID;

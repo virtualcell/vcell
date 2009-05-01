@@ -1085,7 +1085,7 @@ private void renameFluxReaction() {
 		String newName = null;
 		try{
 			newName = cbit.vcell.client.PopupGenerator.showInputDialog(this,"reaction name:",getFluxReaction1().getName());
-		}catch(cbit.vcell.client.task.UserCancelException e){
+		}catch(org.vcell.util.UserCancelException e){
 			return;
 		}
 		if (newName != null) {

@@ -9,13 +9,13 @@ import java.io.*;
 import java.rmi.RemoteException;
 
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.document.User;
 
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.DataAccessException;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;

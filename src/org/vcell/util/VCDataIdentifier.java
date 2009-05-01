@@ -1,4 +1,4 @@
-package cbit.vcell.server;
+package org.vcell.util;
 
 import org.vcell.util.document.User;
 

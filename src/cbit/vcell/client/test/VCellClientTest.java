@@ -22,7 +22,7 @@ public static void main(java.lang.String[] args) {
 	System.out.println("starting with arguments ["+stringBuffer+"]");
 	
 	ClientServerInfo csInfo = null;
-	String hoststr = System.getProperty(cbit.vcell.server.PropertyLoader.vcellServerHost);
+	String hoststr = System.getProperty(org.vcell.util.PropertyLoader.vcellServerHost);
 	String[] hosts = null;
 	if (hoststr != null) {
 		StringTokenizer st = new StringTokenizer(hoststr," ,;");

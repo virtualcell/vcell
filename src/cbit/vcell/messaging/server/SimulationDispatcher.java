@@ -7,12 +7,14 @@ import cbit.rmi.event.WorkerEvent;
 import javax.jms.*;
 
 import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.PropertyLoader;
 
 import java.util.Date;
 import java.util.Map;
@@ -29,9 +31,7 @@ import cbit.sql.KeyFactory;
 import cbit.sql.DBCacheTable;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.JmsSession;
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -73,7 +73,7 @@ public SimulationDispatcher(int serviceOrdinal, String logdir) throws Exception 
 			ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
 	initLog(logdir);
 
-	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());
+	log = new org.vcell.util.StdoutSessionLog(serviceInstanceStatus.getID());
 	
 	conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	keyFactory = new cbit.sql.OracleKeyFactory();		

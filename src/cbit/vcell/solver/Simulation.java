@@ -15,11 +15,11 @@ import java.beans.PropertyVetoException;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.math.*;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.sql.*;
 /**

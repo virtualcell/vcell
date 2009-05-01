@@ -1,4 +1,4 @@
-package cbit.vcell.modeldb;
+package org.vcell.util;
 
 import cbit.vcell.simdata.ExternalDataIdentifier;
 

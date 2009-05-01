@@ -15,7 +15,7 @@ public interface SolverController extends java.rmi.Remote {
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-String getHost() throws RemoteException, cbit.vcell.server.DataAccessException;
+String getHost() throws RemoteException, org.vcell.util.DataAccessException;
 
 
 /**
@@ -23,14 +23,14 @@ String getHost() throws RemoteException, cbit.vcell.server.DataAccessException;
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public double getProgress() throws RemoteException, SolverNotRunningException, cbit.vcell.server.DataAccessException;	
+public double getProgress() throws RemoteException, SolverNotRunningException, org.vcell.util.DataAccessException;	
 
 
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.solver.Simulation
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() throws RemoteException, cbit.vcell.server.DataAccessException;
+public cbit.vcell.solver.SimulationJob getSimulationJob() throws RemoteException, org.vcell.util.DataAccessException;
 
 
 /**
@@ -38,19 +38,19 @@ public cbit.vcell.solver.SimulationJob getSimulationJob() throws RemoteException
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public SolverStatus getSolverStatus() throws RemoteException, cbit.vcell.server.DataAccessException;	
+public SolverStatus getSolverStatus() throws RemoteException, org.vcell.util.DataAccessException;	
 
 
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulationJob() throws RemoteException, SimExecutionException, cbit.vcell.server.DataAccessException;
+public void startSimulationJob() throws RemoteException, SimExecutionException, org.vcell.util.DataAccessException;
 
 
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulationJob() throws RemoteException, cbit.vcell.server.DataAccessException;
+public void stopSimulationJob() throws RemoteException, org.vcell.util.DataAccessException;
 }

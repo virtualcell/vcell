@@ -1,6 +1,9 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
 import javax.jms.Queue;
+
+import org.vcell.util.MessageConstants;
+
 import java.io.Serializable;
 import java.util.*;
 

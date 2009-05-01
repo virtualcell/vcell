@@ -11,13 +11,17 @@ import java.util.*;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.rmi.event.*;
 import javax.swing.event.*;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 /**
  * This type was created in VisualAge.
  */
 public class LocalSolverController extends java.rmi.server.UnicastRemoteObject implements SolverController, cbit.vcell.solver.SolverListener, WorkerEventSender {
 	private SolverControllerImpl solverControllerImpl = null;
 	private EventListenerList listenerList = new EventListenerList();
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private LocalVCellConnection vcConn = null;
 	private SimulationData.DataMoverThread dataMover = null;
 
@@ -130,12 +134,12 @@ public int getMessagingInterval() {
  * Creation date: (6/28/01 2:34:17 PM)
  * @return double
  */
-public double getProgress() throws cbit.vcell.server.DataAccessException {
+public double getProgress() throws org.vcell.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getProgress();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.vcell.server.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -145,7 +149,7 @@ public double getProgress() throws cbit.vcell.server.DataAccessException {
  * Creation date: (10/10/2002 10:38:55 AM)
  * @return cbit.vcell.server.SessionLog
  */
-public cbit.vcell.server.SessionLog getSessionLog() {
+public org.vcell.util.SessionLog getSessionLog() {
 	return log;
 }
 
@@ -153,12 +157,12 @@ public cbit.vcell.server.SessionLog getSessionLog() {
 /**
  * getMathDescriptionVCML method comment.
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.solver.SimulationJob getSimulationJob() throws org.vcell.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.vcell.server.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -168,12 +172,12 @@ public cbit.vcell.solver.SimulationJob getSimulationJob() throws cbit.vcell.serv
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solver.SolverStatus getSolverStatus() throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.solver.SolverStatus getSolverStatus() throws org.vcell.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getSolverStatus();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.vcell.server.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -295,7 +299,7 @@ public void solverStopped(cbit.vcell.solver.SolverEvent event) {
 /**
  * startSimulation method comment.
  */
-public void startSimulationJob() throws SimExecutionException, cbit.vcell.server.DataAccessException {
+public void startSimulationJob() throws SimExecutionException, org.vcell.util.DataAccessException {
 	try {
 		resultSetSavedSet.remove(getSimulationJob().getVCDataIdentifier());
 		if (dataMover != null) {
@@ -309,7 +313,7 @@ public void startSimulationJob() throws SimExecutionException, cbit.vcell.server
 		solverControllerImpl.startSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.vcell.server.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -317,12 +321,12 @@ public void startSimulationJob() throws SimExecutionException, cbit.vcell.server
 /**
  * stopSimulation method comment.
  */
-public void stopSimulationJob() throws cbit.vcell.server.DataAccessException {
+public void stopSimulationJob() throws org.vcell.util.DataAccessException {
 	try {
 		solverControllerImpl.stopSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.vcell.server.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}
 }
 }

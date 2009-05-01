@@ -1,4 +1,4 @@
-package cbit.vcell.messaging;
+package org.vcell.util;
 /**
  * Insert the type's description here.
  * Creation date: (10/23/2001 12:16:47 PM)

@@ -3,6 +3,7 @@ package cbit.vcell.model;
 import java.io.PrintStream;
 
 import org.vcell.util.BigString;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
 import cbit.sql.ConnectionFactory;
@@ -21,7 +22,6 @@ import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.solver.Simulation;
 
 public class ModelParametersVisitor implements VCDatabaseVisitor {

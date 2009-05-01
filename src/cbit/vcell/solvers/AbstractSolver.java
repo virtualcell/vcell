@@ -8,6 +8,10 @@ package cbit.vcell.solvers;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import java.io.*;
+
+import org.vcell.util.ConfigurationException;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.ODEStateVariable;
@@ -21,7 +25,7 @@ import cbit.vcell.math.*;
  */
 public abstract class AbstractSolver implements Solver, SimDataConstants {
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
-	private cbit.vcell.server.SessionLog fieldSessionLog = null;
+	private org.vcell.util.SessionLog fieldSessionLog = null;
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY);
 	private File saveDirectory = null;
 	private boolean saveEnabled = true;
@@ -278,7 +282,7 @@ protected final java.io.File getSaveDirectory() {
  * This method was created in VisualAge.
  * @return cbit.vcell.math.MathDescription
  */
-protected final cbit.vcell.server.SessionLog getSessionLog() {
+protected final org.vcell.util.SessionLog getSessionLog() {
 	return (fieldSessionLog);
 }
 

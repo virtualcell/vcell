@@ -4,21 +4,21 @@ import cbit.vcell.math.AnnotatedFunction;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.sql.DBCacheTable;
-import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
 import java.util.Vector;
 import java.io.File;
 import java.beans.PropertyVetoException;
-import cbit.vcell.server.PermissionException;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solvers.FunctionFileGenerator;
-import cbit.vcell.server.DataAccessException;
 
 /**
  * Insert the type's description here.
@@ -28,7 +28,7 @@ import cbit.vcell.server.DataAccessException;
 public class FunctionFileCrawler {
 	private AdminDatabaseServer adminDbServer = null;
 	private cbit.sql.ConnectionFactory conFactory = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private cbit.sql.DBCacheTable dbCacheTable = null;
 	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
 	private File dataRootDir = null;
@@ -132,7 +132,7 @@ public static void main(String[] args) {
 		}
 			
 		PropertyLoader.loadProperties();
-		SessionLog log = new cbit.vcell.server.StdoutSessionLog("FunctionFileCrawler");		
+		SessionLog log = new org.vcell.util.StdoutSessionLog("FunctionFileCrawler");		
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);

@@ -2,6 +2,9 @@ package cbit.vcell.client.server;
 import cbit.vcell.client.data.*;
 import cbit.vcell.desktop.controls.*;
 import javax.swing.*;
+
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
@@ -20,7 +23,7 @@ DataViewer createViewer(boolean expectODEData) throws DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:43:41 PM)
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 void refreshData() throws DataAccessException;
 }

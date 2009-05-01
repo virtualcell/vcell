@@ -6,12 +6,13 @@ package cbit.vcell.simdata;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
@@ -42,7 +43,7 @@ public abstract void addFunction(AnnotatedFunction function,boolean bReplace) th
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public abstract long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException;
 

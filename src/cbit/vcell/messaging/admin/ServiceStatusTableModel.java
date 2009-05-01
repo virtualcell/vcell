@@ -2,7 +2,8 @@ package cbit.vcell.messaging.admin;
 
 import java.util.*;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
+import org.vcell.util.MessageConstants.ServiceType;
+
 
 /**
  * Insert the type's description here.

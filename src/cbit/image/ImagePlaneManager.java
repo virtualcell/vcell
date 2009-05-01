@@ -4,10 +4,10 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 
-import cbit.vcell.math.CoordinateIndex;
-import cbit.vcell.geometry.Coordinate;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 10:14:12 AM)
@@ -135,7 +135,7 @@ public SourceDataInfo getSourceDataInfo() {
  * Creation date: (10/11/00 12:27:01 PM)
  * @return cbit.vcell.geometry.Coordinate
  */
-public cbit.vcell.geometry.Coordinate getWorldCoordinateFromUnitized2D(double x, double y) {
+public org.vcell.util.Coordinate getWorldCoordinateFromUnitized2D(double x, double y) {
 	if(getSourceDataInfo() != null){
 		//
 		// numSlices (sliceBoundary) should be >= 1
@@ -277,10 +277,10 @@ public int sliceBoundary() {
  * Insert the method's description here.
  * Creation date: (7/12/2004 1:52:04 PM)
  */
-public cbit.vcell.geometry.Coordinate snapWorldCoordinate(cbit.vcell.geometry.Coordinate targetC) {
+public org.vcell.util.Coordinate snapWorldCoordinate(org.vcell.util.Coordinate targetC) {
 	if(getSourceDataInfo() != null){
 		double distance = 0;
-		cbit.vcell.math.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
+		org.vcell.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 		return centerCoord;
 	}
@@ -290,9 +290,9 @@ public cbit.vcell.geometry.Coordinate snapWorldCoordinate(cbit.vcell.geometry.Co
  * Insert the method's description here.
  * Creation date: (7/13/2004 4:27:15 PM)
  */
-public cbit.vcell.geometry.Coordinate snapWorldCoordinateFace(cbit.vcell.geometry.Coordinate targetC) {
+public org.vcell.util.Coordinate snapWorldCoordinateFace(org.vcell.util.Coordinate targetC) {
 	
-		cbit.vcell.math.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
+		org.vcell.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 
 		double diffX = centerCoord.getX()-targetC.getX();

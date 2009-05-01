@@ -4,6 +4,8 @@ package cbit.vcell.server;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+
+import org.vcell.util.PropertyLoader;
 /**
  * This type was created in VisualAge.
  */

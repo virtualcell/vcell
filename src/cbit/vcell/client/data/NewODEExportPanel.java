@@ -17,6 +17,9 @@ import cbit.vcell.export.server.*;
 import cbit.image.*;
 import cbit.vcell.simdata.*;
 import javax.swing.*;
+
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.solver.ode.*;
 import cbit.util.*;
 import cbit.vcell.desktop.controls.*;
@@ -47,7 +50,7 @@ public class NewODEExportPanel extends JPanel implements ExportConstants {
 	private String[] plottableNames = new String[0];
 	private double[] times = new double[0];
 	private javax.swing.JInternalFrame waitWindow = null;
-	private cbit.vcell.server.VCDataIdentifier fieldVcDataIdentifier = null;
+	private org.vcell.util.VCDataIdentifier fieldVcDataIdentifier = null;
 	private cbit.vcell.client.DataViewerManager fieldDataViewerManager = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private ODESolverResultSet ivjodeSolverResultSet1 = null;
@@ -968,7 +971,7 @@ private double[] getTimes() {
  * @return The vcDataIdentifier property value.
  * @see #setVcDataIdentifier
  */
-public cbit.vcell.server.VCDataIdentifier getVcDataIdentifier() {
+public org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
 	return fieldVcDataIdentifier;
 }
 
@@ -1255,7 +1258,7 @@ private void setTimes(double[] newTimes) {
  * @param vcDataIdentifier The new value for the property.
  * @see #getVcDataIdentifier
  */
-public void setVcDataIdentifier(cbit.vcell.server.VCDataIdentifier vcDataIdentifier) {
+public void setVcDataIdentifier(org.vcell.util.VCDataIdentifier vcDataIdentifier) {
 	VCDataIdentifier oldValue = fieldVcDataIdentifier;
 	fieldVcDataIdentifier = vcDataIdentifier;
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);

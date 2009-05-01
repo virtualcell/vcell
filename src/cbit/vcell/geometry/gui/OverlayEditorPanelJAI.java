@@ -45,6 +45,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
+import org.vcell.util.UserCancelException;
 
 import loci.formats.AWTImageTools;
 import loci.formats.FormatTools;
@@ -58,7 +59,6 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.UserCancelException;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */

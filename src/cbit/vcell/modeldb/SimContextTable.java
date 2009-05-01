@@ -8,11 +8,11 @@ import java.math.BigDecimal;
 import cbit.sql.*;
 import java.sql.*;
 
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.server.SessionLog;
 /**
  * This type was created in VisualAge.
  */
@@ -44,7 +44,7 @@ private SimContextTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public cbit.sql.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.vcell.server.DataAccessException {
+public cbit.sql.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 
 	KeyValue mathRef = null;
 	java.math.BigDecimal mathRefValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());
@@ -94,7 +94,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  */
 public SimulationContext getSimContext(	Connection con,User user,ResultSet rset,SessionLog log,
 										GeomDbDriver geomDB,ModelDbDriver modelDB,MathDescriptionDbDriver mathDB) 
-							throws SQLException,cbit.vcell.server.DataAccessException, java.beans.PropertyVetoException {
+							throws SQLException,org.vcell.util.DataAccessException, java.beans.PropertyVetoException {
 			
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);

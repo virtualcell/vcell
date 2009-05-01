@@ -6,21 +6,21 @@ import cbit.vcell.server.WatchdogMonitor;
  * All rights reserved.
 ©*/
 import cbit.vcell.server.VCellBootstrap;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.AuthenticationException;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.VCellServer;
-import cbit.vcell.server.PermissionException;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.StdoutSessionLog;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.util.*;
 import java.rmi.activation.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -154,10 +154,10 @@ private void loadProperties() {
 		}
 
 
-		localHost = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellAnonymizerBootstrapLocalHost);
-		localPort = Integer.parseInt(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellAnonymizerBootstrapLocalPort));
-		remoteHost = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellAnonymizerBootstrapRemoteHost);
-		remotePort = Integer.parseInt(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellAnonymizerBootstrapRemotePort));
+		localHost = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellAnonymizerBootstrapLocalHost);
+		localPort = Integer.parseInt(PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellAnonymizerBootstrapLocalPort));
+		remoteHost = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellAnonymizerBootstrapRemoteHost);
+		remotePort = Integer.parseInt(PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellAnonymizerBootstrapRemotePort));
 
 		sessionLog.print("local server : " + localHost + ":" + localPort);
 		sessionLog.print("remote server : " + remoteHost + ":" + remotePort);		

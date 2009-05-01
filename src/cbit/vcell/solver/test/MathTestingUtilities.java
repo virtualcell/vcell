@@ -3,7 +3,6 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.desktop.controls.DataManager;
 import java.util.Vector;
@@ -14,6 +13,8 @@ import cbit.vcell.numericstest.TestCaseNew;
 import java.util.Enumeration;
 
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
 
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.util.ColumnDescription;
@@ -93,7 +94,7 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws cbit.vcell.server.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	boolean bTimesEqual = true;
@@ -318,7 +319,7 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, cbit.vcell.desktop.controls.DataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws cbit.vcell.server.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, cbit.vcell.desktop.controls.DataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	

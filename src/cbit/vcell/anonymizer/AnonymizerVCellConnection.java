@@ -5,17 +5,17 @@ import cbit.vcell.server.URLFinder;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
-import cbit.vcell.server.PropertyLoader;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.DataAccessException;
 import java.rmi.*;
 import java.rmi.server.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer

@@ -15,6 +15,8 @@ import javax.swing.JFrame;
 import javax.swing.ListSelectionModel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -27,7 +29,6 @@ import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataDBEvent;
@@ -38,7 +39,6 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VersionableTypeVersion;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.SimulationInfo;
@@ -323,10 +323,10 @@ public void propertyChange(PropertyChangeEvent evt) {
 public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataID,boolean bShowReferencingModelsList)
 	throws DataAccessException,UserCancelException{
 
-	cbit.vcell.modeldb.ReferenceQuerySpec rqs =
-		new cbit.vcell.modeldb.ReferenceQuerySpec(targetExtDataID);
+	org.vcell.util.ReferenceQuerySpec rqs =
+		new org.vcell.util.ReferenceQuerySpec(targetExtDataID);
 
-	cbit.vcell.modeldb.ReferenceQueryResult rqr =
+	org.vcell.util.ReferenceQueryResult rqr =
 		getRequestManager().getDocumentManager().findReferences(rqs);
 	cbit.vcell.modeldb.VersionableTypeVersion[] dependants = null;
 	Hashtable<VersionableTypeVersion,String[]> choices = new Hashtable<VersionableTypeVersion,String[]>();

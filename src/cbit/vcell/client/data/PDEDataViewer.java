@@ -1,5 +1,4 @@
 package cbit.vcell.client.data;
-import cbit.vcell.math.CoordinateIndex;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.SimpleSymbolTable;
@@ -16,12 +15,17 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TSJobResultsSpaceStats;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.image.DisplayAdapterService;
@@ -44,7 +48,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import cbit.vcell.client.*;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.export.quicktime.MediaMethods;
 import cbit.vcell.export.quicktime.MediaMovie;
 import cbit.vcell.export.quicktime.MediaSample;
@@ -52,7 +55,6 @@ import cbit.vcell.export.quicktime.MediaTrack;
 import cbit.vcell.export.quicktime.VideoMediaChunk;
 import cbit.vcell.export.quicktime.VideoMediaSampleRaw;
 import cbit.vcell.export.quicktime.atoms.UserDataEntry;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.SurfaceCanvas;
 import cbit.vcell.geometry.gui.SurfaceMovieSettingsPanel;
@@ -2366,7 +2368,7 @@ public static void main(java.lang.String[] args) {
  * @return java.lang.String
  * @param coord cbit.vcell.geometry.Coordinate
  */
-private String niceCoordinateString(cbit.vcell.geometry.Coordinate coord) {
+private String niceCoordinateString(org.vcell.util.Coordinate coord) {
 
 	//reduce fraction digits of the form XX.xxxxxxxxxxxxxxy
 	//to something more reasonable
@@ -2771,7 +2773,7 @@ private void showTimePlot() {
 			final String[] plotNames = new String[singlePointSSOnly.size()];
 			final cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[plotNames.length];
 			for (int i = 0; i < singlePointSSOnly.size(); i++){
-				cbit.vcell.geometry.Coordinate tp = null;
+				org.vcell.util.Coordinate tp = null;
 				if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 					SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
 					indices[i] = ssv.getIndex(0);
@@ -2913,7 +2915,7 @@ private void updateDataValueSurfaceViewer() {
 			public int[][] getSurfacePolygonColors(){
 				return surfaceColors;
 			}
-			public cbit.vcell.geometry.Coordinate getCentroid(int surfaceIndex,int polygonIndex){
+			public org.vcell.util.Coordinate getCentroid(int surfaceIndex,int polygonIndex){
 				return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getCentroid();
 			}
 			public float getArea(int surfaceIndex,int polygonIndex){

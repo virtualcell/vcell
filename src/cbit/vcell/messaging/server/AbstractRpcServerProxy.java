@@ -1,9 +1,9 @@
 package cbit.vcell.messaging.server;
 import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.messaging.MessageConstants.ServiceType;
-import cbit.vcell.server.SessionLog;
 import javax.jms.JMSException;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.User;
 
 /**
@@ -15,7 +15,7 @@ public abstract class AbstractRpcServerProxy implements RpcServerProxy {
 	private cbit.vcell.messaging.JmsClientMessaging clientMessaging = null;
 	protected org.vcell.util.document.User user;
 	private java.lang.String queueName = null;
-	protected cbit.vcell.server.SessionLog log = null;
+	protected org.vcell.util.SessionLog log = null;
 
 /**
  * RpcServerProxy constructor comment.

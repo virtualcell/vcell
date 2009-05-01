@@ -3,6 +3,7 @@ package cbit.vcell.messaging.admin;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.vcell.util.ComparableObject;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 

@@ -1,4 +1,4 @@
-package cbit.vcell.modeldb;
+package org.vcell.util;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -7,7 +7,7 @@ package cbit.vcell.modeldb;
 /**
  * This type was created in VisualAge.
  */
-public class NullSessionLog implements cbit.vcell.server.SessionLog {
+public class NullSessionLog implements org.vcell.util.SessionLog {
 /**
  * NullSessionLog constructor comment.
  */

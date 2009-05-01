@@ -6,18 +6,14 @@ import cbit.vcell.math.MathDescription;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.PermissionException;
 import java.rmi.RemoteException;
 import cbit.sql.UserInfo;
 import java.sql.SQLException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.sql.DBCacheTable;
-import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
 import java.beans.*;
 import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.server.DataAccessException;
 import java.util.Vector;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.mapping.SimulationContext;
@@ -27,6 +23,10 @@ import java.io.File;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -58,7 +58,7 @@ public class MathVerifier {
 	private DatabaseServerImpl dbServerImpl = null;
 	private cbit.sql.KeyFactory keyFactory = null;
 	private DBCacheTable cacheTable = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private cbit.vcell.modeldb.MathDescriptionDbDriver mathDescDbDriver = null;
 	private java.util.HashSet skipHash = new java.util.HashSet(); // holds KeyValues of BioModels to skip
 
@@ -94,7 +94,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 	for (int i=0;i<users.length;i++){
 		User user = users[i];
 		BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
-		SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
+		SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 		userLog.print("Testing user '"+user+"'");
 
 		//
@@ -359,7 +359,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	
 
 	User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
-	SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
+	SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
 		userLog.print("Testing bioModel with key '"+bioModelKeys[i]+"'");
@@ -609,7 +609,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
     User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
-    SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
+    SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
         userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");
         // get biomodel refs

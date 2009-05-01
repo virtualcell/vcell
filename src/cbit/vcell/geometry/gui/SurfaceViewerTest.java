@@ -1,7 +1,8 @@
 package cbit.vcell.geometry.gui;
 
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 /**
  * Insert the type's description here.

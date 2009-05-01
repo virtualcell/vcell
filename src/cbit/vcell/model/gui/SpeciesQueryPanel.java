@@ -1,8 +1,9 @@
 package cbit.vcell.model.gui;
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.dictionary.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.UserCancelException;
 /**
  * Insert the type's description here.
  * Creation date: (2/4/2003 6:52:51 PM)

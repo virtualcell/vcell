@@ -5,6 +5,9 @@ package cbit.vcell.server;
  * All rights reserved.
 ©*/
 import java.io.*;
+
+import org.vcell.util.SessionLog;
+
 import cbit.sql.*;
 import cbit.vcell.simdata.*;
 /**

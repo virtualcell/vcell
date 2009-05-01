@@ -4,6 +4,8 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.math.*;
@@ -22,7 +24,7 @@ public interface DataServer {
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 void addFunction(User user, SimulationInfo simInfo, cbit.vcell.math.Function function) throws DataAccessException;
@@ -30,7 +32,7 @@ void addFunction(User user, SimulationInfo simInfo, cbit.vcell.math.Function fun
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function[]
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 void addFunctions(User user, SimulationInfo simInfo, cbit.vcell.math.Function function[]) throws DataAccessException;
@@ -49,7 +51,7 @@ public double[] getDataSetTimes(User user, SimulationInfo simInfo) throws DataAc
  * Creation date: (10/19/2001 4:45:30 PM)
  * @return cbit.vcell.export.server.ExportLog
  * @param simInfo cbit.vcell.solver.SimulationInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 ExportLog getExportLog(User user, SimulationInfo simInfo) throws DataAccessException;
@@ -57,7 +59,7 @@ ExportLog getExportLog(User user, SimulationInfo simInfo) throws DataAccessExcep
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
  Function[] getFunctions(User user, SimulationInfo simInfo) throws DataAccessException; 
@@ -65,7 +67,7 @@ ExportLog getExportLog(User user, SimulationInfo simInfo) throws DataAccessExcep
  * Insert the method's description here.
  * Creation date: (1/16/00 11:38:06 PM)
  * @return boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 boolean getIsODEData(User user, SimulationInfo simInfo) throws DataAccessException;
@@ -87,7 +89,7 @@ CartesianMesh getMesh(User user, SimulationInfo simInfo) throws DataAccessExcept
  * Insert the method's description here.
  * Creation date: (1/13/00 6:21:10 PM)
  * @param odeSimData cbit.vcell.export.data.ODESimData
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.vcell.solver.ode.ODESimData getODEData(User user, SimulationInfo simInfo) throws DataAccessException;
@@ -95,7 +97,7 @@ cbit.vcell.solver.ode.ODESimData getODEData(User user, SimulationInfo simInfo) t
  * This method was created in VisualAge.
  * @return ParticleData
  * @param time double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(User user, SimulationInfo simInfo, double time) throws DataAccessException;
@@ -134,7 +136,7 @@ public double[][] getTimeSeriesValues(User user, SimulationInfo simInfo, String 
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 void removeFunction(User user, SimulationInfo simInfo, cbit.vcell.math.Function function) throws DataAccessException;
@@ -143,7 +145,7 @@ void removeFunction(User user, SimulationInfo simInfo, cbit.vcell.math.Function 
  * Creation date: (10/22/2001 2:53:44 PM)
  * @return cbit.rmi.event.ExportEvent
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.vcell.export.ExportStatus startExport(User user, ExportSpecs exportSpecs) throws DataAccessException;

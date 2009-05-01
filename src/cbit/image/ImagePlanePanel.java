@@ -5,7 +5,8 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import javax.swing.SwingConstants;
-import cbit.vcell.geometry.Coordinate;
+
+import org.vcell.util.Coordinate;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 3:05:12 PM)

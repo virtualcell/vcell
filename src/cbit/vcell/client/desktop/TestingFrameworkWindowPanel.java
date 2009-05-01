@@ -24,10 +24,11 @@ import java.util.Vector;
 
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.client.task.TFRunSims;
 import cbit.vcell.client.task.TFDuplicateTestSuite;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.client.task.TFRemove;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFUpdateTestCriteria;

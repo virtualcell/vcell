@@ -4,6 +4,7 @@ import cbit.vcell.client.server.*;
 import java.util.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.UserCancelException;
 
 import cbit.vcell.client.*;
 import cbit.vcell.client.desktop.*;

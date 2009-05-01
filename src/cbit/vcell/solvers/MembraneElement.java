@@ -122,8 +122,8 @@ public float getArea() {
  * Creation date: (2/15/2006 1:54:50 PM)
  * @return cbit.vcell.render.Vect3d
  */
-public cbit.vcell.geometry.Coordinate getCentroid() {
-	return (area == AREA_UNDEFINED?null:new cbit.vcell.geometry.Coordinate(centroidX,centroidY,centroidZ));
+public org.vcell.util.Coordinate getCentroid() {
+	return (area == AREA_UNDEFINED?null:new org.vcell.util.Coordinate(centroidX,centroidY,centroidZ));
 }
 
 

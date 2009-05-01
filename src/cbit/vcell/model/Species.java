@@ -16,7 +16,7 @@ import cbit.vcell.xml.MIRIAMAnnotation;
 
 public class Species
 	implements
-		java.beans.VetoableChangeListener,cbit.sql.Cacheable,MIRIAMAnnotatable {
+		java.beans.VetoableChangeListener,org.vcell.util.Cacheable,MIRIAMAnnotatable {
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;

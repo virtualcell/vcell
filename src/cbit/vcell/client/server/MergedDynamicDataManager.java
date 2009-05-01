@@ -1,12 +1,13 @@
 package cbit.vcell.client.server;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.server.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2005 5:26:31 PM)
  * @author: Anuradha Lakshminarayana
  */
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.client.data.MergedDataViewer;
 
 public class MergedDynamicDataManager implements DynamicDataManager {
@@ -29,7 +30,7 @@ public MergedDynamicDataManager(VCDataManager argVCDataManager, VCDataIdentifier
  * Creation date: (10/16/2005 2:42:43 PM)
  * @return javax.swing.JPanel
  */
-public cbit.vcell.client.data.DataViewer createViewer(boolean expectODEData) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.client.data.DataViewer createViewer(boolean expectODEData) throws org.vcell.util.DataAccessException {
 	mergedDataViewer = new MergedDataViewer(vcDataManager, mergedDataIdentifier, expectODEData);
 	return mergedDataViewer;
 }
@@ -53,9 +54,9 @@ public void newData(cbit.vcell.desktop.controls.DataEvent event) {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:43:49 PM)
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void refreshData() throws cbit.vcell.server.DataAccessException {
+public void refreshData() throws org.vcell.util.DataAccessException {
 	mergedDataViewer.refreshData();
 }
 }

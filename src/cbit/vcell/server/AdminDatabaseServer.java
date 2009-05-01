@@ -6,6 +6,7 @@ package cbit.vcell.server;
 ©*/
 import java.rmi.*;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 

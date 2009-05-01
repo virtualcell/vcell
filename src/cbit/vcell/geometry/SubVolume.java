@@ -8,12 +8,12 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
+import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.Cacheable;
 /**
  * This type was created in VisualAge.
  */

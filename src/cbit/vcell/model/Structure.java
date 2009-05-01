@@ -9,12 +9,12 @@ import java.beans.*;
 import java.util.*;
 
 import org.jdom.Element;
+import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.Cacheable;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.units.VCUnitDefinition;

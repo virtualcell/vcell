@@ -8,9 +8,10 @@ import cbit.vcell.solver.SimulationJob;
 ©*/
 import java.rmi.*;
 
+import org.vcell.util.CacheStatus;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.simdata.CacheStatus;
 import cbit.vcell.server.ProcessStatus;
 /**
  * This type was created in VisualAge.
@@ -80,7 +81,7 @@ ServerInfo[] getSlaveServerInfos() throws RemoteException;
  * This method was created in VisualAge.
  * @return cbit.vcell.server.VCellServer
  * @param host java.lang.String
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception cbit.vcell.server.AuthenticationException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  * @exception cbit.vcell.server.ConnectionException The exception description.

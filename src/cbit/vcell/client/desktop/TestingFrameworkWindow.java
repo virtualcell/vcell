@@ -5,8 +5,9 @@ package cbit.vcell.client.desktop;
  * Creation date: (7/15/2004 12:00:01 PM)
  * @author: Anuradha Lakshminarayana
  */
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.UserCancelException;
 public class TestingFrameworkWindow extends javax.swing.JFrame implements TopLevelWindow {
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private javax.swing.JPanel ivjJFrameContentPane = null;

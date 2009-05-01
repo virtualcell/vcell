@@ -819,7 +819,7 @@ private void selectBMAppSim() {
 		} else {
 			PopupGenerator.showErrorDialog("Reference BMAppSimInfo not selected!");
 		}
-	}catch(cbit.vcell.server.DataAccessException e){
+	}catch(org.vcell.util.DataAccessException e){
 		cbit.vcell.client.PopupGenerator.showErrorDialog("Error selecting Biomodel/App Sim "+e.getMessage());
 	}
 }

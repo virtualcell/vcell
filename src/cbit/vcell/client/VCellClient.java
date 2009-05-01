@@ -7,12 +7,13 @@ import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.document.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.UserCancelException;
 
 import cbit.vcell.biomodel.*;
 /**

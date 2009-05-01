@@ -8,16 +8,16 @@ import cbit.image.VCImageInfo;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.MathException;
 import cbit.sql.Version;
-import cbit.vcell.server.ObjectNotFoundException;
 import java.awt.Point;
 import javax.swing.JOptionPane;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
 import org.vcell.util.document.KeyValue;
 
 import java.beans.PropertyVetoException;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.model.gui.VCellNames;
 /**
  * Insert the type's description here.

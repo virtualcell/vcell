@@ -41,6 +41,9 @@ import javax.swing.*;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.VCDataIdentifier;
 
 import cbit.vcell.xml.XMLTags;
 /**

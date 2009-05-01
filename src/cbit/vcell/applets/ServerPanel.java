@@ -1,7 +1,6 @@
 package cbit.vcell.applets;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.UserCancelException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -9,11 +8,12 @@ import cbit.vcell.client.task.UserCancelException;
 import java.util.Vector;
 import javax.swing.*;
 
+import org.vcell.util.CacheStatus;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.server.*;
-import cbit.vcell.simdata.CacheStatus;
 /**
  * Insert the class' description here.
  * Creation date: (8/20/2000 6:33:46 AM)

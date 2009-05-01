@@ -1,12 +1,14 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.MessageConstants.ServiceType;
+
 import cbit.vcell.messaging.admin.ManageUtils;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.messaging.server.Worker;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * Insert the type's description here.

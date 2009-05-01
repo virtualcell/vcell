@@ -2,12 +2,14 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.*;
 import java.beans.*;
 
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.client.data.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.document.*;
 import cbit.vcell.server.*;
 public class SimulationCompareWindow {
-	private cbit.vcell.server.VCDataIdentifier vcDataIdentifier = null;
+	private org.vcell.util.VCDataIdentifier vcDataIdentifier = null;
 	private javax.swing.JInternalFrame frame = null;
 
 /**
@@ -39,7 +41,7 @@ public javax.swing.JInternalFrame getFrame() {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @return cbit.vcell.server.VCDataIdentifier
  */
-public cbit.vcell.server.VCDataIdentifier getVcDataIdentifier() {
+public org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
 	return vcDataIdentifier;
 }
 
@@ -78,7 +80,7 @@ private void setFrame(javax.swing.JInternalFrame newFrame) {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @param newVcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-private void setVcDataIdentifier(cbit.vcell.server.VCDataIdentifier newVcDataIdentifier) {
+private void setVcDataIdentifier(org.vcell.util.VCDataIdentifier newVcDataIdentifier) {
 	vcDataIdentifier = newVcDataIdentifier;
 }
 }

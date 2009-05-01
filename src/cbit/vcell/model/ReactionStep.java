@@ -16,12 +16,12 @@ import java.io.*;
 import java.util.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.Cacheable;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.util.*;

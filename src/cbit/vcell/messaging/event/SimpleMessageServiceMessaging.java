@@ -1,8 +1,8 @@
 package cbit.vcell.messaging.event;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.*;
-import cbit.vcell.server.SessionLog;
 import cbit.rmi.event.*;
 
 /*©

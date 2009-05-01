@@ -53,7 +53,7 @@ public boolean skipIfAbort() {
  * Creation date: (9/13/2004 4:41:33 PM)
  * @return boolean
  */
-public boolean skipIfCancel(cbit.vcell.client.task.UserCancelException exc) {
+public boolean skipIfCancel(org.vcell.util.UserCancelException exc) {
 	return true;
 }
 }

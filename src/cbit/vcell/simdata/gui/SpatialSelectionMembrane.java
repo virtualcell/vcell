@@ -5,7 +5,8 @@ package cbit.vcell.simdata.gui;
  * All rights reserved.
 ©*/
 import java.util.Vector;
-import cbit.vcell.geometry.Coordinate;
+
+import org.vcell.util.Coordinate;
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:54 PM)
@@ -76,7 +77,7 @@ public SSHelper getIndexSamples() {
 		return null;
 	}
 	if(membraneSegmentSelectionIndexes.length == 1){
-		cbit.vcell.geometry.Coordinate[] twoCP = sampledCurve.getControlPointsForSegment(membraneSegmentSelectionIndexes[0]);
+		org.vcell.util.Coordinate[] twoCP = sampledCurve.getControlPointsForSegment(membraneSegmentSelectionIndexes[0]);
 		return new SSHelper(
 			new Coordinate[] {twoCP[0],twoCP[1]},
 			new int[] {fieldSampledDataIndexes[membraneSegmentSelectionIndexes[0]],fieldSampledDataIndexes[membraneSegmentSelectionIndexes[0]]},
@@ -92,12 +93,12 @@ public SSHelper getIndexSamples() {
 	}
 	
 	for(int i =0;i < membraneSegmentSelectionIndexes.length;i+= 1){
-		cbit.vcell.geometry.Coordinate[] twoCP = segCPArr[i];
+		org.vcell.util.Coordinate[] twoCP = segCPArr[i];
 		Coordinate firstSelDirection = null;
 		Coordinate secondSelDirection = null;
 		
 		if (i  != (membraneSegmentSelectionIndexes.length-1)){
-			cbit.vcell.geometry.Coordinate[] twoCPNext = segCPArr[i+1];
+			org.vcell.util.Coordinate[] twoCPNext = segCPArr[i+1];
 			if(twoCP[0].compareEqual(twoCPNext[0]) || twoCP[0].compareEqual(twoCPNext[1])){
 				firstSelDirection = twoCP[1];
 				secondSelDirection = twoCP[0];
@@ -106,7 +107,7 @@ public SSHelper getIndexSamples() {
 				secondSelDirection = twoCP[1];
 			}
 		}else{
-			cbit.vcell.geometry.Coordinate[] twoCPPrev = segCPArr[i-1];
+			org.vcell.util.Coordinate[] twoCPPrev = segCPArr[i-1];
 			if(twoCP[0].compareEqual(twoCPPrev[0]) || twoCP[0].compareEqual(twoCPPrev[1])){
 				firstSelDirection = twoCP[0];
 				secondSelDirection = twoCP[1];

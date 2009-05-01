@@ -23,7 +23,7 @@ public AbstractPolygon(Node[] nodes) {
  * Creation date: (9/22/2005 11:37:45 AM)
  * @return cbit.vcell.geometry.Coordinate
  */
-public cbit.vcell.geometry.Coordinate calculateCentroid() {
+public org.vcell.util.Coordinate calculateCentroid() {
 
 	if(getNodeCount() > 0){
 		double x=0;
@@ -34,7 +34,7 @@ public cbit.vcell.geometry.Coordinate calculateCentroid() {
 			y+= getNodes(k).getY();
 			z+= getNodes(k).getZ();
 		}
-		return new cbit.vcell.geometry.Coordinate(x/getNodeCount(),y/getNodeCount(),z/getNodeCount());
+		return new org.vcell.util.Coordinate(x/getNodeCount(),y/getNodeCount(),z/getNodeCount());
 	}
 
 	return null;

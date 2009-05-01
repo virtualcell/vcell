@@ -1,10 +1,11 @@
 package cbit.vcell.messaging.server;
 import java.util.Date;
 
-import cbit.vcell.server.DataAccessException;
 import javax.jms.*;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants.ServiceType;
+
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.db.VCellServerID;
@@ -25,7 +26,7 @@ public JmsRpcServer(ServiceType serviceType, int serviceOrdinal, String queueNam
 	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), serviceType, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
-	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());	
+	log = new org.vcell.util.StdoutSessionLog(serviceInstanceStatus.getID());	
 	rpcServerMessaging = new RpcServerMessaging(this, queueName, filter, log);	
 }
 

@@ -3,7 +3,8 @@ package cbit.htc;
 import java.io.File;
 import java.util.StringTokenizer;
 
-import cbit.vcell.server.PropertyLoader;
+import org.vcell.util.PropertyLoader;
+
 
 public class HTCUtils {
 

@@ -10,8 +10,10 @@ import cbit.vcell.simdata.VariableType;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+
 import sun.awt.geom.Crossings;
-import cbit.vcell.math.CoordinateIndex;
 
 /**
  * Insert the type's description here.
@@ -42,7 +44,7 @@ public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSel
  * @param ci cbit.vcell.math.CoordinateIndex
  * @param ci2 cbit.vcell.math.CoordinateIndex
  */
-private boolean areTouching(cbit.vcell.math.CoordinateIndex ci1, cbit.vcell.math.CoordinateIndex ci2) {
+private boolean areTouching(org.vcell.util.CoordinateIndex ci1, org.vcell.util.CoordinateIndex ci2) {
 	
 	int dx = Math.abs(ci1.x-ci2.x);
 	int dy = Math.abs(ci1.y-ci2.y);
@@ -61,7 +63,7 @@ private boolean areTouching(cbit.vcell.math.CoordinateIndex ci1, cbit.vcell.math
  * @param ci cbit.vcell.math.CoordinateIndex
  * @param ci2 cbit.vcell.math.CoordinateIndex
  */
-private boolean areTouchingFace(cbit.vcell.math.CoordinateIndex ci1, cbit.vcell.math.CoordinateIndex ci2) {
+private boolean areTouchingFace(org.vcell.util.CoordinateIndex ci1, org.vcell.util.CoordinateIndex ci2) {
 	
 	int dx = Math.abs(ci1.x-ci2.x);
 	int dy = Math.abs(ci1.y-ci2.y);

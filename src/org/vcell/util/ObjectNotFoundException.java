@@ -1,10 +1,9 @@
-package cbit.vcell.server;
+package org.vcell.util;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */

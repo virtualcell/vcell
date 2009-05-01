@@ -9,9 +9,9 @@ import java.io.File;
 import java.io.FileReader;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 
 /**
@@ -20,7 +20,7 @@ import cbit.vcell.simdata.gui.MeshDisplayAdapter;
  * @author: Jim Schaff
  */
 public class GeometryRegressionTest {
-	SessionLog log = new cbit.vcell.server.StdoutSessionLog("GeometryTest");
+	SessionLog log = new org.vcell.util.StdoutSessionLog("GeometryTest");
 	
 	String simlistfile = "D:\\VCell\\geometrytest\\simlist.txt";
 	
@@ -175,16 +175,16 @@ public static void main(String[] args) {
 
 		GeometryRegressionTest grt = new GeometryRegressionTest();
 		if (args[0].equalsIgnoreCase("new")) {	
-			System.setProperty(cbit.vcell.server.PropertyLoader.propertyFileProperty, "C:\\Documents and Settings\\fgao\\vcell.properties");
-			cbit.vcell.server.PropertyLoader.loadProperties();
+			System.setProperty(org.vcell.util.PropertyLoader.propertyFileProperty, "C:\\Documents and Settings\\fgao\\vcell.properties");
+			org.vcell.util.PropertyLoader.loadProperties();
 			String startKey = null;
 			if (args.length > 1) {
 				startKey = args[1];
 			}
 			grt.runSimulations(true, startKey);
 		} else if (args[0].equalsIgnoreCase("old")){
-			System.setProperty(cbit.vcell.server.PropertyLoader.propertyFileProperty, "\\\\san1\\raid\\vcell\\deployed\\manager\\alpha\\configs\\vcell.properties");
-			cbit.vcell.server.PropertyLoader.loadProperties();	
+			System.setProperty(org.vcell.util.PropertyLoader.propertyFileProperty, "\\\\san1\\raid\\vcell\\deployed\\manager\\alpha\\configs\\vcell.properties");
+			org.vcell.util.PropertyLoader.loadProperties();	
 			String startKey = null;
 			if (args.length > 1) {
 				startKey = args[1];

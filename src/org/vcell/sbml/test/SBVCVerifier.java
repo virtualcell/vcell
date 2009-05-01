@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.util.Calendar;
 
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.SimulationVersion;
@@ -25,8 +27,6 @@ import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;

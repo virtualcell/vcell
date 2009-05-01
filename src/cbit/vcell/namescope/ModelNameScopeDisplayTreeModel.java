@@ -8,11 +8,12 @@ import cbit.vcell.parser.Expression;
 import cbit.gui.JTableFixed;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Kinetics;
 import java.beans.PropertyChangeListener;
+
+import org.vcell.util.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (4/12/2004 2:55:19 PM)

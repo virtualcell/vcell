@@ -11,6 +11,7 @@ import java.lang.reflect.*;
 import cbit.vcell.biomodel.*;
 import javax.swing.*;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.User;
 
@@ -1612,9 +1613,9 @@ private void refireActionPerformed(ActionEvent e) {
 
 /**
  * 
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void refresh() throws cbit.vcell.server.DataAccessException {
+private void refresh() throws org.vcell.util.DataAccessException {
 	//getGeometryDbTreeModel().reload();
 	getGeometryDbTreeModel().refreshTree();
 

@@ -3,7 +3,6 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.parser.*;
 import cbit.vcell.model.*;
 import cbit.vcell.math.VCML;
@@ -14,6 +13,7 @@ import cbit.util.*;
 import java.io.*;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
@@ -586,7 +586,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new cbit.vcell.server.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+		throw new org.vcell.util.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
 	}			
 	while (tokens.hasMoreTokens()){
 		token = tokens.nextToken();
@@ -609,7 +609,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 				throw new DataAccessException("unexpected reaction mapping "+mappingType);
 			}
 		}
-		throw new cbit.vcell.server.DataAccessException("unexpected identifier "+token);
+		throw new org.vcell.util.DataAccessException("unexpected identifier "+token);
 	}
 }
 

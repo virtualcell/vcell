@@ -6,6 +6,7 @@ package cbit.sql;
 ©*/
 import java.util.*;
 
+import org.vcell.util.ObjectReferenceWrapper;
 import org.vcell.util.document.KeyValue;
 /**
  * Used for internal references within (or between) Versionable objects

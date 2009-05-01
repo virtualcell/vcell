@@ -11,7 +11,7 @@ import cbit.vcell.field.SimResampleInfoProvider;
  */
 public class VCSimulationDataIdentifierOldStyle
 	implements
-		java.io.Serializable, cbit.vcell.server.VCDataIdentifier,
+		java.io.Serializable, org.vcell.util.VCDataIdentifier,
 		SimResampleInfoProvider{
 
 

@@ -3,6 +3,7 @@ import cbit.vcell.messaging.server.SimulationDispatcher;
 import cbit.vcell.messaging.server.SimulationTask;
 import javax.jms.*;
 
+import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -39,7 +40,7 @@ public WorkerEventMessage(WorkerEvent event) {
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, cbit.vcell.server.DataAccessException {
+public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, org.vcell.util.DataAccessException {
 	parseMessage(dispatcher, message0);
 }
 
@@ -102,7 +103,7 @@ private void parseMessage(SimulationDispatcher dispatcher, Message message) thro
 				if (sim == null) {
 					throw new RuntimeException("Null Simulation"); //wrong message	
 				}
-			} catch (cbit.vcell.server.DataAccessException ex) {
+			} catch (org.vcell.util.DataAccessException ex) {
 				throw new RuntimeException("Null Simulation"); // wrong message
 			}
 			

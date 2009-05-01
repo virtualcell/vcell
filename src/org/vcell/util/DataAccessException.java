@@ -1,4 +1,4 @@
-package cbit.vcell.server;
+package org.vcell.util;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

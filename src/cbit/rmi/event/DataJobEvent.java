@@ -6,6 +6,7 @@ package cbit.rmi.event;
 import java.rmi.dgc.VMID;
 
 import org.vcell.util.TimeSeriesJobResults;
+import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 

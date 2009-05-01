@@ -33,7 +33,9 @@ import javax.swing.filechooser.FileFilter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.task.*;
@@ -754,7 +756,7 @@ public static VCImage editImageAttributes(final VCImage image,final AsynchProgre
 					throw new DataAccessException("Save New Image failed, Old version has same id as New");
 				}	
 			}else{
-				throw cbit.vcell.client.task.UserCancelException.CANCEL_EDIT_IMG_ATTR;
+				throw org.vcell.util.UserCancelException.CANCEL_EDIT_IMG_ATTR;
 			}
 			
 			
@@ -784,9 +786,9 @@ public void findModelsUsingSelectedGeometry() {
 		return;
 	}
 
-	cbit.vcell.modeldb.ReferenceQuerySpec rqs = new cbit.vcell.modeldb.ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
+	org.vcell.util.ReferenceQuerySpec rqs = new org.vcell.util.ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
 	try{
-		cbit.vcell.modeldb.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
+		org.vcell.util.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
 		//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
 		cbit.vcell.modeldb.VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
 		//System.out.println("\n");

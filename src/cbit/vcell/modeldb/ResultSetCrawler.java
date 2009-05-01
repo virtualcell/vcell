@@ -5,13 +5,10 @@ package cbit.vcell.modeldb;
 ©*/
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.sql.DBCacheTable;
-import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.server.DataAccessException;
 
 import java.util.List;
 import java.util.Vector;
@@ -22,12 +19,15 @@ import java.io.PrintWriter;
 
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
-import cbit.vcell.server.PermissionException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -40,7 +40,7 @@ import org.vcell.util.document.User;
 public class ResultSetCrawler {
 	private AdminDatabaseServer adminDbServer = null;
 	private cbit.sql.ConnectionFactory conFactory = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private cbit.sql.DBCacheTable dbCacheTable = null;
 	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
 	private File dataRootDir = null;
@@ -292,7 +292,7 @@ public static void main(String[] args) {
 			
 		PropertyLoader.loadProperties();
 
-		SessionLog log = new cbit.vcell.server.StdoutSessionLog("ResultSetCrawler");		
+		SessionLog log = new org.vcell.util.StdoutSessionLog("ResultSetCrawler");		
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		

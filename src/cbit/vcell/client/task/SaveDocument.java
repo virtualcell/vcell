@@ -1,4 +1,6 @@
 package cbit.vcell.client.task;
+import org.vcell.util.UserCancelException;
+
 import cbit.rmi.event.*;
 import cbit.sql.VersionableType;
 import cbit.vcell.geometry.surface.*;

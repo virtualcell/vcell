@@ -43,10 +43,13 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Preference;
+import org.vcell.util.PropertyLoader;
 
 import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
@@ -55,10 +58,7 @@ import cbit.util.AsynchProgressPopup;
 import cbit.util.ProgressDialogListener;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.pslid.WebClientInterface;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.simdata.VariableType;
 
 import cbit.vcell.pslid.*;

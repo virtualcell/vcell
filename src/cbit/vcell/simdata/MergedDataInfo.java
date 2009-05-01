@@ -6,13 +6,13 @@ import org.vcell.util.document.User;
  * Creation date: (10/7/2003 4:21:41 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class MergedDataInfo implements cbit.vcell.server.VCDataIdentifier, java.io.Serializable, org.vcell.util.Matchable {
+public class MergedDataInfo implements org.vcell.util.VCDataIdentifier, java.io.Serializable, org.vcell.util.Matchable {
 	private java.lang.String datasetName = null;
 	private User datasetUser = null;
-	private cbit.vcell.server.VCDataIdentifier[] dataIDs = null;
+	private org.vcell.util.VCDataIdentifier[] dataIDs = null;
 	private String[] dataSetPrefix = null;
 
-public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdataIDs, String[] prefix) {
+public MergedDataInfo(User argOwner, org.vcell.util.VCDataIdentifier[] argdataIDs, String[] prefix) {
 	super();
 	if(prefix == null)
 	{
@@ -79,7 +79,7 @@ public boolean equals(Object object) {
  * Creation date: (10/21/2003 12:47:21 PM)
  * @return cbit.vcell.server.VCDataIdentifier[]
  */
-public cbit.vcell.server.VCDataIdentifier[] getDataIDs() {
+public org.vcell.util.VCDataIdentifier[] getDataIDs() {
 	return dataIDs;
 }
 /**

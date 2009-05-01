@@ -38,17 +38,17 @@ String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi);
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:04:41 PM)
  */
-cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool,cbit.vcell.geometry.Coordinate wc);
+cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool,org.vcell.util.Coordinate wc);
 /**
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:08:33 PM)
  */
-boolean isAddControlPointOK(int tool,cbit.vcell.geometry.Coordinate wc,Curve addedToThisCurve);
+boolean isAddControlPointOK(int tool,org.vcell.util.Coordinate wc,Curve addedToThisCurve);
 /**
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:09:38 PM)
  */
-boolean providesInitalCurve(int tool,cbit.vcell.geometry.Coordinate wc);
+boolean providesInitalCurve(int tool,org.vcell.util.Coordinate wc);
 
 void setDescription(Curve curve);
 }

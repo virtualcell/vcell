@@ -21,7 +21,7 @@ public abstract class SundialsSolver extends cbit.vcell.solvers.AbstractCompiled
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public SundialsSolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, cbit.vcell.server.SessionLog sessionLog) throws SolverException {
+public SundialsSolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, org.vcell.util.SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
 	if (getSimulation().getIsSpatial()) {
 		throw new SolverException("Cannot use SundialsSolver on spatial simulation");

@@ -1,9 +1,10 @@
 package cbit.vcell.simdata;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.desktop.controls.DataManager;
-import cbit.vcell.server.DataAccessException;
 
 /**
  * Insert the type's description here.
@@ -35,9 +36,9 @@ protected ClientPDEDataContext(DataManager argDataManager) {
  *
  * @param function named expression that is to be bound to dataset and whose name is added to variable list.
  *
- * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
-public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
 	dataManager.addFunctions(functionArr,bReplaceArr);
 	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, functionArr);
 }
@@ -58,11 +59,11 @@ public DataManager getDataManager() {
  *
  * @returns array of functions, or null if no functions.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
 	return dataManager.getFunctions();
 }
 
@@ -72,11 +73,11 @@ public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws cbit.vcell.serv
  *
  * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see Function
  */
-public boolean getIsODEData() throws cbit.vcell.server.DataAccessException {
+public boolean getIsODEData() throws org.vcell.util.DataAccessException {
 	return dataManager.getIsODEData();
 }
 
@@ -90,11 +91,11 @@ public boolean getIsODEData() throws cbit.vcell.server.DataAccessException {
  *
  * @returns annotated array of 'concentration vs. distance' in a plot ready format.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws cbit.vcell.server.DataAccessException {
+public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
 	return dataManager.getLineScan(variable, time, spatialSelection);
 }
 
@@ -118,7 +119,7 @@ protected ParticleDataBlock getParticleDataBlock(double time) throws DataAccessE
  * @param varName java.lang.String
  * @param time double
  */
-protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws cbit.vcell.server.DataAccessException {
+protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws org.vcell.util.DataAccessException {
 	return getDataManager().getSimDataBlock(varName, time);
 }
 
@@ -131,11 +132,11 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
  *
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
 	return dataManager.getTimeSeriesValues(timeSeriesJobSpec);
 }
 
@@ -144,7 +145,7 @@ public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.Ti
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public cbit.vcell.server.VCDataIdentifier getVCDataIdentifier() {
+public org.vcell.util.VCDataIdentifier getVCDataIdentifier() {
 	return dataManager.getVCDataIdentifier();
 }
 
@@ -176,7 +177,7 @@ private void initialize() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException;
+public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException;
 
 
 /**
@@ -208,10 +209,10 @@ public abstract void refreshIdentifiers();
  *
  * @param function function to be removed.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
- * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.PermissionException if not the owner of this dataset.
  */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.PermissionException {
+public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException, org.vcell.util.PermissionException {
 	dataManager.removeFunction(function);
 	firePropertyChange(PROP_CHANGE_FUNC_REMOVED, function, null);
 }

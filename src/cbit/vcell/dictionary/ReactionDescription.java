@@ -5,7 +5,7 @@ import cbit.vcell.model.SpeciesContext;
  * Creation date: (4/23/2003 1:42:35 PM)
  * @author: Frank Morgan
  */
-public class ReactionDescription implements java.io.Serializable, cbit.sql.Cacheable{
+public class ReactionDescription implements java.io.Serializable, org.vcell.util.Cacheable{
 	private String reactionName = null;
 	//
 	//cbit.vcell.modeldb.ReactStepTable.id

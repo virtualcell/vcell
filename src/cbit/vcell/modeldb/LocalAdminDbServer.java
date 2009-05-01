@@ -5,14 +5,14 @@ package cbit.vcell.modeldb;
 ©*/
 import java.rmi.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /**

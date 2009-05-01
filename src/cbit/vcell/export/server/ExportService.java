@@ -24,7 +24,7 @@ public interface ExportService {
  * @param user cbit.vcell.server.User
  * @param dsc cbit.vcell.server.DataSetController
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException;
+ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException;
 }

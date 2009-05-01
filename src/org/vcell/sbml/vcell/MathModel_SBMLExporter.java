@@ -14,12 +14,12 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.libsbml;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (4/11/2006 11:35:34 AM)

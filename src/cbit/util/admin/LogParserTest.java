@@ -29,7 +29,7 @@ public static void main(java.lang.String[] args) {
         String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
         String dbSchemaUser = args[5];
         String dbPassword = args[6];
-        cbit.vcell.server.SessionLog sessionLog = new cbit.vcell.server.StdoutSessionLog("logParser");
+        org.vcell.util.SessionLog sessionLog = new org.vcell.util.StdoutSessionLog("logParser");
         cbit.sql.ConnectionFactory connFactory = new cbit.sql.OraclePoolingConnectionFactory(sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
         File files[] = null;
 		java.util.Vector fileList = new java.util.Vector();

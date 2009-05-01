@@ -1,8 +1,9 @@
 package cbit.vcell.desktop.controls;
 
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.server.DataAccessException;
 
 /**
  * Insert the type's description here.
@@ -25,5 +26,5 @@ org.vcell.util.document.User getUser();
  * Creation date: (5/25/2004 12:51:14 PM)
  * @return cbit.vcell.server.UserMetaDbServer
  */
-cbit.vcell.server.UserMetaDbServer getUserMetaDbServer() throws cbit.vcell.server.DataAccessException;
+cbit.vcell.server.UserMetaDbServer getUserMetaDbServer() throws org.vcell.util.DataAccessException;
 }

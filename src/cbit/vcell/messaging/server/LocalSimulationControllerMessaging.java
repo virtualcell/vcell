@@ -1,4 +1,6 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 
 import cbit.vcell.server.*;
@@ -12,14 +14,14 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
  */
 public class LocalSimulationControllerMessaging extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.SimulationController {
 	private User fieldUser = null;
-	private cbit.vcell.server.SessionLog fieldSessionLog = null;
+	private org.vcell.util.SessionLog fieldSessionLog = null;
 	private RpcSimServerProxy simServerProxy = null;
 
 /**
  * MessagingSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalSimulationControllerMessaging(User user, cbit.vcell.messaging.JmsClientMessaging clientMessaging, cbit.vcell.server.SessionLog log) throws java.rmi.RemoteException, DataAccessException {
+public LocalSimulationControllerMessaging(User user, cbit.vcell.messaging.JmsClientMessaging clientMessaging, org.vcell.util.SessionLog log) throws java.rmi.RemoteException, DataAccessException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortSimulationController,0));
 	this.fieldUser = user;
 	this.fieldSessionLog = log;

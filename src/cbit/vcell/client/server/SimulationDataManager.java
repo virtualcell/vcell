@@ -1,7 +1,8 @@
 package cbit.vcell.client.server;
+import org.vcell.util.DataAccessException;
+
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.client.data.*;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -70,9 +71,9 @@ public void newData(cbit.vcell.desktop.controls.DataEvent event) {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:43:49 PM)
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void refreshData() throws cbit.vcell.server.DataAccessException {
+public void refreshData() throws org.vcell.util.DataAccessException {
 	if (simDataViewer != null) {
 		simDataViewer.refreshData();
 	}

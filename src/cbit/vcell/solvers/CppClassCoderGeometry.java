@@ -7,6 +7,7 @@ import cbit.image.*;
 import cbit.util.*;
 import java.util.*;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.ISize;
 
 import cbit.vcell.math.*;

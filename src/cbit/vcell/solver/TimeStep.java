@@ -5,6 +5,7 @@ package cbit.vcell.solver;
  * All rights reserved.
 ©*/
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
 
 import cbit.vcell.server.*;
 import cbit.vcell.math.*;

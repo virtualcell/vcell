@@ -7,6 +7,9 @@ import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.stoch.HybridSolver;
 
 import java.io.*;
+
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

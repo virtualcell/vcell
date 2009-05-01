@@ -1,6 +1,9 @@
 package cbit.vcell.messaging.admin;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import java.math.BigDecimal;
+
+import org.vcell.util.ComparableObject;
+
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.SolverTaskDescription;
 

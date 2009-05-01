@@ -20,7 +20,7 @@ public class ODEDataViewer extends DataViewer {
 	private boolean ivjConnPtoP2Aligning = false;
 	private NewODEExportPanel ivjNewODEExportPanel1 = null;
 	private boolean ivjConnPtoP3Aligning = false;
-	private cbit.vcell.server.VCDataIdentifier fieldVcDataIdentifier = null;
+	private org.vcell.util.VCDataIdentifier fieldVcDataIdentifier = null;
 	private boolean ivjConnPtoP4Aligning = false;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
@@ -465,7 +465,7 @@ public cbit.vcell.solver.Simulation getSimulation() {
  * @return The vcDataIdentifier property value.
  * @see #setVcDataIdentifier
  */
-public cbit.vcell.server.VCDataIdentifier getVcDataIdentifier() {
+public org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
 	return fieldVcDataIdentifier;
 }
 
@@ -614,8 +614,8 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  * @param vcDataIdentifier The new value for the property.
  * @see #getVcDataIdentifier
  */
-public void setVcDataIdentifier(cbit.vcell.server.VCDataIdentifier vcDataIdentifier) {
-	cbit.vcell.server.VCDataIdentifier oldValue = fieldVcDataIdentifier;
+public void setVcDataIdentifier(org.vcell.util.VCDataIdentifier vcDataIdentifier) {
+	org.vcell.util.VCDataIdentifier oldValue = fieldVcDataIdentifier;
 	fieldVcDataIdentifier = vcDataIdentifier;
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
 }

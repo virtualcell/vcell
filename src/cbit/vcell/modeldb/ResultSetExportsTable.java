@@ -12,6 +12,7 @@ import cbit.vcell.server.*;
 import java.sql.*;
 import java.util.Vector;
 
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 /**

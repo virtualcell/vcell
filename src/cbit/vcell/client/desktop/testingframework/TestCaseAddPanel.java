@@ -4,11 +4,11 @@ import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.client.task.UserCancelException;
 
 import javax.swing.JRadioButton;
 import javax.swing.ListSelectionModel;
 
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 
 import java.awt.GridBagConstraints;
@@ -120,7 +120,7 @@ private void applyTestCaseInfo() throws Exception{
 				}
 				appKeyArr[i] = getTestingFrameworkWindowManager().getSimContextKey(getbioModelInfo(),getappNameArr()[i]);				
 			}
-		}catch (cbit.vcell.server.DataAccessException e){
+		}catch (org.vcell.util.DataAccessException e){
 			e.printStackTrace(System.out);
 			throw new Exception("Exception while retrieving BioModel SimContextKey");
 		}

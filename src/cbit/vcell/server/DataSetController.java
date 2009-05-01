@@ -7,6 +7,11 @@ package cbit.vcell.server;
 import cbit.vcell.math.*;
 import cbit.plot.*;
 import java.rmi.*;
+
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.solvers.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.gui.SpatialSelection;
@@ -24,7 +29,7 @@ public interface DataSetController extends Remote {
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function[]
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction function[],boolean[] bReplaceArr) throws DataAccessException, RemoteException;
@@ -47,7 +52,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteExceptio
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
  AnnotatedFunction[] getFunctions(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException; 
@@ -55,7 +60,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteExceptio
  * Insert the method's description here.
  * Creation date: (1/16/00 11:38:06 PM)
  * @return boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 boolean getIsODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException;
@@ -87,7 +92,7 @@ CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteException, DataAcc
  * Insert the method's description here.
  * Creation date: (1/13/00 6:21:10 PM)
  * @param odeSimData cbit.vcell.export.data.ODESimData
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException;
@@ -95,7 +100,7 @@ cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws Da
  * This method was created in VisualAge.
  * @return ParticleData
  * @param time double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException, RemoteException;
@@ -129,7 +134,7 @@ public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier 
  * Creation date: (10/22/2001 2:53:44 PM)
  * @return cbit.rmi.event.ExportEvent
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException, java.rmi.RemoteException;
@@ -137,7 +142,7 @@ ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException, 
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 void removeFunction(VCDataIdentifier vcdataID, AnnotatedFunction function) throws DataAccessException, RemoteException;

@@ -4,17 +4,17 @@ package cbit.sql;
  * All rights reserved.
 ©*/
 import java.sql.SQLException;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import java.text.ParseException;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Version;
 import cbit.vcell.modeldb.*;
-import cbit.vcell.server.ObjectNotFoundException;
 /**
  * This type was created in VisualAge.
  */

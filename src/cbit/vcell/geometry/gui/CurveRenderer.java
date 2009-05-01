@@ -13,6 +13,7 @@ import java.awt.geom.*;
 import java.util.Hashtable;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Coordinate;
 
 import cbit.image.DisplayAdapterService;
 import cbit.util.*;
@@ -29,8 +30,8 @@ public class CurveRenderer implements DrawPaneModel {
 	private boolean fieldSelectionValid = false;
 	private cbit.vcell.geometry.CurveSelectionInfo fieldSelection = null;
 	private cbit.vcell.geometry.CurveChecker fieldCurveChecker = null;
-	private cbit.vcell.geometry.Coordinate fieldWorldDelta = null;
-	private cbit.vcell.geometry.Coordinate fieldWorldOrigin = null;
+	private org.vcell.util.Coordinate fieldWorldDelta = null;
+	private org.vcell.util.Coordinate fieldWorldOrigin = null;
 	private java.awt.geom.Point2D.Double fieldScaling2D = null;
 	private java.awt.geom.Point2D.Double fieldOrigin2D = null;
 	//
@@ -817,7 +818,7 @@ public boolean getSelectionValid() {
  * @return The worldDelta property value.
  * @see #setWorldDelta
  */
-public cbit.vcell.geometry.Coordinate getWorldDelta() {
+public org.vcell.util.Coordinate getWorldDelta() {
 	return fieldWorldDelta;
 }
 
@@ -827,7 +828,7 @@ public cbit.vcell.geometry.Coordinate getWorldDelta() {
  * @return The worldDelta property value.
  * @see #setWorldDelta
  */
-public cbit.vcell.geometry.Coordinate getWorldOrigin() {
+public org.vcell.util.Coordinate getWorldOrigin() {
 	return fieldWorldOrigin;
 }
 
@@ -1399,7 +1400,7 @@ private void setSelectionValid(boolean selectionValid) {
  * @param worldDelta The new value for the property.
  * @see #getWorldDelta
  */
-public void setWorldDelta(cbit.vcell.geometry.Coordinate wd) {
+public void setWorldDelta(org.vcell.util.Coordinate wd) {
 	if(wd == null && fieldWorldDelta == null){
 		return;
 	}
@@ -1420,7 +1421,7 @@ public void setWorldDelta(cbit.vcell.geometry.Coordinate wd) {
  * @param worldDelta The new value for the property.
  * @see #getWorldDelta
  */
-public void setWorldOrigin(cbit.vcell.geometry.Coordinate wo) {
+public void setWorldOrigin(org.vcell.util.Coordinate wo) {
 	if(wo == null && fieldWorldOrigin == null){
 		return;
 	}

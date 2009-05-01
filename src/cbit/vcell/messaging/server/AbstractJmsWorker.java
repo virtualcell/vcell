@@ -1,19 +1,21 @@
 package cbit.vcell.messaging.server;
 import javax.jms.*;
+
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+
 import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.StringTokenizer;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.solver.SolverEvent;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.WorkerMessaging;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.db.VCellServerID;
-import static cbit.vcell.messaging.MessageConstants.*;
+import static org.vcell.util.MessageConstants.*;
 
 /**
  * Insert the type's description here.
@@ -35,7 +37,7 @@ public AbstractJmsWorker(ServiceType wt, int workerOrdinal, int workerMem, Strin
 	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), serviceType, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
-	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());
+	log = new org.vcell.util.StdoutSessionLog(serviceInstanceStatus.getID());
 	workerMessaging = new WorkerMessaging(this, log);
 }
 

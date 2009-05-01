@@ -3,13 +3,14 @@ package cbit.vcell.client.desktop.testingframework;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.numericstest.*;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.server.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (7/23/2004 10:10:20 AM)
@@ -120,7 +121,7 @@ public class TestingFrmwkTreeModel
 										}
 									}
 								}
-							} catch (cbit.vcell.server.DataAccessException e) {
+							} catch (org.vcell.util.DataAccessException e) {
 								tsg = new TestSuiteGroup();
 								PopupGenerator.showErrorDialog(e.getMessage());
 								return;

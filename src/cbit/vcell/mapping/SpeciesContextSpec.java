@@ -1021,13 +1021,13 @@ public final boolean isEnableDiffusing() {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, cbit.vcell.server.DataAccessException, java.beans.PropertyVetoException {
+public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, org.vcell.util.DataAccessException, java.beans.PropertyVetoException {
 	resetDefaults();
 	
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new cbit.vcell.server.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+		throw new org.vcell.util.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
 	}			
 	while (tokens.hasMoreTokens()){
 		token = tokens.nextToken();
@@ -1081,7 +1081,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 			continue;
 		}
 
-		throw new cbit.vcell.server.DataAccessException("unexpected identifier "+token);
+		throw new org.vcell.util.DataAccessException("unexpected identifier "+token);
 	}
 }
 

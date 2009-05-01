@@ -4,12 +4,12 @@ import cbit.sql.Version;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.solver.Simulation;

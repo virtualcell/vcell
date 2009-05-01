@@ -4,7 +4,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XMLTags;
 import cbit.util.xml.XmlUtil;
@@ -13,6 +12,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 
 import java.io.IOException;

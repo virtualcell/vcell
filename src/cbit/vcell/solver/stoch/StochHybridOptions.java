@@ -1,9 +1,9 @@
 package cbit.vcell.solver.stoch;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
 
 import cbit.vcell.math.VCML;
-import cbit.vcell.server.DataAccessException;
 
 public class StochHybridOptions extends StochSimOptions {
 

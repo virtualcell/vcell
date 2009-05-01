@@ -1,6 +1,7 @@
 package cbit.vcell.client.server;
 
-import cbit.vcell.server.DataAccessException;
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.server.DataSetController;
 
 public interface DataSetControllerProvider {

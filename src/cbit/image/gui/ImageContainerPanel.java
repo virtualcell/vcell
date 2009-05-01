@@ -87,7 +87,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 /**
  * Comment
  */
-public void checkScaleSettingsHistory() throws java.rmi.RemoteException, cbit.vcell.server.DataAccessException {
+public void checkScaleSettingsHistory() throws java.rmi.RemoteException, org.vcell.util.DataAccessException {
 	String newDataSet = getImageContainer().getDataID();
 	if (scaleSettingsHistory.capacity() != 0) scaleSettingsHistory.setElementAt(getScalePanel1().getScaleRange(), index);
 	if (dataSetHistory.contains(newDataSet)) {
@@ -876,7 +876,7 @@ private ImageContainerPanelTool getImageContainerPanelTool() {
  * Method generated to support the promotion of the imageContainerPanelToolBeginLine attribute.
  * @return cbit.vcell.math.CoordinateIndex
  */
-public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolBeginLine() {
+public org.vcell.util.CoordinateIndex getImageContainerPanelToolBeginLine() {
 		return getImageContainerPanelTool().getBeginLine();
 }
 
@@ -885,7 +885,7 @@ public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolBeginLine() {
  * Method generated to support the promotion of the imageContainerPanelToolClickedPoint attribute.
  * @return cbit.vcell.math.CoordinateIndex
  */
-public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolClickedPoint() {
+public org.vcell.util.CoordinateIndex getImageContainerPanelToolClickedPoint() {
 		return getImageContainerPanelTool().getClickedPoint();
 }
 
@@ -894,7 +894,7 @@ public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolClickedPoint() 
  * Method generated to support the promotion of the imageContainerPanelToolEndLine attribute.
  * @return cbit.vcell.math.CoordinateIndex
  */
-public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolEndLine() {
+public org.vcell.util.CoordinateIndex getImageContainerPanelToolEndLine() {
 		return getImageContainerPanelTool().getEndLine();
 }
 

@@ -1,8 +1,8 @@
 package cbit.vcell.server;
 
+import org.vcell.util.CacheStatus;
 import org.vcell.util.document.User;
 
-import cbit.vcell.simdata.CacheStatus;
 /**
  * Insert the type's description here.
  * Creation date: (12/9/2002 12:44:13 AM)

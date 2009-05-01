@@ -20,6 +20,7 @@ import cbit.vcell.biomodel.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.User;
 /**
@@ -1015,9 +1016,9 @@ private void enableToolTips(JTree tree) {
 
 /**
  * 
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void expandTreeToOwner() throws cbit.vcell.server.DataAccessException {
+private void expandTreeToOwner() throws org.vcell.util.DataAccessException {
 	//
 	// expand tree up to and including the "Owner" subtree's first children
 	//
@@ -2095,7 +2096,7 @@ private void refireActionPerformed(ActionEvent e) {
 
 /**
  * 
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 private void refresh() throws DataAccessException{
 	//getMathModelDbTreeModel().reload();

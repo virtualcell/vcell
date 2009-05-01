@@ -8,7 +8,11 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -22,7 +26,6 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -168,7 +171,7 @@ public class UserRegistrationOP implements Serializable{
 				if (registrationProvider == null) {
 					if (currentClientServerInfo.getServerType() == ClientServerInfo.SERVER_LOCAL) {
 						PropertyLoader.loadProperties();
-						SessionLog log = new cbit.vcell.server.StdoutSessionLog("Local");
+						SessionLog log = new org.vcell.util.StdoutSessionLog("Local");
 						ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 						KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 						registrationProvider = new RegistrationProvider(

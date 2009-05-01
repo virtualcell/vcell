@@ -8,8 +8,10 @@ import java.io.File;
 import cbit.gui.VCFileChooser;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
-import cbit.vcell.client.task.UserCancelException;
 import javax.swing.JFileChooser;
+
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.server.UserPreferences;
 import java.io.FileInputStream;
 import java.io.BufferedReader;

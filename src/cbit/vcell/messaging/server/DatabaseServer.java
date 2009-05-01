@@ -1,7 +1,8 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.PropertyLoader;
-import static cbit.vcell.messaging.MessageConstants.*;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+
+import static org.vcell.util.MessageConstants.*;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 

@@ -1,4 +1,6 @@
 package cbit.vcell.messaging.admin;
+import org.vcell.util.MessageConstants;
+
 import cbit.vcell.messaging.*;
 
 /**

@@ -16,6 +16,13 @@ import java.util.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.io.*;
+
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.server.*;
 /**
@@ -43,10 +50,10 @@ public LocalDataSetControllerProxy (SessionLog sessionLog,
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.addFunctions(simID="+vcdID.getID()+", functions="+functions+")");
 	try {
 		//
@@ -154,10 +161,10 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.getFunctions(simID="+vcdID.getID()+")");
 	try {
 		//
@@ -301,7 +308,7 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException 
  * Insert the method's description here.
  * Creation date: (1/14/00 11:20:51 AM)
  * @return cbit.vcell.export.data.ODESimData
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
@@ -497,7 +504,7 @@ private void invalidateRemoteDataSetController() {
 /**
  * This method was created in VisualAge.
  * @param simInfo cbit.vcell.solver.SimulationInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.makeRemoteFile(simID="+exportSpecs.getVCDataIdentifier().getID()+","+exportSpecs+")");
@@ -525,10 +532,10 @@ public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessExce
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.removeFunction(simID="+vcdID.getID()+", function="+function+")");
 	try {
 		//

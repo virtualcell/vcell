@@ -1,5 +1,7 @@
 package cbit.vcell.server;
 
+import org.vcell.util.DataAccessException;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/22/01 11:46:42 AM)

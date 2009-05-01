@@ -15,15 +15,15 @@ public interface WorldCoordinateCalculator {
  * Creation date: (10/11/00 11:39:09 AM)
  * @return cbit.vcell.geometry.Coordinate
  */
-cbit.vcell.geometry.Coordinate getWorldCoordinateFromUnitized2D(double x,double y);
+org.vcell.util.Coordinate getWorldCoordinateFromUnitized2D(double x,double y);
 /**
  * Insert the method's description here.
  * Creation date: (7/12/2004 12:42:16 PM)
  */
-cbit.vcell.geometry.Coordinate snapWorldCoordinate(cbit.vcell.geometry.Coordinate targetC);
+org.vcell.util.Coordinate snapWorldCoordinate(org.vcell.util.Coordinate targetC);
 /**
  * Insert the method's description here.
  * Creation date: (7/13/2004 4:26:44 PM)
  */
-cbit.vcell.geometry.Coordinate snapWorldCoordinateFace(cbit.vcell.geometry.Coordinate targetC);
+org.vcell.util.Coordinate snapWorldCoordinateFace(org.vcell.util.Coordinate targetC);
 }

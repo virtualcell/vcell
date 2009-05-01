@@ -9,15 +9,15 @@ import java.sql.*;
 import java.sql.Statement;
 import java.util.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.*;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */
@@ -47,7 +47,7 @@ public BioModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, Simulat
  * only the owner can delete a Model
  */
 private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioModelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,cbit.vcell.server.PermissionException,DataAccessException,ObjectNotFoundException {
+				throws SQLException,org.vcell.util.DependencyException,org.vcell.util.PermissionException,DataAccessException,ObjectNotFoundException {
 
 	//
 	// get key values of simulations and simulationContexts belonging to this version of BioModel
@@ -118,8 +118,8 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.vcell.server.PermissionException {
+				throws org.vcell.util.DependencyException, ObjectNotFoundException,
+						SQLException,DataAccessException,org.vcell.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.BioModelMetaData)){
@@ -178,7 +178,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 		if (rset.next()) {
 			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
