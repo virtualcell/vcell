@@ -25,8 +25,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.vcell.util.FileUtils;
+
 import cbit.gui.DialogUtils;
-import cbit.util.FileUtils;
 import cbit.vcell.client.task.UserCancelException;
 
 /**

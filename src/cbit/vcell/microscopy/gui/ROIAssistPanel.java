@@ -35,10 +35,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Extent;
+
 import cbit.gui.DialogUtils;
 import cbit.image.VCImageUncompressed;
-import cbit.util.BeanUtils;
-import cbit.util.Extent;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.task.UserCancelException;

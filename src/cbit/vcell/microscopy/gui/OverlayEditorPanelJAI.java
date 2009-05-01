@@ -31,15 +31,17 @@ import javax.swing.border.LineBorder;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEditSupport;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.ISize;
+import org.vcell.util.NumberUtils;
+
 import loci.formats.AWTImageTools;
 
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.ImageTools;
 import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
-import cbit.util.ISize;
-import cbit.util.NumberUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;

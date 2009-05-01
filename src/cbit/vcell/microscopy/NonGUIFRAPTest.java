@@ -11,9 +11,11 @@ import java.util.Comparator;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.vcell.util.Extent;
+import org.vcell.util.FileUtils;
+
 import loci.formats.out.TiffWriter;
-import cbit.util.Extent;
-import cbit.util.FileUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;

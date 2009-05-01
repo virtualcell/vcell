@@ -37,15 +37,16 @@ import cbit.image.VCImageUncompressed;
 import org.vcell.util.document.KeyValue;
 import cbit.sql.SimulationVersion;
 import cbit.sql.VersionFlag;
-import cbit.util.Extent;
-import cbit.util.FileUtils;
-import cbit.util.ISize;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
+import org.vcell.util.FileUtils;
+import org.vcell.util.ISize;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
-import cbit.util.NumberUtils;
-import cbit.util.Origin;
+import org.vcell.util.NumberUtils;
+import org.vcell.util.Origin;
+
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;

@@ -2,7 +2,8 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.Color;
 import org.vcell.util.Compare;
-import cbit.util.NumberUtils;
+import org.vcell.util.NumberUtils;
+
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;

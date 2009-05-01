@@ -48,9 +48,11 @@ import cbit.image.ImageException;
 import cbit.rmi.event.ExportEvent;
 import org.vcell.util.document.KeyValue;
 import cbit.util.AsynchProgressPopup;
-import cbit.util.BeanUtils;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
-import cbit.util.Range;
+import org.vcell.util.Range;
+
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;

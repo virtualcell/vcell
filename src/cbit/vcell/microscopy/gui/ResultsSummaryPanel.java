@@ -43,11 +43,12 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Range;
+
 import cbit.gui.DialogUtils;
 import cbit.gui.SimpleTransferable;
 import cbit.plot.Plot2DPanel;
-import cbit.util.BeanUtils;
-import cbit.util.Range;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.ROI;

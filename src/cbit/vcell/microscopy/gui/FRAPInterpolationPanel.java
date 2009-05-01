@@ -22,12 +22,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+
 import loci.formats.TwoChannelColorSpace;
 
 import cbit.gui.DialogUtils;
 import cbit.util.AsynchProgressPopup;
-import cbit.util.BeanUtils;
-import cbit.util.NumberUtils;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.ROI.RoiType;

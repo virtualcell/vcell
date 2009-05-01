@@ -9,12 +9,13 @@ import java.util.Vector;
 import loci.formats.ImageTools;
 
 import cbit.image.ImageException;
-import cbit.util.Extent;
-import cbit.util.ISize;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
-import cbit.util.Origin;
+import org.vcell.util.Origin;
+
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import loci.formats.AWTImageTools;
 // This represents the ROI - Region Of Interest in a given image : NOTE : subject to change!!
