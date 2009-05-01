@@ -5,9 +5,11 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import cbit.vcell.solver.*;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.geometry.*;
 import java.io.*;
+
+import org.vcell.util.PropertyLoader;
+
 import cbit.vcell.math.*;
 /**
  * This type was created in VisualAge.
@@ -22,8 +24,8 @@ public static void main(String args[]) {
 		new PropertyLoader();
 		MathDescription mathDescription = null;
 		File directoryFile = new File(PropertyLoader.getRequiredProperty(PropertyLoader.tempDirProperty));
-		cbit.vcell.server.SessionLog sessionLog = new cbit.vcell.server.StdoutSessionLog("unknown");
-		new cbit.vcell.server.PropertyLoader();
+		org.vcell.util.SessionLog sessionLog = new org.vcell.util.StdoutSessionLog("unknown");
+		new org.vcell.util.PropertyLoader();
 		//
 		// get current directory
 		//
@@ -69,7 +71,7 @@ public static void main(String args[]) {
 			}
 		};
 		System.out.println(mathDescription.getVCML_database());
-		new cbit.vcell.server.PropertyLoader();
+		new org.vcell.util.PropertyLoader();
 		FVSolver solver = new FVSolver(new SimulationJob(simulation, null, 0), directoryFile, sessionLog);
 		solver.startSolver();
 

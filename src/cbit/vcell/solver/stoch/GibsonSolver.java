@@ -30,7 +30,7 @@ public class GibsonSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
-public GibsonSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public GibsonSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, org.vcell.util.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simulationJob, directory, sessionLog);
 }
 
@@ -189,7 +189,7 @@ public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
  */
 protected void initialize() throws cbit.vcell.solver.SolverException 
 {
-	cbit.vcell.server.SessionLog sessionLog = getSessionLog();
+	org.vcell.util.SessionLog sessionLog = getSessionLog();
 	sessionLog.print("StochSolver.initialize()");
 	fireSolverStarting("StochSolver initializing...");
 	writeFunctionsFile();
@@ -219,7 +219,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"StochSolver starting"));	
 	//get executable path+name.
-	String executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.stochExecutableProperty);
+	String executableName = org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.stochExecutableProperty);
 	setMathExecutable(new cbit.vcell.solvers.MathExecutable(new String[] {executableName, "gibson", inputFilename, outputFileName}));	
 	//setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
 }

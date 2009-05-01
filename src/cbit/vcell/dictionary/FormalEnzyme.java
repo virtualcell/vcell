@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (2/18/2003 6:10:04 PM)
  * @author: Frank Morgan
  */
-public class FormalEnzyme extends DBFormalSpecies implements cbit.sql.Cacheable{
+public class FormalEnzyme extends DBFormalSpecies implements org.vcell.util.Cacheable{
 
 	private EnzymeInfo enzymeInfo = null;
 

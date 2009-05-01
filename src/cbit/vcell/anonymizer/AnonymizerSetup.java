@@ -2,8 +2,10 @@ package cbit.vcell.anonymizer;
 import java.rmi.*;
 import java.rmi.activation.*;
 import java.util.Properties;
+
+import org.vcell.util.PropertyLoader;
+
 import cbit.vcell.server.VCellBootstrap;
-import cbit.vcell.server.PropertyLoader;
 
 public class AnonymizerSetup {
 

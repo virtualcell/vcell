@@ -6,13 +6,14 @@ import java.lang.reflect.InvocationTargetException;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.DBCacheTable;
-import cbit.vcell.server.DataAccessException;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -20,7 +21,6 @@ import cbit.sql.VersionableType;
 import cbit.sql.VersionInfo;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.sql.OracleKeyFactory;
-import cbit.vcell.server.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (12/5/2001 12:00:10 PM)
@@ -35,7 +35,7 @@ public class RpcDbServerImpl extends AbstractRpcServerImpl {
 /**
  * DbServerImpl constructor comment.
  */
-public RpcDbServerImpl(cbit.vcell.server.SessionLog sessionLog) throws DataAccessException {
+public RpcDbServerImpl(org.vcell.util.SessionLog sessionLog) throws DataAccessException {
 	super(sessionLog);
 	try {
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);

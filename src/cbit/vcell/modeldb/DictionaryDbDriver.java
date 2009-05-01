@@ -9,11 +9,11 @@ import java.util.Vector;
 
 import java.sql.*;
 
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.*;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.dictionary.CompoundTable;
 import cbit.vcell.dictionary.EnzymeTable;
 import cbit.vcell.dictionary.CompoundAliasTable;

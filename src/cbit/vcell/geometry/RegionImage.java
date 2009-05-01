@@ -1,5 +1,4 @@
 package cbit.vcell.geometry;
-import cbit.sql.ObjectReferenceWrapper;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Tree;
@@ -19,7 +18,9 @@ import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import java.io.Serializable;
 import java.util.*;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
+import org.vcell.util.ObjectReferenceWrapper;
 import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
@@ -515,7 +516,7 @@ private void calculateRegions(VCImage vcImage) throws cbit.image.ImageException 
 	Graph connectionGraph = new Graph();
 	for (int k = 0; k < numZ; k++){
 		for (int i = 0; i < regionMasks[k].length; i++){
-			Node node = new Node(k+","+i, new cbit.sql.ObjectReferenceWrapper(regionMasks[k][i]));
+			Node node = new Node(k+","+i, new org.vcell.util.ObjectReferenceWrapper(regionMasks[k][i]));
 			connectionGraph.addNode(node);
 		}
 	}

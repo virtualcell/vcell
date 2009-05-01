@@ -79,7 +79,7 @@ protected static cbit.vcell.server.VCellBootstrap VCellBootstrapInit(String args
 		throw new Exception("cannot connect");
 	}
 	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
-	new cbit.vcell.server.PropertyLoader();
+	new org.vcell.util.PropertyLoader();
 	if (!args[0].equalsIgnoreCase("-local")) {
 		try {
 			String SERVICE_NAME = "VCellBootstrapServer";
@@ -108,12 +108,12 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 		throw new Exception("cannot connect");
 	}
 	cbit.vcell.server.VCellConnectionFactory vcConnFactory = null;
-	new cbit.vcell.server.PropertyLoader();		
+	new org.vcell.util.PropertyLoader();		
 	org.vcell.util.document.User user = null;
 	if (args[0].startsWith("-")) {
 		String userid = args[1];
 		String password = args[2];
-		cbit.vcell.server.SessionLog log = new cbit.vcell.server.StdoutSessionLog(userid);
+		org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog(userid);
 		if (args[0].equalsIgnoreCase("-jms")) {
 			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userid, password, log, false);
 		} else if (args[0].equalsIgnoreCase("-local")) {
@@ -143,7 +143,7 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		throw new Exception("cannot connect");
 	}
 	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
-	cbit.vcell.server.PropertyLoader.loadProperties();
+	org.vcell.util.PropertyLoader.loadProperties();
 	org.vcell.util.document.User user = null;
 	if (!args[0].equalsIgnoreCase("-local")) {
 		String host = args[0];
@@ -157,7 +157,7 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		String userid = args[1];
 		String password = args[2];
 //		cbit.vcell.server.SessionLog log = new cbit.vcell.server.StdoutSessionLog(userid);
-		cbit.vcell.server.SessionLog log = new cbit.vcell.modeldb.NullSessionLog();
+		org.vcell.util.SessionLog log = new org.vcell.util.NullSessionLog();
 		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		DBCacheTable dbCacheTable = new DBCacheTable(-1,10000000);

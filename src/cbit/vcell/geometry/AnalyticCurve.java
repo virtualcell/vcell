@@ -4,6 +4,8 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;

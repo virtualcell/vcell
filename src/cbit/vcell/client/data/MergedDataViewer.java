@@ -6,11 +6,13 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.client.server.VCDataManager;
 import javax.swing.*;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -64,7 +66,7 @@ private DataViewer createDataViewer() {
 			pdeDataViewer.setPdeDataContext(mergedDataManager.getPDEDataContext());
 			return pdeDataViewer;
 		}
-	} catch (cbit.vcell.server.DataAccessException exc) {
+	} catch (org.vcell.util.DataAccessException exc) {
 		cbit.gui.DialogUtils.showErrorDialog("Could not fetch requested data.\nJCompare may have failed.\n" + exc.getMessage());
 		exc.printStackTrace();
 	}
@@ -104,9 +106,9 @@ private cbit.vcell.client.server.VCDataManager getVcDataManager() {
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:37:52 PM)
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void initialize() throws cbit.vcell.server.DataAccessException {
+private void initialize() throws org.vcell.util.DataAccessException {
 	
 	// create main viewer and wire it up
 	setMainViewer(createDataViewer());
@@ -131,9 +133,9 @@ private void initialize() throws cbit.vcell.server.DataAccessException {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:43:49 PM)
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void refreshData() throws cbit.vcell.server.DataAccessException {
+public void refreshData() throws org.vcell.util.DataAccessException {
 	if (isODEData) {
 		ODESolverResultSet osr = null;
 		osr = odeDataViewer.getOdeSolverResultSet();

@@ -1,5 +1,5 @@
 package cbit.vcell.anonymizer;
-import cbit.vcell.server.SessionLog;
+import org.vcell.util.SessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2006 11:13:53 PM)
@@ -11,7 +11,7 @@ public class AnonymizerSimulationController extends AnonymizerService implements
  * @exception java.rmi.RemoteException The exception description.
  */
 protected AnonymizerSimulationController(AnonymizerVCellConnection arg_anonymizerVCellConnection, SessionLog arg_sessionLog) throws java.rmi.RemoteException {
-	super(cbit.vcell.server.PropertyLoader.getIntProperty(cbit.vcell.server.PropertyLoader.rmiPortSimulationController,0), arg_anonymizerVCellConnection, arg_sessionLog);
+	super(org.vcell.util.PropertyLoader.getIntProperty(org.vcell.util.PropertyLoader.rmiPortSimulationController,0), arg_anonymizerVCellConnection, arg_sessionLog);
 }
 
 
@@ -19,13 +19,13 @@ protected AnonymizerSimulationController(AnonymizerVCellConnection arg_anonymize
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 private void remoteCall(String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException {
 	try {
 		remoteCall(anonymizerVCellConnection.getRemoteSimulationController(), methodName, argClasses, args);
-	} catch (cbit.vcell.server.DataAccessException ex) {
+	} catch (org.vcell.util.DataAccessException ex) {
 		// should never happen
 		sessionLog.exception(ex);
 	}

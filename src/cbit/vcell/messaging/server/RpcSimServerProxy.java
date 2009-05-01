@@ -1,9 +1,9 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.JmsUtils;
 
@@ -19,7 +19,7 @@ public class RpcSimServerProxy extends AbstractRpcServerProxy implements cbit.vc
 /**
  * DataServerProxy constructor comment.
  */
-public RpcSimServerProxy(User argUser, JmsClientMessaging clientMessaging, cbit.vcell.server.SessionLog log) throws javax.jms.JMSException {
+public RpcSimServerProxy(User argUser, JmsClientMessaging clientMessaging, org.vcell.util.SessionLog log) throws javax.jms.JMSException {
 	super(argUser, clientMessaging, JmsUtils.getQueueSimReq(), log);
 }
 

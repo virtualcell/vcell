@@ -7,6 +7,8 @@ package cbit.vcell.server.test;
 import cbit.vcell.server.*;
 import java.io.*;
 import java.util.*;
+
+import org.vcell.util.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 3:01:11 PM)

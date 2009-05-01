@@ -4,8 +4,9 @@ import java.awt.Color;
 
 import javax.swing.*;
 
-import cbit.vcell.messaging.MessageConstants;
-import cbit.vcell.messaging.MessageConstants.ServiceType;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.MessageConstants.ServiceType;
+
 import cbit.vcell.messaging.db.VCellServerID;
 
 /**

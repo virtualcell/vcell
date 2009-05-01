@@ -4,6 +4,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -24,8 +26,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelChildSummary;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -519,7 +519,7 @@ public String getMathModelXML(User user, KeyValue mathModelKey) throws DataAcces
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-boolean isChanged(User user, cbit.image.VCImage vcImage) throws cbit.vcell.server.DataAccessException {
+boolean isChanged(User user, cbit.image.VCImage vcImage) throws org.vcell.util.DataAccessException {
 	//
 	// identify versionable as it was last loaded from the database
 	//

@@ -129,9 +129,9 @@ private void calculateScaling(java.awt.Dimension ipmDimension) {
 		double wd_x = getSourceDataInfo().getExtent().getX() / getimagePaneModel().getScaledLength(getSourceDataInfo().getXSize());
 		double wd_y = getSourceDataInfo().getExtent().getY() / getimagePaneModel().getScaledLength(getSourceDataInfo().getYSize());
 		double wd_z = getSourceDataInfo().getExtent().getZ() / getimagePaneModel().getScaledLength(getSourceDataInfo().getZSize());
-		getCurveRenderer().setWorldDelta(new cbit.vcell.geometry.Coordinate(wd_x, wd_y, wd_z));
+		getCurveRenderer().setWorldDelta(new org.vcell.util.Coordinate(wd_x, wd_y, wd_z));
 		org.vcell.util.Origin o = getSourceDataInfo().getOrigin();
-		getCurveRenderer().setWorldOrigin(new cbit.vcell.geometry.Coordinate(o.getX(), o.getY(), o.getZ()));
+		getCurveRenderer().setWorldOrigin(new org.vcell.util.Coordinate(o.getX(), o.getY(), o.getZ()));
 		getCurveRenderer().setDefaultLineWidthMultiplier((double) getimagePaneModel().getZoom());
 	} else {
 		getCurveRenderer().setWorldDelta(null);
@@ -1427,7 +1427,7 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 		//}
 	//}else
 	if(mouseEvent.getID() != java.awt.event.MouseEvent.MOUSE_EXITED){
-		cbit.vcell.geometry.Coordinate wc = null;
+		org.vcell.util.Coordinate wc = null;
 		boolean bNeedsMembraneCursor = false;
 		if( getCurveEditorTool().getTool() == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_ZOOM ||
 			getCurveEditorTool().getTool() == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_PAN ){
@@ -1451,9 +1451,9 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 						}
 					}
 					if (infoS == null && getSourceDataInfo() != null) {
-						cbit.vcell.math.CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
+						org.vcell.util.CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
 						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
-						cbit.vcell.geometry.Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
+						org.vcell.util.Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
 						String xCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getX());
 						String yCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getY());
 						String zCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getZ());

@@ -10,6 +10,8 @@ import cbit.rmi.event.*;
 import cbit.vcell.solver.ode.gui.*;
 import javax.swing.*;
 import javax.swing.event.*;
+
+import org.vcell.util.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (6/9/2004 2:17:35 PM)

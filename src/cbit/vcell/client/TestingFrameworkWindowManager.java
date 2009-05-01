@@ -19,7 +19,6 @@ import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.biomodel.BioModel;
 
 import java.math.*;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.clientdb.DocumentManager;
 import javax.swing.JDialog;
 import java.awt.Component;
@@ -31,7 +30,6 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 import cbit.vcell.client.server.DynamicDataManager;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -65,6 +63,9 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -72,7 +73,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.numericstest.*;
 import cbit.util.AsynchProgressPopup;
 /**
@@ -2357,7 +2357,7 @@ public SimulationInfo selectRefSimInfo(MathModelInfo mmInfo) {
 	MathModel mathModel = null;
 	try {
 		 mathModel = getRequestManager().getDocumentManager().getMathModel(mmInfo);
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 		e.printStackTrace(System.out);
 	}
 	return selectSimInfoPrivate(mathModel.getSimulations());

@@ -13,7 +13,7 @@ import java.io.*;
 public class IDASolverTest {
 public static void main(java.lang.String[] args) {
 	try {
-		new cbit.vcell.server.PropertyLoader();
+		new org.vcell.util.PropertyLoader();
 		IDASolverTest test = new IDASolverTest();
 		//test.testStandalone("les");
 		//test.testStandalone("ion");

@@ -1,4 +1,4 @@
-package cbit.vcell.messaging.admin;
+package org.vcell.util;
 
 /**
  * Insert the type's description here.

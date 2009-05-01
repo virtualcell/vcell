@@ -104,10 +104,10 @@ public static SimulationContext getExampleElectrical(int dimension) throws Excep
 	
 	// Add Electrical Stimulus and Gnd Electrode
 
-	cbit.vcell.mapping.Electrode gndelectrode = new cbit.vcell.mapping.Electrode((Feature)model.getStructure("extracellular"), new cbit.vcell.geometry.Coordinate(10.0, 10.0,10.0));
+	cbit.vcell.mapping.Electrode gndelectrode = new cbit.vcell.mapping.Electrode((Feature)model.getStructure("extracellular"), new org.vcell.util.Coordinate(10.0, 10.0,10.0));
 	simContext.setGroundElectrode(gndelectrode);
 	
-	cbit.vcell.mapping.Electrode newelectrode = new cbit.vcell.mapping.Electrode((Feature)model.getStructure("cytosol"), new cbit.vcell.geometry.Coordinate(0.0, 0.0,0.0));
+	cbit.vcell.mapping.Electrode newelectrode = new cbit.vcell.mapping.Electrode((Feature)model.getStructure("cytosol"), new org.vcell.util.Coordinate(0.0, 0.0,0.0));
 	Expression exp = new Expression("0.1*(t>0.01 && t<0.05)");
 	String stimulusName = "Electrode";
 	cbit.vcell.mapping.VoltageClampStimulus voltstimulus = new cbit.vcell.mapping.VoltageClampStimulus(newelectrode, stimulusName, exp, simContext);

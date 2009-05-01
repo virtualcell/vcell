@@ -10,6 +10,8 @@ import cbit.vcell.server.*;
 import java.io.*;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.geometry.*;

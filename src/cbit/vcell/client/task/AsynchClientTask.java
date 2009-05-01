@@ -1,5 +1,7 @@
 package cbit.vcell.client.task;
 import java.util.*;
+
+import org.vcell.util.UserCancelException;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:09:07 PM)

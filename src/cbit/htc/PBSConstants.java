@@ -1,6 +1,6 @@
 package cbit.htc;
 
-import cbit.vcell.server.PropertyLoader;
+import org.vcell.util.PropertyLoader;
 
 public class PBSConstants {
 	static final int PBS_STATUS_UNKNOWN = -1; 			//Not a status in PBS. 

@@ -6,6 +6,9 @@ import cbit.vcell.simdata.gui.*;
 import cbit.vcell.geometry.*;
 import java.rmi.*;
 
+import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
@@ -308,7 +311,7 @@ private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDa
  * @param beginIndex int
  * @param endIndex int
  * @param switchRowsColumns boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 private String getODEDataValues(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] variableNames, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 

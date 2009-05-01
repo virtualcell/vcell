@@ -2,6 +2,9 @@ package cbit.vcell.client.task;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.client.*;
 import java.beans.*;
+
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;
 import cbit.vcell.biomodel.*;

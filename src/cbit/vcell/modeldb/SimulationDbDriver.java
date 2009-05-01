@@ -11,6 +11,11 @@ import cbit.sql.*;
 import java.sql.*;
 import java.sql.Statement;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 /**
@@ -384,7 +389,7 @@ private Simulation getSimulationSQL(Connection con,User user, KeyValue simKey)
 				throw new DataAccessException(e.getMessage());
 			}			
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("Simulation id=" + simKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("Simulation id=" + simKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

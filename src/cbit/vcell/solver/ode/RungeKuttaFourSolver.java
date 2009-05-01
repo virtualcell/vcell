@@ -2,6 +2,9 @@ package cbit.vcell.solver.ode;
 
 import cbit.vcell.server.*;
 import java.io.*;
+
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.solver.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

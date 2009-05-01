@@ -9,13 +9,13 @@ import java.util.*;
 import cbit.sql.*;
 import java.sql.Statement;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.model.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */
@@ -40,7 +40,7 @@ public ModelDbDriver(DBCacheTable argdbc,ReactStepDbDriver argReactStepDB,Sessio
  * only the owner can delete a Model
  */
 private void deleteModelSQL(Connection con, User user, KeyValue modelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,ObjectNotFoundException {
+				throws SQLException,org.vcell.util.DependencyException,ObjectNotFoundException {
 
 	//
 	// first the reactions are deleted, then the model, the order is important because both the 
@@ -74,8 +74,8 @@ private void deleteModelSQL(Connection con, User user, KeyValue modelKey)
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.vcell.server.PermissionException {
+				throws org.vcell.util.DependencyException, ObjectNotFoundException,
+						SQLException,DataAccessException,org.vcell.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.Model)){
@@ -166,7 +166,7 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
 		if (rset.next()) {
 			model = getModel(rset,con,user);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("Model id=" + modelKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("Model id=" + modelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
@@ -325,7 +325,7 @@ public SpeciesContext getSpeciesContext(Connection con, KeyValue speciesContextI
 		if (rset.next()) {
 			speciesContext = getSpeciesContext(con,rset);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("SpeciesContext id=" + speciesContextID + " not found");
+			throw new org.vcell.util.ObjectNotFoundException("SpeciesContext id=" + speciesContextID + " not found");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

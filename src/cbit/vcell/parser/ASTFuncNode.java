@@ -2025,9 +2025,9 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		double[] magnitudeComponents = (isMagnitude?new double[3]:null);
 		for(int i=0;i<3;i+= 1){
 			int axisCode =
-				(opName.equalsIgnoreCase(Expression.GRAD_X) || (isMagnitude && i==0)?cbit.vcell.geometry.Coordinate.X_AXIS:0) +
-				(opName.equalsIgnoreCase(Expression.GRAD_Y) || (isMagnitude && i==1)?cbit.vcell.geometry.Coordinate.Y_AXIS:0) +
-				(opName.equalsIgnoreCase(Expression.GRAD_Z) || (isMagnitude && i==2)?cbit.vcell.geometry.Coordinate.Z_AXIS:0);
+				(opName.equalsIgnoreCase(Expression.GRAD_X) || (isMagnitude && i==0)?org.vcell.util.Coordinate.X_AXIS:0) +
+				(opName.equalsIgnoreCase(Expression.GRAD_Y) || (isMagnitude && i==1)?org.vcell.util.Coordinate.Y_AXIS:0) +
+				(opName.equalsIgnoreCase(Expression.GRAD_Z) || (isMagnitude && i==2)?org.vcell.util.Coordinate.Z_AXIS:0);
 
 			int[] gradCase = getGradCase(values,axisCode,numInternalArgs);
 			//

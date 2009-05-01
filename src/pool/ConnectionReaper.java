@@ -4,7 +4,8 @@ import java.sql.*;
 import java.util.*;
 import java.io.*;
 
-import cbit.vcell.server.PropertyLoader;
+import org.vcell.util.PropertyLoader;
+
 
 class ConnectionReaper extends Thread {
 

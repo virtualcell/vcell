@@ -2,9 +2,11 @@ package cbit.vcell.client;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.server.*;
 import javax.swing.*;
+
+import org.vcell.util.UserCancelException;
+
 import java.awt.*;
 import cbit.gui.*;
-import cbit.vcell.client.task.UserCancelException;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 3:16:43 AM)

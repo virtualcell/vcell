@@ -1,13 +1,13 @@
 package cbit.vcell.simdata.gui;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.VariableType;
 
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
 
 import java.awt.*;
@@ -1114,7 +1114,7 @@ private void initFunctionsList() {
 			 for (int i = 0; i < functions.length; i++) {
 				 functionsList.addElement(functions[i]);
 			 }
-		} catch (cbit.vcell.server.DataAccessException e) {
+		} catch (org.vcell.util.DataAccessException e) {
 			e.printStackTrace(System.out);
 		}
 	}

@@ -2,9 +2,9 @@ package cbit.vcell.messaging;
 
 import java.util.Hashtable;
 
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.VCellServerID;
 

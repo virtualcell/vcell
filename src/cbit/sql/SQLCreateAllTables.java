@@ -5,6 +5,9 @@ import java.awt.*;
 import cbit.vcell.server.*;
 import java.sql.*;
 import javax.swing.*;
+
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 /**
  * This type was created in VisualAge.
  */
@@ -303,7 +306,7 @@ public static void main(java.lang.String[] args) {
         SessionLog log = new StdoutSessionLog("SQLCreateAllTables");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.vcell.server.PropertyLoader();
+        new org.vcell.util.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
             conFactory =
                 new OraclePoolingConnectionFactory(

@@ -1,5 +1,8 @@
 package cbit.vcell.solvers;
 import java.rmi.*;
+
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 /*©
@@ -7,7 +10,6 @@ import cbit.vcell.solver.SimulationJob;
  * All rights reserved.
 ©*/
 import cbit.vcell.solver.SolverStatus;
-import cbit.vcell.server.SessionLog;
 /**
  * This type was created in VisualAge.
  */
@@ -21,7 +23,7 @@ public class SolverProxy {
  * LocalMathController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SolverProxy(cbit.vcell.server.SessionLog argSessionLog, SimulationJob argSimulationJob) throws java.rmi.RemoteException {
+public SolverProxy(org.vcell.util.SessionLog argSessionLog, SimulationJob argSimulationJob) throws java.rmi.RemoteException {
 	super();
 	this.sessionLog = argSessionLog;
 	this.solverController = null;
@@ -34,7 +36,7 @@ public SolverProxy(cbit.vcell.server.SessionLog argSessionLog, SimulationJob arg
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public String getHost() throws java.rmi.RemoteException, cbit.vcell.server.DataAccessException {
+public String getHost() throws java.rmi.RemoteException, org.vcell.util.DataAccessException {
 	return solverController.getHost();
 }
 
@@ -43,7 +45,7 @@ public String getHost() throws java.rmi.RemoteException, cbit.vcell.server.DataA
  * This method was created in VisualAge.
  * @return cbit.vcell.solvers.ExecutableStatus
  */
-public double getProgress() throws RemoteException, cbit.vcell.solver.SolverNotRunningException, cbit.vcell.server.DataAccessException {
+public double getProgress() throws RemoteException, cbit.vcell.solver.SolverNotRunningException, org.vcell.util.DataAccessException {
 	if (solverController==null){
 		throw new cbit.vcell.solver.SolverNotRunningException("solver not running");
 	}
@@ -77,7 +79,7 @@ public SolverController getSolverController() {
  * This method was created in VisualAge.
  * @return cbit.vcell.solvers.ExecutableStatus
  */
-public SolverStatus getSolverStatus() throws RemoteException, cbit.vcell.server.DataAccessException {
+public SolverStatus getSolverStatus() throws RemoteException, org.vcell.util.DataAccessException {
 	if (solverController==null){
 		return null;
 	}
@@ -117,7 +119,7 @@ public void setSolverController(SolverController newSolverController) {
 /**
  * startSimulation method comment.
  */
-public void startSimulationJob() throws java.rmi.RemoteException, SimExecutionException, cbit.vcell.server.DataAccessException {
+public void startSimulationJob() throws java.rmi.RemoteException, SimExecutionException, org.vcell.util.DataAccessException {
 	sessionLog.print("SolverProxy.startSimulationJob()");
 	if (solverController==null){
 		throw new SimExecutionException("proxied solver controller is null");
@@ -133,7 +135,7 @@ public void startSimulationJob() throws java.rmi.RemoteException, SimExecutionEx
 /**
  * stopSimulation method comment.
  */
-public void stopSimulationJob() throws java.rmi.RemoteException, SimExecutionException, cbit.vcell.server.DataAccessException {
+public void stopSimulationJob() throws java.rmi.RemoteException, SimExecutionException, org.vcell.util.DataAccessException {
 	sessionLog.print("SolverProxy.stopSimulationJob()");
 	if (solverController == null){
 		throw new SimExecutionException("proxied solver controller is null");

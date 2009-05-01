@@ -15,6 +15,9 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -120,7 +123,7 @@ SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, boolea
  * @return java.util.List
  * @param conditions java.lang.String
  */
-public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, boolean bEnableRetry) throws java.sql.SQLException, cbit.vcell.server.DataAccessException {
+public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -273,7 +276,7 @@ SimulationStatus getSimulationStatus(KeyValue simKey, boolean bEnableRetry) thro
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -305,7 +308,7 @@ User getUser(String userid, String password, boolean bEnableRetry)
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -336,7 +339,7 @@ public User getUser(String userid, boolean bEnableRetry) throws DataAccessExcept
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -367,7 +370,7 @@ User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) throws Data
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -418,7 +421,7 @@ void sendLostPassword(String userid, boolean bEnableRetry) throws DataAccessExce
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -784,7 +787,7 @@ public ServiceStatus updateServiceStatus(ServiceStatus oldServiceStatus, Transac
 	}
 }
 
-public java.util.List<ServiceStatus> getAllServiceStatus(boolean bEnableRetry) throws java.sql.SQLException, cbit.vcell.server.DataAccessException {
+public java.util.List<ServiceStatus> getAllServiceStatus(boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);

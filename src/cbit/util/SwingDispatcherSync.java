@@ -4,7 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.SwingUtilities;
 
-import cbit.vcell.client.task.UserCancelException;
+import org.vcell.util.UserCancelException;
+
 
 /**
  * Ensures that abstract method runWithException is run on the eventDispatchThread.

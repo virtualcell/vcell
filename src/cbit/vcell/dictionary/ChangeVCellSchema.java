@@ -2,6 +2,10 @@ package cbit.vcell.dictionary;
 
 import java.util.*;
 import java.sql.*;
+
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.sql.*;
 import cbit.vcell.server.*;
 /**
@@ -728,7 +732,7 @@ public static void main(String[] args) {
         SessionLog log = new StdoutSessionLog("ChangeVCellSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.vcell.server.PropertyLoader();
+        new org.vcell.util.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
             conFactory =
                 new OraclePoolingConnectionFactory(

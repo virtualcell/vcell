@@ -6,12 +6,12 @@ package cbit.vcell.modeldb;
 import java.util.StringTokenizer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */

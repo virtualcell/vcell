@@ -15,14 +15,14 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.*;
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
 import cbit.sql.UserInfo;
 /**
  * This type was created in VisualAge.
@@ -169,7 +169,7 @@ public UserInfo getUserInfo(Connection con, KeyValue key) throws SQLException, D
 		stmt.close(); // Release resources include resultset
 	}
 	if (userInfo == null) {
-		throw new cbit.vcell.server.ObjectNotFoundException("UserInfo with id = '" + key + "' not found");
+		throw new org.vcell.util.ObjectNotFoundException("UserInfo with id = '" + key + "' not found");
 	}
 	return userInfo;
 }

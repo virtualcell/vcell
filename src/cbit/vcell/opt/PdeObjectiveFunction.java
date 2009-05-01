@@ -2,9 +2,9 @@ package cbit.vcell.opt;
 import java.io.File;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.util.RowColumnResultSet;

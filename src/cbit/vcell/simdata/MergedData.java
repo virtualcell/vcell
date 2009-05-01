@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 
 import cbit.vcell.math.AnnotatedFunction;
@@ -14,8 +16,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
@@ -221,7 +221,7 @@ private boolean checkTimeArrays(double[] timeArray) {
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	long latestTimeStamp = Long.MIN_VALUE;

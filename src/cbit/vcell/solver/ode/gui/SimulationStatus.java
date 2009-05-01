@@ -1,8 +1,9 @@
 package cbit.vcell.solver.ode.gui;
+import org.vcell.util.MessageConstants;
+
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.*;
 import cbit.rmi.event.*;
-import cbit.vcell.messaging.MessageConstants;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

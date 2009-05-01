@@ -1,4 +1,6 @@
 package cbit.vcell.client.task;
+import org.vcell.util.UserCancelException;
+
 import cbit.sql.*;
 import cbit.util.*;
 import cbit.vcell.client.*;

@@ -24,9 +24,9 @@ public class ColumnComparator implements Comparator {
 
 
 public int compare(Object one, Object two) {
-	if (one instanceof cbit.vcell.messaging.admin.ComparableObject && two instanceof cbit.vcell.messaging.admin.ComparableObject) {
-		Object[] vOne = ((cbit.vcell.messaging.admin.ComparableObject)one).toObjects();
-		Object[] vTwo = ((cbit.vcell.messaging.admin.ComparableObject)two).toObjects();
+	if (one instanceof org.vcell.util.ComparableObject && two instanceof org.vcell.util.ComparableObject) {
+		Object[] vOne = ((org.vcell.util.ComparableObject)one).toObjects();
+		Object[] vTwo = ((org.vcell.util.ComparableObject)two).toObjects();
 		Object oOne = vOne[index];
 		Object oTwo = vTwo[index];
 		if (oOne == null) {

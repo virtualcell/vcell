@@ -1,4 +1,4 @@
-package cbit.vcell.server;
+package org.vcell.util;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -7,9 +7,5 @@ package cbit.vcell.server;
 /**
  * This type was created in VisualAge.
  */
-public interface Pingable {
-/**
- * This method was created in VisualAge.
- */
-public void ping();
+public interface Cacheable extends java.io.Serializable, Matchable {
 }

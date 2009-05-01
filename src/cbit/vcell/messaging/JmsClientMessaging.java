@@ -1,7 +1,10 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.messaging.MessageConstants.ServiceType;
+
+import org.vcell.util.MessageConstants;
+import org.vcell.util.SessionLog;
+import org.vcell.util.MessageConstants.ServiceType;
+
 import cbit.vcell.messaging.server.RpcRequest;
 
 /**
@@ -82,7 +85,7 @@ private synchronized Object rpc(RpcRequest request, String queueName, boolean re
 		log.print("Sending request[" + serviceType + "," + methodName + "] to " + queueName);
 		setTimeSinceLastMessage(System.currentTimeMillis());
 		if (returnRequired) {
-			long clientTimeoutMS = Long.parseLong(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellClientTimeoutMS)); 
+			long clientTimeoutMS = Long.parseLong(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellClientTimeoutMS)); 
 			Message msg = responseRequestor.queueRequest(this, queueName, rpcMessage, DeliveryMode.PERSISTENT, clientTimeoutMS); 
 		
 			if (msg == null || !(msg instanceof ObjectMessage)) {

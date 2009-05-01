@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.PrintWriter;
 
 import org.vcell.util.ISize;
+import org.vcell.util.NullSessionLog;
 
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -35,7 +36,6 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.mapping.FastSystemAnalyzer;
-import cbit.vcell.modeldb.NullSessionLog;
 import cbit.vcell.math.*;
 
 /**

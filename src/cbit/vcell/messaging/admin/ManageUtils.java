@@ -3,9 +3,9 @@ import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 
 import org.vcell.util.Executable;
+import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * Insert the type's description here.
@@ -76,9 +76,9 @@ public static ServerPerformance getDaemonPerformance() {
 	try {
 		String PROGRAM = null;
 		try {
-			PROGRAM = System.getProperty(cbit.vcell.server.PropertyLoader.serverStatisticsProperty);
+			PROGRAM = System.getProperty(org.vcell.util.PropertyLoader.serverStatisticsProperty);
 		} catch (Exception e){
-			throw new RuntimeException("required System property \""+cbit.vcell.server.PropertyLoader.serverStatisticsProperty+"\" not defined");
+			throw new RuntimeException("required System property \""+org.vcell.util.PropertyLoader.serverStatisticsProperty+"\" not defined");
 		}
 
 		long memoryBytes = -1;
@@ -87,9 +87,9 @@ public static ServerPerformance getDaemonPerformance() {
 		long javaTotalMemoryBytes = Runtime.getRuntime().totalMemory();
 		long maxJavaMemoryBytes = -1;
 		try {
-			maxJavaMemoryBytes = Long.parseLong(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.maxJavaMemoryBytesProperty));
+			maxJavaMemoryBytes = Long.parseLong(PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.maxJavaMemoryBytesProperty));
 		}catch (NumberFormatException e){
-			System.out.println("error reading property '"+cbit.vcell.server.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
+			System.out.println("error reading property '"+org.vcell.util.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
 		}
 		try {
 			Executable executable = new Executable(new String[]{PROGRAM});
@@ -117,7 +117,7 @@ public static ServerPerformance getDaemonPerformance() {
  * @return java.lang.String
  * @param keyword java.lang.String
  */
-public static String getEnvVariable(String keyword, cbit.vcell.server.SessionLog log) {
+public static String getEnvVariable(String keyword, org.vcell.util.SessionLog log) {
 	String value = null;
 	String[] command = null;
 	

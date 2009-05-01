@@ -1,5 +1,7 @@
 package cbit.vcell.client.task;
 
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.numericstest.TestSuiteInfoNew;

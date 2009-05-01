@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 
 import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -23,9 +26,6 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
@@ -45,7 +45,7 @@ public static VCDatabaseScanner createDatabaseScanner() throws Exception{
 	DatabasePolicySQL.bSilent = true;
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
-	cbit.vcell.server.SessionLog log = new cbit.vcell.server.StdoutSessionLog("Admin");
+	org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog("Admin");
 	cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 	DbDriver.setKeyFactory(keyFactory);

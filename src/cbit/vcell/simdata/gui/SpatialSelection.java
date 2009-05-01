@@ -3,8 +3,9 @@ package cbit.vcell.simdata.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.geometry.SampledCurve;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.geometry.CurveSelectionInfo;

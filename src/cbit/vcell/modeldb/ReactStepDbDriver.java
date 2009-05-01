@@ -10,16 +10,16 @@ import java.util.*;
 import cbit.sql.*;
 import java.sql.Statement;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.DependencyException;
-import cbit.vcell.server.PermissionException;
 import cbit.vcell.xml.MIRIAMAnnotation;
 /**
  * This type was created in VisualAge.
@@ -350,7 +350,7 @@ public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) t
 		if (rset.next()) {
 			species = getSpecies(rset,con);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("Species id=" + speciesID + " not found");
+			throw new org.vcell.util.ObjectNotFoundException("Species id=" + speciesID + " not found");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

@@ -4,8 +4,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.vcell.util.UserCancelException;
+
 import cbit.util.SwingDispatcherSync;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
 import java.awt.*;

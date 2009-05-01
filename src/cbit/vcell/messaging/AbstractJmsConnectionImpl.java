@@ -1,6 +1,9 @@
 package cbit.vcell.messaging;
 
 import javax.jms.*;
+
+import org.vcell.util.MessageConstants;
+
 import java.util.*;
 
 /**

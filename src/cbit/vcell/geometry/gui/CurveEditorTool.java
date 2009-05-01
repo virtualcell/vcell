@@ -6,6 +6,9 @@ package cbit.vcell.geometry.gui;
 ©*/
 import java.awt.event.*;
 import java.util.*;
+
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.geometry.*;
 /**
  * This type was created in VisualAge.

@@ -6,7 +6,8 @@ package cbit.vcell.geometry.gui;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.SampledCurve;
 import java.awt.geom.*;
-import cbit.vcell.geometry.Coordinate;
+
+import org.vcell.util.Coordinate;
 //
 public class CurveRendererCurveInfo {
 	//

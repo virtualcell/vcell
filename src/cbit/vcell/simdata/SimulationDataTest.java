@@ -12,7 +12,7 @@ public class SimulationDataTest {
  */
 public static void main(String[] args) {
 	final org.vcell.util.document.User user = new org.vcell.util.document.User("fgao15",new org.vcell.util.document.KeyValue("4123431"));	
-	cbit.vcell.server.VCDataIdentifier vcData1 = new cbit.vcell.server.VCDataIdentifier() {
+	org.vcell.util.VCDataIdentifier vcData1 = new org.vcell.util.VCDataIdentifier() {
 		public String getID() {
 			return "SimID_8483780";
 		}
@@ -37,14 +37,14 @@ public static void main(String[] args) {
 				} catch (java.io.IOException e) {
 					System.out.println(runs + "---Timepoint@" + a[i]  + "--- ******IOException*******:");
 					e.printStackTrace();
-				} catch (cbit.vcell.server.DataAccessException e) {
+				} catch (org.vcell.util.DataAccessException e) {
 					System.out.println(runs + "---Timepoint@" + a[i]  + "--- ******DataAccessException*******:");
 					e.printStackTrace();
 				}
 			}
 		} catch (java.io.IOException e) {
 			e.printStackTrace(System.out);
-		} catch (cbit.vcell.server.DataAccessException e) {
+		} catch (org.vcell.util.DataAccessException e) {
 			e.printStackTrace(System.out);
 		} 
 		runs ++;

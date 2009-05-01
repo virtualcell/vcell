@@ -1,7 +1,8 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.DataAccessException;
-import static cbit.vcell.messaging.MessageConstants.*;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+
+import static org.vcell.util.MessageConstants.*;
 import cbit.vcell.messaging.JmsUtils;
 
 /**
@@ -33,7 +34,7 @@ public RpcServerImpl getRpcServerImpl() throws DataAccessException {
 			rpcDataServerImpl = new RpcDataServerImpl(rpcServerMessaging, log);			
 		} catch (java.io.FileNotFoundException ex) {
 			log.exception(ex);
-			throw new cbit.vcell.server.DataAccessException(ex.getMessage());
+			throw new org.vcell.util.DataAccessException(ex.getMessage());
 		}
 	}
 

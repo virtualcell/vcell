@@ -196,7 +196,7 @@ protected void paintComponent(java.awt.Graphics g) {
 							g.drawLine(tempPrintpoint,(int)getPreferredSize().getHeight()-1-len+2,tempPrintpoint,(int)getPreferredSize().getHeight()-1-2);
 						}
 						lastPrintPoint = tempPrintpoint;
-						cbit.vcell.geometry.Coordinate coord = null;
+						org.vcell.util.Coordinate coord = null;
 						if(lastLowPoint == 0){
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,0);
 						}else if(lastHighPoint == (end-1)){
@@ -206,7 +206,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						String val = "";
 						if(coord != null){
-							double doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
+							double doubleVal = org.vcell.util.Coordinate.convertAxisFromStandardXYZToNormal(coord,org.vcell.util.Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
 							val = org.vcell.util.NumberUtils.formatNumber(doubleVal);
 						}
 						java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
@@ -267,7 +267,7 @@ protected void paintComponent(java.awt.Graphics g) {
 							g.drawLine((int)getPreferredSize().getWidth()-1-len+2,tempPrintpoint,(int)getPreferredSize().getWidth()-1-2,tempPrintpoint);						
 						}
 						lastPrintPoint = tempPrintpoint;
-						cbit.vcell.geometry.Coordinate coord = null;
+						org.vcell.util.Coordinate coord = null;
 						if(lastLowPoint == 0){
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,0);
 						}else if(lastHighPoint == (end-1)){
@@ -277,7 +277,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						String val = "";
 						if(coord != null){
-							double doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.Y_AXIS,getImagePlaneManager().getNormalAxis());
+							double doubleVal = org.vcell.util.Coordinate.convertAxisFromStandardXYZToNormal(coord,org.vcell.util.Coordinate.Y_AXIS,getImagePlaneManager().getNormalAxis());
 							val = doubleVal+"";
 							val = (val.length() <= VERT_TEXT_CHAR_LIMIT?val:NumberUtils.formatNumber(doubleVal,VERT_TEXT_CHAR_LIMIT));
 						}

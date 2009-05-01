@@ -5,6 +5,7 @@ import java.util.*;
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.UserCancelException;
 
 import cbit.vcell.client.*;
 import cbit.vcell.solver.*;

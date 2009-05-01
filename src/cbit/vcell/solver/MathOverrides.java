@@ -7,9 +7,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
 
 import cbit.vcell.parser.Expression;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VCML;

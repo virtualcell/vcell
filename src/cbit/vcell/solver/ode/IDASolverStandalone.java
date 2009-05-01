@@ -2,7 +2,8 @@ package cbit.vcell.solver.ode;
 
 import java.io.PrintWriter;
 
-import cbit.vcell.server.PropertyLoader;
+import org.vcell.util.PropertyLoader;
+
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverException;
 /**
@@ -18,7 +19,7 @@ public class IDASolverStandalone extends SundialsSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, org.vcell.util.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simulationJob, directory, sessionLog);
 }
 /**

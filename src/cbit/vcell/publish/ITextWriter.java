@@ -3,7 +3,6 @@ import java.awt.*;
 import cbit.image.VCImage;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.StructureCartoon;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.solver.Simulation;
@@ -55,6 +54,7 @@ import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;

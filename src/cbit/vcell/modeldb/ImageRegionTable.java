@@ -8,9 +8,9 @@ import cbit.sql.*;
 import cbit.image.*;
 import java.sql.*;
 
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.server.SessionLog;
 /**
  * This type was created in VisualAge.
  */

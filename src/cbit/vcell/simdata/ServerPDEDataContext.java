@@ -1,4 +1,6 @@
 package cbit.vcell.simdata;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 
 import cbit.vcell.math.AnnotatedFunction;
@@ -38,9 +40,9 @@ public ServerPDEDataContext(User user0, DataServerImpl dataServerImpl, VCDataIde
  *
  * @param function named expression that is to be bound to dataset and whose name is added to variable list.
  *
- * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
-public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
 	getDataServerImpl().addFunctions(user, vcDataID, functionArr,bReplaceArr);
 	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, functionArr);
 }
@@ -61,11 +63,11 @@ private DataServerImpl getDataServerImpl() {
  *
  * @returns array of functions, or null if no functions.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getFunctions(user, vcDataID);
 }
 
@@ -75,11 +77,11 @@ public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws cbit.vcell.serv
  *
  * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see Function
  */
-public boolean getIsODEData() throws cbit.vcell.server.DataAccessException {
+public boolean getIsODEData() throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getIsODEData(user, vcDataID);
 }
 
@@ -93,11 +95,11 @@ public boolean getIsODEData() throws cbit.vcell.server.DataAccessException {
  *
  * @returns annotated array of 'concentration vs. distance' in a plot ready format.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws cbit.vcell.server.DataAccessException {
+public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getLineScan(user, vcDataID, variable, time, spatialSelection);
 }
 
@@ -109,7 +111,7 @@ public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cb
  * @param varName java.lang.String
  * @param time double
  */
-protected ParticleDataBlock getParticleDataBlock(double time) throws cbit.vcell.server.DataAccessException {
+protected ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getParticleDataBlock(user, vcDataID, time);
 }
 
@@ -121,7 +123,7 @@ protected ParticleDataBlock getParticleDataBlock(double time) throws cbit.vcell.
  * @param varName java.lang.String
  * @param time double
  */
-protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws cbit.vcell.server.DataAccessException {
+protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getSimDataBlock(user, vcDataID, varName, time);
 }
 
@@ -134,11 +136,11 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
  *
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getTimeSeriesValues(user, vcDataID, timeSeriesJobSpec);
 }
 
@@ -180,7 +182,7 @@ private void initialize() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException {
+public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
 	dataServerImpl.makeRemoteFile(user, exportSpecs);
 }
 
@@ -226,10 +228,10 @@ public void refreshTimes() {
  *
  * @param function function to be removed.
  *
- * @throws cbit.vcell.server.DataAccessException if SimulationInfo not found.
- * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.PermissionException if not the owner of this dataset.
  */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.PermissionException {
+public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException, org.vcell.util.PermissionException {
 	getDataServerImpl().removeFunction(user, vcDataID, function);
 	firePropertyChange(PROP_CHANGE_FUNC_REMOVED, function, null);
 }

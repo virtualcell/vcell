@@ -11,11 +11,11 @@ import java.sql.ResultSet;
 import java.sql.Connection;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.geometry.Geometry;
 /**
  * This type was created in VisualAge.
@@ -47,7 +47,7 @@ private MathDescTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.vcell.server.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 	
 	KeyValue geomRef = new KeyValue(rset.getBigDecimal(MathDescTable.table.geometryRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -138,7 +138,7 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 		mathDescription.read_database(tokens);
 	} catch (Exception e){
 		e.printStackTrace(System.out);
-		throw new cbit.vcell.server.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}
 	//
 	return mathDescription;

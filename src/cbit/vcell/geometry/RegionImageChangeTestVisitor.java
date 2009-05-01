@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.Matchable;
 
 import com.sun.java_cup.internal.lexer;
@@ -63,8 +64,8 @@ private void test2(Geometry geometry, PrintStream logFilePrintStream){
 		}
 		java.util.Arrays.sort(membArr0, new java.util.Comparator<cbit.vcell.solvers.MembraneElement> (){
 			public int compare(cbit.vcell.solvers.MembraneElement p1, cbit.vcell.solvers.MembraneElement p2) {
-				cbit.vcell.geometry.Coordinate o1 = p1.getCentroid();
-				cbit.vcell.geometry.Coordinate o2 = p2.getCentroid();
+				org.vcell.util.Coordinate o1 = p1.getCentroid();
+				org.vcell.util.Coordinate o2 = p2.getCentroid();
 				double xdiff = o1.getX()-o2.getX();
 				double xmin = Math.min(Math.abs(o1.getX()),Math.abs(o2.getX()));
 				double xlimit = (1e-12*(xmin>= 1.0?(Math.pow(10,(int)Math.log10(xmin)+1)):1));
@@ -84,8 +85,8 @@ private void test2(Geometry geometry, PrintStream logFilePrintStream){
 			}});
 		java.util.Arrays.sort(membArr1, new java.util.Comparator<cbit.vcell.solvers.MembraneElement> (){
 			public int compare(cbit.vcell.solvers.MembraneElement p1, cbit.vcell.solvers.MembraneElement p2) {
-				cbit.vcell.geometry.Coordinate o1 = p1.getCentroid();
-				cbit.vcell.geometry.Coordinate o2 = p2.getCentroid();
+				org.vcell.util.Coordinate o1 = p1.getCentroid();
+				org.vcell.util.Coordinate o2 = p2.getCentroid();
 				double xdiff = o1.getX()-o2.getX();
 				double xmin = Math.min(Math.abs(o1.getX()),Math.abs(o2.getX()));
 				double xlimit = (1e-12*(xmin>= 1.0?(Math.pow(10,(int)Math.log10(xmin)+1)):1));
@@ -105,8 +106,8 @@ private void test2(Geometry geometry, PrintStream logFilePrintStream){
 			}});
 		double SMALL_DIST = 1e-9;
 		for (int i = 0; i < membArr0.length; i+= 1) {
-			cbit.vcell.geometry.Coordinate centroid0 = membArr0[i].getCentroid();
-			cbit.vcell.geometry.Coordinate centroid1 = membArr1[i].getCentroid();
+			org.vcell.util.Coordinate centroid0 = membArr0[i].getCentroid();
+			org.vcell.util.Coordinate centroid1 = membArr1[i].getCentroid();
 			double dist = Math.sqrt(Math.pow(centroid0.getX()-centroid1.getX(), 2)+
 							Math.pow(centroid0.getY()-centroid1.getY(), 2)+
 					Math.pow(centroid0.getZ()-centroid1.getZ(), 2));

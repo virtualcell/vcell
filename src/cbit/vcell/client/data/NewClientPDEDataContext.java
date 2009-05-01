@@ -22,7 +22,7 @@ public NewClientPDEDataContext(cbit.vcell.desktop.controls.DataManager dataManag
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException {
+public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
 	throw new RuntimeException("should not use this method in NewClientPDEDataContext");
 }
 
@@ -45,7 +45,7 @@ public void refreshIdentifiers() {
 					}
 				}
 		);
-	} catch (cbit.vcell.server.DataAccessException exc) {
+	} catch (org.vcell.util.DataAccessException exc) {
 		exc.printStackTrace(System.out);
 	}
 }
@@ -55,7 +55,7 @@ public void refreshIdentifiers() {
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
-public void refreshTimes() throws cbit.vcell.server.DataAccessException {
+public void refreshTimes() throws org.vcell.util.DataAccessException {
 	setTimePoints(getDataManager().getDataSetTimes());
 }
 }

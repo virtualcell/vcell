@@ -3,7 +3,6 @@ package cbit.vcell.field;
 import javax.swing.JPanel;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.UserCancelException;
 
 import javax.swing.JLabel;
 
@@ -26,6 +25,7 @@ import javax.swing.BorderFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.UserCancelException;
 
 import java.awt.Color;
 

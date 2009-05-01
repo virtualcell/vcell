@@ -7,6 +7,8 @@ package cbit.vcell.solvers;
 import java.io.*;
 import java.util.Vector;
 
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;

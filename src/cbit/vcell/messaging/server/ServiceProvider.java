@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.server;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
+import org.vcell.util.MessageConstants.ServiceType;
+
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 
 /**

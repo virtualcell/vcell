@@ -1,11 +1,12 @@
 package cbit.vcell.messaging.server;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
+
+import org.vcell.util.MessageConstants.ServiceType;
 
 /**
  * Insert the type's description here.
@@ -14,7 +15,7 @@ import java.io.FileOutputStream;
  */
 public abstract class AbstractJmsServiceProvider implements ServiceProvider {
 	protected ServiceInstanceStatus serviceInstanceStatus = null;
-	protected cbit.vcell.server.SessionLog log = null;
+	protected org.vcell.util.SessionLog log = null;
 	
 public AbstractJmsServiceProvider() {
 	super();

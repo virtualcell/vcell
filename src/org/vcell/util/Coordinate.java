@@ -1,4 +1,4 @@
-package cbit.vcell.geometry;
+package org.vcell.util;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -194,7 +194,7 @@ public static final Coordinate convertCoordinateFromNormalToStandardXYZ(double o
  * @return cbit.vcell.geometry.Coordinate
  * @param coord cbit.vcell.geometry.Coordinate
  */
-public static final void convertCoordinateIndexFromNormalToStandardXYZ(cbit.vcell.math.CoordinateIndex coordIndex, int normalAxis) {
+public static final void convertCoordinateIndexFromNormalToStandardXYZ(org.vcell.util.CoordinateIndex coordIndex, int normalAxis) {
 	//Re-uses CoordinateIndex
 	double origX = coordIndex.x;
 	double origY = coordIndex.y;

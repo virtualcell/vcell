@@ -8,6 +8,8 @@ import cbit.sql.UserInfo;
 import cbit.vcell.model.*;
 import java.rmi.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 /**

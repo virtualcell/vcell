@@ -10,6 +10,8 @@ import cbit.image.*;
 import cbit.vcell.server.*;
 import java.sql.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 /**

@@ -11,6 +11,11 @@ import cbit.vcell.math.BoundaryConditionType;
 import java.sql.*;
 import java.sql.Statement;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -354,16 +359,16 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					//
 					// an Electrode (ground)
 					//
-					Electrode groundElectrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
+					Electrode groundElectrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
 					simContext.setGroundElectrode(groundElectrode);
 				}else if (stimulusType == StimulusTable.CURRENT_CLAMP_STIMULUS){
-					Electrode electrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
+					Electrode electrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
 					CurrentClampStimulus stimulus = new CurrentClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
 					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else if (stimulusType == StimulusTable.VOLTAGE_CLAMP_STIMULUS){
-					Electrode electrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
+					Electrode electrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
 					VoltageClampStimulus stimulus = new VoltageClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
 					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
@@ -578,9 +583,9 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
 	try {
 		mathDescDB.deleteVersionable(con,user,VersionableType.MathDescription,mathKey);
 		log.print("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") succeeded");
-	}catch (cbit.vcell.server.PermissionException e){
+	}catch (org.vcell.util.PermissionException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
-	}catch (cbit.vcell.server.DependencyException e){
+	}catch (org.vcell.util.DependencyException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
 	}
 }

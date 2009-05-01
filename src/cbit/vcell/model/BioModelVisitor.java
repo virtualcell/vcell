@@ -6,6 +6,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.vcell.util.BigString;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -24,7 +25,6 @@ import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.solver.Simulation;
 
 public class BioModelVisitor implements VCDatabaseVisitor {

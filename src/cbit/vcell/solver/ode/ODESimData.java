@@ -12,6 +12,9 @@ import cbit.vcell.math.*;
 import java.io.*;
 import java.util.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import ucar.ma2.ArrayDouble;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.stoch.NetCDFEvaluator;
@@ -230,7 +233,7 @@ public void readIn(DataInputStream input) throws IOException {
  * Creation date: (1/14/00 3:55:39 PM)
  * @return cbit.vcell.simdata.ODESimData
  * @param odeDataFile java.io.File
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public static ODESimData readODEDataFile(File odeDataFile) throws DataAccessException {
 	try {

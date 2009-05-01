@@ -13,6 +13,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 import javax.swing.Timer;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -33,8 +35,6 @@ import cbit.vcell.modeldb.MathModelTable;
 import cbit.vcell.modeldb.SimContextTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 public class FieldDataDBOperationDriver{

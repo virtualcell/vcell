@@ -3,9 +3,10 @@ package cbit.vcell.messaging.admin;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
+import org.vcell.util.MessageConstants.ServiceType;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 
 public class ServiceInstanceStatus implements Matchable, Serializable, ComparableObject {
 	private String serverID;

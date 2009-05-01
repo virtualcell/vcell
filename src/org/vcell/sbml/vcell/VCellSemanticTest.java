@@ -26,7 +26,7 @@ public static void main(java.lang.String[] args) {
                 "usage: VCellSemanticTest sbmlfile endTime numTimeSteps outputfile tempdir species1 species2 ...");
             System.exit(1);
         }
-        cbit.vcell.server.PropertyLoader.loadProperties();
+        org.vcell.util.PropertyLoader.loadProperties();
         java.io.File sbmlFile = new java.io.File(args[0]);
         double endTime = Double.parseDouble(args[1]);
         int numTimeSteps = Integer.parseInt(args[2]);

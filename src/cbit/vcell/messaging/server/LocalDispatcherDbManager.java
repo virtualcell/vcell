@@ -1,15 +1,15 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
-import cbit.vcell.messaging.MessageConstants;
 
 /**
  * Insert the type's description here.

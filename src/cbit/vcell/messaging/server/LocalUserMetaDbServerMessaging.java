@@ -15,19 +15,19 @@ import java.rmi.*;
 import java.sql.*;
 
 import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.*;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.server.PropertyLoader;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -40,12 +40,12 @@ import cbit.vcell.server.PropertyLoader;
 public class LocalUserMetaDbServerMessaging extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.UserMetaDbServer {
 	private RpcDbServerProxy dbServerProxy = null;
 	private User user = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 
 /**
  * This method was created in VisualAge.
  */
-public LocalUserMetaDbServerMessaging(cbit.vcell.messaging.JmsClientMessaging clientMessaging, User argUser, cbit.vcell.server.SessionLog sessionLog) throws RemoteException, DataAccessException {
+public LocalUserMetaDbServerMessaging(cbit.vcell.messaging.JmsClientMessaging clientMessaging, User argUser, org.vcell.util.SessionLog sessionLog) throws RemoteException, DataAccessException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortUserMetaDbServer,0));
 	this.user = argUser;
 	this.log = sessionLog;
@@ -62,10 +62,10 @@ public LocalUserMetaDbServerMessaging(cbit.vcell.messaging.JmsClientMessaging cl
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec curateSpec) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec curateSpec) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.curate(curatespec="+curateSpec.toString()+")");
 		return dbServerProxy.curate(curateSpec);
@@ -78,7 +78,7 @@ public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec cu
 	}
 }
 
-public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.userRegistrationOP(...)");
 		return dbServerProxy.userRegistrationOP(userRegistrationOP);
@@ -203,10 +203,10 @@ public void deleteVCImage(org.vcell.util.document.KeyValue key) throws DataAcces
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.doTestSuiteOP("+tsop+")");
 		return dbServerProxy.doTestSuiteOP(tsop);
@@ -224,10 +224,10 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec rqs) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+public org.vcell.util.ReferenceQueryResult findReferences(org.vcell.util.ReferenceQuerySpec rqs) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.findReferences(rqs="+rqs+")");
 		return dbServerProxy.findReferences(rqs);
@@ -263,7 +263,7 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.Versionabl
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
@@ -284,7 +284,7 @@ public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(org.vcell.util.document.
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
@@ -453,7 +453,7 @@ public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue geoKey) throws DataAccessException, ObjectNotFoundException {
@@ -474,7 +474,7 @@ public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException {
@@ -514,7 +514,7 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
@@ -535,7 +535,7 @@ public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(org.vcell.util.docume
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
@@ -613,7 +613,7 @@ public BigString getMathModelXML(KeyValue mathModelKey) throws DataAccessExcepti
  * Insert the method's description here.
  * Creation date: (6/10/2004 7:51:49 PM)
  * @return cbit.util.Preference
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
@@ -751,10 +751,10 @@ public BigString getSimulationXML(KeyValue simKey) throws DataAccessException, O
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getTestSuite("+getThisTS+")");
 		return dbServerProxy.getTestSuite(getThisTS);
@@ -772,10 +772,10 @@ public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal ge
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getTestSuiteInfos()");
 		return dbServerProxy.getTestSuiteInfos();
@@ -813,7 +813,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(R
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue imgKey) throws DataAccessException, ObjectNotFoundException {
@@ -834,7 +834,7 @@ public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue im
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException {
@@ -1118,10 +1118,10 @@ public BigString saveMathModelAs(BigString mathModelXML, String newName, String 
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws cbit.vcell.server.DataAccessException {
+public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws org.vcell.util.DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveSimulation()");
 		BigString savedSimulationXML = dbServerProxy.saveSimulation(simulationXML,bForceIndependent);

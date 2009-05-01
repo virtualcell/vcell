@@ -7,6 +7,8 @@ import java.io.*;
 ©*/
 import java.util.*;
 
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.Expression;

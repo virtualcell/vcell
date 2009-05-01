@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.vcell.util.PropertyLoader;
+
 import ucar.ma2.ArrayDouble;
 
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
@@ -41,7 +42,7 @@ public class HybridSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
 	private int integratorType = EMIntegrator;
 
 
-public HybridSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, cbit.vcell.server.SessionLog sessionLog, int type) throws cbit.vcell.solver.SolverException {
+public HybridSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, org.vcell.util.SessionLog sessionLog, int type) throws cbit.vcell.solver.SolverException {
 	super(simulationJob, directory, sessionLog);
 	integratorType = type;
 }
@@ -299,7 +300,7 @@ private void writeLogFile() throws SolverException {
  */
 protected void initialize() throws cbit.vcell.solver.SolverException 
 {
-	cbit.vcell.server.SessionLog sessionLog = getSessionLog();
+	org.vcell.util.SessionLog sessionLog = getSessionLog();
 	sessionLog.print("HybridSolver.initialize()");
 	fireSolverStarting("HybridSolver initializing...");
 	writeFunctionsFile();
@@ -360,15 +361,15 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	
 	if(getIntegratorType() == HybridSolver.EMIntegrator)
 	{
-		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridEMExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.hybridEMExecutableProperty);
 	}
 	else if (getIntegratorType() == HybridSolver.MilsteinIntegrator)
 	{
-		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.hybridMilExecutableProperty);
 	}
 	else 
 	{
-		executableName = PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilAdaptiveExecutableProperty);
+		executableName = PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.hybridMilAdaptiveExecutableProperty);
 	}
 	
 	ArrayList<String> commandList = new ArrayList<String>();

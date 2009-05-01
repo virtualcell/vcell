@@ -10,6 +10,7 @@ import org.vcell.sbml.gui.SimulationSelectionPanel;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;

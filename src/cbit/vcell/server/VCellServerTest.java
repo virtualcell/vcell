@@ -25,7 +25,7 @@ public static void formatServerStatus(VCellServer vcellServer, java.io.PrintWrit
 	try {
 		status = vcellServer.getConnectionPoolStatus();
 		ProcessStatus ps = vcellServer.getProcessStatus();
-		cbit.vcell.simdata.CacheStatus cs = vcellServer.getCacheStatus();
+		org.vcell.util.CacheStatus cs = vcellServer.getCacheStatus();
 		out.println("<blockquote>");
 		out.println("<LI>CPU:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+ps.getNumJobsRunning()+" Jobs, "+ps.getNumProcessors()+" CPU's  ("+((int)(ps.getFractionFreeCPU()*100))+"% Free CPU)</LI>");
 		out.println("<LI>Memory:&nbsp;"+(ps.getFreeMemoryBytes()/1024)+"KB</LI>");
@@ -58,7 +58,7 @@ public static void formatServerStatus(VCellServer vcellServer, java.io.PrintWrit
 				try {
 					VCellServer server = vcellServer.getSlaveVCellServer(activeHost);
 					ProcessStatus ps = server.getProcessStatus();
-					cbit.vcell.simdata.CacheStatus cs = server.getCacheStatus();
+					org.vcell.util.CacheStatus cs = server.getCacheStatus();
 					out.println("<LI>"+activeHost+"</LI>");
 					out.println("<blockquote>");
 					out.println("<LI>CPU:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+ps.getNumJobsRunning()+" Jobs, "+ps.getNumProcessors()+" CPU's  ("+((int)(ps.getFractionFreeCPU()*100))+"% Free CPU)</LI>");

@@ -1,5 +1,7 @@
 package cbit.vcell.geometry;
 
+import org.vcell.util.Coordinate;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/19/2003 8:39:35 PM)

@@ -1,6 +1,7 @@
 package cbit.rmi.event;
 import java.rmi.*;
-import cbit.vcell.server.PropertyLoader;
+
+import org.vcell.util.PropertyLoader;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

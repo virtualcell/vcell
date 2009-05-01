@@ -6,8 +6,11 @@ package cbit.sql;
 ©*/
 import cbit.vcell.server.*;
 import java.sql.*;
+
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.sql.ConnectionFactory;
-import cbit.vcell.server.PropertyLoader;
 /**
  * This type was created in VisualAge.y
  */

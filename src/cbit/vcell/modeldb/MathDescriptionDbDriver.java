@@ -12,6 +12,11 @@ import cbit.sql.*;
 
 import java.sql.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -116,7 +121,7 @@ private MathDescription getMathDescriptionSQL(Connection con,User user, KeyValue
 			}
 			
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

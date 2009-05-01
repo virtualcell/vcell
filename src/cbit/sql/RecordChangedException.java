@@ -6,7 +6,7 @@ package cbit.sql;
 /**
  * This type was created in VisualAge.
  */
-public class RecordChangedException extends cbit.vcell.server.DataAccessException {
+public class RecordChangedException extends org.vcell.util.DataAccessException {
 /**
  * RecordChangedException constructor comment.
  */

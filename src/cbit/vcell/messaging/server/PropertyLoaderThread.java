@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.messaging.MessageConstants;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+
 
 /**
  * Insert the type's description here.

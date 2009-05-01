@@ -1,11 +1,14 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
+
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import java.io.Serializable;
 import cbit.rmi.event.ExportEvent;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.messaging.server.RpcServer;
 import cbit.vcell.messaging.server.RpcRequest;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * Insert the type's description here.
@@ -82,7 +85,7 @@ public void onQueueMessage(Message message) {
 
 		// if client is not waiting any more, why bother sending the reply. Plus the temporary queue
 		// has been deleted if client has timed out.
-		long clientTimeoutMS = Long.parseLong(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellClientTimeoutMS)); 
+		long clientTimeoutMS = Long.parseLong(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellClientTimeoutMS)); 
 		if (t < clientTimeoutMS) {		
 			Queue replyTo = (Queue)message.getJMSReplyTo();
 			if (replyTo != null) {

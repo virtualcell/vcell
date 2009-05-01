@@ -26,8 +26,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.model.ReservedSymbol;
 

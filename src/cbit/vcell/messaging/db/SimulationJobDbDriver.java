@@ -2,13 +2,13 @@ package cbit.vcell.messaging.db;
 import java.sql.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.DatabaseConstants;
-import cbit.vcell.server.SessionLog;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -26,7 +26,7 @@ public class SimulationJobDbDriver {
 	private static final cbit.vcell.modeldb.UserTable userTable = cbit.vcell.modeldb.UserTable.table;
 	private static final cbit.vcell.modeldb.MathDescTable mathDescTable = cbit.vcell.modeldb.MathDescTable.table;
 	private static final cbit.vcell.modeldb.GeometryTable geometryTable = cbit.vcell.modeldb.GeometryTable.table;
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private java.lang.String standardJobStatusSQL = null;
 
 /**

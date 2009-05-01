@@ -136,10 +136,10 @@ public static MathDescription getFilamentExample() throws Exception {
 	MathDescription mathDesc = getExample();
 
 	FilamentGroup fg = mathDesc.getGeometry().getGeometrySpec().getFilamentGroup();
-	cbit.vcell.geometry.Line line = new cbit.vcell.geometry.Line(new cbit.vcell.geometry.Coordinate(0,0,0),new cbit.vcell.geometry.Coordinate(1,1,1));
+	cbit.vcell.geometry.Line line = new cbit.vcell.geometry.Line(new org.vcell.util.Coordinate(0,0,0),new org.vcell.util.Coordinate(1,1,1));
 	line.setClosed(false);
 	fg.addCurve("filament1",line);
-	line = new cbit.vcell.geometry.Line(new cbit.vcell.geometry.Coordinate(.1,.1,.1),new cbit.vcell.geometry.Coordinate(.5,.5,.5));
+	line = new cbit.vcell.geometry.Line(new org.vcell.util.Coordinate(.1,.1,.1),new org.vcell.util.Coordinate(.5,.5,.5));
 	fg.addCurve("filament1",line);
 
 	FilamentVariable filamentVar = new FilamentVariable("granule");

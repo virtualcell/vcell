@@ -8,7 +8,8 @@ import java.util.Arrays;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 
-import cbit.vcell.server.DataAccessException;
+import org.vcell.util.DataAccessException;
+
 
 /**
  * Insert the type's description here.

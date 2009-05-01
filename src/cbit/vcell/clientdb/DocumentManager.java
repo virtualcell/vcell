@@ -1,4 +1,5 @@
 package cbit.vcell.clientdb;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -22,7 +23,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -46,36 +46,36 @@ public void addFieldDataDBListener(FieldDataDBEventListener newFieldDataDBEventL
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-VCImageInfo addUserToGroup(VCImageInfo imageInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+VCImageInfo addUserToGroup(VCImageInfo imageInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-BioModelInfo addUserToGroup(BioModelInfo bioModelInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+BioModelInfo addUserToGroup(BioModelInfo bioModelInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-GeometryInfo addUserToGroup(GeometryInfo geometryInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+GeometryInfo addUserToGroup(GeometryInfo geometryInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-MathModelInfo addUserToGroup(MathModelInfo mathModelInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+MathModelInfo addUserToGroup(MathModelInfo mathModelInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
@@ -84,54 +84,54 @@ MathModelInfo addUserToGroup(MathModelInfo mathModelInfo,String user) throws cbi
  * @param vcDocumentInfo cbit.vcell.document.VCDocumentInfo
  * @param curateFunction int
  */
-void curate(cbit.vcell.server.CurateSpec curateSpec) throws cbit.vcell.server.DataAccessException;
+void curate(cbit.vcell.server.CurateSpec curateSpec) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-void delete(VCImageInfo vcImageInfo) throws cbit.vcell.server.DataAccessException;
+void delete(VCImageInfo vcImageInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-void delete(BioModelInfo bioModelInfo) throws cbit.vcell.server.DataAccessException;
+void delete(BioModelInfo bioModelInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-void delete(GeometryInfo geometryInfo) throws cbit.vcell.server.DataAccessException;
+void delete(GeometryInfo geometryInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (3/26/2001 11:20:28 PM)
  * @param mathModelInfo cbit.vcell.mathmodel.MathModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-void delete(MathModelInfo mathModelInfo) throws cbit.vcell.server.DataAccessException;
+void delete(MathModelInfo mathModelInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws cbit.vcell.server.DataAccessException;
+FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws org.vcell.util.DataAccessException;
 
-FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws cbit.vcell.server.DataAccessException;
+FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws org.vcell.util.DataAccessException;
 
 /**
  * Insert the method's description here.
@@ -147,7 +147,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec sqs) throws DataAccessException;
+org.vcell.util.ReferenceQueryResult findReferences(org.vcell.util.ReferenceQuerySpec sqs) throws DataAccessException;
 
 	public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos) throws Exception;
 
@@ -354,11 +354,11 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(c
 public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException;
 
 
-	public String getXML(BioModelInfo bmInfo) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
+	public String getXML(BioModelInfo bmInfo) throws org.vcell.util.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
 
 
 
-	public String getXML(MathModelInfo mmInfo) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
+	public String getXML(MathModelInfo mmInfo) throws org.vcell.util.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
 
 
 
@@ -418,36 +418,36 @@ public void removeDatabaseListener(cbit.vcell.clientdb.DatabaseListener newListe
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-VCImageInfo removeUserFromGroup(VCImageInfo imageInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+VCImageInfo removeUserFromGroup(VCImageInfo imageInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo,String user) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.DependencyException;
+MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo,String user) throws org.vcell.util.DataAccessException, org.vcell.util.DependencyException;
 
 
 /**
@@ -527,45 +527,45 @@ public MathModel saveAsNew(MathModel mathModel, String newName, String independe
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-VCImageInfo setGroupPrivate(VCImageInfo imageInfo) throws cbit.vcell.server.DataAccessException;
+VCImageInfo setGroupPrivate(VCImageInfo imageInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-BioModelInfo setGroupPrivate(BioModelInfo bioModelInfo) throws cbit.vcell.server.DataAccessException;
+BioModelInfo setGroupPrivate(BioModelInfo bioModelInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-GeometryInfo setGroupPrivate(GeometryInfo geometryInfo) throws cbit.vcell.server.DataAccessException;
+GeometryInfo setGroupPrivate(GeometryInfo geometryInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws cbit.vcell.server.DataAccessException;
+MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws cbit.vcell.server.DataAccessException;
+VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws org.vcell.util.DataAccessException;
 
 
 public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner) throws DataAccessException,MathException,ExpressionException;
@@ -575,34 +575,34 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-BioModelInfo setGroupPublic(BioModelInfo bioModelInfo) throws cbit.vcell.server.DataAccessException;
+BioModelInfo setGroupPublic(BioModelInfo bioModelInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-GeometryInfo setGroupPublic(GeometryInfo geometryInfo) throws cbit.vcell.server.DataAccessException;
+GeometryInfo setGroupPublic(GeometryInfo geometryInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:16 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws cbit.vcell.server.DataAccessException;
+MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws org.vcell.util.DataAccessException;
 
 
 /**
  * Insert the method's description here.
  * Creation date: (10/14/2005 1:40:15 AM)
  * @param jobEvent cbit.rmi.event.SimulationJobStatusEvent
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-void updateServerSimulationStatusFromJobEvent(cbit.rmi.event.SimulationJobStatusEvent jobEvent) throws cbit.vcell.server.DataAccessException;
+void updateServerSimulationStatusFromJobEvent(cbit.rmi.event.SimulationJobStatusEvent jobEvent) throws org.vcell.util.DataAccessException;
 }

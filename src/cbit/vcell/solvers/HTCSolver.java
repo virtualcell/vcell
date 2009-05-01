@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import org.vcell.util.Executable;
+import org.vcell.util.PropertyLoader;
 
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.*;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -30,7 +30,7 @@ public abstract class HTCSolver extends AbstractSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public HTCSolver(SimulationTask simTask, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public HTCSolver(SimulationTask simTask, java.io.File directory, org.vcell.util.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simTask.getSimulationJob(), directory, sessionLog);
 	simulationTask = simTask;
 	if (!getSimulation().getSolverTaskDescription().getSolverDescription().isInterpretedSolver()) {

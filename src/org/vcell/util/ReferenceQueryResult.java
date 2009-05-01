@@ -1,4 +1,7 @@
-package cbit.vcell.modeldb;
+package org.vcell.util;
+
+import cbit.vcell.modeldb.VersionableFamily;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/6/2005 9:38:17 AM)

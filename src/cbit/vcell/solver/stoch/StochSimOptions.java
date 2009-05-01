@@ -1,7 +1,7 @@
 package cbit.vcell.solver.stoch;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
 
-import cbit.vcell.server.DataAccessException;
 /**
  * This class is used to store some stochastic simulation
  * required information, including  use custom seed or not,

@@ -10,15 +10,15 @@ import java.sql.*;
 import java.sql.Statement;
 import java.util.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.*;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */
@@ -44,7 +44,7 @@ public MathModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, MathDe
  * only the owner can delete a Model
  */
 private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue mathModelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,DataAccessException,cbit.vcell.server.PermissionException,ObjectNotFoundException {
+				throws SQLException,org.vcell.util.DependencyException,DataAccessException,org.vcell.util.PermissionException,ObjectNotFoundException {
 
 
 	//
@@ -101,8 +101,8 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.vcell.server.PermissionException {
+				throws org.vcell.util.DependencyException, ObjectNotFoundException,
+						SQLException,DataAccessException,org.vcell.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.MathModelMetaData)){
@@ -228,7 +228,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 		if (rset.next()) {
 			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,log,simKeys);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

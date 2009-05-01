@@ -22,7 +22,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.NameList;
 import cbit.vcell.xml.NameManager;
@@ -35,6 +34,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 
 import java.util.ArrayList;

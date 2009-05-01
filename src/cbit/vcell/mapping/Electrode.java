@@ -9,7 +9,7 @@ public class Electrode implements java.io.Serializable, org.vcell.util.Matchable
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Feature fieldFeature = null;
-	private cbit.vcell.geometry.Coordinate fieldPosition = null;
+	private org.vcell.util.Coordinate fieldPosition = null;
 /**
  * Electrode constructor comment.
  */
@@ -20,7 +20,7 @@ public Electrode(Electrode electrode) {
 /**
  * Electrode constructor comment.
  */
-public Electrode(cbit.vcell.model.Feature argFeature, cbit.vcell.geometry.Coordinate argPosition) {
+public Electrode(cbit.vcell.model.Feature argFeature, org.vcell.util.Coordinate argPosition) {
 	fieldFeature = argFeature;
 	fieldPosition = argPosition;
 }
@@ -130,7 +130,7 @@ public cbit.vcell.model.Feature getFeature() {
  * @return The position property value.
  * @see #setPosition
  */
-public cbit.vcell.geometry.Coordinate getPosition() {
+public org.vcell.util.Coordinate getPosition() {
 	return fieldPosition;
 }
 /**
@@ -202,8 +202,8 @@ public void setFeature(cbit.vcell.model.Feature feature) throws java.beans.Prope
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getPosition
  */
-public void setPosition(cbit.vcell.geometry.Coordinate position) throws java.beans.PropertyVetoException {
-	cbit.vcell.geometry.Coordinate oldValue = fieldPosition;
+public void setPosition(org.vcell.util.Coordinate position) throws java.beans.PropertyVetoException {
+	org.vcell.util.Coordinate oldValue = fieldPosition;
 	fireVetoableChange("position", oldValue, position);
 	fieldPosition = position;
 	firePropertyChange("position", oldValue, position);

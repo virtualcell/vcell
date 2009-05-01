@@ -43,12 +43,9 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.document.VCDocument;
 import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
@@ -64,10 +61,13 @@ import java.awt.Dimension;
 import javax.swing.JMenuItem;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 
 public class FieldDataGUIPanel extends JPanel{

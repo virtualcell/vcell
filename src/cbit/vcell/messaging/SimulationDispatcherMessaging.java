@@ -7,11 +7,13 @@ import cbit.vcell.messaging.db.VCellServerID;
 
 import javax.jms.*;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.transaction.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -22,7 +24,6 @@ import cbit.sql.ConnectionFactory;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.server.AdminDatabaseServerXA;
@@ -450,7 +451,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
  * Client constructor comment.
  */
 public SimulationDispatcherMessaging(SimulationDispatcher simDispatcher0, ConnectionFactory conFactory0, KeyFactory keyFactory0, SessionLog log0) 
-	throws java.sql.SQLException, JMSException, cbit.vcell.server.DataAccessException {
+	throws java.sql.SQLException, JMSException, org.vcell.util.DataAccessException {
 	super(simDispatcher0, log0);
 	simDispatcher = simDispatcher0;
 	conFactory = conFactory0;
@@ -693,7 +694,7 @@ private void startSimulation(java.sql.Connection con, User user, VCSimulationIde
 			return;
 		}
 		if (simulation != null) {
-			if (simulation.getScanCount() > Integer.parseInt(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.maxJobsPerScan))) {
+			if (simulation.getScanCount() > Integer.parseInt(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.maxJobsPerScan))) {
 				log.alert("Too many simulations (" + simulation.getScanCount() + ") for parameter scan." + vcSimID);
 				StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, "Too many simulations (" + simulation.getScanCount() + ") for parameter scan.", null, null), user.getName(), null, null);

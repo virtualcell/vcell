@@ -2,6 +2,9 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 import javax.swing.*;
+
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.*;
 import cbit.vcell.document.VCDocument;
 /**

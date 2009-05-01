@@ -1,5 +1,6 @@
 package cbit.vcell.server;
 
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
 /**

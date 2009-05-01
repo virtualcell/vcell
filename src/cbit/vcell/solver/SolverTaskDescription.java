@@ -5,7 +5,6 @@ package cbit.vcell.solver;
 ©*/
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.math.VCML;
@@ -14,6 +13,7 @@ import java.beans.PropertyVetoException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 import cbit.util.*;

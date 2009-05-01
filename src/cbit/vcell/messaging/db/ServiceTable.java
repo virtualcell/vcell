@@ -1,10 +1,10 @@
 package cbit.vcell.messaging.db;
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.admin.ServiceStatus;
 import cbit.sql.*;
 import java.sql.*;
 
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 
 /*©

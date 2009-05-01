@@ -12,8 +12,9 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.geometry.surface.SurfaceCollection;
-import cbit.vcell.server.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (9/20/2005 9:13:34 AM)
@@ -34,7 +35,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 		public cbit.vcell.render.Vect3d getNormal(int surfaceIndex,int polygonIndex);
 		public int getMembraneIndex(int surfaceIndex,int polygonIndex);
 		public void plotTimeSeriesData(int[][] indices,boolean bAllTimes,boolean bTimeStats,boolean bSpaceStats) throws DataAccessException;
-		public cbit.vcell.geometry.Coordinate getCentroid(int surfaceIndex,int polygonIndex);
+		public org.vcell.util.Coordinate getCentroid(int surfaceIndex,int polygonIndex);
 		public void showComponentInFrame(java.awt.Component comp,String title);
 		public java.awt.Color getROIHighlightColor();
 		public void makeMovie(SurfaceCanvas surfaceCanvas);
@@ -1914,7 +1915,7 @@ public void pickByAnalytic() {
 				if(surfNames[surf].equals(surfSelect)){
 					int polygonCount = getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(surf).getPolygonCount();
 					for(int i=0;i<polygonCount;i+= 1){
-						cbit.vcell.geometry.Coordinate coord = getSurfaceCollectionDataInfoProvider().getCentroid(surf,i);
+						org.vcell.util.Coordinate coord = getSurfaceCollectionDataInfoProvider().getCentroid(surf,i);
 						if(coord == null){
 							coord = ((cbit.vcell.geometry.surface.Quadrilateral)getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(surf).getPolygons(i)).calculateCentroid();
 						}
@@ -2094,7 +2095,7 @@ private void pickPolygon(java.awt.event.MouseEvent mouseEvent) {
 							int prevPickPolyIndex = ((SurfaceCanvas.SurfaceCollectionPick)polylinePicks.lastElement()).polygonIndex;
 							cbit.vcell.geometry.surface.SurfaceCollection sc = getSurfaceCollectionDataInfo().getSurfaceCollection();
 							cbit.vcell.geometry.surface.Surface surf = sc.getSurfaces(lastPick.surfaceIndex);
-							cbit.vcell.geometry.Coordinate destination = ((cbit.vcell.geometry.surface.Quadrilateral)surf.getPolygons(lastPick.polygonIndex)).calculateCentroid();
+							org.vcell.util.Coordinate destination = ((cbit.vcell.geometry.surface.Quadrilateral)surf.getPolygons(lastPick.polygonIndex)).calculateCentroid();
 							boolean[] bPicked = new boolean[surf.getPolygonCount()];
 							while(true){
 								java.util.Arrays.fill(bPicked,false);
@@ -2110,9 +2111,9 @@ private void pickPolygon(java.awt.event.MouseEvent mouseEvent) {
 								if(bDone){break;}
 								int lowAnglePolyIndex = -1;
 								double lowAngle = Double.POSITIVE_INFINITY;
-								cbit.vcell.geometry.Coordinate vertex = ((cbit.vcell.geometry.surface.Quadrilateral)surf.getPolygons(prevPickPolyIndex)).calculateCentroid();
+								org.vcell.util.Coordinate vertex = ((cbit.vcell.geometry.surface.Quadrilateral)surf.getPolygons(prevPickPolyIndex)).calculateCentroid();
 								for(int i=0;i<neighbors.length;i+= 1){
-									cbit.vcell.geometry.Coordinate neighborCoord = ((cbit.vcell.geometry.surface.Quadrilateral)surf.getPolygons(neighbors[i])).calculateCentroid();
+									org.vcell.util.Coordinate neighborCoord = ((cbit.vcell.geometry.surface.Quadrilateral)surf.getPolygons(neighbors[i])).calculateCentroid();
 									double angle = cbit.vcell.geometry.Curve.getAngle(vertex,destination,neighborCoord);
 									if(Math.abs(angle) < lowAngle){
 										lowAngle = Math.abs(angle);
@@ -2347,7 +2348,7 @@ private void updatePickInfoDisplay() {
 			currentPick = getSurfaceCanvas1().pickPolygon(lastMouse.getX(),lastMouse.getY());
 		}
 		if(currentPick != null){
-			cbit.vcell.geometry.Coordinate centroid = ((cbit.vcell.geometry.surface.Quadrilateral)getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(currentPick.surfaceIndex).getPolygons(currentPick.polygonIndex)).calculateCentroid();
+			org.vcell.util.Coordinate centroid = ((cbit.vcell.geometry.surface.Quadrilateral)getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(currentPick.surfaceIndex).getPolygons(currentPick.polygonIndex)).calculateCentroid();
 			df.setMaximumFractionDigits(5);
 			double area = getSurfaceCollectionDataInfoProvider().getArea(currentPick.surfaceIndex,currentPick.polygonIndex);
 			getJLabelInfo().setText(
@@ -2397,13 +2398,13 @@ private void updatePickInfoDisplay() {
 			String lineString = "";
 			if(polylinePicks.size() > 0){
 				double lineLength = 0;
-				cbit.vcell.geometry.Coordinate lastCentroid = null;
+				org.vcell.util.Coordinate lastCentroid = null;
 				for(int i=0;i<polylinePicks.size();i+= 1){
 					SurfaceCanvas.SurfaceCollectionPick lineElement = (SurfaceCanvas.SurfaceCollectionPick)polylinePicks.elementAt(i);
 					cbit.vcell.geometry.surface.Quadrilateral quad =
 						(cbit.vcell.geometry.surface.Quadrilateral)
 						getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(lineElement.surfaceIndex).getPolygons(lineElement.polygonIndex);
-					cbit.vcell.geometry.Coordinate centroid = quad.calculateCentroid();
+					org.vcell.util.Coordinate centroid = quad.calculateCentroid();
 					if(i>0){
 						lineLength+= centroid.distanceTo(lastCentroid);
 					}

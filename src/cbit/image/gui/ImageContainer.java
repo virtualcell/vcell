@@ -2,6 +2,7 @@ package cbit.image.gui;
 import java.awt.image.*;
 import java.awt.*;
 
+import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Range;
 
 import cbit.vcell.math.*;

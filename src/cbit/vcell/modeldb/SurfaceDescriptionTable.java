@@ -6,11 +6,11 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 ©*/
 import java.sql.*;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import cbit.sql.*;
 /**
  * This type was created in VisualAge.

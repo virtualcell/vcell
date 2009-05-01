@@ -9,10 +9,10 @@ import java.net.*;
 import java.awt.*;
 import javax.swing.event.*;
 
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.SimpleHistory;
 
 import cbit.util.*;
-import cbit.vcell.server.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2001 4:45:03 PM)
@@ -586,7 +586,7 @@ public static void main(java.lang.String[] args) {
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
-		new cbit.vcell.server.PropertyLoader();
+		new org.vcell.util.PropertyLoader();
 		aSimpleWebBrowserPanel.setCurrentURL(new java.net.URL(PropertyLoader.getRequiredProperty(PropertyLoader.userGuideURLProperty)));
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");

@@ -1,10 +1,10 @@
 package cbit.vcell.xml;
 
 import org.jdom.Element;
+import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.sql.Cacheable;
 import cbit.util.xml.XmlUtil;
 
 public class MIRIAMAnnotation implements Cacheable{

@@ -1,9 +1,9 @@
 package cbit.vcell.opt;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 
 import cbit.vcell.parser.Expression;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.util.RowColumnResultSet;
 /**

@@ -1,4 +1,6 @@
 package cbit.vcell.model.gui;
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
@@ -6,7 +8,6 @@ import cbit.vcell.dictionary.SpeciesDescription;
 import cbit.vcell.model.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.UserCancelException;
 
 /**
  * Insert the type's description here.
@@ -421,7 +422,7 @@ private void configureRXParameterList(javax.swing.event.ListSelectionEvent listS
 						
 					pndlm.addElement(new MapStringToObject(descriptiveText/*reactionStepInfos[i].getDescriptiveText()*/,reactionStepInfos[i]));
 				}
-			}catch(cbit.vcell.server.DataAccessException e){
+			}catch(org.vcell.util.DataAccessException e){
 				cbit.vcell.client.PopupGenerator.showErrorDialog("Error Getting Parameter names\n"+e.getMessage());
 			}
 		}else{//Dictionary ReactionDescription
@@ -2631,7 +2632,7 @@ private void parameterNameSelectionChanged() {
 				public int getTaskType() {
 					return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING;
 				}
-				public void run(java.util.Hashtable hash) throws cbit.vcell.server.DataAccessException{
+				public void run(java.util.Hashtable hash) throws org.vcell.util.DataAccessException{
 					ReactionStep rStep = getDocumentManager().getReactionStep(reactionStepKey);
 					if(rStep != null){
 						hash.put(RXSTEP_HASH_VALUE_KEY,rStep);
@@ -2652,7 +2653,7 @@ private void parameterNameSelectionChanged() {
 				public int getTaskType() {
 					return AsynchClientTask.TASKTYPE_SWING_BLOCKING;
 				}
-				public void run(java.util.Hashtable hash) throws cbit.vcell.server.DataAccessException{
+				public void run(java.util.Hashtable hash) throws org.vcell.util.DataAccessException{
 					ReactionStep rStep = (ReactionStep)hash.get(RXSTEP_HASH_VALUE_KEY);
 					if(rStep != null){
 						Kinetics.KineticsParameter[] kpArr = rStep.getKinetics().getKineticsParameters();
@@ -2764,7 +2765,7 @@ private void resolve2() {
 			if(dbsd instanceof cbit.vcell.dictionary.DBFormalSpecies){//get DBSpecies (Dictionary Reactions)
 				try{
 					dbSpecies = getDocumentManager().getBoundSpecies((cbit.vcell.dictionary.DBFormalSpecies)dbsd);
-				}catch(cbit.vcell.server.DataAccessException e){
+				}catch(org.vcell.util.DataAccessException e){
 					//Do Nothing, this SC won't be bound in database, user can do it later
 				}
 			}else{//get DBSpecies (user Reactions)
@@ -2834,7 +2835,7 @@ private void search(){
 			public int getTaskType() {
 				return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING;
 			}
-			public void run(java.util.Hashtable hash) throws cbit.vcell.server.DataAccessException{
+			public void run(java.util.Hashtable hash) throws org.vcell.util.DataAccessException{
 				ReactionDescription[] dbfr = docManager.getDictionaryReactions(reactionQuerySpec);
 				if(dbfr != null && dbfr.length >0){
 					hash.put(RXDESC_VALUE_KEY,dbfr);
@@ -2940,7 +2941,7 @@ private void searchUserReactions(final ReactionQuerySpec reactionQuerySpec){
 					if(dbrd != null && dbrd.length >0){
 						hash.put(RXSTRING_VALUE_KEY,dbrdS);
 					}
-				}catch(cbit.vcell.server.DataAccessException e){
+				}catch(org.vcell.util.DataAccessException e){
 					cbit.vcell.client.PopupGenerator.showErrorDialog(DBReactionWizardPanel.this,e.getMessage());
 				}
 			}

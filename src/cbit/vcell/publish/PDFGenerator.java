@@ -2,11 +2,9 @@ package cbit.vcell.publish;
 import java.awt.print.PageFormat;
 import java.io.*;
 import cbit.vcell.biomodel.BioModelInfo;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.sql.DBCacheTable;
-import cbit.vcell.server.SessionLog;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
@@ -14,6 +12,8 @@ import cbit.vcell.xml.XmlHelper;
 import java.awt.PrintJob;
 
 import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 /**
@@ -49,7 +49,7 @@ public void scan(User users[], String bioModelName) throws DataAccessException {
 	for (int i = 0; i < users.length; i++){
 		User user = users[i];
 		BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
-		SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
+		SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 		userLog.print("Testing user '"+user+"'");
 
 		for (int j = 0; j < bioModelInfos.length; j++){

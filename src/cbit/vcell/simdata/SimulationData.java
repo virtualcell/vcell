@@ -21,7 +21,9 @@ import cbit.util.*;
 import java.util.zip.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.VCDataIdentifier;
 /**
  * This type was created in VisualAge.
  */
@@ -391,7 +393,7 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public synchronized long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	switch (dataType) {

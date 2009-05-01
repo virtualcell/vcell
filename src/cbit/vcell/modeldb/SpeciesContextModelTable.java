@@ -3,12 +3,12 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.

@@ -4,8 +4,8 @@ import cbit.htc.PBSUtils;
 import java.io.File;
 
 import org.vcell.util.ExecutableException;
+import org.vcell.util.MessageConstants;
 
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 
@@ -23,7 +23,7 @@ public class PBSSolver extends HTCSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public PBSSolver(cbit.vcell.messaging.server.SimulationTask simTask, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public PBSSolver(cbit.vcell.messaging.server.SimulationTask simTask, java.io.File directory, org.vcell.util.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simTask, directory, sessionLog);
 }
 

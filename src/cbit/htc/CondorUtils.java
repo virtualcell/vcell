@@ -8,7 +8,7 @@ import org.vcell.util.Executable;
  * @author: Fei Gao
  */
 public class CondorUtils {
-	private static cbit.vcell.server.SessionLog condorLog = new cbit.vcell.server.StdoutSessionLog("Condor-Command");
+	private static org.vcell.util.SessionLog condorLog = new org.vcell.util.StdoutSessionLog("Condor-Command");
 
 /**
  * Insert the method's description here.

@@ -1,6 +1,5 @@
 package cbit.vcell.messaging.admin;
 import static cbit.vcell.messaging.admin.ManageConstants.*;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.sql.ConnectionFactory;
@@ -23,11 +22,13 @@ import javax.jms.*;
 import javax.swing.*;
 
 import org.vcell.util.BigString;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.*;
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.sorttable.JSortTable;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.messaging.server.RpcSimServerProxy;
@@ -42,7 +43,7 @@ import cbit.vcell.modeldb.DbDriver;
 public class ServerManageConsole extends JFrame implements ControlTopicListener {
 	private VCellBootstrap vcellBootstrap = null;
 	private VCellServer vcellServer = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private List<SimpleUserConnection> userList = Collections.synchronizedList(new LinkedList<SimpleUserConnection>());
 	private List<ServiceStatus> serviceConfigList = Collections.synchronizedList(new LinkedList<ServiceStatus>());
 	private List<ServiceInstanceStatus> serviceInstanceStatusList = Collections.synchronizedList(new LinkedList<ServiceInstanceStatus>());
@@ -483,7 +484,7 @@ private javax.swing.JPanel getBroadcastPanel() {
  * Creation date: (7/19/2004 3:44:01 PM)
  * @return cbit.vcell.messaging.server.RpcDbServerProxy
  */
-private cbit.vcell.messaging.server.RpcDbServerProxy getDbProxy(User user) throws JMSException, cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+private cbit.vcell.messaging.server.RpcDbServerProxy getDbProxy(User user) throws JMSException, org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	if (dbProxyHash == null) {
 		dbProxyHash = new HashMap<User, RpcDbServerProxy>();
 	}
@@ -857,7 +858,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
  */
 private String getLocalVCellBootstrapUrl() {
 	String rmiHost = "ms3";
-	int rmiPort = cbit.vcell.server.PropertyLoader.getIntProperty(cbit.vcell.server.PropertyLoader.rmiPortRegistry, 1099);
+	int rmiPort = org.vcell.util.PropertyLoader.getIntProperty(org.vcell.util.PropertyLoader.rmiPortRegistry, 1099);
 	return "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
 }
 
@@ -1828,7 +1829,7 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getServiceStatusTable() 
  * Creation date: (7/19/2004 3:44:01 PM)
  * @return cbit.vcell.messaging.server.RpcsimServerProxy
  */
-private RpcSimServerProxy getSimProxy(User user) throws JMSException, cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+private RpcSimServerProxy getSimProxy(User user) throws JMSException, org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	if (simProxyHash == null) {
 		simProxyHash = new HashMap<User, RpcSimServerProxy>();
 	}
@@ -2151,7 +2152,7 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		try {
-			log = new cbit.vcell.server.StdoutSessionLog("Console");
+			log = new org.vcell.util.StdoutSessionLog("Console");
 			setTitle("Virtual Cell Management Console -- " + VCellServerID.getSystemServerID());
 			reconnect();
 			

@@ -3,12 +3,12 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.Cacheable;
 /**
  * This type was created in VisualAge.
  */

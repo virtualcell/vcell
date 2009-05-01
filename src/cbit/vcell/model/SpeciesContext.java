@@ -6,6 +6,7 @@ package cbit.vcell.model;
 import java.beans.*;
 import java.util.*;
 
+import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
@@ -13,7 +14,6 @@ import org.vcell.util.document.KeyValue;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.model.*;
-import cbit.sql.Cacheable;
 
 public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, PropertyChangeListener {
 	private KeyValue key = null;

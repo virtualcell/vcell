@@ -6,7 +6,7 @@ import java.util.Vector;
  * Creation date: (6/24/2002 10:38:00 AM)
  * @author: Steven Woolley
  */
-public class EnzymeInfo extends FormalSpeciesInfo implements cbit.sql.Cacheable{
+public class EnzymeInfo extends FormalSpeciesInfo implements org.vcell.util.Cacheable{
 	
     private String reaction = null;
     private String sysname = null;

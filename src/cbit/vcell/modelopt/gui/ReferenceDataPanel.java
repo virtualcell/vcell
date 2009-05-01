@@ -533,7 +533,7 @@ private void handleException(java.lang.Throwable exception) {
 /**
  * Comment
  */
-private cbit.vcell.opt.ReferenceData importDataFromFile() throws cbit.vcell.client.task.UserCancelException, Exception {
+private cbit.vcell.opt.ReferenceData importDataFromFile() throws org.vcell.util.UserCancelException, Exception {
 	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser();
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
@@ -553,13 +553,13 @@ private cbit.vcell.opt.ReferenceData importDataFromFile() throws cbit.vcell.clie
 	fileChooser.setDialogTitle("Import Data File");
 	if (fileChooser.showOpenDialog(this) != javax.swing.JFileChooser.APPROVE_OPTION) {
 		// user didn't choose save
-		throw cbit.vcell.client.task.UserCancelException.CANCEL_FILE_SELECTION;
+		throw org.vcell.util.UserCancelException.CANCEL_FILE_SELECTION;
 	} else {
 		File selectedFile = fileChooser.getSelectedFile();
 		javax.swing.filechooser.FileFilter fileFilter = fileChooser.getFileFilter();
 		if (selectedFile == null) {
 			// no file selected (no name given)
-			throw cbit.vcell.client.task.UserCancelException.CANCEL_FILE_SELECTION;
+			throw org.vcell.util.UserCancelException.CANCEL_FILE_SELECTION;
 		} else {
 			if (getUserPreferences()!=null){
 				String newPath = selectedFile.getParent();

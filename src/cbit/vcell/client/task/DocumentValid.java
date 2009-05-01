@@ -1,6 +1,9 @@
 package cbit.vcell.client.task;
 import cbit.vcell.client.*;
 import java.util.*;
+
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;

@@ -11,15 +11,15 @@ import java.io.ByteArrayOutputStream;
  * Creation date: (3/8/01 5:54:05 PM)
  * @author: Jim Schaff
  */
-public class StringSessionLog implements cbit.vcell.server.SessionLog {
+public class StringSessionLog implements org.vcell.util.SessionLog {
 	private java.io.ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-	private cbit.vcell.server.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 /**
  * StringSessionLog constructor comment.
  */
 public StringSessionLog(String name) {
 	java.io.PrintStream logPrintStream = new java.io.PrintStream(byteArrayOutputStream);
-	log = new cbit.vcell.server.StdoutSessionLog(name,logPrintStream);
+	log = new org.vcell.util.StdoutSessionLog(name,logPrintStream);
 }
 /**
  * This method was created in VisualAge.

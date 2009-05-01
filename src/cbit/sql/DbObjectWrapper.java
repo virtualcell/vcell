@@ -8,6 +8,7 @@ import cbit.util.*;
 import java.io.*;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Cacheable;
 /**
  * This type was created in VisualAge.
  */

@@ -2,6 +2,10 @@ package cbit.vcell.messaging.server;
 import java.io.*;
 import cbit.vcell.server.*;
 import javax.jms.JMSException;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -11,12 +15,12 @@ import java.lang.reflect.Method;
  * @author: Fei Gao
  */
 public abstract class AbstractRpcServerImpl implements RpcServerImpl {
-	protected cbit.vcell.server.SessionLog log = null;
+	protected org.vcell.util.SessionLog log = null;
 
 /**
  * RpcServerImpl constructor comment.
  */
-protected AbstractRpcServerImpl(cbit.vcell.server.SessionLog slog) {
+protected AbstractRpcServerImpl(org.vcell.util.SessionLog slog) {
 	super();
 	this.log = slog;
 }

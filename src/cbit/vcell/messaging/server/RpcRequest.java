@@ -1,8 +1,8 @@
 package cbit.vcell.messaging.server;
 
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.User;
 
-import cbit.vcell.messaging.MessageConstants.ServiceType;
 
 /**
  * Insert the type's description here.

@@ -11,6 +11,7 @@ import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -27,7 +28,6 @@ import cbit.sql.VersionFlag;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.Line;
@@ -854,7 +854,7 @@ public Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSi
 	String featureName = unMangle(elem.getAttributeValue(XMLTags.FeatureAttrTag));
 	Feature feature = (Feature)currentSimulationContext.getModel().getStructure(featureName);
 	//retrieve position
-	cbit.vcell.geometry.Coordinate position = getCoordinate(elem.getChild(XMLTags.CoordinateTag, vcNamespace));
+	org.vcell.util.Coordinate position = getCoordinate(elem.getChild(XMLTags.CoordinateTag, vcNamespace));
 	
 	Electrode newElect = new Electrode(feature, position);
 	

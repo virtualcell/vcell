@@ -7,7 +7,7 @@ import java.util.Vector;
  * Creation date: (6/24/2002 10:44:36 AM)
  * @author: Steven Woolley
  */
-public abstract class DBSpecies extends DBFormalSpecies implements cbit.sql.Cacheable{
+public abstract class DBSpecies extends DBFormalSpecies implements org.vcell.util.Cacheable{
 
 	private org.vcell.util.document.KeyValue dbSpeciesKey = null;
 	

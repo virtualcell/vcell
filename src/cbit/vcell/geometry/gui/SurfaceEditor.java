@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.gui;
-import cbit.vcell.client.task.UserCancelException;
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.desktop.controls.ClientTask;

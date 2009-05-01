@@ -29,7 +29,7 @@ public class SolverControllerImpl {
 	private SolverListener solverListener = null;
 	
 	private SimulationJob simulationJob = null;
-	private cbit.vcell.server.SessionLog sessionLog = null;
+	private org.vcell.util.SessionLog sessionLog = null;
 	private Solver solver = null;
 	private File directory = null;
 	private Date startDate = null;
@@ -42,7 +42,7 @@ public class SolverControllerImpl {
  * @param directory java.lang.String
  * @param simIdentifier java.lang.String
  */
-public SolverControllerImpl (LocalVCellConnection argVCellConnection, cbit.vcell.server.SessionLog sessionLog, SimulationJob argSimulationJob, java.io.File directory) throws cbit.vcell.solver.SolverException {
+public SolverControllerImpl (LocalVCellConnection argVCellConnection, org.vcell.util.SessionLog sessionLog, SimulationJob argSimulationJob, java.io.File directory) throws cbit.vcell.solver.SolverException {
 	this.simulationJob = argSimulationJob;
 	this.directory = directory;
 	this.sessionLog = sessionLog;

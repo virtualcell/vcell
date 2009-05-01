@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (2/18/2003 3:07:17 PM)
  * @author: Frank Morgan
  */
-public abstract class FormalSpeciesInfo implements cbit.sql.Cacheable{
+public abstract class FormalSpeciesInfo implements org.vcell.util.Cacheable{
 
 	private String formalID = null;
 	private String[] names = null;
