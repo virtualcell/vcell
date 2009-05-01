@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.vcell.util.Issue;
+
 import cbit.image.ImageException;
-import cbit.util.Issue;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
