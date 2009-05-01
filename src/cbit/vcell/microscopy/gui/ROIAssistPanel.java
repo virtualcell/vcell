@@ -37,13 +37,13 @@ import javax.swing.table.DefaultTableModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
+import org.vcell.util.UserCancelException;
 
 import cbit.gui.DialogUtils;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;

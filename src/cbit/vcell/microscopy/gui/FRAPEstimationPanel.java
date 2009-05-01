@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 
 import cbit.gui.DialogUtils;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
@@ -38,6 +37,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
+
+import org.vcell.util.UserCancelException;
 
 public class FRAPEstimationPanel extends JPanel {
 	private JTable table;

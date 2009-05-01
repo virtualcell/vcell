@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.BitSet;
 
 import org.vcell.util.Compare;
+import org.vcell.util.NullSessionLog;
 import org.vcell.util.TSJobResultsSpaceStats;
 import org.vcell.util.TimeSeriesJobSpec;
 
@@ -17,7 +18,6 @@ import org.vcell.util.document.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.modeldb.NullSessionLog;
 import org.vcell.util.document.User;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;

@@ -2,6 +2,7 @@ package cbit.vcell.microscopy;
 
 import java.io.File;
 
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -11,7 +12,6 @@ import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
