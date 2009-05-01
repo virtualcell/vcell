@@ -843,4 +843,12 @@ public void showMIRIAMWindow() {
 	showFrame(mIRIAMAnnotationEditorFrame);
 }
 
+public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
+{
+	if(getBioModelEditor() != null)
+	{
+		getBioModelEditor().bioModelTreePanel1_ActionPerformed(e);
+	}
+}
+
 }
