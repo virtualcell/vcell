@@ -15,6 +15,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.vcell.util.UserCancelException;
+
 import cbit.gui.DialogUtils;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -23,7 +25,6 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.AnnotatedImageDataset;
 import cbit.vcell.microscopy.FRAPData;

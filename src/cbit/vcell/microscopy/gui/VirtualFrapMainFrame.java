@@ -28,13 +28,14 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.UserCancelException;
+
 import cbit.gui.DialogUtils;
 import cbit.util.AsynchProgressPopup;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.server.PropertyLoader;
 
 
 /**

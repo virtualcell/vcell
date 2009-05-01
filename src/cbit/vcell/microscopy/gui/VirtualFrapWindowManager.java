@@ -13,9 +13,10 @@ import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.StdoutSessionLog;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
