@@ -40,9 +40,9 @@ import cbit.sql.VersionFlag;
 import cbit.util.Extent;
 import cbit.util.FileUtils;
 import cbit.util.ISize;
-import cbit.util.Issue;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import cbit.util.NumberUtils;
 import cbit.util.Origin;
