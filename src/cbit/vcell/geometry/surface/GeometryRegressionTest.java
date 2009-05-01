@@ -259,7 +259,7 @@ public void runSimulations(boolean bNew, String startKey) {
 			System.out.println("--------------------------" + count + ": Running simulation " + line + "-----------------------------");
 			
 			try {
-				cbit.util.BigString simxml = dbServerImpl.getSimulationXML(adminUser, new org.vcell.util.document.KeyValue(line));
+				org.vcell.util.BigString simxml = dbServerImpl.getSimulationXML(adminUser, new org.vcell.util.document.KeyValue(line));
 				cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
 				sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(0.001, 0.001, 0.001));
 				sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0,0.001));

@@ -7,7 +7,6 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.messaging.server.RpcDbServerProxy;
-import cbit.util.BigString;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
@@ -23,6 +22,7 @@ import java.util.List;
 import javax.jms.*;
 import javax.swing.*;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 

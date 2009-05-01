@@ -12,10 +12,10 @@ import cbit.vcell.export.server.ExportLog;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
-import cbit.util.BigString;
 import java.io.ByteArrayInputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.User;
 
 /**

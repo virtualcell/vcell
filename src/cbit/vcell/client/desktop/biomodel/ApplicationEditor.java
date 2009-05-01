@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.util.Issue;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
@@ -9,6 +8,8 @@ import cbit.vcell.math.gui.MathDescEditor;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import org.vcell.util.Issue;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -2272,7 +2273,7 @@ private boolean updateMath() {
 		//
 		// inform user if any issues
 		//
-		cbit.util.Issue issues[] = mathMapping.getIssues();
+		org.vcell.util.Issue issues[] = mathMapping.getIssues();
 		if (issues!=null && issues.length>0){
 			StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
 			int issueCount=0;

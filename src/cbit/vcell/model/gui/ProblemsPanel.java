@@ -12,7 +12,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import cbit.util.Issue;
+import org.vcell.util.Issue;
+
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelTest;

@@ -3,10 +3,10 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.util.BigString;
 import cbit.rmi.event.WorkerEvent;
 import javax.jms.*;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 

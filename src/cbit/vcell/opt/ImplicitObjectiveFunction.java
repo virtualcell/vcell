@@ -2,8 +2,9 @@ package cbit.vcell.opt;
 
 import java.util.Vector;
 
+import org.vcell.util.Issue;
+
 import cbit.function.DefaultScalarFunction;
-import cbit.util.Issue;
 
 public class ImplicitObjectiveFunction extends ObjectiveFunction
 {

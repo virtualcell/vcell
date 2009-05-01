@@ -1,6 +1,7 @@
 package cbit.vcell.opt;
+import org.vcell.util.Issue;
+
 import cbit.util.CommentStringTokenizer;
-import cbit.util.Issue;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.math.MathDescription;

@@ -1,7 +1,6 @@
 package cbit.vcell.server;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.util.BigString;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
@@ -19,6 +18,7 @@ import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
 import java.rmi.*;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.VersionInfo;

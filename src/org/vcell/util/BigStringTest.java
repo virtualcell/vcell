@@ -1,4 +1,7 @@
-package cbit.util;
+package org.vcell.util;
+
+import cbit.util.BeanUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/13/2004 11:50:57 AM)
@@ -37,11 +40,11 @@ public static void main(String[] args) {
 	    sun.io.CharToByteConverter charToByteConverter = sun.io.CharToByteConverter.getDefault();
 	    System.out.println("platform's default character encoding is "+charToByteConverter.getCharacterEncoding()+" with maxBytesPerChar of "+charToByteConverter.getMaxBytesPerChar());
 	    System.out.println("read file '"+filename+"', with "+str.length()+" characters, and "+str.getBytes().length+" bytes as encoded without compression");
-	    cbit.util.BigString bs = new cbit.util.BigString(str);
+	    org.vcell.util.BigString bs = new org.vcell.util.BigString(str);
 	    for (int i = 0; i < 15; i++) {
 	        long t1 = System.currentTimeMillis();
-		    bs = new cbit.util.BigString(str);
-	        cbit.util.BigString bs2 = (cbit.util.BigString)cbit.util.BeanUtils.cloneSerializable(bs);
+		    bs = new org.vcell.util.BigString(str);
+	        org.vcell.util.BigString bs2 = (org.vcell.util.BigString)cbit.util.BeanUtils.cloneSerializable(bs);
 	        //bs2.toString();
 	        if (i==14){
 		        bs2.toString();

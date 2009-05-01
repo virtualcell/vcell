@@ -4457,7 +4457,7 @@ public VCImage getVCImage(Element param, Extent extent) throws XmlParseException
 
 	//getpixels
 	String temp = tempelement.getText();
-	byte[] data = cbit.util.Hex.toBytes(temp); //decode
+	byte[] data = org.vcell.util.Hex.toBytes(temp); //decode
 
 	//create the VCImage object
 	VCImageCompressed newimage = null;	

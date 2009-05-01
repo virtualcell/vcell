@@ -1,10 +1,6 @@
 package cbit.vcell.opt;
 
-import cbit.util.Issue;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
+import org.vcell.util.Issue;
 
 /**
  * Insert the type's description here.

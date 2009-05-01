@@ -13,7 +13,6 @@ import cbit.vcell.units.VCUnitException;
  * All rights reserved.
 ©*/
 import cbit.util.BeanUtils;
-import cbit.util.Issue;
 import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
@@ -24,6 +23,8 @@ import cbit.vcell.parser.*;
 
 import java.beans.PropertyVetoException;
 import java.util.*;
+
+import org.vcell.util.Issue;
 
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -538,26 +539,26 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 		expUnitDef = VCUnitEvaluator.getUnitDefinition(origExp);
 		if (desiredExpUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are null");
-			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",org.vcell.util.Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', evaluated Units are null");
-			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",org.vcell.util.Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),org.vcell.util.Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),cbit.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),org.vcell.util.Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
 		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
 		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		localIssueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
 	}
 	Expression newExp = new Expression(origExp);
 	for (int i=0;i<symbols.length;i++){
@@ -605,12 +606,12 @@ private static Expression getInsideFluxCorrectionExpression(SimulationContext si
  * Creation date: (11/8/2004 3:36:31 PM)
  * @return cbit.util.Issue
  */
-public cbit.util.Issue[] getIssues() {	
+public org.vcell.util.Issue[] getIssues() {	
 	Vector<Issue> issueList = new Vector<Issue>();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
 	issueList.addAll(localIssueList);
-	return (cbit.util.Issue[])cbit.util.BeanUtils.getArray(issueList,cbit.util.Issue.class);
+	return (org.vcell.util.Issue[])cbit.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
 }
 
 

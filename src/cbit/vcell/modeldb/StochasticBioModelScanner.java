@@ -5,7 +5,8 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Vector;
 
-import cbit.util.Issue;
+import org.vcell.util.Issue;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
@@ -75,7 +76,7 @@ public class StochasticBioModelScanner implements VCDatabaseVisitor {
 						bioModel.gatherIssues(modelIssueList);
 						StringBuffer buffer = new StringBuffer("Biomodel Issues ("+modelIssueList.size()+") : ");
 						for (int jj = 0; jj < modelIssueList.size(); jj++){
-							Issue issue = (cbit.util.Issue)modelIssueList.elementAt(jj);
+							Issue issue = (org.vcell.util.Issue)modelIssueList.elementAt(jj);
 							buffer.append("\n<<"+issue.toString()+">>");
 						}
 						// gather mathMapping issues

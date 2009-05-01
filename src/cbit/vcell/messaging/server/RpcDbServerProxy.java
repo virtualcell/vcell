@@ -1,8 +1,8 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.BigString;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.util.BigString;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -680,7 +680,7 @@ public BigString saveMathModelAs(BigString mathModelXML, java.lang.String newNam
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveSimulation(cbit.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
+public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
 	return (BigString)rpc("saveSimulation",new Object[]{user, simulationXML, new Boolean(bForceIndependent)});
 }
 

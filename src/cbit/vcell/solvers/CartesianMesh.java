@@ -7,6 +7,7 @@ import java.util.*;
 import java.io.*;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Hex;
 import org.vcell.util.Matchable;
 
 //import org.apache.commons.httpclient.methods.GetMethod;

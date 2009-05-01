@@ -1,5 +1,7 @@
 package cbit.vcell.model;
 
+import org.vcell.util.Issue;
+
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

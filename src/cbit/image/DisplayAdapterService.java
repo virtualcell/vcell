@@ -11,7 +11,7 @@ import cbit.util.Range;
  * Creation date: (10/3/00 6:07:06 PM)
  * @author: 
  */
-public class DisplayAdapterService implements cbit.util.Stateful, java.beans.PropertyChangeListener {
+public class DisplayAdapterService implements org.vcell.util.Stateful, java.beans.PropertyChangeListener {
 
 	//
 	public class DisplayAdapterServiceState {

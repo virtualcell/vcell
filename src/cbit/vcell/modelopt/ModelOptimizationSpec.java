@@ -455,7 +455,7 @@ private void initializeParameterMappingSpecs() throws cbit.vcell.parser.Expressi
 	java.util.Vector issueList = new java.util.Vector();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
-	cbit.util.Issue[] issues = (cbit.util.Issue[])cbit.util.BeanUtils.getArray(issueList,cbit.util.Issue.class);
+	org.vcell.util.Issue[] issues = (org.vcell.util.Issue[])cbit.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
 	
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		parameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);

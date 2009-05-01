@@ -7,6 +7,9 @@ import cbit.vcell.parser.Expression;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.util.Issue;
+
 import cbit.util.*;
 /**
  * Insert the type's description here.
