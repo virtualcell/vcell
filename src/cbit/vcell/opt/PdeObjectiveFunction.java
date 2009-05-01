@@ -2,7 +2,8 @@ package cbit.vcell.opt;
 import java.io.File;
 import java.util.Vector;
 
-import cbit.util.Issue;
+import org.vcell.util.Issue;
+
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.MathDescription;
@@ -43,7 +44,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 	// check for a data column named "t"
 	//
 	if (referenceData.findVariable("t")<0){
-		issueList.add(new cbit.util.Issue(this,"objectiveFunction","missing time data column with name 't'",cbit.util.Issue.SEVERITY_ERROR));
+		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time data column with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
 	}
 	//
 	// for those columns that are not "t", check for a corresponding math description Function or VolumeVariable
@@ -55,13 +56,13 @@ public void gatherIssues(Vector<Issue> issueList) {
 		}
 		cbit.vcell.math.Variable mathVar = mathDescription.getVariable(variableNames[i]);
 		if (mathVar==null){
-			issueList.add(new cbit.util.Issue(this,"objectiveFunction","variable '"+variableNames[i]+"' not found in math model",cbit.util.Issue.SEVERITY_ERROR));
+			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","variable '"+variableNames[i]+"' not found in math model",org.vcell.util.Issue.SEVERITY_ERROR));
 		}else if (!(mathVar instanceof cbit.vcell.math.VolVariable) && !(mathVar instanceof cbit.vcell.math.Function)){
-			issueList.add(new cbit.util.Issue(this,"objectiveFunction","variable '"+variableNames[i]+"' not a variable or function in math model",cbit.util.Issue.SEVERITY_ERROR));
+			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","variable '"+variableNames[i]+"' not a variable or function in math model",org.vcell.util.Issue.SEVERITY_ERROR));
 		}
 	}
 	if (referenceData.findVariable("t")<0){
-		issueList.add(new cbit.util.Issue(this,"objectiveFunction","missing time variable with name 't'",cbit.util.Issue.SEVERITY_ERROR));
+		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time variable with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
 	}
 	
 }

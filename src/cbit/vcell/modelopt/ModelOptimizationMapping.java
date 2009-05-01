@@ -181,9 +181,9 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	Vector issueList = new Vector();
 	optSpec.gatherIssues(issueList);
 	for (int i = 0; i < issueList.size(); i++){
-		cbit.util.Issue issue = (cbit.util.Issue)issueList.elementAt(i);
+		org.vcell.util.Issue issue = (org.vcell.util.Issue)issueList.elementAt(i);
 		System.out.println(issue.toString());
-		if (issue.getSeverity()==cbit.util.Issue.SEVERITY_ERROR){
+		if (issue.getSeverity()==org.vcell.util.Issue.SEVERITY_ERROR){
 			throw new RuntimeException(issue.getMessage());
 		}
 	}

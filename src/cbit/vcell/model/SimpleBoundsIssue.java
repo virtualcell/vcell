@@ -1,5 +1,6 @@
 package cbit.vcell.model;
-import cbit.util.Issue;
+import org.vcell.util.Issue;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.model.Parameter;
 /**

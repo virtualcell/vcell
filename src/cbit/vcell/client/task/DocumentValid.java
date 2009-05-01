@@ -77,8 +77,8 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 		Vector issueList = new Vector();
 		bioModel.gatherIssues(issueList);
 		for (int i = 0; i < issueList.size(); i++){
-			cbit.util.Issue issue = (cbit.util.Issue)issueList.elementAt(i);
-			if (issue.getSeverity() == cbit.util.Issue.SEVERITY_ERROR){
+			org.vcell.util.Issue issue = (org.vcell.util.Issue)issueList.elementAt(i);
+			if (issue.getSeverity() == org.vcell.util.Issue.SEVERITY_ERROR){
 				throw new Exception("Error: "+issue.getMessage());
 			}
 		}

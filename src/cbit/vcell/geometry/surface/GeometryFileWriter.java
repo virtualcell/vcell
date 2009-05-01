@@ -155,7 +155,7 @@ public static int write(Writer writer, Geometry resampledGeometry) throws Except
 		dos.write(uncompressedRegionIDs,0,uncompressedRegionIDs.length);
 		dos.close();
 		byte[] compressedRegionIDs = bos.toByteArray();
-		writer.write(cbit.util.Hex.toString(compressedRegionIDs)+"\n");
+		writer.write(org.vcell.util.Hex.toString(compressedRegionIDs)+"\n");
 	} else {
 		writer.write("\n");
 	}

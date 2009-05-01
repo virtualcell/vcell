@@ -146,7 +146,7 @@ public void onControlTopicMessage(javax.jms.Message message0) throws javax.jms.J
 			log.print("---onTopicMessage[DataEvent[vcdid=" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
 			fireMessageEvent(event);
 		} else if (msgType.equals(cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
-			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((cbit.util.BigString)message.getObject()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
+			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((org.vcell.util.BigString)message.getObject()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
 		} else{
 			throw new javax.jms.JMSException(this.getClass().getName()+".onControlTopicMessage: Unimplemented message "+message);
 		}

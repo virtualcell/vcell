@@ -6,6 +6,8 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+
+import org.vcell.util.Issue;
 /**
  * Insert the type's description here.
  * Creation date: (2/18/2002 5:07:08 PM)

@@ -1,6 +1,5 @@
-package cbit.util;
+package org.vcell.util;
 
-import org.vcell.util.Matchable;
 
 /**
  * Insert the type's description here.

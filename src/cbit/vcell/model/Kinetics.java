@@ -13,6 +13,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import java.util.*;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 import cbit.util.*;

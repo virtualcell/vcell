@@ -5,13 +5,13 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import com.icl.saxon.functions.UnparsedEntityURI;
 
 import cbit.sql.ConnectionFactory;
-import cbit.util.BigString;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.test.ClientTester;

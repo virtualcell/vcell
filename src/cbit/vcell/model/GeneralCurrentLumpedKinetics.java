@@ -2,7 +2,8 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import cbit.util.Issue;
+import org.vcell.util.Issue;
+
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;

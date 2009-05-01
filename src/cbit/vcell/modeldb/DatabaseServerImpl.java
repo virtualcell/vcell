@@ -1,7 +1,6 @@
 package cbit.vcell.modeldb;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import java.util.Vector;
-import cbit.util.BigString;
 import cbit.image.VCImage;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -16,6 +15,7 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.solver.SolverResultSetInfo;
 import java.sql.*;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 

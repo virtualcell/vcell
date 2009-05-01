@@ -3,15 +3,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
-import cbit.util.BigString;
+
+import org.vcell.util.BigString;
 /**
  * Insert the type's description here.
  * Creation date: (6/27/2005 2:59:47 PM)
  * @author: Anuradha Lakshminarayana
  */
 public class BNGOutput implements java.io.Serializable {
-	private cbit.util.BigString consoleOutput;
-	private cbit.util.BigString[] bng_fileContents;
+	private org.vcell.util.BigString consoleOutput;
+	private org.vcell.util.BigString[] bng_fileContents;
 	private String[] bng_filenames;
 
 /**

@@ -1,7 +1,6 @@
 package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import cbit.util.BigString;
 import cbit.vcell.math.MathDescription;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -27,6 +26,7 @@ import cbit.sql.VersionableType;
 import cbit.util.BeanUtils;
 import java.io.File;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -189,7 +189,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 						cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
 						MathDescription newMathDesc = mathMapping.getMathDescription();
 						String issueString = null;
-						cbit.util.Issue issues[] = mathMapping.getIssues();
+						org.vcell.util.Issue issues[] = mathMapping.getIssues();
 						if (issues!=null && issues.length>0){
 							StringBuffer buffer = new StringBuffer("Issues("+issues.length+"):");
 							for (int l = 0; l < issues.length; l++){
@@ -439,7 +439,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
 					MathDescription newMathDesc = mathMapping.getMathDescription();
 					String issueString = null;
-					cbit.util.Issue issues[] = mathMapping.getIssues();
+					org.vcell.util.Issue issues[] = mathMapping.getIssues();
 					if (issues!=null && issues.length>0){
 						StringBuffer buffer = new StringBuffer("Issues("+issues.length+"):");
 						for (int l = 0; l < issues.length; l++){
@@ -721,7 +721,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
                     MathDescription newMathDesc = mathMapping.getMathDescription();
                     String issueString = null;
-                    cbit.util.Issue issues[] = mathMapping.getIssues();
+                    org.vcell.util.Issue issues[] = mathMapping.getIssues();
                     if (issues != null && issues.length > 0) {
                         StringBuffer buffer = new StringBuffer("Issues(" + issues.length + "):");
                         for (int l = 0; l < issues.length; l++) {

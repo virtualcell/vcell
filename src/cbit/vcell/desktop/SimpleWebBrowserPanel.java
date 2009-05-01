@@ -8,6 +8,9 @@ import java.io.*;
 import java.net.*;
 import java.awt.*;
 import javax.swing.event.*;
+
+import org.vcell.util.SimpleHistory;
+
 import cbit.util.*;
 import cbit.vcell.server.PropertyLoader;
 /**

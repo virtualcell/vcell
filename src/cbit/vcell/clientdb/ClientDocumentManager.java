@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.vcell.util.BigString;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 
@@ -19,7 +20,6 @@ import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 import cbit.sql.VersionableType;
 import cbit.util.BeanUtils;
-import cbit.util.BigString;
 import cbit.util.ISize;
 import cbit.util.Preference;
 import cbit.vcell.biomodel.BioModel;

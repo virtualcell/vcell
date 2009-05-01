@@ -6,6 +6,9 @@ import java.beans.PropertyVetoException;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.util.Issue;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 /**

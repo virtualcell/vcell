@@ -1,4 +1,4 @@
-package cbit.util;
+package org.vcell.util;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.io.ByteArrayOutputStream;
@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+
+import cbit.util.BeanUtils;
 
 /**
  * Insert the type's description here.

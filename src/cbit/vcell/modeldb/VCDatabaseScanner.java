@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -15,7 +16,6 @@ import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.sql.UserInfo;
 import cbit.sql.VersionableType;
-import cbit.util.BigString;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;

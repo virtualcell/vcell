@@ -9,6 +9,7 @@ import java.beans.PropertyVetoException;
 import java.util.*;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;

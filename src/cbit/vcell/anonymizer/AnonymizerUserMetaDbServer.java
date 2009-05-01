@@ -196,8 +196,8 @@ public cbit.vcell.biomodel.BioModelMetaData[] getBioModelMetaDatas(boolean bAll)
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString getBioModelXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("getBioModelXML", new Class[] {org.vcell.util.document.KeyValue.class}, new Object[] {key});
+public org.vcell.util.BigString getBioModelXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("getBioModelXML", new Class[] {org.vcell.util.document.KeyValue.class}, new Object[] {key});
 }
 
 
@@ -279,8 +279,8 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws 
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString getGeometryXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("getGeometryXML", new Class[] {org.vcell.util.document.KeyValue.class}, new Object[] {key});
+public org.vcell.util.BigString getGeometryXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("getGeometryXML", new Class[] {org.vcell.util.document.KeyValue.class}, new Object[] {key});
 }
 
 
@@ -339,8 +339,8 @@ public cbit.vcell.mathmodel.MathModelMetaData[] getMathModelMetaDatas(boolean bA
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString getMathModelXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("getMathModelXML", new Class[]{org.vcell.util.document.KeyValue.class}, new Object[]{key});
+public org.vcell.util.BigString getMathModelXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("getMathModelXML", new Class[]{org.vcell.util.document.KeyValue.class}, new Object[]{key});
 }
 
 
@@ -412,8 +412,8 @@ public cbit.vcell.solver.ode.gui.SimulationStatus getSimulationStatus(org.vcell.
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString getSimulationXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("getSimulationXML", new Class[]{org.vcell.util.document.KeyValue.class}, new Object[]{key});
+public org.vcell.util.BigString getSimulationXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("getSimulationXML", new Class[]{org.vcell.util.document.KeyValue.class}, new Object[]{key});
 }
 
 
@@ -483,8 +483,8 @@ public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws cbit.vcell.
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString getVCImageXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("getVCImageXML", new Class[]{org.vcell.util.document.KeyValue.class}, new Object[]{key});
+public org.vcell.util.BigString getVCImageXML(org.vcell.util.document.KeyValue key) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("getVCImageXML", new Class[]{org.vcell.util.document.KeyValue.class}, new Object[]{key});
 }
 
 
@@ -581,8 +581,8 @@ public void replacePreferences(cbit.util.Preference[] preferences) throws cbit.v
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveBioModel(cbit.util.BigString bioModelXML, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveBioModel", new Class[]{cbit.util.BigString.class, String[].class}, 
+public org.vcell.util.BigString saveBioModel(org.vcell.util.BigString bioModelXML, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveBioModel", new Class[]{org.vcell.util.BigString.class, String[].class}, 
 		new Object[]{bioModelXML, independentSims});
 
 }
@@ -596,8 +596,8 @@ public cbit.util.BigString saveBioModel(cbit.util.BigString bioModelXML, java.la
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveBioModelAs(cbit.util.BigString bioModelXML, String newName, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveBioModelAs", new Class[]{cbit.util.BigString.class, String.class, String[].class}, 
+public org.vcell.util.BigString saveBioModelAs(org.vcell.util.BigString bioModelXML, String newName, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveBioModelAs", new Class[]{org.vcell.util.BigString.class, String.class, String[].class}, 
 		new Object[]{bioModelXML, newName, independentSims});
 
 }
@@ -610,8 +610,8 @@ public cbit.util.BigString saveBioModelAs(cbit.util.BigString bioModelXML, Strin
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveGeometry(cbit.util.BigString geometryXML) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveGeometry", new Class[]{cbit.util.BigString.class}, new Object[]{geometryXML});
+public org.vcell.util.BigString saveGeometry(org.vcell.util.BigString geometryXML) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveGeometry", new Class[]{org.vcell.util.BigString.class}, new Object[]{geometryXML});
 }
 
 
@@ -623,8 +623,8 @@ public cbit.util.BigString saveGeometry(cbit.util.BigString geometryXML) throws 
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveGeometryAs(cbit.util.BigString geometryXML, String newName) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveGeometryAs", new Class[]{cbit.util.BigString.class, String.class}, 
+public org.vcell.util.BigString saveGeometryAs(org.vcell.util.BigString geometryXML, String newName) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveGeometryAs", new Class[]{org.vcell.util.BigString.class, String.class}, 
 		new Object[]{geometryXML, newName});
 
 }
@@ -638,8 +638,8 @@ public cbit.util.BigString saveGeometryAs(cbit.util.BigString geometryXML, Strin
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveMathModel(cbit.util.BigString mathModelXML, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveMathModel", new Class[]{cbit.util.BigString.class, String[].class}, 
+public org.vcell.util.BigString saveMathModel(org.vcell.util.BigString mathModelXML, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveMathModel", new Class[]{org.vcell.util.BigString.class, String[].class}, 
 		new Object[]{mathModelXML, independentSims});
 
 }
@@ -653,8 +653,8 @@ public cbit.util.BigString saveMathModel(cbit.util.BigString mathModelXML, java.
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveMathModelAs(cbit.util.BigString mathModelXML, String newName, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveMathModelAs", new Class[]{cbit.util.BigString.class, String.class, String[].class}, 
+public org.vcell.util.BigString saveMathModelAs(org.vcell.util.BigString mathModelXML, String newName, java.lang.String[] independentSims) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveMathModelAs", new Class[]{org.vcell.util.BigString.class, String.class, String[].class}, 
 		new Object[]{mathModelXML, newName, independentSims});
 }
 
@@ -667,8 +667,8 @@ public cbit.util.BigString saveMathModelAs(cbit.util.BigString mathModelXML, Str
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveSimulation(cbit.util.BigString simulationXML, boolean forceIndependent) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveSimulation", new Class[]{cbit.util.BigString.class, boolean.class}, new Object[]{simulationXML, new Boolean(forceIndependent)});
+public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean forceIndependent) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveSimulation", new Class[]{org.vcell.util.BigString.class, boolean.class}, new Object[]{simulationXML, new Boolean(forceIndependent)});
 }
 
 
@@ -680,8 +680,8 @@ public cbit.util.BigString saveSimulation(cbit.util.BigString simulationXML, boo
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveVCImage(cbit.util.BigString vcImageXML) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveVCImage", new Class[]{cbit.util.BigString.class}, new Object[]{vcImageXML});
+public org.vcell.util.BigString saveVCImage(org.vcell.util.BigString vcImageXML) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveVCImage", new Class[]{org.vcell.util.BigString.class}, new Object[]{vcImageXML});
 }
 
 
@@ -693,7 +693,7 @@ public cbit.util.BigString saveVCImage(cbit.util.BigString vcImageXML) throws cb
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveVCImageAs(cbit.util.BigString vcImageXML, String newName) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.BigString)remoteCall("saveVCImageAs", new Class[]{cbit.util.BigString.class, String.class}, new Object[]{vcImageXML, newName});
+public org.vcell.util.BigString saveVCImageAs(org.vcell.util.BigString vcImageXML, String newName) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.BigString)remoteCall("saveVCImageAs", new Class[]{org.vcell.util.BigString.class, String.class}, new Object[]{vcImageXML, newName});
 }
 }

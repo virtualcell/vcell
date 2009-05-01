@@ -1,8 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
-import cbit.util.Issue;
 import cbit.vcell.client.*;
 import cbit.vcell.mapping.*;
 import javax.swing.*;
+
+import org.vcell.util.Issue;
 /**
  * Insert the type's description here.
  * Creation date: (6/3/2004 10:10:46 PM)
@@ -398,7 +399,7 @@ public void updateMath() {
 		//
 		// inform user if any issues
 		//
-		cbit.util.Issue issues[] = mathMapping.getIssues();
+		org.vcell.util.Issue issues[] = mathMapping.getIssues();
 		if (issues!=null && issues.length>0){
 			StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
 			int issueCount = 0;

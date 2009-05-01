@@ -106,7 +106,7 @@ public org.jdom.Element getXML(cbit.image.VCImage param) throws XmlParseExceptio
 		imagedata.setAttribute(XMLTags.ZAttrTag, String.valueOf(param.getNumZ()));
 		imagedata.setAttribute(XMLTags.CompressedSizeTag, String.valueOf(compressedPixels.length));
 		//Get imagedata content
-		imagedata.addContent(cbit.util.Hex.toString(compressedPixels)); //encode
+		imagedata.addContent(org.vcell.util.Hex.toString(compressedPixels)); //encode
 		//Add imagedata to VCImage element
 		image.addContent(imagedata);
 		//Add PixelClass elements

@@ -1,11 +1,11 @@
 package cbit.vcell.server;
-import cbit.util.BigString;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.rmi.*;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.*;

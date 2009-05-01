@@ -1,6 +1,5 @@
 package cbit.vcell.modeldb;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.util.BigString;
 import java.io.*;
 import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.field.FieldDataDBOperationResults;
@@ -17,6 +16,7 @@ import cbit.vcell.solver.SolverResultSetInfo;
 import java.rmi.*;
 import java.sql.*;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 

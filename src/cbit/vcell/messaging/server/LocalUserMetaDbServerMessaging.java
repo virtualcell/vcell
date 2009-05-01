@@ -1,7 +1,6 @@
 package cbit.vcell.messaging.server;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.util.BigString;
 import cbit.image.VCImage;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -15,6 +14,7 @@ import cbit.vcell.solver.SolverResultSetInfo;
 import java.rmi.*;
 import java.sql.*;
 
+import org.vcell.util.BigString;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -1121,7 +1121,7 @@ public BigString saveMathModelAs(BigString mathModelXML, String newName, String 
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveSimulation(cbit.util.BigString simulationXML, boolean bForceIndependent) throws cbit.vcell.server.DataAccessException {
+public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws cbit.vcell.server.DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveSimulation()");
 		BigString savedSimulationXML = dbServerProxy.saveSimulation(simulationXML,bForceIndependent);
