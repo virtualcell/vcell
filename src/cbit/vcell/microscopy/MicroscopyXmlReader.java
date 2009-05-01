@@ -219,7 +219,7 @@ private UShortImage getUShortImage(Element param) throws XmlParseException{
 	int UNCOMPRESSED_SIZE_BYTES = aNumX*aNumY*aNumZ*BYTES_PER_SHORT;
 	//getpixels
 	String hexEncodedBytes = tempelement.getText();
-	byte[] rawBytes = cbit.util.Hex.toBytes(hexEncodedBytes);
+	byte[] rawBytes = org.vcell.util.Hex.toBytes(hexEncodedBytes);
 	ByteArrayInputStream rawByteArrayInputStream = new ByteArrayInputStream(rawBytes);
 	InputStream rawInputStream = rawByteArrayInputStream;
 	if(compressSize != UNCOMPRESSED_SIZE_BYTES){
