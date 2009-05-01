@@ -4,7 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
-import cbit.util.Executable;
+import org.vcell.util.Executable;
+
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.*;
 import cbit.vcell.xml.XmlHelper;

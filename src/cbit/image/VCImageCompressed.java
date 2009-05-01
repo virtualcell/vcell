@@ -29,7 +29,7 @@ public VCImageCompressed(VCImage vcimage) throws ImageException {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public VCImageCompressed(cbit.sql.Version aVersion, byte pixels[], cbit.util.Extent extent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public VCImageCompressed(cbit.sql.Version aVersion, byte pixels[], org.vcell.util.Extent extent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aVersion,extent,aNumX,aNumY,aNumZ);
 	this.compressedPixels = pixels;
 	initPixelClasses();

@@ -6,13 +6,14 @@ package cbit.vcell.modeldb;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.BeanUtils;
-import cbit.util.Preference;
-import cbit.util.TokenMangler;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Preference;
+import org.vcell.util.TokenMangler;
 
 /**
  * This type was created in VisualAge.

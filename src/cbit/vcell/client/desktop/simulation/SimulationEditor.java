@@ -245,7 +245,7 @@ private void makeBoldTitle() {
  */
 public void prepareToEdit(cbit.vcell.solver.Simulation simulation) {
 	try {
-		Simulation clonedSimulation = (Simulation)cbit.util.BeanUtils.cloneSerializable(simulation);
+		Simulation clonedSimulation = (Simulation)org.vcell.util.BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
 		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
 		getMeshSpecificationPanel1().setMeshSpecification(clonedSimulation == null ? null : clonedSimulation.getMeshSpecification());

@@ -4,10 +4,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.SimulationVersion;
-import cbit.util.BeanUtils;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
@@ -85,7 +85,7 @@ private String printComparisonReport(SimulationComparisonSummary simCompSummary,
 	reportStrBuffer.append("\t\tPassed Variables : \n");
 	// Check if varSummary exists in failed summaries list. If not, simulation passed.
 	for (int m = 0; m < allVarSummaries.length; m++) {
-		if (!cbit.util.BeanUtils.arrayContains(failedVarSummaries, allVarSummaries[m])) {
+		if (!org.vcell.util.BeanUtils.arrayContains(failedVarSummaries, allVarSummaries[m])) {
 			reportStrBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 		}
 	}

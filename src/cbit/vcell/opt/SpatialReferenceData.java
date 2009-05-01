@@ -1,6 +1,6 @@
 package cbit.vcell.opt;
 
-import cbit.util.ISize;
+import org.vcell.util.ISize;
 
 public class SpatialReferenceData implements ReferenceData, java.io.Serializable {
 	private String variableNames[] = null;

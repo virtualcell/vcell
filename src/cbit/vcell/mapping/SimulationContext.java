@@ -8,13 +8,13 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Version;
-import cbit.util.BeanUtils;
-import cbit.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
@@ -599,7 +599,7 @@ public cbit.vcell.modelopt.AnalysisTask copyAnalysisTask(cbit.vcell.modelopt.Ana
 		boolean found = true;
 		while (found) {
 			found = false;
-			parameterEstimationName = cbit.util.TokenMangler.getNextEnumeratedToken(parameterEstimationName);
+			parameterEstimationName = org.vcell.util.TokenMangler.getNextEnumeratedToken(parameterEstimationName);
 			for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
 				if (analysisTasks[i].getName().equals(parameterEstimationName)){
 					found = true;
@@ -1197,7 +1197,7 @@ private void refreshCharacteristicSize() throws PropertyVetoException {
 		setCharacteristicSize(null);
 		return;
 	}
-	cbit.util.Extent extent = geo.getExtent();
+	org.vcell.util.Extent extent = geo.getExtent();
 	
 	if (characteristicSize == null){
 		//

@@ -43,7 +43,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 			return children;
 		}
 		public String getName() {
-			return cbit.util.TokenMangler.fixTokenStrict(ElectricalDevice.this.getName());
+			return org.vcell.util.TokenMangler.fixTokenStrict(ElectricalDevice.this.getName());
 		}
 		public cbit.vcell.parser.NameScope getParent() {
 			if (ElectricalDevice.this.mathMapping != null){

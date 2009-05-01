@@ -25,7 +25,7 @@ public static void main(String[] args) {
 		}
 		MathExecutable mathExecutable = new MathExecutable(args);
 		mathExecutable.start();
-		while (mathExecutable.getStatus().equals(cbit.util.ExecutableStatus.RUNNING)){
+		while (mathExecutable.getStatus().equals(org.vcell.util.ExecutableStatus.RUNNING)){
 		}
 		System.out.println("finished, return code "+mathExecutable.getExitValue());
 		System.out.println("STDOUT");

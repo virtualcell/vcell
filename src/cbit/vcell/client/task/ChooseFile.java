@@ -8,6 +8,8 @@ import javax.swing.*;
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
 import org.vcell.sbml.gui.SimulationSelectionPanel;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
@@ -183,7 +185,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) &&
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) &&
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription())) {
-				String[] applicationNames = (String[])cbit.util.BeanUtils.getArray(applicableAppNameList,String.class);
+				String[] applicationNames = (String[])org.vcell.util.BeanUtils.getArray(applicableAppNameList,String.class);
 				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, applicationNames, "Please select Application");
 				if (choice == null) {
 					// user cancelled

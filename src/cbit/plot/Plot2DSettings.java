@@ -3,7 +3,7 @@ package cbit.plot;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Range;
+import org.vcell.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (5/25/2001 3:53:18 PM)

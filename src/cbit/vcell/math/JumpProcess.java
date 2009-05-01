@@ -2,9 +2,9 @@ package cbit.vcell.math;
 import cbit.vcell.parser.Expression;
 import java.util.*;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 
-import cbit.util.CommentStringTokenizer;
 public class JumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName=null;
 	private cbit.vcell.parser.Expression  probabilityRate=null;

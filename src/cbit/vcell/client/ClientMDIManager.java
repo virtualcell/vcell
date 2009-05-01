@@ -8,6 +8,8 @@ import java.awt.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
 
+import org.vcell.util.BeanUtils;
+
 import java.util.*;
 import java.awt.event.*;
 /**

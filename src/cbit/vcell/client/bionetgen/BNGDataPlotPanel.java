@@ -417,7 +417,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	}
 	
 	String[] labels = {"", "t", ""};	
-	String[] names = (String[])cbit.util.BeanUtils.getArray(nameList,String.class);	
+	String[] names = (String[])org.vcell.util.BeanUtils.getArray(nameList,String.class);	
 
 	cbit.plot.Plot2D plot2D = new cbit.plot.SingleXPlot2D(null,"Time", names, dataValues,labels, visibleFlags);
 	getplotPane().setPlot2D(plot2D);

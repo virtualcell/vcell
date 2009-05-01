@@ -39,6 +39,8 @@ import java.util.List;
 import javax.swing.*;
 
 import org.jdom.Element;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 
 import cbit.vcell.xml.XMLTags;
 /**

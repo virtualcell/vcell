@@ -71,7 +71,7 @@ protected static final void pasteReactionSteps(ReactionStep[] reactionStepsArr,M
 		Structure currentStruct = struct;
 		String copiedStructName = reactionStepsArr[counter].getStructure().getName();
 		do{
-			ReactionStep newReactionStep = (ReactionStep)cbit.util.BeanUtils.cloneSerializable(reactionStepsArr[counter]);
+			ReactionStep newReactionStep = (ReactionStep)org.vcell.util.BeanUtils.cloneSerializable(reactionStepsArr[counter]);
 			newReactionStep.refreshDependencies();
 			if(!newReactionStep.getStructure().getClass().equals(struct.getClass())){
 				throw new Exception("Copied RectionStep structure type="+newReactionStep.getStructure().getClass().getName()+
@@ -93,7 +93,7 @@ protected static final void pasteReactionSteps(ReactionStep[] reactionStepsArr,M
 			}
 			String newName = newReactionStep.getName();
 			while(model.getReactionStep(newName) != null){
-				newName = cbit.util.TokenMangler.getNextEnumeratedToken(newName);
+				newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
 			}
 			newReactionStep.setName(newName);
 			newReactionStep.setStructure(currentStruct);
@@ -196,7 +196,7 @@ protected static final SpeciesContext pasteSpecies(Species species,Model model, 
 			if(bNew){
 				String newName = species.getCommonName();
 				while(model.getSpecies(newName) != null){
-					newName = cbit.util.TokenMangler.getNextEnumeratedToken(newName);
+					newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
 				}
 				newSpecies = new Species(newName,species.getAnnotation(),species.getDBSpecies());
 				model.addSpecies(newSpecies);
@@ -291,7 +291,7 @@ protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model
 	//
 	getDialogOwner(myGraphPane).remove(createSpeciesContextDialog);
 	getDialogOwner(myGraphPane).add(createSpeciesContextDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(createSpeciesContextDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(createSpeciesContextDialog, getDialogOwner(myGraphPane));
 	createSpeciesContextDialog.setVisible(true);
 }
 
@@ -311,7 +311,7 @@ protected void showEditSpeciesDialog(GraphPane myGraphPane,SpeciesContext specie
 	//
 	getDialogOwner(myGraphPane).remove(editSpeciesDialog);
 	getDialogOwner(myGraphPane).add(editSpeciesDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(editSpeciesDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(editSpeciesDialog, getDialogOwner(myGraphPane));
 	editSpeciesDialog.setVisible(true);
 }
 
@@ -332,7 +332,7 @@ protected void showCreateGlobalParamDialog(GraphPane myGraphPane, final Model mo
 	//
 	getDialogOwner(myGraphPane).remove(createGlobalParamDialog);
 	getDialogOwner(myGraphPane).add(createGlobalParamDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(createGlobalParamDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(createGlobalParamDialog, getDialogOwner(myGraphPane));
 	createGlobalParamDialog.setVisible(true);
 }
 
@@ -366,7 +366,7 @@ public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model
 	featureDialog.setLocation(location);
 	//
 	getDialogOwner(myGraphPane).add(featureDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(featureDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(featureDialog, getDialogOwner(myGraphPane));
 	featureDialog.show();
 }
 
@@ -383,7 +383,7 @@ public static final void showMembranePropertiesDialog(GraphPane myGraphPane,Memb
 	membraneDialog.setTitle("Membrane Dialog for "+membrane.getName());
 	membraneDialog.setLocation(location);
 	getDialogOwner(myGraphPane).add(membraneDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(membraneDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(membraneDialog, getDialogOwner(myGraphPane));
 	membraneDialog.show();
 }
 }

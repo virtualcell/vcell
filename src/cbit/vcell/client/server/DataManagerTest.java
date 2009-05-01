@@ -39,7 +39,7 @@ public DataManagerTest(cbit.vcell.math.AnnotatedFunction argFunctions[], double 
  * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
 public void addFunction(cbit.vcell.math.AnnotatedFunction argFunction) throws cbit.vcell.server.DataAccessException {
-	functions = (cbit.vcell.math.AnnotatedFunction[])cbit.util.BeanUtils.addElement(functions,argFunction);
+	functions = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.addElement(functions,argFunction);
 }
 /**
  * adds an array of named <code>Function</code>s to the list of variables that are availlable for this Simulation.
@@ -49,7 +49,7 @@ public void addFunction(cbit.vcell.math.AnnotatedFunction argFunction) throws cb
  * @throws cbit.vcell.server.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
  */
 public void addFunctions(cbit.vcell.math.AnnotatedFunction[] argFunctions) throws cbit.vcell.server.DataAccessException {
-	functions = (cbit.vcell.math.AnnotatedFunction[])cbit.util.BeanUtils.addElements(functions,argFunctions);
+	functions = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.addElements(functions,argFunctions);
 }
 /**
  * retrieves a list of data names (state variables and functions) defined for this Simulation.
@@ -197,7 +197,7 @@ public static DataManagerTest getPDEExample1() {
 		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME,false));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
-		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])cbit.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);
+		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);
 
 		final double END_TIME = 1.0;
 		final int NUM_TIMES = 101;
@@ -234,7 +234,7 @@ public static DataManagerTest getPDEExample2() {
 		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME,false));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
-		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])cbit.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);
+		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);
 
 		final double END_TIME = 1.0;
 		final int NUM_TIMES = 101;
@@ -358,6 +358,6 @@ public cbit.vcell.server.VCDataIdentifier getVCDataIdentifier() {
  * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
  */
 public void removeFunction(cbit.vcell.math.AnnotatedFunction argFunction) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.PermissionException {
-	functions = (cbit.vcell.math.AnnotatedFunction[])cbit.util.BeanUtils.removeElement(functions,argFunction);
+	functions = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.removeElement(functions,argFunction);
 }
 }

@@ -418,7 +418,7 @@ private void getImageRegionsForVCImage(Connection con, VCImage vcImage) throws S
 			}
 			vcpcVector.addElement(vcpc);
 		}
-		VCPixelClass vcPixelClasses[] = (VCPixelClass[])cbit.util.BeanUtils.getArray(vcpcVector,VCPixelClass.class);
+		VCPixelClass vcPixelClasses[] = (VCPixelClass[])org.vcell.util.BeanUtils.getArray(vcpcVector,VCPixelClass.class);
 		vcImage.setPixelClasses(vcPixelClasses);
 		
 	} catch (PropertyVetoException e) {
@@ -640,7 +640,7 @@ System.out.println(sql);
 			VolumeGeometricRegion volumeRegion = geoRegionTable.getVolumeRegion(rset,geom,log);
 			regionList.add(volumeRegion);
 		}
-		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])cbit.util.BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
+		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
 		
 		//
 		// read surface regions from GeometricRegionTable
@@ -667,7 +667,7 @@ System.out.println(sql);
 		//
 		// set regions onto the geometrySurfaceDescription
 		//
-		GeometricRegion regions[] = (GeometricRegion[])cbit.util.BeanUtils.getArray(regionList,GeometricRegion.class);
+		GeometricRegion regions[] = (GeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
 		geom.getGeometrySurfaceDescription().setGeometricRegions(regions);
 		
 		

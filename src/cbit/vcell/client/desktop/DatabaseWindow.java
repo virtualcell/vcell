@@ -4,7 +4,9 @@ import java.text.*;
 import cbit.vcell.client.server.*;
 import java.awt.*;
 import javax.swing.*;
-import cbit.util.BeanUtils;
+
+import org.vcell.util.BeanUtils;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 /**

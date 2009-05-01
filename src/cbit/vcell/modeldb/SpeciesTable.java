@@ -40,7 +40,7 @@ public Species getSpecies(java.sql.ResultSet rset, SessionLog log,DBSpecies dbSp
 	
 	String annotation = rset.getString(SpeciesTable.table.annotation.toString());
 	if (annotation!=null){
-		annotation = cbit.util.TokenMangler.getSQLRestoredString(annotation);
+		annotation = org.vcell.util.TokenMangler.getSQLRestoredString(annotation);
 	}
 	String cNameStr = rset.getString(SpeciesTable.table.commonName.toString());
 	Species species = new Species(cNameStr,annotation,dbSpecies);
@@ -62,7 +62,7 @@ public String getSQLValueList(KeyValue key, KeyValue ownerKey, Species species) 
 	buffer.append("'"+species.getCommonName()+"'"+",");
 	KeyValue dbSpeciesKey = (species.getDBSpecies() == null ? null :species.getDBSpecies().getDBSpeciesKey());
 	buffer.append((dbSpeciesKey != null?dbSpeciesKey.toString():"null")+",");
-	buffer.append((species.getAnnotation() != null ? "'"+cbit.util.TokenMangler.getSQLEscapedString(species.getAnnotation())+"'" : "null")+")");
+	buffer.append((species.getAnnotation() != null ? "'"+org.vcell.util.TokenMangler.getSQLEscapedString(species.getAnnotation())+"'" : "null")+")");
 	
 	return buffer.toString();
 }

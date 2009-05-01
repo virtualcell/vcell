@@ -68,7 +68,7 @@ public double getEstimatedMemorySizeMB() {
 	}	
 	long numMeshPoints = 1;
 	if (simulation.getMathDescription().getGeometry().getDimension() > 0) {
-		cbit.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
+		org.vcell.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
 		numMeshPoints = samplingSize.getX()*samplingSize.getY()*samplingSize.getZ();
 	}
 	

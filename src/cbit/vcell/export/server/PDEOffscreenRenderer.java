@@ -129,8 +129,8 @@ public int[] getPixelsRGB() {
 				new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
 			curveRenderer.setNormalAxis(getNormalAxis());
 
-			cbit.util.Origin origin = mesh.getOrigin();
-			cbit.util.Extent extent = mesh.getExtent();
+			org.vcell.util.Origin origin = mesh.getOrigin();
+			org.vcell.util.Extent extent = mesh.getExtent();
 			curveRenderer.setWorldOrigin(new cbit.vcell.geometry.Coordinate(origin.getX(),origin.getY(),origin.getZ()));
 			double pixelScaleX = extent.getX()/mesh.getSizeX();
 			double pixelScaleY = extent.getY()/mesh.getSizeY();
@@ -142,7 +142,7 @@ public int[] getPixelsRGB() {
 			//Hashtable curveHash = meshDisplayAdapter.getCurvesFromMembranes(getNormalAxis(),getSlice(),membraneValues);
 			Hashtable curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 			if (curvesAndMembraneIndexes!=null){
-				Curve curves[] = (Curve[])cbit.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
+				Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
 				for (int i=0;curves!=null && i<curves.length;i++){
 					curveRenderer.addCurve(curves[i]);
 					curveRenderer.renderPropertySegmentColors(curves[i],getCurveColors(curvesAndMembraneIndexes,curves[i],getDisplayAdapterService(),meshDisplayAdapter));
@@ -177,8 +177,8 @@ public int[] getPixelsRGB() {
 			new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
 		curveRenderer.setNormalAxis(getNormalAxis());
 
-		cbit.util.Origin origin = mesh.getOrigin();
-		cbit.util.Extent extent = mesh.getExtent();
+		org.vcell.util.Origin origin = mesh.getOrigin();
+		org.vcell.util.Extent extent = mesh.getExtent();
 		curveRenderer.setWorldOrigin(new cbit.vcell.geometry.Coordinate(origin.getX(),origin.getY(),origin.getZ()));
 		double pixelScaleX = extent.getX()/mesh.getSizeX();
 		double pixelScaleY = extent.getY()/mesh.getSizeY();
@@ -188,7 +188,7 @@ public int[] getPixelsRGB() {
 		//Hashtable curveHash = meshDisplayAdapter.getCurvesFromMembranes(getNormalAxis(),getSlice(),membraneData);
 		Hashtable curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 		if (curvesAndMembraneIndexes!=null){
-			Curve curves[] = (Curve[])cbit.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
+			Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
 			for (int i=0;curves!=null && i<curves.length;i++){
 				curveRenderer.addCurve(curves[i]);
 				curveRenderer.renderPropertySegmentColors(curves[i],getCurveColors(curvesAndMembraneIndexes,curves[i],getDisplayAdapterService(),meshDisplayAdapter));

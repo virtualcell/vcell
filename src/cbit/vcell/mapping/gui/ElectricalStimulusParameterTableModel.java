@@ -2,6 +2,9 @@ package cbit.vcell.mapping.gui;
 
 import cbit.vcell.model.*;
 import java.util.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.model.Model;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -10,7 +13,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameter;

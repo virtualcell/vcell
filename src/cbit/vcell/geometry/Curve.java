@@ -345,7 +345,7 @@ public boolean isClosed() {
  * @param c1 cbit.vcell.geometry.Coordinate
  * @param delta cbit.vcell.geometry.Coordinate
  */
-public boolean isInside(cbit.util.Origin origin, cbit.util.Extent extent, Coordinate delta) {
+public boolean isInside(org.vcell.util.Origin origin, org.vcell.util.Extent extent, Coordinate delta) {
 	//
 	// This util. checks sample of this curve that are straight line segments and that if their endpoints
 	// are inside the the whole thing is inside.

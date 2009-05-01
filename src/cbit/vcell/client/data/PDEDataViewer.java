@@ -15,6 +15,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+import org.vcell.util.Range;
 import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TSJobResultsSpaceStats;
 import org.vcell.util.TimeSeriesJobResults;
@@ -2539,7 +2542,7 @@ protected void showComponentInFrame(final Component comp,final String title) {
 					new JInternalFrame(title, true, true, true, true);
 				frame.getContentPane().add(comp);
 				frame.pack();
-				cbit.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+				org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
 				DocumentWindowManager.showFrame(frame,jDesktopPane);		
 			}else{
 				final Frame dialogOwner = (Frame)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, Frame.class);
@@ -2548,7 +2551,7 @@ protected void showComponentInFrame(final Component comp,final String title) {
 
 				frame.getContentPane().add(comp);
 				frame.pack();
-				cbit.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+				org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
 				frame.setVisible(true);
 			}
 			return null;

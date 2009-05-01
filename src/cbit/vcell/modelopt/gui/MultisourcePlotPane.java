@@ -461,8 +461,8 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	
 	
 	String[] labels = {"", "t", ""};	
-	String[] names = (String[])cbit.util.BeanUtils.getArray(nameList,String.class);	
-	cbit.plot.PlotData[] plotDatas = (cbit.plot.PlotData[])cbit.util.BeanUtils.getArray(plotDataList,cbit.plot.PlotData.class);
+	String[] names = (String[])org.vcell.util.BeanUtils.getArray(nameList,String.class);	
+	cbit.plot.PlotData[] plotDatas = (cbit.plot.PlotData[])org.vcell.util.BeanUtils.getArray(plotDataList,cbit.plot.PlotData.class);
 	boolean visibleFlags[] = new boolean[plotDatas.length];
 	for (int i = 0; i < visibleFlags.length; i++){
 		visibleFlags[i] = true;
@@ -533,7 +533,7 @@ public String getModelDataLabelPrefix() {
 public void setModelDataLabelPrefix(String modelDataLabelPrefix) {
 	this.modelDataLabelPrefix = modelDataLabelPrefix;
 }
-public void forceXYRange(cbit.util.Range xRange,cbit.util.Range yRange) {
+public void forceXYRange(org.vcell.util.Range xRange,org.vcell.util.Range yRange) {
 	getplotPane().forceXYRange(xRange, yRange);
 }
 }

@@ -11,6 +11,7 @@ import java.util.*;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.model.*;

@@ -7,6 +7,9 @@ import cbit.util.*;
 import cbit.vcell.math.Constant;
 import java.awt.Color;
 import java.util.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.solver.*;
 /**
  * Insert the class' description here.

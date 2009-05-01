@@ -112,7 +112,7 @@ void reconcileVarNames(cbit.vcell.math.MathDescription mathDesc) {
 				(cbit.vcell.parser.SymbolTableEntry[])mathToBiologicalHash.put(var,new cbit.vcell.parser.SymbolTableEntry[] {biologicalSymbol});
 			if(previousBiologicalSymbolArr != null){
 				cbit.vcell.parser.SymbolTableEntry[] steArr =
-					(cbit.vcell.parser.SymbolTableEntry[])cbit.util.BeanUtils.addElement(previousBiologicalSymbolArr,biologicalSymbol);
+					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.addElement(previousBiologicalSymbolArr,biologicalSymbol);
 				mathToBiologicalHash.put(var,steArr);
 			}
 		}

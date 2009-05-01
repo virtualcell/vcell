@@ -12,7 +12,8 @@ import java.io.PrintWriter;
 import cbit.vcell.math.Function;
 import java.util.Vector;
 import java.io.FileInputStream;
-import cbit.util.TokenMangler;
+
+import org.vcell.util.TokenMangler;
 /**
  * Insert the type's description here.
  * Creation date: (1/12/2004 11:06:55 AM)

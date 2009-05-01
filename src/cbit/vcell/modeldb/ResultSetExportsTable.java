@@ -91,10 +91,10 @@ public static cbit.vcell.export.server.ExportLog[] getExportLogs(ResultSet rset,
 			}
 			
 			String exportFormat =
-				cbit.util.TokenMangler.getSQLRestoredString(
+				org.vcell.util.TokenMangler.getSQLRestoredString(
 					rset.getString(ResultSetExportsTable.table.exportFormat.toString()));
 			String exportLocation =
-				cbit.util.TokenMangler.getSQLRestoredString(
+				org.vcell.util.TokenMangler.getSQLRestoredString(
 					rset.getString(ResultSetExportsTable.table.exportURL.toString()));
 			java.net.URL exportLocationURL = null;
 			try{
@@ -180,8 +180,8 @@ public static String getSQLValueList(KeyValue simKey, String exportFormat,String
 	buffer.append(Table.NewSEQ+",");
 	buffer.append(simKey+",");
 	buffer.append("SYSDATE"+",");
-	buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(exportFormat)+"',");
-	buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(exportURL)+"'");
+	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(exportFormat)+"',");
+	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(exportURL)+"'");
 	buffer.append(")");
 
 	return buffer.toString();

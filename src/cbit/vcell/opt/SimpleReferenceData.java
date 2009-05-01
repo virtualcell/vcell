@@ -146,7 +146,7 @@ public int findColumn(java.lang.String colName) {
  * @return cbit.vcell.opt.SimpleConstraintData
  * @param tokens cbit.vcell.math.CommentStringTokenizer
  */
-public static SimpleReferenceData fromVCML(cbit.util.CommentStringTokenizer tokens) throws DataAccessException {
+public static SimpleReferenceData fromVCML(org.vcell.util.CommentStringTokenizer tokens) throws DataAccessException {
 	String token = tokens.nextToken();
 	if (!token.equals("SimpleReferenceData")){
 		throw new DataAccessException("unexpected identifier '"+token+"', expecting '"+"Data"+"'");

@@ -299,7 +299,7 @@ public MathModelInfo[] getMathModelInfos() throws DataAccessException;
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.Preference[] getPreferences() throws DataAccessException;
+org.vcell.util.Preference[] getPreferences() throws DataAccessException;
 
 
 /**
@@ -456,7 +456,7 @@ MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo,String user) throw
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-void replacePreferences(cbit.util.Preference[] preferences) throws DataAccessException;
+void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException;
 
 
 /**

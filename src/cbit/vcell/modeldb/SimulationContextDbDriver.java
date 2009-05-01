@@ -1,5 +1,4 @@
 package cbit.vcell.modeldb;
-import cbit.util.TokenMangler;
 import cbit.vcell.model.Feature;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -12,6 +11,7 @@ import cbit.vcell.math.BoundaryConditionType;
 import java.sql.*;
 import java.sql.Statement;
 
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -341,12 +341,12 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 				double posY = rset.getBigDecimal(stimulusTable.positionY.toString()).doubleValue();
 				double posZ = rset.getBigDecimal(stimulusTable.positionZ.toString()).doubleValue();
 
-				cbit.util.CommentStringTokenizer paramsCST = null;
+				org.vcell.util.CommentStringTokenizer paramsCST = null;
 				String paramsS = rset.getString(StimulusTable.table.params.toString());
 				if(!rset.wasNull()){
 					paramsCST =
-						new cbit.util.CommentStringTokenizer(
-							cbit.util.TokenMangler.getSQLRestoredString(paramsS)
+						new org.vcell.util.CommentStringTokenizer(
+							org.vcell.util.TokenMangler.getSQLRestoredString(paramsS)
 						);
 				}
 				
@@ -360,13 +360,13 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					Electrode electrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
 					CurrentClampStimulus stimulus = new CurrentClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
-					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])cbit.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else if (stimulusType == StimulusTable.VOLTAGE_CLAMP_STIMULUS){
 					Electrode electrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
 					VoltageClampStimulus stimulus = new VoltageClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
-					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])cbit.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else{
 					throw new DataAccessException("unknown stimulusType <"+stimulusType+">");

@@ -12,8 +12,6 @@ import cbit.vcell.units.VCUnitException;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.BeanUtils;
-import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -24,7 +22,9 @@ import cbit.vcell.parser.*;
 import java.beans.PropertyVetoException;
 import java.util.*;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.TokenMangler;
 
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -96,7 +96,7 @@ public class MathMapping implements ScopedSymbolTable {
 			return nameScopes;
 		}
 		public String getName() {
-			return "MathMapping_for_"+cbit.util.TokenMangler.fixTokenStrict(simContext.getName());
+			return "MathMapping_for_"+org.vcell.util.TokenMangler.fixTokenStrict(simContext.getName());
 		}
 		public cbit.vcell.parser.NameScope getParent() {
 			//System.out.println("MathMappingNameScope.getParent() returning null ... no parent");
@@ -306,7 +306,7 @@ MathMapping.MathMappingParameter addMathMappingParameter(String name, Expression
 		return previousParameter;
 	}
 	expression.bindExpression(this);
-	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])cbit.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])org.vcell.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -332,7 +332,7 @@ MathMapping.ProbabilityParameter addProbabilityParameter(String name, Expression
 		return (MathMapping.ProbabilityParameter)previousParameter;
 	}
 	//expression.bindExpression(this);
-	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])cbit.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])org.vcell.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -611,7 +611,7 @@ public org.vcell.util.Issue[] getIssues() {
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
 	issueList.addAll(localIssueList);
-	return (org.vcell.util.Issue[])cbit.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
+	return (org.vcell.util.Issue[])org.vcell.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
 }
 
 
@@ -1387,7 +1387,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 	//
 	for (int i = 0; i < newMathMappingParameters.length; i++){
 		if (newMathMappingParameters[i].getRole() == PARAMETER_ROLE_KFLUX){
-			newMathMappingParameters = (MathMappingParameter[])cbit.util.BeanUtils.removeElement(newMathMappingParameters,newMathMappingParameters[i]);
+			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.removeElement(newMathMappingParameters,newMathMappingParameters[i]);
 		}		
 	}
 	
@@ -1407,7 +1407,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
 			String insideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+insideFeature.getNameScope().getName();
 			KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,insideFeature);
-			newMathMappingParameters = (MathMappingParameter[])cbit.util.BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
 
 			//
 			// add "outside" flux correction
@@ -1417,7 +1417,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
 			String outsideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+outsideFeature.getNameScope().getName();
 			KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,outsideFeature);
-			newMathMappingParameters = (MathMappingParameter[])cbit.util.BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
 		}
 	}
 	try {
@@ -2627,7 +2627,7 @@ private void refreshVariables() throws MappingException {
  * @param mathMappingParameter cbit.vcell.mapping.MathMapping.MathMappingParameter
  */
 void removeMathMappingParameter(MathMapping.MathMappingParameter mathMappingParameter) throws java.beans.PropertyVetoException {
-	MathMappingParameter newMathMappingParameters[] = (MathMappingParameter[])cbit.util.BeanUtils.removeElement(fieldMathMappingParameters,mathMappingParameter);
+	MathMappingParameter newMathMappingParameters[] = (MathMappingParameter[])org.vcell.util.BeanUtils.removeElement(fieldMathMappingParameters,mathMappingParameter);
 	setMathMapppingParameters(newMathMappingParameters);
 }
 

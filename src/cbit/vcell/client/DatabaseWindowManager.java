@@ -30,7 +30,10 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import javax.swing.filechooser.FileFilter;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.task.*;

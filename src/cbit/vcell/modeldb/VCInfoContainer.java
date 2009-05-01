@@ -126,7 +126,7 @@ private void inflate() {
 
 	try {
 		//Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
-		Object objArray[] = (Object[])cbit.util.BeanUtils.fromCompressedSerialized(compressedBytes);
+		Object objArray[] = (Object[])org.vcell.util.BeanUtils.fromCompressedSerialized(compressedBytes);
 		user = (User)objArray[0];
 		bioModelInfos = (BioModelInfo[])objArray[1];
 		mathModelInfos = (MathModelInfo[])objArray[2];	
@@ -165,7 +165,7 @@ private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
 
 	if (compressedBytes == null) {
-		compressedBytes = cbit.util.BeanUtils.toCompressedSerialized(objArray);
+		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
 	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);

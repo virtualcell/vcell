@@ -43,9 +43,9 @@ import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.BeanUtils;
-import cbit.util.TokenMangler;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
@@ -204,7 +204,7 @@ protected void addCompartments() {
 							// deal with unit conversion, since default unit for membrane (area) in SBML is m2 and in VCell is always um2.
 							newCompartment.setSize(membSize);
 							// Define um2 - AREA; add it to model
-							UnitDefinition unitDefn = new UnitDefinition(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
+							UnitDefinition unitDefn = new UnitDefinition(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
 							org.sbml.libsbml.Unit um2_unit = new Unit("metre", 2, -6);
 							unitDefn.addUnit(um2_unit);
 							// Also add it to vcUnitsHash, to be able to retreive it later
@@ -1502,7 +1502,7 @@ private void resolveRxnParameterNameConflicts(Reaction sbmlRxn, Kinetics vcKinet
 		// Check if reaction rate param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
 		// If so, change the name of the kinetic param (say, by adding reaction name to it).
 		if (paramName.equals(origRateParamName)) {
-			vcKinetics.getAuthoritativeParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(sbmlRxn.getId()));
+			vcKinetics.getAuthoritativeParameter().setName(origRateParamName+"_"+org.vcell.util.TokenMangler.mangleToSName(sbmlRxn.getId()));
 		}
 	}
 
@@ -1515,7 +1515,7 @@ private void resolveRxnParameterNameConflicts(Reaction sbmlRxn, Kinetics vcKinet
 			// Check if reaction rate param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
 			// If so, change the name of the kinetic param (say, by adding reaction name to it).
 			if (paramName.equals(origRateParamName)) {
-				vcKinetics.getAuthoritativeParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(sbmlRxn.getId()));
+				vcKinetics.getAuthoritativeParameter().setName(origRateParamName+"_"+org.vcell.util.TokenMangler.mangleToSName(sbmlRxn.getId()));
 			}
 		}
 	} 

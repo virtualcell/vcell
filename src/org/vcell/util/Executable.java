@@ -1,4 +1,4 @@
-package cbit.util;
+package org.vcell.util;
 import java.io.*;
 
 /**
@@ -75,7 +75,7 @@ public Executable(String[] command, long arg_timeoutMS) {
 /**
  * This method was created by a SmartGuide.
  */
-protected void executeProcess() throws cbit.util.ExecutableException {
+protected void executeProcess() throws org.vcell.util.ExecutableException {
 	
 	System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
@@ -91,7 +91,7 @@ protected void executeProcess() throws cbit.util.ExecutableException {
 		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 1000);
 		setExitValue(new Integer(exitCode));
 		// log what happened and update status
-		if (getStatus().equals(cbit.util.ExecutableStatus.STOPPED)) {
+		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {
 			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
 		} else if (getExitValue().intValue() == 0) {
 			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") executable successful\n");
@@ -190,7 +190,7 @@ private java.lang.Process getProcess() {
  * Creation date: (10/23/2002 12:23:37 PM)
  * @return cbit.vcell.solvers.ExecutableStatus
  */
-public cbit.util.ExecutableStatus getStatus() {
+public org.vcell.util.ExecutableStatus getStatus() {
 	return status;
 }
 
@@ -357,7 +357,7 @@ private void setProcess(java.lang.Process newProcess) {
  * Creation date: (10/23/2002 12:23:37 PM)
  * @param newStatus cbit.vcell.solvers.ExecutableStatus
  */
-private void setStatus(cbit.util.ExecutableStatus newStatus) {
+private void setStatus(org.vcell.util.ExecutableStatus newStatus) {
 	status = newStatus;
 }
 
@@ -365,7 +365,7 @@ private void setStatus(cbit.util.ExecutableStatus newStatus) {
 /**
  * This method was created in VisualAge.
  */
-public final void start() throws cbit.util.ExecutableException {
+public final void start() throws org.vcell.util.ExecutableException {
 
     setStatus(ExecutableStatus.RUNNING);
     try {

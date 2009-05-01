@@ -60,7 +60,7 @@ public Diagram getDiagram(ResultSet rset, SessionLog log) throws SQLException, D
 		//languageString = buffer.toString();
 	//}
 	
-	cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(languageString);
+	org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(languageString);
 	try {
 		diagram.fromTokens(tokens);
 	}catch (Exception e){

@@ -55,7 +55,7 @@ public KeyValue getGeomRef() {
  */
 public String getSimulationID() {
 	String rawSimID = getVersion().getName()+((getVersion().getVersionKey()!=null)?("_"+getVersion().getVersionKey().toString()):"");
-	return cbit.util.TokenMangler.fixToken(rawSimID);
+	return org.vcell.util.TokenMangler.fixToken(rawSimID);
 }
 /**
  * This method was created in VisualAge.

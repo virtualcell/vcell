@@ -11,6 +11,9 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+
 import loci.formats.AWTImageTools;
 import loci.formats.FormatException;
 import loci.formats.FormatReader;
@@ -20,8 +23,6 @@ import loci.formats.MetadataTools;
 import loci.formats.meta.MetadataRetrieve;
 import loci.formats.meta.MetadataStore;
 import cbit.image.ImageException;
-import cbit.util.Extent;
-import cbit.util.Origin;
 
 public class ImageDatasetReader {
 // This function has been amended in Jan 2008 to calculate progress when loading zip, or single image file. Class ImageLoadingProgress has been

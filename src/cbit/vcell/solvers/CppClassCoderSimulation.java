@@ -7,6 +7,8 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;

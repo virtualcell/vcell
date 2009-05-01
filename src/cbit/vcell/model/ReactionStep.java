@@ -15,8 +15,10 @@ import cbit.vcell.parser.Expression;
 import java.io.*;
 import java.util.*;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Cacheable;
@@ -262,7 +264,7 @@ public void fireVetoableChange(
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public abstract void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception;
+public abstract void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception;
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 10:26:42 PM)

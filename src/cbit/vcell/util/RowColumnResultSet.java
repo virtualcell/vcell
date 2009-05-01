@@ -320,7 +320,7 @@ public int getDataColumnCount() {
  * getVariableNames method comment.
  */
 public ColumnDescription[] getDataColumnDescriptions() {
-	return (ColumnDescription[])cbit.util.BeanUtils.getArray(fieldDataColumnDescriptions,ColumnDescription.class);
+	return (ColumnDescription[])org.vcell.util.BeanUtils.getArray(fieldDataColumnDescriptions,ColumnDescription.class);
 }
 
 
@@ -338,7 +338,7 @@ public int getFunctionColumnCount() {
  * getVariableNames method comment.
  */
 public FunctionColumnDescription[] getFunctionColumnDescriptions() {
-	return (FunctionColumnDescription[])cbit.util.BeanUtils.getArray(fieldFunctionColumnDescriptions,FunctionColumnDescription.class);
+	return (FunctionColumnDescription[])org.vcell.util.BeanUtils.getArray(fieldFunctionColumnDescriptions,FunctionColumnDescription.class);
 }
 
 

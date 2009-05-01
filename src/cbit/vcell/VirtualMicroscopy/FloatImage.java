@@ -8,11 +8,11 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
+import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
-import cbit.util.Extent;
-import cbit.util.Origin;
 /**
  * This type was created in VisualAge.
  */
@@ -40,7 +40,7 @@ public class FloatImage extends Image implements Serializable {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public FloatImage(float pixels[], Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public FloatImage(float pixels[], Origin aOrigin, org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aOrigin, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");

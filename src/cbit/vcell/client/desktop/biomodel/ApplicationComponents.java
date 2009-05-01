@@ -5,6 +5,9 @@ import java.awt.*;
 import cbit.vcell.client.desktop.simulation.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
+
 import java.util.*;
 import cbit.util.*;
 import cbit.gui.*;

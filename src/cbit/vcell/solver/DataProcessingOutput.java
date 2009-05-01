@@ -4,7 +4,8 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-import cbit.util.BeanUtils;
+import org.vcell.util.BeanUtils;
+
 
 
 /**

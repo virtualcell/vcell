@@ -6,7 +6,8 @@ package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 import java.util.Hashtable;
 
-import cbit.util.TokenMangler;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.VariableType;

@@ -3,10 +3,10 @@ package cbit.vcell.xml;
 import java.io.PrintStream;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.SimulationVersion;
-import cbit.util.BeanUtils;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;

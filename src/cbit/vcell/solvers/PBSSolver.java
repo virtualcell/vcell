@@ -3,7 +3,8 @@ import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
 import java.io.File;
 
-import cbit.util.ExecutableException;
+import org.vcell.util.ExecutableException;
+
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;

@@ -1,10 +1,12 @@
 package cbit.vcell.math.gui;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+
 import cbit.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Extent;
 /**
  * Insert the type's description here.
  * Creation date: (1/9/01 8:56:10 AM)

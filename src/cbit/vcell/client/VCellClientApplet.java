@@ -1,6 +1,9 @@
 package cbit.vcell.client;
 import java.awt.*;
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.desktop.*;
 import cbit.util.*;
 import cbit.vcell.client.server.*;

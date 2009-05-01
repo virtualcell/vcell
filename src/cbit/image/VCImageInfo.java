@@ -4,13 +4,13 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.Version;
 import cbit.sql.VersionInfo;
-import cbit.util.ISize;
-import cbit.util.Extent;
 /**
  * This type was created in VisualAge.
  */

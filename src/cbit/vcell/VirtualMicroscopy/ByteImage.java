@@ -9,8 +9,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.DeflaterOutputStream;
 
+import org.vcell.util.Origin;
+
 import cbit.image.ImageException;
-import cbit.util.Origin;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 /**
  * This type was created in VisualAge.
@@ -34,7 +35,7 @@ public ByteImage(ByteImage image) throws ImageException {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public ByteImage(byte pixels[], Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public ByteImage(byte pixels[], Origin aOrigin, org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aOrigin, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
@@ -50,7 +51,7 @@ public ByteImage(byte pixels[], Origin aOrigin, cbit.util.Extent aExtent, int aN
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public ByteImage(int sourceValues[], Origin aOrigin, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public ByteImage(int sourceValues[], Origin aOrigin, org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aOrigin, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != sourceValues.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+sourceValues.length+" pixels");
@@ -230,7 +231,7 @@ public static ByteImage concatenateZSeries(ByteImage images[]) throws ImageExcep
 	int nX = images[0].getNumX();
 	int nY = images[0].getNumY();
 	int nZ = images[0].getNumZ();
-	cbit.util.Extent extent0 = images[0].getExtent();
+	org.vcell.util.Extent extent0 = images[0].getExtent();
 	for (int i=1;i<images.length;i++){
 		if (images[i].getNumX() != nX){
 			throw new ImageException("image "+(i+1)+" x dimension doesn't match the first image");
@@ -253,7 +254,7 @@ public static ByteImage concatenateZSeries(ByteImage images[]) throws ImageExcep
 			bigBuffer[index++] = currPix[j];
 		}
 	}		
-	ByteImage byteImage = new ByteImage(bigBuffer,images[0].getOrigin(), new cbit.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
+	ByteImage byteImage = new ByteImage(bigBuffer,images[0].getOrigin(), new org.vcell.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
 	return byteImage;
 }
 

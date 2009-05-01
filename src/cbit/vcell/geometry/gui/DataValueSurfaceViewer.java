@@ -42,16 +42,16 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 
 	public class SurfaceCollectionDataInfo {
 		private SurfaceCollection surfaceCollection;
-		private cbit.util.Origin origin;
-		private cbit.util.Extent extent;
+		private org.vcell.util.Origin origin;
+		private org.vcell.util.Extent extent;
 		private String[] surfaceNames;
 		private Double[] surfaceAreas;
 		private int dimension;
 		
 		public SurfaceCollectionDataInfo(
 			SurfaceCollection argSurfaceCollection,
-			cbit.util.Origin argOrigin,
-			cbit.util.Extent argExtent,
+			org.vcell.util.Origin argOrigin,
+			org.vcell.util.Extent argExtent,
 			String[] argSurfaceNames,
 			Double[] argSurfaceAreas,
 			int argDimension
@@ -64,8 +64,8 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 				dimension = argDimension;
 		}
 		public SurfaceCollection getSurfaceCollection(){return surfaceCollection;}
-		public cbit.util.Origin getSurfaceCollectionOrigin(){return origin;}
-		public cbit.util.Extent getSurfaceCollectionExtent(){return extent;}
+		public org.vcell.util.Origin getSurfaceCollectionOrigin(){return origin;}
+		public org.vcell.util.Extent getSurfaceCollectionExtent(){return extent;}
 		public String[] getSurfaceNames(){return surfaceNames;}
 		public Double[] getSurfaceAreas(){return surfaceAreas;}
 		public int getDimension(){return dimension;}
@@ -1686,8 +1686,8 @@ private void handleException(java.lang.Throwable exception) {
  */
 public void init(
 			SurfaceCollection argSurfaceCollection,
-			cbit.util.Origin argOrigin,
-			cbit.util.Extent argExtent,
+			org.vcell.util.Origin argOrigin,
+			org.vcell.util.Extent argExtent,
 			String[] argSurfaceNames,
 			Double[] argSurfaceAreas,
 			int argDimension
@@ -1938,7 +1938,7 @@ public void pickByAnalytic() {
  * Insert the method's description here.
  * Creation date: (2/19/2006 2:52:44 PM)
  */
-private void pickByRange(cbit.util.Range pickRange) {
+private void pickByRange(org.vcell.util.Range pickRange) {
 
 	String[] surfNames = getSurfaceCollectionDataInfo().getSurfaceNames();
 	String surfSelect = (String)cbit.vcell.client.PopupGenerator.showListDialog(this,surfNames,"Pick Surface");

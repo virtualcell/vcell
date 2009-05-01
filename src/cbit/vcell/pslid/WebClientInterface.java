@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.File;
 import java.io.FileInputStream;
+
+import org.vcell.util.Preference;
+
 import cbit.util.AsynchProgressPopup;
-import cbit.util.Preference;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.field.PSLIDPanel;
 

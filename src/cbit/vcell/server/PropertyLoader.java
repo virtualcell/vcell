@@ -3,7 +3,8 @@ package cbit.vcell.server;
 import java.util.Arrays;
 import java.util.Vector;
 
-import cbit.util.Preference;
+import org.vcell.util.Preference;
+
 
 
 

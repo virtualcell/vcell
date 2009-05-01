@@ -208,7 +208,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 					if (afn.getName().indexOf(" ") > 0) {
 						// if function name has space, mangle the name and store the function in a different list.
 						bNameHasSpaces = true;
-						String newName = cbit.util.TokenMangler.fixTokenStrict(afn.getName());
+						String newName = org.vcell.util.TokenMangler.fixTokenStrict(afn.getName());
 						annotatedFnsVector.set(j, new AnnotatedFunction(newName, afn.getExpression(), afn.getErrorString(), afn.getFunctionType(), afn.isUserDefined()));
 					} else {
 						annotatedFnsVector.set(j, afn);

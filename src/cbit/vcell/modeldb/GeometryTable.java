@@ -60,8 +60,8 @@ public Geometry getGeometry(ResultSet rset, Connection con,SessionLog log) throw
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	
 	Geometry geometry = new Geometry(version,dim);
-	geometry.getGeometrySpec().setOrigin(new cbit.util.Origin(ox,oy,oz));
-	geometry.getGeometrySpec().setExtent(new cbit.util.Extent(ex,ey,ez));
+	geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(ox,oy,oz));
+	geometry.getGeometrySpec().setExtent(new org.vcell.util.Extent(ex,ey,ez));
 	
 	return geometry;
 }
@@ -81,12 +81,12 @@ public VersionInfo getInfo(ResultSet rset,Connection con, SessionLog log) throws
 	double oX = rset.getBigDecimal(GeometryTable.table.originX.toString()).doubleValue();
 	double oY = rset.getBigDecimal(GeometryTable.table.originY.toString()).doubleValue();
 	double oZ = rset.getBigDecimal(GeometryTable.table.originZ.toString()).doubleValue();
-	cbit.util.Origin origin = new cbit.util.Origin(oX,oY,oZ);
+	org.vcell.util.Origin origin = new org.vcell.util.Origin(oX,oY,oZ);
 	
 	double extentX = rset.getBigDecimal(ExtentTable.table.extentX.toString()).doubleValue();
 	double extentY = rset.getBigDecimal(ExtentTable.table.extentY.toString()).doubleValue();
 	double extentZ = rset.getBigDecimal(ExtentTable.table.extentZ.toString()).doubleValue();
-	cbit.util.Extent extent = new cbit.util.Extent(extentX,extentY,extentZ);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(extentX,extentY,extentZ);
 
 	KeyValue imgRef = null;
 	java.math.BigDecimal bigDecimal = rset.getBigDecimal(GeometryTable.table.imageRef.toString());

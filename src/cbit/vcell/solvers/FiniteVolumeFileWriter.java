@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import cbit.util.ISize;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -12,6 +11,8 @@ import cbit.vcell.parser.SymbolTable;
 import java.util.Enumeration;
 import java.io.File;
 import java.io.PrintWriter;
+
+import org.vcell.util.ISize;
 
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;

@@ -1,9 +1,10 @@
 package cbit.vcell.server.bionetgen;
-import cbit.util.FileUtils;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGInput;
 import java.io.*;
+
+import org.vcell.util.FileUtils;
 
 /**
  * Insert the type's description here.
@@ -22,7 +23,7 @@ public class BNGUtils {
 	private final static String prefix = "vcell_bng_";
 
 	private static File workingDir = null;
-	private static cbit.util.Executable executable = null;
+	private static org.vcell.util.Executable executable = null;
 	private static boolean bFirstTime = true;
 
 	private static File file_exe_bng = null;
@@ -90,11 +91,11 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		System.out.println("-------------Starting BNG ...-------------------------------");
 		// run BNG
 		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
-		executable = new cbit.util.Executable(cmd);
+		executable = new org.vcell.util.Executable(cmd);
 		executable.start();
 		
 		String stdoutString = executable.getStdoutString();
-		if (executable.getStatus() == cbit.util.ExecutableStatus.STOPPED && stdoutString.length() == 0) {
+		if (executable.getStatus() == org.vcell.util.ExecutableStatus.STOPPED && stdoutString.length() == 0) {
 			stdoutString = "Stopped by user. No output from BioNetGen.";	
 		}
 		
@@ -112,11 +113,11 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		bngOutput = new BNGOutput(stdoutString, filenames, filecontents);
 		System.out.println("--------------Finished BNG----------------------------");
 		
-	} catch(cbit.util.ExecutableException ex ){
+	} catch(org.vcell.util.ExecutableException ex ){
 		if (executable.getStderrString().trim().length() == 0) {
 			throw ex;
 		}
-		throw new cbit.util.ExecutableException(executable.getStderrString());
+		throw new org.vcell.util.ExecutableException(executable.getStderrString());
 	} finally {
 		if (workingDir != null && workingDir.exists()) {
 			File[] files = workingDir.listFiles();

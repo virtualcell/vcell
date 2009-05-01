@@ -27,10 +27,10 @@ public static void testConvergence() {
 		double r = 0.8;
 		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume(null,"subVolume1",new cbit.vcell.parser.Expression("x^2+y^2<"+(r*r)),2));
 		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume(null,"subVolume0",new cbit.vcell.parser.Expression(1.0),1));
-		geometry.getGeometrySpec().setExtent(new cbit.util.Extent(2,2,2));
-		geometry.getGeometrySpec().setOrigin(new cbit.util.Origin(-1,-1,-1));
+		geometry.getGeometrySpec().setExtent(new org.vcell.util.Extent(2,2,2));
+		geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-1,-1,-1));
 		GeometrySurfaceDescription geometrySurfaceDescription = geometry.getGeometrySurfaceDescription();
-		cbit.util.ISize sampleSize = new cbit.util.ISize(10,10,3);  // geometry.getGeometrySpec().getDefaultSampledImageSize();
+		org.vcell.util.ISize sampleSize = new org.vcell.util.ISize(10,10,3);  // geometry.getGeometrySpec().getDefaultSampledImageSize();
 		for (int i = 0; i < 8; i++){
 			//
 			// set the sample size
@@ -60,7 +60,7 @@ public static void testConvergence() {
 			}
 			double exactArea = 2*Math.PI*r*geometry.getExtent().getZ();
 			System.out.println("area = "+area+", exact = "+exactArea+", error = "+(area - exactArea));
-			sampleSize = new cbit.util.ISize(sampleSize.getX()*2,sampleSize.getY()*2,sampleSize.getZ());
+			sampleSize = new org.vcell.util.ISize(sampleSize.getX()*2,sampleSize.getY()*2,sampleSize.getZ());
 		}
 	}catch (Throwable e){
 		e.printStackTrace(System.out);

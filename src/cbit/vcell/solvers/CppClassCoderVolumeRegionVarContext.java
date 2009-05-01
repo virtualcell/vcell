@@ -5,7 +5,8 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.*;
 
-import cbit.util.TokenMangler;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -48,7 +49,7 @@ protected CppClassCoderVolumeRegionVarContext(CppCoderVCell argCppCoderVCell,
 			membraneSubDomainOwnedList.add(membranes[i]);
 		}
 	}
-	this.membraneSubDomainsOwned = (MembraneSubDomain[])cbit.util.BeanUtils.getArray(membraneSubDomainOwnedList,MembraneSubDomain.class);
+	this.membraneSubDomainsOwned = (MembraneSubDomain[])org.vcell.util.BeanUtils.getArray(membraneSubDomainOwnedList,MembraneSubDomain.class);
 }
 
 
@@ -76,7 +77,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 		for (int i = 0;membraneSubDomainsOwned!=null && i < membraneSubDomainsOwned.length; i++){
 			JumpCondition jumpCondition = membraneSubDomainsOwned[i].getJumpCondition((VolVariable)getEquation().getVariable());
 			Enumeration<Variable> enumJC = jumpCondition.getRequiredVariables(getSimulation());
-			requiredVariables = (Variable[])cbit.util.BeanUtils.addElements(requiredVariables,(Variable[])cbit.util.BeanUtils.getArray(enumJC,Variable.class));
+			requiredVariables = (Variable[])org.vcell.util.BeanUtils.addElements(requiredVariables,(Variable[])org.vcell.util.BeanUtils.getArray(enumJC,Variable.class));
 		}
 	}
 	Vector<Variable> uniqueVarList = new Vector<Variable>();
@@ -101,7 +102,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 		}
 	}
 
-	return (Variable[])cbit.util.BeanUtils.getArray(uniqueVarList,Variable.class);
+	return (Variable[])org.vcell.util.BeanUtils.getArray(uniqueVarList,Variable.class);
 }
 
 

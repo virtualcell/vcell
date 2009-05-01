@@ -5,12 +5,12 @@ package cbit.vcell.modeldb;
 ©*/
 import java.math.BigDecimal;
 import cbit.sql.*;
-import cbit.util.CommentStringTokenizer;
 import cbit.vcell.math.MathDescription;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -68,8 +68,8 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])cbit.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])cbit.util.BeanUtils.addElement(f,vTable.geometryRef);
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.geometryRef);
 	
 	Table[] t = {vTable,userTable};
 	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName();  // links in the userTable

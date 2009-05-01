@@ -448,7 +448,7 @@ private void connPtoP4SetTarget() {
  * Creation date: (12/16/2004 3:00:42 PM)
  * @param range cbit.util.Range
  */
-public void forceXYRange(cbit.util.Range xRange,cbit.util.Range yRange) {
+public void forceXYRange(org.vcell.util.Range xRange,org.vcell.util.Range yRange) {
 
 	if(xRange == null){
 		getPlot2DPanel1().setXAuto(true);

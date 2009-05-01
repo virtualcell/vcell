@@ -3,9 +3,10 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
+
 import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
-import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

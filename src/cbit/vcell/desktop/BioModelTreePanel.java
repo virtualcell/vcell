@@ -609,7 +609,7 @@ private void editAnnotation(java.awt.event.ActionEvent actionEvent) {
 			String oldAnnotation = ((BioModel)parentObject).getDescription();
 			try{
 				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
-				if (cbit.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
+				if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
 					((BioModel)parentObject).setDescription(newAnnotation);
 				}
 			}catch(cbit.gui.UtilCancelException e){
@@ -619,7 +619,7 @@ private void editAnnotation(java.awt.event.ActionEvent actionEvent) {
 			String oldAnnotation = ((SimulationContext)parentObject).getDescription();
 			try{
 				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
-				if (cbit.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
+				if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
 					((SimulationContext)parentObject).setDescription(newAnnotation);
 				}
 			}catch(cbit.gui.UtilCancelException e){
@@ -629,7 +629,7 @@ private void editAnnotation(java.awt.event.ActionEvent actionEvent) {
 			String oldAnnotation = ((Simulation)parentObject).getDescription();
 			try{
 				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
-				if (cbit.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
+				if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
 					((Simulation)parentObject).setDescription(newAnnotation);
 				}
 			}catch(cbit.gui.UtilCancelException e){

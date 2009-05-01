@@ -1,6 +1,7 @@
 package cbit.gui;
-import cbit.util.BeanUtils;
 import java.awt.datatransfer.*;
+
+import org.vcell.util.BeanUtils;
 
 public class SimpleTransferable extends java.awt.datatransfer.StringSelection {
 	private Object xferObject = null;

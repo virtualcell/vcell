@@ -9,6 +9,8 @@ import cbit.vcell.mapping.VariableHash;
 
 import javax.swing.event.*;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
@@ -309,8 +311,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 		    return true;
 		}else{
 		    //if (!bSilent) System.out.println("------NATIVE MATHS ARE DIFFERENT----------------------");
-			Variable oldVars[] = (Variable[])cbit.util.BeanUtils.getArray(oldMathDesc.getVariables(),Variable.class);
-			Variable newVars[] = (Variable[])cbit.util.BeanUtils.getArray(newMathDesc.getVariables(),Variable.class);
+			Variable oldVars[] = (Variable[])org.vcell.util.BeanUtils.getArray(oldMathDesc.getVariables(),Variable.class);
+			Variable newVars[] = (Variable[])org.vcell.util.BeanUtils.getArray(newMathDesc.getVariables(),Variable.class);
 			if (oldVars.length != newVars.length){
 				//
 				// number of state variables are not equal (canonical maths only have state variables)
@@ -328,8 +330,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 			//
 			// go through the list of SubDomains, and compare equations one by one and "correct" new one if possible
 			//
-			SubDomain subDomainsOld[] = (SubDomain[])cbit.util.BeanUtils.getArray(oldMathDesc.getSubDomains(),SubDomain.class);
-			SubDomain subDomainsNew[] = (SubDomain[])cbit.util.BeanUtils.getArray(newMathDesc.getSubDomains(),SubDomain.class);
+			SubDomain subDomainsOld[] = (SubDomain[])org.vcell.util.BeanUtils.getArray(oldMathDesc.getSubDomains(),SubDomain.class);
+			SubDomain subDomainsNew[] = (SubDomain[])org.vcell.util.BeanUtils.getArray(newMathDesc.getSubDomains(),SubDomain.class);
 			if (subDomainsOld.length != subDomainsNew.length){
 				reasonForDecision.append(DIFFERENT_NUMBER_OF_SUBDOMAINS);
 				return false;
@@ -361,8 +363,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 							reasonForDecision.append(EQUATION_REMOVED);
 							return false;
 						}
-						Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldEqu.getExpressions(oldMathDesc),Expression.class);
-						Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newEqu.getExpressions(newMathDesc),Expression.class);
+						Expression oldExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(oldEqu.getExpressions(oldMathDesc),Expression.class);
+						Expression newExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(newEqu.getExpressions(newMathDesc),Expression.class);
 						if (oldExps.length != newExps.length){
 							reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 							return false;
@@ -424,8 +426,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								reasonForDecision.append(EQUATION_REMOVED);
 								return false;
 							}
-							Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldJumpCondition.getExpressions(oldMathDesc),Expression.class);
-							Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newJumpCondition.getExpressions(newMathDesc),Expression.class);
+							Expression oldExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(oldJumpCondition.getExpressions(oldMathDesc),Expression.class);
+							Expression newExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(newJumpCondition.getExpressions(newMathDesc),Expression.class);
 							if (oldExps.length != newExps.length){
 								reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 								return false;

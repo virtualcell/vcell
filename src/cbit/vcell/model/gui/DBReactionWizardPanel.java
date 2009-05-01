@@ -333,14 +333,14 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 private void closeParent() {
     //Try to close whoever contains us
     javax.swing.JInternalFrame jif =
-        (javax.swing.JInternalFrame) cbit.util.BeanUtils.findTypeParentOfComponent(
+        (javax.swing.JInternalFrame) org.vcell.util.BeanUtils.findTypeParentOfComponent(
             this,
             javax.swing.JInternalFrame.class);
     if (jif != null) {
         jif.dispose();
     } else {
         java.awt.Window window =
-            (java.awt.Window) cbit.util.BeanUtils.findTypeParentOfComponent(
+            (java.awt.Window) org.vcell.util.BeanUtils.findTypeParentOfComponent(
                 this,
                 java.awt.Window.class);
         if (window != null) {
@@ -1017,7 +1017,7 @@ private void done() {
 				if(bUnique){
 					break;
 				}
-				uniqueName = cbit.util.TokenMangler.getNextEnumeratedToken(uniqueName);
+				uniqueName = org.vcell.util.TokenMangler.getNextEnumeratedToken(uniqueName);
 			}
 			//Create RX components and determine which must be newly added to model
 			java.util.Vector speciesContextV = new java.util.Vector();
@@ -1034,7 +1034,7 @@ private void done() {
 					newlyAddedSpecies.add(currentSpecies);
 					//Make sure species name doesn't conflict
 					while(getModel().getSpecies(currentSpecies.getCommonName()) != null){
-						currentSpecies.setCommonName(cbit.util.TokenMangler.getNextEnumeratedToken(currentSpecies.getCommonName()));
+						currentSpecies.setCommonName(org.vcell.util.TokenMangler.getNextEnumeratedToken(currentSpecies.getCommonName()));
 					}
 					if(dbfr.isFlux(i)){
 						newFluxSpecies = currentSpecies;
@@ -1137,7 +1137,7 @@ private void done() {
 					String kpName = kpArr[i].getName();
 					Kinetics.KineticsParameter kp = null;
 					while(getModel().getKineticsParameter(kpName) != null){
-						String newKPName = cbit.util.TokenMangler.getNextEnumeratedToken(kpName);
+						String newKPName = org.vcell.util.TokenMangler.getNextEnumeratedToken(kpName);
 						kinetics.renameParameter(kpName,newKPName);
 						kpName = newKPName;
 					}
@@ -2777,7 +2777,7 @@ private void resolve2() {
 				}
 			}
 			species =
-				new cbit.vcell.model.Species(cbit.util.TokenMangler.fixTokenStrict(dbsd.getPreferredName()),
+				new cbit.vcell.model.Species(org.vcell.util.TokenMangler.fixTokenStrict(dbsd.getPreferredName()),
 					null,
 					dbSpecies);
 		}
@@ -3333,7 +3333,7 @@ private cbit.vcell.dictionary.DBFormalSpecies showSpeciesBrowser() {
 	//}
 	sqd.setDocumentManager(getDocumentManager());
 	sqd.setSize(550,500);
-	cbit.util.BeanUtils.centerOnScreen(sqd);
+	org.vcell.util.BeanUtils.centerOnScreen(sqd);
 	cbit.gui.ZEnforcer.showModalDialogOnTop(sqd,this);
 	//sqd.setVisible(true);
 

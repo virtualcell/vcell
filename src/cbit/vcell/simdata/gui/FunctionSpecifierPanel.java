@@ -23,8 +23,6 @@ import java.lang.String;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
-import cbit.util.BeanUtils;
-import cbit.util.TokenMangler;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
@@ -35,6 +33,9 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.FVSolver;
 
 import javax.swing.JComboBox;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 
 public class FunctionSpecifierPanel extends JPanel implements ActionListener,UndoableEditListener{
 

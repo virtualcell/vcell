@@ -1,6 +1,7 @@
 package cbit.htc;
 import static cbit.htc.CondorConstants.*;
-import cbit.util.Executable;
+
+import org.vcell.util.Executable;
 /**
  * Insert the type's description here.
  * Creation date: (9/25/2003 9:59:32 AM)
@@ -17,12 +18,12 @@ public class CondorUtils {
  */
 public static int getJobStatus(String jobid) {		
 	int iStatus = CONDOR_STATUS_UNKNOWN;
-	cbit.util.Executable exe = null;
+	org.vcell.util.Executable exe = null;
 	String line = null;
 	
 	try {
 		String[] cmd = new String[]{JOB_CMD_STATUS, jobid};
-		exe = new cbit.util.Executable(cmd);
+		exe = new org.vcell.util.Executable(cmd);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -47,7 +48,7 @@ public static int getJobStatus(String jobid) {
 			}	
 		}		
 		
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (org.vcell.util.ExecutableException ex) {
 	}
 
 	int exitCode = 0;
@@ -55,7 +56,7 @@ public static int getJobStatus(String jobid) {
 	if (iStatus == CONDOR_STATUS_UNKNOWN) {
 		String[] cmd = new String[]{JOB_CMD_HISTORY, "-l", jobid};
 		try {		
-			exe = new cbit.util.Executable(cmd);
+			exe = new org.vcell.util.Executable(cmd);
 			exe.start();
 
 			String output = exe.getStdoutString();
@@ -76,7 +77,7 @@ public static int getJobStatus(String jobid) {
 					iStatus = Integer.parseInt(status);
 				} 
 			}		
-		} catch (cbit.util.ExecutableException ex0) {
+		} catch (org.vcell.util.ExecutableException ex0) {
 			condorLog.exception(ex0);
 			return CONDOR_STATUS_UNKNOWN;
 		}
@@ -97,7 +98,7 @@ public static int getJobStatus(String jobid) {
  * @param jobid java.lang.String
  */
 public static String getPendingReason(String jobid) {
-	cbit.util.Executable exe = null;
+	org.vcell.util.Executable exe = null;
 	String reason = "";
 	
 	try {
@@ -112,7 +113,7 @@ public static String getPendingReason(String jobid) {
 			return reason;
 		}		
 		
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (org.vcell.util.ExecutableException ex) {
 		condorLog.exception(ex);
 	}
 
@@ -134,7 +135,7 @@ public static void killJob(String jobid) {
 		String[] cmd = new String[]{JOB_CMD_DELETE, jobid};
 		Executable exe = new Executable(cmd);
 		exe.start();
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (org.vcell.util.ExecutableException ex) {
 		condorLog.exception(ex);
 	}
 }
@@ -166,7 +167,7 @@ public static void main(String[] args) {
  * Creation date: (9/25/2003 8:04:51 AM)
  * @param command java.lang.String
  */
-public static String submitJob(String computeResource, String sub_file, String executable, String cmdArguments) throws cbit.util.ExecutableException {		
+public static String submitJob(String computeResource, String sub_file, String executable, String cmdArguments) throws org.vcell.util.ExecutableException {		
 
 	try {	
 		java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
@@ -195,7 +196,7 @@ public static String submitJob(String computeResource, String sub_file, String e
 	
 	String[] completeCommand =  new String[] {JOB_CMD_SUBMIT, sub_file};
 	String jobid = null;
-	cbit.util.Executable exe = new Executable(completeCommand);
+	org.vcell.util.Executable exe = new Executable(completeCommand);
 	exe.start();
 	String output = exe.getStdoutString();
 	String typicalWords = "submitted to cluster";

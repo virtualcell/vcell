@@ -6,6 +6,10 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.VariableType;
 
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1015,7 +1019,7 @@ private void displayAdapterService1_AutoScale(boolean arg1) {
 /**
  * Comment
  */
-private void displayAdapterService1_CustomScaleRange(cbit.util.Range arg1) {
+private void displayAdapterService1_CustomScaleRange(org.vcell.util.Range arg1) {
 	String varName = (String)getJList1().getSelectedValue();
 	if(varName != null){
 		if(arg1 == null){

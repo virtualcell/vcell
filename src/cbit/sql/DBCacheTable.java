@@ -202,7 +202,7 @@ public void putProtected(KeyValue key, Cacheable cacheable) {
 	long dataSize = 1000;
 	byte[] objData = null;
 	try {
-		objData = cbit.util.BeanUtils.toSerialized(cacheable);
+		objData = org.vcell.util.BeanUtils.toSerialized(cacheable);
 		//
 		// dataSize is length*3 because three copies are stored in DbObjectWrapper (reference/bytes/working).
 		//
@@ -248,7 +248,7 @@ public void putUnprotected(KeyValue key, Cacheable cacheable) {
 	}
 	long dataSize = 1000;
 	try {
-		byte[] objData = cbit.util.BeanUtils.toSerialized(cacheable);
+		byte[] objData = org.vcell.util.BeanUtils.toSerialized(cacheable);
 		dataSize = objData.length;
 	}catch (IOException e){
 		e.printStackTrace(System.out);

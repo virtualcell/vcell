@@ -283,7 +283,7 @@ BigString getMathModelXML(KeyValue key) throws DataAccessException, java.rmi.Rem
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.Preference[] getPreferences() throws DataAccessException, java.rmi.RemoteException;
+org.vcell.util.Preference[] getPreferences() throws DataAccessException, java.rmi.RemoteException;
 
 
 public cbit.vcell.model.ReactionStep getReactionStep(KeyValue rxID) throws DataAccessException, java.rmi.RemoteException;
@@ -442,7 +442,7 @@ cbit.sql.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws 
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-void replacePreferences(cbit.util.Preference[] preferences) throws java.rmi.RemoteException, DataAccessException;
+void replacePreferences(org.vcell.util.Preference[] preferences) throws java.rmi.RemoteException, DataAccessException;
 
 
 /**

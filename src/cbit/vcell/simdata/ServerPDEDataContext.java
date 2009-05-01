@@ -192,7 +192,7 @@ public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) thr
 public void refreshIdentifiers() {
 	try {
 		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(user, vcDataID));
-		if ( getVariableName() != null && !cbit.util.BeanUtils.arrayContains(getVariableNames(), getVariableName()) )  {
+		if ( getVariableName() != null && !org.vcell.util.BeanUtils.arrayContains(getVariableNames(), getVariableName()) )  {
 			// This condition occurs if a function has been removed from the dataset (esp. MergedDataset->compare).
 			if (getDataIdentifiers() != null && getDataIdentifiers().length > 0) {
 				setVariableName(getDataIdentifiers()[0].getName());

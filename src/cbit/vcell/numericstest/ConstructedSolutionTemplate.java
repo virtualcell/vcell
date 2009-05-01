@@ -84,6 +84,6 @@ private void initialize(cbit.vcell.math.MathDescription mathDesc) {
 		}
 	}
 
-	this.solutionTemplates = (SolutionTemplate[])cbit.util.BeanUtils.getArray(solutionTemplateList,SolutionTemplate.class);
+	this.solutionTemplates = (SolutionTemplate[])org.vcell.util.BeanUtils.getArray(solutionTemplateList,SolutionTemplate.class);
 }
 }

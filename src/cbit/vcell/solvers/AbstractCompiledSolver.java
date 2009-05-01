@@ -119,7 +119,7 @@ private void runSolver() {
 		getMathExecutable().start();
 		cleanup();
 		//  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
-		if (getMathExecutable().getStatus().equals(cbit.util.ExecutableStatus.COMPLETE)) {
+		if (getMathExecutable().getStatus().equals(org.vcell.util.ExecutableStatus.COMPLETE)) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, "finished"));
 			fireSolverFinished();
 		}
@@ -128,7 +128,7 @@ private void runSolver() {
 		cleanup();
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, integratorException.getMessage()));
 		fireSolverAborted(integratorException.getMessage());
-	} catch (cbit.util.ExecutableException executableException) {
+	} catch (org.vcell.util.ExecutableException executableException) {
 		getSessionLog().exception(executableException);
 		cleanup();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not execute code: " + executableException.getMessage()));

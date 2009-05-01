@@ -170,7 +170,7 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 			FunctionColumnDescription fcd = new FunctionColumnDescription(new Expression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getName(), null, getSensitivityParameter().getName(), false);
 			odeSolverResultSet.addFunctionColumn(fcd);
 		}
-		StateVariable stateVars[] = (StateVariable[])cbit.util.BeanUtils.getArray(fieldStateVariables,StateVariable.class);
+		StateVariable stateVars[] = (StateVariable[])org.vcell.util.BeanUtils.getArray(fieldStateVariables,StateVariable.class);
 		for (int i = 0; i < variables.length; i++){
 			if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
 				Function depSensFunction = (Function)variables[i];

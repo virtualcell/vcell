@@ -66,7 +66,7 @@ public Membrane(String name) throws java.beans.PropertyVetoException {
 }
 
 public static String getDefaultMembraneVoltageName(String structureName){
-	return cbit.util.TokenMangler.fixTokenStrict("Voltage_"+structureName);
+	return org.vcell.util.TokenMangler.fixTokenStrict("Voltage_"+structureName);
 }
 
 

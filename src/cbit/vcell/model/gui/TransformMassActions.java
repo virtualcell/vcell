@@ -4,7 +4,8 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Vector;
 
-import cbit.util.BeanUtils;
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;

@@ -252,7 +252,7 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 }
 
 
-public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, cbit.util.ISize size, double[][] dataArr) throws IOException {
+public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, org.vcell.util.ISize size, double[][] dataArr) throws IOException {
 	
 	FileOutputStream fos = null;
 	BufferedOutputStream bos = null;

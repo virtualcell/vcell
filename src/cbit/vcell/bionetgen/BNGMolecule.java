@@ -87,12 +87,12 @@ public void setComponentsStates() {
 			count++;
 		}
 
-		String[] componentStatesNames = (String[])cbit.util.BeanUtils.getArray(statesVector, String.class);
+		String[] componentStatesNames = (String[])org.vcell.util.BeanUtils.getArray(statesVector, String.class);
 		statesVector.clear();
 		componentsVector.addElement(new BNGSpeciesComponent(componentName, null, componentStatesNames));
 	}
 
-	molComponents = (BNGSpeciesComponent[])cbit.util.BeanUtils.getArray(componentsVector, BNGSpeciesComponent.class);
+	molComponents = (BNGSpeciesComponent[])org.vcell.util.BeanUtils.getArray(componentsVector, BNGSpeciesComponent.class);
 }
 
 

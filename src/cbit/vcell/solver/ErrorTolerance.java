@@ -4,7 +4,8 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.CommentStringTokenizer;
+import org.vcell.util.CommentStringTokenizer;
+
 import cbit.vcell.math.VCML;
 import cbit.vcell.server.DataAccessException;
 /**

@@ -40,10 +40,10 @@ public ConstraintContainerImpl() {
  * @param constraint cbit.vcell.constraints.AbstractConstraint
  */
 public void addGeneralConstraint(GeneralConstraint constraint) throws java.beans.PropertyVetoException {
-	if (cbit.util.BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
+	if (org.vcell.util.BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
 		throw new RuntimeException(constraint+" already exists");
 	}
-	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])cbit.util.BeanUtils.addElement(fieldGeneralConstraints,constraint);
+	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])org.vcell.util.BeanUtils.addElement(fieldGeneralConstraints,constraint);
 	setGeneralConstraints(newGeneralConstraint);
 }
 
@@ -70,10 +70,10 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  * @param constraint cbit.vcell.constraints.AbstractConstraint
  */
 public void addSimpleBound(SimpleBounds bounds) throws java.beans.PropertyVetoException {
-	if (cbit.util.BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
+	if (org.vcell.util.BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
 		throw new RuntimeException(bounds+" already exists");
 	}
-	SimpleBounds newSimpleBounds[] = (SimpleBounds[])cbit.util.BeanUtils.addElement(fieldSimpleBounds,bounds);
+	SimpleBounds newSimpleBounds[] = (SimpleBounds[])org.vcell.util.BeanUtils.addElement(fieldSimpleBounds,bounds);
 	setSimpleBounds(newSimpleBounds);
 }
 
@@ -291,10 +291,10 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param constraint cbit.vcell.constraints.AbstractConstraint
  */
 public void removeGeneralConstraint(GeneralConstraint constraint) throws java.beans.PropertyVetoException {
-	if (!cbit.util.BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
+	if (!org.vcell.util.BeanUtils.arrayContains(fieldGeneralConstraints,constraint)){
 		throw new RuntimeException(constraint+" not found");
 	}
-	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])cbit.util.BeanUtils.removeElement(fieldGeneralConstraints,constraint);
+	GeneralConstraint newGeneralConstraint[] = (GeneralConstraint[])org.vcell.util.BeanUtils.removeElement(fieldGeneralConstraints,constraint);
 	setGeneralConstraints(newGeneralConstraint);
 }
 
@@ -321,10 +321,10 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param constraint cbit.vcell.constraints.AbstractConstraint
  */
 public void removeSimpleBound(SimpleBounds bounds) throws java.beans.PropertyVetoException {
-	if (!cbit.util.BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
+	if (!org.vcell.util.BeanUtils.arrayContains(fieldSimpleBounds,bounds)){
 		throw new RuntimeException(bounds+" not found");
 	}
-	SimpleBounds newSimpleBounds[] = (SimpleBounds[])cbit.util.BeanUtils.removeElement(fieldSimpleBounds,bounds);
+	SimpleBounds newSimpleBounds[] = (SimpleBounds[])org.vcell.util.BeanUtils.removeElement(fieldSimpleBounds,bounds);
 	setSimpleBounds(newSimpleBounds);
 }
 
@@ -430,8 +430,8 @@ public String toECLiPSe() {
 		}else if (bounds.hi()==Double.NEGATIVE_INFINITY){
 			hiBoundsString = "-1.0Inf";
 		}
-		buffer.append(cbit.util.TokenMangler.getEscapedTokenECLiPSe(symbol)+" $>= "+lowBoundsString+",");
-		buffer.append(cbit.util.TokenMangler.getEscapedTokenECLiPSe(symbol)+" $=< "+hiBoundsString+",");
+		buffer.append(org.vcell.util.TokenMangler.getEscapedTokenECLiPSe(symbol)+" $>= "+lowBoundsString+",");
+		buffer.append(org.vcell.util.TokenMangler.getEscapedTokenECLiPSe(symbol)+" $=< "+hiBoundsString+",");
 	}
 
 	for (int i = 0; i < fieldGeneralConstraints.length; i++){

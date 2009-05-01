@@ -3,13 +3,14 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

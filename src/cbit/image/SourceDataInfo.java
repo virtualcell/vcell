@@ -5,10 +5,12 @@ package cbit.image;
 ©*/
 import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.math.CoordinateIndex;
-import cbit.util.Extent;
-import cbit.util.Origin;
 import java.lang.reflect.Array;
-import cbit.util.Range;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+import org.vcell.util.Range;
+
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.

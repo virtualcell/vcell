@@ -12,9 +12,11 @@ import cbit.vcell.units.VCUnitDefinition;
 
 import java.util.*;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
 import cbit.util.*;
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -791,7 +793,7 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public final void fromTokens(cbit.util.CommentStringTokenizer tokens) throws ExpressionException, PropertyVetoException {
+public final void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throws ExpressionException, PropertyVetoException {
 	//
 	//  old format (version 1) (still supported for reading)
 	//

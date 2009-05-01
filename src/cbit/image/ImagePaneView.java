@@ -13,7 +13,8 @@ import java.awt.Window;
 
 import javax.swing.SwingUtilities;
 
-import cbit.util.BeanUtils;
+import org.vcell.util.BeanUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/3/00 1:57:50 PM)

@@ -59,7 +59,7 @@ public static void main(java.lang.String[] args) {
 				}
 			}
 		}
-		files = (File[])cbit.util.BeanUtils.getArray(fileList,File.class);
+		files = (File[])org.vcell.util.BeanUtils.getArray(fileList,File.class);
 		System.out.println("Files:");
 		for (int i = 0; i < files.length; i++){
 			System.out.println(files[i].getAbsolutePath());

@@ -1,6 +1,5 @@
-package cbit.util;
+package org.vcell.util;
 
-import org.vcell.util.Matchable;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

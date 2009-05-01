@@ -792,7 +792,7 @@ public static Model getExample2() throws Exception {
 						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
 						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
 						"} ";
-	cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(diagramFile);
+	org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(diagramFile);
 	diagram.fromTokens(st);
 			
 	return model;
@@ -1210,7 +1210,7 @@ public static Model getExampleHMM() throws Exception {
 						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
 						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
 						"} ";
-	cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(diagramFile);
+	org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(diagramFile);
 	diagram.fromTokens(st);
 			
 	return model;
@@ -1325,7 +1325,7 @@ public static Model getExampleWithCurrent() throws Exception {
 						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
 						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
 						"} ";
-	cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(diagramFile);
+	org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(diagramFile);
 	diagram.fromTokens(st);
 			
 	FluxReaction fr;
@@ -1452,7 +1452,7 @@ public static Model getExample_GlobalParams() throws Exception {
 						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
 						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
 						"} ";
-	cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(diagramFile);
+	org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(diagramFile);
 	diagram.fromTokens(st);
 			
 	return model;

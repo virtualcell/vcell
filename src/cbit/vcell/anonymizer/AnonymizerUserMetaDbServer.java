@@ -351,8 +351,8 @@ public org.vcell.util.BigString getMathModelXML(org.vcell.util.document.KeyValue
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.Preference[] getPreferences() throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.Preference[])remoteCall("getPreferences", new Class[]{}, new Object[]{});
+public org.vcell.util.Preference[] getPreferences() throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.Preference[])remoteCall("getPreferences", new Class[]{}, new Object[]{});
 }
 
 
@@ -568,8 +568,8 @@ private Object remoteCall(String methodName, Class[] argClasses, Object[] args) 
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(cbit.util.Preference[] preferences) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	remoteCall("replacePreferences", new Class[]{cbit.util.Preference[].class}, new Object[]{preferences});
+public void replacePreferences(org.vcell.util.Preference[] preferences) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	remoteCall("replacePreferences", new Class[]{org.vcell.util.Preference[].class}, new Object[]{preferences});
 }
 
 

@@ -12,8 +12,8 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SolverException;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.sbml.test.SbmlConverter;
+import org.vcell.util.Executable;
 
-import cbit.util.Executable;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.math.Variable;

@@ -6,7 +6,6 @@ package cbit.vcell.client.data;
 import cbit.vcell.simdata.gui.*;
 
 import java.awt.*;
-import java.awt.Insets;
 import java.util.*;
 
 import cbit.vcell.export.server.*;
@@ -15,6 +14,9 @@ import cbit.vcell.simdata.*;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.util.*;
 import cbit.vcell.client.*;
 /**

@@ -260,7 +260,7 @@ public static Version getVersion(ResultSet rset, cbit.vcell.server.GroupAccess g
 	if (rset.wasNull()) {
 		vAnnot = null;
 	} else {
-		vAnnot = cbit.util.TokenMangler.getSQLRestoredString(vAnnotDB);
+		vAnnot = org.vcell.util.TokenMangler.getSQLRestoredString(vAnnotDB);
 	}
 	boolean bFoundParentSimRefColumn = false;
 	KeyValue parentSimRef = null;
@@ -323,7 +323,7 @@ protected static String getVersionGroupSQLValue(Version version) {
 	buffer.append(formatDateToOracle(version.getDate()) + ",");
 	buffer.append(version.getFlag().getIntValue() + ",");
 	if (version.getAnnot() != null) {
-		buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(version.getAnnot())+"'");
+		buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(version.getAnnot())+"'");
 	} else {
 		buffer.append("NULL");
 	}

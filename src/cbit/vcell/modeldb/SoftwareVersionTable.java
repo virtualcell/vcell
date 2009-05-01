@@ -38,7 +38,7 @@ public String getSQLValueList(KeyValue newVersionKey) {
 	String softwareVersionS =
 		cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellSoftwareVersion);
 
-	softwareVersionS = cbit.util.TokenMangler.getSQLEscapedString(softwareVersionS);
+	softwareVersionS = org.vcell.util.TokenMangler.getSQLEscapedString(softwareVersionS);
 	
 	return "("+Table.NewSEQ+","+newVersionKey.toString()+",'"+softwareVersionS+"')";
 }

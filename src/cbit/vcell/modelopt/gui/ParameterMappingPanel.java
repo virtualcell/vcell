@@ -645,9 +645,9 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
 				new cbit.gui.SimpleTransferable.ResolvedValuesSelection(
-					(cbit.vcell.parser.SymbolTableEntry[])cbit.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
-					(cbit.vcell.parser.SymbolTableEntry[])cbit.util.BeanUtils.getArray(alternateSymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
-					(cbit.vcell.parser.Expression[])cbit.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
+					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
+					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
+					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
 					sb.toString());
 
 			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);

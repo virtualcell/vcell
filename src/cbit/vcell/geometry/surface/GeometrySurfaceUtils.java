@@ -1,7 +1,8 @@
 package cbit.vcell.geometry.surface;
 
+import org.vcell.util.ISize;
+
 import progress.message.client.EExclusiveQueueOpen;
-import cbit.util.ISize;
 import cbit.vcell.geometry.RegionImage;
 
 /**
@@ -244,7 +245,7 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 		System.out.println("added surfaceRegion("+surfaceRegion.getName()+")");
 	}
 
-	return (GeometricRegion[])cbit.util.BeanUtils.getArray(regionList,GeometricRegion.class);
+	return (GeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
 }
 
 

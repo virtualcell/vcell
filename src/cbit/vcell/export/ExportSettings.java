@@ -1,5 +1,7 @@
 package cbit.vcell.export;
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

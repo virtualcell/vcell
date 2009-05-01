@@ -250,7 +250,7 @@ public SolverControllerInfo[] getSolverControllerInfos() {
 		SolverProxy solverProxy = (SolverProxy)solverProxyEnum.nextElement();
 		scList.add(new SolverControllerInfo(solverProxy));
 	}
-	return (SolverControllerInfo[])cbit.util.BeanUtils.getArray(scList,SolverControllerInfo.class);
+	return (SolverControllerInfo[])org.vcell.util.BeanUtils.getArray(scList,SolverControllerInfo.class);
 }
 
 

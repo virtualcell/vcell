@@ -98,9 +98,9 @@ public void testStandalone(String username) {
 			String[] cmd_old = new String[] {old_idastandalone, inputfilepath, oldOutput.getAbsolutePath()};
 			String[] cmd_new = new String[] {new_idastandalone, inputfilepath, newOutput.getAbsolutePath()};
 			try {
-				cbit.util.Executable exe = new cbit.util.Executable(cmd_old);
+				org.vcell.util.Executable exe = new org.vcell.util.Executable(cmd_old);
 				exe.start();
-				exe = new cbit.util.Executable(cmd_new);
+				exe = new org.vcell.util.Executable(cmd_new);
 				exe.start();
 			} catch (Exception ex) {
 				if (!newOutput.exists()) {

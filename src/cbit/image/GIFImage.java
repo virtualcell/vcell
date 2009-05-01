@@ -4,8 +4,9 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import java.awt.image.ImageObserver;
-import cbit.util.ISize;
 import java.io.Serializable;
+
+import org.vcell.util.ISize;
 
 /**
  * This type was created in VisualAge.

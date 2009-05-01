@@ -1663,7 +1663,7 @@ private cbit.vcell.dictionary.DBFormalSpecies showDatabaseBindingDialog() {
 	SpeciesQueryDialog aSpeciesQueryDialog = new SpeciesQueryDialog((java.awt.Frame)null,true);
 	aSpeciesQueryDialog.setDocumentManager(getDocumentManager());
 	aSpeciesQueryDialog.setSize(500,500);
-	cbit.util.BeanUtils.centerOnScreen(aSpeciesQueryDialog);
+	org.vcell.util.BeanUtils.centerOnScreen(aSpeciesQueryDialog);
 	cbit.gui.ZEnforcer.showModalDialogOnTop(aSpeciesQueryDialog,this);
 	//aSpeciesQueryDialog.setVisible(true);
 
@@ -1731,7 +1731,7 @@ private void updateInterface() {
 			(getNameValueJTextField().getText() != null) && 
 			(getNameValueJTextField().getText().length() > 0)){
 			
-			contextName = cbit.util.TokenMangler.fixTokenStrict(
+			contextName = org.vcell.util.TokenMangler.fixTokenStrict(
 				getNameValueJTextField().getText()+"_"+
 				getSpeciesContext().getStructure().getName()
 			);

@@ -13,6 +13,7 @@ import cbit.util.*;
 
 import java.io.*;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {

@@ -6,7 +6,8 @@ package cbit.vcell.solver;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import cbit.util.CommentStringTokenizer;
+import org.vcell.util.CommentStringTokenizer;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.math.Constant;
@@ -235,7 +236,7 @@ public Expression getActualExpression(String key, int index) {
 		for (int i = 0; i < names.length; i++){
 			bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
 		}
-		int[] coordinates = cbit.util.BeanUtils.indexToCoordinate(index, bounds);
+		int[] coordinates = org.vcell.util.BeanUtils.indexToCoordinate(index, bounds);
 		int localIndex = coordinates[java.util.Arrays.binarySearch(names, key)];
 		return getConstantArraySpec(key).getConstants()[localIndex].getExpression();
 	}
@@ -248,7 +249,7 @@ public String[] getAllConstantNames() {
 	while (en.hasMoreElements()) {
 		v.add(((Constant)en.nextElement()).getName());
 	}
-	return (String[])cbit.util.BeanUtils.getArray(v, String.class);
+	return (String[])org.vcell.util.BeanUtils.getArray(v, String.class);
 }
 
 
@@ -352,7 +353,7 @@ public String[] getScannedConstantNames() {
 	for (int i = 0; i < overrides.length; i++){
 		if (isScan(overrides[i])) v.add(overrides[i]);
 	}
-	return (String[])cbit.util.BeanUtils.getArray(v, String.class);
+	return (String[])org.vcell.util.BeanUtils.getArray(v, String.class);
 }
 
 

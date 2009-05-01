@@ -89,7 +89,7 @@ private StateVariable[] createStateVariables() throws cbit.vcell.math.MathExcept
 		throw new MathException("there are no equations defined");
 	}
 
-	StateVariable stateVars[] = (StateVariable[])cbit.util.BeanUtils.getArray(stateVariables,StateVariable.class);
+	StateVariable stateVars[] = (StateVariable[])org.vcell.util.BeanUtils.getArray(stateVariables,StateVariable.class);
 	return(stateVars);
 }
 

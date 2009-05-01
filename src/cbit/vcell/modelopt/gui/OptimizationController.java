@@ -117,12 +117,12 @@ public void plot() {
 				}
 			}
 		}
-		DataSource[] dataSources = (DataSource[])cbit.util.BeanUtils.getArray(dataSourceList,DataSource.class);
+		DataSource[] dataSources = (DataSource[])org.vcell.util.BeanUtils.getArray(dataSourceList,DataSource.class);
 		MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
 		multisourcePlotPane.setDataSources(dataSources);	
 
 		String[] nameArray = new String[nameVector.size()];
-		nameArray = (String[])cbit.util.BeanUtils.getArray(nameVector, String.class);
+		nameArray = (String[])org.vcell.util.BeanUtils.getArray(nameVector, String.class);
 		multisourcePlotPane.select(nameArray);
 		
 		cbit.gui.DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");

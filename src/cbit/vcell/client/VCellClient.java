@@ -2,7 +2,6 @@ package cbit.vcell.client;
 import java.awt.event.*;
 
 import cbit.sql.UserInfo;
-import cbit.util.BeanUtils;
 import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
@@ -12,6 +11,8 @@ import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.document.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
 
 import cbit.vcell.biomodel.*;
 /**

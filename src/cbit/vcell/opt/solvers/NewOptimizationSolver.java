@@ -9,10 +9,10 @@ import org.jdom.CDATA;
 import org.jdom.Element;
 import org.vcell.optimization.OptXmlReader;
 import org.vcell.optimization.OptXmlTags;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.BeanUtils;
-import cbit.util.ISize;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;

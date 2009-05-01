@@ -9,8 +9,9 @@ import java.util.Vector;
 
 import javax.swing.JDesktopPane;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.graph.StructureShape;
 import cbit.vcell.model.Kinetics;
@@ -505,7 +506,7 @@ private void jMenuItemAdd_ActionPerformed(ActionEvent actionEvent) throws Except
 		Container container = (Container)BeanUtils.findTypeParentOfComponent(getJScrollPane1(), JDesktopPane.class);
 		container.remove(createGlobalParamDialog);
 		container.add(createGlobalParamDialog, JDesktopPane.MODAL_LAYER);
-		cbit.util.BeanUtils.centerOnComponent(createGlobalParamDialog, this);
+		org.vcell.util.BeanUtils.centerOnComponent(createGlobalParamDialog, this);
 		createGlobalParamDialog.setVisible(true);
 	}
 }
@@ -787,9 +788,9 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
 				new cbit.gui.SimpleTransferable.ResolvedValuesSelection(
-					(cbit.vcell.parser.SymbolTableEntry[])cbit.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
+					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					null,
-					(cbit.vcell.parser.Expression[])cbit.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
+					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
 					sb.toString());
 
 			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);

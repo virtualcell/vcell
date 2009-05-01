@@ -895,8 +895,8 @@ private void Ok() throws PropertyVetoException {
 	bUpdating = true;
 	try {
 		GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-		geometrySpec.setExtent(new cbit.util.Extent(worldExtentX,worldExtentY,worldExtentZ));
-		geometrySpec.setOrigin(new cbit.util.Origin(worldOriginX,worldOriginY,worldOriginZ));
+		geometrySpec.setExtent(new org.vcell.util.Extent(worldExtentX,worldExtentY,worldExtentZ));
+		geometrySpec.setOrigin(new org.vcell.util.Origin(worldOriginX,worldOriginY,worldOriginZ));
 	}finally{
 		bUpdating = false;
 	}

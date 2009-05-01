@@ -98,9 +98,9 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 	Vector simAnnotsV = new Vector();
 
 	while(st.hasMoreElements()){
-		scNamesV.add(cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
-		scAnnotsV.add(cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
-		geoNamesV.add(cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+		scNamesV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+		scAnnotsV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+		geoNamesV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
 		int[] temp = new int[geoDimsArr.length + 1];
 		System.arraycopy(geoDimsArr,0,temp,0,geoDimsArr.length);
 		temp[temp.length-1] = Integer.parseInt((String)st.nextElement());
@@ -110,8 +110,8 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 		Vector currentSimNamesV = new Vector();
 		Vector currentSimAnnotsV= new Vector();
 		for(int j=0;j<numSims;j+= 1){
-			currentSimNamesV.add(cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
-			currentSimAnnotsV.add(cbit.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+			currentSimNamesV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+			currentSimAnnotsV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
 		}
 		simNamesV.add((String[])currentSimNamesV.toArray(new String[currentSimNamesV.size()]));
 		simAnnotsV.add((String[])currentSimAnnotsV.toArray(new String[currentSimAnnotsV.size()]));
@@ -228,15 +228,15 @@ public String toDatabaseSerialization() {
 	StringBuffer sb = new StringBuffer();
 	for(int i = 0; i < scNames.length;i+= 1){
 		//Application (SimulationContext)
-		sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(scNames[i]))+"\n");
-		sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(scAnnots[i]))+"\n");
-		sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(geoNames[i]))+"\n");
+		sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(scNames[i]))+"\n");
+		sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(scAnnots[i]))+"\n");
+		sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(geoNames[i]))+"\n");
 		sb.append(geoDims[i]+"\n");
 		//Simulations
 		sb.append(simNames[i].length+"\n");//num simulations
 		for(int j=0;j<simNames[i].length;j+= 1){
-			sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(simNames[i][j]))+"\n");
-			sb.append(emptyConvention(cbit.util.TokenMangler.getChildSummaryElementEscapedString(simAnnots[i][j]))+"\n");
+			sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(simNames[i][j]))+"\n");
+			sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(simAnnots[i][j]))+"\n");
 		}
 	}
 	return sb.toString();

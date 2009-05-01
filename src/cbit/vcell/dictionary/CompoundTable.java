@@ -85,13 +85,13 @@ public DBFormalSpecies[] getCompounds(java.sql.ResultSet rset, SessionLog log,bo
 			currentKeggID = 	rset.getString(CompoundTable.table.keggID.toString());
 			currentCASID = 		rset.getString(CompoundTable.table.casID.toString());
 			currentFormula = 	rset.getString(CompoundTable.table.formula.toString());
-				currentFormula = 	(currentFormula != null ?cbit.util.TokenMangler.getSQLRestoredString(currentFormula):null);
+				currentFormula = 	(currentFormula != null ?org.vcell.util.TokenMangler.getSQLRestoredString(currentFormula):null);
 			if(createBound){
 				currentDBSpeciesID =	new KeyValue(rset.getBigDecimal("dbspecies_id"));
 			}
 		}
 		currentPreferred = 	rset.getString(CompoundAliasTable.table.preferred.toString());
-		currentAliasName = 	cbit.util.TokenMangler.getSQLRestoredString(rset.getString(CompoundAliasTable.table.name.toString()));
+		currentAliasName = 	org.vcell.util.TokenMangler.getSQLRestoredString(rset.getString(CompoundAliasTable.table.name.toString()));
 		if(currentPreferred.compareToIgnoreCase("T") == 0){
 			aliasNames.add(0,currentAliasName);
 		}else{

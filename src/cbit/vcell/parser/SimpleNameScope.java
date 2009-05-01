@@ -33,7 +33,7 @@ public void addChild(NameScope childNameScope) {
 		}
 	}
 	
-	children = (NameScope[])cbit.util.BeanUtils.addElement(children,childNameScope);
+	children = (NameScope[])org.vcell.util.BeanUtils.addElement(children,childNameScope);
 }
 /**
  * Insert the method's description here.
@@ -78,7 +78,7 @@ public void removeChild(NameScope childNameScope) {
 	}
 	for (int i = 0; i < children.length; i++){
 		if (children.equals(childNameScope)){
-			children = (NameScope[])cbit.util.BeanUtils.removeElement(children,childNameScope);
+			children = (NameScope[])org.vcell.util.BeanUtils.removeElement(children,childNameScope);
 		}
 	}
 	

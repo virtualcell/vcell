@@ -31,14 +31,9 @@ import cbit.gui.DialogUtils;
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
 import cbit.util.AsynchProgressPopup;
-import cbit.util.BeanUtils;
-import cbit.util.Extent;
 import cbit.util.FileFilters;
-import cbit.util.ISize;
-import cbit.util.Origin;
 import cbit.util.ProgressDialogListener;
 import cbit.util.SwingDispatcherSync;
-import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
@@ -68,6 +63,11 @@ import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import javax.swing.JMenuItem;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 public class FieldDataGUIPanel extends JPanel{

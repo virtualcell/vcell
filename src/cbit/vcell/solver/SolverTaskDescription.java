@@ -11,6 +11,8 @@ import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.math.VCML;
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 

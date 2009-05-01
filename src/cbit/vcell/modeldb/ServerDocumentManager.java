@@ -3,6 +3,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -11,8 +13,6 @@ import cbit.sql.Version;
 import cbit.sql.VersionInfo;
 import cbit.sql.Versionable;
 import cbit.sql.VersionableType;
-import cbit.util.BeanUtils;
-import cbit.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelChildSummary;
 import cbit.vcell.biomodel.BioModelMetaData;

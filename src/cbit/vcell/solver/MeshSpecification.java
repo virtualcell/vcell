@@ -7,6 +7,8 @@ import java.beans.*;
 import java.io.Serializable;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 
 import cbit.util.*;
@@ -21,7 +23,7 @@ public class MeshSpecification implements Serializable, Matchable, java.beans.Ve
 	private java.lang.Double fieldMinimumAngleConstraint = null;
 	private java.lang.Double fieldMaximumSizeConstraint = null;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
-	private cbit.util.ISize fieldSamplingSize = new cbit.util.ISize(0, 0, 0);
+	private org.vcell.util.ISize fieldSamplingSize = new org.vcell.util.ISize(0, 0, 0);
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 
@@ -185,7 +187,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The samplingSize property value.
  * @see #setSamplingSize
  */
-public cbit.util.ISize getSamplingSize() {
+public org.vcell.util.ISize getSamplingSize() {
 	// cbit.util.Assertion.assertNotNull(fieldSamplingSize);
 	return fieldSamplingSize;
 }
@@ -337,7 +339,7 @@ public void setMinimumAngleConstraint(java.lang.Double minimumAngleConstraint) {
  * @param samplingSize The new value for the property.
  * @see #getSamplingSize
  */
-public void setSamplingSize(cbit.util.ISize samplingSize) throws java.beans.PropertyVetoException {
+public void setSamplingSize(org.vcell.util.ISize samplingSize) throws java.beans.PropertyVetoException {
 	// cbit.util.Assertion.assertNotNull(fieldSamplingSize);
 	//
 	// check for no-change
@@ -346,7 +348,7 @@ public void setSamplingSize(cbit.util.ISize samplingSize) throws java.beans.Prop
 		(samplingSize.getY() != fieldSamplingSize.getY()) ||
 		(samplingSize.getZ() != fieldSamplingSize.getZ())){
 			
-		cbit.util.ISize oldSamplingSize = fieldSamplingSize;
+		org.vcell.util.ISize oldSamplingSize = fieldSamplingSize;
 		fireVetoableChange("samplingSize",oldSamplingSize,samplingSize);
 		fieldSamplingSize = samplingSize;
 		firePropertyChange("samplingSize",oldSamplingSize,fieldSamplingSize);

@@ -45,8 +45,8 @@ public static MathDescription getExample() throws Exception {
 */
 
 	Geometry geo = GeometryTest.getExample_er_cytsol2D();
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(1.0, 1.0, 1.0));
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 	mathDesc.setGeometry(geo);
 	
 	//
@@ -175,8 +175,8 @@ public static MathDescription getOdeExactExample() throws Exception {
 	mathDesc.addSubDomain(cytosolSubDomain);
 	
 	Geometry geo = new Geometry("getOdeExactExample()",0);
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(1.0, 1.0, 1.0));
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 	mathDesc.setGeometry(geo);
 
 	//
@@ -241,8 +241,8 @@ public static MathDescription getOdeExample() throws Exception {
 */
 
 	Geometry geo = new Geometry("getOdeExample()",0);
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(1.0, 1.0, 1.0));
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 	mathDesc.setGeometry(geo);
 	
 	//
@@ -300,8 +300,8 @@ public static MathDescription getOdeExample2() throws Exception {
 */
 
 	Geometry geo = new Geometry("getOdeExample2()",0);
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(1.0, 1.0, 1.0));
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 	mathDesc.setGeometry(geo);
 	
 	
@@ -393,9 +393,9 @@ public static MathDescription getMathDescExample_Stoch() throws Exception
 
 	// //copy from getODEExampleWagner---all are nonsense here , just for making MathDescriton valid
 	Geometry geo = new Geometry("getOdeExampleWagner()",0);
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
 
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 	md.setGeometry(geo);
 
 	//	Constants
@@ -456,8 +456,8 @@ public static MathDescription getOdeExampleWagner() throws Exception {
 */
 
 	Geometry geo = new Geometry("getOdeExampleWagner()",0);
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(1.0, 1.0, 1.0));
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 	mathDesc.setGeometry(geo);
 	
 	
@@ -589,8 +589,8 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 				reasonForDecision.append(FLATTENED_MATHS_ARE_SAME);
 			    return true;
 			}else{
-				Variable oldVars[] = (Variable[])cbit.util.BeanUtils.getArray(strippedOldMath.getVariables(),Variable.class);
-				Variable newVars[] = (Variable[])cbit.util.BeanUtils.getArray(strippedNewMath.getVariables(),Variable.class);
+				Variable oldVars[] = (Variable[])org.vcell.util.BeanUtils.getArray(strippedOldMath.getVariables(),Variable.class);
+				Variable newVars[] = (Variable[])org.vcell.util.BeanUtils.getArray(strippedNewMath.getVariables(),Variable.class);
 				if (oldVars.length != newVars.length){
 					//
 					// number of state variables are not equal (canonical maths only have state variables)
@@ -608,8 +608,8 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 				//
 				// go through the list of SubDomains, and compare equations one by one and "correct" new one if possible
 				//
-				SubDomain subDomainsOld[] = (SubDomain[])cbit.util.BeanUtils.getArray(strippedOldMath.getSubDomains(),SubDomain.class);
-				SubDomain subDomainsNew[] = (SubDomain[])cbit.util.BeanUtils.getArray(strippedNewMath.getSubDomains(),SubDomain.class);
+				SubDomain subDomainsOld[] = (SubDomain[])org.vcell.util.BeanUtils.getArray(strippedOldMath.getSubDomains(),SubDomain.class);
+				SubDomain subDomainsNew[] = (SubDomain[])org.vcell.util.BeanUtils.getArray(strippedNewMath.getSubDomains(),SubDomain.class);
 				if (subDomainsOld.length != subDomainsNew.length){
 					reasonForDecision.append(DIFFERENT_NUMBER_OF_SUBDOMAINS);
 					return false;
@@ -641,8 +641,8 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 								reasonForDecision.append(EQUATION_REMOVED);
 								return false;
 							}
-							Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldEqu.getExpressions(strippedOldMath),Expression.class);
-							Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newEqu.getExpressions(strippedNewMath),Expression.class);
+							Expression oldExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(oldEqu.getExpressions(strippedOldMath),Expression.class);
+							Expression newExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(newEqu.getExpressions(strippedNewMath),Expression.class);
 							if (oldExps.length != newExps.length){
 								reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 								return false;
@@ -704,8 +704,8 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 									reasonForDecision.append(EQUATION_REMOVED);
 									return false;
 								}
-								Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldJumpCondition.getExpressions(strippedOldMath),Expression.class);
-								Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newJumpCondition.getExpressions(strippedNewMath),Expression.class);
+								Expression oldExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(oldJumpCondition.getExpressions(strippedOldMath),Expression.class);
+								Expression newExps[] = (Expression[])org.vcell.util.BeanUtils.getArray(newJumpCondition.getExpressions(strippedNewMath),Expression.class);
 								if (oldExps.length != newExps.length){
 									reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 									return false;

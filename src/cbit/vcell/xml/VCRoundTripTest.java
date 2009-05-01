@@ -23,7 +23,6 @@ import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.solver.Simulation;
-import cbit.util.BeanUtils;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Attribute;
@@ -31,6 +30,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;

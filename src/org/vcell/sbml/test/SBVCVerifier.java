@@ -89,7 +89,7 @@ private String printComparisonReport(SimulationComparisonSummary simCompSummary,
 	reportStrBuffer.append("\t\tPassed Variables : \n");
 	// Check if varSummary exists in failed summaries list. If not, simulation passed.
 	for (int m = 0; m < allVarSummaries.length; m++) {
-		if (!cbit.util.BeanUtils.arrayContains(failedVarSummaries, allVarSummaries[m])) {
+		if (!org.vcell.util.BeanUtils.arrayContains(failedVarSummaries, allVarSummaries[m])) {
 			reportStrBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 		}
 	}

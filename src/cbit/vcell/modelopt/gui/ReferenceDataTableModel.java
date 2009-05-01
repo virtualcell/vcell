@@ -1,5 +1,8 @@
 package cbit.vcell.modelopt.gui;
 import java.util.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.model.Model;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -11,7 +14,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics;
 /**
  * Insert the type's description here.

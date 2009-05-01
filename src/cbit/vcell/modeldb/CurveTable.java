@@ -44,7 +44,7 @@ public CurveTable() {
 public static cbit.vcell.geometry.Curve decodeCurve(String encodedShape) throws Exception {
 	cbit.vcell.geometry.Curve rCurve = null;
 	try {
-		cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(encodedShape);
+		org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(encodedShape);
 		String curveType = st.nextToken();
 		Class classType = Class.forName(curveType);
 		Object oCurve = classType.newInstance();

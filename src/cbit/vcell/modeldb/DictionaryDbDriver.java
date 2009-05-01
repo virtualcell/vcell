@@ -169,7 +169,7 @@ public String[] getCompoundAliases(Connection con, String likeString)
             + ")"
             + " LIKE "
             + "'"
-            + cbit.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
+            + org.vcell.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
             + "'"
             + " ORDER BY "
             + "UPPER("
@@ -183,7 +183,7 @@ public String[] getCompoundAliases(Connection con, String likeString)
         while (rset.next()) {
 
             String name =
-                cbit.util.TokenMangler.getSQLRestoredString(
+                org.vcell.util.TokenMangler.getSQLRestoredString(
                     rset.getString(compoundAliasTable.name.getUnqualifiedColName()));
             //System.out.println("DictionaryDbDriver.getAliases() name = " + name);
             nameList.add(name);
@@ -536,7 +536,7 @@ public String[] getEnzymeAliases(Connection con, String likeString)
             + ")"
             + " LIKE "
             + "'"
-            + cbit.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
+            + org.vcell.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
             + "'"
             + " ORDER BY "
             + "UPPER("
@@ -550,7 +550,7 @@ public String[] getEnzymeAliases(Connection con, String likeString)
         while (rset.next()) {
 
             String name =
-                cbit.util.TokenMangler.getSQLRestoredString(
+                org.vcell.util.TokenMangler.getSQLRestoredString(
                     rset.getString(enzymeAliasTable.name.getUnqualifiedColName()));
             //System.out.println("DictionaryDbDriver.getEnzymeAliases() name = " + name);
             nameList.add(name);
@@ -613,7 +613,7 @@ public String[] getProteinAliases(Connection con, String likeString)
             + ")"
             + " LIKE "
             + "'"
-            + cbit.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
+            + org.vcell.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
             + "'"
             + " ORDER BY"
             + " UPPER("
@@ -627,7 +627,7 @@ public String[] getProteinAliases(Connection con, String likeString)
         while (rset.next()) {
 
             String name =
-                cbit.util.TokenMangler.getSQLRestoredString(
+                org.vcell.util.TokenMangler.getSQLRestoredString(
                     rset.getString(proteinAliasTable.name.getUnqualifiedColName()));
             //System.out.println("DictionaryDbDriver.getProteinAliases() name = " + name);
             nameList.add(name);
@@ -740,7 +740,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,o
     if(reactionStepInfoList.size() == 0){
 	    return null;
     }
-	return (cbit.vcell.model.ReactionStepInfo[])cbit.util.BeanUtils.getArray(reactionStepInfoList,cbit.vcell.model.ReactionStepInfo.class);
+	return (cbit.vcell.model.ReactionStepInfo[])org.vcell.util.BeanUtils.getArray(reactionStepInfoList,cbit.vcell.model.ReactionStepInfo.class);
 }
 
 
@@ -822,7 +822,7 @@ private void insertCompoundSQL(Connection con, KeyValue key, CompoundInfo compou
                 + compoundAliasTable.getSQLValueList(
                     newKey,
                     key,
-                    cbit.util.TokenMangler.getSQLEscapedString(names[i]),
+                    org.vcell.util.TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
         //System.out.println(sql);
         cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
@@ -885,7 +885,7 @@ private void insertEnzymeSQL(Connection con, KeyValue key, EnzymeInfo enzyme)
                 + enzymeAliasTable.getSQLValueList(
                     newKey,
                     key,
-                    cbit.util.TokenMangler.getSQLEscapedString(names[i]),
+                    org.vcell.util.TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
         //System.out.println(sql);
         cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
@@ -948,7 +948,7 @@ private void insertProteinSQL(Connection con, KeyValue key, ProteinInfo protein)
                 + proteinAliasTable.getSQLValueList(
                     newKey,
                     key,
-                    cbit.util.TokenMangler.getSQLEscapedString(names[i]),
+                    org.vcell.util.TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
         //        System.out.println(sql);
         cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);

@@ -1,5 +1,4 @@
 package org.vcell.cellml;
-import cbit.util.TokenMangler;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.parser.MathMLTags;
 import org.jdom.Attribute;
@@ -8,6 +7,8 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
+import org.vcell.util.TokenMangler;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;

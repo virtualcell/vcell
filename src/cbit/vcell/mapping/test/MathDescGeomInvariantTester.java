@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 
-import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;

@@ -27,7 +27,6 @@ import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.NameList;
 import cbit.vcell.xml.NameManager;
 import cbit.util.xml.XmlUtil;
-import cbit.util.TokenMangler;
 import cbit.vcell.xml.XMLTags;
 
 import org.jdom.Comment;
@@ -36,6 +35,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
+import org.vcell.util.TokenMangler;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -244,8 +244,8 @@ public class CellQuanVCTranslator extends Translator {
 		try {
 			// Create dummy compartmental geometry for now ?
 			Geometry geometry = new Geometry("Default", 0);
-			geometry.getGeometrySpec().setExtent(new cbit.util.Extent(10.0, 10.0, 10.0));
-			geometry.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+			geometry.getGeometrySpec().setExtent(new org.vcell.util.Extent(10.0, 10.0, 10.0));
+			geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 			mathDescription.setGeometry(geometry);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);

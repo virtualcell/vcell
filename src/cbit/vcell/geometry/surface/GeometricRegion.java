@@ -28,7 +28,7 @@ public GeometricRegion(String argName, double argSize, VCUnitDefinition argSizeU
  * @param adjacentRegion cbit.vcell.geometry.surface.GeometricRegion
  */
 public void addAdjacentGeometricRegion(GeometricRegion adjacentRegion) {
-	setAdjacentGeometricRegions((GeometricRegion[])cbit.util.BeanUtils.addElement(fieldAdjacentGeometricRegions,adjacentRegion));
+	setAdjacentGeometricRegions((GeometricRegion[])org.vcell.util.BeanUtils.addElement(fieldAdjacentGeometricRegions,adjacentRegion));
 }
 
 

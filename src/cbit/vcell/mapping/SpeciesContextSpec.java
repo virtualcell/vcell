@@ -4,12 +4,12 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.util.BeanUtils;
-import cbit.util.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;

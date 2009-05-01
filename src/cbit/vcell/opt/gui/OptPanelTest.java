@@ -43,7 +43,7 @@ public static void main(String[] args) {
 				char singleChar = (char)ichar;
 				strBuf.append(singleChar);
 			}	
-			cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(strBuf.toString());
+			org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(strBuf.toString());
 			optSpec.read(tokens);
 		}
 			

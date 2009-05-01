@@ -14,6 +14,7 @@ import java.awt.*;
 import cbit.vcell.document.*;
 import javax.swing.*;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.*;
@@ -925,7 +926,7 @@ public void startExport(ExportSpecs exportSpecs) {
  */
 public void tileWindows(boolean horizontal) {
 	JInternalFrame[] iframes = getOpenWindows();
-	Rectangle[] bounds = cbit.util.BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
+	Rectangle[] bounds = org.vcell.util.BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
 	for (int i=0;i<iframes.length;i++) {
 		iframes[i].setBounds(bounds[i]);
 		iframes[i].show();

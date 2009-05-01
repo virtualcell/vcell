@@ -2233,7 +2233,7 @@ private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws cbit.
 	for (int i = 0; i < columnNames.length; i++){
 		columnNames[i] = odeSolverResultSet.getColumnDescriptions(i).getDisplayName();
 	}
-	if (cbit.util.BeanUtils.arrayEquals(columnNames, getResultSetColumnNames())) {
+	if (org.vcell.util.BeanUtils.arrayEquals(columnNames, getResultSetColumnNames())) {
 		// same stuff, maybe more/different data - keep axis choices
 		regeneratePlot2D();
 	} else {

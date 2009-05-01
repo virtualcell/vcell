@@ -92,7 +92,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 	buffer.append(stimulus.getElectrode().getPosition().getX()+",");
 	buffer.append(stimulus.getElectrode().getPosition().getY()+",");
 	buffer.append(stimulus.getElectrode().getPosition().getZ()+",");
-	buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(esParameterWriter.getBuffer().toString())+"'");
+	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(esParameterWriter.getBuffer().toString())+"'");
 	buffer.append(")");
 
 	return buffer.toString();

@@ -6,6 +6,8 @@ package cbit.sql;
 ©*/
 import cbit.util.*;
 import java.io.*;
+
+import org.vcell.util.BeanUtils;
 /**
  * This type was created in VisualAge.
  */

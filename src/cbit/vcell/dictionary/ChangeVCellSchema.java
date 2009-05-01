@@ -648,7 +648,7 @@ private static void fixBadSpeciesNames(Statement stmt) throws SQLException{
 	if(rset != null){
 		while(rset.next()){
 			String speciesName = rset.getString(cbit.vcell.modeldb.SpeciesTable.table.commonName.toString());
-			String fixedSpeciesName = cbit.util.TokenMangler.fixTokenStrict(speciesName);
+			String fixedSpeciesName = org.vcell.util.TokenMangler.fixTokenStrict(speciesName);
 			if(!speciesName.equals(fixedSpeciesName)){
 				fixedSpeciesIDV.add(rset.getBigDecimal(cbit.vcell.modeldb.SpeciesTable.table.id.toString()));
 				String pad = "";
@@ -672,8 +672,8 @@ private static void fixBadSpeciesNames(Statement stmt) throws SQLException{
 			"INSERT INTO "+tempspnameTableName + " VALUES " +
 			"("+
 			((java.math.BigDecimal)fixedSpeciesIDV.get(i)).toString()+","+
-			"'"+cbit.util.TokenMangler.getEscapedString(origSpeciesName)+"'"+","+
-			"'"+cbit.util.TokenMangler.getEscapedString(fixedSpeciesName)+"'"+
+			"'"+org.vcell.util.TokenMangler.getEscapedString(origSpeciesName)+"'"+","+
+			"'"+org.vcell.util.TokenMangler.getEscapedString(fixedSpeciesName)+"'"+
 			")";
 			
 		doUpdate(sql,stmt);

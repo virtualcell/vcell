@@ -57,8 +57,8 @@ private NrrdInfo() {
 public static NrrdInfo createBasicNrrdInfo(int dimension, int[] sizes, String type, String encoding) throws IllegalArgumentException {
 	if (dimension < 1) throw new IllegalArgumentException("NRRD dimension must be greater than 0");
 	if (sizes == null || sizes.length != dimension) throw new IllegalArgumentException("NRRD size array not same length with dimension");
-	if (!cbit.util.BeanUtils.arrayContains(types, type)) throw new IllegalArgumentException("Unsupported NRRD type");
-	if (!cbit.util.BeanUtils.arrayContains(encodings, encoding)) throw new IllegalArgumentException("Unsupported NRRD encoding");
+	if (!org.vcell.util.BeanUtils.arrayContains(types, type)) throw new IllegalArgumentException("Unsupported NRRD type");
+	if (!org.vcell.util.BeanUtils.arrayContains(encodings, encoding)) throw new IllegalArgumentException("Unsupported NRRD encoding");
 	NrrdInfo info = new NrrdInfo();
 	info.setDimension(dimension);
 	info.setSizes(sizes);

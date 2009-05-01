@@ -9,7 +9,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import cbit.util.NumberUtils;
+import org.vcell.util.NumberUtils;
+
 import cbit.vcell.client.PopupGenerator;
 
 public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{

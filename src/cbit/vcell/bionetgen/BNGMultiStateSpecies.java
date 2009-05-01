@@ -68,7 +68,7 @@ public boolean isWellDefined() {
 public BNGSpecies[] parseBNGSpeciesName() {
 	// Need to parse BNGMultiStateSpecies that have wild cards ("*") in their names.
 	String name = getName();
-	name = cbit.util.TokenMangler.fixToken(name);
+	name = org.vcell.util.TokenMangler.fixToken(name);
 	BNGMultiStateSpecies msSpecies = new BNGMultiStateSpecies(name, getConcentration(), getNetworkFileIndex());
 	return new BNGSpecies[] {msSpecies};
 }
@@ -107,6 +107,6 @@ public void setComponentStates() {
 		}
 	}
 
-	speciesComponents = (BNGSpeciesComponent[])cbit.util.BeanUtils.getArray(componentsVector, BNGSpeciesComponent.class);
+	speciesComponents = (BNGSpeciesComponent[])org.vcell.util.BeanUtils.getArray(componentsVector, BNGSpeciesComponent.class);
 }
 }
