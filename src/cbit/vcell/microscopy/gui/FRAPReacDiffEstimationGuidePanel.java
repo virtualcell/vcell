@@ -29,9 +29,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+
 import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
-import cbit.util.NumberUtils;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer;
 import cbit.vcell.microscopy.EstimatedParameter;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
