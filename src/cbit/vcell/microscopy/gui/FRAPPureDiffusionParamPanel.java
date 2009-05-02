@@ -24,13 +24,13 @@ import javax.swing.event.UndoableEditListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
 
 import com.icl.saxon.functions.FormatNumber;
 
 import loci.formats.TwoChannelColorSpace;
 
-import cbit.gui.DialogUtils;
-import cbit.util.AsynchProgressPopup;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;

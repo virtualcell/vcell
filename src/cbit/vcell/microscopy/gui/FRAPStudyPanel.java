@@ -45,13 +45,13 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.ZEnforcer;
 import cbit.image.ImageException;
 
 import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.KeyValue;
-import cbit.util.AsynchProgressPopup;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
