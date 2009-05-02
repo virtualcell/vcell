@@ -16,8 +16,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;

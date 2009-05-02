@@ -31,8 +31,8 @@ import javax.swing.table.TableModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Range;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;

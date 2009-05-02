@@ -24,7 +24,8 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import cbit.gui.DialogUtils;
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.client.PopupGenerator;
 
 /*

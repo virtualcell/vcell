@@ -31,8 +31,8 @@ import javax.swing.table.TableColumn;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer;
 import cbit.vcell.microscopy.EstimatedParameter;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
