@@ -1,10 +1,11 @@
 package cbit.vcell.client;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.gui.JInternalFrameEnhanced;
 
 import java.awt.*;
 import javax.swing.*;
+
+import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.client.desktop.geometry.*;
@@ -342,7 +343,7 @@ private void showSurfaceViewer(boolean bSurfaceViewerButtonSelected) {
 			try{
 				surfaceViewer.updateSurfaces();
 			}catch(Exception e){
-				cbit.gui.DialogUtils.showErrorDialog("Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
+				org.vcell.util.gui.DialogUtils.showErrorDialog("Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
 			}
 		}
 	} else {

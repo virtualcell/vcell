@@ -9,6 +9,7 @@ import java.awt.image.MemoryImageSource;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.gui.ColorIcon;
 
 import cbit.vcell.geometry.*;
 import cbit.image.*;
@@ -30,7 +31,7 @@ public class GeometrySummaryPanel extends javax.swing.JPanel {
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private Geometry ivjgeometry1 = null;
-	private cbit.gui.DefaultListModelCivilized ivjDefaultListModelCivilized = null;
+	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilized = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JLabel ivjGeometryVersionLabel = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
@@ -503,10 +504,10 @@ private javax.swing.ListCellRenderer getcellRenderer1() {
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilized() {
+private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilized() {
 	if (ivjDefaultListModelCivilized == null) {
 		try {
-			ivjDefaultListModelCivilized = new cbit.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilized = new org.vcell.util.gui.DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -589,7 +590,7 @@ private javax.swing.JLabel getGeometryVersionLabel() {
 		try {
 			ivjGeometryVersionLabel = new javax.swing.JLabel();
 			ivjGeometryVersionLabel.setName("GeometryVersionLabel");
-			ivjGeometryVersionLabel.setBorder(new cbit.gui.LineBorderBean());
+			ivjGeometryVersionLabel.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjGeometryVersionLabel.setText("GeometryName");
 			// user code begin {1}
 			// user code end

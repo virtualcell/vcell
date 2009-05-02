@@ -1,6 +1,4 @@
 package cbit.vcell.client.desktop;
-import cbit.gui.DialogUtils;
-import cbit.gui.UtilCancelException;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
@@ -26,6 +24,8 @@ import javax.swing.tree.TreePath;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.client.task.TFRunSims;
@@ -505,7 +505,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				// initialize fields
 				String oldAnnotation = tsInfoNew.getTSAnnotation();
 				// show the editor
-				newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(this, oldAnnotation);
+				newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, oldAnnotation);
 				final String finalAnnotation = newAnnotation;
 				AsynchClientTask editTestSuiteAnnotation =
 					new AsynchClientTask(){
@@ -539,7 +539,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				// initialize fields
 				String oldAnnotation = tcNew.getAnnotation();
 				// show the editor
-				newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(this, oldAnnotation);
+				newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, oldAnnotation);
 				final String finalAnnotation = newAnnotation;
 				AsynchClientTask editTestCaseAnnotation =
 					new AsynchClientTask(){

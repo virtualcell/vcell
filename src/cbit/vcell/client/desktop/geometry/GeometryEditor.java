@@ -8,9 +8,9 @@ import javax.swing.*;
  */
 public class GeometryEditor extends JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.gui.JToolBarToggleButton ivjgeoEditorToggleButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjgeoEditorToggleButton = null;
 	private JToolBar ivjGeometryToolBar = null;
-	private cbit.gui.JToolBarToggleButton ivjSurfaceViewerToggleButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjSurfaceViewerToggleButton = null;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
 	private cbit.vcell.client.GeometryWindowManager fieldGeometryWindowManager = null;
 
@@ -84,10 +84,10 @@ private void connEtoM1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getgeoEditorToggleButton() {
+private org.vcell.util.gui.JToolBarToggleButton getgeoEditorToggleButton() {
 	if (ivjgeoEditorToggleButton == null) {
 		try {
-			ivjgeoEditorToggleButton = new cbit.gui.JToolBarToggleButton();
+			ivjgeoEditorToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjgeoEditorToggleButton.setName("geoEditorToggleButton");
 			ivjgeoEditorToggleButton.setPreferredSize(new java.awt.Dimension(75, 25));
 			ivjgeoEditorToggleButton.setText("Geometry Editor");
@@ -160,10 +160,10 @@ private boolean getSurfaceViewerButtonSelected() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getSurfaceViewerToggleButton() {
+private org.vcell.util.gui.JToolBarToggleButton getSurfaceViewerToggleButton() {
 	if (ivjSurfaceViewerToggleButton == null) {
 		try {
-			ivjSurfaceViewerToggleButton = new cbit.gui.JToolBarToggleButton();
+			ivjSurfaceViewerToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjSurfaceViewerToggleButton.setName("SurfaceViewerToggleButton");
 			ivjSurfaceViewerToggleButton.setPreferredSize(new java.awt.Dimension(75, 25));
 			ivjSurfaceViewerToggleButton.setText("Surface Viewer");

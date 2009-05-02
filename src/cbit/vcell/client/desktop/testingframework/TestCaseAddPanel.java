@@ -1,5 +1,4 @@
 package cbit.vcell.client.desktop.testingframework;
-import cbit.gui.DialogUtils;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNew;
@@ -10,6 +9,7 @@ import javax.swing.ListSelectionModel;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.gui.DialogUtils;
 
 import java.awt.GridBagConstraints;
 /**

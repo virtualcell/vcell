@@ -18,9 +18,9 @@ import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.JInternalFrameEnhanced;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
@@ -260,7 +260,7 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
 	getBioModelEditor().setDocumentManager(getRequestManager().getDocumentManager());
-	cbit.gui.JInternalFrameEnhanced editorFrame = new cbit.gui.JInternalFrameEnhanced("Model", true, false, true, true);
+	org.vcell.util.gui.JInternalFrameEnhanced editorFrame = new org.vcell.util.gui.JInternalFrameEnhanced("Model", true, false, true, true);
 	editorFrame.setContentPane(bioModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.show();

@@ -27,7 +27,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * Creation date: (2/3/2003 2:07:01 PM)
  * @author: Anuradha
  */
-public class AddModelParamDialog extends cbit.gui.JInternalFrameEnhanced {
+public class AddModelParamDialog extends org.vcell.util.gui.JInternalFrameEnhanced {
 	//
 	private ModelParameter fieldModelParameter = null;
 	private JPanel ivjJInternalFrameEnhancedContentPane = null;
@@ -384,7 +384,7 @@ private javax.swing.JPanel getJPanel1() {
 		try {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel1.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsOKJButton = new java.awt.GridBagConstraints();

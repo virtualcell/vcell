@@ -5,12 +5,12 @@ import java.util.Hashtable;
 import cbit.vcell.client.task.AsynchClientTask;
 import java.io.PrintWriter;
 import java.io.File;
-import cbit.gui.VCFileChooser;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import javax.swing.JFileChooser;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.client.server.UserPreferences;
 import java.io.FileInputStream;
@@ -196,8 +196,8 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 
 	// set default file filter
-	fileChooser.addChoosableFileFilter(cbit.util.FileFilters.FILE_FILTER_BNGL);
-	fileChooser.setFileFilter(cbit.util.FileFilters.FILE_FILTER_BNGL);
+	fileChooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
+	fileChooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
 
 	// Set file chooser dialog title
 	fileChooser.setDialogTitle("Upload Selected BNG file ...");
@@ -218,7 +218,7 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 			}
 			// Check if file has .bngl extension
 			if (!selectedFile.getPath().endsWith(".bngl")) {
-				cbit.gui.DialogUtils.showErrorDialog("File " + selectedFile.getPath() + " is not a .bngl file");
+				org.vcell.util.gui.DialogUtils.showErrorDialog("File " + selectedFile.getPath() + " is not a .bngl file");
 				throw new RuntimeException("File " + selectedFile.getPath() + " is not a .bngl file");
 			}
 			// Read characters from file into character array and transfer into string buffer.

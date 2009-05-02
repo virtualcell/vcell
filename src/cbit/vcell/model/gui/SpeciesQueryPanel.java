@@ -279,7 +279,7 @@ public class SpeciesQueryPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JPanel ivjJPanel3 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroup1 = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroup1 = null;
 	private javax.swing.JTabbedPane ivjSNBJTabbedPane = null;
 	private javax.swing.JButton ivjSearchJButton = null;
 	private javax.swing.JTextField ivjFilterJTextField = null;
@@ -1000,10 +1000,10 @@ private javax.swing.JRadioButton getAllModelsJRadioButton() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroup1() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroup1() {
 	if (ivjButtonGroup1 == null) {
 		try {
-			ivjButtonGroup1 = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroup1 = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1213,8 +1213,8 @@ private javax.swing.JLabel getJLabel1() {
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitle("Search For");
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
@@ -1248,8 +1248,8 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPanel getJPanel2() {
 	if (ivjJPanel2 == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder1.setTitle("Restrict Search for Formal Species To");
 			ivjJPanel2 = new javax.swing.JPanel();
 			ivjJPanel2.setName("JPanel2");

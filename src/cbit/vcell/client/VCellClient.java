@@ -346,7 +346,7 @@ public static void login(final RequestManager requestManager,final ClientServerI
 		}
 	};
 	loginDialog.addActionListener(listener);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(loginDialog);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(loginDialog);
 }
 
 

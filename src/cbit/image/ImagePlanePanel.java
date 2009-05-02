@@ -776,8 +776,8 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		cbit.gui.TitledBorderBean ivjLocalBorder;
-		ivjLocalBorder = new cbit.gui.TitledBorderBean();
+		org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+		ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 		ivjLocalBorder.setTitle("Slice");
 		setName("ImagePlanePanel");
 		setBorder(ivjLocalBorder);

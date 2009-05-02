@@ -23,9 +23,9 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.JInternalFrameEnhanced;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.PDEDataViewer;
@@ -450,13 +450,13 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 		if(!bDanglingReferences){
 			bHasReferences = false;
 			if(bShowReferencingModelsList){
-				cbit.gui.DialogUtils.showInfoDialog(
+				org.vcell.util.gui.DialogUtils.showInfoDialog(
 					"No Model references found for Field Data "+targetExtDataID.getName());
 			}
 		}else{
 			bHasReferences = true;
 			if(bShowReferencingModelsList){
-				cbit.gui.DialogUtils.showInfoDialog(
+				org.vcell.util.gui.DialogUtils.showInfoDialog(
 					"No current Model references found.\n"+
 					"Field Data has internal database references from\n"+
 					"previously linked Model(s) that have been deleted.\n"+

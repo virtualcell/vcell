@@ -25,7 +25,7 @@ import org.vcell.util.document.Versionable;
 public class BioModelTreePanel extends JPanel {
 	private JScrollPane ivjJScrollPane1 = null;
 	private BioModelCellRenderer ivjBioModelCellRendererFactory = null;
-	private cbit.gui.JTreeFancy ivjJTree2 = null;
+	private org.vcell.util.gui.JTreeFancy ivjJTree2 = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
 	private BioModel ivjBioModel = null;
@@ -608,31 +608,31 @@ private void editAnnotation(java.awt.event.ActionEvent actionEvent) {
 		if(parentObject instanceof BioModel){
 			String oldAnnotation = ((BioModel)parentObject).getDescription();
 			try{
-				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
+				String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
 				if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
 					((BioModel)parentObject).setDescription(newAnnotation);
 				}
-			}catch(cbit.gui.UtilCancelException e){
+			}catch(org.vcell.util.gui.UtilCancelException e){
 				//Do Nothing
 			}
 		}else if(parentObject instanceof SimulationContext){
 			String oldAnnotation = ((SimulationContext)parentObject).getDescription();
 			try{
-				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
+				String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
 				if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
 					((SimulationContext)parentObject).setDescription(newAnnotation);
 				}
-			}catch(cbit.gui.UtilCancelException e){
+			}catch(org.vcell.util.gui.UtilCancelException e){
 				//Do Nothing
 			}
 		}else if(parentObject instanceof Simulation){
 			String oldAnnotation = ((Simulation)parentObject).getDescription();
 			try{
-				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
+				String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(null, oldAnnotation);
 				if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
 					((Simulation)parentObject).setDescription(newAnnotation);
 				}
-			}catch(cbit.gui.UtilCancelException e){
+			}catch(org.vcell.util.gui.UtilCancelException e){
 				//Do Nothing
 			}
 		}else{
@@ -640,7 +640,7 @@ private void editAnnotation(java.awt.event.ActionEvent actionEvent) {
 		}
 	}catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage());
 	}
 }
 
@@ -1154,13 +1154,13 @@ private javax.swing.JSeparator getJSeparator2() {
  * @return cbit.gui.JTreeFancy
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTreeFancy getJTree2() {
+private org.vcell.util.gui.JTreeFancy getJTree2() {
 	if (ivjJTree2 == null) {
 		try {
 			javax.swing.tree.DefaultTreeSelectionModel ivjLocalSelectionModel;
 			ivjLocalSelectionModel = new javax.swing.tree.DefaultTreeSelectionModel();
 			ivjLocalSelectionModel.setRowMapper(getLocalSelectionModelVariableHeightLayoutCache());
-			ivjJTree2 = new cbit.gui.JTreeFancy();
+			ivjJTree2 = new org.vcell.util.gui.JTreeFancy();
 			ivjJTree2.setName("JTree2");
 			ivjJTree2.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("loading",false)));
 			ivjJTree2.setBounds(0, 0, 78, 72);

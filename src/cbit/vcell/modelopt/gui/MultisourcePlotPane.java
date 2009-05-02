@@ -2,9 +2,10 @@ package cbit.vcell.modelopt.gui;
 import java.awt.Color;
 import java.util.Vector;
 
+import org.vcell.util.gui.DefaultListSelectionModelFixed;
+
 import cbit.plot.Plot2DPanel;
 import cbit.plot.PlotData;
-import cbit.util.DefaultListSelectionModelFixed;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
@@ -18,7 +19,7 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	private MultisourcePlotListModel ivjmultisourcePlotListModel = null;
 	private cbit.plot.PlotPane ivjplotPane = null;
 	private cbit.vcell.modelopt.gui.DataSource[] fieldDataSources = null;
-	private cbit.util.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
+	private org.vcell.util.gui.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 	
 	private String refDataLabelPrefix = "refData_";
@@ -170,10 +171,10 @@ public DataSource getDataSources(int index) {
  * @return cbit.util.DefaultListSelectionModelFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
+private org.vcell.util.gui.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
 	if (ivjdefaultListSelectionModelFixed == null) {
 		try {
-			ivjdefaultListSelectionModelFixed = new cbit.util.DefaultListSelectionModelFixed();
+			ivjdefaultListSelectionModelFixed = new org.vcell.util.gui.DefaultListSelectionModelFixed();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

@@ -34,7 +34,7 @@ public class SimulationListPanel extends JPanel {
 	private JButton ivjNewButton = null;
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
-	private cbit.gui.JTableFixed ivjScrollPaneTable = null;
+	private org.vcell.util.gui.JTableFixed ivjScrollPaneTable = null;
 	private JButton ivjStopButton = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
@@ -520,7 +520,7 @@ private void copySimulations() {
  */
 private void customizeTable() {
 	getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-	getScrollPaneTable().setDefaultRenderer(Object.class, new cbit.gui.DefaultTableCellRendererEnhanced());
+	getScrollPaneTable().setDefaultRenderer(Object.class, new org.vcell.util.gui.DefaultTableCellRendererEnhanced());
 }
 
 
@@ -812,10 +812,10 @@ private javax.swing.JButton getRunButton() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTableFixed getScrollPaneTable() {
+private org.vcell.util.gui.JTableFixed getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new cbit.gui.JTableFixed();
+			ivjScrollPaneTable = new org.vcell.util.gui.JTableFixed();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);

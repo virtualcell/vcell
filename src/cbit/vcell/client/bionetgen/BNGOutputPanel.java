@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.MassActionKinetics;

@@ -11,6 +11,7 @@ import java.util.*;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.FileFilters;
 
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.mapping.*;

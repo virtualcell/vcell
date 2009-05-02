@@ -53,7 +53,7 @@ public org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
  */
 private void initialize(DataViewer dataViewer) {
 	// create frame
-	setFrame(new cbit.gui.JInternalFrameEnhanced("Comparing ... "+getVcDataIdentifier().getID(), true, true, true, true));
+	setFrame(new org.vcell.util.gui.JInternalFrameEnhanced("Comparing ... "+getVcDataIdentifier().getID(), true, true, true, true));
 	getFrame().setContentPane(dataViewer);
 	if (dataViewer instanceof ODEDataViewer) {
 		getFrame().setSize(450, 450);

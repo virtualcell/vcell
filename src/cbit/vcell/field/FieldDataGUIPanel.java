@@ -27,12 +27,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
-import cbit.gui.DialogUtils;
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
-import cbit.util.AsynchProgressPopup;
-import cbit.util.FileFilters;
-import cbit.util.ProgressDialogListener;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -69,6 +65,10 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.ProgressDialogListener;
 
 public class FieldDataGUIPanel extends JPanel{
 
@@ -697,8 +697,8 @@ private javax.swing.JButton getJButtonFDView() {
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder.setTitle("Create New Field Data");
 			ivjJPanel1 = new javax.swing.JPanel();

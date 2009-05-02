@@ -9,13 +9,13 @@ import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.ZEnforcer;
 import cbit.util.*;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class PDEPlotControlPanel extends JPanel {
 	private JTextField ivjJTextField1 = null;
 	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
-	private cbit.gui.DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
+	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
 	private JList ivjJList1 = null;
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanel2 = null;
@@ -1061,10 +1061,10 @@ private javax.swing.JButton getAddFunctionButton() {
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilized1() {
+private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilized1() {
 	if (ivjDefaultListModelCivilized1 == null) {
 		try {
-			ivjDefaultListModelCivilized1 = new cbit.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilized1 = new org.vcell.util.gui.DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

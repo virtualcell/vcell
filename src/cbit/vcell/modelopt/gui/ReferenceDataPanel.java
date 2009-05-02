@@ -445,8 +445,8 @@ private javax.swing.JPanel getJPanel1() {
 private MultisourcePlotPane getmultisourcePlotPane() {
 	if (ivjmultisourcePlotPane == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
 			ivjLocalBorder.setTitle("Time Series Data");
 			ivjmultisourcePlotPane = new cbit.vcell.modelopt.gui.MultisourcePlotPane();
@@ -534,12 +534,12 @@ private void handleException(java.lang.Throwable exception) {
  * Comment
  */
 private cbit.vcell.opt.ReferenceData importDataFromFile() throws org.vcell.util.UserCancelException, Exception {
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser();
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser();
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	fileChooser.addChoosableFileFilter(cbit.util.FileFilters.FILE_FILTER_CSV);
+	fileChooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_CSV);
 	// Set the default file filter...
-	fileChooser.setFileFilter(cbit.util.FileFilters.FILE_FILTER_CSV);
+	fileChooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_CSV);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 	String defaultPath = null;
@@ -718,7 +718,7 @@ private void showEditor() {
 	geteditorPanel().setPreferredSize(new java.awt.Dimension(600,600));
 	geteditorPanel().setMinimumSize(new java.awt.Dimension(600,600));
 	try {
-		int retVal = cbit.gui.DialogUtils.showComponentOKCancelDialog(this,geteditorPanel(),"time series data editor");
+		int retVal = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this,geteditorPanel(),"time series data editor");
 		if (retVal == javax.swing.JOptionPane.OK_OPTION){
 			cbit.vcell.util.RowColumnResultSet rc = (new cbit.vcell.export.CSV()).importFrom(new java.io.StringReader(geteditorTextArea().getText()));
 			double weights[] = new double[rc.getDataColumnCount()];
@@ -726,10 +726,10 @@ private void showEditor() {
 			cbit.vcell.opt.SimpleReferenceData simpleRefData = new cbit.vcell.opt.SimpleReferenceData(rc,weights);
 			setReferenceData(simpleRefData);
 		}
-	}catch (cbit.gui.UtilCancelException e){
+	}catch (org.vcell.util.gui.UtilCancelException e){
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
 	}
 	return;
 }
@@ -745,7 +745,7 @@ private void showHelp() {
 		"   The first row must contain column names (e.g. t, var1, var2).\n"+
 		"   Each sucessive row represents data at a time-point.\n"+
 		"	";
-	cbit.gui.DialogUtils.showInfoDialog(message);
+	org.vcell.util.gui.DialogUtils.showInfoDialog(message);
 }
 
 
@@ -784,7 +784,7 @@ private ReferenceData subsample() {
 		return srd;
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(e.getMessage());
 		return refData;
 	}
 	

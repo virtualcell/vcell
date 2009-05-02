@@ -1002,7 +1002,7 @@ private void copyAnalysisTaskButton_ActionPerformed() {
 		}
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
 	}
 }
 
@@ -1974,8 +1974,8 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 
 		String newParameterEstimationName = null;
 		try {
-			newParameterEstimationName = cbit.gui.DialogUtils.showInputDialog0(this,"name for new parameter estimation set",parameterEstimationName);
-		} catch (cbit.gui.UtilCancelException ex) {
+			newParameterEstimationName = org.vcell.util.gui.DialogUtils.showInputDialog0(this,"name for new parameter estimation set",parameterEstimationName);
+		} catch (org.vcell.util.gui.UtilCancelException ex) {
 			// user canceled; it's ok
 		}
 
@@ -1992,7 +1992,7 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 		refreshAnalysisTaskEnables();
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
 	}
 }
 

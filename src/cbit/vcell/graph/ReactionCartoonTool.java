@@ -17,6 +17,8 @@ import cbit.vcell.model.gui.FluxReaction_Dialog;
 import javax.swing.event.InternalFrameEvent;
 
 import org.vcell.util.Compare;
+import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.model.gui.EditSpeciesDialog;
 import cbit.vcell.client.PopupGenerator;
@@ -655,9 +657,9 @@ protected void menuAction(Shape shape, String menuAction) {
 			//System.out.println("Menu action annotate activated...");
 			ReactionStep rs = ((SimpleReactionShape)shape).getReactionStep();
 			try{
-				String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(getGraphPane(), rs.getAnnotation());
+				String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(getGraphPane(), rs.getAnnotation());
 				rs.setAnnotation(newAnnotation);
-			}catch(cbit.gui.UtilCancelException e){
+			}catch(org.vcell.util.gui.UtilCancelException e){
 				//Do Nothing
 			}catch (Throwable exc) {
 				exc.printStackTrace(System.out);
@@ -1525,7 +1527,7 @@ public void showReactionBrowserDialog(ReactionCartoon sCartoon, Structure struct
 		cbit.vcell.client.server.ClientServerManager csm = (cbit.vcell.client.server.ClientServerManager)getDocumentManager().getSessionManager();
 		cbit.vcell.client.server.UserPreferences userPref = csm.getUserPreferences();
 		String defaultPath = userPref.getGenPref(cbit.vcell.client.server.UserPreferences.GENERAL_LAST_PATH_USED);
-		cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+		org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.addChoosableFileFilter(gifFilter);

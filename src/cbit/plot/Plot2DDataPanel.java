@@ -45,7 +45,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 	private JScrollPane ivjJScrollPane1 = null;
 	private Plot2D ivjplot2D1 = null;
 	private JTable ivjScrollPaneTable = null;
-	private cbit.gui.NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
+	private org.vcell.util.gui.NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
 	private JMenuItem ivjJMenuItemCopy = null;
 	private JPopupMenu ivjJPopupMenu1 = null;
 	private JMenuItem ivjJMenuItemCopyAll = null;
@@ -366,11 +366,11 @@ private synchronized void copyCells(String actionCommand) {
 			}
 		}
 
-		cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-			new cbit.gui.SimpleTransferable.ResolvedValuesSelection(symbolTableEntries,null,resolvedValues,buffer.toString());
-		cbit.gui.SimpleTransferable.sendToClipboard(rvs);
+		org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+			new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(symbolTableEntries,null,resolvedValues,buffer.toString());
+		org.vcell.util.gui.SimpleTransferable.sendToClipboard(rvs);
 	}catch(Throwable e){
-		cbit.gui.DialogUtils.showErrorDialog("Plot2DDataPanel copy failed.  "+e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog("Plot2DDataPanel copy failed.  "+e.getMessage());
 	}
 }
 
@@ -472,10 +472,10 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.gui.NonEditableDefaultTableModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.NonEditableDefaultTableModel getNonEditableDefaultTableModel1() {
+private org.vcell.util.gui.NonEditableDefaultTableModel getNonEditableDefaultTableModel1() {
 	if (ivjNonEditableDefaultTableModel1 == null) {
 		try {
-			ivjNonEditableDefaultTableModel1 = new cbit.gui.NonEditableDefaultTableModel();
+			ivjNonEditableDefaultTableModel1 = new org.vcell.util.gui.NonEditableDefaultTableModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

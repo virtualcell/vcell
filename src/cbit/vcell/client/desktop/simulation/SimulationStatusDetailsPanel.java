@@ -506,8 +506,8 @@ public void setSimulationStatusDetails(SimulationStatusDetails simulationStatusD
  * Comment
  */
 public void simulationStatusDetailsPanel_Initialize() {
-	getScrollPaneTable().setDefaultRenderer(java.util.Date.class, new cbit.vcell.messaging.admin.DateRenderer());
-	getScrollPaneTable().setDefaultRenderer(Object.class, new cbit.gui.DefaultTableCellRendererEnhanced());
+	getScrollPaneTable().setDefaultRenderer(java.util.Date.class, new org.vcell.util.gui.DateRenderer());
+	getScrollPaneTable().setDefaultRenderer(Object.class, new org.vcell.util.gui.DefaultTableCellRendererEnhanced());
 	return;
 }
 

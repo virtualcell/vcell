@@ -17,7 +17,7 @@ public class MathOverridesPanel extends JPanel {
 	private JScrollPane ivjScrollPane = null;
 	private MathOverridesTableModel ivjMathOverridesTableModel = null;
 	private boolean fieldEditable = true;
-	private cbit.gui.JTableFixed ivjJTableFixed = null;
+	private org.vcell.util.gui.JTableFixed ivjJTableFixed = null;
 	private DefaultCellEditor ivjDefaultCellEditor1 = null;
 	private Component ivjComponent1 = null;
 	private cbit.vcell.solver.MathOverrides fieldMathOverrides = null;
@@ -536,8 +536,8 @@ private synchronized void copyCells(String actionCommand) {
 				resolvedValuesV.add(getMathOverrides().getActualExpression(rowName,0));
 				
 			}
-			cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-				new cbit.gui.SimpleTransferable.ResolvedValuesSelection(
+			org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+				new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					null,
 					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
@@ -595,8 +595,8 @@ public boolean getEditable() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
@@ -736,10 +736,10 @@ private javax.swing.JPopupMenu getJPopupMenu1() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTableFixed getJTableFixed() {
+private org.vcell.util.gui.JTableFixed getJTableFixed() {
 	if (ivjJTableFixed == null) {
 		try {
-			ivjJTableFixed = new cbit.gui.JTableFixed();
+			ivjJTableFixed = new org.vcell.util.gui.JTableFixed();
 			ivjJTableFixed.setName("JTableFixed");
 			getScrollPane().setColumnHeaderView(ivjJTableFixed.getTableHeader());
 			getScrollPane().getViewport().setBackingStoreEnabled(true);
@@ -921,9 +921,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 
 		Object pasteThis = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
 		for(int i=0;i<rows.length;i+= 1){
-			if(pasteThis instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection){
-				cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-					(cbit.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
+			if(pasteThis instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection){
+				org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+					(org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
 
 				for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
 					cbit.vcell.math.Constant pastedConstant = null;
@@ -1279,7 +1279,7 @@ private void showPopupMenu(MouseEvent mouseEvent) {
 	if (mouseEvent.isPopupTrigger()) {
 		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
 		boolean bPaste =
-			obj instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection;
+			obj instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection;
 
 		getJMenuItemPaste().setEnabled(bPaste && (getJTableFixed().getSelectedRowCount() > 0));
 		getJMenuItemPaste().setVisible(getEditable());

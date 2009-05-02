@@ -10,6 +10,7 @@ import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.GlassPane;
 
 import java.util.*;
 import java.awt.event.*;
@@ -116,7 +117,7 @@ public int closeWindow(String windowID) {
 				}
 				window.removeWindowListener(windowListener);
 				window.dispose();
-				cbit.gui.SwingHacks.cleanup();				
+				org.vcell.util.gui.SwingHacks.cleanup();				
 			}
 		}
 	}

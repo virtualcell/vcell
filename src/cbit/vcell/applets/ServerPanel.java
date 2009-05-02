@@ -40,7 +40,7 @@ public class ServerPanel extends JPanel implements java.awt.event.ActionListener
 	private ServerTableModel ivjServerTableModel1 = null;
 	private JLabel ivjJLabel2 = null;
 	private JList ivjJListUsers = null;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private JLabel ivjJLabel3 = null;
 	private JPanel ivjJPanel2 = null;
 	private JRadioButton ivjJRadioButtonDate = null;
@@ -403,10 +403,10 @@ public int getAdminPort() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1444,7 +1444,7 @@ public void updateAll() {
 			
 			setPrimaryServerStatus(ServerPanel.SERVER_UP);
 			getServerTableModel1().setServerMonitorInfos(getAdminHost()+":"+getAdminPort(),new ServerMonitorInfo(getAdminHost()+":"+getAdminPort(),ServerMonitorInfo.SERVERTYPE_MAIN,primaryServerInfo));
-			cbit.gui.DefaultListModelCivilized listModel = new cbit.gui.DefaultListModelCivilized();
+			org.vcell.util.gui.DefaultListModelCivilized listModel = new org.vcell.util.gui.DefaultListModelCivilized();
 			listModel.setContents(primaryServerInfo.getConnectedUsers());
 			getJListUsers().setModel(listModel);
 			getSolverControllerTableModel1().setSolverControllerInfos(solverControllerInfos);

@@ -10,10 +10,10 @@ import javax.swing.*;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
-import cbit.gui.JInternalFrameEnhanced;
 import cbit.vcell.client.desktop.mathmodel.*;
 import cbit.vcell.mathmodel.MathModel;
 import java.util.Hashtable;
@@ -131,7 +131,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 							//);
 							surfaceViewer.updateSurfaces();
 						}catch(Exception e2){
-							cbit.gui.DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
+							org.vcell.util.gui.DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
 						}
 					//}
 				//}

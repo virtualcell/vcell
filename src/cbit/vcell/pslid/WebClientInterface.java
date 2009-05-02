@@ -7,8 +7,8 @@ import java.io.File;
 import java.io.FileInputStream;
 
 import org.vcell.util.Preference;
+import org.vcell.util.gui.AsynchProgressPopup;
 
-import cbit.util.AsynchProgressPopup;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.field.PSLIDPanel;
 

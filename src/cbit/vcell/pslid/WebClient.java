@@ -15,7 +15,8 @@ import java.net.URLConnection;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 
-import cbit.util.AsynchProgressPopup;
+import org.vcell.util.gui.AsynchProgressPopup;
+
 
 public class WebClient {
 	

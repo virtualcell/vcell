@@ -24,8 +24,8 @@ public static void main(java.lang.String[] args) {
 		//top.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		top.setSize(827, 621);
 		//
-		javax.swing.JDesktopPane jdp = new cbit.gui.JDesktopPaneEnhanced();
-		javax.swing.JInternalFrame jif = new cbit.gui.JInternalFrameEnhanced();
+		javax.swing.JDesktopPane jdp = new org.vcell.util.gui.JDesktopPaneEnhanced();
+		javax.swing.JInternalFrame jif = new org.vcell.util.gui.JInternalFrameEnhanced();
 		jif.setResizable(true);
 		jif.setBounds(37, 20, 673, 546);
 		jif.setContentPane(aGeometryViewer);

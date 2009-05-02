@@ -4,7 +4,6 @@
 ©*/
 
 package cbit.vcell.solver.ode.gui;
-import cbit.gui.DialogUtils;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
@@ -33,6 +32,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:25 PM)
@@ -1747,8 +1747,8 @@ private javax.swing.JLabel getJLabel4() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
@@ -2808,7 +2808,7 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 			throw new RuntimeException("Problems while setting the output options " + e.getMessage());
 		}
 	} catch (Exception e) {
-		cbit.gui.DialogUtils.showErrorDialog("Error in Value : " + e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog("Error in Value : " + e.getMessage());
 	}
 }
 

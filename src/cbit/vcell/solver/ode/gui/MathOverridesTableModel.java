@@ -87,7 +87,7 @@ private void editScanValues(String name, int r) throws cbit.vcell.parser.DivideB
 		spec = cbit.vcell.solver.ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
 	}
 	panel.setConstantArraySpec(spec);
-	int confirm = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, panel, "Scan values for parameter '" + fieldKeys[r]);
+	int confirm = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null, panel, "Scan values for parameter '" + fieldKeys[r]);
 	if (confirm == javax.swing.JOptionPane.OK_OPTION) {
 		panel.applyValues();
 		getMathOverrides().putConstantArraySpec(panel.getConstantArraySpec());

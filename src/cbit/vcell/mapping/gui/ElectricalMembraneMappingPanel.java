@@ -19,7 +19,7 @@ public class ElectricalMembraneMappingPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private Component ivjComponent1 = null;
 	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;
-	private cbit.gui.JTableFixed ivjScrollPaneTable1 = null;
+	private org.vcell.util.gui.JTableFixed ivjScrollPaneTable1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ElectricalMembraneMappingTableModel ivjElectricalMembraneMappingTableModel1 = null;
 	private ElectricalStimulusPanel ivjElectricalStimuliPanel = null;
@@ -525,10 +525,10 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTableFixed getScrollPaneTable1() {
+private org.vcell.util.gui.JTableFixed getScrollPaneTable1() {
 	if (ivjScrollPaneTable1 == null) {
 		try {
-			ivjScrollPaneTable1 = new cbit.gui.JTableFixed();
+			ivjScrollPaneTable1 = new org.vcell.util.gui.JTableFixed();
 			ivjScrollPaneTable1.setName("ScrollPaneTable1");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable1.getTableHeader());
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);

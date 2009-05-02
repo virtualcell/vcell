@@ -153,7 +153,7 @@ public static void main(String[] args) {
 		graphModelPanel.setGraph(graph);
 		graphModelPanel.setPreferredSize(new java.awt.Dimension(800,800));
 		graphModelPanel.setMinimumSize(new java.awt.Dimension(800,800));
-		cbit.gui.DialogUtils.showComponentOKCancelDialog(null,graphModelPanel,"graph");
+		org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null,graphModelPanel,"graph");
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
 	}

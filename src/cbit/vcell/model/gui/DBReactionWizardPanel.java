@@ -1604,11 +1604,11 @@ private javax.swing.JLabel getJLabel2() {
 private javax.swing.JPanel getJPanel() {
 	if (ivjJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder4;
-			ivjLocalBorder4 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder4;
+			ivjLocalBorder4 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder4.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder3;
-			ivjLocalBorder3 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder3;
+			ivjLocalBorder3 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder3.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder3.setBorder(ivjLocalBorder4);
 			ivjLocalBorder3.setTitleColor(java.awt.Color.black);
@@ -1672,11 +1672,11 @@ private javax.swing.JPanel getJPanel() {
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder2;
-			ivjLocalBorder2 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder2;
+			ivjLocalBorder2 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder2.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder1.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder1.setBorder(ivjLocalBorder2);
 			ivjLocalBorder1.setTitleColor(java.awt.Color.black);
@@ -1886,11 +1886,11 @@ private javax.swing.JButton getNextJButton() {
 private javax.swing.JPanel getParameterJPanel() {
 	if (ivjParameterJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder8;
-			ivjLocalBorder8 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder8;
+			ivjLocalBorder8 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder8.setThickness(1);
-			cbit.gui.TitledBorderBean ivjLocalBorder7;
-			ivjLocalBorder7 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder7;
+			ivjLocalBorder7 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder7.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder7.setBorder(ivjLocalBorder8);
 			ivjLocalBorder7.setTitleColor(java.awt.Color.black);
@@ -2049,11 +2049,11 @@ private javax.swing.JScrollPane getParameterValuesJScrollPane() {
 private ReactionCanvas getReactionCanvas1() {
 	if (ivjReactionCanvas1 == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder12;
-			ivjLocalBorder12 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder12;
+			ivjLocalBorder12 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder12.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder11;
-			ivjLocalBorder11 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder11;
+			ivjLocalBorder11 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder11.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder11.setBorder(ivjLocalBorder12);
 			ivjLocalBorder11.setTitle("Reaction Stoichiometry");
@@ -2158,11 +2158,11 @@ private javax.swing.JLabel getResolveHighlightJLabel() {
 private javax.swing.JPanel getResolverJPanel() {
 	if (ivjResolverJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder10;
-			ivjLocalBorder10 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder10;
+			ivjLocalBorder10 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder10.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder9;
-			ivjLocalBorder9 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder9;
+			ivjLocalBorder9 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder9.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder9.setBorder(ivjLocalBorder10);
 			ivjLocalBorder9.setTitle("Resolve Reaction Participants with Model");
@@ -2225,11 +2225,11 @@ private javax.swing.ListSelectionModel getRXDescriptionLSM() {
 private javax.swing.JPanel getRXParticipantsJPanel() {
 	if (ivjRXParticipantsJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder14;
-			ivjLocalBorder14 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder14;
+			ivjLocalBorder14 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder14.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder13;
-			ivjLocalBorder13 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder13;
+			ivjLocalBorder13 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder13.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder13.setBorder(ivjLocalBorder14);
 			ivjLocalBorder13.setTitle("Assign Reaction Participants To Model");
@@ -2257,8 +2257,8 @@ private javax.swing.JPanel getRXParticipantsJPanel() {
 private javax.swing.JPanel getSearchCriteriaJPanel() {
 	if (ivjSearchCriteriaJPanel == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder.setTitle("Reaction Search");
 			ivjSearchCriteriaJPanel = new javax.swing.JPanel();
@@ -2322,11 +2322,11 @@ private javax.swing.JRadioButton getSearchDictionaryJRadioButton() {
 private javax.swing.JPanel getSearchResultsJPanel() {
 	if (ivjSearchResultsJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder6;
-			ivjLocalBorder6 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder6;
+			ivjLocalBorder6 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder6.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder5;
-			ivjLocalBorder5 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder5;
+			ivjLocalBorder5 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder5.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder5.setBorder(ivjLocalBorder6);
 			ivjLocalBorder5.setTitleColor(java.awt.Color.black);
@@ -3335,7 +3335,7 @@ private cbit.vcell.dictionary.DBFormalSpecies showSpeciesBrowser() {
 	sqd.setDocumentManager(getDocumentManager());
 	sqd.setSize(550,500);
 	org.vcell.util.BeanUtils.centerOnScreen(sqd);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(sqd,this);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(sqd,this);
 	//sqd.setVisible(true);
 
 	cbit.vcell.dictionary.DBFormalSpecies dbfs = null;

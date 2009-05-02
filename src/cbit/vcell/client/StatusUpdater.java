@@ -7,7 +7,7 @@ import java.util.*;
  * Creation date: (5/10/2004 1:13:41 PM)
  * @author: Ion Moraru
  */
-public class StatusUpdater extends cbit.util.AsynchGuiUpdater {
+public class StatusUpdater extends org.vcell.util.gui.AsynchGuiUpdater {
 	private MDIManager mdiManager = null;
 	private int progressRunner = 0;
 	private ConnectionStatus connectionStatus = null;

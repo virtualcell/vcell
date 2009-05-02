@@ -17,7 +17,7 @@ import org.vcell.util.document.MathModelInfo;
  */
 public class MathModelMetaDataPanel extends JPanel {
 	private JPanel ivjJPanel1 = null;
-	private cbit.gui.JTreeFancy ivjJTree1 = null;
+	private org.vcell.util.gui.JTreeFancy ivjJTree1 = null;
 	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
 	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
 	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
@@ -278,10 +278,10 @@ private javax.swing.JPanel getJPanel1() {
  * @return cbit.gui.JTreeFancy
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTreeFancy getJTree1() {
+private org.vcell.util.gui.JTreeFancy getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
-			ivjJTree1 = new cbit.gui.JTreeFancy();
+			ivjJTree1 = new org.vcell.util.gui.JTreeFancy();
 			ivjJTree1.setName("JTree1");
 			ivjJTree1.setEnabled(true);
 			ivjJTree1.setRootVisible(false);

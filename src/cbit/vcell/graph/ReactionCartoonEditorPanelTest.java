@@ -22,7 +22,7 @@ public static void main(java.lang.String[] args) {
 		frame.add("Center", aReactionCartoonEditorPanel);
 		frame.setSize(aReactionCartoonEditorPanel.getSize());
 		frame.setVisible(true);
-		new cbit.gui.WindowCloser(frame,true);
+		new org.vcell.util.gui.WindowCloser(frame,true);
 
 		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args,"ReactionCartoonEditorPanelTest",frame);
 		cbit.vcell.clientdb.ClientDocumentManager docManager = (cbit.vcell.clientdb.ClientDocumentManager)managerManager.getDocumentManager();

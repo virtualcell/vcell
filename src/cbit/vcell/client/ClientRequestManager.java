@@ -1,7 +1,6 @@
 package cbit.vcell.client;
 import cbit.vcell.xml.XmlHelper;
 import cbit.xml.merge.*;
-import cbit.gui.DialogUtils;
 import cbit.image.*;
 import cbit.vcell.export.server.*;
 import cbit.vcell.xml.XMLInfo;
@@ -49,6 +48,10 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.gui.AsynchGuiUpdater;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.FileFilters;
 
 import cbit.vcell.xml.XMLTags;
 /**
@@ -920,7 +923,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 			    // prepare chooser
 			    File selectedFile = (File)new SwingDispatcherSync() {
 					public Object runSwing() throws Exception{
-						final cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+						final org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 						fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 						fileChooser.setMultiSelectionEnabled(false);
 						fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
@@ -986,7 +989,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 			if (get() != null) {
 				Throwable e = (Throwable)get();
 				e.printStackTrace(System.out);
-				cbit.gui.DialogUtils.showErrorDialog("Downloading failed\n"+e.getMessage());
+				org.vcell.util.gui.DialogUtils.showErrorDialog("Downloading failed\n"+e.getMessage());
 			}
 		}
 	};

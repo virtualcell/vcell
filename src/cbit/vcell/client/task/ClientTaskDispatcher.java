@@ -10,6 +10,8 @@ import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.vcell.client.*;
 /**

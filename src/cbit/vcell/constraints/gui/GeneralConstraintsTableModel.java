@@ -303,7 +303,7 @@ System.out.println("GeneralConstraintsTableModel().setValueAt("+aValue+","+rowIn
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.gui.DialogUtils.showErrorDialog("Expression error:\n"+e.getMessage());
+					org.vcell.util.gui.DialogUtils.showErrorDialog("Expression error:\n"+e.getMessage());
 				}
 				break;
 			}
