@@ -1,9 +1,12 @@
 package cbit.vcell.client.desktop.mathmodel;
 
 import cbit.gui.*;
-import cbit.gui.JInternalFrameEnhanced;
 import java.awt.Container;
 import javax.swing.*;
+
+import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.JToolBarToggleButton;
+
 import cbit.vcell.client.*;
 /**
  * Insert the type's description here.
@@ -130,10 +133,10 @@ private void connEtoM1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getEquationsViewerToggleButton() {
+private org.vcell.util.gui.JToolBarToggleButton getEquationsViewerToggleButton() {
 	if (ivjEquationsViewerToggleButton == null) {
 		try {
-			ivjEquationsViewerToggleButton = new cbit.gui.JToolBarToggleButton();
+			ivjEquationsViewerToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjEquationsViewerToggleButton.setName("EquationsViewerToggleButton");
 			ivjEquationsViewerToggleButton.setPreferredSize(new java.awt.Dimension(120, 25));
 			ivjEquationsViewerToggleButton.setText("Equations Viewer");
@@ -166,10 +169,10 @@ private boolean getGeoButtonSelected() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getGeometryToggleButton() {
+private org.vcell.util.gui.JToolBarToggleButton getGeometryToggleButton() {
 	if (ivjGeometryToggleButton == null) {
 		try {
-			ivjGeometryToggleButton = new cbit.gui.JToolBarToggleButton();
+			ivjGeometryToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjGeometryToggleButton.setName("GeometryToggleButton");
 			ivjGeometryToggleButton.setPreferredSize(new java.awt.Dimension(120, 25));
 			ivjGeometryToggleButton.setText("Geometry Viewer");
@@ -240,10 +243,10 @@ private boolean getSimsButtonSelected() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getSimulationsToggleButton() {
+private org.vcell.util.gui.JToolBarToggleButton getSimulationsToggleButton() {
 	if (ivjSimulationsToggleButton == null) {
 		try {
-			ivjSimulationsToggleButton = new cbit.gui.JToolBarToggleButton();
+			ivjSimulationsToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjSimulationsToggleButton.setName("SimulationsToggleButton");
 			ivjSimulationsToggleButton.setPreferredSize(new java.awt.Dimension(100, 25));
 			ivjSimulationsToggleButton.setText("Simulations");
@@ -270,10 +273,10 @@ private boolean getVCMLButtonSelected() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getvcmlToggleButton() {
+private org.vcell.util.gui.JToolBarToggleButton getvcmlToggleButton() {
 	if (ivjvcmlToggleButton == null) {
 		try {
-			ivjvcmlToggleButton = new cbit.gui.JToolBarToggleButton();
+			ivjvcmlToggleButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjvcmlToggleButton.setName("vcmlToggleButton");
 			ivjvcmlToggleButton.setPreferredSize(new java.awt.Dimension(100, 25));
 			ivjvcmlToggleButton.setText("VCML Editor");

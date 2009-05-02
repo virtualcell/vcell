@@ -2,7 +2,6 @@ package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.gui.DialogUtils;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.simdata.MergedDataInfo;
 import javax.swing.JInternalFrame;
@@ -66,6 +65,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
@@ -74,7 +75,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.numericstest.*;
-import cbit.util.AsynchProgressPopup;
 /**
  * Insert the type's description here.
  * Creation date: (7/15/2004 11:44:12 AM)
@@ -989,7 +989,7 @@ public static SimulationInfo getUserSelectedRefSimInfo(RequestManager currentReq
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  */
-public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,cbit.util.AsynchProgressPopup pp,SimulationInfo userDefinedRefSimInfo) {
+public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,org.vcell.util.gui.AsynchProgressPopup pp,SimulationInfo userDefinedRefSimInfo) {
 
 	StringBuffer reportTCBuffer = new StringBuffer();
 	if (testCase == null) {
@@ -2442,7 +2442,7 @@ private Object showAddTestCaseDialog(JComponent addTCPanel, Component requester)
 	JDialog d = getAddTestCaseDialog().createDialog(requester, "Add New TestCase:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
 	return getAddTestCaseDialog().getValue();
 	
 }
@@ -2461,7 +2461,7 @@ private Object showAddTestSuiteDialog(JComponent addTSPanel, Component requester
 	JDialog d = getAddTestSuiteDialog().createDialog(requester, (duplicateTestSuiteName != null?"Duplicate TestSuite '"+duplicateTestSuiteName+"'":"Add New TestSuite"));
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
 	return getAddTestSuiteDialog().getValue();
 	
 }
@@ -2506,7 +2506,7 @@ private Object showEditTestCriteriaDialog(JComponent editTCrPanel, Component req
 	JDialog d = getEditTestCriteriaDialog().createDialog(requester, "Edit Test Criteria:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
 	return getEditTestCriteriaDialog().getValue();
 }
 

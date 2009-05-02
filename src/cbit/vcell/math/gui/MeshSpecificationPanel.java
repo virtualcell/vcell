@@ -251,8 +251,8 @@ private javax.swing.JTextField getGeometrySizeTextField() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
@@ -661,7 +661,7 @@ public void updateSize() {
 	} catch (java.beans.PropertyVetoException pexc) {
 		error = "Problem with sampling size " +pexc.getMessage();
 	}
-	cbit.gui.DialogUtils.showErrorDialog("Error in mesh value - " + error);
+	org.vcell.util.gui.DialogUtils.showErrorDialog("Error in mesh value - " + error);
 }
 
 

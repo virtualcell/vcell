@@ -12,7 +12,7 @@ public class OptimizationController {
 	private OptTestPanel optTestPanel = null;
 	private ParameterEstimationTask parameterEstimationTask = null;
 
-	public class OptSolverUpdater extends cbit.util.AsynchGuiUpdater {
+	public class OptSolverUpdater extends org.vcell.util.gui.AsynchGuiUpdater {
 		private int progressRunner = 0;
 		private OptSolverCallbacks optSolverCallbacks = null;
 
@@ -41,7 +41,7 @@ public class OptimizationController {
 				optTestPanel.getSolverTypeComboBox().setEnabled(true);
 			}else if (params instanceof Exception){
 				parameterEstimationTask.appendSolverMessageText("\n"+((Exception)params).getMessage());
-				cbit.gui.DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
+				org.vcell.util.gui.DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
 				parameterEstimationTask.setOptimizationResultSet(null);
 				this.stop();
 				optTestPanel.getSolveButton().setEnabled(true);
@@ -125,7 +125,7 @@ public void plot() {
 		nameArray = (String[])org.vcell.util.BeanUtils.getArray(nameVector, String.class);
 		multisourcePlotPane.select(nameArray);
 		
-		cbit.gui.DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
+		org.vcell.util.gui.DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
 	}
@@ -170,11 +170,11 @@ public void saveSolutionAsNewSimulation() {
 			cbit.vcell.mapping.SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
 			cbit.vcell.solver.Simulation newSim = simContext.addNewSimulation();
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
-			cbit.gui.DialogUtils.showInfoDialog("created simulation \""+newSim.getName()+"\"");
+			org.vcell.util.gui.DialogUtils.showInfoDialog("created simulation \""+newSim.getName()+"\"");
 		}
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage());
 	}
 }
 
@@ -269,7 +269,7 @@ public void solve() {
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		getParameterEstimationTask().appendSolverMessageText("\n"+e.getMessage()+"\n");
-		cbit.gui.DialogUtils.showErrorDialog(optTestPanel,e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(optTestPanel,e.getMessage());
 	}
 }
 

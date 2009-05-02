@@ -30,8 +30,8 @@ class LineIcon implements Icon {
 	private Plot2DPanel ivjPlot2DPanel1 = null;
 	private JLabel ivjJLabel5 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.gui.EnhancedJLabel ivjJLabelLeft = null;
-	private cbit.gui.EnhancedJLabel ivjJLabelRight = null;
+	private org.vcell.util.gui.EnhancedJLabel ivjJLabelLeft = null;
+	private org.vcell.util.gui.EnhancedJLabel ivjJLabelRight = null;
 	private JLabel ivjJLabelBottom = null;
 	private JLabel ivjJLabelTitle = null;
 	private Plot2D fieldPlot2D = new Plot2D(null,null, null);
@@ -39,10 +39,10 @@ class LineIcon implements Icon {
 	private JPanel ivjJPanelData = null;
 	private JPanel ivjJPanelPlot = null;
 	private Plot2DDataPanel ivjPlot2DDataPanel1 = null;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private CardLayout ivjCardLayout1 = null;
-	private cbit.gui.JToolBarToggleButton ivjDataButton = null;
-	private cbit.gui.JToolBarToggleButton ivjPlotButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjDataButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjPlotButton = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private ButtonModel ivjselection1 = null;
 	private boolean fieldBCompact = false;
@@ -509,10 +509,10 @@ private javax.swing.JLabel getBlankLabel() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -541,10 +541,10 @@ private java.awt.CardLayout getCardLayout1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getDataButton() {
+private org.vcell.util.gui.JToolBarToggleButton getDataButton() {
 	if (ivjDataButton == null) {
 		try {
-			ivjDataButton = new cbit.gui.JToolBarToggleButton();
+			ivjDataButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjDataButton.setName("DataButton");
 			ivjDataButton.setToolTipText("Show data");
 			ivjDataButton.setText("");
@@ -643,10 +643,10 @@ private javax.swing.JLabel getJLabelBottom() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.EnhancedJLabel getJLabelLeft() {
+private org.vcell.util.gui.EnhancedJLabel getJLabelLeft() {
 	if (ivjJLabelLeft == null) {
 		try {
-			ivjJLabelLeft = new cbit.gui.EnhancedJLabel();
+			ivjJLabelLeft = new org.vcell.util.gui.EnhancedJLabel();
 			ivjJLabelLeft.setName("JLabelLeft");
 			ivjJLabelLeft.setText("JLabel2");
 			ivjJLabelLeft.setForeground(java.awt.Color.black);
@@ -673,8 +673,8 @@ private cbit.gui.EnhancedJLabel getJLabelLeft() {
 private javax.swing.JLabel getJLabelLegendTitle() {
 	if (ivjJLabelLegendTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 4, 10, 4));
 			ivjJLabelLegendTitle = new javax.swing.JLabel();
 			ivjJLabelLegendTitle.setName("JLabelLegendTitle");
@@ -697,10 +697,10 @@ private javax.swing.JLabel getJLabelLegendTitle() {
  * @return cbit.gui.EnhancedJLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.EnhancedJLabel getJLabelRight() {
+private org.vcell.util.gui.EnhancedJLabel getJLabelRight() {
 	if (ivjJLabelRight == null) {
 		try {
-			ivjJLabelRight = new cbit.gui.EnhancedJLabel();
+			ivjJLabelRight = new org.vcell.util.gui.EnhancedJLabel();
 			ivjJLabelRight.setName("JLabelRight");
 			ivjJLabelRight.setText("JLabel4");
 			ivjJLabelRight.setForeground(java.awt.Color.black);
@@ -999,10 +999,10 @@ private Plot2DPanel getPlot2DPanel1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getPlotButton() {
+private org.vcell.util.gui.JToolBarToggleButton getPlotButton() {
 	if (ivjPlotButton == null) {
 		try {
-			ivjPlotButton = new cbit.gui.JToolBarToggleButton();
+			ivjPlotButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjPlotButton.setName("PlotButton");
 			ivjPlotButton.setToolTipText("Show plot(s)");
 			ivjPlotButton.setText("");
@@ -1034,7 +1034,7 @@ private javax.swing.JScrollPane getPlotLegendsScrollPane() {
 			ivjPlotLegendsScrollPane = new javax.swing.JScrollPane();
 			ivjPlotLegendsScrollPane.setName("PlotLegendsScrollPane");
 			ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			ivjPlotLegendsScrollPane.setBorder(new cbit.gui.EmptyBorderBean());
+			ivjPlotLegendsScrollPane.setBorder(new org.vcell.util.gui.EmptyBorderBean());
 			getPlotLegendsScrollPane().setViewportView(getJPanelPlotLegends());
 			// user code begin {1}
 			// user code end
@@ -1312,8 +1312,8 @@ private void updateLegend() {
 	for (int i = 0; i < plotIndices.length - legends.length / 2; i++){
 		JLabel line = new JLabel();
 		JLabel text = new JLabel();
-		line.setBorder(new cbit.gui.EmptyBorderBean(6,0,0,0));
-		text.setBorder(new cbit.gui.EmptyBorderBean(0,8,6,0));
+		line.setBorder(new org.vcell.util.gui.EmptyBorderBean(6,0,0,0));
+		text.setBorder(new org.vcell.util.gui.EmptyBorderBean(0,8,6,0));
 		getJPanelPlotLegends().add(line);
 		getJPanelPlotLegends().add(text);
 		text.addMouseListener(ml);

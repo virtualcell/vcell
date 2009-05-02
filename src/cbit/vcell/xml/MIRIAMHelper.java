@@ -21,8 +21,8 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.ZEnforcer;
 
-import cbit.gui.ZEnforcer;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.ReactionStep;

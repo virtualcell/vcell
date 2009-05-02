@@ -907,7 +907,7 @@ private javax.swing.JLabel getInfoJlabel() {
 		try {
 			ivjInfoJlabel = new javax.swing.JLabel();
 			ivjInfoJlabel.setName("InfoJlabel");
-			ivjInfoJlabel.setBorder(new cbit.gui.LineBorderBean());
+			ivjInfoJlabel.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjInfoJlabel.setText("Info");
 			ivjInfoJlabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 			// user code begin {1}

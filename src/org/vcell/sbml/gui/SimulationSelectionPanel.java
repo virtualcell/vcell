@@ -300,11 +300,11 @@ public cbit.vcell.solver.Simulation getSimulations(int index) {
 private javax.swing.JPanel getSimulationsListPanel() {
 	if (ivjSimulationsListPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder1.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 12));
 			ivjLocalBorder.setBorder(ivjLocalBorder1);
 			ivjLocalBorder.setTitleColor(new java.awt.Color(0,0,0));
@@ -335,11 +335,11 @@ private javax.swing.JPanel getSimulationsListPanel() {
 private javax.swing.JPanel getSimulationSummaryPanel() {
 	if (ivjSimulationSummaryPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder3;
-			ivjLocalBorder3 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder3;
+			ivjLocalBorder3 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder3.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder2;
-			ivjLocalBorder2 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder2;
+			ivjLocalBorder2 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder2.setTitleFont(new java.awt.Font("Arial", 1, 12));
 			ivjLocalBorder2.setBorder(ivjLocalBorder3);
 			ivjLocalBorder2.setTitleColor(new java.awt.Color(0,0,0));

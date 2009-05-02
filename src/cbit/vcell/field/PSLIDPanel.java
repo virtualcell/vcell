@@ -50,12 +50,12 @@ import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Preference;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.ProgressDialogListener;
 
 import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
 
-import cbit.util.AsynchProgressPopup;
-import cbit.util.ProgressDialogListener;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.pslid.WebClientInterface;

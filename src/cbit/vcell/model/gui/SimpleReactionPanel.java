@@ -1,6 +1,4 @@
 package cbit.vcell.model.gui;
-import cbit.gui.DialogUtils;
-import cbit.gui.UtilCancelException;
 import cbit.vcell.parser.Expression;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -21,6 +19,8 @@ import javax.swing.JButton;
 
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;

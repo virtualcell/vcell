@@ -16,7 +16,7 @@ public class StructureMappingCartoonPanelTest {
 public static void main(java.lang.String[] args) {
 	try {
 		java.awt.Frame frame = new java.awt.Frame();
-		new cbit.gui.WindowCloser(frame,true);
+		new org.vcell.util.gui.WindowCloser(frame,true);
 		MathMapping mathMapping = MathMappingTest.getExample(2);
 		//cbit.vcell.mapping.SimulationContext simContext = cbit.vcell.mapping.SimulationContextTest.getExample(2);
 		//cbit.vcell.model.Model model = simContext.getReactionContext().getModel();

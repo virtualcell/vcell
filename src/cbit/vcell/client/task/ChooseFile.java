@@ -12,6 +12,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.FileFilters;
 
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
@@ -90,7 +91,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML);
@@ -238,12 +239,12 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					applnStructInputPanel.setStructures(structures);
 					applnStructInputPanel.setPreferredSize(new java.awt.Dimension(350, 400));
 					applnStructInputPanel.setMaximumSize(new java.awt.Dimension(350, 400));
-					option = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, applnStructInputPanel, "Select Application and Specify Structure Size to Export:");
+					option = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null, applnStructInputPanel, "Select Application and Specify Structure Size to Export:");
 					structSelection = applnStructInputPanel.getStructSelectionIndex();
 					if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
 						break;
 					} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
-						cbit.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
+						org.vcell.util.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
 					}
 				}
 				if (option == JOptionPane.OK_OPTION) {
@@ -261,7 +262,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 						 (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
 						 (!geoContext.isAllSizeSpecifiedPositive() && !geoContext.isAllVolFracAndSurfVolSpecified()) ||
 						 (geoContext.isAllSizeSpecifiedNull() && !geoContext.isAllVolFracAndSurfVolSpecified()) ) {
-						cbit.gui.DialogUtils.showErrorDialog("Cannot export to SBML without compartment sizes being set. This can be automatically " +
+						org.vcell.util.gui.DialogUtils.showErrorDialog("Cannot export to SBML without compartment sizes being set. This can be automatically " +
 								" computed if the absolute size of at least one compartment and the relative sizes (Surface-to-volume-ratio/Volume-fraction) " +
 								" of all compartments are known. Sufficient information is not available to perform this computation." +
 								"\n\nThis can be fixed by going back to the application '" + chosenSimContextName + "' and setting structure sizes in the 'StructureMapping' tab.");
@@ -290,7 +291,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 						simSelectionPanel.setPreferredSize(new java.awt.Dimension(600, 400));
 						simSelectionPanel.setMaximumSize(new java.awt.Dimension(600, 400));
 						simSelectionPanel.setSimulations(overriddenSims);
-						int simOption = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, simSelectionPanel, "Select Simulation whose overrides should be exported:");
+						int simOption = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null, simSelectionPanel, "Select Simulation whose overrides should be exported:");
 						if (simOption == JOptionPane.OK_OPTION) {
 							chosenSimulation = simSelectionPanel.getSelectedSimulation();
 							if (chosenSimulation != null) {
@@ -341,7 +342,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
@@ -408,7 +409,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 	// fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);		// Can export Mathmodel to L2V1 ??

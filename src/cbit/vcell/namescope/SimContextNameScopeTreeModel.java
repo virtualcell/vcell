@@ -9,11 +9,11 @@ import cbit.vcell.model.Model;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.parser.ScopedExpression;
-import cbit.gui.JTableFixed;
 import cbit.vcell.model.Parameter;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.JTableFixed;
 
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.desktop.BioModelNode;

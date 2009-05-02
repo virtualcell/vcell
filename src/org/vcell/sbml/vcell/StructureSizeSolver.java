@@ -2,6 +2,7 @@ package org.vcell.sbml.vcell;
 import java.util.Enumeration;
 
 import org.vcell.util.TokenMangler;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -12,7 +13,6 @@ import cbit.vcell.constraints.GeneralConstraint;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.AbstractConstraint;
 import cbit.vcell.constraints.SimpleBounds;
-import cbit.gui.DialogUtils;
 import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.

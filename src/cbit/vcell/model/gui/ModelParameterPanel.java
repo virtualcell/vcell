@@ -10,8 +10,8 @@ import java.util.Vector;
 import javax.swing.JDesktopPane;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.graph.StructureShape;
 import cbit.vcell.model.Kinetics;
@@ -786,8 +786,8 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			//Send to clipboard
 			//
-			cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-				new cbit.gui.SimpleTransferable.ResolvedValuesSelection(
+			org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+				new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					null,
 					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
@@ -831,9 +831,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			for(int i=0;i<rows.length;i+= 1){
 				cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)getmodelParameterTableModel().getData().get(rows[i]);
 				try{
-					if(pasteThis instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection){
-						cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-							(cbit.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
+					if(pasteThis instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection){
+						org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+							(org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
 						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
 							cbit.vcell.model.Parameter pasteDestination = null;
 							cbit.vcell.model.Parameter clipboardBiologicalParameter = null;
@@ -960,7 +960,7 @@ private void modelParameterPanel_Initialize() {
 private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 	if(mouseEvent.isPopupTrigger()){
 		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
-		boolean bPastable = obj instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection;
+		boolean bPastable = obj instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection;
 		boolean bSomethingSelected = getScrollPaneTable().getSelectedRowCount() > 0;
 		getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
 		getJMenuItemPasteAll().setEnabled(bPastable);
@@ -1075,7 +1075,7 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		// if it is a reaction parameter (authoritative parameter, i.e., reaction rate), it is editable
 		ReactionStep rs = getmodelParameterTableModel().getEditableAnnotationReactionStep(getScrollPaneTable().getSelectedRow());
 		if(rs != null){
-			String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(this, rs.getAnnotation());
+			String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, rs.getAnnotation());
 			if(newAnnotation != null && newAnnotation.length() == 0){
 				newAnnotation = null;
 			}
@@ -1093,7 +1093,7 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 			modelParameter.setModelParameterAnnotation(newAnnotation);
 			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
 		}
-	}catch(cbit.gui.UtilCancelException e){
+	}catch(org.vcell.util.gui.UtilCancelException e){
 		//Do Nothing
 	}catch (Throwable exc) {
 		exc.printStackTrace(System.out);

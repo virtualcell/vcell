@@ -344,7 +344,7 @@ public void mouseClicked(java.awt.event.MouseEvent event) {
 		Point canvasLoc = getGraphPane().getLocationOnScreen();
 		canvasLoc.x += screenPoint.x;
 		canvasLoc.y += screenPoint.y;
-		cbit.gui.DialogUtils.showErrorDialog("Error:\n"+e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog("Error:\n"+e.getMessage());
 	}				
 }
 

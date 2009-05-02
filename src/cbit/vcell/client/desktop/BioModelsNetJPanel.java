@@ -21,8 +21,8 @@ import javax.swing.ListCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;

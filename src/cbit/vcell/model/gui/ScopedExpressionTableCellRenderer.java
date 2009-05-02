@@ -8,7 +8,8 @@ import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import cbit.gui.DefaultTableCellRendererEnhanced;
+import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
+
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.parser.ScopedExpression;
 

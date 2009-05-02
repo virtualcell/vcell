@@ -17,7 +17,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-public class JSortTable extends cbit.gui.JTableFixed
+public class JSortTable extends org.vcell.util.gui.JTableFixed
   implements MouseListener
 {
   

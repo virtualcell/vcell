@@ -4,11 +4,11 @@ package cbit.vcell.client.task;
 //import cbit.vcell.clientdb.DocumentManager;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.AsynchProgressPopup;
 //import cbit.vcell.numericstest.AddTestSuiteOP;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 //import cbit.vcell.client.RequestManager;
-import cbit.util.AsynchProgressPopup;
 /**
  * Insert the type's description here.
  * Creation date: (11/17/2004 2:08:09 PM)

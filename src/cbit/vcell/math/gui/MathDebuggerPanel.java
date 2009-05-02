@@ -9,7 +9,6 @@ import java.awt.Insets;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
 
-import cbit.gui.DialogUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MappingException;
@@ -28,6 +27,8 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.TransferHandler;
+
+import org.vcell.util.gui.DialogUtils;
 
 import sun.misc.Regexp;
 

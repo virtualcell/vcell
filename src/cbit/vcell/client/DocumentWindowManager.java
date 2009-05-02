@@ -18,6 +18,9 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.solver.*;
 /**
@@ -130,13 +133,13 @@ public void compareWithSaved() {
 			comparePane.setMessage(comparePanel);
 			JDialog compareDialog = comparePane.createDialog(DocumentWindowManager.this.getComponent(), "Compare Models");      
 			compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			cbit.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DocumentWindowManager.this.getComponent());
+			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DocumentWindowManager.this.getComponent());
 			if ("Apply Changes".equals(comparePane.getValue())) {
 				if (!comparePanel.tagsResolved()) {
 					JOptionPane messagePane = new JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
 					JDialog messageDialog = messagePane.createDialog(comparePanel, "Error");
 					messageDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					cbit.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
+					org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
 				} else {
 					BeanUtils.setCursorThroughout((Container)getComponent(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {

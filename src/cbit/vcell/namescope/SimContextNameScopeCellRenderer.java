@@ -13,10 +13,11 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
-import cbit.gui.JTableFixed;
 import cbit.vcell.model.Model;
 import cbit.vcell.desktop.BioModelNode;
 import javax.swing.JTree;
+
+import org.vcell.util.gui.JTableFixed;
 /**
  * Insert the type's description here.
  * Creation date: (5/6/2004 3:33:12 PM)

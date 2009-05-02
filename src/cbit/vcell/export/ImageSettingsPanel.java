@@ -38,7 +38,7 @@ public class ImageSettingsPanel extends javax.swing.JPanel implements ExportCons
 	private javax.swing.JTabbedPane ivjJTabbedPane1 = null;
 	private javax.swing.JPanel ivjTIFF = null;
 	private cbit.vcell.simdata.gui.DisplayPreferences[] fieldDisplayPreferences = null;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private boolean fieldHideMembraneOutline = true;
 	private javax.swing.JRadioButton ivjJRadioButtonHideMembraneOutline = null;
 	private javax.swing.JButton ivjCancelJButton = null;
@@ -323,10 +323,10 @@ protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEven
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

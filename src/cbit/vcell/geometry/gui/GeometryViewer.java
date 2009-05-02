@@ -606,8 +606,8 @@ private cbit.vcell.geometry.GeometrySpec getGeometrySpec() {
 private GeometrySubVolumePanel getGeometrySubVolumePanel() {
 	if (ivjGeometrySubVolumePanel == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjGeometrySubVolumePanel = new cbit.vcell.geometry.gui.GeometrySubVolumePanel();
 			ivjGeometrySubVolumePanel.setName("GeometrySubVolumePanel");
@@ -653,8 +653,8 @@ private cbit.image.ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
 private javax.swing.JButton getJButtonChangeDomain() {
 	if (ivjJButtonChangeDomain == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder1.setColor(new java.awt.Color(160,160,255));
 			ivjJButtonChangeDomain = new javax.swing.JButton();
 			ivjJButtonChangeDomain.setName("JButtonChangeDomain");
@@ -1006,7 +1006,7 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
 private void showSizeDialog() {
 	org.vcell.util.BeanUtils.centerOnComponent(getGeometrySizeDialog1(), this);
 	getGeometrySizeDialog1().init(getGeometry());
-	cbit.gui.ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
 }
 
 

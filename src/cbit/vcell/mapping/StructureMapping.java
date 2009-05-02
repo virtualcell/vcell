@@ -12,11 +12,11 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
-import cbit.gui.DialogUtils;
 import cbit.util.*;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;

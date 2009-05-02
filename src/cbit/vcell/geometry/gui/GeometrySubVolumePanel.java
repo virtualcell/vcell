@@ -17,10 +17,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 
 import java.beans.*;
 
-import cbit.gui.DialogUtils;
 import cbit.image.ImagePlaneManager;
 import cbit.image.ImagePlaneManagerPanel;
 import cbit.vcell.geometry.*;
@@ -566,9 +566,9 @@ private void geometrySubVolumePanel_Initialize() {
 	getScrollPaneTable().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 	getScrollPaneTable().setDefaultEditor(
 		Object.class,
-		new cbit.gui.ValidatingCellEditor(
+		new org.vcell.util.gui.ValidatingCellEditor(
 			new javax.swing.JTextField(),
-			new cbit.gui.EditorValueProvider () {
+			new org.vcell.util.gui.EditorValueProvider () {
 				public Object getEditorValue(Object obj){
 					if(obj instanceof SubVolume){
 						return ((SubVolume)obj).getName();
@@ -771,7 +771,7 @@ private javax.swing.JPanel getJPanel1() {
 							d.setSize(300,275);
 							d.setLocation(300,200);
 //							BeanUtils.centerOnComponent(GeometrySubVolumePanel.this,null);
-							cbit.gui.ZEnforcer.showModalDialogOnTop(d, GeometrySubVolumePanel.this);
+							org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d, GeometrySubVolumePanel.this);
 
 							if(acceptFlag[0]){
 								AddShapeJPanel.addSubVolumeToGeometrySpec(addShapeJPanel,getGeometrySpec());

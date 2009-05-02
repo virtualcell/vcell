@@ -13,7 +13,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-import cbit.gui.JTableFixed;
+import org.vcell.util.gui.JTableFixed;
+
 import cbit.vcell.model.Model;
 
 /**
@@ -81,7 +82,7 @@ public class TransformMassActionPanel extends JPanel implements ActionListener {
 	{
 		if(transMATable == null)
 		{
-			transMATable = new cbit.gui.JTableFixed()
+			transMATable = new org.vcell.util.gui.JTableFixed()
 			{
 				//Implement table cell tool tips.
 			    public String getToolTipText(MouseEvent e) {

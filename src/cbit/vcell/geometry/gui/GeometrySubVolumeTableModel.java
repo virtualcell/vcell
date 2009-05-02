@@ -16,7 +16,7 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener,cbit.gui.TableCellValidator {
+public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener,org.vcell.util.gui.TableCellValidator {
 	private final int NUM_COLUMNS = 2;
 	private final int COLUMN_NAME = 0;
 	private final int COLUMN_VALUE = 1;
@@ -318,7 +318,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public cbit.gui.TableCellValidator.EditValidation validate(java.lang.Object obj,int row,int col) {
+public org.vcell.util.gui.TableCellValidator.EditValidation validate(java.lang.Object obj,int row,int col) {
 	//
 	//Verify that object(obj) is an appropriate value for a specific class type  in a table cell(row,col)
 	//
@@ -328,18 +328,18 @@ public cbit.gui.TableCellValidator.EditValidation validate(java.lang.Object obj,
 			//Value needs to be a String Expression appropriate for AnalyticSubVolume
 			if(obj instanceof String){
 					new AnalyticSubVolume("test",new Expression((String)obj));//Try to have and error
-					return cbit.gui.TableCellValidator.VALIDATE_OK;
+					return org.vcell.util.gui.TableCellValidator.VALIDATE_OK;
 			}
 		}else if(col == COLUMN_NAME && getColumnClass(col).isAssignableFrom(SubVolume.class)){
 			//Subvolume "name" column
 			//Value needs to be String Name appropriate for AnalyticSubVolume
 			if(obj instanceof String){
 					new AnalyticSubVolume((String)obj);//Try to have and error
-					return cbit.gui.TableCellValidator.VALIDATE_OK;
+					return org.vcell.util.gui.TableCellValidator.VALIDATE_OK;
 			}
 		}
 	}catch(Throwable e){
-		return new cbit.gui.TableCellValidator.EditValidation(e.getClass().getName()+"\n"+(e.getMessage() != null?e.getMessage():"")+".");
+		return new org.vcell.util.gui.TableCellValidator.EditValidation(e.getClass().getName()+"\n"+(e.getMessage() != null?e.getMessage():"")+".");
 	}
 	
 	//Couldn't verify object

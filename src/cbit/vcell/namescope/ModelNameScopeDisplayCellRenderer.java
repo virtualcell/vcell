@@ -10,7 +10,8 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model;
 import cbit.vcell.desktop.BioModelNode;
 import javax.swing.JTree;
-import cbit.gui.JTableFixed;
+
+import org.vcell.util.gui.JTableFixed;
 /**
  * Insert the type's description here.
  * Creation date: (4/12/2004 3:27:37 PM)

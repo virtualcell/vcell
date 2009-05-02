@@ -1502,7 +1502,7 @@ private cbit.plot.PlotPane getPlotPaneLineScan() {
 		try {
 			ivjPlotPaneLineScan = new cbit.plot.PlotPane();
 			ivjPlotPaneLineScan.setName("PlotPaneLineScan");
-			ivjPlotPaneLineScan.setBorder(new cbit.gui.LineBorderBean());
+			ivjPlotPaneLineScan.setBorder(new org.vcell.util.gui.LineBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1524,7 +1524,7 @@ private cbit.plot.PlotPane getPlotPaneTimeSeries() {
 		try {
 			ivjPlotPaneTimeSeries = new cbit.plot.PlotPane();
 			ivjPlotPaneTimeSeries.setName("PlotPaneTimeSeries");
-			ivjPlotPaneTimeSeries.setBorder(new cbit.gui.LineBorderBean());
+			ivjPlotPaneTimeSeries.setBorder(new org.vcell.util.gui.LineBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

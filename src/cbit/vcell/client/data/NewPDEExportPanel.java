@@ -46,12 +46,12 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JRadioButton ivjJRadioButtonSelection = null;
 	private JRadioButton ivjJRadioButtonSlice = null;
 	private JScrollPane ivjJScrollPane2 = null;
-	private cbit.gui.DefaultListModelCivilized ivjDefaultListModelCivilizedSelections = null;
-	private cbit.gui.DefaultListModelCivilized ivjDefaultListModelCivilizedVariables = null;
+	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilizedSelections = null;
+	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilizedVariables = null;
 //	private cbit.vcell.simdata.gui.SpatialSelection fieldSelectedRegion = null;
 	private int fieldSlice = -1;
 	private int fieldNormalAxis = -1;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private JPanel ivjJPanelRegion = null;
 	private JPanel ivjJPanelTime = null;
 	private JPanel ivjJPanelVariables = null;
@@ -851,10 +851,10 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -882,10 +882,10 @@ public cbit.vcell.client.DataViewerManager getDataViewerManager() {
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilizedSelections() {
+private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilizedSelections() {
 	if (ivjDefaultListModelCivilizedSelections == null) {
 		try {
-			ivjDefaultListModelCivilizedSelections = new cbit.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilizedSelections = new org.vcell.util.gui.DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -902,10 +902,10 @@ private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilizedSelection
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilizedVariables() {
+private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilizedVariables() {
 	if (ivjDefaultListModelCivilizedVariables == null) {
 		try {
-			ivjDefaultListModelCivilizedVariables = new cbit.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilizedVariables = new org.vcell.util.gui.DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1886,11 +1886,11 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		cbit.gui.LineBorderBean ivjLocalBorder1;
-		ivjLocalBorder1 = new cbit.gui.LineBorderBean();
+		org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
+		ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
 		ivjLocalBorder1.setLineColor(java.awt.Color.blue);
-		cbit.gui.TitledBorderBean ivjLocalBorder;
-		ivjLocalBorder = new cbit.gui.TitledBorderBean();
+		org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+		ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 		ivjLocalBorder.setBorder(ivjLocalBorder1);
 		ivjLocalBorder.setTitle("Specify data to be exported");
 		setName("PDEExportPanel");

@@ -9,12 +9,12 @@ import swingthreads.SwingWorker;
 import java.awt.*;
 import cbit.vcell.client.desktop.*;
 import cbit.rmi.event.ExportEvent;
-import cbit.util.AsynchProgressPopup;
-import cbit.util.FileFilters;
 
 import javax.swing.*;
 
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.FileFilters;
 
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.*;

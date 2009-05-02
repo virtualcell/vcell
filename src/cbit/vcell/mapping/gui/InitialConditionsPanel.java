@@ -19,8 +19,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.ZEnforcer;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
+
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
@@ -958,8 +959,8 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			//Send to clipboard
 			//
-			cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-				new cbit.gui.SimpleTransferable.ResolvedValuesSelection(
+			org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+				new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
@@ -1008,9 +1009,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			for(int i=0;i<rows.length;i+= 1){
 				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSimulationContext().getReactionContext().getSpeciesContextSpecs(rows[i]);
 				try{
-					if(pasteThis instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection){
-						cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-							(cbit.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
+					if(pasteThis instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection){
+						org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+							(org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
 						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
 							SpeciesContextSpec.SpeciesContextSpecParameter pasteDestination = null;
 							SpeciesContextSpec.SpeciesContextSpecParameter clipboardBiologicalParameter = null;
@@ -1150,7 +1151,7 @@ private void scrollPaneTable_MouseButton(java.awt.event.MouseEvent mouseEvent) {
 		boolean bPastable =
 			//obj instanceof cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection ||
 			//obj instanceof cbit.vcell.desktop.VCellTransferable.InitialConditionsSelection ||
-			obj instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection;
+			obj instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection;
 			//||
 			//obj instanceof cbit.vcell.desktop.VCellTransferable.OptimizationParametersSelection;
 			
@@ -1241,8 +1242,8 @@ private void showCustomEditor(java.awt.event.MouseEvent mouseEvent) {
 		int col = getScrollPaneTable().getSelectedColumn();
 		switch (getScrollPaneTable().convertColumnIndexToModel(col)) {
 			case SpeciesContextSpecsTableModel.COLUMN_INITIAL: {
-				cbit.gui.BevelBorderBean ivjLocalBorder;
-				ivjLocalBorder = new cbit.gui.BevelBorderBean();
+				org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+				ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 				ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 				ivjLocalBorder.setBevelType(1);
 				final JTextArea  txtArea = new javax.swing.JTextArea();

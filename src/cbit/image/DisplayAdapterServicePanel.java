@@ -39,7 +39,7 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 	private JLabel ivjSCNANJLabel = null;
 	private JLabel ivjSCNoRangeJLabel = null;
 	private JPanel ivjSpecialColorsJPanel = null;
-	private cbit.gui.ButtonGroupCivilized ivjColorMapButtonGroup = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjColorMapButtonGroup = null;
 	private ButtonModel ivjButtonModel1 = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
@@ -659,8 +659,8 @@ private javax.swing.ButtonModel getButtonModel1() {
 private javax.swing.JPanel getColorGridPanel() {
 	if (ivjColorGridPanel == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setBorder(new javax.swing.border.EtchedBorder());
 			ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.LEFT);
 			ivjLocalBorder.setTitle("Color");
@@ -692,10 +692,10 @@ private javax.swing.JPanel getColorGridPanel() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getColorMapButtonGroup() {
+private org.vcell.util.gui.ButtonGroupCivilized getColorMapButtonGroup() {
 	if (ivjColorMapButtonGroup == null) {
 		try {
-			ivjColorMapButtonGroup = new cbit.gui.ButtonGroupCivilized();
+			ivjColorMapButtonGroup = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -716,8 +716,8 @@ private cbit.gui.ButtonGroupCivilized getColorMapButtonGroup() {
 private javax.swing.JLabel getColorMapJLabel() {
 	if (ivjColorMapJLabel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder2;
-			ivjLocalBorder2 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder2;
+			ivjLocalBorder2 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder2.setThickness(2);
 			ivjColorMapJLabel = new javax.swing.JLabel();
 			ivjColorMapJLabel.setName("ColorMapJLabel");
@@ -964,8 +964,8 @@ private javax.swing.JLabel getSCAboveMaxJLabel() {
 private javax.swing.JPanel getScalePanel() {
 	if (ivjScalePanel == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder1.setBorder(new javax.swing.border.EtchedBorder());
 			ivjLocalBorder1.setTitleJustification(javax.swing.border.TitledBorder.LEFT);
 			ivjLocalBorder1.setTitle("Data Values Range (Min-Max)");

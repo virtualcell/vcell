@@ -10,7 +10,7 @@ import cbit.vcell.model.*;
 /**
  * This type was created in VisualAge.
  */
-public class ModelParametersDialog extends cbit.gui.JInternalFrameEnhanced {
+public class ModelParametersDialog extends org.vcell.util.gui.JInternalFrameEnhanced {
 	private JTabbedPane tabbedPane = null;
 	private ModelParameterPanel modelParametersPanel = null;
 	private ProblemsPanel problemsPanel = null;

@@ -843,7 +843,7 @@ public void showReactionCartoonEditorPanel(final StructureShape structureShape) 
 		cbit.vcell.client.server.ClientServerManager csm = (cbit.vcell.client.server.ClientServerManager)getDocumentManager().getSessionManager();
 		cbit.vcell.client.server.UserPreferences userPref = csm.getUserPreferences();
 		String defaultPath = userPref.getGenPref(cbit.vcell.client.server.UserPreferences.GENERAL_LAST_PATH_USED);
-		cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+		org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.addChoosableFileFilter(gifFilter);

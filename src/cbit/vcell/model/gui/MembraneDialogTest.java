@@ -21,7 +21,7 @@ public class MembraneDialogTest {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		javax.swing.JDesktopPane desktop = new cbit.gui.JDesktopPaneEnhanced();
+		javax.swing.JDesktopPane desktop = new org.vcell.util.gui.JDesktopPaneEnhanced();
 		frame.setSize(500,500);
 		frame.setContentPane(desktop);
 

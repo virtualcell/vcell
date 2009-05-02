@@ -2491,7 +2491,7 @@ private void processMouseClick(java.awt.event.MouseEvent mouseEvent) {
 		// save current settings before showing panel; plot will update live
 		getplot2DSettings1().saveSettings();
 //		int newSettings = JOptionPane.showOptionDialog(this, getPlot2DSettingsPanel1(), "Plot Settings", 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-		int newSettings = cbit.gui.DialogUtils.showComponentOKCancelDialog(this, getPlot2DSettingsPanel1(), "Plot Settings");
+		int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getPlot2DSettingsPanel1(), "Plot Settings");
 		if (newSettings != JOptionPane.OK_OPTION) {
 			// user didn't ok, put back old settings
 			getplot2DSettings1().restoreSavedSettings();

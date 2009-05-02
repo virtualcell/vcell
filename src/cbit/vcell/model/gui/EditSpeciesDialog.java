@@ -8,7 +8,7 @@ import cbit.vcell.client.UserMessage;
  * Creation date: (2/3/2003 2:07:01 PM)
  * @author: Frank Morgan
  */
-public class EditSpeciesDialog extends cbit.gui.JInternalFrameEnhanced {
+public class EditSpeciesDialog extends org.vcell.util.gui.JInternalFrameEnhanced {
 
 	//
 	//
@@ -1048,7 +1048,7 @@ private javax.swing.JPanel getJPanel1() {
 		try {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel1.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsOKJButton = new java.awt.GridBagConstraints();
@@ -1664,7 +1664,7 @@ private cbit.vcell.dictionary.DBFormalSpecies showDatabaseBindingDialog() {
 	aSpeciesQueryDialog.setDocumentManager(getDocumentManager());
 	aSpeciesQueryDialog.setSize(500,500);
 	org.vcell.util.BeanUtils.centerOnScreen(aSpeciesQueryDialog);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(aSpeciesQueryDialog,this);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(aSpeciesQueryDialog,this);
 	//aSpeciesQueryDialog.setVisible(true);
 
 	cbit.vcell.dictionary.DBFormalSpecies dbfs = null;

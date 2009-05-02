@@ -46,14 +46,14 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 
 import loci.formats.AWTImageTools;
 import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.ImageTools;
-import cbit.gui.DialogUtils;
-import cbit.gui.UtilCancelException;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;

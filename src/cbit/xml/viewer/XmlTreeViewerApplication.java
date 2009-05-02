@@ -303,10 +303,10 @@ private javax.swing.JMenuItem getExitMenuItem() {
  */
 protected java.io.File getfile() {
 	if (this.chooser == null) {
-		this.chooser = new cbit.gui.VCFileChooser(".");
+		this.chooser = new org.vcell.util.gui.VCFileChooser(".");
 		this.chooser.setFileSelectionMode(chooser.FILES_ONLY);
-		this.chooser.addChoosableFileFilter(cbit.util.FileFilters.FILE_FILTER_XML);
-		this.chooser.setFileFilter(cbit.util.FileFilters.FILE_FILTER_XML);
+		this.chooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_XML);
+		this.chooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_XML);
 	}
 	
 	int returnval = chooser.showOpenDialog(null);

@@ -5,6 +5,9 @@ package cbit.gui.graph;
  * All rights reserved.
 ©*/
 import javax.swing.*;
+
+import org.vcell.util.gui.ButtonGroupCivilized;
+
 import java.util.*;
 import cbit.gui.*;
 import java.awt.event.*;
@@ -326,7 +329,7 @@ public final static String getActionCommand(int mode) {
  * Creation date: (7/14/00 11:40:05 AM)
  * @return cbit.gui.ButtonGroupCivilized
  */
-public cbit.gui.ButtonGroupCivilized getButtonGroup() {
+public org.vcell.util.gui.ButtonGroupCivilized getButtonGroup() {
 	return buttonGroup;
 }
 
@@ -669,7 +672,7 @@ protected Point screenToWorld(Point screenPoint) {
  * Creation date: (7/14/00 11:40:05 AM)
  * @param newButtonGroup cbit.gui.ButtonGroupCivilized
  */
-public void setButtonGroup(cbit.gui.ButtonGroupCivilized newButtonGroup) {
+public void setButtonGroup(org.vcell.util.gui.ButtonGroupCivilized newButtonGroup) {
 	buttonGroup = newButtonGroup;
 	setMode(SELECT_MODE);
 }

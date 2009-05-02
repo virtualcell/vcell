@@ -643,8 +643,8 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			//Send to clipboard
 			//
-			cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-				new cbit.gui.SimpleTransferable.ResolvedValuesSelection(
+			org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+				new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
@@ -701,9 +701,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 				cbit.vcell.modelopt.ParameterMappingSpec pms =
 					(cbit.vcell.modelopt.ParameterMappingSpec)getparameterMappingTableModel().getData().get(rows[i]);
 				try{
-					if(pasteThis instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection){
-						cbit.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-							(cbit.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
+					if(pasteThis instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection){
+						org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
+							(org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
 						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
 							cbit.vcell.modelopt.ParameterMappingSpec pasteDestination = null;
 							cbit.vcell.model.Parameter clipboardBiologicalParameter = null;
@@ -845,7 +845,7 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 	if(mouseEvent.isPopupTrigger()){
 		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
 		boolean bPastable =
-			obj instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection;
+			obj instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection;
 
 		boolean bInitGuessSelected = getScrollPaneTable().getSelectedColumn() == ParameterMappingTableModel.COLUMN_CURRENTVALUE;
 		bPastable = bPastable && bInitGuessSelected;

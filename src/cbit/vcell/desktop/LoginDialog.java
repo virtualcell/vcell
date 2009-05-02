@@ -11,10 +11,10 @@ import javax.swing.*;
 
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.gui.DialogUtils;
 
 import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
-import cbit.gui.DialogUtils;
 import cbit.util.*;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;

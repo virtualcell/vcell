@@ -19,7 +19,7 @@ import cbit.util.*;
  * @author: 
  */
 public class SimpleWebBrowserPanel extends javax.swing.JPanel implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, HyperlinkListener {
-	private cbit.gui.JEditorPaneBeanFix ivjJEditorPane1 = null;
+	private org.vcell.util.gui.JEditorPaneBeanFix ivjJEditorPane1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.JButton ivjJButtonBack = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
@@ -308,10 +308,10 @@ private javax.swing.JButton getJButtonForward() {
  * @return cbit.gui.JEditorPaneBeanFix
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JEditorPaneBeanFix getJEditorPane1() {
+private org.vcell.util.gui.JEditorPaneBeanFix getJEditorPane1() {
 	if (ivjJEditorPane1 == null) {
 		try {
-			ivjJEditorPane1 = new cbit.gui.JEditorPaneBeanFix();
+			ivjJEditorPane1 = new org.vcell.util.gui.JEditorPaneBeanFix();
 			ivjJEditorPane1.setName("JEditorPane1");
 			ivjJEditorPane1.setAutoscrolls(true);
 			ivjJEditorPane1.setDoubleBuffered(true);

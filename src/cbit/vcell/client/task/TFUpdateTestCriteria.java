@@ -2,9 +2,9 @@ package cbit.vcell.client.task;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.AsynchProgressPopup;
 
 import cbit.vcell.client.TestingFrameworkWindowManager;
-import cbit.util.AsynchProgressPopup;
 import cbit.vcell.numericstest.TestCriteriaNew;
 /**
  * Insert the type's description here.

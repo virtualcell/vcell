@@ -17,8 +17,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
-import cbit.util.AsynchProgressPopup;
-import cbit.util.ProgressDialogListener;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.xml.MIRIAMHelper.DescriptiveHeirarchy;
@@ -43,6 +41,8 @@ import javax.swing.JTextField;
 import javax.swing.BorderFactory;
 
 import org.jdom.Element;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.ProgressDialogListener;
 
 import uk.ac.ebi.miriam.lib.MiriamLink;
 

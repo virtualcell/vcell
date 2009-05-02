@@ -6,7 +6,7 @@ package cbit.vcell.namescope;
  */
 public class NameScopeParametersPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjTableHeaderLabel = null;
-	private cbit.gui.JTableFixed aJTable = null;
+	private org.vcell.util.gui.JTableFixed aJTable = null;
 
 /**
  * NameScopeParametersPanel constructor comment.
@@ -49,7 +49,7 @@ public NameScopeParametersPanel(boolean isDoubleBuffered) {
  * Creation date: (4/15/2004 11:19:06 AM)
  * @return javax.swing.JTable
  */
-public cbit.gui.JTableFixed getAJTable() {
+public org.vcell.util.gui.JTableFixed getAJTable() {
 	return aJTable;
 }
 
@@ -140,7 +140,7 @@ public static void main(java.lang.String[] args) {
  * Creation date: (4/15/2004 11:19:06 AM)
  * @param newAJTable javax.swing.JTable
  */
-public void setAJTable(cbit.gui.JTableFixed newAJTable) {
+public void setAJTable(org.vcell.util.gui.JTableFixed newAJTable) {
 	aJTable = newAJTable;
 	add((java.awt.Component)aJTable, java.awt.BorderLayout.CENTER);
 }

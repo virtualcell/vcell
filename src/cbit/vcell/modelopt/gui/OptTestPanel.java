@@ -1030,7 +1030,7 @@ private javax.swing.JEditorPane getJEditorPane1() {
 		try {
 			ivjJEditorPane1 = new javax.swing.JEditorPane();
 			ivjJEditorPane1.setName("JEditorPane1");
-			ivjJEditorPane1.setBorder(new cbit.gui.LineBorderBean());
+			ivjJEditorPane1.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJEditorPane1.setMargin(new java.awt.Insets(6, 3, 3, 3));
 			// user code begin {1}
 			// user code end
@@ -1155,8 +1155,8 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPanel getJPanel10() {
 	if (ivjJPanel10 == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder2;
-			ivjLocalBorder2 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder2;
+			ivjLocalBorder2 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder2.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
 			ivjLocalBorder2.setTitle("optimization solver");
 			ivjJPanel10 = new javax.swing.JPanel();
@@ -1378,8 +1378,8 @@ private javax.swing.JPanel getJPanel6() {
 private javax.swing.JPanel getJPanel7() {
 	if (ivjJPanel7 == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder1.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
 			ivjLocalBorder1.setTitle("solution");
 			ivjJPanel7 = new javax.swing.JPanel();
@@ -1422,8 +1422,8 @@ private javax.swing.JPanel getJPanel7() {
 private javax.swing.JPanel getJPanel8() {
 	if (ivjJPanel8 == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
 			ivjLocalBorder.setTitle("data/model mapping");
 			ivjJPanel8 = new javax.swing.JPanel();
@@ -2230,7 +2230,7 @@ private void mapButton_ActionPerformed() {
 	
 	java.util.Arrays.sort(symbolTableEntries,steComparator);
 	
-	SymbolTableEntry ste = (SymbolTableEntry)cbit.gui.DialogUtils.showListDialog(this,symbolTableEntries,"select data association",new SymbolTableEntryListCellRenderer());
+	SymbolTableEntry ste = (SymbolTableEntry)org.vcell.util.gui.DialogUtils.showListDialog(this,symbolTableEntries,"select data association",new SymbolTableEntryListCellRenderer());
 
 	if (ste!=null && getselectionModel1().getMaxSelectionIndex()>=0){
 		cbit.vcell.modelopt.ReferenceDataMappingSpec refDataMappingSpec = getParameterEstimationTask().getModelOptimizationSpec().getReferenceDataMappingSpecs()[getselectionModel1().getMaxSelectionIndex()];
@@ -2238,7 +2238,7 @@ private void mapButton_ActionPerformed() {
 			refDataMappingSpec.setModelObject(ste);
 		}catch (java.beans.PropertyVetoException e){
 			e.printStackTrace(System.out);
-			cbit.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+			org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
 		}
 	}
 	return;

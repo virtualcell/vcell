@@ -16,11 +16,11 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.util.AsynchProgressPopup;
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;

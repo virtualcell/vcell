@@ -1,6 +1,7 @@
 package cbit.vcell.solver.stoch;
 
-import cbit.gui.DialogUtils;
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;

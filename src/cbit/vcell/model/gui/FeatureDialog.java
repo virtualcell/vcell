@@ -35,7 +35,7 @@ import cbit.vcell.model.*;
  *
  *
  */
-public class FeatureDialog extends cbit.gui.JInternalFrameEnhanced implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+public class FeatureDialog extends org.vcell.util.gui.JInternalFrameEnhanced implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 	private JCheckBox overrideSizeNameCheckBox;
 	private JTextField featureSizeNameJTextField;
 	private JLabel featureSizeNameLabel;

@@ -27,6 +27,8 @@ import org.vcell.util.TimeSeriesJobSpec;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.ProgressDialogListener;
 
 import cbit.image.DisplayAdapterService;
 import cbit.plot.*;
@@ -1769,7 +1771,7 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 			getPdeDataContext().getCartesianMesh().getGeometryDimension()
 		);
 		
-		dataValueSurfaceViewerJIF = new cbit.gui.JInternalFrameEnhanced("DataValueSurfaceViewer",true,true,true,true);
+		dataValueSurfaceViewerJIF = new org.vcell.util.gui.JInternalFrameEnhanced("DataValueSurfaceViewer",true,true,true,true);
 		dataValueSurfaceViewerJIF.setContentPane(fieldDataValueSurfaceViewer0);
 		//dataValueSurfaceViewerJIF.pack();
 		dataValueSurfaceViewerJIF.setSize(800,800);
@@ -1830,11 +1832,11 @@ public cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel() {
 private cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel1() {
 	if (ivjExportMonitorPanel1 == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder1.setLineColor(java.awt.Color.blue);
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setBorder(ivjLocalBorder1);
 			ivjLocalBorder.setTitle("Export jobs");
 			ivjExportMonitorPanel1 = new cbit.vcell.export.ExportMonitorPanel();

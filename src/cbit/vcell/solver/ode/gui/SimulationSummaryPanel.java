@@ -1112,7 +1112,7 @@ private javax.swing.JTextArea getJTextAreaDescription() {
 		try {
 			ivjJTextAreaDescription = new javax.swing.JTextArea();
 			ivjJTextAreaDescription.setName("JTextAreaDescription");
-			ivjJTextAreaDescription.setBorder(new cbit.gui.EmptyBorderBean());
+			ivjJTextAreaDescription.setBorder(new org.vcell.util.gui.EmptyBorderBean());
 			ivjJTextAreaDescription.setForeground(java.awt.Color.blue);
 			ivjJTextAreaDescription.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJTextAreaDescription.setBounds(0, 0, 160, 120);
