@@ -38,8 +38,8 @@ import javax.swing.table.DefaultTableModel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;

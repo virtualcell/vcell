@@ -27,8 +27,8 @@ import javax.swing.SwingUtilities;
 
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 
 /**
  * To play a movie with Java Media Framework.

@@ -45,9 +45,9 @@ import javax.swing.table.TableModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Range;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.SimpleTransferable;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.SimpleTransferable;
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;

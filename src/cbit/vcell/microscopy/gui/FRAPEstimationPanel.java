@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.gui;
 import java.awt.Color;
 import java.awt.Dimension;
 
-import cbit.gui.DialogUtils;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
@@ -39,6 +38,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 
 public class FRAPEstimationPanel extends JPanel {
 	private JTable table;

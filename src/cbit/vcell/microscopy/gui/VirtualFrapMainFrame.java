@@ -30,9 +30,9 @@ import javax.swing.undo.UndoableEdit;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
-import cbit.util.AsynchProgressPopup;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.FRAPStudy;

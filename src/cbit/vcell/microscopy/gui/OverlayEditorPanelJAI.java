@@ -35,13 +35,13 @@ import javax.swing.undo.UndoableEditSupport;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.DialogUtils;
 
 import loci.formats.AWTImageTools;
 
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.ImageTools;
-import cbit.gui.DialogUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
