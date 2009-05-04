@@ -1,48 +1,30 @@
 package cbit.vcell.client.task;
-import org.vcell.util.UserCancelException;
+import java.util.Hashtable;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 
-import cbit.rmi.event.*;
-import cbit.vcell.geometry.surface.*;
-import cbit.vcell.client.*;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.clientdb.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.server.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.PerformanceData;
+import cbit.rmi.event.PerformanceDataEntry;
+import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.MathModelWindowManager;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class SaveDocument extends AsynchClientTask {
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Saving document to database";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
-
+	
+	public SaveDocument() {
+		super("Saving document to database", TASKTYPE_NONSWING_BLOCKING);
+	}
 
 /**
  * Insert the method's description here.
@@ -50,14 +32,14 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	long l1 = System.currentTimeMillis();
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	VCDocument currentDocument = documentWindowManager.getVCDocument();
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	boolean bAsNew = hashTable.containsKey("newName");
 	String newName = bAsNew ? (String)hashTable.get("newName") : null;
-	cbit.vcell.solver.Simulation simulationsToRun[] = (cbit.vcell.solver.Simulation[])hashTable.get("simulations");
+	Simulation simulationsToRun[] = (Simulation[])hashTable.get("simulations");
 	String independentSims[] = null;
 	if (simulationsToRun!=null && simulationsToRun.length>0){
 		independentSims = new String[simulationsToRun.length];
@@ -134,23 +116,4 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:23 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:41:05 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

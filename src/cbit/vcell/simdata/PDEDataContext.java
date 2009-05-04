@@ -4,17 +4,16 @@ import cbit.vcell.simdata.gui.SpatialSelection;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.desktop.controls.*;
 import cbit.vcell.solvers.*;
 import java.beans.*;
 import java.util.Comparator;
+import cbit.gui.PropertyChangeListenerProxyVCell;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
-
 import cbit.image.*;
 import cbit.util.*;
 /**
@@ -102,7 +101,7 @@ public abstract void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionAr
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
 }
 
 
@@ -216,7 +215,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-public void externalRefresh() throws DataAccessException{
+public void externalRefresh() throws DataAccessException {
 	refreshData(getVariableName(), getTimePoint(),true);
 }
 
@@ -696,29 +695,13 @@ protected void setSourceDataInfo(cbit.image.SourceDataInfo sourceDataInfo) {
 	firePropertyChange("sourceDataInfo", oldValue, sourceDataInfo);
 }
 
-
-/**
- * Sets the timePoint property (double) value.
- * @param timePoint The new value for the property.
- * @see #getTimePoint
- */
-public void setTimePoint(double timePoint) throws DataAccessException{
-	
-//	if(timePoint == getTimePoint()){
-//		return;
-//	}
-	refreshData(getVariableName(), timePoint,false);
-	
-//	//
-//	if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
-//		throw new IllegalArgumentException("Time point="+timePoint+" does not exist");
-//	}
-//	//
-//	double oldValue = fieldTimePoint;
-//	fieldTimePoint = timePoint;
-//	firePropertyChange("timePoint", new Double(oldValue), new Double(timePoint));
+public void setVariableAndTime(String variable, double timePoint) throws DataAccessException {
+	refreshData(variable, timePoint, false);
 }
 
+public void setTimePoint(double timePoint) throws DataAccessException {
+	setVariableAndTime(getVariableName(), timePoint);
+}
 
 /**
  * Sets the timePoints property (double[]) value.
@@ -731,40 +714,8 @@ protected void setTimePoints(double[] timePoints) {
 	firePropertyChange("timePoints", oldValue, timePoints);
 }
 
-
-/**
- * Sets the variableName property (java.lang.String) value.
- * @param variableName The new value for the property.
- * @see #getVariableName
- */
-public void setVariableName(java.lang.String variableName) throws DataAccessException{
-	
-//	if(variableName.equals(getVariableName())){
-//		return;
-//	}
-	
-	refreshData(variableName, getTimePoint(),false);
-	
-//	//
-//	if (!BeanUtils.arrayContains(getVariableNames(),variableName)) {
-//		throw new IllegalArgumentException("Variable Name="+variableName+" does not exist");
-//	}
-//	//
-//	String oldName = getVariableName();
-//	//
-//	// select new DataIdentifier
-//	//
-//	fieldDataIdentifier = null;
-//	for (int i = 0; i < dataIdentifiers.length; i++){
-//		if (dataIdentifiers[i].getName().equals(variableName)){
-//			fieldDataIdentifier = dataIdentifiers[i];
-//		}
-//	}
-//	
-//	String newName = null;
-//	if (fieldDataIdentifier!=null){
-//		newName = fieldDataIdentifier.getName();
-//	}
-//	firePropertyChange("variableName", oldName, newName);
+public void setVariableName(String variable) throws DataAccessException {
+	setVariableAndTime(variable, getTimePoint());
 }
+
 }

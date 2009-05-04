@@ -1,22 +1,15 @@
 package cbit.vcell.client.task;
-import cbit.vcell.server.*;
-import cbit.vcell.clientdb.*;
-import javax.swing.*;
 
+
+import java.util.Hashtable;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.MathModelWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.clientdb.DocumentManager;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
-
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.client.*;
-
-import java.beans.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
-import cbit.vcell.client.server.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -31,29 +24,9 @@ public class CheckUnchanged extends AsynchClientTask {
  * @param whileSavingForRunningSims boolean
  */
 public CheckUnchanged(boolean whileSavingForRunningSims) {
+	super("Checking changes to document", TASKTYPE_SWING_BLOCKING);
 	this.whileSavingForRunningSims = whileSavingForRunningSims;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Checking changes to document";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_SWING_BLOCKING;
-}
-
 
 /**
  * Insert the method's description here.
@@ -61,10 +34,10 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
-	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
+//	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
 	if (documentWindowManager.getVCDocument().getDocumentType() == VCDocument.MATHMODEL_DOC) {
 		if (((MathModelWindowManager)documentWindowManager).hasUnappliedChanges()) {
 			String msg = "Changes have been made in VCML Editor, please click \"Apply Changes\" or \"Cancel\" to proceed.";
@@ -96,25 +69,5 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			}
 		}
 	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:05 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:38:36 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
 }
 }

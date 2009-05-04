@@ -1,26 +1,23 @@
 package cbit.vcell.simdata.gui;
+
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
-
 import javax.swing.*;
-
 import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import cbit.util.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.awt.GridBagLayout;
@@ -35,14 +32,14 @@ public class PDEPlotControlPanel extends JPanel {
 	private JComboBox filterComboBox;
 	private JLabel ivjJLabel1 = null;
 	private JTextField ivjJTextField1 = null;
-	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
+	private PDEDataContext fieldPdeDataContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
 	private JList ivjJList1 = null;
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanel2 = null;
 	private JScrollPane ivjJScrollPane1 = null;
-	private cbit.vcell.simdata.PDEDataContext ivjpdeDataContext1 = null;
+	private PDEDataContext ivjpdeDataContext1 = null;
 	private JLabel ivjJLabelMax = null;
 	private JLabel ivjJLabelMin = null;
 	private JSlider ivjJSliderTime = null;
@@ -1744,36 +1741,52 @@ private void setTimeFromSlider(int sliderPosition) {
 	if (getpdeDataContext1() != null && getpdeDataContext1().getTimePoints() != null) {
 		final double timepoint = getpdeDataContext1().getTimePoints()[sliderPosition];
 		
-
 		if (! getJSliderTime().getValueIsAdjusting()) {
-			try {
-				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				getpdeDataContext1().setTimePoint(timepoint);
-				getJTextField1().setText(Double.toString(getPdeDataContext().getTimePoint()));
-				synchronizeView();
-			} catch (final Exception exc) {
-				SwingUtilities.invokeLater(new Runnable(){
-					public void run(){
-					PopupGenerator.showErrorDialog("Error updating timepoint '"+timepoint+"'\n"+exc.getMessage());
-					}});
-				int index = -1;
-				if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
-					double[] timePoints = getPdeDataContext().getTimePoints();
-					for(int i=0;i<timePoints.length;i+= 1){
-						if(timePoints[i] == getPdeDataContext().getTimePoint()){
-							index = i;
-							break;
-						}
+			Hashtable<String, Object> hash = new Hashtable<String, Object>();
+			AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));									
+				}
+			};
+			
+			AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					try {
+						getpdeDataContext1().setTimePoint(timepoint);
+					} catch (final Exception exc) {
+						hashTable.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR, exc);
 					}
 				}
-				if(index != -1){
-					getJSliderTime().setValue(index);
-				}else{
-					getJTextField1().setText("-Error-");
+			};
+			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					try {				
+						Exception exc = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+						if (exc != null) {				
+//							PopupGenerator.showErrorDialog("Error updating timepoint '"+timepoint+"'\n"+exc.getMessage());
+							int index = -1;
+							if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
+								double[] timePoints = getPdeDataContext().getTimePoints();
+								for(int i=0;i<timePoints.length;i+= 1){
+									if(timePoints[i] == getPdeDataContext().getTimePoint()){
+										index = i;
+										break;
+									}
+								}
+							}
+							if(index != -1){
+								getJSliderTime().setValue(index);
+							}else{
+								getJTextField1().setText("-Error-");
+							}
+						}
+					} finally {
+						setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					}
 				}
-			} finally {
-				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			}
+			};
+			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
+			ClientTaskDispatcher.dispatch(this, hash, taskArray);
 		}else{
 			getJTextField1().setText(timepoint+"");
 		}
@@ -1815,34 +1828,6 @@ private void setTimeFromTextField(String typedValue) {
 	getJSliderTime().setValue(val);
 }
 
-
-private void synchronizeView() throws DataAccessException{
-	if(getPdeDataContext() == null &&
-			getpdeDataContext1().getTimePoints() != null){
-		return;
-	}
-	double[] timePoints = getpdeDataContext1().getTimePoints();
-	int timeIndex = getJSliderTime().getValue();
-	double currentTimePoint = (timeIndex>0 && timeIndex < timePoints.length?timePoints[timeIndex]:-1);
-	if(currentTimePoint == -1){
-		return;
-	}
-	if(getpdeDataContext1().getTimePoint() != currentTimePoint){
-		updateTimeTextField(currentTimePoint);
-		if(getPdeDataContext().getTimePoint() != currentTimePoint){
-			getPdeDataContext().setTimePoint(currentTimePoint);
-		}
-	}
-	String currentVariableName = (String)getJList1().getSelectedValue();
-	if(getJList1().getSelectedValue() == currentVariableName){
-		return;
-	}
-	if(!currentVariableName.equals(getPdeDataContext().getVariableName())){
-		getPdeDataContext().setVariableName(currentVariableName);
-	}
-}
-
-
 /**
  * Comment
  */
@@ -1859,7 +1844,7 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 					getDisplayAdapterService().activateMarkedState(newVariableName);
 				}
 				getPdeDataContext().setVariableName(newVariableName);
-				synchronizeView();
+//				synchronizeView();
 			} catch (final Exception e) {
 				e.printStackTrace();
 				SwingUtilities.invokeLater(new Runnable(){
@@ -1892,6 +1877,71 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 			}
 		}
 	}
+	
+//	if(getPdeDataContext() == null){
+//		return;
+//	}
+//	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
+//		final String newVariableName = (String)getJList1().getSelectedValue();
+//		if(newVariableName != null){
+//			Hashtable<String, Object> hash = new Hashtable<String, Object>();
+//			AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+//				public void run(Hashtable<String, Object> hashTable) throws Exception {
+//					setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//					if(getDisplayAdapterService() != null){
+//						getDisplayAdapterService().activateMarkedState(newVariableName);
+//					}
+//				}
+//			};
+//			
+//			AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+//				public void run(Hashtable<String, Object> hashTable) throws Exception {
+//					try {
+//						getPdeDataContext().setVariableName(newVariableName);
+//					} catch (final Exception exc) {
+//						hashTable.put("Exception", exc);						
+//					}
+//				}
+//			};
+//				
+//			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+//				public void run(Hashtable<String, Object> hashTable) throws Exception {
+//					try {				
+//						Exception e = (Exception)hashTable.get("Exception");
+//						if (e != null) {			
+//							e.printStackTrace();
+//							PopupGenerator.showErrorDialog("Error setting variable name '"+newVariableName+"'\n"+e.getMessage());
+//							int index = -1;
+//							if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+//								for(int i=0;i<getJList1().getModel().getSize();i+= 1){
+//									if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+//										index = i;
+//										break;
+//									}
+//								}
+//							}
+//							if(index != -1){
+//								getJList1().setSelectedIndex(index);
+//							}else{
+//								getJList1().clearSelection();
+//							}
+//						}
+//					} finally {
+//						setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+//					}
+//				}
+//			};
+//			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
+//			ClientTaskDispatcher.dispatch(this, hash, taskArray);
+//		}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+//			for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+//				if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+//					getJList1().setSelectedIndex(i);
+//					break;
+//				}
+//			}
+//		}
+//	}
 }
 private void updateTimeTextField(double newTime){
 	getJTextField1().setText(Double.toString(newTime));

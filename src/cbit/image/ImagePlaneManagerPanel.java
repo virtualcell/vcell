@@ -1,7 +1,6 @@
 package cbit.image;
 
 import java.awt.*;
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.geometry.gui.CurveRenderer;
 
@@ -74,45 +73,39 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 				connEtoC6(e);
 		};
 		public void propertyChange(final java.beans.PropertyChangeEvent evt) {
-			new SwingDispatcherSync (){
-				public Object runSwing() throws Exception{
-					if (evt.getSource() == ImagePlaneManagerPanel.this) 
-						connEtoC19(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this && (evt.getPropertyName().equals("mode"))) 
-						connEtoC3(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePlaneManager() && (evt.getPropertyName().equals("imagePlaneData"))) 
-						connEtoM1(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getimagePaneModel() && (evt.getPropertyName().equals("dimension"))) 
-						connEtoC5(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePlaneManager() && (evt.getPropertyName().equals("normalAxis"))) 
-						connEtoM2(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveEditorTool() && (evt.getPropertyName().equals("curveRenderer"))) 
-						connPtoP3SetSource();
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("activeColorModelID"))) 
-						connEtoC12(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("activeScaleRange"))) 
-						connEtoC13(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("valueDomain"))) 
-						connEtoC14(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePaneScroller1() && (evt.getPropertyName().equals("imagePaneView"))) 
-						connPtoP5SetTarget();
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveRenderer() && (evt.getPropertyName().equals("selection"))) 
-						connEtoC8(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveRenderer() && (evt.getPropertyName().equals("selectionValid"))) 
-						connEtoC9(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveEditorTool() && (evt.getPropertyName().equals("tool"))) 
-						connEtoC10(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this && (evt.getPropertyName().equals("curveValueProvider"))) 
-						connEtoM7(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getDisplayAdapterServicePanel()) 
-						connEtoM3(evt);
-					if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePlaneManager() && (evt.getPropertyName().equals("normalAxis"))) 
-						connEtoM4(evt);
-					return null;
-				}
-			}.dispatchWrapRuntime();
-
-		};
+			if (evt.getSource() == ImagePlaneManagerPanel.this) 
+				connEtoC19(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this && (evt.getPropertyName().equals("mode"))) 
+				connEtoC3(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePlaneManager() && (evt.getPropertyName().equals("imagePlaneData"))) 
+				connEtoM1(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getimagePaneModel() && (evt.getPropertyName().equals("dimension"))) 
+				connEtoC5(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePlaneManager() && (evt.getPropertyName().equals("normalAxis"))) 
+				connEtoM2(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveEditorTool() && (evt.getPropertyName().equals("curveRenderer"))) 
+				connPtoP3SetSource();
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("activeColorModelID"))) 
+				connEtoC12(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("activeScaleRange"))) 
+				connEtoC13(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("valueDomain"))) 
+				connEtoC14(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePaneScroller1() && (evt.getPropertyName().equals("imagePaneView"))) 
+				connPtoP5SetTarget();
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveRenderer() && (evt.getPropertyName().equals("selection"))) 
+				connEtoC8(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveRenderer() && (evt.getPropertyName().equals("selectionValid"))) 
+				connEtoC9(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getCurveEditorTool() && (evt.getPropertyName().equals("tool"))) 
+				connEtoC10(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this && (evt.getPropertyName().equals("curveValueProvider"))) 
+				connEtoM7(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getDisplayAdapterServicePanel()) 
+				connEtoM3(evt);
+			if (evt.getSource() == ImagePlaneManagerPanel.this.getImagePlaneManager() && (evt.getPropertyName().equals("normalAxis"))) 
+				connEtoM4(evt);
+		}
 	};
 /**
  * ImagePlaneManagerPanel constructor comment.

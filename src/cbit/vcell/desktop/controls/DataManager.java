@@ -1,24 +1,12 @@
 package cbit.vcell.desktop.controls;
-import cbit.vcell.simdata.*;
-
 import cbit.plot.PlotData;
-import cbit.rmi.event.*;
-import cbit.vcell.export.server.ASCIISpecs;
-import cbit.vcell.export.server.ExportOutput;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.GeometrySpecs;
-import cbit.vcell.export.server.ImageSpecs;
-import cbit.vcell.export.server.MovieSpecs;
-import cbit.vcell.export.server.TimeSpecs;
-import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.math.Function;
-import cbit.vcell.parser.Expression;
+import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.DataProcessingOutput;
-import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solvers.CartesianMesh;
-import java.util.zip.DataFormatException;
 
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
@@ -27,6 +15,7 @@ import org.vcell.util.VCDataIdentifier;
 
 public interface DataManager {
 
+	void connect() throws DataAccessException;
 /**
  * adds an array of named <code>Function</code>s to the list of variables that are availlable for this Simulation.
  * 

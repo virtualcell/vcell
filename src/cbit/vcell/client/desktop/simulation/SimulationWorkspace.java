@@ -1,29 +1,36 @@
 package cbit.vcell.client.desktop.simulation;
-import cbit.util.SwingDispatcherSync;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.JumpProcess;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.StochVolVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.VarIniCondition;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.ode.gui.*;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Vector;
-
-import cbit.vcell.client.*;
-import javax.swing.*;
-import cbit.vcell.mapping.*;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.util.SwingDispatcherSync;
+import cbit.vcell.client.ClientSimManager;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.*;
-import cbit.vcell.document.*;
-import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;
@@ -47,7 +54,7 @@ public SimulationWorkspace(DocumentWindowManager documentWindowManager, Simulati
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
 }
 
 

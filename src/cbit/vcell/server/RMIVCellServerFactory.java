@@ -5,8 +5,9 @@ package cbit.vcell.server;
  * All rights reserved.
 ©*/
 import java.rmi.*;
-
+import cbit.vcell.client.server.VCellThreadChecker;
 import org.vcell.util.document.User;
+
 /**
  * This type was created in VisualAge.
  */
@@ -54,6 +55,8 @@ public String getConnectionString() {
  * getVCellConnection method comment.
  */
 public VCellServer getVCellServer() throws ConnectionException, AuthenticationException {
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	if (vcellServer==null){
 		reconnect();
 	}else{
@@ -69,6 +72,8 @@ public VCellServer getVCellServer() throws ConnectionException, AuthenticationEx
  * This method was created in VisualAge.
  */
 public static boolean pingBootstrap(String host) {
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	try {
 		VCellBootstrap vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup("//"+host+"/"+SERVICE_NAME);
 		if (vcellBootstrap != null){
@@ -84,13 +89,17 @@ public static boolean pingBootstrap(String host) {
  * This method was created in VisualAge.
  */
 public void pingVCellServer() throws RemoteException {
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	vcellServer.isPrimaryServer();
 }
 /**
  * This method was created in VisualAge.
  */
 private void reconnect() throws ConnectionException, AuthenticationException {
-	String bootstrapName = "VCellBootstrapServer";
+	VCellThreadChecker.checkRemoteInvocation();
+	
+//	String bootstrapName = "VCellBootstrapServer";
 	try {
 		vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup(connectString);
 	} catch (Throwable e){

@@ -1,9 +1,9 @@
 package cbit.vcell.client.server;
-import org.vcell.util.DataAccessException;
 
-import cbit.util.SwingDispatcherSync;
+import org.vcell.util.DataAccessException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.client.data.*;
+import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
@@ -29,20 +29,15 @@ public SimulationDataManager(VCDataManager vcDataManager, Simulation simulation)
 	this.vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (10/16/2005 2:42:43 PM)
  * @return javax.swing.JPanel
  */
-public DataViewer createViewer(final boolean expectODEData) throws DataAccessException {
+public DataViewer createViewer(boolean expectODEData, DataManager dataManager) throws DataAccessException {
 	try{
-		return (SimDataViewer) new SwingDispatcherSync (){
-			public Object runSwing() throws Exception{
-				simDataViewer = new SimDataViewer(simulation, vcDataManager, expectODEData);
-				return simDataViewer;
-			}
-		}.dispatchWithException();
+		simDataViewer = new SimDataViewer(simulation, vcDataManager, expectODEData, dataManager);
+		return simDataViewer;
 	}catch(Exception e){
 		if(e instanceof DataAccessException){
 			throw (DataAccessException)e;

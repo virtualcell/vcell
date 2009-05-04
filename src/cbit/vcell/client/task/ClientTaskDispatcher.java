@@ -1,8 +1,6 @@
 package cbit.vcell.client.task;
-import cbit.vcell.client.desktop.*;
 import java.awt.*;
 import java.util.*;
-import cbit.vcell.desktop.controls.*;
 import swingthreads.*;
 import cbit.util.*;
 import javax.swing.*;
@@ -25,38 +23,53 @@ public class ClientTaskDispatcher {
 	public static final String TASK_ABORTED_BY_ERROR = "abort";
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
+	private static boolean bInProgress = false;
 
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
-public static void dispatch(final Component requester, final Hashtable hash, final AsynchClientTask[] tasks, final boolean useTaskProgress) {
-	dispatch(requester,hash,tasks,useTaskProgress,false,null);
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks) {
+	dispatch(requester,hash,tasks,false, false, false, null);
+}
+	
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final boolean useTaskProgress) {
+	dispatch(requester,hash,tasks, useTaskProgress,false, null);
 }
 
-
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final boolean useTaskProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener) {
+	dispatch(requester,hash,tasks, true, useTaskProgress, cancelable, progressDialogListener);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
-public static void dispatch(final Component requester, final Hashtable hash, final AsynchClientTask[] tasks, final boolean useTaskProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener) {
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, 
+		final boolean bShowProgressPopup, final boolean useTaskProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener) {
 	// check tasks - swing non-blocking can be only at the end
+//	if (bInProgress) {
+//		Thread.dumpStack();
+//	}	
 	for (int i = 0; i < tasks.length; i++){
-		if (tasks[i].getTaskType() == ClientTask.TASKTYPE_SWING_NONBLOCKING && i < tasks.length - 1) {
+		if (tasks[i].getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING && i < tasks.length - 1) {
 			throw new RuntimeException("SWING_NONBLOCKING task only permitted as last task");
 		}
 	}
 	// dispatch tasks to a new worker
 	SwingWorker worker = new SwingWorker() {
-		private AsynchProgressPopup pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", false, useTaskProgress, cancelable, progressDialogListener);
+		private AsynchProgressPopup pp = null;
 		public Object construct() {
-			if (useTaskProgress) {
-				// make AsynchProgressPopup available for finer granularity progress update by individual ClientTasks
-				hash.put(PROGRESS_POPUP, pp);
+			bInProgress = true;
+			if (bShowProgressPopup) {
+				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", false, useTaskProgress, cancelable, progressDialogListener);			
+				if (useTaskProgress) {
+					// make AsynchProgressPopup available for finer granularity progress update by individual ClientTasks
+					hash.put(PROGRESS_POPUP, pp);
+				}
+				pp.start();
 			}
-			pp.start();
 			for (int i = 0; i < tasks.length; i++){
 				// run all tasks
 				// after abort, run only non-skippable tasks
@@ -67,8 +80,10 @@ public static void dispatch(final Component requester, final Hashtable hash, fin
 					// update Hash with current interval for Progress
 					hash.put(TASK_PROGRESS_INTERVAL, new Range(i*100/tasks.length, (i+1)*100/tasks.length));
 				}
-				pp.setProgress(i*100/tasks.length); // beginning of task
-				pp.setMessage(currentTask.getTaskName());
+				if (pp != null) {
+					pp.setProgress(i*100/tasks.length); // beginning of task
+					pp.setMessage(currentTask.getTaskName());
+				}
 				boolean shouldRun = true;
 				if (hash.containsKey(TASK_ABORTED_BY_ERROR) && tasks[i].skipIfAbort()) {
 					shouldRun = false;
@@ -87,9 +102,9 @@ public static void dispatch(final Component requester, final Hashtable hash, fin
 				}
 				if (shouldRun) {
 					try {
-						if (currentTask.getTaskType() == ClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 							currentTask.run(hash);
-						} else if (currentTask.getTaskType() == ClientTask.TASKTYPE_SWING_BLOCKING) {
+						} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 							SwingUtilities.invokeAndWait(new Runnable() {
 								public void run() {
 									try {
@@ -99,7 +114,7 @@ public static void dispatch(final Component requester, final Hashtable hash, fin
 									}
 								}
 							});
-						} else if (currentTask.getTaskType() == ClientTask.TASKTYPE_SWING_NONBLOCKING) {
+						} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
 									try {
@@ -119,7 +134,9 @@ public static void dispatch(final Component requester, final Hashtable hash, fin
 		}
 		public void finished() {
 //System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
-			pp.stop();
+			if (pp != null) {
+				pp.stop();
+			}
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong
 				Throwable e = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
@@ -136,6 +153,7 @@ public static void dispatch(final Component requester, final Hashtable hash, fin
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);
 			}
+			bInProgress = false;
 //System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
 		}
 	};
@@ -148,7 +166,7 @@ public static void dispatch(final Component requester, final Hashtable hash, fin
  * Creation date: (6/1/2004 8:58:38 PM)
  * @param hash java.util.Hashtable
  */
-private static void dispatchFollowUp(Hashtable hash) {
+private static void dispatchFollowUp(Hashtable<String, Object> hash) {
 	//
 	// we deal with a task dispatch that aborted due to some user choice on prompts
 	//
@@ -165,7 +183,7 @@ private static void dispatchFollowUp(Hashtable hash) {
  * Creation date: (5/28/2004 2:17:22 AM)
  * @param exc java.lang.Exception
  */
-public static void recordException(Throwable exc, Hashtable hash) {
+public static void recordException(Throwable exc, Hashtable<String, Object> hash) {
 	if (exc instanceof UserCancelException) {
 		hash.put(TASK_ABORTED_BY_USER, exc);
 	} else {

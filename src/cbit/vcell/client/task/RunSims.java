@@ -1,49 +1,29 @@
 package cbit.vcell.client.task;
-import cbit.vcell.solver.*;
-import cbit.vcell.client.server.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ClientSimManager;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.server.JobManager;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
-
-import cbit.vcell.client.*;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.clientdb.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.server.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class RunSims extends AsynchClientTask {
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Sending simulation start requests";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
-
+	
+	public RunSims() {
+		super("Sending simulation start requests", TASKTYPE_NONSWING_BLOCKING);
+	}
 
 /**
  * Insert the method's description here.
@@ -51,13 +31,13 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	ClientSimManager clientSimManager = (ClientSimManager)hashTable.get("clientSimManager");
-	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
+//	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	JobManager jobManager = (JobManager)hashTable.get("jobManager");
 	Simulation[] simulations = (Simulation[])hashTable.get("simulations");
-	Hashtable failures = new Hashtable();
+	Hashtable<Simulation, Throwable> failures = new Hashtable<Simulation, Throwable>();
 	if (simulations != null && simulations.length > 0) {
 		// we need to get the new ones if a save occurred...
 		if (hashTable.containsKey("savedDocument")) {
@@ -68,7 +48,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			} else if (savedDocument instanceof MathModel) {
 				allSims = ((MathModel)savedDocument).getSimulations();
 			}
-			Vector v = new Vector();
+			Vector<Simulation> v = new Vector<Simulation>();
 			for (int i = 0; i < simulations.length; i++){
 				for (int j = 0; j < allSims.length; j++){
 					if (simulations[i].getName().equals(allSims[j].getName())) {
@@ -102,9 +82,9 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	// we actually have an array of requests and more than one can fail
 	// we deal with individual request failures here, passing down only other things (that break the whole thing down) to dispatcher
 	if (! failures.isEmpty()) {
-		Enumeration en = failures.keys();
+		Enumeration<Simulation> en = failures.keys();
 		while (en.hasMoreElements()) {
-			Simulation sim = (Simulation)en.nextElement();
+			Simulation sim = en.nextElement();
 			Throwable exc = (Throwable)failures.get(sim);
 			// updateStatus
 			clientSimManager.updateStatusFromStartRequest(sim, true, exc.getMessage());
@@ -113,17 +93,6 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 		}
 	}
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:23 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
 
 /**
  * Insert the method's description here.

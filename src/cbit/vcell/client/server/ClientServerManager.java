@@ -7,6 +7,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 
+import cbit.rmi.event.RemoteMessageHandler;
 import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -194,13 +195,15 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  * Creation date: (5/12/2004 4:48:13 PM)
  */
 private void changeConnection(VCellConnection newVCellConnection, boolean reconnect) {
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	VCellConnection lastVCellConnection = getVcellConnection();
 	setVcellConnection(newVCellConnection);
 	if (getVcellConnection() != null) {
 		try {
 			// hook up the message manager
 			getAsynchMessageManager().connect(getRemoteMessageHandler());
-			if (! reconnect) {
+			//if (! reconnect) {
 				/* new credentials; need full init */
 				// throw it away; doesn't properly support full reinits
 				documentManager = null;
@@ -211,7 +214,7 @@ private void changeConnection(VCellConnection newVCellConnection, boolean reconn
 				// load user preferences
 				getUserPreferences().resetFromSaved(getDocumentManager().getPreferences());
 
-			}
+			//}
 			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.CONNECTED));
 		} catch (DataAccessException exc) {
 			// unlikely, since we just connected, but it looks like we did loose the connection...
@@ -268,9 +271,8 @@ public static void checkClientServerSoftwareVersion(ClientServerInfo clientServe
 public void connect(ClientServerInfo clientServerInfo) {
 	// just reconnecting ?
 	boolean reconnecting = clientServerInfo.equals(getClientServerInfo());
-	if (reconnecting) {
-		checkClientServerSoftwareVersion(clientServerInfo);
-	}
+	checkClientServerSoftwareVersion(clientServerInfo);
+	
 	// store credentials
 	setClientServerInfo(clientServerInfo);
 	// get new server connection
@@ -306,6 +308,8 @@ public void connectAs(String user, String password) {
  * Creation date: (5/12/2004 4:48:13 PM)
  */
 private VCellConnection connectToServer() {
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	VCellConnection newVCellConnection = null;
 	VCellConnectionFactory vcConnFactory = null;
 	String badConnStr = BAD_CONNECTION_MESSAGE1 + " (";
@@ -432,12 +436,13 @@ public ConnectionStatus getConnectionStatus() {
  * Creation date: (5/13/2004 1:54:04 PM)
  * @return UserMetaDbServer
  */
-public DataSetController getDataSetController() throws DataAccessException {
+public synchronized DataSetController getDataSetController() throws DataAccessException {
+	VCellThreadChecker.checkRemoteInvocation();
 	if (dataSetController!=null){
 		return dataSetController;
 	}else if (getVcellConnection()==null){
 		throw new RuntimeException("cannot get Simulation Data Server, no VCell Connection\ntry Server->Reconnect");
-	}else{
+	}else{		
 		try {
 			dataSetController = getVcellConnection().getDataSetController();
 			return dataSetController;
@@ -512,7 +517,8 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * Creation date: (5/13/2004 1:54:04 PM)
  * @return UserMetaDbServer
  */
-private cbit.rmi.event.RemoteMessageHandler getRemoteMessageHandler() throws DataAccessException {
+private synchronized RemoteMessageHandler getRemoteMessageHandler() throws DataAccessException {
+	VCellThreadChecker.checkRemoteInvocation();
 	if (remoteMessageHandler!=null){
 		return remoteMessageHandler;
 	}else if (getVcellConnection()==null){
@@ -541,7 +547,8 @@ private cbit.rmi.event.RemoteMessageHandler getRemoteMessageHandler() throws Dat
  * Creation date: (5/13/2004 1:54:04 PM)
  * @return UserMetaDbServer
  */
-SimulationController getSimulationController() {
+public synchronized SimulationController getSimulationController() {
+	VCellThreadChecker.checkRemoteInvocation();
 	if (simulationController!=null){
 		return simulationController;
 	}else if (getVcellConnection()==null){
@@ -570,12 +577,13 @@ SimulationController getSimulationController() {
  * Creation date: (5/13/2004 1:54:04 PM)
  * @return cbit.vcell.server.URLFinder
  */
-public User getUser() {
+public synchronized User getUser() {
 	if (user!=null){
 		return user;
 	}else if (getVcellConnection()==null){
 		return null;
 	}else{
+		VCellThreadChecker.checkRemoteInvocation();
 		try {
 			user = getVcellConnection().getUser();
 			return user;
@@ -592,7 +600,8 @@ public User getUser() {
  * Creation date: (5/13/2004 1:54:04 PM)
  * @return UserMetaDbServer
  */
-public cbit.vcell.server.UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
+public synchronized UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
+	VCellThreadChecker.checkRemoteInvocation();
 	if (userMetaDbServer!=null){
 		return userMetaDbServer;
 	}else if (getVcellConnection()==null){
@@ -661,14 +670,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (5/17/2004 6:26:14 PM)
  */
 public void reconnect() {
-	connect(getClientServerInfo());
-	try {
-		if (getUserMetaDbServer()!=null){
-			((ClientDocumentManager)getDocumentManager()).initAllDatabaseInfos();
-		}
-	}catch (DataAccessException e){
-		e.printStackTrace(System.out);
-	}
+	connect(getClientServerInfo());	
 }
 
 
@@ -720,6 +722,7 @@ public void setConnectionStatus(ConnectionStatus connectionStatus) {
  * Insert the method's description here.
  * Creation date: (5/13/2004 12:26:57 PM)
  * @param newVcellConnection VCellConnection
+ * @throws DataAccessException 
  */
 private void setVcellConnection(VCellConnection newVcellConnection) {
 	vcellConnection = newVcellConnection;
@@ -728,5 +731,16 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 	dataSetController = null;
 	userMetaDbServer = null;
 	remoteMessageHandler = null;
+	
+	try {
+		getUser();
+		getSimulationController();
+		getDataSetController();
+		getUserMetaDbServer();
+		getRemoteMessageHandler();
+	} catch (DataAccessException ex) {
+		ex.printStackTrace(System.out);
+		throw new RuntimeException("DataAccessException: "+ex.getMessage());
+	}
 }
 }

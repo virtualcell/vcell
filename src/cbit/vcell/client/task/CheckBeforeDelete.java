@@ -1,8 +1,6 @@
 package cbit.vcell.client.task;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import java.util.*;
-import javax.swing.*;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
@@ -10,26 +8,28 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 
-import cbit.vcell.client.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.mathmodel.*;
-import cbit.util.*;
-import cbit.vcell.server.*;
-import cbit.vcell.geometry.*;
-import cbit.sql.*;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
-import cbit.vcell.client.server.*;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class CheckBeforeDelete extends AsynchClientTask {
+	
+	public CheckBeforeDelete() {
+		super("Checking for successfull save and possible lost results", TASKTYPE_NONSWING_BLOCKING);
+	}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 3:44:03 PM)
@@ -40,7 +40,7 @@ private Simulation[] checkLostResults(BioModel oldBioModel, BioModel newlySavedB
 	//
 	// before deleting old version, prompt user if old simulation results will not be availlable in new edition
 	//
-	Vector lostResultsSimulationList = new Vector();
+	Vector<Simulation> lostResultsSimulationList = new Vector<Simulation>();
 	Simulation oldSimulations[] = oldBioModel.getSimulations();
 	for (int i = 0; i < oldSimulations.length; i++){
 		Simulation oldSimulation = oldSimulations[i];
@@ -133,11 +133,11 @@ private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySav
 	//
 	// before deleting old version, prompt user if old simulation results will not be availlable in new edition
 	//
-	Vector lostResultsSimulationList = new Vector();
+	Vector<Simulation> lostResultsSimulationList = new Vector<Simulation>();
 	Simulation oldSimulations[] = oldMathmodel.getSimulations();
 	for (int i = 0; i < oldSimulations.length; i++){
 		Simulation oldSimulation = oldSimulations[i];
-		SolverResultSetInfo rsInfo = null;
+//		SolverResultSetInfo rsInfo = null;
 		SimulationStatus simStatus = null;
 		SimulationInfo oldSimInfo = oldSimulation.getSimulationInfo();
 		if (oldSimInfo!=null){
@@ -216,36 +216,15 @@ private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySav
 	return (Simulation[])BeanUtils.getArray(lostResultsSimulationList, Simulation.class);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Checking for successfull save and possible lost results";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 6:04:14 PM)
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
-	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
+//	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
 	VCDocument currentDocument = documentWindowManager.getVCDocument();
 	if (! hashTable.containsKey("savedDocument")) {
 		throw new RuntimeException("CheckBeforeDelete task called although SaveDocument task did not complete - should have aborted!!");
@@ -258,7 +237,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	}
 
 	
-	cbit.vcell.clientdb.DocumentManager documentManager = (cbit.vcell.clientdb.DocumentManager)hashTable.get("documentManager");
+	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	Simulation simulations[] = (Simulation[])hashTable.get("simulations");
 	VCDocument savedDocument = (VCDocument)hashTable.get("savedDocument");
 	// just to make sure, verify that we actually did save a new edition
@@ -298,23 +277,4 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:02 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:38:15 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

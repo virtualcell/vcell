@@ -1,19 +1,10 @@
 package cbit.vcell.client.data;
-import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.client.server.MergedDataManager;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.math.Constant;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.client.server.VCDataManager;
-import javax.swing.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
-
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.client.server.VCDataManager;
+import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)
@@ -24,6 +15,7 @@ public class MergedDataViewer extends DataViewer {
 	private VCDataIdentifier vcDataId = null;
 	private DataViewer mainViewer = null;
 	private boolean isODEData;
+	private DataManager dataManager = null;
 	private ODEDataViewer odeDataViewer = null;
 	private PDEDataViewer pdeDataViewer = null;
 
@@ -33,11 +25,12 @@ public class MergedDataViewer extends DataViewer {
  * @param simulation cbit.vcell.solver.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
-public MergedDataViewer(VCDataManager argVcDataManager, VCDataIdentifier argMergedDataID, boolean argIsODEData) throws DataAccessException {
+public MergedDataViewer(VCDataManager argVcDataManager, VCDataIdentifier argMergedDataID, boolean argIsODEData, DataManager dataManager) throws DataAccessException {
 	super();
 	setVcDataId(argMergedDataID);
 	setVcDataManager(argVcDataManager);
 	this.isODEData = argIsODEData;
+	this.dataManager = dataManager;
 	initialize();
 }
 
@@ -48,22 +41,15 @@ public MergedDataViewer(VCDataManager argVcDataManager, VCDataIdentifier argMerg
  * @return javax.swing.JPanel
  */
 private DataViewer createDataViewer() {
-	MergedDataManager mergedDataManager = null;
-	if (vcDataId instanceof MergedDataInfo) {
-		mergedDataManager = new MergedDataManager(vcDataManager, vcDataId);
-	} else {
-		throw new RuntimeException("Not the correct type of data identifier!");
-	}
-
 	try {
 		if (isODEData) {
 			odeDataViewer = new ODEDataViewer();
-			odeDataViewer.setOdeSolverResultSet(mergedDataManager.getODESolverResultSet());
+			odeDataViewer.setOdeSolverResultSet(dataManager.getODESolverResultSet());
 			odeDataViewer.setVcDataIdentifier(vcDataId);
 			return odeDataViewer;
 		} else {
 			pdeDataViewer = new PDEDataViewer();
-			pdeDataViewer.setPdeDataContext(mergedDataManager.getPDEDataContext());
+			pdeDataViewer.setPdeDataContext(dataManager.getPDEDataContext());
 			return pdeDataViewer;
 		}
 	} catch (org.vcell.util.DataAccessException exc) {
@@ -91,17 +77,6 @@ public cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel() {
 private DataViewer getMainViewer() {
 	return mainViewer;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2005 11:36:17 PM)
- * @return cbit.vcell.client.server.VCDataManager
- */
-private cbit.vcell.client.server.VCDataManager getVcDataManager() {
-	return vcDataManager;
-}
-
 
 /**
  * Insert the method's description here.

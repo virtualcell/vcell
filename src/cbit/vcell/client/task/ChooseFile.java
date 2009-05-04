@@ -28,6 +28,10 @@ import cbit.vcell.document.*;
  */
 public class ChooseFile extends AsynchClientTask {
 
+	public ChooseFile() {
+		super("Selecting export file destination", TASKTYPE_SWING_BLOCKING);
+	}
+
 	//reset the user preference for the default path, if needed.
 	private void resetPreferredFilePath(File selectedFile, UserPreferences userPreferences) {
 
@@ -39,24 +43,6 @@ public class ChooseFile extends AsynchClientTask {
 		System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + oldPath);
 	}
 
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Selecting export file destination";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_SWING_BLOCKING;
-}
 
 
 /**
@@ -475,23 +461,4 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:16 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:39:38 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

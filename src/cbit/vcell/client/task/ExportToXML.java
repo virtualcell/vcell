@@ -1,31 +1,33 @@
 package cbit.vcell.client.task;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Hashtable;
+import javax.swing.filechooser.FileFilter;
+import org.vcell.util.gui.FileFilters;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.xml.*;
-import cbit.vcell.clientdb.*;
-import java.io.*;
-import cbit.vcell.client.*;
-import java.util.*;
-
-import org.vcell.util.UserCancelException;
+import cbit.vcell.xml.XmlHelper;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.FileFilters;
 
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class ExportToXML extends AsynchClientTask {
+	
+	public ExportToXML() {
+		super("Exporting document to XML", TASKTYPE_NONSWING_BLOCKING);
+	}
 /**
  * Insert the method's description here.
  * Creation date: (7/26/2004 12:29:53 PM)
@@ -49,37 +51,16 @@ private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter 
 	return sw.getBuffer().toString();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Exporting document";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 6:04:14 PM)
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	VCDocument documentToExport = (VCDocument)hashTable.get("documentToExport");
 	File exportFile = (File)hashTable.get("exportFile");
-	javax.swing.filechooser.FileFilter fileFilter = (javax.swing.filechooser.FileFilter)hashTable.get("fileFilter");
+	FileFilter fileFilter = (FileFilter)hashTable.get("fileFilter");
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	String resultString = null;			
 	if (documentToExport instanceof BioModel) {
@@ -187,23 +168,4 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	fileWriter.close();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:12 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:39:26 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

@@ -1,41 +1,19 @@
 package cbit.vcell.client.task;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.client.*;
-import java.beans.*;
-
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
 
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
+import java.util.Hashtable;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.MDIManager;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class FinishSave extends AsynchClientTask {
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Updating the workspace";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_SWING_BLOCKING;
-}
-
+	
+	public FinishSave() {
+		super("Updating the workspace", TASKTYPE_SWING_BLOCKING, false, false);
+	}
 
 /**
  * Insert the method's description here.
@@ -43,7 +21,7 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	MDIManager mdiManager= (MDIManager)hashTable.get("mdiManager");
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	if (hashTable.containsKey("savedDocument")) {
@@ -54,23 +32,4 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	mdiManager.showWindow(documentWindowManager.getManagerID());
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:16 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return false;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:39:38 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return false;
-}
 }

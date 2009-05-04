@@ -1,8 +1,10 @@
 package cbit.vcell.client.server;
-import org.vcell.util.VCDataIdentifier;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
 import cbit.vcell.client.data.NewClientPDEDataContext;
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
 /**
  * Insert the type's description here.
@@ -206,22 +208,8 @@ public boolean getParticleDataExists() throws org.vcell.util.DataAccessException
  * Creation date: (11/30/2005 5:37:29 PM)
  * @return cbit.vcell.simdata.PDEDataContext
  */
-public cbit.vcell.simdata.PDEDataContext getPDEDataContext() {
-	boolean isODEData = true;
-	try {
-		isODEData = getIsODEData();
-	} catch (org.vcell.util.DataAccessException e) {
-		e.printStackTrace(System.out);
-		return null;
-	}
-	if (!isODEData) {
-		if (newClientPDEDataContext == null) {
-			newClientPDEDataContext = new NewClientPDEDataContext(this);
-		}
-		return newClientPDEDataContext;
-	} else {
-		throw new RuntimeException("No PDEDataContext for ODE data!");
-	}
+public PDEDataContext getPDEDataContext() {
+	return newClientPDEDataContext;
 }
 
 
@@ -321,5 +309,20 @@ private void setVcDataIdentifier(org.vcell.util.VCDataIdentifier newVcDataIdenti
  */
 private void setVcDataManager(VCDataManager newVcDataManager) {
 	vcDataManager = newVcDataManager;
+}
+
+
+public void connect() {
+	boolean isODEData = true;
+	try {
+		isODEData = getIsODEData();
+	} catch (DataAccessException e) {
+		e.printStackTrace(System.out);
+	}
+	if (!isODEData) {
+		newClientPDEDataContext = new NewClientPDEDataContext(this);
+	} else {
+		throw new RuntimeException("No PDEDataContext for ODE data!");
+	}
 }
 }

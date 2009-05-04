@@ -1,16 +1,14 @@
 package cbit.vcell.client.server;
+
 import cbit.vcell.solver.*;
 import cbit.vcell.simdata.gui.*;
 import cbit.plot.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.math.*;
 import java.rmi.*;
-
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
-
-import cbit.vcell.desktop.controls.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.server.*;
@@ -110,6 +108,8 @@ public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers(org.vcell.util.VCD
  */
 private DataSetController getDataSetController() throws DataAccessException {
 	// convenience method
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	return getDataSetControllerProvider().getDataSetController();
 }
 

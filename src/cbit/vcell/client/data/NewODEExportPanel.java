@@ -1,28 +1,24 @@
 package cbit.vcell.client.data;
-import cbit.vcell.util.ColumnDescription;
-import cbit.vcell.desktop.controls.ClientTask;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.net.*;
-import cbit.vcell.simdata.gui.*;
-import javax.swing.event.*;
-import cbit.vcell.server.*;
-import cbit.plot.*;
-import java.awt.*;
-import java.util.*;
-import cbit.vcell.math.*;
-import cbit.vcell.export.server.*;
-import cbit.image.*;
-import cbit.vcell.simdata.*;
-import javax.swing.*;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import org.vcell.util.VCDataIdentifier;
-
-import cbit.vcell.solver.ode.*;
-import cbit.util.*;
-import cbit.vcell.desktop.controls.*;
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.util.ColumnDescription;
 /**
  * This type was created in VisualAge.
  */
@@ -1098,7 +1094,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

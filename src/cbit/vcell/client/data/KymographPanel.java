@@ -4,6 +4,10 @@ import java.awt.geom.Point2D;
 
 import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.VariableType;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -13,10 +17,12 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
 import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TimeSeriesJobResults;
+import org.vcell.util.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
 import java.awt.GridBagConstraints;
+import java.util.Hashtable;
 /**
  * Insert the type's description here.
  * Creation date: (12/14/2004 9:38:13 AM)
@@ -1850,7 +1856,7 @@ private void initConnections() throws java.lang.Exception {
 public void initDataManager(
 	User argUserRequestingData,
 	cbit.vcell.desktop.controls.DataManager argDataManager,
-	String variableName,double initTime,int step,double endTime,
+	final String variableName,double initTime,int step,double endTime,
 	int[] indices,int[] argCrossingMembraneIndices,
 	double[] accumDistances,
 	boolean waitOnInitialLoad,
@@ -1877,18 +1883,32 @@ public void initDataManager(
 	currentSelectionImg = new java.awt.Point(0,0);
 	currentSelectionUnit = new java.awt.geom.Point2D.Double(0,0);;
 
-	cbit.vcell.simdata.DataIdentifier[] sortedDataIDs =
-		cbit.vcell.simdata.VariableType.collectSimilarDataTypes(variableName,dataManager.getDataIdentifiers());
-	//Add to combobox
-	getVarNamesJComboBox().setEnabled(true);
-	getVarNamesJComboBox().removeAllItems();
-	getVarNamesJComboBox().removeActionListener(ivjEventHandler);	
-	for(int i=0;i<sortedDataIDs.length;i+= 1){
-		getVarNamesJComboBox().addItem(sortedDataIDs[i].getName());
-	}
-	getVarNamesJComboBox().addActionListener(ivjEventHandler);
-
-	getVarNamesJComboBox().setSelectedItem(variableName);
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	
+	AsynchClientTask task1  = new AsynchClientTask("Retrieving time points", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			DataIdentifier[] sortedDataIDs = VariableType.collectSimilarDataTypes(variableName,dataManager.getDataIdentifiers());
+			hashTable.put("sortedDataIDs", sortedDataIDs);
+		}
+	};
+	AsynchClientTask task2 = new AsynchClientTask("Setting time points", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			DataIdentifier[] sortedDataIDs = (DataIdentifier[])hashTable.get("sortedDataIDs");
+	
+			//Add to combobox
+			getVarNamesJComboBox().setEnabled(true);
+			getVarNamesJComboBox().removeAllItems();
+			getVarNamesJComboBox().removeActionListener(ivjEventHandler);	
+			for(int i=0;i<sortedDataIDs.length;i+= 1){
+				getVarNamesJComboBox().addItem(sortedDataIDs[i].getName());
+			}
+			getVarNamesJComboBox().addActionListener(ivjEventHandler);
+		
+			getVarNamesJComboBox().setSelectedItem(variableName);
+		}
+	};
+	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
+	ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
 }
 
 
@@ -1967,25 +1987,36 @@ private void initDataManagerVariable(final String finalVarName) {
 	}
 	
 	try{
-		double[] timeValues = dataManager.getDataSetTimes();
-		org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
-			new org.vcell.util.TimeSeriesJobSpec(
-					new String[] {finalVarName},
-					new int[][] {dataManagerIndices},
-					(crossingMembraneIndices != null?new int[][] {crossingMembraneIndices}:null),
-					resampleStartTimeOrig,resampleStepOrig,timeValues[timeValues.length-1]/*resampleEndTimeOrig*/,
-					VCDataJobID.createVCDataJobID(userRequestingData, true));
-		timeSeriesJobStarter.startTimeSeriesJob(timeSeriesJobSpec,
-				new PDEDataViewer.TimeSeriesJobResultsAction(){
+		Hashtable<String, Object> hash = new Hashtable<String, Object>();
+		
+		AsynchClientTask task1  = new AsynchClientTask("Retrieving time points", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {	
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				double[] timeValues = dataManager.getDataSetTimes();
+				hashTable.put("times", timeValues);
+			}
+		};
+		AsynchClientTask task2  = new AsynchClientTask("Retrieving time series", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				double[] timeValues = (double[])hashTable.get("times");
+				TimeSeriesJobSpec timeSeriesJobSpec =
+					new TimeSeriesJobSpec(
+							new String[] {finalVarName},
+							new int[][] {dataManagerIndices},
+							(crossingMembraneIndices != null?new int[][] {crossingMembraneIndices}:null),
+							resampleStartTimeOrig,resampleStepOrig,timeValues[timeValues.length-1]/*resampleEndTimeOrig*/,
+							VCDataJobID.createVCDataJobID(userRequestingData, true));
+				
+				PDEDataViewer.TimeSeriesJobResultsAction action = new PDEDataViewer.TimeSeriesJobResultsAction(){
 					private TimeSeriesJobResults timeSeriesJobResults;
 					private Throwable timeSeriesJobFailed;
+					
 					public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults) {
 						this.timeSeriesJobResults = timeSeriesJobResults;
 					}
 					public void setTimeSeriesJobFailed(Throwable e) {
 						timeSeriesJobFailed = e;
 					}
-
+		
 					public void run() {
 						try {
 							currentInfo = finalVarName;
@@ -2040,7 +2071,12 @@ private void initDataManagerVariable(final String finalVarName) {
 							e.printStackTrace();
 						}
 					}
-				},false);
+				};
+				timeSeriesJobStarter.startTimeSeriesJob(timeSeriesJobSpec, action, false);
+			}
+		};
+		AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
+		ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
 	}catch(Throwable e){
 		final Throwable finale = e;
 					cbit.vcell.client.PopupGenerator.showErrorDialog(
