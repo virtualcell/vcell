@@ -1,17 +1,17 @@
 package cbit.vcell.client;
-import cbit.vcell.document.*;
+
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.field.FieldDataWindow;
 import cbit.util.*;
 import cbit.vcell.client.server.*;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import java.awt.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GlassPane;
-
 import java.util.*;
 import java.awt.event.*;
 /**
@@ -173,16 +173,16 @@ private DocumentWindow createDocumentWindow() {
  * @param vcDocument cbit.vcell.document.VCDocument
  */
 public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
+	// used for opening new document windows
+	// assumes caller checked for having this document already open
 
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-
-			// used for opening new document windows
-			// assumes caller checked for having this document already open
-
-			// make the window
+	// make the window
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	AsynchClientTask task1  = new AsynchClientTask("Creating New Document Window", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			DocumentWindow documentWindow = createDocumentWindow();
 			documentWindow.setWorkArea(windowManager.getComponent());
+			
 			// keep track of things
 			String windowID = windowManager.getManagerID();
 			getWindowsHash().put(windowID, documentWindow);
@@ -199,9 +199,10 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 			getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
 			// done
 			documentWindow.setVisible(true);
-			return null;
 		}
-	}.dispatchWrapRuntime();
+	};
+	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1};
+	ClientTaskDispatcher.dispatch(null, hash, taskArray);
 }
 
 

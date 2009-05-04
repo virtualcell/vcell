@@ -566,7 +566,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 		// make the viewer
 		DynamicDataManager dynamicMergedDataMgr = getRequestManager().getDynamicDataManager(mergedDataInfo);
 		addDataListener(dynamicMergedDataMgr);
-		DataViewer viewer = dynamicMergedDataMgr.createViewer(mergedDataManager.getIsODEData());
+		DataViewer viewer = dynamicMergedDataMgr.createViewer(mergedDataManager.getIsODEData(), mergedDataManager);
 		viewer.setDataViewerManager(this);
 		addExportListener(viewer);
 		
@@ -796,24 +796,8 @@ private void updateReports(final Hashtable<TestSuiteInfoNew, Vector<TestCriteria
 						}
 					}
 					final String END_NOTIFIER = "END NOTIFIER";
-					tasksVLocal.add(new AsynchClientTask() {
-						public boolean skipIfAbort() {
-							return false;
-						}
-
-						public boolean skipIfCancel(UserCancelException exc) {
-							return false;
-						}
-
-						public String getTaskName() {
-							return END_NOTIFIER;
-						}
-
-						public int getTaskType() {
-							return TASKTYPE_NONSWING_BLOCKING;
-						}
-
-						public void run(Hashtable hashTable) throws Exception {
+					tasksVLocal.add(new AsynchClientTask(END_NOTIFIER, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, false, false) {
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							hashTable.put(END_NOTIFIER, END_NOTIFIER);
 						}
 
@@ -1196,6 +1180,7 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
 						Simulation refSim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(refSimInfo);
 						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
 						DataManager refDataManager = getRequestManager().getDataManager(refVcdID, refSim.getIsSpatial());
+						
 						String varsToCompare[] = getVariableNamesToCompare(sim,refSim);
 						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResults(sim, dataManager, refSim, refDataManager, varsToCompare,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						// Failed var summaries
@@ -2838,7 +2823,7 @@ public void viewResults(TestCriteriaNew testCriteria) {
 		addDataListener(dynamicDataMgr);
 		// make the viewer
 		boolean expectODEdata = sim.getMathDescription().getGeometry().getDimension() == 0;
-		DataViewer viewer = dynamicDataMgr.createViewer(expectODEdata);
+		DataViewer viewer = dynamicDataMgr.createViewer(expectODEdata, dataManager);
 		viewer.setDataViewerManager(this);
 		addExportListener(viewer);
 		

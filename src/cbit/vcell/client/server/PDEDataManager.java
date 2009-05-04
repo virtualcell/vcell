@@ -1,9 +1,9 @@
 package cbit.vcell.client.server;
-import org.vcell.util.VCDataIdentifier;
 
+import org.vcell.util.VCDataIdentifier;
 import cbit.vcell.client.data.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.vcell.server.*;
+import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
 /**
  * Insert the type's description here.
@@ -193,10 +193,7 @@ public boolean getParticleDataExists() throws org.vcell.util.DataAccessException
  * Creation date: (6/13/2004 3:04:49 PM)
  * @return cbit.vcell.simdata.PDEDataContext
  */
-public cbit.vcell.simdata.PDEDataContext getPDEDataContext() {
-	if (newClientPDEDataContext == null) {
-		newClientPDEDataContext = new NewClientPDEDataContext(this);
-	}
+public PDEDataContext getPDEDataContext() {	
 	return newClientPDEDataContext;
 }
 
@@ -293,5 +290,10 @@ private void setVcDataIdentifier(org.vcell.util.VCDataIdentifier newVcDataIdenti
  */
 private void setVcDataManager(VCDataManager newVcDataManager) {
 	vcDataManager = newVcDataManager;
+}
+
+
+public void connect() {
+	newClientPDEDataContext = new NewClientPDEDataContext(this);	
 }
 }

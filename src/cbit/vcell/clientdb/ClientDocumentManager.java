@@ -1,15 +1,14 @@
 package cbit.vcell.clientdb;
+
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
@@ -29,7 +28,6 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModel;
@@ -73,20 +71,20 @@ public class ClientDocumentManager implements DocumentManager{
 	//
 	// cacheTable holds xml for (BioModel, MathModel, Simulation, Geometry, VCImage)
 	//
-	private Hashtable xmlHash = new Hashtable();
+	private Hashtable<KeyValue, String> xmlHash = new Hashtable<KeyValue, String>();
 	//
 	// hashTables holds all info objects (including BioModelMetaData WITH info objects)
 	//
-	private boolean bMathModelInfosDirty = true;
-	private boolean bImageInfosDirty = true;
-	private boolean bBioModelInfosDirty = true;
-	private boolean bGeometryInfosDirty = true;
+//	private boolean bMathModelInfosDirty = true;
+//	private boolean bImageInfosDirty = true;
+//	private boolean bBioModelInfosDirty = true;
+//	private boolean bGeometryInfosDirty = true;
 	
-	private Hashtable geoInfoHash = new Hashtable();
-	private Hashtable imgInfoHash = new Hashtable();
-	private Hashtable mathModelInfoHash = new Hashtable();
-	private Hashtable bioModelInfoHash = new Hashtable();
-	private HashMap simulationStatusHash = new HashMap();
+	private Hashtable<KeyValue, GeometryInfo> geoInfoHash = new Hashtable<KeyValue, GeometryInfo>();
+	private Hashtable<KeyValue, VCImageInfo> imgInfoHash = new Hashtable<KeyValue, VCImageInfo>();
+	private Hashtable<KeyValue, MathModelInfo> mathModelInfoHash = new Hashtable<KeyValue, MathModelInfo>();
+	private Hashtable<KeyValue, BioModelInfo> bioModelInfoHash = new Hashtable<KeyValue, BioModelInfo>();
+	private HashMap<KeyValue, SimulationStatus> simulationStatusHash = new HashMap<KeyValue, SimulationStatus>();
 	
 	private Preference preferences[] = null;
 	
@@ -316,10 +314,10 @@ public void curate(CurateSpec curateSpec) throws DataAccessException{
 		
 		if(curateSpec.getVCDocumentInfo() instanceof MathModelInfo){
 			mathModelInfoHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
-			mathModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(),newVCDocumentInfo);
+			mathModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(), (MathModelInfo)newVCDocumentInfo);
 		}else if(curateSpec.getVCDocumentInfo() instanceof BioModelInfo){
 			bioModelInfoHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
-			bioModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(),newVCDocumentInfo);
+			bioModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(), (BioModelInfo)newVCDocumentInfo);
 		}
 
 		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, curateSpec.getVCDocumentInfo(), newVCDocumentInfo));
@@ -777,7 +775,7 @@ private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAcces
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException {
+public synchronized BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException {
 	if (key==null){
 System.out.println("<<<NULL>>>> ClientDocumentManager.getBioModelInfo("+key+")");
 		return null;
@@ -794,7 +792,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getBioModelInfo("+key+")")
 	// else refresh cache
 	//
 	reloadBioModelInfos();
-	bBioModelInfosDirty = false;
+//	bBioModelInfosDirty = false;
 
 	//
 	// now look in cache again (should be in there unless it was deleted from database).
@@ -815,11 +813,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getBioModelInfo("+key+")")
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
 public BioModelInfo[] getBioModelInfos() throws DataAccessException {
-	if (bBioModelInfosDirty){
-		reloadBioModelInfos();
-		bBioModelInfosDirty = false;
-	}
-	ArrayList arrayList = new ArrayList(bioModelInfoHash.values());
+	ArrayList<BioModelInfo> arrayList = new ArrayList<BioModelInfo>(bioModelInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (BioModelInfo[])arrayList.toArray(new BioModelInfo[bioModelInfoHash.size()]);
 }
@@ -981,7 +975,7 @@ private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAcces
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException {
+public synchronized GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException {
 	if (key==null){
 System.out.println("<<<NULL>>>> ClientDocumentManager.getGeometryInfo("+key+")");
 		return null;
@@ -999,7 +993,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getGeometryInfo("+key+")")
 	// else get new list of info objects from database and stick in cache
 	//
 	reloadGeometryInfos();
-	bGeometryInfosDirty = false;
+//	bGeometryInfosDirty = false;
 
 	//
 	// now look in cache again (should be in there unless it was deleted from database).
@@ -1019,11 +1013,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getGeometryInfo("+key+")")
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
 public GeometryInfo[] getGeometryInfos() throws DataAccessException {
-	if (bGeometryInfosDirty){
-		reloadGeometryInfos();
-		bGeometryInfosDirty = false;
-	}
-	ArrayList arrayList = new ArrayList(geoInfoHash.values());
+	ArrayList<GeometryInfo> arrayList = new ArrayList<GeometryInfo>(geoInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (GeometryInfo[])arrayList.toArray(new GeometryInfo[geoInfoHash.size()]);
 }
@@ -1088,7 +1078,7 @@ public VCImage getImage(VCImageInfo vcImageInfo) throws DataAccessException {
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-private VCImageInfo getImageInfo(KeyValue key) throws DataAccessException {
+private synchronized VCImageInfo getImageInfo(KeyValue key) throws DataAccessException {
 	if (key==null){
 System.out.println("<<<NULL>>>> ClientDocumentManager.getImageInfo("+key+")");
 		return null;
@@ -1106,7 +1096,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getImageInfo("+key+")");
 	// else get new list of info objects from database and stick in cache
 	//
 	reloadVCImageInfos();
-	bImageInfosDirty = false;
+//	bImageInfosDirty = false;
 
 	//
 	// now look in cache again (should be in there unless it was deleted from database).
@@ -1124,12 +1114,8 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getImageInfo("+key+")");
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public cbit.image.VCImageInfo[] getImageInfos() throws org.vcell.util.DataAccessException {
-	if (bImageInfosDirty){
-		reloadVCImageInfos();
-		bImageInfosDirty = false;
-	}
-	ArrayList arrayList = new ArrayList(imgInfoHash.values());
+public VCImageInfo[] getImageInfos() throws org.vcell.util.DataAccessException {
+	ArrayList<VCImageInfo> arrayList = new ArrayList<VCImageInfo>(imgInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (VCImageInfo[])arrayList.toArray(new VCImageInfo[imgInfoHash.size()]);
 }
@@ -1165,24 +1151,6 @@ private String getImageXML(KeyValue vKey) throws DataAccessException {
 		//return null;
 	}
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:30:03 PM)
- * @return cbit.sql.KeyValue[]
- * @param enum1 java.util.Enumeration
- */
-private KeyValue[] getKeyArrayFromEnumeration(Enumeration enum1) {
-	Vector temp = new Vector();
-	while (enum1.hasMoreElements()){
-		temp.addElement(enum1.nextElement());
-	}
-	KeyValue keyArray[] = new KeyValue[temp.size()];
-	temp.copyInto(keyArray);
-	return keyArray;
-}
-
 
 /**
  * Insert the method's description here.
@@ -1258,7 +1226,7 @@ private MathModel getMathModelFromDatabaseXML(String mathModelXML) throws DataAc
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException {
+public synchronized MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException {
 	if (key==null){
 System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo("+key+")");
 		return null;
@@ -1279,8 +1247,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo("+key+")"
 	// else refresh cache
 	//
 	reloadMathModelInfos();
-	bMathModelInfosDirty = false;
-	
+//	bMathModelInfosDirty = false;
 
 	//
 	// now look in cache again (should be in there unless it was deleted from database).
@@ -1301,11 +1268,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo("+key+")"
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
 public MathModelInfo[] getMathModelInfos() throws DataAccessException {
-	if (bMathModelInfosDirty){
-		reloadMathModelInfos();
-		bMathModelInfosDirty = false;
-	}
-	ArrayList arrayList = new ArrayList(mathModelInfoHash.values());
+	ArrayList<MathModelInfo> arrayList = new ArrayList<MathModelInfo>(mathModelInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (MathModelInfo[])arrayList.toArray(new MathModelInfo[mathModelInfoHash.size()]);
 }
@@ -1598,7 +1561,7 @@ private void handleRemoteException(RemoteException e) {
  * Creation date: (9/25/2003 7:45:19 AM)
  * @return cbit.vcell.modeldb.VCInfoContainer
  */
-public void initAllDatabaseInfos() throws DataAccessException {
+public synchronized void initAllDatabaseInfos() throws DataAccessException {
 
 	cbit.vcell.modeldb.VCInfoContainer vcInfoContainer = null;
 	try{
@@ -1608,10 +1571,10 @@ public void initAllDatabaseInfos() throws DataAccessException {
 		// gets BioModelMetaDatas, MathModelMetaDatas, all VersionInfos, and ResultSetInfos
 		//
 		vcInfoContainer = sessionManager.getUserMetaDbServer().getVCInfoContainer();
-		bMathModelInfosDirty = false;
-		bImageInfosDirty = false;
-		bBioModelInfosDirty = false;
-		bGeometryInfosDirty = false;
+//		bMathModelInfosDirty = false;
+//		bImageInfosDirty = false;
+//		bBioModelInfosDirty = false;
+//		bGeometryInfosDirty = false;
 
 		cbit.rmi.event.PerformanceMonitorEvent pme = new cbit.rmi.event.PerformanceMonitorEvent(this,getUser(),
 			new cbit.rmi.event.PerformanceData("ClientDocumentManager.initAllDatabaseInfos()",

@@ -1,24 +1,13 @@
 package cbit.vcell.desktop;
-import cbit.image.VCImageInfo;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.geometry.*;
+
+import java.util.TreeMap;
 import java.util.Vector;
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.solver.SimulationInfo;
-import java.util.Enumeration;
-import cbit.vcell.clientdb.DatabaseListener;
 import javax.swing.tree.DefaultTreeModel;
-
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
-
+import cbit.image.VCImageInfo;
+import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -62,11 +51,11 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  */
 private BioModelNode createBaseTree() throws DataAccessException {
 	VCImageInfo imageInfos[] = getDocumentManager().getImageInfos();
-	BioModelNode rootRootNode = new BioModelNode("images",true);
+	BioModelNode rootRootNode = new BioModelNode("Images",true);
 	//
 	// get list of users (owners)
 	//
-	Vector ownerList = new Vector();
+	Vector<User> ownerList = new Vector<User>();
 	ownerList.addElement(getDocumentManager().getUser());
 	for (int i=0;i<imageInfos.length;i++){
 		VCImageInfo imageInfo = imageInfos[i];
@@ -77,7 +66,7 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	//
 	// for each user
 	//
-	java.util.TreeMap treeMap = new java.util.TreeMap();
+	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>();
 	for (int ownerIndex=0;ownerIndex<ownerList.size();ownerIndex++){
 		User owner = (User)ownerList.elementAt(ownerIndex);
 		BioModelNode ownerNode = createOwnerSubTree(owner);
@@ -118,7 +107,7 @@ private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
 			//
 			// get list of images with the same branch
 			//
-			Vector imageBranchList = new Vector();
+			Vector<VCImageInfo> imageBranchList = new Vector<VCImageInfo>();
 			imageBranchList.addElement(imageInfo);
 			for (i=i+1;i<imageInfos.length;i++){
 				if (imageInfos[i].getVersion().getBranchID().equals(imageInfo.getVersion().getBranchID())){
@@ -365,8 +354,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(DocumentManager documentManager) {
+	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 
 	if (oldValue != null){

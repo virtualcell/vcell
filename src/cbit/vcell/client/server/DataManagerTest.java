@@ -1,9 +1,6 @@
 package cbit.vcell.client.server;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.Vector;
-
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
@@ -14,7 +11,7 @@ import cbit.vcell.math.ReservedVariable;
  * Creation date: (11/4/2003 4:48:32 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class DataManagerTest extends cbit.vcell.client.server.PDEDataManager {
+public class DataManagerTest extends PDEDataManager {
 	private cbit.vcell.math.AnnotatedFunction functions[] = new cbit.vcell.math.AnnotatedFunction[0];
 	private double times[] = null;
 	private cbit.vcell.solvers.CartesianMesh mesh = null;

@@ -1,14 +1,11 @@
 package cbit.vcell.client.task;
 
-//import cbit.vcell.numericstest.TestSuiteInfoNew;
-//import cbit.vcell.clientdb.DocumentManager;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.UserCancelException;
+import java.util.Hashtable;
+
 import org.vcell.util.gui.AsynchProgressPopup;
-//import cbit.vcell.numericstest.AddTestSuiteOP;
+
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
-//import cbit.vcell.client.RequestManager;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
 /**
@@ -18,16 +15,19 @@ import cbit.vcell.numericstest.TestCriteriaNew;
  */
 public class TFRunSims extends AsynchClientTask {
 
-	private TestingFrameworkWindowManager tfwm;
-	private TestCriteriaNew tcrit;
-	private TestCaseNew tcn;
-	private TestSuiteInfoNew tsin;
+	private TestingFrameworkWindowManager tfwm = null;
+	private TestCriteriaNew tcrit = null;
+	private TestCaseNew tcn = null;
+	private TestSuiteInfoNew tsin = null;
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:06:56 PM)
  */
+	private TFRunSims() {
+		super("Running Sims", TASKTYPE_NONSWING_BLOCKING);
+	}
 public TFRunSims(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn) {
-	
+	this();
 	tfwm = argtfwm;
 	tcn = argtcn;
 }
@@ -36,7 +36,7 @@ public TFRunSims(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn) {
  * Creation date: (11/17/2004 3:06:56 PM)
  */
 public TFRunSims(TestingFrameworkWindowManager argtfwm,TestCriteriaNew argtcrit) {
-	
+	this();
 	tfwm = argtfwm;
 	tcrit = argtcrit;
 }
@@ -45,33 +45,18 @@ public TFRunSims(TestingFrameworkWindowManager argtfwm,TestCriteriaNew argtcrit)
  * Creation date: (11/17/2004 3:06:56 PM)
  */
 public TFRunSims(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argtsinfo) {
-	
+	this();
 	tfwm = argtfwm;
 	tsin = argtsinfo;
 }
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
- * @return java.lang.String
- */
-public String getTaskName() {
-	return "Running Sims";
-}
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 2:08:09 PM)
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable){
+public void run(Hashtable<String, Object> hashTable){
 
 	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
 	String errors = (String)hashTable.get(TFRefresh.TF_ERRORS);
@@ -91,20 +76,5 @@ public void run(java.util.Hashtable hashTable){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
+
 }

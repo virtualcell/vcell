@@ -1,5 +1,7 @@
 package cbit.vcell.server;
 
+import cbit.vcell.client.server.VCellThreadChecker;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -38,6 +40,8 @@ public void changeUser(java.lang.String userID, java.lang.String password) {
  * @return cbit.vcell.server.VCellConnection
  */
 public VCellConnection createVCellConnection() throws AuthenticationException, ConnectionException {
+	VCellThreadChecker.checkRemoteInvocation();
+
 	VCellBootstrap vcellBootstrap = null;
 	VCellConnection vcellConnection = null;
 	try {
@@ -62,6 +66,8 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
  * This method was created in VisualAge.
  */
 public static String getVCellSoftwareVersion(String host) {
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	try {
 		VCellBootstrap vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup("//"+host+"/"+SERVICE_NAME);
 		if (vcellBootstrap != null){
@@ -78,6 +84,8 @@ public static String getVCellSoftwareVersion(String host) {
  * This method was created in VisualAge.
  */
 public static boolean pingBootstrap(String host) {
+	VCellThreadChecker.checkRemoteInvocation();
+	
 	try {
 		VCellBootstrap vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup("//"+host+"/"+SERVICE_NAME);
 		if (vcellBootstrap != null){

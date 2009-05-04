@@ -4,7 +4,6 @@ package cbit.vcell.applets;
  * All rights reserved.
 ©*/
 import javax.swing.Timer;
-import cbit.vcell.desktop.controls.ClientTask;
 /**
  * Insert the class' description here.
  * Creation date: (8/20/2000 6:33:33 AM)

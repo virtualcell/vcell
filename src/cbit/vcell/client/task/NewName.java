@@ -13,25 +13,10 @@ import cbit.vcell.client.*;
  * @author: Ion Moraru
  */
 public class NewName extends AsynchClientTask {
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Getting document name";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_SWING_BLOCKING;
-}
-
+	
+	public NewName() {
+		super("Getting document name", TASKTYPE_SWING_BLOCKING);
+	}
 
 /**
  * Insert the method's description here.
@@ -68,23 +53,4 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	hashTable.put("newName", newName);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:20 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:39:49 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

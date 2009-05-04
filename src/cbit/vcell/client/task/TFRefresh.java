@@ -1,8 +1,6 @@
 package cbit.vcell.client.task;
 
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.AsynchProgressPopup;
-
+import java.util.Hashtable;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
@@ -28,7 +26,7 @@ this(argtfwm,null);
 	
 }
 public TFRefresh(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argtsin) {
-
+	super("Testing Framework Refresh", TASKTYPE_SWING_NONBLOCKING, false, false);
 	tfwm = argtfwm;
 	tsin = argtsin;
 	
@@ -37,26 +35,10 @@ public TFRefresh(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argtsin)
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 2:20:58 PM)
- * @return java.lang.String
- */
-public String getTaskName() {
-	return "Testing Framework Refresh";
-}
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:20:58 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_SWING_NONBLOCKING;
-}
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:20:58 PM)
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable){
+public void run(Hashtable<String, Object> hashTable){
 	
 	tfwm.getTestingFrameworkWindowPanel().refreshTree(tsin);
 	
@@ -70,20 +52,5 @@ public void run(java.util.Hashtable hashTable){
 	}
 	
 }
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:20:58 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return false;
-}
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2004 2:20:58 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return false;
-}
+
 }

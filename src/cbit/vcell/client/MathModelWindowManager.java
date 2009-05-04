@@ -1,17 +1,15 @@
 package cbit.vcell.client;
+
 import cbit.util.SwingDispatcherSync;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.*;
-import cbit.sql.*;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
-
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.JInternalFrameEnhanced;
-
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.mathmodel.*;
@@ -371,15 +369,12 @@ private void initializeInternalFrames() {
 			return null;
 		}
 	}.dispatchWrapRuntime();
-
-	
-	
-	// Initialize Geometry Viewer internal frame
-	//String geoViewerTitle = "Geometry Viewer";
-	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
 	
 	new SwingDispatcherSync() {
 		public Object runSwing() throws Exception{
+			// Initialize Geometry Viewer internal frame
+			geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
+			
 			//disable changeGeometry and openGeometry button in geometry summary viewer if it is a stochastic app.
 			if(getMathModel().getMathDescription().isStoch())
 			{
@@ -392,11 +387,6 @@ private void initializeInternalFrames() {
 				geoViewer.setOpenGeometryEnabled(true);
 			}
 			geometryViewerEditorFrame = createDefaultFrame(geoViewer);
-			//geometryViewerEditorFrame = new JInternalFrameEnhanced(geoViewerTitle, true, true, true, true);
-			//geometryViewerEditorFrame.setContentPane(geoViewer);
-			//geometryViewerEditorFrame.setSize(700, 400);
-			//geometryViewerEditorFrame.setLocation(200, 200);
-			//geometryViewerEditorFrame.setMinimumSize(new Dimension(600, 400));
 			geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
 				public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
 					getMathModelEditor().setToggleButtonSelected("Geometry Viewer", false);
@@ -404,14 +394,8 @@ private void initializeInternalFrames() {
 			});
 
 			// Initialize Surface Viewer internal frame
-			//String surfaceViewerTitle = "Surface Viewer";
 			surfaceViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
 			surfaceViewerFrame = createDefaultFrame(surfaceViewer);
-			//surfaceViewerFrame = new JInternalFrameEnhanced(surfaceViewerTitle, true, true, true, true);
-			//surfaceViewerFrame.setContentPane(surfaceViewer);
-			//surfaceViewerFrame.setSize(500, 500);
-			//surfaceViewerFrame.setLocation(400, 200);
-			//surfaceViewerFrame.setMinimumSize(new Dimension(400, 400));
 
 				
 			// Initialize SimulationsList Viewer internal frame

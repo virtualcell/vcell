@@ -1,47 +1,24 @@
 package cbit.vcell.client.task;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.clientdb.*;
-import cbit.vcell.client.*;
-import java.util.*;
-
-import org.vcell.util.UserCancelException;
+import java.util.Hashtable;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
+import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.geometry.GeometryInfo;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class DocumentToExport extends AsynchClientTask {
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Fetching document to be exported";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
-
+	public DocumentToExport() {
+		super("Fetching document to be exported", TASKTYPE_NONSWING_BLOCKING);
+	}
 
 /**
  * Insert the method's description here.
@@ -49,7 +26,7 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	VCDocument doc = null;
@@ -71,23 +48,4 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	hashTable.put("documentToExport", doc);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:12 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:39:26 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

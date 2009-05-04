@@ -3,26 +3,20 @@ import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-
 import java.awt.event.ActionEvent;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFAddTestSuite;
-
 import java.math.BigDecimal;
 import java.util.Hashtable;
 import java.util.Vector;
-
 import javax.swing.tree.TreePath;
-
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
@@ -426,8 +420,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager());
 	}
 	
-	java.util.Hashtable hash = new java.util.Hashtable();
-	Vector<AsynchClientTask> tasksV = new java.util.Vector<AsynchClientTask>();
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
 	
 	try{
 		TreePath[] selectedTreePaths = gettestingFrameworkPanel().getSelectedTreePaths();
@@ -451,20 +445,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				final TestingFrmwkTreeModel.TestCriteriaVarUserObj tcritVaruserObj = (TestingFrmwkTreeModel.TestCriteriaVarUserObj)selectedObj;
 				final TestSuiteInfoNew tsInfoNew = gettestingFrameworkPanel().getTestSuiteInfoOfTreePath(selectedTreePaths[0]);
 				AsynchClientTask queryTCritCrossRef =
-					new AsynchClientTask(){
-						public boolean skipIfAbort() {
-							return true;
-						}
-						public boolean skipIfCancel(UserCancelException exc) {
-							return true;
-						}
-						public String getTaskName() {
-							return "Query TCrit Var Cross Ref";
-						}
-						public int getTaskType() {
-							return TASKTYPE_NONSWING_BLOCKING;
-						}
-						public void run(Hashtable hashTable) throws Exception {
+					new AsynchClientTask("Query TCrit Var Cross Ref", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){						
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							getTestingFrameworkWindowManager().queryTCritCrossRef(tsInfoNew,tcritVaruserObj.getTestCriteria(),tcritVaruserObj.getVariableComparisonSummary().getName());
 						}
 				};
@@ -477,20 +459,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				final TestCriteriaNew tcritNew = (TestCriteriaNew)selectedObj;
 				final TestSuiteInfoNew tsInfoNew = gettestingFrameworkPanel().getTestSuiteInfoOfSelectedTestCriteria();
 				AsynchClientTask queryTCritCrossRef =
-					new AsynchClientTask(){
-						public boolean skipIfAbort() {
-							return true;
-						}
-						public boolean skipIfCancel(UserCancelException exc) {
-							return true;
-						}
-						public String getTaskName() {
-							return "Query TCrit Cross Ref";
-						}
-						public int getTaskType() {
-							return TASKTYPE_NONSWING_BLOCKING;
-						}
-						public void run(Hashtable hashTable) throws Exception {
+					new AsynchClientTask("Query TCrit Cross Ref", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){						
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							getTestingFrameworkWindowManager().queryTCritCrossRef(tsInfoNew,tcritNew,null);
 						}
 				};
@@ -508,23 +478,11 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, oldAnnotation);
 				final String finalAnnotation = newAnnotation;
 				AsynchClientTask editTestSuiteAnnotation =
-					new AsynchClientTask(){
-						public boolean skipIfAbort() {
-							return true;
-						}
-						public boolean skipIfCancel(UserCancelException exc) {
-							return true;
-						}
-						public String getTaskName() {
-							return "Edit TestSuite Annotation";
-						}
-						public int getTaskType() {
-							return TASKTYPE_NONSWING_BLOCKING;
-						}
-						public void run(Hashtable hashTable) throws Exception {
+					new AsynchClientTask("Edit TestSuite Annotation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							getTestingFrameworkWindowManager().updateTestSuiteAnnotation(tsInfoNew, finalAnnotation);
 						}
-				};
+					};
 				tasksV.add(editTestSuiteAnnotation);
 				tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsInfoNew);
 				tasksV.add(tfRefreshTreeTask);
@@ -542,20 +500,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, oldAnnotation);
 				final String finalAnnotation = newAnnotation;
 				AsynchClientTask editTestCaseAnnotation =
-					new AsynchClientTask(){
-						public boolean skipIfAbort() {
-							return true;
-						}
-						public boolean skipIfCancel(UserCancelException exc) {
-							return true;
-						}
-						public String getTaskName() {
-							return "Edit TestCase Annotation";
-						}
-						public int getTaskType() {
-							return TASKTYPE_NONSWING_BLOCKING;
-						}
-						public void run(Hashtable hashTable) throws Exception {
+					new AsynchClientTask("Edit TestCase Annotation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){						
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							getTestingFrameworkWindowManager().updateTestCaseAnnotation(tcNew, finalAnnotation);
 						}
 				};
@@ -579,20 +525,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 						new String[] {okString,"Cancel"},okString);
 				if (confirm.equals(okString)) {
 					AsynchClientTask toggleSteadyState =
-						new AsynchClientTask(){
-							public boolean skipIfAbort() {
-								return true;
-							}
-							public boolean skipIfCancel(UserCancelException exc) {
-								return true;
-							}
-							public String getTaskName() {
-								return "Toggle Steady State";
-							}
-							public int getTaskType() {
-								return TASKTYPE_NONSWING_BLOCKING;
-							}
-							public void run(Hashtable hashTable) throws Exception {
+						new AsynchClientTask("Toggle Steady State", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){							
+							public void run(Hashtable<String, Object> hashTable) throws Exception {
 								getTestingFrameworkWindowManager().toggleTestCaseSteadyState(new TestCaseNew[] {testCase});
 							}
 					};
@@ -815,23 +749,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 									tasksVLocal.add(new cbit.vcell.client.task.TFUpdateRunningStatus(getTestingFrameworkWindowManager(),tsInfo));
 									tasksVLocal.add(new TFGenerateReport(getTestingFrameworkWindowManager(),tsInfo));
 									final String END_NOTIFIER = "END NOTIFIER";
-									tasksVLocal.add(new AsynchClientTask(){
-										public boolean skipIfAbort() {
-											return false;
-										}
-										public boolean skipIfCancel(UserCancelException exc) {
-											return false;
-										}
-				
-										public String getTaskName() {
-											return END_NOTIFIER;
-										}
-				
-										public int getTaskType() {
-											return TASKTYPE_NONSWING_BLOCKING;
-										}
-				
-										public void run(Hashtable hashTable) throws Exception {
+									tasksVLocal.add(new AsynchClientTask(END_NOTIFIER, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, false, false){
+										public void run(Hashtable<String, Object> hashTable) throws Exception {
 											hashTable.put(END_NOTIFIER, END_NOTIFIER);
 										}
 										
@@ -841,7 +760,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 
 									AsynchClientTask[] tasksArr = new AsynchClientTask[tasksVLocal.size()];
 									tasksVLocal.copyInto(tasksArr);
-									java.util.Hashtable hashLocal = new java.util.Hashtable();
+									Hashtable<String, Object> hashLocal = new Hashtable<String, Object>();
 									ClientTaskDispatcher.dispatch(TestingFrameworkWindowPanel.this, hashLocal, tasksArr, true);
 									//Wait for each report to complete before going on to next because report methods are not thread safe?
 									while(!hashLocal.contains(END_NOTIFIER)){

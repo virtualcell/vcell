@@ -1,40 +1,24 @@
 package cbit.vcell.client.task;
-import cbit.vcell.client.*;
-import java.util.*;
 
-import org.vcell.util.UserCancelException;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
+import org.vcell.util.Issue;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StochMathMapping;
+import cbit.vcell.math.MathDescription;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class DocumentValid extends AsynchClientTask {
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Checking document consistency";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
-
+	public DocumentValid() {
+		super("Checking document consistency", TASKTYPE_NONSWING_BLOCKING);
+	}
 
 /**
  * Insert the method's description here.
@@ -42,7 +26,7 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	if (documentWindowManager.getVCDocument() instanceof BioModel) {
 		// try to successfully generate math and geometry region info
@@ -77,11 +61,11 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			scArray[i].setMathDescription(math);
 		}
 		// check issues for errors
-		Vector issueList = new Vector();
+		Vector<Issue> issueList = new Vector<Issue>();
 		bioModel.gatherIssues(issueList);
 		for (int i = 0; i < issueList.size(); i++){
-			org.vcell.util.Issue issue = (org.vcell.util.Issue)issueList.elementAt(i);
-			if (issue.getSeverity() == org.vcell.util.Issue.SEVERITY_ERROR){
+			Issue issue = issueList.elementAt(i);
+			if (issue.getSeverity() == Issue.SEVERITY_ERROR){
 				throw new Exception("Error: "+issue.getMessage());
 			}
 		}
@@ -111,23 +95,4 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:12 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:39:26 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

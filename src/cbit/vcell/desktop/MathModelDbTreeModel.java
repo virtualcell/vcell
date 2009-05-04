@@ -3,21 +3,11 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.mathmodel.*;
+import java.util.TreeMap;
 import java.util.Vector;
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.solver.SimulationInfo;
-import java.util.Enumeration;
-import cbit.vcell.clientdb.DatabaseListener;
-import javax.swing.tree.DefaultTreeModel;
-
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
-
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -61,11 +51,11 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  */
 private BioModelNode createBaseTree() throws DataAccessException {
 	MathModelInfo mathModelInfos[] = getDocumentManager().getMathModelInfos();
-	BioModelNode rootRootNode = new BioModelNode("math models",true);
+	BioModelNode rootRootNode = new BioModelNode("Math Models",true);
 	//
 	// get list of users (owners)
 	//
-	Vector ownerList = new Vector();
+	Vector<User> ownerList = new Vector<User>();
 	ownerList.addElement(getDocumentManager().getUser());
 	for (int i=0;i<mathModelInfos.length;i++){
 		MathModelInfo mathModelInfo = mathModelInfos[i];
@@ -76,7 +66,7 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	//
 	// for each user
 	//
-	java.util.TreeMap treeMap = new java.util.TreeMap();
+	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>();
 	for (int ownerIndex=0;ownerIndex<ownerList.size();ownerIndex++){
 		User owner = (User)ownerList.elementAt(ownerIndex);
 		BioModelNode ownerNode = createOwnerSubTree(owner);
@@ -116,7 +106,7 @@ private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
 			//
 			// get list of bioModels with the same branch
 			//
-			Vector mathModelBranchList = new Vector();
+			Vector<MathModelInfo> mathModelBranchList = new Vector<MathModelInfo>();
 			mathModelBranchList.addElement(mathModelInfo);
 			for (i=i+1;i<mathModelInfos.length;i++){
 				if (mathModelInfos[i].getVersion().getBranchID().equals(mathModelInfo.getVersion().getBranchID())){

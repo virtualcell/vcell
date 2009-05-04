@@ -1,37 +1,48 @@
 package cbit.vcell.client.desktop;
-import cbit.vcell.document.*;
 
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.text.DecimalFormat;
+import java.util.Hashtable;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VersionFlag;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.server.*;
-import cbit.vcell.client.*;
-
-import java.text.*;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-
-import javax.swing.*;
-
-import cbit.vcell.desktop.*;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.model.gui.TransformMassActionPanel;
-import cbit.vcell.server.UserRegistrationOP;
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotationEditor;
-import cbit.vcell.xml.MIRIAMHelper;
-import cbit.util.*;
-import javax.swing.JMenuItem;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
 /**
@@ -3319,7 +3330,6 @@ private void tileVertically() {
  * Creation date: (5/10/2004 4:32:17 PM)
  */
 public void updateConnectionStatus(ConnectionStatus connStatus) {
-
 	// other updates
 	String status = "";
 	org.vcell.util.document.User user = getWindowManager().getUser();

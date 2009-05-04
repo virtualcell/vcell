@@ -1,4 +1,5 @@
 package cbit.vcell.client;
+
 import cbit.vcell.xml.XmlHelper;
 import cbit.xml.merge.*;
 import cbit.image.*;
@@ -14,26 +15,20 @@ import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
-
 import java.beans.*;
 import java.io.File;
-
 import cbit.util.*;
 import swingthreads.*;
 import java.awt.*;
-
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.document.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import java.util.*;
 import java.util.List;
-
 import javax.swing.*;
-
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -1114,13 +1109,16 @@ public DataManager getDataManager(VCDataIdentifier vcDataId, boolean isSpatial) 
 	//
 	// Create ODE or PDE or Merged Datamanager depending on ODE or PDE or Merged data.
 	//
+	DataManager dataManager = null;
 	if (vcDataId instanceof cbit.vcell.simdata.MergedDataInfo) {
-		return new MergedDataManager(getClientServerManager().getVCDataManager(), vcDataId);
+		dataManager = new MergedDataManager(getClientServerManager().getVCDataManager(), vcDataId);
 	} else if (!isSpatial) {
-		return new ODEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
+		dataManager = new ODEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
 	} else {
-		return new PDEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
+		dataManager = new PDEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
 	}
+	dataManager.connect();
+	return dataManager;
 }
 
 

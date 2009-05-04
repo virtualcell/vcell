@@ -1,47 +1,26 @@
 package cbit.vcell.client.task;
-import org.vcell.util.UserCancelException;
+import java.util.Hashtable;
+
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mathmodel.MathModel;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
 
-import cbit.sql.*;
-import cbit.util.*;
-import cbit.vcell.client.*;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.clientdb.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.server.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
 public class DeleteOldDocument extends AsynchClientTask {
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return java.lang.String
- */
-public java.lang.String getTaskName() {
-	return "Deleting old document from database";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @return int
- */
-public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
-}
-
+	
+public DeleteOldDocument() {
+		super("Deleting old document from database", TASKTYPE_NONSWING_BLOCKING);
+	}
 
 /**
  * Insert the method's description here.
@@ -49,7 +28,7 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	VCDocument currentDocument = ((DocumentWindowManager)hashTable.get("documentWindowManager")).getVCDocument();
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	switch (currentDocument.getDocumentType()) {
@@ -80,23 +59,4 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/1/2004 8:44:08 PM)
- * @return boolean
- */
-public boolean skipIfAbort() {
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 4:38:57 PM)
- * @return boolean
- */
-public boolean skipIfCancel(UserCancelException exc) {
-	return true;
-}
 }

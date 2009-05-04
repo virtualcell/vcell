@@ -8,6 +8,8 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.client.server.VCDataManager;
+import cbit.vcell.desktop.controls.DataManager;
+
 import javax.swing.*;
 
 import org.vcell.util.DataAccessException;
@@ -28,6 +30,7 @@ public class SimDataViewer extends DataViewer {
 	private PDEDataViewer pdeDataViewer = null;
 	private boolean isODEData;
 	private Hashtable<String, JTable> choicesHash = new Hashtable<String, JTable>();
+	private DataManager dataManager = null;
 
 /**
  * Insert the method's description here.
@@ -35,11 +38,12 @@ public class SimDataViewer extends DataViewer {
  * @param simulation cbit.vcell.solver.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
-public SimDataViewer(Simulation simulation, VCDataManager vcDataManager, boolean isODEData) throws DataAccessException {
+public SimDataViewer(Simulation simulation, VCDataManager vcDataManager, boolean bOdeData, DataManager dataManager) throws DataAccessException {
 	super();
 	setSimulation(simulation);
 	setVcDataManager(vcDataManager);
-	this.isODEData = isODEData;
+	this.isODEData = bOdeData;
+	this.dataManager = dataManager;
 	initialize();
 }
 
@@ -51,11 +55,11 @@ public SimDataViewer(Simulation simulation, VCDataManager vcDataManager, boolean
  */
 private DataViewer createODEDataViewer(int jobIndex) {
 	VCDataIdentifier vcdid = new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
-	ODEDataManager odeDatamanager = new ODEDataManager(vcDataManager, vcdid);
+	//ODEDataManager odeDatamanager = new ODEDataManager(vcDataManager, vcdid);
 	odeDataViewer = new ODEDataViewer();
 	odeDataViewer.setSimulation(getSimulation());
 	try {
-		odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
+		odeDataViewer.setOdeSolverResultSet(dataManager.getODESolverResultSet());
 	} catch (org.vcell.util.DataAccessException exc) {
 		org.vcell.util.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n" + exc.getMessage());
 		exc.printStackTrace();
@@ -71,11 +75,11 @@ private DataViewer createODEDataViewer(int jobIndex) {
  * @return javax.swing.JPanel
  */
 private DataViewer createPDEDataViewer(int jobIndex) throws DataAccessException {
-	VCDataIdentifier vcdid = new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
-	PDEDataManager pdeDatamanager = new PDEDataManager(vcDataManager, vcdid);
+	//VCDataIdentifier vcdid = new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
+	//PDEDataManager pdeDatamanager = new PDEDataManager(vcDataManager, vcdid);
 	pdeDataViewer = new PDEDataViewer();
 	pdeDataViewer.setSimulation(getSimulation());
-	pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());
+	pdeDataViewer.setPdeDataContext(dataManager.getPDEDataContext());
 	return pdeDataViewer;
 }
 
@@ -120,17 +124,6 @@ private javax.swing.JPanel getParamChoicesPanel() {
 private cbit.vcell.solver.Simulation getSimulation() {
 	return simulation;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2005 11:36:17 PM)
- * @return cbit.vcell.client.server.VCDataManager
- */
-private cbit.vcell.client.server.VCDataManager getVcDataManager() {
-	return vcDataManager;
-}
-
 
 /**
  * Insert the method's description here.
@@ -315,6 +308,7 @@ private void updateScanParamChoices(){
 	if (isODEData) {
 		ODEDataManager odeDatamanager = new ODEDataManager(vcDataManager, vcdid);
 		try {
+			odeDatamanager.connect();
 			odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
 			odeDataViewer.setVcDataIdentifier(vcdid);
 		} catch (DataAccessException exc) {
@@ -324,6 +318,8 @@ private void updateScanParamChoices(){
 		}
 	} else {
 		PDEDataManager pdeDatamanager = new PDEDataManager(vcDataManager, vcdid);
+		pdeDatamanager.connect();
+		
 		ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
 		if (currentContext == null || currentContext.getDataIdentifier() == null) {
 			pdeDataViewer.setPdeDataContext(new NewClientPDEDataContext(pdeDatamanager));

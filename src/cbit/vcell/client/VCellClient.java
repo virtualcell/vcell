@@ -1,21 +1,21 @@
 package cbit.vcell.client;
-import java.awt.event.*;
 
+import java.awt.event.*;
+import java.util.Hashtable;
 import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.document.*;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
-
 import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
@@ -227,42 +227,59 @@ private void setStatusUpdater(StatusUpdater newStatusUpdater) {
  * Creation date: (5/5/2004 3:51:06 PM)
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public static VCellClient startClient(VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
+public static VCellClient startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
 	// instantiate app
 	final VCellClient vcellClient = new VCellClient();
-	// start management layer
-	vcellClient.setClientServerManager(new ClientServerManager());
-	vcellClient.getClientServerManager().setClientServerInfo(clientServerInfo);
-	vcellClient.setRequestManager(new ClientRequestManager(vcellClient));
-	vcellClient.setMdiManager(new ClientMDIManager(vcellClient.getRequestManager()));
-	// start auxilliary stuff
-	vcellClient.startStatusThreads();
-	// make sure we have at least a blank document to start with
-	if (startupDoc == null) {
-		startupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC);
-	}
-	// fire up the GUI
-    vcellClient.createAndShowGUI(startupDoc, false);
-	String build = System.getProperty(PropertyLoader.vcellSoftwareVersion);
-	if (build != null){
-		DocumentWindowAboutBox.BUILD_NO = build;
-	}
-    // try server connection
-    if (clientServerInfo.getUsername() == null) {
-	    // we were not supplied login credentials; pop-up dialog
-    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo);
-    } else {
-		new Thread(new Runnable(){public void run(){vcellClient.getRequestManager().connectToServer(clientServerInfo);}}).start();
-    }
-    
-	RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
+	
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();	
+	AsynchClientTask task1  = new AsynchClientTask("Starting Virtual Cell", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// start management layer
+			vcellClient.setClientServerManager(new ClientServerManager());
+			vcellClient.getClientServerManager().setClientServerInfo(clientServerInfo);
+			vcellClient.setRequestManager(new ClientRequestManager(vcellClient));
+			vcellClient.setMdiManager(new ClientMDIManager(vcellClient.getRequestManager()));
+			// start auxilliary stuff
+			vcellClient.startStatusThreads();
+			// make sure we have at least a blank document to start with
+			if (startupDoc != null) {
+				hashTable.put("startupDoc",startupDoc);
+			} else {
+				VCDocument newStartupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC);
+				hashTable.put("startupDoc",newStartupDoc);
+			}
+		}
+	};
+	AsynchClientTask task2  = new AsynchClientTask("Creating GUI", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// fire up the GUI
+			VCDocument startupDoc = (VCDocument)hashTable.get("startupDoc");
+		    vcellClient.createAndShowGUI(startupDoc, false);
+		    RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());		    
+		}
+	};
+	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", clientServerInfo.getUsername() == null ? AsynchClientTask.TASKTYPE_SWING_BLOCKING : AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {		
+			String build = System.getProperty(PropertyLoader.vcellSoftwareVersion);
+			if (build != null){
+				DocumentWindowAboutBox.BUILD_NO = build;
+			}
+		    // try server connection
+		    if (clientServerInfo.getUsername() == null) {
+			    // we were not supplied login credentials; pop-up dialog
+		    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo);
+		    } else {
+				vcellClient.getRequestManager().connectToServer(clientServerInfo);
+		    }
+		}
+	}; 	
 
+	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
+	ClientTaskDispatcher.dispatch(null, hash, taskArray);
 	return vcellClient;
 }
 
-public static void login(final RequestManager requestManager,final ClientServerInfo clientServerInfo){
-	ClientServerManager.checkClientServerSoftwareVersion(clientServerInfo);
-	
+public static void login(final RequestManager requestManager,final ClientServerInfo clientServerInfo){	
 	final LoginDialog loginDialog = new LoginDialog(null);
 	loginDialog.setLoggedInUser(null);
 	loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
