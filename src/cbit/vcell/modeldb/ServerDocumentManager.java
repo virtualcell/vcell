@@ -1336,7 +1336,7 @@ roundtripTimer += l2 - l1;
 		}
 		bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(updatedBioModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),
-												BioModelChildSummary.fromDatabaseBioModel(updatedBioModel).toDatabaseSerialization());
+				updatedBioModel.createBioModelChildSummary().toDatabaseSerialization());
 		dbServer.insertVersionableXML(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),bioModelXML);
 System.out.println("------------------------------> Total time: " + ((double)(System.currentTimeMillis() - start)) / 1000);
 System.out.println("------------------------------> Time spent on roundtrip: " + ((double)roundtripTimer) / 1000);
@@ -1819,7 +1819,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 		}
 		mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(updatedMathModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),
-												MathModelChildSummary.fromDatabaseMathModel(updatedMathModel).toDatabaseSerialization());
+				updatedMathModel.createMathModelChildSummary().toDatabaseSerialization());
 		dbServer.insertVersionableXML(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),mathModelXML);
 		return mathModelXML;
 	} else {

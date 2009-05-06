@@ -2,7 +2,6 @@ package org.vcell.util.document;
 
 import java.util.Vector;
 
-import cbit.vcell.mathmodel.MathModel;
 /**
  * Insert the type's description here.
  * Creation date: (8/20/2004 2:11:48 PM)
@@ -19,6 +18,13 @@ public class MathModelChildSummary implements java.io.Serializable {
  * Creation date: (8/23/2004 10:13:07 PM)
  */
 private MathModelChildSummary() {}
+
+public MathModelChildSummary(String arg_geoName, int arg_geoDim, String[] arg_simNames, String[] arg_simAnnots){
+	this.geoName = arg_geoName;
+	this.geoDim = arg_geoDim;
+	this.simNames = arg_simNames;
+	this.simAnnots = arg_simAnnots;
+}
 /**
  * Insert the method's description here.
  * Creation date: (8/24/2004 3:01:10 PM)
@@ -31,28 +37,6 @@ private String emptyConvention(String str) {
 		return str;
 	}
 	return " ";
-}
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 11:41:14 AM)
- * @param savedMathModel cbit.vcell.mathmodel.MathModel
- */
-public static MathModelChildSummary fromDatabaseMathModel(MathModel savedMathModel) {
-
-	MathModelChildSummary mmcs = new MathModelChildSummary();
-
-	mmcs.geoName = savedMathModel.getMathDescription().getGeometry().getName();
-	mmcs.geoDim = savedMathModel.getMathDescription().getGeometry().getDimension();
-	
-	cbit.vcell.solver.Simulation[] sims = savedMathModel.getSimulations();
-	mmcs.simNames = new String[sims.length];
-	mmcs.simAnnots = new String[sims.length];
-	for(int i=0;i<sims.length;i+= 1){
-		mmcs.simNames[i] = sims[i].getName();
-		mmcs.simAnnots[i] = sims[i].getDescription();
-	}
-	
-	return mmcs;
 }
 /**
  * Insert the method's description here.
@@ -69,8 +53,8 @@ public static MathModelChildSummary fromDatabaseSerialization(String databaseSer
 	mmcs.geoName = (String)org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
 	mmcs.geoDim = Integer.parseInt((String)st.nextElement());
 	
-	Vector simNamesV = new Vector();
-	Vector simAnnotsV = new Vector();
+	Vector<String> simNamesV = new Vector<String>();
+	Vector<String> simAnnotsV = new Vector<String>();
 	int numSims = Integer.parseInt((String)st.nextElement());
 
 	while(st.hasMoreElements()){
