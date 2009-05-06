@@ -1880,7 +1880,7 @@ throws SQLException,DataAccessException{
 		throw new DataAccessException(versionable+" already inserted in this transaction");
 	}
 
-	VersionableType vType = VersionableType.fromVersionable(versionable);
+	VersionableType vType = VersionTable.versionableTypeFromVersionable(versionable);
 	if (vType.getIsTopLevel() && isNameUsed(con,vType,user,name)){
 		throw new DataAccessException("'"+user.getName()+"' already has a "+vType.getTypeName()+" with name '"+name+"'");
 	}
@@ -3899,7 +3899,7 @@ protected Version updateVersionableInit(InsertHashtable hash, Connection con, Us
 	}
 	//Can only update things we own
 	if(!versionable.getVersion().getOwner().equals(user)){
-		throw new PermissionException("Versionable name="+versionable.getName()+" type="+VersionableType.fromVersionable(versionable)+"\nuser="+versionable.getVersion().getOwner()+" Not Equal to client user="+user);
+		throw new PermissionException("Versionable name="+versionable.getName()+" type="+VersionTable.versionableTypeFromVersionable(versionable)+"\nuser="+versionable.getVersion().getOwner()+" Not Equal to client user="+user);
 	}
 	
 	//

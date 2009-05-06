@@ -52,31 +52,6 @@ public boolean equals(Object obj) {
 }
 /**
  * This method was created in VisualAge.
- * @return cbit.sql.VersionableType
- * @param versionable cbit.sql.Versionable
- */
-public static VersionableType fromVersionable(Versionable versionable) {
-	if (versionable instanceof cbit.vcell.geometry.Geometry){
-		return VersionableType.Geometry;
-	}else if (versionable instanceof cbit.vcell.math.MathDescription){
-		return VersionableType.MathDescription;
-	}else if (versionable instanceof cbit.image.VCImage){
-		return VersionableType.VCImage;
-	}else if (versionable instanceof cbit.vcell.model.Model){
-		return VersionableType.Model;
-	}else if (versionable instanceof cbit.vcell.mapping.SimulationContext){
-		return VersionableType.SimulationContext;
-	}else if (versionable instanceof cbit.vcell.solver.Simulation){
-		return VersionableType.Simulation;
-	}else if (versionable instanceof cbit.vcell.biomodel.BioModelMetaData){
-		return VersionableType.BioModelMetaData;
-	}else if (versionable instanceof cbit.vcell.mathmodel.MathModelMetaData){
-		return VersionableType.MathModelMetaData;
-	}
-	return null;
-}
-/**
- * This method was created in VisualAge.
  * @return int
  */
 public int getCode() {

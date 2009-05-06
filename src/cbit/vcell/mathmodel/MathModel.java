@@ -10,6 +10,7 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.solver.Simulation;
@@ -243,6 +244,21 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
 	return newSimulation;
 }
 
+public MathModelChildSummary createMathModelChildSummary() {
+
+	String geoName = getMathDescription().getGeometry().getName();
+	int geoDim = getMathDescription().getGeometry().getDimension();
+	
+	Simulation[] sims = getSimulations();
+	String[] simNames = new String[sims.length];
+	String[] simAnnots = new String[sims.length];
+	for(int i=0;i<sims.length;i+= 1){
+		simNames[i] = sims[i].getName();
+		simAnnots[i] = sims[i].getDescription();
+	}
+	
+	return new MathModelChildSummary(geoName, geoDim, simNames, simAnnots);
+}
 
 /**
  * The firePropertyChange method was generated to support the propertyChange field.

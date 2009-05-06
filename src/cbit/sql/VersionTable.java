@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
@@ -18,6 +17,13 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
+import cbit.image.VCImage;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.model.Model;
 import cbit.vcell.modeldb.*;
 /**
  * This type was created in VisualAge.
@@ -361,8 +367,34 @@ protected static String getVersionGroupSQLValue(Version version) {
  */
 public static VersionTable getVersionTable(Versionable v) throws IllegalArgumentException {
 
-	VersionableType vType = VersionableType.fromVersionable(v);
+	VersionableType vType = VersionTable.versionableTypeFromVersionable(v);
 	return getVersionTable(vType);
+}
+
+/**
+* This method was created in VisualAge.
+* @return cbit.sql.VersionableType
+* @param versionable cbit.sql.Versionable
+*/
+public static VersionableType versionableTypeFromVersionable(Versionable versionable) {
+	if (versionable instanceof Geometry){
+		return VersionableType.Geometry;
+	}else if (versionable instanceof MathDescription){
+		return VersionableType.MathDescription;
+	}else if (versionable instanceof VCImage){
+		return VersionableType.VCImage;
+	}else if (versionable instanceof Model){
+		return VersionableType.Model;
+	}else if (versionable instanceof SimulationContext){
+		return VersionableType.SimulationContext;
+	}else if (versionable instanceof SimulationContext){
+		return VersionableType.Simulation;
+	}else if (versionable instanceof BioModelMetaData){
+		return VersionableType.BioModelMetaData;
+	}else if (versionable instanceof MathModelMetaData){
+		return VersionableType.MathModelMetaData;
+	}
+	return null;
 }
 
 

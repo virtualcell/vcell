@@ -21,6 +21,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.solver.Simulation;
@@ -274,6 +275,34 @@ public SimulationContext copySimulationContext(SimulationContext simulationConte
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
 	return simContext;
+}
+
+public BioModelChildSummary createBioModelChildSummary() {
+
+	SimulationContext[] simContexts = getSimulationContexts();
+	
+	String[] scNames = new String[simContexts.length];
+	String[] scAnnots = new String[scNames.length];
+	String[] geoNames = new String[scNames.length];
+	int[] geoDims = new int[scNames.length];
+	String[][] simNames = new String[scNames.length][];
+	String[][] simAnnots = new String[scNames.length][];
+	
+	for(int i=0;i<simContexts.length;i+= 1){
+		scNames[i] = simContexts[i].getName();
+		scAnnots[i]= simContexts[i].getDescription();
+		geoNames[i] = simContexts[i].getGeometry().getName();
+		geoDims[i] = simContexts[i].getGeometry().getDimension();
+		
+		Simulation[] sims = simContexts[i].getSimulations();
+		simNames[i] = new String[sims.length];
+		simAnnots[i] =  new String[sims.length];
+		for(int j=0;j< sims.length;j+= 1){
+			simNames[i][j] = sims[j].getName();
+			simAnnots[i][j] = sims[j].getDescription();
+		}
+	}
+	return new BioModelChildSummary(scNames,scAnnots,simNames,simAnnots,geoNames,geoDims);
 }
 
 

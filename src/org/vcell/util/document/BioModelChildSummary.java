@@ -1,7 +1,6 @@
 package org.vcell.util.document;
 import java.util.Vector;
 
-import cbit.vcell.biomodel.BioModel;
 /**
  * Insert the type's description here.
  * Creation date: (8/20/2004 2:11:48 PM)
@@ -24,6 +23,15 @@ public class BioModelChildSummary implements java.io.Serializable {
  */
 private BioModelChildSummary() {}
 
+public BioModelChildSummary(String[] arg_scNames, String[] arg_scAnnots, String[][] arg_simNames, String[][] arg_simAnnots, String[] arg_geoNames, int[] arg_geoDims){
+	this.scNames = arg_scNames;
+	this.scAnnots = arg_scAnnots;
+	this.geoNames = arg_geoNames;
+	this.geoDims = arg_geoDims;
+	this.simNames = arg_simNames;
+	this.simAnnots = arg_simAnnots;
+}
+
 
 /**
  * Insert the method's description here.
@@ -39,41 +47,6 @@ private String emptyConvention(String str) {
 	return " ";
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/23/2004 11:41:14 AM)
- * @param savedBioModel cbit.vcell.biomodel.BioModel
- */
-public static BioModelChildSummary fromDatabaseBioModel(BioModel savedBioModel) {
-
-	BioModelChildSummary bmcs = new BioModelChildSummary();
-
-	cbit.vcell.mapping.SimulationContext[] simContexts = savedBioModel.getSimulationContexts();
-	
-	bmcs.scNames = new String[simContexts.length];
-	bmcs.scAnnots = new String[bmcs.scNames.length];
-	bmcs.geoNames = new String[bmcs.scNames.length];
-	bmcs.geoDims = new int[bmcs.scNames.length];
-	bmcs.simNames = new String[bmcs.scNames.length][];
-	bmcs.simAnnots = new String[bmcs.scNames.length][];
-	
-	for(int i=0;i<simContexts.length;i+= 1){
-		bmcs.scNames[i] = simContexts[i].getName();
-		bmcs.scAnnots[i]= simContexts[i].getDescription();
-		bmcs.geoNames[i] = simContexts[i].getGeometry().getName();
-		bmcs.geoDims[i] = simContexts[i].getGeometry().getDimension();
-		
-		cbit.vcell.solver.Simulation[] sims = simContexts[i].getSimulations();
-		bmcs.simNames[i] = new String[sims.length];
-		bmcs.simAnnots[i] =  new String[sims.length];
-		for(int j=0;j< sims.length;j+= 1){
-			bmcs.simNames[i][j] = sims[j].getName();
-			bmcs.simAnnots[i][j] = sims[j].getDescription();
-		}
-	}
-	return bmcs;
-}
 
 
 /**
@@ -91,13 +64,13 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 	
 	//Assumes there is a non-empty string for every element
 	java.util.StringTokenizer st = new java.util.StringTokenizer(databaseSerialization,"\n",false);
-	Vector scNamesV = new Vector();
-	Vector scAnnotsV = new Vector();
-	Vector geoNamesV = new Vector();
+	Vector<String> scNamesV = new Vector<String>();
+	Vector<String> scAnnotsV = new Vector<String>();
+	Vector<String> geoNamesV = new Vector<String>();
 	int[] geoDimsArr = new int[0];
 
-	Vector simNamesV = new Vector();
-	Vector simAnnotsV = new Vector();
+	Vector<String[]> simNamesV = new Vector<String[]>();
+	Vector<String[]> simAnnotsV = new Vector<String[]>();
 
 	while(st.hasMoreElements()){
 		scNamesV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
@@ -109,8 +82,8 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 		geoDimsArr = temp;
 		
 		int numSims = Integer.parseInt((String)st.nextElement());
-		Vector currentSimNamesV = new Vector();
-		Vector currentSimAnnotsV= new Vector();
+		Vector<String> currentSimNamesV = new Vector<String>();
+		Vector<String> currentSimAnnotsV= new Vector<String>();
 		for(int j=0;j<numSims;j+= 1){
 			currentSimNamesV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
 			currentSimAnnotsV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));

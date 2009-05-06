@@ -2360,7 +2360,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),BioModelChildSummary.fromDatabaseBioModel(savedBioModel));
+		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
 
@@ -2435,7 +2435,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),MathModelChildSummary.fromDatabaseMathModel(savedMathModel));
+		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
@@ -2552,7 +2552,7 @@ public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioMo
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),BioModelChildSummary.fromDatabaseBioModel(savedBioModel));
+		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
@@ -2633,7 +2633,7 @@ public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel m
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),MathModelChildSummary.fromDatabaseMathModel(savedMathModel));
+		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
