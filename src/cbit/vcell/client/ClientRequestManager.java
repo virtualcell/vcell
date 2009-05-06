@@ -679,7 +679,11 @@ private VCDocument createNewDocument(VCDocument.DocumentCreationInfo documentCre
 					// Get image from file --- INCOMPLETE
 					image = getMdiManager().getDatabaseWindowManager().selectImageFromFile(pp);
 				}else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
-					VCImage initImage = ((VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo).getVCImage();
+					VCDocument.GeomFromFieldDataCreationInfo docInfo =
+						(VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
+					VCImage initImage =
+						new VCImageUncompressed(docInfo.getImageVersion(),docInfo.getImageData(),docInfo.getImageExtent(),
+								docInfo.getImageSize().getX(),docInfo.getImageSize().getY(),docInfo.getImageSize().getZ());
 					image = DatabaseWindowManager.editImageAttributes(initImage, pp, this);
 				}else{
 					throw new RuntimeException("Unknown Geometry Document creation option value="+documentCreationInfo.getOption());

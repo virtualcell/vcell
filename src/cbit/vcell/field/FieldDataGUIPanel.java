@@ -1400,19 +1400,18 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 				}
 				segmentedData[i] = (byte)index;
 			}
-			VCImageUncompressed vcImageUncompressed =
-				new VCImageUncompressed(null,segmentedData,
-					pdeDataContext.getCartesianMesh().getExtent(),
-					pdeDataContext.getCartesianMesh().getSizeX(),
-					pdeDataContext.getCartesianMesh().getSizeY(),
-					pdeDataContext.getCartesianMesh().getSizeZ());
-			vcImageUncompressed.setDescription("Created from Field Data "+
-					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName()+":\n"+
-					"Variable="+pdeDataContext.getVariableName()+" Time="+pdeDataContext.getTimePoint());
 			fieldDataWindowManager.newDocument(
 				new VCDocument.GeomFromFieldDataCreationInfo(
 					VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FIELDDATA,
-					vcImageUncompressed));
+					segmentedData,
+					new ISize(pdeDataContext.getCartesianMesh().getSizeX(),pdeDataContext.getCartesianMesh().getSizeY(),pdeDataContext.getCartesianMesh().getSizeZ()),
+					pdeDataContext.getCartesianMesh().getExtent(),
+					null,
+					"Created from Field Data "+
+					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName()+":\n"+
+					"Variable="+pdeDataContext.getVariableName()+" Time="+pdeDataContext.getTimePoint()
+				)
+			);
 		} catch (Exception e) {
 			e.printStackTrace();
 			PopupGenerator.showErrorDialog("Error creating Geometry\n"+e.getMessage());

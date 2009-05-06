@@ -1,6 +1,9 @@
 package org.vcell.util.document;
 
 
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+
 import cbit.image.VCImage;
 import cbit.sql.*;
 /**
@@ -42,13 +45,34 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		}
 	};
 	public static class GeomFromFieldDataCreationInfo extends DocumentCreationInfo{
-		private VCImage vcImage;
-		public GeomFromFieldDataCreationInfo(int documentType,int option,VCImage vcImage){
+		private byte[] imageData;
+		private ISize imageSize;
+		private Version imageVersion;
+		private Extent imageExtent;
+		private String imageDescription;
+		public GeomFromFieldDataCreationInfo(int documentType,int option,
+				byte[] imageData,ISize imageSize,Extent imageExtent,Version imageVersion,String imageDescription){
 			super(documentType,option);
-			this.vcImage = vcImage;
+			this.imageData = imageData;
+			this.imageSize = imageSize;
+			this.imageVersion = imageVersion;
+			this.imageExtent = imageExtent;
+			this.imageDescription = imageDescription;
 		}
-		public VCImage getVCImage(){
-			return vcImage;
+		public byte[] getImageData() {
+			return imageData;
+		}
+		public ISize getImageSize() {
+			return imageSize;
+		}
+		public Version getImageVersion() {
+			return imageVersion;
+		}
+		public Extent getImageExtent() {
+			return imageExtent;
+		}
+		public String getImageDescription(){
+			return imageDescription;
 		}
 	};
 /**
