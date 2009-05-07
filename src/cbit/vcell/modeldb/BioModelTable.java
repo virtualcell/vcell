@@ -112,19 +112,19 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,Sessi
  */
 public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 
-	String serialDbChildSummary =
-		DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge);
+	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
+	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	
+	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge);
 
+	
+	
 	BioModelChildSummary bioModelChildSummary = null;
 	if (serialDbChildSummary!=null){
 		bioModelChildSummary = bioModelChildSummary.fromDatabaseSerialization(serialDbChildSummary);
 	}
-
-	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
-	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
-
-		
+	
 	return new org.vcell.util.document.BioModelInfo(version, modelRef, bioModelChildSummary);
 }
 /**

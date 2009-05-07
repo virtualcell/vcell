@@ -102,6 +102,12 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			component.setText(label);
 			setIcon(fieldSimulationIcon);
 
+		}else if (node.getUserObject() instanceof String && "AppType".equals(node.getRenderHint("type"))) {
+			String label = (String)node.getUserObject();
+			component.setToolTipText("Simulation");
+			component.setText(label);
+			setIcon(fieldAppTypeIcon);
+
 		}else if (node.getUserObject() instanceof Annotation) {
 			String label = ((Annotation)node.getUserObject()).toString();
 			component.setToolTipText("Annotation");

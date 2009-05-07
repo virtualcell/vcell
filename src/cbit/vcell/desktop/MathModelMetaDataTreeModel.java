@@ -13,6 +13,7 @@ import cbit.vcell.clientdb.DatabaseListener;
 import javax.swing.tree.DefaultTreeModel;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
@@ -69,11 +70,16 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 	}else{
 		int geomDim = mathModelChildSummary.getGeometryDimension();
 		String geomName = mathModelChildSummary.getGeometryName();
+		String modelType = mathModelChildSummary.getModelType();
+		//add model type tree node
+		BioModelNode modelTypeNode = new BioModelNode(modelType,false);
+		modelTypeNode.setRenderHint("type","AppType");
+		versionNode.add(modelTypeNode);
 		BioModelNode geometryNode = null;
 		if (geomDim>0){
 			geometryNode = new BioModelNode(geomName + " ("+geomDim+"D)",false);
 		}else{
-			geometryNode = new BioModelNode("Compartmental",false);
+			geometryNode = new BioModelNode(BioModelChildSummary.COMPARTMENTAL_GEO_STR,false);
 		}
 		geometryNode.setRenderHint("type","Geometry");
 		geometryNode.setRenderHint("dimension",new Integer(geomDim));

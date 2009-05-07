@@ -101,7 +101,19 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}else if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)){
 					component.setText("(Published) "+component.getText());
 				}
+			}else if (node.getUserObject() instanceof String && "Geometry".equals(node.getRenderHint("type"))) {
+				String label = (String)node.getUserObject();
+				component.setToolTipText("Geometry");
+				component.setText(label);
+				setIcon(fieldGeometryIcon);
 			}
+			else if (node.getUserObject() instanceof String && "AppType".equals(node.getRenderHint("type"))) {
+				String label = (String)node.getUserObject();
+				component.setToolTipText("Application type");
+				component.setText(label);
+				setIcon(fieldAppTypeIcon);
+			}
+			
 		}
 	}catch (Throwable e){
 		e.printStackTrace(System.out);

@@ -54,6 +54,10 @@ private MathModelTable() {
  */
 public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 
+	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
+	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
+	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	
 	String serialDbChildSummary =
 		DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge);
 
@@ -62,10 +66,6 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 		mathModelChildSummary = mathModelChildSummary.fromDatabaseSerialization(serialDbChildSummary);
 	}
 
-	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
-	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
-	
 	return new MathModelInfo(version, mathRef, mathModelChildSummary);
 }
 

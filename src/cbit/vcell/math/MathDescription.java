@@ -6,6 +6,7 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.VariableHash;
+import cbit.vcell.mathmodel.MathModel;
 
 import javax.swing.event.*;
 
@@ -13,6 +14,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 /*©
@@ -3205,4 +3207,17 @@ public static void substituteFieldFuncNames(
 		}
 	}
 }
+
+public String getTypeInChildSummary()
+{
+	String result = BioModelChildSummary.TYPE_DETER_STR;
+	//stoch/determ 
+	if(isStoch()) //deterministic spatial
+	{
+		result = BioModelChildSummary.TYPE_STOCH_STR;
+	}
+	
+	return result;
+}
+
 }

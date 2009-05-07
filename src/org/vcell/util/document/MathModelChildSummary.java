@@ -1,7 +1,12 @@
 package org.vcell.util.document;
 
+import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.vcell.util.TokenMangler;
+
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (8/20/2004 2:11:48 PM)
@@ -13,13 +18,16 @@ public class MathModelChildSummary implements java.io.Serializable {
 	
 	private String simNames[] = null;
 	private String simAnnots[] = null;
+	//math model type deterministic or stochastic
+	private String modelType = null;
 /**
  * Insert the method's description here.
  * Creation date: (8/23/2004 10:13:07 PM)
  */
 private MathModelChildSummary() {}
 
-public MathModelChildSummary(String arg_geoName, int arg_geoDim, String[] arg_simNames, String[] arg_simAnnots){
+public MathModelChildSummary(String arg_modelType, String arg_geoName, int arg_geoDim, String[] arg_simNames, String[] arg_simAnnots){
+	this.modelType = arg_modelType;
 	this.geoName = arg_geoName;
 	this.geoDim = arg_geoDim;
 	this.simNames = arg_simNames;
@@ -38,6 +46,8 @@ private String emptyConvention(String str) {
 	}
 	return " ";
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (8/23/2004 1:30:48 PM)
@@ -47,26 +57,45 @@ private String emptyConvention(String str) {
 public static MathModelChildSummary fromDatabaseSerialization(String databaseSerialization) {
 	
 	MathModelChildSummary mmcs = new MathModelChildSummary();
-	//Assumes there is a non-empty string for every element
-	java.util.StringTokenizer st = new java.util.StringTokenizer(databaseSerialization,"\n",false);
-
-	mmcs.geoName = (String)org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
-	mmcs.geoDim = Integer.parseInt((String)st.nextElement());
-	
-	Vector<String> simNamesV = new Vector<String>();
-	Vector<String> simAnnotsV = new Vector<String>();
-	int numSims = Integer.parseInt((String)st.nextElement());
-
-	while(st.hasMoreElements()){
-		for(int j=0;j<numSims;j+= 1){
-			simNamesV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
-			simAnnotsV.add(org.vcell.util.TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+//	if(BioModelChildSummary.debug) return mmcs;
+	StringTokenizer st = null;
+	try{
+		//Assumes there is a non-empty string for every element
+		st = new java.util.StringTokenizer(databaseSerialization,"\n",false);
+		//check if tere is new field(model type), if so, read it and next stringTokenizer will be geometry name.
+		//otherwise this tokenStr is geometry name.
+		String tokenStr = (String)st.nextElement();
+		if(tokenStr.startsWith(BioModelChildSummary.TYPE_TOKEN))
+		{
+			mmcs.modelType = TokenMangler.getChildSummaryElementRestoredString(tokenStr.substring(BioModelChildSummary.TYPE_TOKEN.length()));
+			mmcs.geoName = TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
 		}
-	}
-
-	mmcs.simNames = (String[])simNamesV.toArray(new String[simNamesV.size()]);
-	mmcs.simAnnots = (String[])simAnnotsV.toArray(new String[simAnnotsV.size()]);
+		else
+		{
+			mmcs.modelType = BioModelChildSummary.TYPE_UNKNOWN_STR;
+			mmcs.geoName = TokenMangler.getChildSummaryElementRestoredString(tokenStr);
+		}
+//		mmcs.modelType = (String)TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
+//		mmcs.geoName = (String)TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
+		mmcs.geoDim = Integer.parseInt((String)st.nextElement());
+		
+		Vector<String> simNamesV = new Vector<String>();
+		Vector<String> simAnnotsV = new Vector<String>();
+		int numSims = Integer.parseInt((String)st.nextElement());
+		while(st.hasMoreElements()){
+			for(int j=0;j<numSims;j+= 1){
+				simNamesV.add(TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+				simAnnotsV.add(TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
+			}
+		}
 	
+		mmcs.simNames = (String[])simNamesV.toArray(new String[simNamesV.size()]);
+		mmcs.simAnnots = (String[])simAnnotsV.toArray(new String[simAnnotsV.size()]);
+	}catch(Exception e)
+	{
+		System.out.println("Failed reading MathModelChildSummary info..." + st.toString());
+		e.printStackTrace(System.out);
+	}
 	return mmcs;
 }
 /**
@@ -98,6 +127,12 @@ public int getGeometryDimension() {
 public String getGeometryName() {
 	return geoName;
 }
+
+public String getModelType()
+{
+	return modelType;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (8/20/2004 2:18:34 PM)
@@ -122,15 +157,17 @@ public String[] getSimulationNames() {
 public String toDatabaseSerialization() {
 	
 	StringBuffer sb = new StringBuffer();
-	
-	sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(geoName))+"\n");
+	//add modeltype 
+	sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(BioModelChildSummary.TYPE_TOKEN+modelType))+"\n");
+	sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(geoName))+"\n");
+
 	sb.append(geoDim+"\n");
 	
 	//Simulations
 	sb.append(simNames.length+"\n");//num simulations
 	for(int j=0;j<simNames.length;j+= 1){
-		sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(simNames[j]))+"\n");
-		sb.append(emptyConvention(org.vcell.util.TokenMangler.getChildSummaryElementEscapedString(simAnnots[j]))+"\n");
+		sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(simNames[j]))+"\n");
+		sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(simAnnots[j]))+"\n");
 	}
 	
 	return sb.toString();

@@ -282,14 +282,16 @@ public BioModelChildSummary createBioModelChildSummary() {
 	SimulationContext[] simContexts = getSimulationContexts();
 	
 	String[] scNames = new String[simContexts.length];
-	String[] scAnnots = new String[scNames.length];
-	String[] geoNames = new String[scNames.length];
-	int[] geoDims = new int[scNames.length];
-	String[][] simNames = new String[scNames.length][];
-	String[][] simAnnots = new String[scNames.length][];
+	String[] appTypes = new String[simContexts.length];
+	String[] scAnnots = new String[simContexts.length];
+	String[] geoNames = new String[simContexts.length];
+	int[] geoDims = new int[simContexts.length];
+	String[][] simNames = new String[simContexts.length][];
+	String[][] simAnnots = new String[simContexts.length][];
 	
 	for(int i=0;i<simContexts.length;i+= 1){
 		scNames[i] = simContexts[i].getName();
+		appTypes[i] = simContexts[i].getMathDescription().getTypeInChildSummary();
 		scAnnots[i]= simContexts[i].getDescription();
 		geoNames[i] = simContexts[i].getGeometry().getName();
 		geoDims[i] = simContexts[i].getGeometry().getDimension();
@@ -302,9 +304,8 @@ public BioModelChildSummary createBioModelChildSummary() {
 			simAnnots[i][j] = sims[j].getDescription();
 		}
 	}
-	return new BioModelChildSummary(scNames,scAnnots,simNames,simAnnots,geoNames,geoDims);
+	return new BioModelChildSummary(scNames,appTypes, scAnnots,simNames,simAnnots,geoNames,geoDims);
 }
-
 
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
