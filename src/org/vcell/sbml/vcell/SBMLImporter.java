@@ -29,6 +29,7 @@ import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import cbit.util.BeanUtils;
 import cbit.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelChildSummary;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -1450,7 +1451,7 @@ public BioModel getBioModel() {
 	} 
 	cbit.vcell.model.Model vcModel = new cbit.vcell.model.Model(modelName);
 
-	Geometry geometry = new Geometry("Compartmental", 0);
+	Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
 	try {
 		simContext = new SimulationContext(vcModel, geometry);
 		simContext.setName(simContext.getModel().getName()+"_"+simContext.getGeometry().getName());
