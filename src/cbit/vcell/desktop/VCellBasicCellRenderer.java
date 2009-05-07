@@ -23,6 +23,7 @@ import javax.swing.*;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -35,6 +36,7 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldBioModelErrorIcon = null;
 	protected javax.swing.Icon fieldBioModelWarningIcon = null;
 	protected javax.swing.Icon fieldGeometryIcon = null;
+	protected javax.swing.Icon fieldAppTypeIcon = null;
 	protected javax.swing.Icon fieldSimulationIcon = null;
 	protected javax.swing.Icon fieldSimulationErrorIcon = null;
 	protected javax.swing.Icon fieldSimulationWarningIcon = null;
@@ -61,6 +63,7 @@ public VCellBasicCellRenderer() {
 	fieldBioModelErrorIcon = new ImageIcon(getClass().getResource("/images/bioModelError_16x16.gif"));
 	fieldBioModelWarningIcon = new ImageIcon(getClass().getResource("/images/bioModelWarning_16x16.gif"));
 	fieldGeometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
+	fieldAppTypeIcon = new ImageIcon(getClass().getResource("/images/type.gif"));
 	fieldSimulationIcon = new ImageIcon(getClass().getResource("/images/run2_16x16.gif"));
 	fieldSimulationErrorIcon = new ImageIcon(getClass().getResource("/images/run2Error_16x16.gif"));
 	fieldSimulationWarningIcon = new ImageIcon(getClass().getResource("/images/run2Warning_16x16.gif"));
@@ -555,7 +558,7 @@ protected void setComponentProperties(JLabel component, Geometry geometry) {
 	if (geometry.getDimension()>0){
 		component.setText("\""+geometry.getName()+"\""+date);
 	}else{
-		component.setText("Compartmental");
+		component.setText(BioModelChildSummary.COMPARTMENTAL_GEO_STR);
 	}
 	
 }
@@ -608,7 +611,7 @@ protected void setComponentProperties(JLabel component, SimulationContext simCon
  */
 protected void setComponentProperties(JLabel component, MathDescription mathDesc) {
 
-	//component.setIcon(fieldMathModelIcon);
+	component.setIcon(fieldMathModelIcon);
 	
 	component.setToolTipText("Math");
 	component.setText("math");

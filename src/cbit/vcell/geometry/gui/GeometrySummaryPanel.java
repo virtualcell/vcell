@@ -11,6 +11,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.gui.ColorIcon;
 
+import org.vcell.util.document.BioModelChildSummary;
 import cbit.vcell.geometry.*;
 import cbit.image.*;
 /**
@@ -610,7 +611,7 @@ public java.lang.String getGeometryVersionString(Geometry geometry) {
 	if (geometry == null){
 		return "";
 	}else if (geometry.getDimension() == 0){
-		return "Compartmental";
+		return BioModelChildSummary.COMPARTMENTAL_GEO_STR;
 	}else if (geometry.getVersion()==null){
 		return "Unsaved";
 	}else{

@@ -67,18 +67,23 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		String scAnnot[] = bioModelChildSummary.getSimulationContextAnnotations();
 		int geomDims[] = bioModelChildSummary.getGeometryDimensions();
 		String geomNames[] = bioModelChildSummary.getGeometryNames();
-		for (int i = 0; i < scNames.length; i++){
+		String appTypes[] = bioModelChildSummary.getAppTypes();
+ 		for (int i = 0; i < scNames.length; i++){
 			BioModelNode scNode = new BioModelNode(scNames[i],true);
 			scNode.setRenderHint("type","SimulationContext");
 			versionNode.add(scNode);
+			//add application type
+			BioModelNode appTypeNode = new BioModelNode(appTypes[i],false);
+			appTypeNode.setRenderHint("type","AppType");
+			scNode.add(appTypeNode);
 			if (scAnnot[i]!=null && scAnnot[i].trim().length()>0){
 				scNode.add(new BioModelNode(new Annotation(scAnnot[i]),false));
 			}
 			BioModelNode geometryNode = null;
 			if (geomDims[i]>0){
-				geometryNode = new BioModelNode(geomNames[i],false);
+				geometryNode = new BioModelNode((geomNames[i]+" ("+geomDims[i]+"D)"),false);
 			}else{
-				geometryNode = new BioModelNode("Compartmental",false);
+				geometryNode = new BioModelNode(BioModelChildSummary.COMPARTMENTAL_GEO_STR,false);
 			}
 			geometryNode.setRenderHint("type","Geometry");
 			geometryNode.setRenderHint("dimension",new Integer(geomDims[i]));

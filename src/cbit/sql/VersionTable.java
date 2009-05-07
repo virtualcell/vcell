@@ -25,6 +25,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
 import cbit.vcell.modeldb.*;
+import cbit.vcell.solver.Simulation;
 /**
  * This type was created in VisualAge.
  */
@@ -387,7 +388,7 @@ public static VersionableType versionableTypeFromVersionable(Versionable version
 		return VersionableType.Model;
 	}else if (versionable instanceof SimulationContext){
 		return VersionableType.SimulationContext;
-	}else if (versionable instanceof SimulationContext){
+	}else if (versionable instanceof Simulation){
 		return VersionableType.Simulation;
 	}else if (versionable instanceof BioModelMetaData){
 		return VersionableType.BioModelMetaData;

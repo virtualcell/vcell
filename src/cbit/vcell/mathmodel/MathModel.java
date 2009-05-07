@@ -246,6 +246,7 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
 
 public MathModelChildSummary createMathModelChildSummary() {
 
+	String modelType = getMathDescription().getTypeInChildSummary();
 	String geoName = getMathDescription().getGeometry().getName();
 	int geoDim = getMathDescription().getGeometry().getDimension();
 	
@@ -256,8 +257,9 @@ public MathModelChildSummary createMathModelChildSummary() {
 		simNames[i] = sims[i].getName();
 		simAnnots[i] = sims[i].getDescription();
 	}
+	 	
+	return new MathModelChildSummary(modelType, geoName, geoDim, simNames, simAnnots);
 	
-	return new MathModelChildSummary(geoName, geoDim, simNames, simAnnots);
 }
 
 /**
