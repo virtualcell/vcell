@@ -1,6 +1,5 @@
-package org.vcell.util.document;
+package cbit.vcell.field;
 
-import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
