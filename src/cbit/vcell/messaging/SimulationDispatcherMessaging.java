@@ -1,5 +1,6 @@
 package cbit.vcell.messaging;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.db.VCellServerID;
 
 
@@ -10,7 +11,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 

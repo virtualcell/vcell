@@ -2,13 +2,13 @@ package cbit.vcell.messaging;
 import javax.jms.*;
 
 import org.vcell.util.MessageConstants;
-import org.vcell.util.document.FieldDataIdentifierSpec;
 
 import cbit.vcell.xml.XmlParseException;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 

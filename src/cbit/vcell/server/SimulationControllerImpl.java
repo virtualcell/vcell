@@ -1,5 +1,6 @@
 package cbit.vcell.server;
 import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.messaging.db.VCellServerID;
 /*©
@@ -25,7 +26,6 @@ import org.vcell.util.MessageConstants;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 

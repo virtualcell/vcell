@@ -8,12 +8,12 @@ import java.util.*;
 import java.io.*;
 
 import org.vcell.util.TokenMangler;
-import org.vcell.util.document.FieldDataIdentifierSpec;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.*;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.*;
 import cbit.vcell.messaging.JmsUtils;
