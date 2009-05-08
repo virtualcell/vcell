@@ -45,7 +45,6 @@ import javax.swing.undo.UndoableEditSupport;
 import cbit.image.ImageException;
 import cbit.rmi.event.ExportEvent;
 
-import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
@@ -82,6 +81,7 @@ import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;

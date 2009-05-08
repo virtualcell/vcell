@@ -35,7 +35,6 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 
-import org.vcell.util.document.FieldDataIdentifierSpec;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
@@ -58,6 +57,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
