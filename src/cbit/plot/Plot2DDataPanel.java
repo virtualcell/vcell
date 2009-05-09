@@ -6,6 +6,7 @@ package cbit.plot;
 import java.awt.event.*;
 import javax.swing.*;
 
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.ReservedSymbol;
 
 import java.util.Vector;
@@ -366,9 +367,9 @@ private synchronized void copyCells(String actionCommand) {
 			}
 		}
 
-		org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-			new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(symbolTableEntries,null,resolvedValues,buffer.toString());
-		org.vcell.util.gui.SimpleTransferable.sendToClipboard(rvs);
+		VCellTransferable.ResolvedValuesSelection rvs =
+			new VCellTransferable.ResolvedValuesSelection(symbolTableEntries,null,resolvedValues,buffer.toString());
+		VCellTransferable.sendToClipboard(rvs);
 	}catch(Throwable e){
 		org.vcell.util.gui.DialogUtils.showErrorDialog("Plot2DDataPanel copy failed.  "+e.getMessage());
 	}

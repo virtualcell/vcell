@@ -9,48 +9,6 @@ public class SimpleTransferable extends java.awt.datatransfer.StringSelection {
 	public static final DataFlavor OBJECT_FLAVOR =
 		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+java.lang.Object.class.getName(),"Java Object");
 
-	public static final DataFlavor RESOLVED_VALUES_FLAVOR =
-		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+ResolvedValuesSelection.class.getName(),"ResolvedValues");
-	public static class ResolvedValuesSelection{
-		private cbit.vcell.parser.SymbolTableEntry[] primarySymbolTableEntries;
-		private cbit.vcell.parser.SymbolTableEntry[] alternateSymbolTableEntries;
-		private cbit.vcell.parser.Expression[] expressionValues;
-		private String stringRepresentation;
-
-		public ResolvedValuesSelection(
-			cbit.vcell.parser.SymbolTableEntry[] argPrimarySymbolTableEntries,
-			cbit.vcell.parser.SymbolTableEntry[] argAlternateSymbolTableEntries,
-			cbit.vcell.parser.Expression[] argExpressionValues,String argStringRep){
-				
-			if(argPrimarySymbolTableEntries.length != argExpressionValues.length ||
-				(argAlternateSymbolTableEntries != null && argAlternateSymbolTableEntries.length != argExpressionValues.length)){
-				throw new IllegalArgumentException("ResolvedValuesSelection SymbolTableEntry array length must equal DataValues array length");
-			}
-			for(int i=0;i<argExpressionValues.length;i+= 1){
-				if(argExpressionValues[i] == null){
-					throw new IllegalArgumentException("ResolvedValuesSelection resolved value "+argPrimarySymbolTableEntries[i].getNameScope().getName()+" cannot be null.");
-				}
-			}
-			primarySymbolTableEntries = argPrimarySymbolTableEntries;
-			alternateSymbolTableEntries = argAlternateSymbolTableEntries;
-			expressionValues = argExpressionValues;
-			stringRepresentation = argStringRep;
-		}
-
-		public cbit.vcell.parser.SymbolTableEntry[] getPrimarySymbolTableEntries(){
-			return primarySymbolTableEntries;
-		}
-		public cbit.vcell.parser.SymbolTableEntry[] getAlternateSymbolTableEntries(){
-			return alternateSymbolTableEntries;
-		}
-		public cbit.vcell.parser.Expression[] getExpressionValues(){
-			return expressionValues;
-		}
-		public String toString() {
-			return stringRepresentation;
-		}
-	}
-
 /**
  * Creates a transferable object capable of transferring the
  * specified string in plain text format.
@@ -143,10 +101,6 @@ public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
 	// add object flavor to those inherited from StringSelection (ok for all
 	flavors = (DataFlavor[]) BeanUtils.addElement(flavors,OBJECT_FLAVOR);
 
-	if (getDataObjectClass().equals(SimpleTransferable.ResolvedValuesSelection.class)){
-		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,RESOLVED_VALUES_FLAVOR);
-	}
-	
 	return flavors;
 }
 
@@ -178,10 +132,6 @@ public boolean isDataFlavorSupported(DataFlavor flavor) {
 protected boolean isSupportedObjectFlavor(DataFlavor dataFlavor) {
 	
 	if(dataFlavor.equals(OBJECT_FLAVOR)){
-		return true;		
-	}
-
-	if(dataFlavor.equals(RESOLVED_VALUES_FLAVOR)){
 		return true;		
 	}
 

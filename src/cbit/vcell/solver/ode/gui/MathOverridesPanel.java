@@ -1,8 +1,10 @@
 package cbit.vcell.solver.ode.gui;
-import java.awt.datatransfer.*;
+
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+
+import cbit.vcell.desktop.VCellTransferable;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -536,16 +538,16 @@ private synchronized void copyCells(String actionCommand) {
 				resolvedValuesV.add(getMathOverrides().getActualExpression(rowName,0));
 				
 			}
-			org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-				new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(
+			VCellTransferable.ResolvedValuesSelection rvs =
+				new VCellTransferable.ResolvedValuesSelection(
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					null,
 					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
 					buffer.toString());
 
-			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);
+			VCellTransferable.sendToClipboard(rvs);
 		}else{
-			cbit.vcell.desktop.VCellTransferable.sendToClipboard(buffer.toString());
+			VCellTransferable.sendToClipboard(buffer.toString());
 		}
 	}catch(Throwable e){
 		cbit.vcell.client.PopupGenerator.showErrorDialog("MathOverridesPanel copy failed.  "+e.getMessage());
@@ -921,9 +923,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 
 		Object pasteThis = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
 		for(int i=0;i<rows.length;i+= 1){
-			if(pasteThis instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection){
-				org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-					(org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
+			if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
+				VCellTransferable.ResolvedValuesSelection rvs =
+					(VCellTransferable.ResolvedValuesSelection)pasteThis;
 
 				for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
 					cbit.vcell.math.Constant pastedConstant = null;
@@ -1279,7 +1281,7 @@ private void showPopupMenu(MouseEvent mouseEvent) {
 	if (mouseEvent.isPopupTrigger()) {
 		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
 		boolean bPaste =
-			obj instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection;
+			obj instanceof VCellTransferable.ResolvedValuesSelection;
 
 		getJMenuItemPaste().setEnabled(bPaste && (getJTableFixed().getSelectedRowCount() > 0));
 		getJMenuItemPaste().setVisible(getEditable());
