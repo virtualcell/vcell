@@ -49,6 +49,7 @@ import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.vcell.client.task.*;
 /**

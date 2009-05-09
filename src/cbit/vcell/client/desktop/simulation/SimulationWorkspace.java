@@ -7,8 +7,10 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+
+import org.vcell.util.gui.SwingDispatcherSync;
+
 import cbit.gui.PropertyChangeListenerProxyVCell;
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;

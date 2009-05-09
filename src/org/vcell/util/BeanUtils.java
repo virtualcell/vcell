@@ -13,7 +13,8 @@ import java.awt.*;
 import java.util.Vector;
 import javax.swing.*;
 
-import cbit.util.SwingDispatcherSync;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 
 import java.io.Serializable;
 /**

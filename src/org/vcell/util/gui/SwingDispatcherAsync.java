@@ -1,4 +1,4 @@
-package cbit.util;
+package org.vcell.util.gui;
 
 import javax.swing.SwingUtilities;
 

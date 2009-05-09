@@ -1,6 +1,5 @@
 package cbit.vcell.client;
 
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.*;
@@ -10,6 +9,8 @@ import javax.swing.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.mathmodel.*;

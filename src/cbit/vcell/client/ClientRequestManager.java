@@ -47,6 +47,7 @@ import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.vcell.xml.XMLTags;
 /**

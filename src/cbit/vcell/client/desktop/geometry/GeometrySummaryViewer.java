@@ -3,7 +3,8 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-import cbit.util.SwingDispatcherSync;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/3/2004 11:48:54 PM)

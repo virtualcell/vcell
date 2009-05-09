@@ -1,10 +1,10 @@
 package cbit.vcell.client;
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.client.server.*;
 import javax.swing.*;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.SwingDispatcherSync;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 

@@ -1,7 +1,6 @@
 package org.vcell.util.gui;
 
 import java.awt.*;
-import cbit.util.SwingDispatcherAsync;
 
 /**
  * Insert the type's description here.

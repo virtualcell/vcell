@@ -29,7 +29,6 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
@@ -69,6 +68,7 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.ProgressDialogListener;
+import org.vcell.util.gui.SwingDispatcherSync;
 
 public class FieldDataGUIPanel extends JPanel{
 

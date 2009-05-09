@@ -1,7 +1,8 @@
 package cbit.vcell.math.gui;
 import java.util.Enumeration;
 
-import cbit.util.SwingDispatcherSync;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;

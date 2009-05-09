@@ -6,7 +6,6 @@ import javax.swing.table.DefaultTableModel;
 
 import org.vcell.util.UserCancelException;
 
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
 import java.awt.*;

@@ -1,6 +1,6 @@
 package cbit.vcell.math.gui;
 
-import cbit.util.SwingDispatcherSync;
+import org.vcell.util.gui.SwingDispatcherSync;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

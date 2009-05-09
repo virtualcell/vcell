@@ -1,4 +1,4 @@
-package cbit.util;
+package org.vcell.util.gui;
 
 import java.lang.reflect.InvocationTargetException;
 
