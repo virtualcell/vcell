@@ -5,6 +5,7 @@ import java.sql.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.*;
 public interface AdminDatabaseServerXA {

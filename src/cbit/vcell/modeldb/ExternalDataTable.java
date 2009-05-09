@@ -8,12 +8,12 @@ import java.sql.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.sql.*;
 /**
  * This type was created in VisualAge.
@@ -69,7 +69,7 @@ public String getExternalDataAnnot(ResultSet rset) throws SQLException{
 	return TokenMangler.getSQLRestoredString(annotStr);
 }
 
-public cbit.vcell.simdata.ExternalDataIdentifier getExternalDataIdentifier(ResultSet rset) throws SQLException{
+public org.vcell.util.document.ExternalDataIdentifier getExternalDataIdentifier(ResultSet rset) throws SQLException{
 	
 	KeyValue extDataIDKey = new KeyValue(rset.getBigDecimal(ExternalDataTable.table.id.getUnqualifiedColName()));
 	String externalDataName = rset.getString(ExternalDataTable.table.externalDataName.getUnqualifiedColName());

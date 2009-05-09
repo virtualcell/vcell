@@ -5,6 +5,7 @@ import java.util.Date;
 import java.io.Serializable;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
 /**
  * Insert the type's description here.

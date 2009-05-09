@@ -16,9 +16,9 @@ import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 
@@ -929,7 +929,7 @@ private void writeFieldData() throws Exception {
 		if(!uniqueFieldDataIDSpecs.contains(fieldDataIDSpecs[i])){
 			FieldFunctionArguments ffa = fieldDataIDSpecs[i].getFieldFuncArgs();
 			File newResampledFieldDataFile = new File(userDirectory,
-					ExternalDataIdentifier.createCanonicalResampleFileName((VCSimulationDataIdentifier)simulationJob.getVCDataIdentifier(),
+					SimulationData.createCanonicalResampleFileName((VCSimulationDataIdentifier)simulationJob.getVCDataIdentifier(),
 							fieldDataIDSpecs[i].getFieldFuncArgs())
 				);
 			uniqueFieldDataIDSpecs.add(fieldDataIDSpecs[i]);
@@ -948,7 +948,7 @@ private void writeFieldData() throws Exception {
 			printWriter.println(index + " " + varType.getTypeName() + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().infix() + " " + newResampledFieldDataFile);
 			uniqueFieldDataNSet.add(
 				new FieldDataNumerics(
-					ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
+					SimulationData.createCanonicalFieldFunctionSyntax(
 						ffa.getFieldName(),
 						ffa.getVariableName(),
 						ffa.getTime().evaluateConstant(),

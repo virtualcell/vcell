@@ -1,6 +1,6 @@
 package org.vcell.util;
 
-import cbit.vcell.simdata.ExternalDataIdentifier;
+import org.vcell.util.document.ExternalDataIdentifier;
 
 /**
  * Insert the type's description here.

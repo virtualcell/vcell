@@ -1,7 +1,6 @@
 package cbit.vcell.parser;
 
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -12,6 +11,7 @@ import java.util.*;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.ExternalDataIdentifier;
 
 import net.sourceforge.interval.ia_math.*;
 

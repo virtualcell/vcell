@@ -3,6 +3,7 @@ import javax.jms.*;
 
 import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.VCellServerID;
 
 import java.io.FileNotFoundException;
 import java.util.Date;
@@ -14,7 +15,6 @@ import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.messaging.WorkerMessaging;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
-import cbit.vcell.messaging.db.VCellServerID;
 import static org.vcell.util.MessageConstants.*;
 
 /**

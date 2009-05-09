@@ -2,8 +2,8 @@ package cbit.vcell.messaging.server;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;

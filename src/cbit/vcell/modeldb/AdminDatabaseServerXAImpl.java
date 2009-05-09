@@ -1,6 +1,7 @@
 package cbit.vcell.modeldb;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.*;
 import cbit.vcell.server.*;

@@ -4,9 +4,9 @@ import java.util.Hashtable;
 
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
-import cbit.vcell.messaging.db.VCellServerID;
 
 /**
  * Insert the type's description here.

@@ -27,6 +27,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 import org.vcell.util.gui.DateRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
 

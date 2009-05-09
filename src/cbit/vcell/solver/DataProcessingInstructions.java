@@ -6,6 +6,7 @@ import java.util.StringTokenizer;
 import org.jdom.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -15,7 +16,6 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.xml.XMLTags;
 
 public final class DataProcessingInstructions implements Matchable, Serializable {

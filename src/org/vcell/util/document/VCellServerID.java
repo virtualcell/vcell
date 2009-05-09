@@ -1,4 +1,4 @@
-package cbit.vcell.messaging.db;
+package org.vcell.util.document;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2005 2:00:13 PM)

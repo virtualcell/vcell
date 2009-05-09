@@ -6,8 +6,8 @@ import javax.swing.*;
 
 import org.vcell.util.MessageConstants;
 import org.vcell.util.MessageConstants.ServiceType;
+import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.db.VCellServerID;
 
 /**
  * Insert the type's description here.

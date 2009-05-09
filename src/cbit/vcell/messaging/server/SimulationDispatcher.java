@@ -1,5 +1,4 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -11,8 +10,10 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.MessageConstants.ServiceType;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.solver.Simulation;
 
@@ -35,7 +36,6 @@ import cbit.vcell.messaging.JmsSession;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.WorkerEventMessage;

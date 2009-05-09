@@ -1,5 +1,4 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.AdminDatabaseServer;
@@ -12,6 +11,7 @@ import java.util.Date;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
 
 /**

@@ -6,7 +6,6 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.*;
 
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.mapping.FastSystemAnalyzer;
@@ -55,7 +54,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	Enumeration<Variable> enum_vars = fs_analyzer.getIndependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = enum_vars.nextElement();
-		out.println("\tpVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
+		out.println("\tpVars[" + varCount + "] = " + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		varCount++;
 	}
 	out.println("");
@@ -64,7 +63,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	enum_vars = fs_analyzer.getDependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = (Variable)enum_vars.nextElement();
-		out.println("\tpDependentVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
+		out.println("\tpDependentVars[" + varCount + "] = " + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		varCount++;
 	}
 	out.println("");
@@ -72,7 +71,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	Enumeration<PseudoConstant> enum_pc = fs_analyzer.getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
 		PseudoConstant pc = enum_pc.nextElement();
-		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + " = 0.0;");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + " = 0.0;");
 	}
 	out.println("}");
 }
@@ -101,19 +100,19 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	Enumeration<Variable> enum_vars = fs_analyzer.getIndependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = enum_vars.nextElement();
-		out.println("\tVariable *" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
+		out.println("\tVariable *" + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + ";");
 	}
 	enum_vars = fs_analyzer.getDependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = enum_vars.nextElement();
-		out.println("\tVariable *" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
+		out.println("\tVariable *" + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + ";");
 	}
 	out.println("");
 
 	Enumeration<PseudoConstant> enum_pc = fs_analyzer.getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
 		PseudoConstant pc = enum_pc.nextElement();
-		out.println("\tdouble " + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + ";");
+		out.println("\tdouble " + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + ";");
 	}
 	out.println("};");
 }
@@ -137,7 +136,7 @@ protected void writeFastFunctionDeclarations(java.io.PrintWriter out, Expression
 			// define reserved symbols (x,y,z,t)
 			//
 			ReservedVariable rv = (ReservedVariable)var;
-			String mangledVarName = TokenMangler.getEscapedLocalVariableName_C(rv.getName());
+			String mangledVarName = CppClassCoder.getEscapedLocalVariableName_C(rv.getName());
 			if (rv.isTIME()){
 				out.println("\tdouble " + mangledVarName + " = simulation->getTime_sec();");
 			}else if (rv.isX()){
@@ -196,21 +195,21 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
-		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "->getCurr(currIndex);");
-		out.println("\tsetX(" + varCount + "," + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + ");");
+		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(var.getName()) + " = " + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + "->getCurr(currIndex);");
+		out.println("\tsetX(" + varCount + "," + CppClassCoder.getEscapedLocalVariableName_C(var.getName()) + ");");
 		varCount++;
 	}
 	enum1 = fs_analyzer.getDependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "->getCurr(currIndex);");
+		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(var.getName()) + " = " + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + "->getCurr(currIndex);");
 	}
 	
 	// Write out the reserved variables, (x,y,z,t) in case they are used in the fast invariants 
-	String mangledVarXName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.X.getName());
-	String mangledVarYName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Y.getName());
-	String mangledVarZName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Z.getName());
-	String mangledVarTName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.TIME.getName());
+	String mangledVarXName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.X.getName());
+	String mangledVarYName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.Y.getName());
+	String mangledVarZName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.Z.getName());
+	String mangledVarTName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.TIME.getName());
 
 	out.println("\tdouble " +  mangledVarTName + " = simulation->getTime_sec();");
 	out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord(currIndex);");
@@ -222,7 +221,7 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 	Enumeration<PseudoConstant> enum2 = fs_analyzer.getPseudoConstants();
 	while (enum2.hasMoreElements()){
 		PseudoConstant pc = (PseudoConstant)enum2.nextElement();
-		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + " = " + simulation.substituteFunctions(pc.getPseudoExpression()).flatten().infix_C()+";");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + " = " + simulation.substituteFunctions(pc.getPseudoExpression()).flatten().infix_C()+";");
 		invariantCount++;
 	}
 		
@@ -244,11 +243,11 @@ protected void writeResolveReferences(java.io.PrintWriter out) throws Exception 
 	int varCount=0;
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
-		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
-		out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
+		out.println("\tif (" + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
 		out.println("\t\tthrow(\"could not resolve '" + var.getName() + "'\\n\");");
 		out.println("\t}");
-		out.println("\tpVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
+		out.println("\tpVars[" + varCount + "] = " + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + ";");
 		out.println();
 		varCount++;
 	}		  	
@@ -256,11 +255,11 @@ protected void writeResolveReferences(java.io.PrintWriter out) throws Exception 
 	varCount=0;
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
-		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
-		out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
+		out.println("\tif (" + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
 		out.println("\t\tthrow(\"could not resolve '" + var.getName() + "'\\n\");");
 		out.println("\t}");
-		out.println("\tpDependentVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
+		out.println("\tpDependentVars[" + varCount + "] = " + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + ";");
 		out.println("");
 		varCount++;
 	}		  	
@@ -280,15 +279,15 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 	Enumeration<Variable> enum1 = fs_analyzer.getIndependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = getX(" + varCount + ");");
+		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(var.getName()) + " = getX(" + varCount + ");");
 		varCount++;
 	}
 
 	// --- Write out the reserved variables, (x,y,z,t) in case they are used in the fast invariants 
-	String mangledVarXName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.X.getName());
-	String mangledVarYName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Y.getName());
-	String mangledVarZName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Z.getName());
-	String mangledVarTName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.TIME.getName());
+	String mangledVarXName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.X.getName());
+	String mangledVarYName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.Y.getName());
+	String mangledVarZName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.Z.getName());
+	String mangledVarTName = CppClassCoder.getEscapedLocalVariableName_C(ReservedVariable.TIME.getName());
 
 	out.println("\tdouble " +  mangledVarTName + " = simulation->getTime_sec();");
 	out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord(currIndex);");
@@ -299,7 +298,7 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 	Enumeration<PseudoConstant> enum_pc = fs_analyzer.getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
 		PseudoConstant pc = enum_pc.nextElement();
-		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(pc.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + ";");
+		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(pc.getName()) + " = " + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + ";");
 	}	
 
 	Enumeration<Expression> enum_exp = fs_analyzer.getDependencyExps();
@@ -309,7 +308,7 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 		Variable depVar = enum_var.nextElement();
 		exp.bindExpression(fs_analyzer);
 		exp = MathUtilities.substituteFunctions(exp, fs_analyzer).flatten();
-		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(depVar.getName()) + "->setCurr(currIndex," + exp.infix_C() + ");");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(depVar.getName()) + "->setCurr(currIndex," + exp.infix_C() + ");");
 	}
 	
 	out.println("}");
@@ -339,21 +338,21 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 	Enumeration<Variable> enum1 = fs_analyzer.getIndependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
-		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = getX(" + varCount + ");");
+		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(var.getName()) + " = getX(" + varCount + ");");
 		varCount++;
 	}
 
 	Enumeration<PseudoConstant> enum_pc = fs_analyzer.getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
 		PseudoConstant pc = enum_pc.nextElement();
-		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(pc.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + ";");
+		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(pc.getName()) + " = " + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + ";");
 	}
 	
 	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
 
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
-		String localvarname = TokenMangler.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);
-		String globalvarname = TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
+		String localvarname = CppClassCoder.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);
+		String globalvarname = CppClassCoder.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
 		out.println("\tdouble " + localvarname + " = " + globalvarname + "->getData()[currIndex];");	
 	}
 	

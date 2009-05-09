@@ -5,10 +5,10 @@ import javax.jms.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants.ServiceType;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.messaging.RpcServerMessaging;
 
 /**

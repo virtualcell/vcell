@@ -1,5 +1,4 @@
 package cbit.vcell.solvers;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
@@ -64,7 +63,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof VolVariable || var instanceof FilamentVariable){
-			out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = NULL;");
+			out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(var.getName())+" = NULL;");
 		}
 	}		  	
 	out.println("}");
@@ -99,7 +98,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
-		String mangledVarName = TokenMangler.getEscapedFieldVariableName_C(var.getName());
+		String mangledVarName = CppClassCoder.getEscapedFieldVariableName_C(var.getName());
 		if (var instanceof FilamentVariable){
 			out.println("\tContourVariable *" + mangledVarName + ";");
 		}else if (var instanceof VolVariable){

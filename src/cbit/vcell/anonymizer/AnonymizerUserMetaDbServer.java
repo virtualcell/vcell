@@ -2,12 +2,12 @@ package cbit.vcell.anonymizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.simdata.ExternalDataIdentifier;;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2006 10:57:49 PM)

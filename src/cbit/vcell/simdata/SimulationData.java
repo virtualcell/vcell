@@ -6,9 +6,14 @@ package cbit.vcell.simdata;
 ©*/
 
 import cbit.vcell.solver.DataProcessingOutput;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.*;
 
 import java.io.*;
@@ -24,6 +29,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */
@@ -616,7 +622,7 @@ private synchronized File getFirstJobFunctionsFile() throws FileNotFoundExceptio
 		return getJobFunctionsFile();
 	}
 	// always use the functions file from the first simulation in the scan 
-	File functionsFile = new File(userDirectory, ExternalDataIdentifier.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)vcDataId).getSimulationKey(), 0, false));	
+	File functionsFile = new File(userDirectory, SimulationData.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)vcDataId).getSimulationKey(), 0, false));	
 	if (functionsFile.exists()){
 		return functionsFile;
 	}else{
@@ -1862,6 +1868,77 @@ private void replaceFunction(AnnotatedFunction function) throws ExpressionExcept
 	for (int i = 0; i < allReferringFuncArr.length; i++) {
 		allReferringFuncArr[i].getExpression().bindExpression(this);
 	}
+}
+
+/**
+ * FieldDataIdentifier constructor comment.
+ */
+
+
+public static String createCanonicalSimFilePathName(KeyValue fieldDataKey,int timeIndex,int jobIndex,boolean isOldStyle){
+	return
+		createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+		(timeIndex>=1000?timeIndex+"":"")+
+		(timeIndex>=100 && timeIndex<1000?"0"+timeIndex:"")+
+		(timeIndex>=10 && timeIndex<100?"00"+timeIndex:"")+
+		(timeIndex<10?"000"+timeIndex:"")+SimDataConstants.PDE_DATA_EXTENSION;
+}
+
+public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
+	return
+	createSimIDWithJobIndex(fieldDataKey,0,false)+
+	SimDataConstants.LOGFILE_EXTENSION;
+}
+
+public static String createCanonicalFieldFunctionSyntax(String externalDataIdentifierName,String varName,double beginTime,String extDataIdVariableTypeName){	
+	VariableType vt = VariableType.getVariableTypeFromVariableTypeName(extDataIdVariableTypeName);
+	return MathMLTags.FIELD+"("+
+		externalDataIdentifierName+","+varName+","+beginTime+
+		(vt.equals(VariableType.UNKNOWN)?"": ","+vt.getTypeName())+")";
+}
+
+public static String createCanonicalSimZipFileName(KeyValue fieldDataKey,int zipIndex,int jobIndex,boolean isOldStyle){
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+	(zipIndex<10?"0":"")+zipIndex+SimDataConstants.ZIPFILE_EXTENSION;
+}
+
+public static String createCanonicalSimLogFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+	SimDataConstants.LOGFILE_EXTENSION;
+}
+
+public static String createCanonicalMeshFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+	SimDataConstants.MESHFILE_EXTENSION;
+}
+
+public static String createCanonicalFunctionsFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	return
+		createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
+		SimDataConstants.FUNCTIONFILE_EXTENSION;
+}
+
+public static String createCanonicalResampleFileName(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFuncArgs){
+	return
+		createSimIDWithJobIndex(
+				simResampleInfoProvider.getSimulationKey(),
+				simResampleInfoProvider.getJobIndex(),
+				!simResampleInfoProvider.isParameterScanType())+
+		FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs);
+}
+
+public static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+	if(isOldStyle && jobIndex != 0){
+		throw new IllegalArgumentException("Job index must be 0 for Old Style names");
+	}
+	String name = Simulation.createSimulationID(fieldDataKey);
+	if(!isOldStyle){
+		name = SimulationJob.createSimulationJobID(name, jobIndex);
+	}
+	return name;
 }
 
 

@@ -3,9 +3,6 @@ package org.vcell.util;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -18,10 +15,6 @@ public class TokenMangler {
 	//private static final char badChars[] = { ' ', '-', '+', '(', ')', '/', '*', '.', '&', ';', ':', ',', '=', '<', '>', '\n', '\t', '\012', '\016' };
 	private static final String MATLAB_PREFIX = "mlabfix";
 	private static final String ECLiPSe_PREFIX = "VAR_";
-	private static final String C_FIELDVAR_PREFIX = "vcell_fieldvar_";
-	private static final String C_LOCALVAR_PREFIX = "vcell_localvar_";
-	private static final String C_LOCALFIELD_PREFIX = "vcell_localfield_";
-	private static final String C_GLOBALFIELD_PREFIX = "vcell_globalfield_";
 
 /**
  * This method was created in VisualAge.
@@ -204,50 +197,6 @@ public static String getEscapedString_C(String inputString) {
 	return sb.toString();
 }
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public static String getEscapedFieldVariableName_C(String var) {
-	if (var == null){
-		throw new IllegalArgumentException("input string is null");
-	}
-	return C_FIELDVAR_PREFIX + var;
-}
-
-public static String getEscapedLocalVariableName_C(String var) {
-	if (var == null){
-		throw new IllegalArgumentException("input string is null");
-	}
-	return C_LOCALVAR_PREFIX + var;
-}
-
-public static String getEscapedLocalFieldVariableName_C(FieldFunctionArguments fieldFuncArgs) {
-	if (fieldFuncArgs == null) {
-		throw new IllegalArgumentException("input fieldFuncArgs is null");
-	}
-	return C_LOCALFIELD_PREFIX + fieldFuncArgs.getUniqueID();
-}
-
-public static String getEscapedLocalFieldVariableName_C(String fieldname, String varname, String timeExp, String varType) {	
-	if (fieldname == null || varname == null || timeExp == null) {
-		throw new IllegalArgumentException("TokenMangler::getEscapedLocalFieldVariableName_C() : input args can't be null");
-	}
-	try {
-		return C_LOCALFIELD_PREFIX + FieldFunctionArguments.getUniqueID(fieldname, varname, new Expression(timeExp), varType);
-	} catch (ExpressionException e) {		
-		e.printStackTrace(System.out);
-		throw new IllegalArgumentException("TokenMangler::getEscapedLocalFieldVariableName_C() : time expression is not correctly formatted");
-	}
-}
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 2:51:03 PM)
- * @return java.lang.String
- */
-public static String getEscapedGlobalFieldVariableName_C(FieldFunctionArguments fieldFuncArgs){
-	return C_GLOBALFIELD_PREFIX + fieldFuncArgs.getUniqueID();
-}
 /**
  * This method was created in VisualAge.
  * @return java.lang.String

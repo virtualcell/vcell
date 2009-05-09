@@ -1,7 +1,6 @@
 package cbit.vcell.modeldb;
 import cbit.vcell.messaging.admin.ServiceStatus;
 import cbit.vcell.messaging.admin.SimpleJobStatus;
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -11,16 +10,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import cbit.sql.*;
 import cbit.vcell.server.*;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;
