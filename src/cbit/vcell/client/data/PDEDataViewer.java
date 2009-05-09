@@ -29,6 +29,7 @@ import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.ProgressDialogListener;
+import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.image.DisplayAdapterService;
 import cbit.plot.*;

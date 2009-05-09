@@ -3,9 +3,10 @@ package cbit.vcell.desktop;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.biomodel.BioModel;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;

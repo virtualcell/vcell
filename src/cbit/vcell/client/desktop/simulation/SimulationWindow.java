@@ -2,7 +2,8 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.*;
 import java.beans.*;
 
-import cbit.util.SwingDispatcherSync;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 import cbit.vcell.client.data.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.document.*;

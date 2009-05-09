@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.gui.MathDescEditor;
@@ -10,6 +9,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import org.vcell.util.Issue;
+import org.vcell.util.gui.SwingDispatcherSync;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)

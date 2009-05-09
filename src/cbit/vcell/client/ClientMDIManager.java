@@ -12,6 +12,8 @@ import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GlassPane;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 import java.util.*;
 import java.awt.event.*;
 /**

@@ -3,13 +3,13 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.SwingDispatcherSync;
 
 import java.awt.image.MemoryImageSource;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.gui.ColorIcon;
+import org.vcell.util.gui.SwingDispatcherSync;
 
 import org.vcell.util.document.BioModelChildSummary;
 import cbit.vcell.geometry.*;

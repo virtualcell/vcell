@@ -1,7 +1,8 @@
 package cbit.vcell.geometry.gui;
+import org.vcell.util.gui.SwingDispatcherSync;
+
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.util.SwingDispatcherSync;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

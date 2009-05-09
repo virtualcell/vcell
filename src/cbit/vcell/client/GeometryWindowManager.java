@@ -1,11 +1,11 @@
 package cbit.vcell.client;
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 import java.awt.*;
 import javax.swing.*;
 
 import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.client.desktop.geometry.*;

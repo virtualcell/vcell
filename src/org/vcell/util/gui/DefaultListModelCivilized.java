@@ -6,7 +6,6 @@ package org.vcell.util.gui;
  ©*/
 import javax.swing.AbstractListModel;
 
-import cbit.util.SwingDispatcherSync;
 
 import java.util.Vector;
 import java.util.Enumeration;

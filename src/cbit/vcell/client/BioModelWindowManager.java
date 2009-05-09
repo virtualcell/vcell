@@ -20,8 +20,8 @@ import javax.swing.JPanel;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.SwingDispatcherSync;
 
-import cbit.util.SwingDispatcherSync;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
