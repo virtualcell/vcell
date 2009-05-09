@@ -2,7 +2,7 @@ package cbit.vcell.microscopy;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-import cbit.vcell.simdata.ExternalDataIdentifier;
+import org.vcell.util.document.ExternalDataIdentifier;
 
 /**
  */
