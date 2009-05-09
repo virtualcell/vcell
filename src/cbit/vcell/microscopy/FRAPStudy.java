@@ -36,6 +36,7 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
@@ -84,10 +85,10 @@ import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
 import org.vcell.util.document.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.ErrorTolerance;
@@ -814,13 +815,13 @@ public class FRAPStudy implements Matchable{
 
 		if(status.getStatus() == SolverStatus.SOLVER_FINISHED){
 			String roiMeshFileName =
-				ExternalDataIdentifier.createCanonicalMeshFileName(
+				SimulationData.createCanonicalMeshFileName(
 					roiExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
 			String imageDataMeshFileName =
-				ExternalDataIdentifier.createCanonicalMeshFileName(
+				SimulationData.createCanonicalMeshFileName(
 					imageDataExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
 			String simulationMeshFileName =
-				ExternalDataIdentifier.createCanonicalMeshFileName(
+				SimulationData.createCanonicalMeshFileName(
 					sim.getVersion().getVersionKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
 			// delete old external data mesh files and copy simulation mesh file to them
 			File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
@@ -1622,16 +1623,16 @@ public class FRAPStudy implements Matchable{
 			File userDir = new File(localWorkspace.getDefaultSimDataDirectory());
 			File fdLogFile =
 				new File(userDir,
-						ExternalDataIdentifier.createCanonicalSimLogFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalSimLogFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
 			File fdMeshFile =
 				new File(userDir,
-						ExternalDataIdentifier.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
 			File fdFunctionFile =
 				new File(userDir,
-						ExternalDataIdentifier.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
 			File fdZipFile =
 				new File(userDir,
-						ExternalDataIdentifier.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
 			return new File[] {fdLogFile,fdMeshFile,fdFunctionFile,fdZipFile};
 		}
 		return null;

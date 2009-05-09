@@ -47,6 +47,7 @@ import javax.swing.undo.UndoableEditSupport;
 
 import cbit.image.ImageException;
 
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
@@ -91,7 +92,6 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.SimDataConstants;
