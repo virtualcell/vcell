@@ -6,11 +6,11 @@ import java.io.PrintWriter;
 
 import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.solver.*;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.messaging.server.SimulationTask;
 
 /**

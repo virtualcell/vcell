@@ -2,7 +2,6 @@ package cbit.vcell.server;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.messaging.db.VCellServerID;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -10,7 +9,6 @@ import cbit.vcell.messaging.db.VCellServerID;
 import java.io.File;
 import cbit.vcell.server.*;
 import java.rmi.*;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -26,8 +24,10 @@ import org.vcell.util.MessageConstants;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.server.DispatcherDbManager;
 import cbit.vcell.messaging.server.LocalDispatcherDbManager;

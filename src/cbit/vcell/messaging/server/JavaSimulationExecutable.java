@@ -10,6 +10,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.ControlMessageCollector;
 import cbit.vcell.messaging.ControlTopicListener;
@@ -21,7 +22,6 @@ import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.MessagePropertyNotFoundException;
 import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.admin.ManageUtils;
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.Solver;

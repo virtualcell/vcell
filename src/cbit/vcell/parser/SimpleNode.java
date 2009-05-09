@@ -7,9 +7,10 @@ package cbit.vcell.parser;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.document.ExternalDataIdentifier;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 
 public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Node parent;

@@ -82,7 +82,7 @@ SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatu
 	}
 
 	// new job status
-	SimulationJobStatus newJobStatus = new SimulationJobStatus(cbit.vcell.messaging.db.VCellServerID.getSystemServerID(), vcSimID, jobIndex, 
+	SimulationJobStatus newJobStatus = new SimulationJobStatus(org.vcell.util.document.VCellServerID.getSystemServerID(), vcSimID, jobIndex, 
 		oldJobStatus == null ? null : oldJobStatus.getSubmitDate(), status, oldJobStatus == null ? 0 : oldJobStatus.getTaskID(), solverMsg,
 		newQueueStatus, newExeStatus);
 	

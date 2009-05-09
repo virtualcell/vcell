@@ -9,6 +9,7 @@ import cbit.vcell.server.*;
 import java.sql.*;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.modeldb.*;
 

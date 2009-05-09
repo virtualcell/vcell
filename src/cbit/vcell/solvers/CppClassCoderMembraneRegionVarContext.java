@@ -4,7 +4,6 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
@@ -89,7 +88,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 				|| var instanceof MemVariable
 				|| var instanceof VolumeRegionVariable
 				|| var instanceof MembraneRegionVariable) {
-			out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
+			out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		}
 	}		  	
 	out.println("}");
@@ -125,7 +124,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
-		String mangledVarName = TokenMangler.getEscapedFieldVariableName_C(var.getName());
+		String mangledVarName = CppClassCoder.getEscapedFieldVariableName_C(var.getName());
 		if (var instanceof VolVariable){
 			out.println("\tVolumeVariable *" + mangledVarName + ";");
 		}else if (var instanceof MemVariable){

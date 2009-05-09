@@ -7,7 +7,6 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataConstants;
@@ -381,7 +380,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		out.println();
 		for (int i = 0; i < fieldFuncArgs.length; i ++) {
-			out.println("FieldData* " + TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + " = 0;");
+			out.println("FieldData* " + CppClassCoder.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + " = 0;");
 		}
 	}
 
@@ -401,7 +400,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 		out.println();
 		out.println("\tdelete SimulationMessaging::getInstVar();");	
 		for (int i = 0; i < fieldFuncArgs.length; i ++) {
-			out.println("\tdelete " +  TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + ";");
+			out.println("\tdelete " +  CppClassCoder.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + ";");
 		}
 		out.println();
 	}
@@ -507,7 +506,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 				varType = "VAR_UNKNOWN";
 			}
 			String constructorArg = i + "," + varType + ",\"" + fieldDataID + "\",\"" + fieldName + "\",\"" + varName + "\"," + fieldFuncArgs[i].getTime().infix() + ", tempString";
-			String globalVarName =  TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
+			String globalVarName =  CppClassCoder.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
 			out.println("\t\t" + globalVarName + " = new FieldData(" + constructorArg + ");");
 			if (psfFieldFunc != null && psfFieldFunc.equals(fieldFuncArgs[i])) {
 				psfFieldDataGlobalVarName = globalVarName;	

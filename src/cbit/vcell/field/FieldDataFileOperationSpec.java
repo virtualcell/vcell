@@ -3,10 +3,10 @@ package cbit.vcell.field;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 

@@ -12,6 +12,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 
@@ -36,7 +37,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.Simulation;
 /**
  * This type was created in VisualAge.

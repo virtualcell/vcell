@@ -19,8 +19,8 @@ import java.io.PrintWriter;
 
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 
 import java.sql.SQLException;
 
@@ -28,6 +28,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -168,7 +169,7 @@ private void deleteResampledFieldDataFileList(
 			for(int i=0;extDataIDArr != null && i<extDataIDArr.length;i+= 1){
 				if(resamplePrefixArr[i] == null){
 					resamplePrefixArr[i] = 
-						ExternalDataIdentifier.createSimIDWithJobIndex(
+						SimulationData.createSimIDWithJobIndex(
 							extDataIDArr[i].getKey(),
 							0/*always for FieldData*/,
 							false/*always for Fielddata*/);
@@ -368,7 +369,7 @@ private void scan(File userDir, ExternalDataIdentifier[] extDataIDArr, Vector si
 		for(int i=0;extDataIDArr != null && i<extDataIDArr.length;i+= 1){
 			File extDataIDLogFile =
 				new File(userDir,
-						ExternalDataIdentifier.
+						SimulationData.
 							createCanonicalFieldDataLogFileName(extDataIDArr[i].getKey()));
 			if (extDataIDLogFile.exists()) {
 				logfileList.remove(extDataIDLogFile);

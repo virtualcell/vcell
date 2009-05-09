@@ -6,7 +6,6 @@ package cbit.vcell.modeldb;
 ©*/
 import cbit.vcell.math.*;
 import cbit.vcell.server.*;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.Simulation;
 import cbit.sql.*;
 
@@ -17,6 +16,7 @@ import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;

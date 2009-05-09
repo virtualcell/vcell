@@ -1,7 +1,6 @@
 package cbit.vcell.messaging;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.messaging.db.VCellServerID;
 
 
 
@@ -13,6 +12,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.transaction.*;
 import cbit.vcell.solver.Simulation;
@@ -231,7 +231,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 					
 					if (allActiveJobs != null && allActiveJobs.length > 0) {				
 						SimulationJobStatusInfo firstQualifiedJob = BatchScheduler.schedule(allActiveJobs, getHTCPartitionMaximumJobs(), 
-							JmsUtils.getMaxOdeJobsPerUser(), JmsUtils.getMaxPdeJobsPerUser(), cbit.vcell.messaging.db.VCellServerID.getSystemServerID(), log);
+							JmsUtils.getMaxOdeJobsPerUser(), JmsUtils.getMaxPdeJobsPerUser(), org.vcell.util.document.VCellServerID.getSystemServerID(), log);
 						if (firstQualifiedJob != null) {
 							foundOne = true;					
 							jobStatus = firstQualifiedJob.getSimJobStatus();					
@@ -811,7 +811,7 @@ private static int getHTCPartitionMaximumJobs() {
  * Creation date: (2/21/2006 9:01:20 AM)
  * @return cbit.vcell.messaging.db.VCellServerID[]
  */
-private static cbit.vcell.messaging.db.VCellServerID[] getHTCPartitionShareServerIDs() {
+private static org.vcell.util.document.VCellServerID[] getHTCPartitionShareServerIDs() {
 	try {
 		String lsfPartitionShareServerIDs = PropertyLoader.getRequiredProperty(PropertyLoader.htcPartitionShareServerIDs);
 		StringTokenizer st = new StringTokenizer(lsfPartitionShareServerIDs, " ,");

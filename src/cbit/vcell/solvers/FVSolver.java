@@ -15,9 +15,9 @@ import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
@@ -674,7 +674,7 @@ public static void resampleFieldData(
 			File newResampledFieldDataFile =
 				new File(
 					userDirectory,
-					ExternalDataIdentifier.createCanonicalResampleFileName(
+					SimulationData.createCanonicalResampleFileName(
 							simResampleInfoProvider,
 							argFieldDataIDSpecs[i].getFieldFuncArgs())
 				);

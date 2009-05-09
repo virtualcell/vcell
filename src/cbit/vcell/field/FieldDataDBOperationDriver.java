@@ -16,6 +16,7 @@ import javax.swing.Timer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableType;
@@ -35,7 +36,7 @@ import cbit.vcell.modeldb.MathModelTable;
 import cbit.vcell.modeldb.SimContextTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
-import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.SimulationData;
 
 public class FieldDataDBOperationDriver{
 	
@@ -384,7 +385,7 @@ public class FieldDataDBOperationDriver{
 			BigDecimal jobIndex = rset.getBigDecimal(2);
 			boolean isOldStyle = rset.wasNull();
 			functionNamesH.put(
-				ExternalDataIdentifier.createCanonicalFunctionsFileName(
+				SimulationData.createCanonicalFunctionsFileName(
 					simKey, (isOldStyle?0:jobIndex.intValue()), isOldStyle),
 				simKey
 			);

@@ -18,6 +18,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
@@ -39,7 +40,6 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.SimulationInfo;
 

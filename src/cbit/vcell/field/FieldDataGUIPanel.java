@@ -41,8 +41,8 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
@@ -62,6 +62,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.AsynchProgressPopup;
@@ -1373,7 +1374,7 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 	}
 	if(actionEvent.getSource() == getJButtonFDCopyRef()){
 		String fieldFunctionReference =
-			ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
+			SimulationData.createCanonicalFieldFunctionSyntax(
 					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName(),
 					((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(),
 					times[begIndex],((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType().getTypeName());

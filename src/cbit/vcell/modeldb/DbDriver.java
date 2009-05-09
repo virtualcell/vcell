@@ -15,7 +15,6 @@ import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.server.*;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 
 import java.util.Arrays;
 import java.util.Vector;
@@ -29,6 +28,7 @@ import org.vcell.util.Preference;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.admin.ServiceStatus;
 

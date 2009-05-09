@@ -8,13 +8,13 @@ import java.rmi.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /**
  * This type was created in VisualAge.

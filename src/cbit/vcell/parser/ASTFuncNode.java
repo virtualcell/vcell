@@ -6,11 +6,12 @@ package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 import java.util.Hashtable;
 
-import org.vcell.util.TokenMangler;
+import org.vcell.util.document.ExternalDataIdentifier;
+
 
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solvers.CppClassCoder;
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTFuncNode extends SimpleNode {
@@ -2574,7 +2575,7 @@ public String infixString(int lang, NameScope nameScope) {
 		}
 	 	case FIELD: {
 		 	if (lang == LANGUAGE_C){
-			 	return TokenMangler.getEscapedLocalFieldVariableName_C(			 			
+			 	return CppClassCoder.getEscapedLocalFieldVariableName_C(			 			
 			 				jjtGetChild(0).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
 			 				jjtGetChild(1).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
 			 				jjtGetChild(2).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),

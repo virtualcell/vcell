@@ -2,9 +2,10 @@ package cbit.vcell.field;
 
 import java.util.Hashtable;
 
+import org.vcell.util.document.ExternalDataIdentifier;
+
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 
 public interface FieldFunctionContainer {
 

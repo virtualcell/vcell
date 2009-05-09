@@ -441,7 +441,7 @@ public final static void loadProperties() throws java.io.IOException {
 	System.setProperties(p);
 	// display new properties
 	//System.getProperties().list(System.out);
-	System.out.println("ServerID=" + cbit.vcell.messaging.db.VCellServerID.getSystemServerID()+", SoftwareVersion="+getRequiredProperty(vcellSoftwareVersion));
+	System.out.println("ServerID=" + org.vcell.util.document.VCellServerID.getSystemServerID()+", SoftwareVersion="+getRequiredProperty(vcellSoftwareVersion));
 
 }
 

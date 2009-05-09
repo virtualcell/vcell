@@ -1,7 +1,8 @@
 package cbit.vcell.field;
 
+import org.vcell.util.document.ExternalDataIdentifier;
+
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 
 /**
