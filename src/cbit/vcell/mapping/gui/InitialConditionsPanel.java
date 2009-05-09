@@ -8,6 +8,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.util.Vector;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -23,6 +24,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -959,8 +961,8 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			//Send to clipboard
 			//
-			org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-				new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(
+			VCellTransferable.ResolvedValuesSelection rvs =
+				new VCellTransferable.ResolvedValuesSelection(
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
@@ -979,9 +981,9 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
  */
 private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	
-	java.util.Vector pasteDescriptionsV = new java.util.Vector();
-	java.util.Vector newExpressionsV = new java.util.Vector();
-	java.util.Vector changedParametersV = new java.util.Vector();
+	Vector<String> pasteDescriptionsV = new Vector<String>();
+	Vector<Expression> newExpressionsV = new Vector<Expression>();
+	Vector<SpeciesContextSpec.SpeciesContextSpecParameter> changedParametersV = new Vector<SpeciesContextSpec.SpeciesContextSpecParameter>();
 	try{
 		if(actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()){
 			Object pasteThis = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
@@ -1009,9 +1011,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			for(int i=0;i<rows.length;i+= 1){
 				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSimulationContext().getReactionContext().getSpeciesContextSpecs(rows[i]);
 				try{
-					if(pasteThis instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection){
-						org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-							(org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
+					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
+						VCellTransferable.ResolvedValuesSelection rvs =
+							(VCellTransferable.ResolvedValuesSelection)pasteThis;
 						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
 							SpeciesContextSpec.SpeciesContextSpecParameter pasteDestination = null;
 							SpeciesContextSpec.SpeciesContextSpecParameter clipboardBiologicalParameter = null;
@@ -1130,7 +1132,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1151,7 +1153,7 @@ private void scrollPaneTable_MouseButton(java.awt.event.MouseEvent mouseEvent) {
 		boolean bPastable =
 			//obj instanceof cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection ||
 			//obj instanceof cbit.vcell.desktop.VCellTransferable.InitialConditionsSelection ||
-			obj instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection;
+			obj instanceof VCellTransferable.ResolvedValuesSelection;
 			//||
 			//obj instanceof cbit.vcell.desktop.VCellTransferable.OptimizationParametersSelection;
 			

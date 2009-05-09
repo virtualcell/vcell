@@ -13,7 +13,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.graph.StructureShape;
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelQuantity;
@@ -786,14 +786,14 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			//Send to clipboard
 			//
-			org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-				new org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection(
+			VCellTransferable.ResolvedValuesSelection rvs =
+				new VCellTransferable.ResolvedValuesSelection(
 					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
 					null,
 					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
 					sb.toString());
 
-			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);
+			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
 			cbit.vcell.client.PopupGenerator.showErrorDialog("ModelParametersPanel Copy failed.  "+e.getMessage());
 		}
@@ -831,9 +831,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			for(int i=0;i<rows.length;i+= 1){
 				cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)getmodelParameterTableModel().getData().get(rows[i]);
 				try{
-					if(pasteThis instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection){
-						org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection rvs =
-							(org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection)pasteThis;
+					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
+						VCellTransferable.ResolvedValuesSelection rvs =
+							(VCellTransferable.ResolvedValuesSelection)pasteThis;
 						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
 							cbit.vcell.model.Parameter pasteDestination = null;
 							cbit.vcell.model.Parameter clipboardBiologicalParameter = null;
@@ -960,7 +960,7 @@ private void modelParameterPanel_Initialize() {
 private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 	if(mouseEvent.isPopupTrigger()){
 		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
-		boolean bPastable = obj instanceof org.vcell.util.gui.SimpleTransferable.ResolvedValuesSelection;
+		boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
 		boolean bSomethingSelected = getScrollPaneTable().getSelectedRowCount() > 0;
 		getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
 		getJMenuItemPasteAll().setEnabled(bPastable);

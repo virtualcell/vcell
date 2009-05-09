@@ -15,6 +15,47 @@ public class VCellTransferable extends org.vcell.util.gui.SimpleTransferable {
 		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+cbit.vcell.model.Species.class.getName(),"Species");
 	public static final DataFlavor REACTIONSTEP_ARRAY_FLAVOR =
 		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class=\"[Lcbit.vcell.model.ReactionStep;\"","ReactionStepArray");
+	public static final DataFlavor RESOLVED_VALUES_FLAVOR =
+		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+ResolvedValuesSelection.class.getName(),"ResolvedValues");
+	public static class ResolvedValuesSelection{
+		private cbit.vcell.parser.SymbolTableEntry[] primarySymbolTableEntries;
+		private cbit.vcell.parser.SymbolTableEntry[] alternateSymbolTableEntries;
+		private cbit.vcell.parser.Expression[] expressionValues;
+		private String stringRepresentation;
+
+		public ResolvedValuesSelection(
+			cbit.vcell.parser.SymbolTableEntry[] argPrimarySymbolTableEntries,
+			cbit.vcell.parser.SymbolTableEntry[] argAlternateSymbolTableEntries,
+			cbit.vcell.parser.Expression[] argExpressionValues,String argStringRep){
+				
+			if(argPrimarySymbolTableEntries.length != argExpressionValues.length ||
+				(argAlternateSymbolTableEntries != null && argAlternateSymbolTableEntries.length != argExpressionValues.length)){
+				throw new IllegalArgumentException("ResolvedValuesSelection SymbolTableEntry array length must equal DataValues array length");
+			}
+			for(int i=0;i<argExpressionValues.length;i+= 1){
+				if(argExpressionValues[i] == null){
+					throw new IllegalArgumentException("ResolvedValuesSelection resolved value "+argPrimarySymbolTableEntries[i].getNameScope().getName()+" cannot be null.");
+				}
+			}
+			primarySymbolTableEntries = argPrimarySymbolTableEntries;
+			alternateSymbolTableEntries = argAlternateSymbolTableEntries;
+			expressionValues = argExpressionValues;
+			stringRepresentation = argStringRep;
+		}
+
+		public cbit.vcell.parser.SymbolTableEntry[] getPrimarySymbolTableEntries(){
+			return primarySymbolTableEntries;
+		}
+		public cbit.vcell.parser.SymbolTableEntry[] getAlternateSymbolTableEntries(){
+			return alternateSymbolTableEntries;
+		}
+		public cbit.vcell.parser.Expression[] getExpressionValues(){
+			return expressionValues;
+		}
+		public String toString() {
+			return stringRepresentation;
+		}
+	}
 
 /**
  * Insert the method's description here.
@@ -43,6 +84,11 @@ public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
 		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,REACTIONSTEP_ARRAY_FLAVOR);
 	}
 
+	if (getDataObjectClass().equals(VCellTransferable.ResolvedValuesSelection.class)){
+		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,RESOLVED_VALUES_FLAVOR);
+	}
+	
+
 	return flavors;
 }
 
@@ -64,6 +110,10 @@ protected boolean isSupportedObjectFlavor(DataFlavor dataFlavor) {
 	}
 
 	if(dataFlavor.equals(REACTIONSTEP_ARRAY_FLAVOR)){
+		return true;		
+	}
+
+	if(dataFlavor.equals(RESOLVED_VALUES_FLAVOR)){
 		return true;		
 	}
 
