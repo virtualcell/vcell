@@ -16,6 +16,7 @@ import cbit.image.ImageException;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -26,7 +27,6 @@ import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.opt.SimpleReferenceData;
 import org.vcell.util.document.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlBase;
 import cbit.vcell.xml.XmlParseException;
