@@ -80,21 +80,11 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	setGeometrySummaryViewer(geoViewer);
 	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
 	setGeometrySummaryViewerFrame(DocumentWindowManager.createDefaultFrame(getGeometrySummaryViewer()));
-	//setGeometrySummaryViewerFrame(new JInternalFrameEnhanced("GEOMETRY for: "+simContext.getName(), true, true, true, true));
-	//getGeometrySummaryViewerFrame().setContentPane(getGeometrySummaryViewer());
-	//getGeometrySummaryViewerFrame().setSize(700,400);
-	//getGeometrySummaryViewerFrame().setMinimumSize(new Dimension(600,400));
-	//getGeometrySummaryViewerFrame().setLocation(200, 300);
 
 	// make the surface viewer
 	setSurfaceViewer(new cbit.vcell.client.desktop.geometry.SurfaceViewerPanel());
 	getSurfaceViewer().setGeometry(simContext.getGeometry());
 	setSurfaceViewerFrame(DocumentWindowManager.createDefaultFrame(getSurfaceViewer()));
-	//setSurfaceViewerFrame(new JInternalFrameEnhanced("SURFACE for: "+simContext.getName(), true, true, true, true));
-	//getSurfaceViewerFrame().setContentPane(getSurfaceViewer());
-	//getSurfaceViewerFrame().setSize(500,500);
-	//getSurfaceViewerFrame().setMinimumSize(new Dimension(400,400));
-	//getSurfaceViewerFrame().setLocation(550, 350);
 }
 
 
@@ -350,5 +340,12 @@ private void setSurfaceViewer(SurfaceViewerPanel newSurfaceViewer) {
  */
 private void setSurfaceViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newSurfaceViewerFrame) {
 	surfaceViewerFrame = newSurfaceViewerFrame;
+}
+
+public void preloadSimulationStatus(Simulation[] simulations) {
+	ClientSimManager clientSimManager = getAppEditor().getSimulationWorkspace().getClientSimManager();
+	if (clientSimManager != null) {
+		clientSimManager.preloadSimulationStatus(simulations);
+	}
 }
 }

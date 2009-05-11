@@ -1,6 +1,6 @@
 package cbit.vcell.client.data;
-import java.util.Hashtable;
 
+import java.util.Hashtable;
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.math.Constant;
@@ -8,13 +8,12 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.client.server.VCDataManager;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataManager;
-
 import javax.swing.*;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
-
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -304,39 +303,47 @@ private void updateScanParamChoices(){
 		}
 		return;
 	}
-	VCDataIdentifier vcdid = new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
+	
+	final VCDataIdentifier vcdid = new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
 	if (isODEData) {
-		ODEDataManager odeDatamanager = new ODEDataManager(vcDataManager, vcdid);
-		try {
-			odeDatamanager.connect();
-			odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
-			odeDataViewer.setVcDataIdentifier(vcdid);
-		} catch (DataAccessException exc) {
-			exc.printStackTrace();
-			org.vcell.util.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n" + exc.getMessage());
-			odeDataViewer.setOdeSolverResultSet(null);
-		}
-	} else {
-		PDEDataManager pdeDatamanager = new PDEDataManager(vcDataManager, vcdid);
-		pdeDatamanager.connect();
-		
-		ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
-		if (currentContext == null || currentContext.getDataIdentifier() == null) {
-			pdeDataViewer.setPdeDataContext(new NewClientPDEDataContext(pdeDatamanager));
-		} else {
-			try{
-				currentContext.setDataManager(pdeDatamanager);
-			} catch (Exception e){
-				e.printStackTrace();
-				org.vcell.util.gui.DialogUtils.showErrorDialog(pdeDataViewer, e.getMessage());
+		AsynchClientTask task1 = new AsynchClientTask("get ode results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ODEDataManager odeDatamanager = new ODEDataManager(vcDataManager, vcdid);
+				odeDatamanager.connect();
+				hashTable.put("odeDatamanager", odeDatamanager);
 			}
-		}
-		if (pdeDataViewer.getPdeDataContext().getDataValues() == null) {
-			JInternalFrame frame = (JInternalFrame)org.vcell.util.BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
-			frame.setSize(frame.getWidth(), frame.getHeight() - 1);
-			frame.setSize(frame.getWidth(), frame.getHeight() + 1);
-			org.vcell.util.gui.DialogUtils.showErrorDialog(pdeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n");
-		}
+		};
+		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Exception ex = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+				if (ex == null) {
+					ODEDataManager odeDatamanager = (ODEDataManager)hashTable.get("odeDatamanager");
+					odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
+					odeDataViewer.setVcDataIdentifier(vcdid);
+				} else {
+					odeDataViewer.setOdeSolverResultSet(null);
+				}
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
+	} else {
+		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				PDEDataManager pdeDatamanager = new PDEDataManager(vcDataManager, vcdid);
+				pdeDatamanager.connect();
+			
+				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
+				if (currentContext == null || currentContext.getDataIdentifier() == null) {
+					pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());
+				} else {
+					currentContext.setDataManager(pdeDatamanager);
+				}
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 	}
 }
 }

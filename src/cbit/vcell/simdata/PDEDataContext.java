@@ -478,7 +478,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
-private void refreshData(String varName,double timePoint,boolean bForce) throws DataAccessException{
+private synchronized void refreshData(String varName,double timePoint,boolean bForce) throws DataAccessException{
 	
 	if(!bForce){
 		if(getVariableName() != null && getVariableName().equals(varName) &&

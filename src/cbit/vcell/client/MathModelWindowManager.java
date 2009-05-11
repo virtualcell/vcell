@@ -70,14 +70,9 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 			getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
 			setMathModel(aMathModel);
 			createMathModelEditor();
-			return null;
-		}
-	}.dispatchWrapRuntime();
 
-	initializeInternalFrames();
+			initializeInternalFrames();
 	
-	new SwingDispatcherSync() {
-		public Object runSwing() throws Exception{
 			geoViewer.addActionListener(MathModelWindowManager.this);
 			getJPanel().add(getMathModelEditor(), BorderLayout.NORTH);
 			if (System.getProperty("java.version").compareTo("1.3") >= 0) {
@@ -332,90 +327,77 @@ cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSim
  */
 private void initializeInternalFrames() {
 
-	new SwingDispatcherSync() {
-		public Object runSwing() throws Exception{
-			// Initialize VCML Editor internal frame
-			String vcmlEditorTitle = "VCML Editor";
-			vcmlEditor.setMathModel(getMathModel());
-			VCMLEditorFrame = new JInternalFrameEnhanced(vcmlEditorTitle, true, true, true, true);
-			JMenuBar mb = new JMenuBar();
-			JMenu menu = vcmlEditor.getEditMenu();
-			mb.add(menu);
-			VCMLEditorFrame.setJMenuBar(mb);
-			
-			VCMLEditorFrame.setContentPane(vcmlEditor);
-			VCMLEditorFrame.setSize(550, 550);
-			VCMLEditorFrame.setLocation(10, 10);
-			VCMLEditorFrame.setMinimumSize(new Dimension(250, 250));
-			VCMLEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-				public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-					getMathModelEditor().setToggleButtonSelected("VCML Editor", false);
-				};
-			});		
-			
-			
-			// Initialize Equations Viewer internal frame
-			String equnsViewerTitle = "Equations Viewer";
-			equnsViewer.setMathModel(getMathModel());
-			equationsViewerEditorFrame = new JInternalFrameEnhanced(equnsViewerTitle, true, true, true, true);
-			equationsViewerEditorFrame.setContentPane(equnsViewer);
-			equationsViewerEditorFrame.setSize(400, 400);
-			equationsViewerEditorFrame.setLocation(300, 100);
-			equationsViewerEditorFrame.setMinimumSize(new Dimension(250, 250));
-			equationsViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-				public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-					getMathModelEditor().setToggleButtonSelected("Equations Viewer", false);
-				};
-			});
-			return null;
-		}
-	}.dispatchWrapRuntime();
+	String vcmlEditorTitle = "VCML Editor";
+	vcmlEditor.setMathModel(getMathModel());
+	VCMLEditorFrame = new JInternalFrameEnhanced(vcmlEditorTitle, true, true, true, true);
+	JMenuBar mb = new JMenuBar();
+	JMenu menu = vcmlEditor.getEditMenu();
+	mb.add(menu);
+	VCMLEditorFrame.setJMenuBar(mb);
 	
-	new SwingDispatcherSync() {
-		public Object runSwing() throws Exception{
-			// Initialize Geometry Viewer internal frame
-			geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
-			
-			//disable changeGeometry and openGeometry button in geometry summary viewer if it is a stochastic app.
-			if(getMathModel().getMathDescription().isStoch())
-			{
-				geoViewer.setChangeGeometryEnabled(false);
-				geoViewer.setOpenGeometryEnabled(false);
-			}
-			else
-			{
-				geoViewer.setChangeGeometryEnabled(true);
-				geoViewer.setOpenGeometryEnabled(true);
-			}
-			geometryViewerEditorFrame = createDefaultFrame(geoViewer);
-			geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-				public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-					getMathModelEditor().setToggleButtonSelected("Geometry Viewer", false);
-				};
-			});
+	VCMLEditorFrame.setContentPane(vcmlEditor);
+	VCMLEditorFrame.setSize(550, 550);
+	VCMLEditorFrame.setLocation(10, 10);
+	VCMLEditorFrame.setMinimumSize(new Dimension(250, 250));
+	VCMLEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+			getMathModelEditor().setToggleButtonSelected("VCML Editor", false);
+		};
+	});		
+	
+	
+	// Initialize Equations Viewer internal frame
+	String equnsViewerTitle = "Equations Viewer";
+	equnsViewer.setMathModel(getMathModel());
+	equationsViewerEditorFrame = new JInternalFrameEnhanced(equnsViewerTitle, true, true, true, true);
+	equationsViewerEditorFrame.setContentPane(equnsViewer);
+	equationsViewerEditorFrame.setSize(400, 400);
+	equationsViewerEditorFrame.setLocation(300, 100);
+	equationsViewerEditorFrame.setMinimumSize(new Dimension(250, 250));
+	equationsViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+			getMathModelEditor().setToggleButtonSelected("Equations Viewer", false);
+		};
+	});
+	// Initialize Geometry Viewer internal frame
+	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
+	
+	//disable changeGeometry and openGeometry button in geometry summary viewer if it is a stochastic app.
+	if(getMathModel().getMathDescription().isStoch())
+	{
+		geoViewer.setChangeGeometryEnabled(false);
+		geoViewer.setOpenGeometryEnabled(false);
+	}
+	else
+	{
+		geoViewer.setChangeGeometryEnabled(true);
+		geoViewer.setOpenGeometryEnabled(true);
+	}
+	geometryViewerEditorFrame = createDefaultFrame(geoViewer);
+	geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+			getMathModelEditor().setToggleButtonSelected("Geometry Viewer", false);
+		};
+	});
 
-			// Initialize Surface Viewer internal frame
-			surfaceViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
-			surfaceViewerFrame = createDefaultFrame(surfaceViewer);
+	// Initialize Surface Viewer internal frame
+	surfaceViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
+	surfaceViewerFrame = createDefaultFrame(surfaceViewer);
 
-				
-			// Initialize SimulationsList Viewer internal frame
-			String simsListTitle = "Simulations";
-			simsPanel.setSimulationWorkspace(new SimulationWorkspace(MathModelWindowManager.this, getMathModel()));
-			simsListEditorFrame = new JInternalFrameEnhanced(simsListTitle, true, true, true, true);
-			simsListEditorFrame.setContentPane(simsPanel);
-			simsListEditorFrame.setSize(750, 600);
-			simsListEditorFrame.setLocation(500, 300);
-			simsListEditorFrame.setMinimumSize(new Dimension(500, 500));
-			simsListEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-				public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-					getMathModelEditor().setToggleButtonSelected("Simulations", false);
-				};
-			});
-			return null;
-		}
-	}.dispatchWrapRuntime();
-
+		
+	// Initialize SimulationsList Viewer internal frame
+	String simsListTitle = "Simulations";
+	simsPanel.setSimulationWorkspace(new SimulationWorkspace(MathModelWindowManager.this, getMathModel()));
+	simsListEditorFrame = new JInternalFrameEnhanced(simsListTitle, true, true, true, true);
+	simsListEditorFrame.setContentPane(simsPanel);
+	simsListEditorFrame.setSize(750, 600);
+	simsListEditorFrame.setLocation(500, 300);
+	simsListEditorFrame.setMinimumSize(new Dimension(500, 500));
+	simsListEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+			getMathModelEditor().setToggleButtonSelected("Simulations", false);
+		};
+	});
 }
 
 
@@ -478,6 +460,12 @@ public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	getRequestManager().updateStatusNow();
 }
 
+public void preloadSavedModelSimulationStatus(MathModel mathModel) {
+	ClientSimManager clientSimManager = simsPanel.getSimulationWorkspace().getClientSimManager();
+	if (clientSimManager != null) {
+		clientSimManager.preloadSimulationStatus(mathModel.getSimulations());
+	}
+}
 
 /**
  * Insert the method's description here.

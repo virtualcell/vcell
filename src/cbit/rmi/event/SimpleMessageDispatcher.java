@@ -3,7 +3,6 @@ package cbit.rmi.event;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.EventQueue;
 /**
  * Insert the type's description here.
  * Creation date: (11/12/2000 9:31:08 PM)
@@ -11,127 +10,6 @@ import java.awt.EventQueue;
  */
 public class SimpleMessageDispatcher implements MessageDispatcher {
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
-
-	//
-	// thread DataJobEvents
-	//
-	protected class DataJobEventNotifier implements Runnable {
-		private DataJobListener listener = null;
-		private DataJobEvent event = null;
-		public DataJobEventNotifier(DataJobListener argListener, DataJobEvent argEvent){
-			listener = argListener;
-			event = argEvent;
-		}
-		public void run() {
-			try {
-				listener.dataJobMessage(event);
-			}catch (Throwable e){
-			}
-		}
-	}
-	//
-	// thread DataJobEvents
-	//
-	protected class VCellMessageEventNotifier implements Runnable {
-		private VCellMessageEventListener listener = null;
-		private VCellMessageEvent event = null;
-		public VCellMessageEventNotifier(VCellMessageEventListener argListener, VCellMessageEvent argEvent){
-			listener = argListener;
-			event = argEvent;
-		}
-		public void run() {
-			try {
-				listener.onVCellMessageEvent(event);
-			}catch (Throwable e){
-			}
-		}
-	}
-	//
-	// thread ExportEvents
-	//
-	protected class ExportEventNotifier implements Runnable {
-		private ExportListener listener = null;
-		private ExportEvent event = null;
-		public ExportEventNotifier(ExportListener argListener, ExportEvent argEvent){
-			listener = argListener;
-			event = argEvent;
-		}
-		public void run() {
-			try {
-				listener.exportMessage(event);
-			}catch (Throwable e){
-			}
-		}
-	}
-	//
-	// thread PerformanceMonitorEvents
-	//
-	protected class PerformanceMonitorEventNotifier implements Runnable {
-		private PerformanceMonitorListener listener = null;
-		private PerformanceMonitorEvent event = null;
-		public PerformanceMonitorEventNotifier(PerformanceMonitorListener argListener, PerformanceMonitorEvent argEvent){
-			listener = argListener;
-			event = argEvent;
-		}
-		public void run() {
-			try {
-				listener.performanceMonitorEvent(event);
-			}catch (Throwable e){
-			}
-		}
-	}
-	//
-	// thread WorkerEvents
-	//
-	protected class WorkerEventNotifier implements Runnable {
-		private WorkerEventListener listener = null;
-		private WorkerEvent event = null;
-		public WorkerEventNotifier(WorkerEventListener argListener, WorkerEvent argEvent){
-			listener = argListener;
-			event = argEvent;
-		}
-		public void run() {
-			try {
-				listener.onWorkerEvent(event);
-			}catch (Throwable e){
-				e.printStackTrace(System.out);
-			}
-		}
-	}	
-	//
-	// thread SimulationJobStatusEvents
-	//	
-	protected class SimulationJobStatusEventNotifier implements Runnable {
-		private SimulationJobStatusListener listener = null;
-		private SimulationJobStatusEvent event = null;
-		public SimulationJobStatusEventNotifier(SimulationJobStatusListener argListener, SimulationJobStatusEvent argEvent){
-			listener = argListener;
-			event = argEvent;
-		}
-		public void run() {
-			try {
-				listener.simulationJobStatusChanged(event);
-			}catch (Throwable e){
-			}
-		}
-	}
-	//
-	// thread MessageEvents
-	//
-	protected class MessageEventNotifier implements Runnable {
-		private MessageListener listener = null;
-		private MessageEvent event = null;
-		public MessageEventNotifier(MessageListener argListener, MessageEvent argEvent){
-			listener = argListener;
-			event = argEvent;
-		}
-		public void run() {
-			try {
-				listener.messageEvent(event);
-			}catch (Throwable e){
-			}
-		}
-	}
 
 /**
  * Insert the method's description here.
@@ -213,7 +91,7 @@ protected void fireDataJobEvent(DataJobEvent event) {
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==DataJobListener.class) {
-		    EventQueue.invokeLater(new SimpleMessageDispatcher.DataJobEventNotifier((DataJobListener)listeners[i+1],event));
+	    	((DataJobListener)listeners[i+1]).dataJobMessage(event);
 	    }	       
 	}
 }
@@ -233,7 +111,7 @@ protected void fireExportEvent(ExportEvent event) {
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==ExportListener.class) {
-		    EventQueue.invokeLater(new SimpleMessageDispatcher.ExportEventNotifier((ExportListener)listeners[i+1],event));
+	    	((ExportListener)listeners[i+1]).exportMessage(event);
 	    }	       
 	}
 }
@@ -253,7 +131,7 @@ protected void fireMessageEvent(MessageEvent event) {
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==MessageListener.class) {
-		    EventQueue.invokeLater(new SimpleMessageDispatcher.MessageEventNotifier((MessageListener)listeners[i+1],event));
+	    	((MessageListener)listeners[i+1]).messageEvent(event);
 	    }	       
 	}
 }	
@@ -273,7 +151,7 @@ protected void firePerformanceMonitorEvent(PerformanceMonitorEvent event) {
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==PerformanceMonitorListener.class) {
-		    EventQueue.invokeLater(new SimpleMessageDispatcher.PerformanceMonitorEventNotifier((PerformanceMonitorListener)listeners[i+1],event));
+	    	((PerformanceMonitorListener)listeners[i+1]).performanceMonitorEvent(event);
 	    }	       
 	}
 }
@@ -293,7 +171,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==SimulationJobStatusListener.class) {
-		    EventQueue.invokeLater(new SimpleMessageDispatcher.SimulationJobStatusEventNotifier((SimulationJobStatusListener)listeners[i+1],event));
+	    	((SimulationJobStatusListener)listeners[i+1]).simulationJobStatusChanged(event);
 	    }	       
 	}
 }
@@ -313,7 +191,7 @@ protected void fireVCellMessageEvent(VCellMessageEvent event) {
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==VCellMessageEventListener.class) {
-		    EventQueue.invokeLater(new SimpleMessageDispatcher.VCellMessageEventNotifier((VCellMessageEventListener)listeners[i+1],event));
+	    	((VCellMessageEventListener)listeners[i+1]).onVCellMessageEvent(event);
 	    }	       
 	}
 }
@@ -333,7 +211,7 @@ protected void fireWorkerEvent(WorkerEvent event) {
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==WorkerEventListener.class) {
-		    EventQueue.invokeLater(new SimpleMessageDispatcher.WorkerEventNotifier((WorkerEventListener)listeners[i+1],event));
+	    	((WorkerEventListener)listeners[i+1]).onWorkerEvent(event);
 	    }	       
 	}
 }

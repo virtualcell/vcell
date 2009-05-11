@@ -799,6 +799,7 @@ private SimDataBlock evaluateFunction(
 	args[2] = 0.0; // y
 	args[3] = 0.0; // z
 	CartesianMesh mesh = getMesh(vcdID);
+	String dividedByZeroMsg = "";
 	for (int i = 0; i < dataLength; i++) {
 		//
 		// initialize argments to expression
@@ -892,9 +893,12 @@ private SimDataBlock evaluateFunction(
 //				System.out.println(" "+(args[args.length-2]/args[args.length-1]));
 //			}
 		}catch (DivideByZeroException e){
-			System.out.println("DataSetControllerImpl.evaluateFunction(): DivideByZero "+e.getMessage());
+			dividedByZeroMsg = e.getMessage();
 			data[i] = Double.POSITIVE_INFINITY;
 		}
+	}
+	if (dividedByZeroMsg.length() != 0) {
+		System.out.println("DataSetControllerImpl.evaluateFunction(): DivideByZero " + dividedByZeroMsg);
 	}
 
 	PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(), vcdID.getID(), function.getName(), time, lastModified);

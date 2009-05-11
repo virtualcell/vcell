@@ -1751,11 +1751,7 @@ private void setTimeFromSlider(int sliderPosition) {
 			
 			AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					try {
-						getpdeDataContext1().setTimePoint(timepoint);
-					} catch (final Exception exc) {
-						hashTable.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR, exc);
-					}
+					getpdeDataContext1().setTimePoint(timepoint);
 				}
 			};
 			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
@@ -1763,7 +1759,6 @@ private void setTimeFromSlider(int sliderPosition) {
 					try {				
 						Exception exc = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 						if (exc != null) {				
-//							PopupGenerator.showErrorDialog("Error updating timepoint '"+timepoint+"'\n"+exc.getMessage());
 							int index = -1;
 							if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
 								double[] timePoints = getPdeDataContext().getTimePoints();
@@ -1831,43 +1826,56 @@ private void setTimeFromTextField(String typedValue) {
 /**
  * Comment
  */
-private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
+private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {	
 	if(getPdeDataContext() == null){
 		return;
 	}
 	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
 		final String newVariableName = (String)getJList1().getSelectedValue();
 		if(newVariableName != null){
-			try {
-				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				if(getDisplayAdapterService() != null){
-					getDisplayAdapterService().activateMarkedState(newVariableName);
-				}
-				getPdeDataContext().setVariableName(newVariableName);
-//				synchronizeView();
-			} catch (final Exception e) {
-				e.printStackTrace();
-				SwingUtilities.invokeLater(new Runnable(){
-					public void run(){
-						PopupGenerator.showErrorDialog("Error setting variable name '"+newVariableName+"'\n"+e.getMessage());
-					}});
-				int index = -1;
-				if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-					for(int i=0;i<getJList1().getModel().getSize();i+= 1){
-						if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-							index = i;
-							break;
-						}
+			Hashtable<String, Object> hash = new Hashtable<String, Object>();
+			AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					if(getDisplayAdapterService() != null){
+						getDisplayAdapterService().activateMarkedState(newVariableName);
 					}
 				}
-				if(index != -1){
-					getJList1().setSelectedIndex(index);
-				}else{
-					getJList1().clearSelection();
+			};
+			
+			AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					getPdeDataContext().setVariableName(newVariableName);
 				}
-			} finally {
-				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			}
+			};
+				
+			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					try {	
+						Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+						if (e != null) {			
+							int index = -1;
+							if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+								for(int i=0;i<getJList1().getModel().getSize();i+= 1){
+									if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+										index = i;
+										break;
+									}
+								}
+							}
+							if(index != -1){
+								getJList1().setSelectedIndex(index);
+							}else{
+								getJList1().clearSelection();
+							}
+						}
+					} finally {
+						setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					}
+				}
+			};
+			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
+			ClientTaskDispatcher.dispatch(this, hash, taskArray);
 		}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
 			for (int i = 0; i < getJList1().getModel().getSize(); i++) {
 				if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
@@ -1877,71 +1885,6 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 			}
 		}
 	}
-	
-//	if(getPdeDataContext() == null){
-//		return;
-//	}
-//	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
-//		final String newVariableName = (String)getJList1().getSelectedValue();
-//		if(newVariableName != null){
-//			Hashtable<String, Object> hash = new Hashtable<String, Object>();
-//			AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
-//				public void run(Hashtable<String, Object> hashTable) throws Exception {
-//					setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//					if(getDisplayAdapterService() != null){
-//						getDisplayAdapterService().activateMarkedState(newVariableName);
-//					}
-//				}
-//			};
-//			
-//			AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
-//				public void run(Hashtable<String, Object> hashTable) throws Exception {
-//					try {
-//						getPdeDataContext().setVariableName(newVariableName);
-//					} catch (final Exception exc) {
-//						hashTable.put("Exception", exc);						
-//					}
-//				}
-//			};
-//				
-//			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
-//				public void run(Hashtable<String, Object> hashTable) throws Exception {
-//					try {				
-//						Exception e = (Exception)hashTable.get("Exception");
-//						if (e != null) {			
-//							e.printStackTrace();
-//							PopupGenerator.showErrorDialog("Error setting variable name '"+newVariableName+"'\n"+e.getMessage());
-//							int index = -1;
-//							if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-//								for(int i=0;i<getJList1().getModel().getSize();i+= 1){
-//									if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-//										index = i;
-//										break;
-//									}
-//								}
-//							}
-//							if(index != -1){
-//								getJList1().setSelectedIndex(index);
-//							}else{
-//								getJList1().clearSelection();
-//							}
-//						}
-//					} finally {
-//						setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//					}
-//				}
-//			};
-//			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
-//			ClientTaskDispatcher.dispatch(this, hash, taskArray);
-//		}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-//			for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-//				if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-//					getJList1().setSelectedIndex(i);
-//					break;
-//				}
-//			}
-//		}
-//	}
 }
 private void updateTimeTextField(double newTime){
 	getJTextField1().setText(Double.toString(newTime));

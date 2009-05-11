@@ -9,6 +9,7 @@ import cbit.rmi.event.PerformanceData;
 import cbit.rmi.event.PerformanceDataEntry;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.clientdb.DocumentManager;
@@ -66,6 +67,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			} else {
 				savedDocument = documentManager.save((BioModel)currentDocument, independentSims);
 			}
+			((BioModelWindowManager)documentWindowManager).preloadSavedModelSimulationStatus((BioModel)savedDocument);
 			break;
 		}
 		case VCDocument.MATHMODEL_DOC: {
@@ -86,6 +88,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			} else {
 				savedDocument = documentManager.save((MathModel)currentDocument, independentSims);
 			}
+			((MathModelWindowManager)documentWindowManager).preloadSavedModelSimulationStatus((MathModel)savedDocument);
 			break;
 		}
 		case VCDocument.GEOMETRY_DOC: {
@@ -98,6 +101,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		}
 	}
 	hashTable.put("savedDocument", savedDocument);
+	
 	// generate PerformanceMonitorEvent
 	long l2 = System.currentTimeMillis();
 	double duration = ((double)(l2 - l1)) / 1000;

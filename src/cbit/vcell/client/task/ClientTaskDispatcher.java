@@ -2,11 +2,9 @@ package cbit.vcell.client.task;
 import java.awt.*;
 import java.util.*;
 import swingthreads.*;
-import cbit.util.*;
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.ProgressDialogListener;
@@ -18,8 +16,8 @@ import cbit.vcell.client.*;
  * @author: Ion Moraru
  */
 public class ClientTaskDispatcher {
-	public static final String PROGRESS_POPUP = "asynchProgressPopup";
-	public static final String TASK_PROGRESS_INTERVAL = "progressRange";
+//	public static final String PROGRESS_POPUP = "asynchProgressPopup";
+//	public static final String TASK_PROGRESS_INTERVAL = "progressRange";
 	public static final String TASK_ABORTED_BY_ERROR = "abort";
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
@@ -64,10 +62,10 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			bInProgress = true;
 			if (bShowProgressPopup) {
 				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", false, useTaskProgress, cancelable, progressDialogListener);			
-				if (useTaskProgress) {
-					// make AsynchProgressPopup available for finer granularity progress update by individual ClientTasks
-					hash.put(PROGRESS_POPUP, pp);
-				}
+//				if (useTaskProgress) {
+//					// make AsynchProgressPopup available for finer granularity progress update by individual ClientTasks
+//					hash.put(PROGRESS_POPUP, pp);
+//				}
 				pp.start();
 			}
 			for (int i = 0; i < tasks.length; i++){
@@ -75,11 +73,13 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// after abort, run only non-skippable tasks
 				// also skip selected tasks specified by conditionalSkip tag 
 				final AsynchClientTask currentTask = tasks[i];
+				currentTask.setClientTaskStatusSupport(pp);
+				
 //System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
-				if (useTaskProgress) {
-					// update Hash with current interval for Progress
-					hash.put(TASK_PROGRESS_INTERVAL, new Range(i*100/tasks.length, (i+1)*100/tasks.length));
-				}
+//				if (useTaskProgress) {
+//					// update Hash with current interval for Progress
+//					hash.put(TASK_PROGRESS_INTERVAL, new Range(i*100/tasks.length, (i+1)*100/tasks.length));
+//				}
 				if (pp != null) {
 					pp.setProgress(i*100/tasks.length); // beginning of task
 					pp.setMessage(currentTask.getTaskName());
@@ -110,7 +110,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 									try {
 										currentTask.run(hash);
 									} catch (Throwable exc) {
-											recordException(exc, hash);
+										recordException(exc, hash);
 									}
 								}
 							});
@@ -120,7 +120,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 									try {
 										currentTask.run(hash);
 									} catch (Throwable exc) {
-											recordException(exc, hash);
+										recordException(exc, hash);
 									}
 								}
 							});

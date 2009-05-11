@@ -160,19 +160,20 @@ private void initialize() {
 		setCartesianMesh(getDataManager().getMesh());
 		setTimePoints(getDataManager().getDataSetTimes());
 		setDataIdentifiers(getDataManager().getDataIdentifiers());
-//		double tp = getTimePoint();
-//		double[] timePoints = getTimePoints();
-//		if (timePoints != null && timePoints.length >0) {
-//			tp = timePoints[0];
-//		}
-////		String variable = getVariableName();
-//		DataIdentifier[] dataIdentifiers = getDataIdentifiers();
-////		if (dataIdentifiers != null && dataIdentifiers.length > 0) {
-////			variable = dataIdentifiers[0].getName();
-////		}
-//		//setVariableAndTime(variable, tp);
+		double tp = getTimePoint();
+		double[] timePoints = getTimePoints();
+		if (timePoints != null && timePoints.length >0) {
+			tp = timePoints[0];
+		}
+		String variable = getVariableName();
+		DataIdentifier[] dataIdentifiers = getDataIdentifiers();
+		if (dataIdentifiers != null && dataIdentifiers.length > 0) {
+			variable = getVariableNames()[0];
+		}
+		setVariableAndTime(variable, tp);
 	} catch (DataAccessException exc) {
 		exc.printStackTrace(System.out);
+		throw new RuntimeException(exc.getMessage());
 	}
 }
 

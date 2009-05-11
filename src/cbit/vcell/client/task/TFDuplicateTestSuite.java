@@ -36,11 +36,7 @@ public TFDuplicateTestSuite(TestingFrameworkWindowManager argtfwm,TestSuiteInfoN
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws DataAccessException{
-
-	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
-
-	String errors = null;
-	errors = tfwm.duplicateTestSuite(origTSInfo,newTSInfo,regrRefFlag,pp);
+	String errors = tfwm.duplicateTestSuite(origTSInfo,newTSInfo,regrRefFlag,getClientTaskStatusSupport());
 
 	if(errors != null){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);

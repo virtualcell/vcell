@@ -267,11 +267,7 @@ protected void fireSimStatusEvent(SimStatusEvent event) {
  * Creation date: (6/9/2004 3:49:15 PM)
  */
 private void fireSimStatusEvent(final SimStatusEvent event, final SimStatusListener listener) {
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-		    listener.simStatusChanged(event);
-	    }
-	});
+	listener.simStatusChanged(event);
 }
 
 
@@ -300,11 +296,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
  * Creation date: (6/9/2004 3:49:15 PM)
  */
 private void fireSimulationJobStatusEvent(final SimulationJobStatusEvent event, final SimulationJobStatusListener listener) {
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-		    listener.simulationJobStatusChanged(event);
-	    }
-	});
+    listener.simulationJobStatusChanged(event);
 }
 
 

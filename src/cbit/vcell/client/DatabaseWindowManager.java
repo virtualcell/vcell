@@ -10,16 +10,12 @@ import cbit.vcell.geometry.*;
 import cbit.vcell.geometry.gui.ImageAttributePanel;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.server.*;
-import cbit.util.*;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.util.xml.XmlUtil;
-import cbit.sql.*;
 import cbit.vcell.clientdb.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.document.*;
 import javax.swing.*;
 import javax.swing.Timer;
 
@@ -50,8 +46,6 @@ import org.vcell.util.document.VersionableType;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.SwingDispatcherSync;
-
-import cbit.vcell.client.task.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 5:06:46 PM)
@@ -607,7 +601,7 @@ public static ImageHelper convertTIF(byte[] tifData) throws cbit.image.TiffExcep
  * Creation date: (10/11/2004 12:21:47 PM)
  * @return cbit.image.VCImage
  */
-public static ImageHelper convertZIP(byte[] zipData,AsynchProgressPopup pp) {
+public static ImageHelper convertZIP(byte[] zipData, ClientTaskStatusSupport pp) {
 
 	//
 	// Read individual entries from zip as z-sections
@@ -697,7 +691,7 @@ public void deleteSelected() {
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public static VCImage editImageAttributes(final VCImage image,final AsynchProgressPopup pp,final RequestManager theRequestManager) throws Exception{
+public static VCImage editImageAttributes(final VCImage image,final ClientTaskStatusSupport pp,final RequestManager theRequestManager) throws Exception{
 	return (VCImage)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
@@ -1220,7 +1214,7 @@ public VCImage selectImageFromDatabase() throws DataAccessException, UserCancelE
 	throw UserCancelException.CANCEL_DB_SELECTION;
 }
 
-public static ImageHelper readFromImageFile(AsynchProgressPopup pp,File imageFile)
+public static ImageHelper readFromImageFile(ClientTaskStatusSupport pp,File imageFile)
 	throws FileNotFoundException,IOException,ImageException{
 	
 	ImageHelper ih = null;
@@ -1271,7 +1265,7 @@ public static ImageHelper readFromImageFile(AsynchProgressPopup pp,File imageFil
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public VCImage selectImageFromFile(final AsynchProgressPopup pp) throws Exception{
+public VCImage selectImageFromFile(final ClientTaskStatusSupport pp) throws Exception{
 
 	VCImage vcImage;
 	

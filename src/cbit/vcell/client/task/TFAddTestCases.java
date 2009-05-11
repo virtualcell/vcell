@@ -38,11 +38,7 @@ public TFAddTestCases(TestingFrameworkWindowManager argtfwm,
  */
 public void run(Hashtable<String, Object> hashTable) throws DataAccessException {
 
-	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
-	String errors = null;
-
-	errors = tfwm.addTestCases(tsin,tcns,TestingFrameworkWindowManager.COPY_REGRREF,pp);
-	
+	String errors = tfwm.addTestCases(tsin,tcns,TestingFrameworkWindowManager.COPY_REGRREF, getClientTaskStatusSupport());	
 	if(errors != null){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);
 	}

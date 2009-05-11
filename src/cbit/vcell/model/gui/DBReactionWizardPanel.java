@@ -15,7 +15,6 @@ import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.SpeciesDescription;
 import cbit.vcell.model.*;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -423,13 +422,9 @@ private void configureRXParameterList(javax.swing.event.ListSelectionEvent listS
 				rxKeys[i] = new KeyValue(rxIDV.elementAt(i));
 			}
 			AsynchClientTask task1 = new AsynchClientTask("getting user reaction step infos", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-				public void run(Hashtable<String, Object> hashTable) {
-					try{
-						ReactionStepInfo reactionStepInfos[] = getDocumentManager().getUserReactionStepInfos(rxKeys);
-						hashTable.put("reactionStepInfos", reactionStepInfos);
-					}catch(DataAccessException e){
-						hashTable.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR, e);
-					}
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ReactionStepInfo reactionStepInfos[] = getDocumentManager().getUserReactionStepInfos(rxKeys);
+					hashTable.put("reactionStepInfos", reactionStepInfos);
 				}
 			};
 			AsynchClientTask task2 = new AsynchClientTask("getting user reaction step infos", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

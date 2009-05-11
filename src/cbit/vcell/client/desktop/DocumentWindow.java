@@ -3296,7 +3296,6 @@ private void showEditAnnotationWindow() {
  * Comment
  */
 private void showLoginDialog() {
-	getWindowManager().getRequestManager().checkClientServerSoftwareVersion();
 	ZEnforcer.showModalDialogOnTop(getLoginDialog(),this);
 }
 

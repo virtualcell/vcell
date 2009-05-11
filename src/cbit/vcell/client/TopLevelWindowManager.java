@@ -1,23 +1,14 @@
 package cbit.vcell.client;
-import cbit.vcell.desktop.controls.DataListener;
-import cbit.rmi.event.ExportListener;
-import cbit.vcell.desktop.controls.DataEvent;
 
-import java.io.*;
-import java.net.*;
-import swingthreads.SwingWorker;
-import java.awt.*;
-import cbit.vcell.client.desktop.*;
-import cbit.rmi.event.ExportEvent;
-
-import javax.swing.*;
-
+import java.awt.Component;
+import java.util.Vector;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.FileFilters;
-
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.server.*;
-import cbit.vcell.client.*;
+import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.desktop.controls.DataListener;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 12:53:14 AM)
@@ -25,12 +16,9 @@ import cbit.vcell.client.*;
  */
 public abstract class TopLevelWindowManager {
 	private cbit.vcell.client.RequestManager requestManager = null;
-
-	protected transient java.util.Vector aDataListener = null;
-
-	protected transient java.util.Vector aExportListener = null;
-	
-	protected transient java.util.Vector aDataJobListener = null;
+	protected transient Vector<DataListener> aDataListener = null;
+	protected transient Vector<ExportListener> aExportListener = null;	
+	protected transient Vector<DataJobListener> aDataJobListener = null;
 
 /**
  * Insert the method's description here.
@@ -47,7 +35,7 @@ public TopLevelWindowManager(RequestManager requestManager) {
  */
 public void addDataJobListener(cbit.rmi.event.DataJobListener newListener) {
 	if (aDataJobListener == null) {
-		aDataJobListener = new java.util.Vector();
+		aDataJobListener = new Vector<DataJobListener>();
 	};
 	aDataJobListener.addElement(newListener);
 }
@@ -58,7 +46,7 @@ public void addDataJobListener(cbit.rmi.event.DataJobListener newListener) {
  */
 public void addDataListener(DataListener newListener) {
 	if (aDataListener == null) {
-		aDataListener = new java.util.Vector();
+		aDataListener = new Vector<DataListener>();
 	};
 	aDataListener.addElement(newListener);
 }
@@ -69,7 +57,7 @@ public void addDataListener(DataListener newListener) {
  */
 public void addExportListener(ExportListener newListener) {
 	if (aExportListener == null) {
-		aExportListener = new java.util.Vector();
+		aExportListener = new Vector<ExportListener>();
 	};
 	aExportListener.addElement(newListener);
 }

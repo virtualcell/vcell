@@ -1,6 +1,7 @@
 package org.vcell.util.gui;
 
 import java.awt.*;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 /**
  * Insert the type's description here.
@@ -33,7 +34,7 @@ Typical usage:
  
  
  */
-public class AsynchProgressPopup extends AsynchGuiUpdater {
+public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskStatusSupport {
 	private ProgressDialog dialog = null;
 	private int progress = 0;
 	private int autoProgress = 0;
