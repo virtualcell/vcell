@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -744,7 +745,7 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (11/1/2005 9:30:09 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector issueVector) {
+public void gatherIssues(Vector<Issue> issueVector) {
 	getReactionContext().gatherIssues(issueVector);
 	getGeometryContext().gatherIssues(issueVector);
 }

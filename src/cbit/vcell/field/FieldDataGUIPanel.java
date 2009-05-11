@@ -58,7 +58,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
-import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
@@ -995,53 +994,35 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 					clientRequestManager.getDocumentManager().getUser());
 
 		AsynchClientTask CreateFDFromSim = new AsynchClientTask("Create Field Data from Simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hash){
-				try{
-					try{
-						FieldDataFileOperationResults fdor =
-							clientRequestManager.getDocumentManager().fieldDataFileOperation(
-									FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(
-											(simInfoHolder.simInfo.getParentSimulationReference() != null?
-													simInfoHolder.simInfo.getParentSimulationReference():
-													simInfoHolder.simInfo.getSimulationVersion().getVersionKey()
-											), 
-											simInfoHolder.simInfo.getOwner(),
-											simInfoHolder.jobIndex));
-						//Create (non-editable) info for display
-						fdos.origin = fdor.origin;
-						fdos.extent = fdor.extent;
-						fdos.isize = fdor.iSize;
-						fdos.times = fdor.times;
-						fdos.varNames = new String[fdor.dataIdentifierArr.length];
-						for(int i=0;i<fdor.dataIdentifierArr.length;i+= 1){
-							fdos.varNames[i] =
-								(fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.VOLUME)?"(vol) ":"")+
-								(fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.MEMBRANE)?"(mbr) ":"")+
-								fdor.dataIdentifierArr[i].getName();
-						}
-					}catch(ObjectNotFoundException e){
-						throw new ObjectNotFoundException(
-							"Field Data Info not found.  Check sim '"+simInfoHolder.simInfo.getName()+"' has data results.");
-					}catch(Exception e){
-						throw new Exception("Error getting sim data info from server.  Try again.\n"+e.getMessage());
-					}
-					
-					try{
-						addNewExternalData(clientRequestManager, fdos, simInfoHolder.simInfo.getName(), true);
-					}catch(UserCancelException e){
-						hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_USER,e);
-						return;
-					}
-				}catch(Throwable e){
-					hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
+			public void run(Hashtable<String, Object> hash) throws Exception {
+				FieldDataFileOperationResults fdor =
+					clientRequestManager.getDocumentManager().fieldDataFileOperation(
+							FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(
+									(simInfoHolder.simInfo.getParentSimulationReference() != null?
+											simInfoHolder.simInfo.getParentSimulationReference():
+											simInfoHolder.simInfo.getSimulationVersion().getVersionKey()
+									),
+									simInfoHolder.simInfo.getOwner(),
+									simInfoHolder.jobIndex));
+				//Create (non-editable) info for display
+				fdos.origin = fdor.origin;
+				fdos.extent = fdor.extent;
+				fdos.isize = fdor.iSize;
+				fdos.times = fdor.times;
+				fdos.varNames = new String[fdor.dataIdentifierArr.length];
+				for(int i=0;i<fdor.dataIdentifierArr.length;i+= 1){
+					fdos.varNames[i] =
+						(fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.VOLUME)?"(vol) ":"")+
+						(fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.MEMBRANE)?"(mbr) ":"")+
+						fdor.dataIdentifierArr[i].getName();
 				}
+				addNewExternalData(clientRequestManager, fdos, simInfoHolder.simInfo.getName(), true);
 			}
 		};
 
 		AsynchClientTask tasks[] = new AsynchClientTask[] { CreateFDFromSim};
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		ClientTaskDispatcher.dispatch(this,hash,tasks,false);
-		
 		
 	}catch(UserCancelException e){
 		return;
@@ -1124,72 +1105,60 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 	try{
 	
 		AsynchClientTask importImageTask = new AsynchClientTask("Import image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hash){
-				try{
-					FieldDataFileOperationSpec fdos = null;
-					String initFDName = null;
-					
-					if (argfdos == null) {
-						File imageFile = 
-							DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
-						initFDName = imageFile.getName();
-						//read VCell Special
-						DatabaseWindowManager.ImageHelper imageHelper = null;
-						//				if(imagedataSet == null){
+			public void run(Hashtable<String, Object> hash) throws Exception {
+				FieldDataFileOperationSpec fdos = null;
+				String initFDName = null;
+				
+				if (argfdos == null) {
+					File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
+					initFDName = imageFile.getName();
+					//read VCell Special
+					DatabaseWindowManager.ImageHelper imageHelper = null;
+					//				if(imagedataSet == null){
+					try {
+						fdos = new FieldDataFileOperationSpec();
+						imageHelper = DatabaseWindowManager.readFromImageFile(
+								getClientTaskStatusSupport(), imageFile);
+						fdos.times = new double[] { 0 };
+						fdos.varNames = new String[] { "variableName" };
+						fdos.origin = new Origin(0, 0, 0);
+						fdos.extent = new Extent(1, 1, 1);
+						fdos.isize = new ISize(imageHelper.xsize,
+								imageHelper.ysize, imageHelper.zsize);
+						short[] shortPixels = new short[imageHelper.imageData.length];
+						for (int i = 0; i < shortPixels.length; i += 1) {
+							shortPixels[i] = (short) (0x000000FF & imageHelper.imageData[i]);
+						}
+						fdos.shortSpecData = new short[][][] { { shortPixels } };
+						fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
+					} catch (Exception e) {
+						System.out
+								.println("VCell simple image import couldn't read "
+										+ e.getMessage());
+						fdos = null;
+					}
+					//				}
+					//read BioFormat
+					if (fdos == null) {
 						try {
-							fdos = new FieldDataFileOperationSpec();
-							AsynchProgressPopup pp = new AsynchProgressPopup(
-									FieldDataGUIPanel.this, "Import Field Data",
-									"Start", false, false);
-							imageHelper = DatabaseWindowManager.readFromImageFile(
-									pp, imageFile);
-							fdos.times = new double[] { 0 };
-							fdos.varNames = new String[] { "variableName" };
-							fdos.origin = new Origin(0, 0, 0);
-							fdos.extent = new Extent(1, 1, 1);
-							fdos.isize = new ISize(imageHelper.xsize,
-									imageHelper.ysize, imageHelper.zsize);
-							short[] shortPixels = new short[imageHelper.imageData.length];
-							for (int i = 0; i < shortPixels.length; i += 1) {
-								shortPixels[i] = (short) (0x000000FF & imageHelper.imageData[i]);
-							}
-							fdos.shortSpecData = new short[][][] { { shortPixels } };
-							fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
-						} catch (Exception e) {
-							System.out
-									.println("VCell simple image import couldn't read "
-											+ e.getMessage());
+							fdos = createFDOSFromImageFile(imageFile,true);
+						} catch (DataFormatException e) {
+							System.out.println("BioFormat couldn't read "
+									+ e.getMessage());
 							fdos = null;
 						}
-						//				}
-						//read BioFormat
-						if (fdos == null) {
-							try {
-								fdos = createFDOSFromImageFile(imageFile,true);
-							} catch (DataFormatException e) {
-								System.out.println("BioFormat couldn't read "
-										+ e.getMessage());
-								fdos = null;
-							}
-						}
-						if(fdos == null){
-							throw new Exception("Neither BioFormats or VCell can read image "+imageFile.getAbsolutePath());
-						}
-					}else{
-						fdos = argfdos;
-						initFDName = arginitFDName;
 					}
-					
-					fdos.owner = clientRequestManager.getDocumentManager().getUser();
-					fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-					addNewExternalData(clientRequestManager, fdos, initFDName, false);
-				}catch(UserCancelException e){
-					hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_USER,e);
-					return;
-				}catch(Throwable e){
-					e.printStackTrace(System.out);
-					hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
+					if(fdos == null){
+						throw new Exception("Neither BioFormats or VCell can read image "+imageFile.getAbsolutePath());
+					}
+				}else{
+					fdos = argfdos;
+					initFDName = arginitFDName;
 				}
+				
+				fdos.owner = clientRequestManager.getDocumentManager().getUser();
+				fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+				addNewExternalData(clientRequestManager, fdos, initFDName, false);
 			}
 		};
 		//
@@ -1287,44 +1256,31 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 		
 	}
 	AsynchClientTask CheckRemoveFromDBTask = new AsynchClientTask("Check Field Data references in DB", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hash){
-			try{
-				if(fieldDataWindowManager.findReferencingModels(fieldDataMainList.externalDataIdentifier, false)){
-					throw new Exception("Cannot delete Field Data '"+fieldDataMainList.externalDataIdentifier.getName()+
-							"' because it is referenced in a Model(s) or Function(s) file.");
-				}
-			}catch(Throwable e){
-				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
+		public void run(Hashtable<String, Object> hash) throws Exception {
+			if(fieldDataWindowManager.findReferencingModels(fieldDataMainList.externalDataIdentifier, false)){
+				throw new Exception("Cannot delete Field Data '"+fieldDataMainList.externalDataIdentifier.getName()+
+						"' because it is referenced in a Model(s) or Function(s) file.");
 			}
 		}
 	};
 	AsynchClientTask RemoveNodeTreeTask = new AsynchClientTask("Remove FieldData tree node", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hash){
-			try{
-				((DefaultTreeModel)getJTree1().getModel()).removeNodeFromParent(mainNode);
-				if(((DefaultMutableTreeNode)getJTree1().getModel().getRoot()).getChildCount() == 0){
-					updateJTree(clientRequestManager);
-				}
-			}catch(Throwable e){
-				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
+		public void run(Hashtable<String, Object> hash) throws Exception {
+			((DefaultTreeModel)getJTree1().getModel()).removeNodeFromParent(mainNode);
+			if(((DefaultMutableTreeNode)getJTree1().getModel().getRoot()).getChildCount() == 0){
+				updateJTree(clientRequestManager);
 			}
 		}
 	};
 	AsynchClientTask RemoveFromDiskAndDBTask = new AsynchClientTask("Remove Field Data from Disk and DB", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hash){
-			try{
-				//Remove from Disk
-				FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
-				FieldDataFileOperationSpec fdos = 
-					FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
-						fieldDataMainList.externalDataIdentifier);
-				clientRequestManager.getDocumentManager().fieldDataFileOperation(fdos);
-				//Remove from DB
-				fieldDataWindowManager.deleteExternalDataIdentifier(fieldDataMainList.externalDataIdentifier);
-
-			}catch(Throwable e){
-				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
-			}
+		public void run(Hashtable<String, Object> hash) throws Exception {
+			//Remove from Disk
+			FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
+			FieldDataFileOperationSpec fdos = 
+				FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
+					fieldDataMainList.externalDataIdentifier);
+			clientRequestManager.getDocumentManager().fieldDataFileOperation(fdos);
+			//Remove from DB
+			fieldDataWindowManager.deleteExternalDataIdentifier(fieldDataMainList.externalDataIdentifier);
 		}
 	};
 	//
@@ -1489,21 +1445,17 @@ private void refreshMainNode(final DefaultMutableTreeNode mainNode){
 	final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
 	AsynchClientTask FieldDataInfoTask = new AsynchClientTask("Gather Field Data info", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hash){
-			try{
-				FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
-				final FieldDataFileOperationResults fieldDataFileOperationResults =
-					clientRequestManager.getDocumentManager().
-					fieldDataFileOperation(
-							FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(
-									fieldDataMainList.externalDataIdentifier.getKey(),
-									clientRequestManager.getDocumentManager().getUser(),
-									FieldDataFileOperationSpec.JOBINDEX_DEFAULT)
-							);
-				hash.put(FDOR_INFO,fieldDataFileOperationResults);
-			}catch(Throwable e){
-				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
-			}
+		public void run(Hashtable<String, Object> hash) throws Exception {
+			FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
+			final FieldDataFileOperationResults fieldDataFileOperationResults =
+				clientRequestManager.getDocumentManager().
+				fieldDataFileOperation(
+						FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(
+								fieldDataMainList.externalDataIdentifier.getKey(),
+								clientRequestManager.getDocumentManager().getUser(),
+								FieldDataFileOperationSpec.JOBINDEX_DEFAULT)
+						);
+			hash.put(FDOR_INFO,fieldDataFileOperationResults);
 		}
 	};
 	

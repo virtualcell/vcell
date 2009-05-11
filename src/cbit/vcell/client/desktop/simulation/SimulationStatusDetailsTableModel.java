@@ -220,7 +220,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == fieldSimulationStatusDetails.getSimulationWorkspace() && evt.getPropertyName().equals("status")) {
+	if (fieldSimulationStatusDetails != null && evt.getSource() == fieldSimulationStatusDetails.getSimulationWorkspace() && evt.getPropertyName().equals("status")) {
 		fireTableDataChanged();
 	}	
 }

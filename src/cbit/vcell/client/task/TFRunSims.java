@@ -58,7 +58,7 @@ public TFRunSims(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argtsinf
  */
 public void run(Hashtable<String, Object> hashTable){
 
-	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
+	ClientTaskStatusSupport pp = getClientTaskStatusSupport();
 	String errors = (String)hashTable.get(TFRefresh.TF_ERRORS);
 	if(errors == null){
 		errors="";

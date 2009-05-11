@@ -174,6 +174,8 @@ public void addResultsFrame(SimulationWindow simWindow) {
  * Creation date: (6/1/2004 2:33:41 AM)
  */
 private void checkValidApplicationFrames(boolean reset) {
+	SimulationContext[] scs = getBioModel().getSimulationContexts();
+	
 	Enumeration<SimulationContext> en = getApplicationsHash().keys();
 	while (en.hasMoreElements()) {
 		SimulationContext sc = (SimulationContext)en.nextElement();
@@ -181,7 +183,6 @@ private void checkValidApplicationFrames(boolean reset) {
 		if (!getBioModel().contains(sc)) {
 			if (reset) {
 				// find one with the same name, if available
-				SimulationContext[] scs = getBioModel().getSimulationContexts();
 				SimulationContext found = null;
 				if (scs != null) {
 					for (int i = 0; i < scs.length; i++){
@@ -851,4 +852,27 @@ public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
 	}
 }
 
+public void preloadSavedModelSimulationStatus(BioModel bioModel) {
+	Simulation[] allSimulations = bioModel.getSimulations();
+	SimulationContext[] scs = bioModel.getSimulationContexts();
+	
+	Enumeration<SimulationContext> en = getApplicationsHash().keys();
+	while (en.hasMoreElements()) {
+		SimulationContext sc = en.nextElement();
+		ApplicationComponents appComponents = getApplicationsHash().get(sc);
+		// find one with the same name, if available		
+		SimulationContext found = null;
+		if (scs != null) {
+			for (int i = 0; i < scs.length; i++){
+				if (scs[i].getName().equals(sc.getName())) {
+					found = scs[i];
+					break;
+				}
+			}
+		}
+		if (found != null) {
+			appComponents.preloadSimulationStatus(found.getSimulations());
+		}
+	}
+}
 }

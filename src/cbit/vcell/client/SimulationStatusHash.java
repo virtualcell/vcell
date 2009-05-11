@@ -1,5 +1,7 @@
 package cbit.vcell.client;
 import java.util.Enumeration;
+import java.util.Hashtable;
+
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -8,7 +10,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  * @author: Jim Schaff
  */
 public class SimulationStatusHash {
-	private java.util.Hashtable hash = new java.util.Hashtable();
+	private Hashtable<Simulation, SimulationStatus> hash = new Hashtable<Simulation, SimulationStatus>();
 
 /**
  * SimulationStatusHash constructor comment.
@@ -27,7 +29,7 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 	if (newSimulations == null) {
 		hash.clear();
 	} else {
-		java.util.Hashtable newHash = new java.util.Hashtable();
+		Hashtable<Simulation, SimulationStatus> newHash = new Hashtable<Simulation, SimulationStatus>();
 		for (int i = 0; i < newSimulations.length; i++){
 			//
 			// look in list for existing status
@@ -39,9 +41,9 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 			// 
 			}else{
 				SimulationStatus newSimStatus = null;
-				Enumeration en = this.hash.keys();
+				Enumeration<Simulation> en = this.hash.keys();
 				while (en.hasMoreElements()) {
-					Simulation sim = (Simulation)en.nextElement();
+					Simulation sim = en.nextElement();
 					//
 					// if simulations have the same "authoritative simulation identifier" then use this status
 					//
@@ -54,7 +56,7 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 						if (newSimStatus!=null){
 							System.out.println("warning: more than one match for simulation status");
 						}
-						newSimStatus = (SimulationStatus)hash.get(sim);
+						newSimStatus = hash.get(sim);
 					}
 				}
 				if (newSimStatus!=null){
@@ -75,7 +77,7 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
  * @param simulation cbit.vcell.solver.Simulation
  */
 public SimulationStatus getSimulationStatus(Simulation simulation) {
-	return (SimulationStatus)hash.get(simulation);
+	return hash.get(simulation);
 }
 
 

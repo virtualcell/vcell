@@ -23,6 +23,7 @@ public abstract class AsynchClientTask {
 	private boolean bSkipIfCancel = true;
 	private int taskType = TASKTYPE_NONSWING_BLOCKING;
 	private String taskName = "";
+	private ClientTaskStatusSupport clientTaskStatusSupport = null;
 	
 	public AsynchClientTask(String name, int taskType) {
 		this(name, taskType, true, true);
@@ -37,6 +38,10 @@ public abstract class AsynchClientTask {
 	
 	public final boolean skipIfAbort() {
 		return bSkipIfAbort;
+	}
+	
+	public ClientTaskStatusSupport getClientTaskStatusSupport() {
+		return clientTaskStatusSupport;
 	}
 
 	/**
@@ -57,4 +62,8 @@ public abstract class AsynchClientTask {
 	}
 	
 	public abstract void run(Hashtable<String, Object> hashTable) throws Exception;
+
+	public void setClientTaskStatusSupport(ClientTaskStatusSupport clientTaskStatusSupport) {
+		this.clientTaskStatusSupport = clientTaskStatusSupport;
+	}
 }

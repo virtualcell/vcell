@@ -72,6 +72,7 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.numericstest.*;
@@ -159,7 +160,7 @@ public void addNewTestSuiteToTF() throws Exception {
  * Creation date: (4/10/2003 11:27:32 AM)
  * @param testCase cbit.vcell.numericstestingframework.TestCase
  */
-public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] testCases,int regrRefFlag,AsynchProgressPopup pp){
+public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] testCases,int regrRefFlag,ClientTaskStatusSupport pp){
 		
 	if (testCases == null || testCases.length == 0 || tsInfo == null) {
 		throw new IllegalArgumentException("TestCases and TestSuiteInfo cannot be null");
@@ -615,7 +616,7 @@ public String duplicateTestSuite(
 		final TestSuiteInfoNew testSuiteInfo_Original,
 		final TestSuiteInfoNew newTestSuiteInfo,
 		int regrRefFlag,
-		AsynchProgressPopup pp) throws DataAccessException{
+		ClientTaskStatusSupport pp) throws DataAccessException{
 	
 	if (testSuiteInfo_Original == null || newTestSuiteInfo == null) {
 		throw new IllegalArgumentException(this.getClass().getName()+"duplicateTestSuite_Private: TestSuite cannot be null");
@@ -973,7 +974,7 @@ public static SimulationInfo getUserSelectedRefSimInfo(RequestManager currentReq
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  */
-public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,org.vcell.util.gui.AsynchProgressPopup pp,SimulationInfo userDefinedRefSimInfo) {
+public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,ClientTaskStatusSupport pp,SimulationInfo userDefinedRefSimInfo) {
 
 	StringBuffer reportTCBuffer = new StringBuffer();
 	if (testCase == null) {
@@ -1354,7 +1355,7 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  */
-public String generateTestSuiteReport(TestSuiteInfoNew testSuiteInfo,AsynchProgressPopup pp) {
+public String generateTestSuiteReport(TestSuiteInfoNew testSuiteInfo, ClientTaskStatusSupport pp) {
 
 	if (testSuiteInfo == null) {
 		return "Test Suite is null";
@@ -2579,7 +2580,7 @@ public void startExport(cbit.vcell.export.server.ExportSpecs exportSpecs) {
  * Creation date: (11/16/2004 6:38:33 AM)
  * @param simInfos cbit.vcell.solver.SimulationInfo[]
  */
-public String startSimulations(TestCriteriaNew[] tcrits,AsynchProgressPopup pp) {
+public String startSimulations(TestCriteriaNew[] tcrits,ClientTaskStatusSupport pp) {
 
 	if(tcrits == null || tcrits.length == 0){
 		throw new IllegalArgumentException("startSimulations: No TestCriteria arguments");
@@ -2619,7 +2620,7 @@ public String startSimulations(TestCriteriaNew[] tcrits,AsynchProgressPopup pp) 
  * @return boolean
  * @param mathDesc cbit.vcell.math.MathDescription
  */
-public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,AsynchProgressPopup pp){
+public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,ClientTaskStatusSupport pp){
 
 	StringBuffer errors = new StringBuffer();
 	try{
@@ -2665,11 +2666,11 @@ public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,AsynchPro
  * Creation date: (11/16/2004 7:44:27 AM)
  * 
  */
-public String updateSimRunningStatus(AsynchProgressPopup pp,TestSuiteInfoNew tsin){
+public String updateSimRunningStatus(ClientTaskStatusSupport pp,TestSuiteInfoNew tsin){
 
 	StringBuffer errors = new StringBuffer();
 	
-	Vector runningTCrits = new Vector();
+	Vector<TestCriteriaNew> runningTCrits = new Vector<TestCriteriaNew>();
 	try{
 		TestSuiteInfoNew[] tsinfos = getRequestManager().getDocumentManager().getTestSuiteInfos();
 		if(tsinfos != null && tsinfos.length > 0){

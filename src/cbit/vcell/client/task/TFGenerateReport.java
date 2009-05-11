@@ -64,7 +64,8 @@ public TFGenerateReport(TestingFrameworkWindowManager argtfwm,
  */
 public void run(Hashtable<String, Object> hashTable) throws Exception{
 
-	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
+	ClientTaskStatusSupport pp = getClientTaskStatusSupport();
+	
 	String report = (String)hashTable.get(TFRefresh.TF_REPORT);
 	if(report == null){
 		report = "";

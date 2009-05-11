@@ -4,20 +4,33 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableModel;
+import javax.swing.tree.TreeModel;
 
 
 public class PropertyChangeListenerProxyVCell implements PropertyChangeListener {
 
 	private PropertyChangeListener listener = null;
+	private boolean bRunOnSwing = false;
 	public PropertyChangeListenerProxyVCell(PropertyChangeListener listener) {
 		this.listener = listener;
+		Class enclosingClass = listener.getClass().getEnclosingClass();
+		if (listener instanceof Component 
+				|| listener instanceof TableModel
+				|| listener instanceof ListModel
+				|| listener instanceof TreeModel
+				|| enclosingClass != null && Component.class.isAssignableFrom(enclosingClass)
+			) {
+			bRunOnSwing = true;
+		}
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		final PropertyChangeEvent finalEvent = evt;
-		Class enclosingClass = listener.getClass().getEnclosingClass();
-		if ((listener instanceof Component || enclosingClass != null && Component.class.isAssignableFrom(enclosingClass))  && !SwingUtilities.isEventDispatchThread()) {
+		if (bRunOnSwing && !SwingUtilities.isEventDispatchThread()) {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run(){

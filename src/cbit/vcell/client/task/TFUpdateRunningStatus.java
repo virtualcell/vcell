@@ -38,8 +38,7 @@ public class TFUpdateRunningStatus extends AsynchClientTask {
  */
 public void run(Hashtable<String, Object> hashTable){
 
-	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
-	String errors = tfwm.updateSimRunningStatus(pp,tsin);
+	String errors = tfwm.updateSimRunningStatus(getClientTaskStatusSupport(),tsin);
 	if(errors != null){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);
 	}
