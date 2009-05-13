@@ -14,6 +14,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 /**
@@ -98,6 +99,18 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				savedDocument = documentManager.save((Geometry)currentDocument);
 			}
 			break;
+		}
+	}
+	if (savedDocument instanceof MathModel) {
+		Geometry geometry = ((MathModel)savedDocument).getMathDescription().getGeometry();
+		geometry.precomputeAll();
+	} else if (savedDocument instanceof Geometry) {
+		((Geometry)savedDocument).precomputeAll();
+	} else if (savedDocument instanceof BioModel) {
+		BioModel bioModel = (BioModel)savedDocument;
+		SimulationContext[] simContexts = bioModel.getSimulationContexts();
+		for (SimulationContext simContext : simContexts) {
+			simContext.getGeometry().precomputeAll();
 		}
 	}
 	hashTable.put("savedDocument", savedDocument);

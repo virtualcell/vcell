@@ -16,4 +16,11 @@ public class VCellThreadChecker {
 			Thread.dumpStack();
 		}
 	}
+	
+	public static void checkCpuIntensiveInvocation() {
+		if (SwingUtilities.isEventDispatchThread()) {
+			System.out.println("!!!!!!!!!!!!!! --calling cpu intensive method from swing thread-----");
+			Thread.dumpStack();
+		}
+	}
 }

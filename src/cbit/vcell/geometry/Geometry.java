@@ -460,4 +460,11 @@ private void setVersion(org.vcell.util.document.Version newVersion) throws Prope
 public String toString() {
 	return "geometry"+"@"+Integer.toHexString(hashCode())+"("+((version!=null)?(version.toString()):getName())+")";
 }
+
+public void precomputeAll() throws GeometryException, ImageException, ExpressionException {
+	getGeometrySpec().getSampledImage();
+	if (getDimension()>0 && getGeometrySurfaceDescription().getGeometricRegions()==null){
+		getGeometrySurfaceDescription().updateAll();					
+	}	
+}
 }

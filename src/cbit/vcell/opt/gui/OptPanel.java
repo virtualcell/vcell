@@ -3,9 +3,12 @@ package cbit.vcell.opt.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.gui.*;
 import cbit.vcell.math.*;
 import java.util.*;
+
 import cbit.vcell.opt.*;
 import cbit.vcell.opt.solvers.*;
 /**
@@ -705,26 +708,34 @@ public static void main(java.lang.String[] args) {
 public void optimizeButton_ActionPerformed() throws java.rmi.RemoteException, OptimizationException {
 	getTextArea2().setText("working...");
 	getOptimizeButton().setEnabled(false);
-	swingthreads.SwingWorker swingWorker = new swingthreads.SwingWorker() {
-		public Object construct() {
+	AsynchClientTask task1 = new AsynchClientTask("optimizing", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			String message = null;
 			try {
 				String solverName = (String)getSolverTypeComboBox().getSelectedItem();
 				double ftol = Double.parseDouble(getFToleranceTextField().getText());
 				OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
 				OptimizationResultSet optResultSet = getOptimizationService().solve(getOptimizationSpec(),new OptimizationSolverSpec(solverName,ftol),optSolverCallbacks);
-				String message = displayResults(optResultSet,getOptimizationSpec());
-				return message;
+				message = displayResults(optResultSet,getOptimizationSpec());
+				hashTable.put("message", message);
 			}catch (Exception e){
 				e.printStackTrace(System.out);
-				return e.getMessage();
+				message = e.getMessage();
 			}
-		}
-		public void finished() {
-			getTextArea2().setText((String)getValue());
+			hashTable.put("message", message);
+		}		
+	};
+	AsynchClientTask task2 = new AsynchClientTask("optimizing", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			getTextArea2().setText((String)hashTable.get("message"));
 			getOptimizeButton().setEnabled(true);
 		}
 	};
-	swingWorker.start();
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 }
 
 

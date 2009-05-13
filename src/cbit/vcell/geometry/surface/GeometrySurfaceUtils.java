@@ -3,6 +3,7 @@ package cbit.vcell.geometry.surface;
 import org.vcell.util.ISize;
 
 import progress.message.client.EExclusiveQueueOpen;
+import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.RegionImage;
 
 /**
@@ -22,6 +23,8 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 	//
 	// parse regionImage into ResolvedVolumeLocations
 	//
+	VCellThreadChecker.checkCpuIntensiveInvocation();
+	
 	double sizeOfPixel = 0;
 	cbit.vcell.units.VCUnitDefinition volumeUnit = null;
 	cbit.vcell.units.VCUnitDefinition surfaceUnit = null;

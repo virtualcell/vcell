@@ -13,6 +13,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
@@ -1604,7 +1605,7 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
  * Creation date: (9/22/2006 4:07:16 PM)
  * @param newIsStoch boolean
  */
-public void setIsStoch(boolean newIsStoch) {
+private void setIsStoch(boolean newIsStoch) {
 	isStoch = newIsStoch;
 }
 
@@ -1807,5 +1808,9 @@ public void convertSpeciesIniCondition(boolean bUseConcentration) throws Mapping
 	}
 }
 
+public String getMathType()
+{
+	return isStoch ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
+}
 
 }

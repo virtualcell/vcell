@@ -3208,16 +3208,9 @@ public static void substituteFieldFuncNames(
 	}
 }
 
-public String getTypeInChildSummary()
+public String getMathType()
 {
-	String result = BioModelChildSummary.TYPE_DETER_STR;
-	//stoch/determ 
-	if(isStoch()) //deterministic spatial
-	{
-		result = BioModelChildSummary.TYPE_STOCH_STR;
-	}
-	
-	return result;
+	return isStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
 }
 
 }

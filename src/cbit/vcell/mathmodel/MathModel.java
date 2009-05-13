@@ -5,10 +5,8 @@ package cbit.vcell.mathmodel;
 ©*/
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
-import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.Version;
@@ -246,7 +244,7 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
 
 public MathModelChildSummary createMathModelChildSummary() {
 
-	String modelType = getMathDescription().getTypeInChildSummary();
+	String modelType = getMathDescription().getMathType();
 	String geoName = getMathDescription().getGeometry().getName();
 	int geoDim = getMathDescription().getGeometry().getDimension();
 	

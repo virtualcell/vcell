@@ -23,6 +23,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
+import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.math.VCML;
 import cbit.vcell.modeldb.GeomDbDriver;
 import cbit.util.*;
@@ -376,6 +377,8 @@ public boolean compareEqual(Matchable object) {
  */
 public VCImage createSampledImage(ISize sampleSize) throws GeometryException, ImageException, ExpressionException {
 
+	VCellThreadChecker.checkCpuIntensiveInvocation();
+	
 	byte handles[] = new byte[sampleSize.getX()*sampleSize.getY()*sampleSize.getZ()];
 	for (int i=0;i<handles.length;i++){
 		handles[i] = -1;
