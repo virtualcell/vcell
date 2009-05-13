@@ -2,7 +2,6 @@ package cbit.vcell.client;
 
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.field.FieldDataWindow;
-import cbit.util.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -12,7 +11,6 @@ import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GlassPane;
-import org.vcell.util.gui.SwingDispatcherSync;
 
 import java.util.*;
 import java.awt.event.*;
@@ -54,18 +52,13 @@ public ClientMDIManager(RequestManager requestManager) {
  */
 public JFrame blockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
-		return (JFrame)
-		new SwingDispatcherSync (){
-			public Object runSwing() throws Exception{
-				JFrame f = (JFrame)getWindowsHash().get(windowID);
-				GlassPane gp = new GlassPane(false);  // not used for blocking, only for painting as disabled
-				gp.setPaint(true);
-				f.setGlassPane(gp);
-				gp.setVisible(true);
-				//f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
-				return f;
-			}
-		}.dispatchWrapRuntime();
+		JFrame f = (JFrame)getWindowsHash().get(windowID);
+		GlassPane gp = new GlassPane(false);  // not used for blocking, only for painting as disabled
+		gp.setPaint(true);
+		f.setGlassPane(gp);
+		gp.setVisible(true);
+		//f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
+		return f;
 	} else {
 		return null;
 	}
@@ -491,7 +484,9 @@ private void setRequestManager(RequestManager newRequestManager) {
  */
 public void showWindow(java.lang.String windowID) {
 	if (haveWindow(windowID)) {
-		((JFrame)getWindowsHash().get(windowID)).setVisible(true);
+		JFrame frame = (JFrame)getWindowsHash().get(windowID);
+		frame.setState(Frame.NORMAL);
+		frame.setVisible(true);
 	}
 }
 
@@ -503,16 +498,11 @@ public void showWindow(java.lang.String windowID) {
  */
 public void unBlockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
-		new SwingDispatcherSync (){
-			public Object runSwing() throws Exception{
-				JFrame f = (JFrame)getWindowsHash().get(windowID);
-				f.setGlassPane(new JPanel());
-				f.getGlassPane().setVisible(false);
-				((JPanel)f.getGlassPane()).setOpaque(false);
-				f.setEnabled(true);
-				return null;
-			}
-		}.dispatchWrapRuntime();
+		JFrame f = (JFrame)getWindowsHash().get(windowID);
+		f.setGlassPane(new JPanel());
+		f.getGlassPane().setVisible(false);
+		((JPanel)f.getGlassPane()).setOpaque(false);
+		f.setEnabled(true);
 	}
 }
 

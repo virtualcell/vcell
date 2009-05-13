@@ -17,7 +17,10 @@ import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
 import java.beans.*;
 import java.io.File;
-import cbit.util.*;
+import java.net.URL;
+import java.net.URLConnection;
+
+import cbit.rmi.event.ExportEvent;
 import swingthreads.*;
 import java.awt.*;
 import cbit.vcell.client.server.*;
@@ -48,6 +51,8 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.SwingDispatcherSync;
+import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.xml.XMLTags;
 /**
@@ -104,49 +109,46 @@ public void changeGeometry(DocumentWindowManager requester, SimulationContext si
 private void changeGeometryAfterChecking(final GeometryInfo geoInfo, final DocumentWindowManager requester, final SimulationContext simContext) {
 	/* asynchronous and not blocking any window */
 		
-	// start a thread that gets it and updates the GUI
-	SwingWorker worker = new SwingWorker() {
-		private Geometry geometry = null;
-		private AsynchProgressPopup pp = new AsynchProgressPopup(requester.getComponent(), "Changing geometry", "Document: '", false, false);
-		private Throwable exc = null;
-		public Object construct() {
-			pp.start();
+	AsynchClientTask task1 = new AsynchClientTask("Changing geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			getMdiManager().blockWindow(requester.getManagerID());
+		}		
+	};
+	
+	AsynchClientTask task2 = new AsynchClientTask("Changing geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Geometry geometry = getDocumentManager().getGeometry(geoInfo);
+			geometry.getGeometrySpec().getSampledImage();
+			if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
+				geometry.getGeometrySurfaceDescription().updateAll();				
+			}			
+			hashTable.put("geometry", geometry);
+		}		
+	};
+	
+	AsynchClientTask task3 = new AsynchClientTask("Changing geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
-				geometry = getDocumentManager().getGeometry(geoInfo);
-			} catch (Throwable e) {
-				exc = e;
-			}
-			return geometry;
-		}
-		public void finished() {
-			if (exc != null) {
-				pp.stop();
-				exc.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(requester, "Changing Geometry failed:\n\n" + exc.getMessage());
-				getMdiManager().unBlockWindow(requester.getManagerID());
-			} else {
-				// reset Geometry
-				if (requester instanceof BioModelWindowManager) {
-					try {
+				Geometry geometry = (Geometry)hashTable.get("geometry");
+				if (geometry != null) {
+					if (requester instanceof BioModelWindowManager) {
 						simContext.setGeometry(geometry);
-					} catch (Exception e) {
-						PopupGenerator.showErrorDialog(requester, "Changing Geometry failed:\n\n" + e.getMessage());
-					}
-				} else if (requester instanceof MathModelWindowManager) {
-					try {
+					} else if (requester instanceof MathModelWindowManager) {
 						MathModel mathModel = (MathModel)((MathModelWindowManager)requester).getVCDocument();
-						mathModel.getMathDescription().setGeometry(geometry);						
-					} catch (Exception e) {
-						PopupGenerator.showErrorDialog(requester, "Changing Geometry failed:\n\n" + e.getMessage());
+						mathModel.getMathDescription().setGeometry(geometry);
 					}
 				}
+			} finally {
 				getMdiManager().unBlockWindow(requester.getManagerID());
-				pp.stop();
 			}
 		}
 	};
-	worker.start();
+	
+	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
+
 }
 
 
@@ -374,9 +376,8 @@ public TMLPanel compareWithOther(final VCDocumentInfo docInfo1, final VCDocument
 		TMLPanel comparePanel = compareDocuments(document1, document2, TMLPanel.COMPARE_DOCS_OTHER, baselineDesc, modifiedDesc);
 		return comparePanel;
 	} catch (Exception e) {
-		System.err.println("Unable to process model comparison request.");
 		e.printStackTrace();
-		return null;
+		throw new RuntimeException(e.getMessage());
 	}
 }
 
@@ -415,10 +416,9 @@ public TMLPanel compareWithSaved(VCDocument document) {
 		String modifiedDesc = "Opened document instance";
 		TMLPanel comparePanel = compareDocuments(savedVersion, document, TMLPanel.COMPARE_DOCS_SAVED, baselineDesc, modifiedDesc);
 		return comparePanel;
-	} catch (Throwable e) {
-		System.err.println("Unable to compare models.");
+	} catch (Exception e) {
 		e.printStackTrace();
-		return null;
+		throw new RuntimeException(e.getMessage());
 	}				
 }
 
@@ -553,67 +553,48 @@ public void createMathModelFromApplication(final String name, final SimulationCo
 		PopupGenerator.showErrorDialog("Selected Application is null, cannot generate corresponding math model");
 		return;
 	}
-		
-	SwingWorker worker = new SwingWorker() {
-		private AsynchProgressPopup pp = new AsynchProgressPopup(null, "Creating new document", "", false, false);
-		private Throwable exc = null;
-		private DocumentWindowManager windowManager = null;
-		public Object construct() {
-			pp.start();
+	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathModel newMathModel = new MathModel(null);
+			//Get corresponding mathDesc to create new mathModel.
+			MathDescription mathDesc = simContext.getMathDescription();
+			MathDescription newMathDesc = null;
+			newMathDesc = new MathDescription(name+"_"+(new java.util.Random()).nextInt());
 			try {
-				//Get corresponding mathDesc to create new mathModel.
-				MathDescription mathDesc = simContext.getMathDescription();
-				MathDescription newMathDesc = null;
-				newMathDesc = new MathDescription(name+"_"+(new java.util.Random()).nextInt());
-				try {
-					if (mathDesc.getGeometry().getDimension()>0 && mathDesc.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
-						mathDesc.getGeometry().getGeometrySurfaceDescription().updateAll();
-					}
-				}catch (cbit.image.ImageException e){
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
-				}catch (cbit.vcell.geometry.GeometryException e){
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
+				if (mathDesc.getGeometry().getDimension()>0 && mathDesc.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
+					mathDesc.getGeometry().getGeometrySurfaceDescription().updateAll();
 				}
-				newMathDesc.setGeometry(mathDesc.getGeometry());
-				newMathDesc.read_database(new CommentStringTokenizer(mathDesc.getVCML_database()));
-				newMathDesc.isValid();
+			}catch (cbit.image.ImageException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
+			}catch (cbit.vcell.geometry.GeometryException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
+			}
+			newMathDesc.setGeometry(mathDesc.getGeometry());
+			newMathDesc.read_database(new CommentStringTokenizer(mathDesc.getVCML_database()));
+			newMathDesc.isValid();
 
-				newMathModel.setName(name);
-				newMathModel.setMathDescription(newMathDesc);
-				
-				windowManager = createDocumentWindowManager(newMathModel);
-				//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, newMathModel, getMdiManager().getNewlyCreatedDesktops());
-				if(simContext.getBioModel().getVersion() != null){
-					((MathModelWindowManager)windowManager).
-						setCopyFromBioModelAppVersionableTypeVersion(
-								new VersionableTypeVersion(
-										VersionableType.BioModelMetaData,
-										simContext.getBioModel().getVersion()));
-				}
-			} catch (Throwable e) {
-				exc = e;
+			newMathModel.setName(name);
+			newMathModel.setMathDescription(newMathDesc);
+			hashTable.put("newMathModel", newMathModel);
+		}		
+	};
+	
+	AsynchClientTask task2 = new AsynchClientTask("Creating MathModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			MathModel newMathModel = (MathModel)hashTable.get("newMathModel");
+			DocumentWindowManager windowManager = createDocumentWindowManager(newMathModel);
+			if(simContext.getBioModel().getVersion() != null){
+				((MathModelWindowManager)windowManager). setCopyFromBioModelAppVersionableTypeVersion(
+							new VersionableTypeVersion(VersionableType.BioModelMetaData, simContext.getBioModel().getVersion()));
 			}
-			return newMathModel;
-		}
-		public void finished() {
-			if (exc != null) {
-				pp.stop();
-				if (exc instanceof UserCancelException) {
-					System.out.println(exc);
-				} else {
-					exc.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("Creating new document failed:\n\n" + exc.getMessage());
-				}
-			} else {
-				getMdiManager().createNewDocumentWindow(windowManager);
-				pp.stop();
-			}
+			getMdiManager().createNewDocumentWindow(windowManager);
 		}
 	};
-	worker.start();
+	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
 }
 
 
@@ -621,7 +602,7 @@ public void createMathModelFromApplication(final String name, final SimulationCo
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
  */
-private VCDocument createNewDocument(VCDocument.DocumentCreationInfo documentCreationInfo,AsynchProgressPopup pp) throws UserCancelException, Exception {
+private VCDocument createNewDocument(VCDocument.DocumentCreationInfo documentCreationInfo,ClientTaskStatusSupport pp) throws UserCancelException, Exception {
 	switch (documentCreationInfo.getDocumentType()) {
 		case VCDocument.BIOMODEL_DOC: {
 			// blank
@@ -732,33 +713,20 @@ public void curateDocument(final VCDocumentInfo documentInfo, final int curateTy
 					"\nwith version date '"+documentInfo.getVersion().getDate().toString()+"'?")
 				,"WARNING -- "+CurateSpec.CURATE_TYPE_ACTIONS[curateType]+" operation cannot be undone");
 			if (confirm == JOptionPane.OK_OPTION){
-				SwingWorker worker = new SwingWorker() {
-					AsynchProgressPopup pp = new AsynchProgressPopup(requester.getComponent(), "WORKING", CurateSpec.CURATE_TYPE_ACTIONS[curateType]+" document...", false, false);
-					Throwable exc = null;
-					public Object construct() {
-						pp.start();
-						try {
-							if (documentInfo instanceof BioModelInfo) {
-								getDocumentManager().curate(new CurateSpec((BioModelInfo)documentInfo,curateType));
-							} else if (documentInfo instanceof MathModelInfo) {
-								getDocumentManager().curate(new CurateSpec((MathModelInfo)documentInfo,curateType));
-							} else {
-								throw new RuntimeException(CurateSpec.CURATE_TYPE_ACTIONS[curateType]+" not supported for VCDocumentInfo type "+documentInfo.getClass().getName());
-							}
-						} catch (Throwable e) {
-							exc = e;
+				AsynchClientTask task1 = new AsynchClientTask(CurateSpec.CURATE_TYPE_ACTIONS[curateType]+" document...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						if (documentInfo instanceof BioModelInfo) {
+							getDocumentManager().curate(new CurateSpec((BioModelInfo)documentInfo,curateType));
+						} else if (documentInfo instanceof MathModelInfo) {
+							getDocumentManager().curate(new CurateSpec((MathModelInfo)documentInfo,curateType));
+						} else {
+							throw new RuntimeException(CurateSpec.CURATE_TYPE_ACTIONS[curateType]+" not supported for VCDocumentInfo type "+documentInfo.getClass().getName());
 						}
-						return null;
-					}
-					public void finished() {
-						if (exc != null) {
-							exc.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog(requester, CurateSpec.CURATE_TYPE_ACTIONS[curateType]+" failed\n"+exc);
-						}
-						pp.stop();
 					}
 				};
-				worker.start();
+				ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 			} else {
 				// user canceled
 				return;
@@ -847,35 +815,22 @@ public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWind
 			// don't have it open, try to delete it
 			String confirm = PopupGenerator.showWarningDialog(requester, getUserPreferences(), UserMessage.warn_deleteDocument,documentInfo.getVersion().getName());
 			if (confirm.equals(UserMessage.OPTION_DELETE)){
-				SwingWorker worker = new SwingWorker() {
-					AsynchProgressPopup pp = new AsynchProgressPopup(requester.getComponent(), "WORKING", "Deleting document...", false, false);
-					Throwable exc = null;
-					public Object construct() {
-						pp.start();
-						try {
-							if (documentInfo instanceof BioModelInfo) {
-								getDocumentManager().delete((BioModelInfo)documentInfo);
-							} else if (documentInfo instanceof MathModelInfo) {
-								getDocumentManager().delete((MathModelInfo)documentInfo);
-							} else if (documentInfo instanceof GeometryInfo) {
-								getDocumentManager().delete((GeometryInfo)documentInfo);
-							} else {
-								throw new RuntimeException("delete not supported for VCDocumentInfo type "+documentInfo.getClass().getName());
-							}
-						} catch (Throwable e) {
-							exc = e;
+				AsynchClientTask task1 = new AsynchClientTask("Deleting document...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						if (documentInfo instanceof BioModelInfo) {
+							getDocumentManager().delete((BioModelInfo)documentInfo);
+						} else if (documentInfo instanceof MathModelInfo) {
+							getDocumentManager().delete((MathModelInfo)documentInfo);
+						} else if (documentInfo instanceof GeometryInfo) {
+							getDocumentManager().delete((GeometryInfo)documentInfo);
+						} else {
+							throw new RuntimeException("delete not supported for VCDocumentInfo type "+documentInfo.getClass().getName());
 						}
-						return null;
-					}
-					public void finished() {
-						if (exc != null) {
-							exc.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog(requester, "Delete failed\n"+exc);
-						}
-						pp.stop();
 					}
 				};
-				worker.start();
+				ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 			} else {
 				// user canceled
 				return;
@@ -891,109 +846,89 @@ public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWind
 /**
  * Comment
  */
-protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
-	java.net.URL location = null;
+protected void downloadExportedData(final ExportEvent evt) {
+	URL location = null;
 	try {
-		location = new java.net.URL(evt.getLocation());
+		location = new URL(evt.getLocation());
 	} catch (java.net.MalformedURLException exc) {
 		exc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog((Component)null, "Reported file location does not seem to be a valid URL\n"+exc.getMessage());
 		return;
 	}
-	final java.net.URL url = location;
-	// now download it
-	SwingWorker worker = new SwingWorker() {
-		AsynchProgressPopup pp = new AsynchProgressPopup((Component)null, "Downloading exported dataset", "Retrieving data from "+url, false, false);
-		public Object construct() {
-			pp.start();
-			final String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-			try {
-				// get it
-			    java.net.URLConnection connection = url.openConnection();
-			    byte[] bytes = new byte[connection.getContentLength()];
-			    java.io.InputStream is = connection.getInputStream();
-			    int bytesRead = 0;
-			    int offset = 0;
-			    while (bytesRead >= 0 && offset<(bytes.length-1)) {
-			        System.out.println("offset: " + offset + ", bytesRead: " + bytesRead);
-			        bytesRead = is.read(bytes, offset, bytes.length - offset);
-			        offset += bytesRead;
-			    }
-			    is.close();
-			    // prepare chooser
-			    File selectedFile = (File)new SwingDispatcherSync() {
-					public Object runSwing() throws Exception{
-						final org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
-						fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-						fileChooser.setMultiSelectionEnabled(false);
-						fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
-						fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
-					    String name = evt.getVCDataIdentifier().getID();
-					    //if (evt.getVCDataIdentifier() instanceof cbit.vcell.solver.SimulationInfo){
-						    //cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)evt.getVCDataIdentifier();
-						    //name = simInfo.getName();
-					    //}
-					    String suffix = "_exported.zip";
-					    java.io.File file = new java.io.File(name + suffix);
-					    if (file.exists()) {
-						    int count = 0;
-						    do {
-						    	file = new java.io.File(name + "_" + count + suffix);
-						    } while (file.exists());
-					    }
+	final URL url = location;
+	AsynchClientTask task1 = new AsynchClientTask("Retrieving data from "+url, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
-					    fileChooser.setSelectedFile(file);
-						fileChooser.setDialogTitle("Save exported dataset...");
-						int approve = fileChooser.showSaveDialog((Component)null);
-						if (approve != JFileChooser.APPROVE_OPTION) {
-							fileChooser.setSelectedFile(null);
-						}
-						return fileChooser.getSelectedFile();
-					}
-				}.dispatchWithException();
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// get it
+		    URLConnection connection = url.openConnection();
+		    byte[] bytes = new byte[connection.getContentLength()];
+		    java.io.InputStream is = connection.getInputStream();
+		    int bytesRead = 0;
+		    int offset = 0;
+		    while (bytesRead >= 0 && offset<(bytes.length-1)) {
+		        //System.out.println("offset: " + offset + ", bytesRead: " + bytesRead);
+		        bytesRead = is.read(bytes, offset, bytes.length - offset);
+		        offset += bytesRead;
+		    }
+		    is.close();
+		    hashTable.put("bytes", bytes);
+		}		
+	};
+	AsynchClientTask task2 = new AsynchClientTask("selecting file to save", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
-//				SwingUtilities.invokeAndWait(new Runnable() {
-//					public void run() {
-//						int approve = fileChooser.showSaveDialog((Component)null);
-//						if (approve != JFileChooser.APPROVE_OPTION) {
-//							fileChooser.setSelectedFile(null);
-//							return;
-//						}
-//					}
-//				});
-//				java.io.File selectedFile = fileChooser.getSelectedFile();
-				if (selectedFile != null) {
-			        String newPath = selectedFile.getParent();
-			        if (!newPath.equals(defaultPath)) {
-						getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
-			        }
-			        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
-					//
-					if (selectedFile.exists()) {
-						String question = PopupGenerator.showWarningDialog((Component)null, getUserPreferences(), UserMessage.warn_OverwriteFile,selectedFile.getAbsolutePath());
-						if (question.equals(UserMessage.OPTION_CANCEL)){
-							return null;
-						}
-					}
-		            java.io.FileOutputStream fo = new java.io.FileOutputStream(selectedFile);
-		            fo.write(bytes);
-		            fo.close();
-				}
-			} catch (Throwable exc) {
-				return exc;
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+			final VCFileChooser fileChooser = new VCFileChooser(defaultPath);
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fileChooser.setMultiSelectionEnabled(false);
+			fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
+			fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
+		    String name = evt.getVCDataIdentifier().getID();
+		    String suffix = "_exported.zip";
+		    java.io.File file = new java.io.File(name + suffix);
+		    if (file.exists()) {
+			    int count = 0;
+			    do {
+			    	file = new java.io.File(name + "_" + count + suffix);
+			    } while (file.exists());
+		    }
+
+		    fileChooser.setSelectedFile(file);
+			fileChooser.setDialogTitle("Save exported dataset...");
+			int approve = fileChooser.showSaveDialog((Component)null);
+			if (approve != JFileChooser.APPROVE_OPTION) {
+				fileChooser.setSelectedFile(null);
 			}
-			return null;
-		}
-		public void finished() {
-			pp.stop();
-			if (get() != null) {
-				Throwable e = (Throwable)get();
-				e.printStackTrace(System.out);
-				org.vcell.util.gui.DialogUtils.showErrorDialog("Downloading failed\n"+e.getMessage());
-			}
+		    hashTable.put("selectedFile", fileChooser.getSelectedFile());
 		}
 	};
-	worker.start();
+	AsynchClientTask task3 = new AsynchClientTask("saving to file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+			File selectedFile = (File)hashTable.get("selectedFile");
+			String newPath = selectedFile.getParent();
+	        if (!newPath.equals(defaultPath)) {
+				getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+	        }
+	        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
+			//
+			if (selectedFile.exists()) {
+				String question = PopupGenerator.showWarningDialog((Component)null, getUserPreferences(), UserMessage.warn_OverwriteFile,selectedFile.getAbsolutePath());
+				if (question.equals(UserMessage.OPTION_CANCEL)){
+					return;
+				}
+			}
+			byte[] bytes = (byte[])hashTable.get("bytes");
+            java.io.FileOutputStream fo = new java.io.FileOutputStream(selectedFile);
+            fo.write(bytes);
+            fo.close();
+		}
+	};
+	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
 }
 
 
@@ -1323,301 +1258,113 @@ public void onVCellMessageEvent(final cbit.rmi.event.VCellMessageEvent event) {
 private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevelWindowManager requester, final boolean inNewWindow) {
 
 	/* asynchronous and not blocking any window */
-		
+	bOpening = true;
+	
 	// start a thread that gets it and updates the GUI by creating a new document desktop
-	Thread openThread = new Thread(new Runnable(){public void run(){
-		AsynchProgressPopup pp =
-			new AsynchProgressPopup(requester.getComponent(), "Loading from "+(documentInfo instanceof XMLInfo?"XML":"database"), "Document: '" + documentInfo.getVersion().getName() + "'", false, false);
-		try{
-			DocumentWindowManager windowManager = null;
-			VCDocument doc = null;
-			pp.start();
+	String taskName = "Loading Document: '" + documentInfo.getVersion().getName() + "' from " + (documentInfo instanceof XMLInfo?"XML":"database");
+	
+	AsynchClientTask task0 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if (! inNewWindow) {
 				// request was to replace the document in an existing window
 				getMdiManager().blockWindow(requester.getManagerID());
 			}
+		}
+	};
+	AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			VCDocument doc = null;
 			if (documentInfo instanceof BioModelInfo) {
 				BioModelInfo bmi = (BioModelInfo)documentInfo;
-	//			try {
-					doc = getDocumentManager().getBioModel(bmi);
-					if (inNewWindow) {
-						windowManager = createDocumentWindowManager((BioModel)doc);
-						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						//((BioModelWindowManager)windowManager).preloadApps();
-						final DocumentWindowManager finalDWM = windowManager;
-						new SwingDispatcherSync (){
-							public Object runSwing() throws Exception{
-								((BioModelWindowManager)finalDWM).preloadApps();
-								return null;
-							}
-						}.dispatchWithException();
-					}
-	//			} catch (Throwable e) {
-	//				exc = e;
-	//			}
+				doc = getDocumentManager().getBioModel(bmi);
 			} else if (documentInfo instanceof MathModelInfo) {
 				MathModelInfo mmi = (MathModelInfo)documentInfo;
-	//			try {
-					doc = getDocumentManager().getMathModel(mmi);
-					if (inNewWindow) {
-						windowManager = createDocumentWindowManager((MathModel)doc);
-						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-					}
-	//			} catch (Throwable e) {
-	//				exc = e;
-	//			}
+				doc = getDocumentManager().getMathModel(mmi);
 			} else if (documentInfo instanceof GeometryInfo) {
 				GeometryInfo gmi = (GeometryInfo)documentInfo;
-	//			try {
-					doc = getDocumentManager().getGeometry(gmi);
-					if (inNewWindow) {
-						windowManager = createDocumentWindowManager((Geometry)doc);
-						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
-					}
-	//			} catch (Throwable e) {
-	//				exc = e;
-	//			}
+				doc = getDocumentManager().getGeometry(gmi);
 			} else if (documentInfo instanceof XMLInfo) {
 				String xmlStr = ((XMLInfo)documentInfo).getXmlString();
-	//			try {
-					org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);         //some overhead.
-					String xmlType = rootElement.getName();
-					String modelXmlType = null;
-					if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
-						// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
-						// Will deal with multiple children of <vcml> Element when we get to model composition.
-						List<Element> childElementList = rootElement.getChildren();
-						Element modelElement = childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
-						modelXmlType = modelElement.getName();
-					}
-					if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
-						doc = XmlHelper.XMLToBioModel(xmlStr);
-						windowManager = createDocumentWindowManager((BioModel)doc);
-						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						//((BioModelWindowManager)windowManager).preloadApps();
-						final DocumentWindowManager finalDWM = windowManager;
-						new SwingDispatcherSync (){
-							public Object runSwing() throws Exception{
-								((BioModelWindowManager)finalDWM).preloadApps();
-								return null;
-							}
-						}.dispatchWithException();
-					} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
-						doc = XmlHelper.XMLToMathModel(xmlStr);
-						MathModel mathModel = (MathModel)doc;
-						Geometry geometry = mathModel.getMathDescription().getGeometry();
-						if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
-							geometry.getGeometrySurfaceDescription().updateAll();
-						}
-						windowManager = createDocumentWindowManager((MathModel)doc);
-						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-					} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
-						doc = XmlHelper.XMLToGeometry(xmlStr);
-						Geometry geometry = (Geometry)doc;
-						if (geometry.getDimension()>0){
-							geometry.getGeometrySurfaceDescription().updateAll();
-						}
-						windowManager = createDocumentWindowManager((Geometry)doc);
-						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
-					} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+				org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);         //some overhead.
+				String xmlType = rootElement.getName();
+				String modelXmlType = null;
+				if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
+					// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
+					// Will deal with multiple children of <vcml> Element when we get to model composition.
+					List<Element> childElementList = rootElement.getChildren();
+					Element modelElement = childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
+					modelXmlType = modelElement.getName();
+				}
+				if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
+					doc = XmlHelper.XMLToBioModel(xmlStr);
+				} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
+					doc = XmlHelper.XMLToMathModel(xmlStr);					
+				} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
+					doc = XmlHelper.XMLToGeometry(xmlStr);
+				} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+					TranslationLogger transLogger = new TranslationLogger(requester);
+					doc = XmlHelper.importSBML(transLogger, xmlStr);
+				} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
+					if (requester instanceof BioModelWindowManager){
 						TranslationLogger transLogger = new TranslationLogger(requester);
-						doc = XmlHelper.importSBML(transLogger, xmlStr);
-						windowManager = createDocumentWindowManager((BioModel)doc);
-						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-					} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
-						if (requester instanceof BioModelWindowManager){
-							TranslationLogger transLogger = new TranslationLogger(requester);
-							doc = XmlHelper.importBioCellML(transLogger, xmlStr);
-							windowManager = createDocumentWindowManager((BioModel)doc);
-							//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						}else{
-							TranslationLogger transLogger = new TranslationLogger(requester);
-							doc = XmlHelper.importMathCellML(transLogger, xmlStr);
-							windowManager = createDocumentWindowManager((MathModel)doc);
-							//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-						}
-					} else { // unknown XML format
-						throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
+						doc = XmlHelper.importBioCellML(transLogger, xmlStr);
+					}else{
+						TranslationLogger transLogger = new TranslationLogger(requester);
+						doc = XmlHelper.importMathCellML(transLogger, xmlStr);
 					}
-	//			} catch (Throwable e) {
-	//				exc = e;
-	//			}
+				} else { // unknown XML format
+					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
+				}
 			}
-			if (inNewWindow) {
-				// request was to create a new top-level window with this doc
-				getMdiManager().createNewDocumentWindow(windowManager);
-			} else {
-				// request was to replace the document in an existing window
-				((DocumentWindowManager)requester).resetDocument(doc);
-				getMdiManager().setCanonicalTitle(requester.getManagerID());
-				getMdiManager().unBlockWindow(requester.getManagerID());
+			if (doc instanceof MathModel) {
+				Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
+				geometry.precomputeAll();
+			} else if (doc instanceof Geometry) {
+				((Geometry)doc).precomputeAll();
+			} else if (doc instanceof BioModel) {
+				BioModel bioModel = (BioModel)doc;
+				SimulationContext[] simContexts = bioModel.getSimulationContexts();
+				getClientTaskStatusSupport().setMessage("preloading applications");
+				for (SimulationContext simContext : simContexts) {
+					simContext.getGeometry().precomputeAll();
+				}
 			}
-		}catch(Throwable exc){
-			exc.printStackTrace(System.out);
-			if (!(exc instanceof UserCancelException)) {                      //allow 
-				PopupGenerator.showErrorDialog(requester, exc.getMessage());
-			}
-			if (!inNewWindow) {
-				getMdiManager().unBlockWindow(requester.getManagerID());
-			}
-		}finally {
-			bOpening = false;
-			pp.stop();
+			hashTable.put("doc", doc);
 		}
-	}});
-	
-	bOpening = true;
-	openThread.start();
-	
-//	SwingWorker worker = new SwingWorker() {
-//		private VCDocument doc = null;
-//		private AsynchProgressPopup pp = new AsynchProgressPopup(requester.getComponent(), "Loading from "+(documentInfo instanceof XMLInfo?"XML":"database"), "Document: '" + documentInfo.getVersion().getName() + "'", false, false);
-//		private Throwable exc = null;
-//		private DocumentWindowManager windowManager = null;
-//		public Object construct() {
-////			pp.start();
-////			if (! inNewWindow) {
-////				// request was to replace the document in an existing window
-////				getMdiManager().blockWindow(requester.getManagerID());
-////			}
-////			if (documentInfo instanceof BioModelInfo) {
-////				BioModelInfo bmi = (BioModelInfo)documentInfo;
-////				try {
-////					doc = getDocumentManager().getBioModel(bmi);
-////					if (inNewWindow) {
-////						windowManager = createDocumentWindowManager((BioModel)doc);
-////						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-////						//((BioModelWindowManager)windowManager).preloadApps();
-////						new EventDispatchRunWithException (){
-////							public Object runWithException() throws Exception{
-////								((BioModelWindowManager)windowManager).preloadApps();
-////								return null;
-////							}
-////						}.runEventDispatchThreadSafelyWithException();
-////					}
-////				} catch (Throwable e) {
-////					exc = e;
-////				}
-////			} else if (documentInfo instanceof MathModelInfo) {
-////				MathModelInfo mmi = (MathModelInfo)documentInfo;
-////				try {
-////					doc = getDocumentManager().getMathModel(mmi);
-////					if (inNewWindow) {
-////						windowManager = createDocumentWindowManager((MathModel)doc);
-////						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-////					}
-////				} catch (Throwable e) {
-////					exc = e;
-////				}
-////			} else if (documentInfo instanceof GeometryInfo) {
-////				GeometryInfo gmi = (GeometryInfo)documentInfo;
-////				try {
-////					doc = getDocumentManager().getGeometry(gmi);
-////					if (inNewWindow) {
-////						windowManager = createDocumentWindowManager((Geometry)doc);
-////						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
-////					}
-////				} catch (Throwable e) {
-////					exc = e;
-////				}
-////			} else if (documentInfo instanceof XMLInfo) {
-////				String xmlStr = ((XMLInfo)documentInfo).getXmlString();
-////				try {
-////					org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);         //some overhead.
-////					String xmlType = rootElement.getName();
-////					String modelXmlType = null;
-////					if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
-////						// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
-////						// Will deal with multiple children of <vcml> Element when we get to model composition.
-////						java.util.List childElementList = rootElement.getChildren();
-////						Element modelElement = (Element)childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
-////						modelXmlType = modelElement.getName();
-////					}
-////					if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
-////						doc = XmlHelper.XMLToBioModel(xmlStr);
-////						windowManager = createDocumentWindowManager((BioModel)doc);
-////						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-////						//((BioModelWindowManager)windowManager).preloadApps();
-////						new EventDispatchRunWithException (){
-////							public Object runWithException() throws Exception{
-////								((BioModelWindowManager)windowManager).preloadApps();
-////								return null;
-////							}
-////						}.runEventDispatchThreadSafelyWithException();
-////					} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
-////						doc = XmlHelper.XMLToMathModel(xmlStr);
-////						MathModel mathModel = (MathModel)doc;
-////						Geometry geometry = mathModel.getMathDescription().getGeometry();
-////						if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
-////							geometry.getGeometrySurfaceDescription().updateAll();
-////						}
-////						windowManager = createDocumentWindowManager((MathModel)doc);
-////						//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-////					} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
-////						doc = XmlHelper.XMLToGeometry(xmlStr);
-////						Geometry geometry = (Geometry)doc;
-////						if (geometry.getDimension()>0){
-////							geometry.getGeometrySurfaceDescription().updateAll();
-////						}
-////						windowManager = createDocumentWindowManager((Geometry)doc);
-////						//new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
-////					} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
-////						TranslationLogger transLogger = new TranslationLogger(requester);
-////						doc = XmlHelper.importSBML(transLogger, xmlStr);
-////						windowManager = createDocumentWindowManager((BioModel)doc);
-////						//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-////					} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
-////						if (requester instanceof BioModelWindowManager){
-////							TranslationLogger transLogger = new TranslationLogger(requester);
-////							doc = XmlHelper.importBioCellML(transLogger, xmlStr);
-////							windowManager = createDocumentWindowManager((BioModel)doc);
-////							//new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
-////						}else{
-////							TranslationLogger transLogger = new TranslationLogger(requester);
-////							doc = XmlHelper.importMathCellML(transLogger, xmlStr);
-////							windowManager = createDocumentWindowManager((MathModel)doc);
-////							//new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-////						}
-////					} else { // unknown XML format
-////						throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
-////					}
-////				} catch (Throwable e) {
-////					exc = e;
-////				}
-////			}
-////			return doc;
-//		}
-//		public void finished() {
-//			SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-//			try {
-//				if (exc != null) {
-////					exc.printStackTrace(System.out);
-////					if (!(exc instanceof UserCancelException)) {                      //allow 
-////						PopupGenerator.showErrorDialog(requester, "Loading document failed:\n\n" + exc.getMessage());
-////					}
-////					if (!inNewWindow) {
-////						getMdiManager().unBlockWindow(requester.getManagerID());
-////					}
-//				} else {
-////					if (inNewWindow) {
-////						// request was to create a new top-level window with this doc
-////						getMdiManager().createNewDocumentWindow(windowManager);
-////					} else {
-////						// request was to replace the document in an existing window
-////						((DocumentWindowManager)requester).resetDocument(doc);
-////						getMdiManager().setCanonicalTitle(requester.getManagerID());
-////						getMdiManager().unBlockWindow(requester.getManagerID());
-////					}
-//				}
-//			} finally {
-//				pp.stop();
-//				bOpening = false;
-//			}
-//			}});
-//		}
-//	};
-//	bOpening = true;
-//	worker.start();
+	};
+		
+	AsynchClientTask task2 = new AsynchClientTask("Showing document", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try {
+				Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+				if (exc == null) {
+					VCDocument doc = (VCDocument)hashTable.get("doc");
+					DocumentWindowManager windowManager = null;
+					if (inNewWindow) {
+						windowManager = createDocumentWindowManager(doc);
+						// request was to create a new top-level window with this doc
+						getMdiManager().createNewDocumentWindow(windowManager);						
+					} else {
+						// request was to replace the document in an existing window
+						windowManager = (DocumentWindowManager)requester;
+						windowManager.resetDocument(doc);
+						getMdiManager().setCanonicalTitle(requester.getManagerID());
+					}
+					if (windowManager instanceof BioModelWindowManager) {
+						((BioModelWindowManager)windowManager).preloadApps();
+					}
+				}
+			} finally {
+				if (!inNewWindow) {
+					getMdiManager().unBlockWindow(requester.getManagerID());
+				}
+				bOpening = false;
+			}
+		}		
+	};
+	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task0, task1, task2}, false);
 }
 
 private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
@@ -2201,19 +1948,14 @@ public void showTestingFrameworkWindow() {
  */
 public void startExport(final TopLevelWindowManager windowManager, final ExportSpecs exportSpecs) {
 	// start a thread to get it; not blocking any window/frame
-	SwingWorker worker = new SwingWorker() {
-		public Object construct() {
-			try {
-				getClientServerManager().getJobManager().startExport(exportSpecs);
-			} catch (DataAccessException exc) {
-				exc.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(windowManager, exc.getMessage());
-			}
-			return null;
+	AsynchClientTask task1 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			getClientServerManager().getJobManager().startExport(exportSpecs);
 		}
-		public void finished() {}
 	};
-	worker.start();
+	ClientTaskDispatcher.dispatch(windowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1 });
 }
 
 
@@ -2225,8 +1967,10 @@ public void startExport(final TopLevelWindowManager windowManager, final ExportS
  */
 public void stopSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations) {
 	// stop is single step operation, don't bother with tasks, thread inline
-	SwingWorker worker = new SwingWorker() {
-		public Object construct() {
+	AsynchClientTask task1 = new AsynchClientTask("stopping simulations", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			Hashtable<Simulation, Throwable> failures = new Hashtable<Simulation, Throwable>();
 			if (simulations != null && simulations.length > 0) {
 				for (int i = 0; i < simulations.length; i++){
@@ -2249,12 +1993,17 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
 						failures.put(simulations[i], exc);
 					}
 				}
+				hashTable.put("failures", failures);
 			}
-			return failures;
 		}
-		public void finished() {
-			Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation, Throwable>)get();
-			if (! failures.isEmpty()) {
+	};
+	
+	AsynchClientTask task2 = new AsynchClientTask("stopping simulations", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation, Throwable>)hashTable.get("failures");
+			if (failures != null && ! failures.isEmpty()) {
 				Enumeration<Simulation> en = failures.keys();
 				while (en.hasMoreElements()) {
 					Simulation sim = (Simulation)en.nextElement();
@@ -2265,7 +2014,7 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
 			}
 		}
 	};
-	worker.start();	
+	ClientTaskDispatcher.dispatch(clientSimManager.getDocumentWindowManager().getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });	
 }
 
 
@@ -2345,5 +2094,28 @@ public void checkClientServerSoftwareVersion() {
 	getClientServerManager().checkClientServerSoftwareVersion();	
 }
 
-
+public void showComparisonResults(TopLevelWindowManager requester, TMLPanel comparePanel) {
+	JOptionPane comparePane = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Apply Changes", "Close"});
+	comparePane.setMessage(comparePanel);
+	JDialog compareDialog = comparePane.createDialog(requester.getComponent(), "Compare Models");
+	compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	ZEnforcer.showModalDialogOnTop(compareDialog,requester.getComponent());
+	if ("Apply Changes".equals(comparePane.getValue())) {
+		if (!comparePanel.tagsResolved()) {
+			JOptionPane messagePane = new JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
+			JDialog messageDialog = messagePane.createDialog(comparePanel, "Error");
+			messageDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
+		} else {
+			BeanUtils.setCursorThroughout((Container)requester.getComponent(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			try {
+				processComparisonResult(comparePanel, requester);
+			} catch (RuntimeException e) {
+				throw e;
+			} finally {
+				BeanUtils.setCursorThroughout((Container)requester.getComponent(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+		} 
+	}
+}
 }

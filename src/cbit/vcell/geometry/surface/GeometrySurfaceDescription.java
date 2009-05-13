@@ -2,6 +2,7 @@ package cbit.vcell.geometry.surface;
 import org.vcell.util.Compare;
 
 import cbit.image.VCImage;
+import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.
@@ -599,6 +600,8 @@ public void updateAll() throws GeometryException, cbit.image.ImageException, cbi
 	//
 	// make new RegionImage if necessary missing or wrong size
 	//
+	VCellThreadChecker.checkCpuIntensiveInvocation();
+	
 	boolean bChanged = false;
 	RegionImage updatedRegionImage = GeometrySurfaceUtils.getUpdatedRegionImage(this);
 	if (updatedRegionImage != getRegionImage()){  // getUpdatedRegionImage returns same image if not changed

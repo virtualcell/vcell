@@ -53,8 +53,7 @@ private void addBioModelContents(BioModelNode bioModelNode, BioModel bioModel) {
 			
 			
 			//add application type node
-			String typeInfo = "";
-			typeInfo = scArray[i].getMathDescription().getTypeInChildSummary();
+			String typeInfo = scArray[i].getMathType();
 			
 			BioModelNode appTypeNode = new BioModelNode(typeInfo,false);
 			appTypeNode.setRenderHint("type","AppType");
@@ -62,25 +61,9 @@ private void addBioModelContents(BioModelNode bioModelNode, BioModel bioModel) {
 			//
 			// Display Annotation on tree
 			//
-			//if (!scArray[i].getDescription().equals("")){
-				scNode.add(new BioModelNode(new Annotation(scArray[i].getDescription()),false));
-			//}
+			scNode.add(new BioModelNode(new Annotation(scArray[i].getDescription()),false));
 			
-			//geomety info, when spatial--shows name+1D/2D/3D
-			String geoInfo = scArray[i].getGeometry().getName();
-			if(scArray[i].getGeometry().getDimension()>0)
-			{
-				geoInfo = geoInfo + " ("+scArray[i].getGeometry().getDimension()+"D)";
-			}
-			else
-			{
-				geoInfo = BioModelChildSummary.COMPARTMENTAL_GEO_STR;
-			}
-			BioModelNode geometryNode = new BioModelNode(geoInfo,false);
-			geometryNode.setRenderHint("type","Geometry");
-			geometryNode.setRenderHint("dimension",new Integer(scArray[i].getGeometry().getDimension()));
-			scNode.add(geometryNode);
-//			scNode.add(new BioModelNode(scArray[i].getGeometry(),false));
+			scNode.add(new BioModelNode(scArray[i].getGeometry(),false));
 			if (scArray[i].getMathDescription()!=null){
 				scNode.add(new BioModelNode(scArray[i].getMathDescription(),false));
 			}else{

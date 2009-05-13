@@ -469,7 +469,6 @@ public void resetDocument(final org.vcell.util.document.VCDocument newDocument) 
 			return null;
 		}
 	}.dispatchWrapRuntime();
-	
 }
 
 
@@ -853,7 +852,6 @@ public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
 }
 
 public void preloadSavedModelSimulationStatus(BioModel bioModel) {
-	Simulation[] allSimulations = bioModel.getSimulations();
 	SimulationContext[] scs = bioModel.getSimulationContexts();
 	
 	Enumeration<SimulationContext> en = getApplicationsHash().keys();

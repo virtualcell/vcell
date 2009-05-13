@@ -1,28 +1,32 @@
 package cbit.vcell.client;
-import cbit.xml.merge.TMLPanel;
-import swingthreads.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import cbit.vcell.server.*;
-import cbit.vcell.export.server.*;
-import cbit.rmi.event.*;
-import cbit.gui.*;
-import cbit.util.*;
-import cbit.vcell.geometry.*;
-
-import java.awt.*;
-
-import cbit.vcell.document.*;
-import javax.swing.*;
+import javax.swing.JDesktopPane;
+import javax.swing.JInternalFrame;
+import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import cbit.vcell.solver.*;
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.PerformanceMonitorListener;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.xml.merge.TMLPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:01:37 PM)
@@ -102,59 +106,33 @@ public void compareWithSaved() {
 		PopupGenerator.showErrorDialog(this, "There is no saved version of this document");
 		return;
 	}
-	final MDIManager mdiManager = new ClientMDIManager(DocumentWindowManager.this.getRequestManager());        
-	mdiManager.blockWindow(DocumentWindowManager.this.getManagerID()); 
-	SwingWorker worker = new SwingWorker() {
-		AsynchProgressPopup pp = new AsynchProgressPopup(DocumentWindowManager.this.getComponent(), "Working", "Retrieving saved version...", false, false);
-		Throwable e = null;
-		VCDocument document = DocumentWindowManager.this.getVCDocument();
-		public Object construct() {
+	final MDIManager mdiManager = new ClientMDIManager(getRequestManager());        
+	mdiManager.blockWindow(getManagerID()); 
+	
+	String taskName = "Comparing with saved"; 
+	AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			TMLPanel comparePanel = getRequestManager().compareWithSaved(getVCDocument());
+			hashTable.put("comparePanel", comparePanel);
+		}			
+	};
+	AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
-				pp.start();
-				// compare
-				pp.setMessage("Comparing...");
-				TMLPanel comparePanel = DocumentWindowManager.this.getRequestManager().compareWithSaved(document);
-				return comparePanel;
-			} catch (Throwable exc) {
-				e = exc;
-				return null;
+				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+					TMLPanel comparePanel = (TMLPanel)hashTable.get("comparePanel");
+					getRequestManager().showComparisonResults(DocumentWindowManager.this, comparePanel);
+				}
+			} finally {
+				mdiManager.unBlockWindow(getManagerID());
 			}
 		}
-		public void finished() {
-			if (e != null) {
-				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(DocumentWindowManager.this, "Unable to compare to saved version\n"+e);
-			} 
-			// done
-			pp.stop();
-			//display the comparison window.
-			JOptionPane comparePane = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Apply Changes", "Discard"});
-			TMLPanel comparePanel = (TMLPanel)get();
-			comparePane.setMessage(comparePanel);
-			JDialog compareDialog = comparePane.createDialog(DocumentWindowManager.this.getComponent(), "Compare Models");      
-			compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DocumentWindowManager.this.getComponent());
-			if ("Apply Changes".equals(comparePane.getValue())) {
-				if (!comparePanel.tagsResolved()) {
-					JOptionPane messagePane = new JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
-					JDialog messageDialog = messagePane.createDialog(comparePanel, "Error");
-					messageDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
-				} else {
-					BeanUtils.setCursorThroughout((Container)getComponent(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					try {
-						getRequestManager().processComparisonResult(comparePanel, DocumentWindowManager.this);
-					} catch (RuntimeException e) {
-						throw e;
-					} finally {
-						BeanUtils.setCursorThroughout((Container)getComponent(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-					}
-				} 
-			}     
-			mdiManager.unBlockWindow(DocumentWindowManager.this.getManagerID());
-		}
 	};
-	worker.start();
+	ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 }
 
 
@@ -267,7 +245,7 @@ public String getManagerID() {
  */
 private JInternalFrame[] getOpenWindows() {
 	JInternalFrame[] allFrames = getJDesktopPane().getAllFrames();
-	java.util.Vector openWindows = new java.util.Vector();
+	Vector<JInternalFrame> openWindows = new Vector<JInternalFrame>();
 	for (int i=0;i<allFrames.length;i++) {
 		if ((! allFrames[i].isClosed()) && (allFrames[i].isVisible())) {
 			openWindows.add(allFrames[i]);
@@ -316,31 +294,38 @@ public void openDocument(int documentType) {
  * Insert the method's description here.
  * Creation date: (1/21/2006 10:45:13 AM)
  */
-public void openGeometryDocumentWindow(Geometry geom) {
+public void openGeometryDocumentWindow(final Geometry geom) {
 	
-	try{
-		cbit.vcell.geometry.GeometryInfo geomInfo = null;
-		try{
-			geomInfo = getRequestManager().getDocumentManager().getGeometryInfo(geom.getVersion().getVersionKey());
-		}catch(ObjectNotFoundException e){
-			if(!getVCDocument().getVersion().getOwner().equals(getRequestManager().getDocumentManager().getUser())){
-				DialogUtils.showErrorDialog(
-					"Opening a geometry document window for '"+geom.getName()+"' from\n"+
-					"Model '"+getVCDocument().getName()+"' owned by "+getVCDocument().getVersion().getOwner().getName()+"\n"+
-					"FAILED because requester ("+getRequestManager().getDocumentManager().getUser()+") does not have permission.\n"+
-					"Save Model '"+getVCDocument().getName()+"' to your account to have full access to the geometry."
-				);
-				return;
-			}else{
-				throw e;
+	AsynchClientTask task1 = new AsynchClientTask("opening geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try{
+				GeometryInfo geomInfo = getRequestManager().getDocumentManager().getGeometryInfo(geom.getVersion().getVersionKey());
+				hashTable.put("geomInfo", geomInfo);
+			}catch(ObjectNotFoundException e){
+				if(getVCDocument().getVersion() != null && !getVCDocument().getVersion().getOwner().equals(getRequestManager().getDocumentManager().getUser())){
+					throw new RuntimeException (
+						"Opening a geometry document window for '"+geom.getName()+"' from\n"+
+						"Model '"+getVCDocument().getName()+"' owned by user ("+getVCDocument().getVersion().getOwner().getName()+")\n"+
+						"FAILED because user ("+getRequestManager().getDocumentManager().getUser().getName()+") does not have permission.\n"+
+						"Save Model '"+getVCDocument().getName()+"' to your account to have full access to the geometry."
+					);
+				} else{
+					throw e;
+				}
 			}
 		}
-		getRequestManager().openDocument(geomInfo,this,true);
-	}catch(Exception e){
-		e.printStackTrace();
-		DialogUtils.showErrorDialog("Error opening Geometry\n"+e.getMessage());
-	}
-	
+	};
+	AsynchClientTask task2 = new AsynchClientTask("opening geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			GeometryInfo geomInfo = (GeometryInfo)hashTable.get("geomInfo");
+			getRequestManager().openDocument(geomInfo,DocumentWindowManager.this,true);
+		}
+	};
+	ClientTaskDispatcher.dispatch(this.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 }
 
 

@@ -19,6 +19,7 @@ import cbit.vcell.geometry.GeometryInfo;
  */
 import javax.swing.*;
 
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -77,38 +78,50 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			boolean bLoaded = false;
-			if (node.getUserObject() instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof BioModelInfo){
+			Object userObject = node.getUserObject();
+			if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof BioModelInfo){
 				//
 				// Check if node is a User, with at least one child which is a string (BioModel name)
 				// and if the child's child is a BioModelInfo node
 				//
 				String label = null;
-				if ( sessionUser != null && sessionUser.compareEqual((User)node.getUserObject())){
-					label = "My Models ("+((User)node.getUserObject()).getName()+")";
+				if ( sessionUser != null && sessionUser.compareEqual((User)userObject)){
+					label = "My Models ("+((User)userObject).getName()+")";
 				} else {
-					label = ((User)node.getUserObject()).getName()+"                        ";
+					label = ((User)userObject).getName()+"                        ";
 				}
 				component.setToolTipText("User Name");
 				component.setText(label);
 				
-				if (isLoaded((User)node.getUserObject())) {
+				if (isLoaded((User)userObject)) {
 					bLoaded = true;
 				}
-			}else if(node.getUserObject() instanceof BioModelInfo){
-				BioModelInfo biomodelInfo = (BioModelInfo)node.getUserObject();
+			}else if(userObject instanceof BioModelInfo){
+				BioModelInfo biomodelInfo = (BioModelInfo)userObject;
 				if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)){
 					component.setText("(Archived) "+component.getText());
 				}else if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)){
 					component.setText("(Published) "+component.getText());
 				}
-			}else if (node.getUserObject() instanceof String && "Geometry".equals(node.getRenderHint("type"))) {
-				String label = (String)node.getUserObject();
+			}else if (userObject instanceof Geometry) {
+				Geometry geo = (Geometry)userObject;
+				String label = "";
+				//geomety info, when spatial--shows name+1D/2D/3D				
+				if(geo.getDimension()>0)
+				{
+					label = geo.getName() + " ("+geo.getDimension()+"D)";
+				}
+				else
+				{
+					label = BioModelChildSummary.COMPARTMENTAL_GEO_STR;
+				}
+
 				component.setToolTipText("Geometry");
 				component.setText(label);
 				setIcon(fieldGeometryIcon);
 			}
-			else if (node.getUserObject() instanceof String && "AppType".equals(node.getRenderHint("type"))) {
-				String label = (String)node.getUserObject();
+			else if (userObject instanceof String && "AppType".equals(node.getRenderHint("type"))) {
+				String label = (String)userObject;
 				component.setToolTipText("Application type");
 				component.setText(label);
 				setIcon(fieldAppTypeIcon);

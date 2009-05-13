@@ -10,6 +10,8 @@ import cbit.vcell.geometry.*;
 import cbit.vcell.geometry.gui.ImageAttributePanel;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.clientdb.*;
@@ -20,7 +22,6 @@ import javax.swing.*;
 import javax.swing.Timer;
 
 import cbit.vcell.desktop.*;
-import swingthreads.*;
 import cbit.vcell.client.desktop.geometry.ImageBrowser;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -43,7 +44,6 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
-import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.SwingDispatcherSync;
 /**
@@ -488,57 +488,32 @@ public void comparePreviousEdition()  {
 //Processes the model comparison,
 	private void compareWithOther(final VCDocumentInfo docInfo1, final VCDocumentInfo docInfo2) {
 		
-		final MDIManager mdiManager = new ClientMDIManager(DatabaseWindowManager.this.getRequestManager());       
-		mdiManager.blockWindow(DatabaseWindowManager.this.getManagerID());
-		SwingWorker worker = new SwingWorker() {
-			AsynchProgressPopup pp = new AsynchProgressPopup(null, "Working", "Comparing editions...", false, false);
-			Throwable e = null;
-			public Object construct() {
+		final MDIManager mdiManager = new ClientMDIManager(getRequestManager());       
+		mdiManager.blockWindow(getManagerID());
+		String taskName = "Comparing " + docInfo1.getVersion().getName() + " with " + docInfo2.getVersion().getName(); 
+		AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				TMLPanel comparePanel = DatabaseWindowManager.this.getRequestManager().compareWithOther(docInfo1, docInfo2);
+				hashTable.put("comparePanel", comparePanel);
+			}			
+		};
+		AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				try {
-					pp.start();
-					pp.setMessage("Comparing...");
-					TMLPanel comparePanel = DatabaseWindowManager.this.getRequestManager().compareWithOther(docInfo1, docInfo2);
-					return comparePanel;
-				} catch (Throwable exc) {
-					e = exc;
-					return null;
+					if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+						TMLPanel comparePanel = (TMLPanel)hashTable.get("comparePanel");
+						getRequestManager().showComparisonResults(DatabaseWindowManager.this, comparePanel);						
+					}
+				} finally {
+					mdiManager.unBlockWindow(getManagerID());
 				}
 			}
-			public void finished() {
-				if (e != null) {
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(DatabaseWindowManager.this, "Unable to compare editions\n"+e);
-			 	} 
-				// done
-				pp.stop();
-				//display the comparison window.
-				JOptionPane comparePane = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Apply Changes", "Discard"});
-				TMLPanel comparePanel = (TMLPanel)get(); 
-				comparePane.setMessage(comparePanel);
-				JDialog compareDialog = comparePane.createDialog(DatabaseWindowManager.this.getDatabaseWindowPanel(), "Compare Models");
-				compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-				org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DatabaseWindowManager.this.getDatabaseWindowPanel());
-				if ("Apply Changes".equals(comparePane.getValue())) {
-					if (!comparePanel.tagsResolved()) {
-						JOptionPane messagePane = new javax.swing.JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
-						JDialog messageDialog = messagePane.createDialog(comparePanel, "Error");
-						messageDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-						org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
-					} else {
-						BeanUtils.setCursorThroughout((Container)getComponent(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-						try {
-							getRequestManager().processComparisonResult(comparePanel, DatabaseWindowManager.this);
-						} catch (RuntimeException e) {
-							throw e;
-						} finally {
-							BeanUtils.setCursorThroughout((Container)getComponent(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-						}
-					}
-				}       
-				mdiManager.unBlockWindow(DatabaseWindowManager.this.getManagerID());   
-			}
 		};
-		worker.start();
+		ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
 
 

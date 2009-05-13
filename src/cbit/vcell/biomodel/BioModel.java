@@ -291,7 +291,7 @@ public BioModelChildSummary createBioModelChildSummary() {
 	
 	for(int i=0;i<simContexts.length;i+= 1){
 		scNames[i] = simContexts[i].getName();
-		appTypes[i] = simContexts[i].getMathDescription().getTypeInChildSummary();
+		appTypes[i] = simContexts[i].getMathType();
 		scAnnots[i]= simContexts[i].getDescription();
 		geoNames[i] = simContexts[i].getGeometry().getName();
 		geoDims[i] = simContexts[i].getGeometry().getDimension();

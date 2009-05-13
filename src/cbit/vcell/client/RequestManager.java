@@ -1,10 +1,4 @@
 package cbit.vcell.client;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.xml.merge.TMLPanel;
-import cbit.vcell.export.server.*;
-import cbit.vcell.mapping.SimulationContext;
-import javax.swing.*;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.BioModelInfo;
@@ -12,21 +6,20 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
-import java.awt.*;
-
-import cbit.vcell.document.*;
-import cbit.vcell.client.server.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.clientdb.*;
-import java.beans.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.solver.ode.gui.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.server.*;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.client.server.AsynchMessageManager;
+import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.server.DynamicDataManager;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.xml.merge.TMLPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 2:36:40 AM)
@@ -329,4 +322,6 @@ void stopSimulations(ClientSimManager clientSimManager, Simulation[] simulations
 void updateStatusNow();
 
 void checkClientServerSoftwareVersion();
+
+void showComparisonResults(TopLevelWindowManager requester, TMLPanel comparePanel);
 }

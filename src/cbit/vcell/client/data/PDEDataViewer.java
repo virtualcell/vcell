@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -35,7 +36,6 @@ import cbit.image.DisplayAdapterService;
 import cbit.plot.*;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.MessageEvent;
-import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
 import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 
@@ -51,6 +51,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import cbit.vcell.client.*;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.quicktime.MediaMethods;
 import cbit.vcell.export.quicktime.MediaMovie;
 import cbit.vcell.export.quicktime.MediaSample;
@@ -59,9 +61,9 @@ import cbit.vcell.export.quicktime.VideoMediaChunk;
 import cbit.vcell.export.quicktime.VideoMediaSampleRaw;
 import cbit.vcell.export.quicktime.atoms.UserDataEntry;
 import cbit.vcell.geometry.SinglePoint;
+import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
 import cbit.vcell.geometry.gui.SurfaceCanvas;
 import cbit.vcell.geometry.gui.SurfaceMovieSettingsPanel;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -2539,31 +2541,22 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  * Creation date: (2/26/2006 2:24:21 PM)
  */
 protected void showComponentInFrame(final Component comp,final String title) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			final JDesktopPane jDesktopPane = (JDesktopPane)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPane.class);
-			if(jDesktopPane != null){
-				final JInternalFrame frame =
-					new JInternalFrame(title, true, true, true, true);
-				frame.getContentPane().add(comp);
-				frame.pack();
-				org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
-				DocumentWindowManager.showFrame(frame,jDesktopPane);		
-			}else{
-				final Frame dialogOwner = (Frame)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, Frame.class);
-				final JDialog frame =
-					new JDialog(dialogOwner,title);
+	final JDesktopPane jDesktopPane = (JDesktopPane)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPane.class);
+	if(jDesktopPane != null){
+		final JInternalFrame frame = new JInternalFrame(title, true, true, true, true);
+		frame.getContentPane().add(comp);
+		frame.pack();
+		org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+		DocumentWindowManager.showFrame(frame,jDesktopPane);		
+	}else{
+		final Frame dialogOwner = (Frame)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, Frame.class);
+		final JDialog frame = new JDialog(dialogOwner,title);
 
-				frame.getContentPane().add(comp);
-				frame.pack();
-				org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
-				frame.setVisible(true);
-			}
-			return null;
-		}
-	}.dispatchConsumeException();
-
-	
+		frame.getContentPane().add(comp);
+		frame.pack();
+		org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+		frame.setVisible(true);
+	}
 }
 
 
@@ -2682,65 +2675,58 @@ private void showSpatialPlot() {
 		}
 	}
 	
-	// get plots, ignoring points
-	for (int i = 0; i < sl.length; i++){
-		try {
-			if (! sl[i].isPoint()) {
-				final cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[1];
-				try{
-					if(getSimulation() != null && getSimulation().getMathDescription() != null){
-						symbolTableEntries[0] =
-							getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
-					}
-					if(symbolTableEntries[0] == null){
-						symbolTableEntries[0] =
-							new VolVariable(getPdeDataContext().getDataIdentifier().getName());
-					}
-				}catch(cbit.vcell.parser.ExpressionBindingException e){
-					e.printStackTrace();
-				}
-				
-				final int finalI = i;
-				new Thread(
-					new Runnable(){
-						public void run(){
-							AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving spatial series for variable '" + getPdeDataContext().getVariableName(), false, false);
-							try{
-								pp.start();
-								final String varName = getPdeDataContext().getVariableName();
-								double timePoint = getPdeDataContext().getTimePoint();
-								final PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[finalI]);
-								new SwingDispatcherSync (){
-									public Object runSwing() throws Exception{
-										PlotPane plotPane = new PlotPane();
-										plotPane.setPlot2D(
-												new Plot2D(
-													symbolTableEntries,
-													new String[] { varName },new PlotData[] { plotData },
-													new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"}));
-										String title = "Line Plot: ("+varName+")";
-										if (getSimulationModelInfo()!=null){
-											title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-										}
-										showComponentInFrame(plotPane, title);
-										return null;
-									}
-								}.dispatchWithException();
-							}catch(Exception e){
-								pp.stop();
-								PopupGenerator.showErrorDialog("Show Spatial Plot error:\n"+e.getMessage());
-							}finally{
-								pp.stop();
-							}
-						}
-					}
-				).start();
-			}
-		} catch (Exception exc) {
-			exc.printStackTrace();
-			PopupGenerator.showErrorDialog("Spatial Plot error:\n"+exc.getMessage());
+	final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[1];
+	try{
+		if(getSimulation() != null && getSimulation().getMathDescription() != null){
+			symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
 		}
+		if(symbolTableEntries[0] == null){
+			symbolTableEntries[0] = new VolVariable(getPdeDataContext().getDataIdentifier().getName());
+		}
+	} catch (ExpressionBindingException e){
+		e.printStackTrace();
 	}
+	
+	AsynchClientTask task1 = new AsynchClientTask("Retrieving spatial series for variable '" + getPdeDataContext().getVariableName(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// get plots, ignoring points
+			PlotData[] plotDatas = new PlotData[sl.length];
+			for (int i = 0; i < sl.length; i++){				
+				String varName = getPdeDataContext().getVariableName();
+				double timePoint = getPdeDataContext().getTimePoint();
+				PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[i]);
+				plotDatas[i] = plotData;								
+			}
+			hashTable.put("plotDatas", plotDatas);
+		}
+	};
+				
+	AsynchClientTask task2 = new AsynchClientTask("Showing spatial plot for variable" + getPdeDataContext().getVariableName(), AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			String varName = getPdeDataContext().getVariableName();
+			PlotData[] plotDatas = (PlotData[])hashTable.get("plotDatas");
+			for (PlotData plotData : plotDatas){
+				if (plotData != null) {			
+					PlotPane plotPane = new PlotPane();
+					plotPane.setPlot2D(
+							new Plot2D(
+								symbolTableEntries,
+								new String[] { varName },new PlotData[] { plotData },
+								new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"}));
+					String title = "Line Plot: ("+varName+")";
+					if (getSimulationModelInfo()!=null){
+						title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+					}
+					showComponentInFrame(plotPane, title);
+				}
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);	
 }
 
 
@@ -2898,8 +2884,8 @@ private void updateDataValueSurfaceViewer() {
 	}
 	
 
-	cbit.vcell.geometry.gui.DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider svdp =
-		new cbit.vcell.geometry.gui.DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider(){
+	DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider svdp =
+		new DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider(){
 			private DisplayAdapterService updatedDAS = new DisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
 			private String updatedVariableName = getPdeDataContext().getVariableName();
 			private double updatedTimePoint = getPdeDataContext().getTimePoint();
