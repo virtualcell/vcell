@@ -460,13 +460,6 @@ public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	getRequestManager().updateStatusNow();
 }
 
-public void preloadSavedModelSimulationStatus(MathModel mathModel) {
-	ClientSimManager clientSimManager = simsPanel.getSimulationWorkspace().getClientSimManager();
-	if (clientSimManager != null) {
-		clientSimManager.preloadSimulationStatus(mathModel.getSimulations());
-	}
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (5/27/2004 1:58:14 PM)

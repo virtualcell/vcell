@@ -605,4 +605,6 @@ MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws org.vcell.util.
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 void updateServerSimulationStatusFromJobEvent(cbit.rmi.event.SimulationJobStatusEvent jobEvent) throws org.vcell.util.DataAccessException;
+
+void preloadSimulationStatus(VCSimulationIdentifier[] simIDs);
 }

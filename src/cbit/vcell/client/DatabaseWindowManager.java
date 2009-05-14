@@ -314,7 +314,7 @@ public void compareAnotherEdition() {
 		return;
 	}
 	// Now that we have both the document versions to be compared, do the comparison and display the result
-	compareWithOther(thisDocumentInfo, anotherDocumentInfo);
+	compareWithOther(anotherDocumentInfo, thisDocumentInfo);
 }
 
 /**
@@ -361,7 +361,7 @@ public void compareAnotherModel() {
 		return;
 	}
 	// Now that we have both the document versions to be compared, do the comparison and display the result
-	compareWithOther(thisDocumentInfo, otherDocumentInfo);
+	compareWithOther(otherDocumentInfo, thisDocumentInfo);
 }
 
 
@@ -418,7 +418,7 @@ public void compareLatestEdition()  {
 	//
 	// Now that we have both the document versions to be compared, do the comparison and display the result
 	//
-	compareWithOther(thisDocumentInfo, latestDocumentInfo);
+	compareWithOther(latestDocumentInfo, thisDocumentInfo);
 }
 
 
@@ -481,7 +481,7 @@ public void comparePreviousEdition()  {
 	}
 
 	// Now that we have both the document versions to be compared, do the comparison and display the result
-	compareWithOther(thisDocumentInfo, previousDocumentInfo);
+	compareWithOther(previousDocumentInfo, thisDocumentInfo);
 }
 
 
@@ -495,8 +495,8 @@ public void comparePreviousEdition()  {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				TMLPanel comparePanel = DatabaseWindowManager.this.getRequestManager().compareWithOther(docInfo1, docInfo2);
-				hashTable.put("comparePanel", comparePanel);
+				XmlTreeDiff xmlTreeDiff = getRequestManager().compareWithOther(docInfo1, docInfo2);
+				hashTable.put("xmlTreeDiff", xmlTreeDiff);
 			}			
 		};
 		AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
@@ -505,8 +505,10 @@ public void comparePreviousEdition()  {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				try {
 					if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
-						TMLPanel comparePanel = (TMLPanel)hashTable.get("comparePanel");
-						getRequestManager().showComparisonResults(DatabaseWindowManager.this, comparePanel);						
+						XmlTreeDiff xmlTreeDiff = (XmlTreeDiff)hashTable.get("xmlTreeDiff");
+						String baselineDesc = docInfo1.getVersion().getName() + ", " + docInfo1.getVersion().getDate();
+						String modifiedDesc = docInfo2.getVersion().getName() + ", " + docInfo2.getVersion().getDate();
+						getRequestManager().showComparisonResults(DatabaseWindowManager.this, xmlTreeDiff, baselineDesc, modifiedDesc);						
 					}
 				} finally {
 					mdiManager.unBlockWindow(getManagerID());

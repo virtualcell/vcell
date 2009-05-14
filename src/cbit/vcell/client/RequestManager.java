@@ -20,6 +20,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.xml.merge.TMLPanel;
+import cbit.xml.merge.XmlTreeDiff;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 2:36:40 AM)
@@ -47,7 +48,7 @@ boolean closeWindow(String managerID, boolean exitIfLast);
  * Creation date: (5/27/2004 2:59:24 PM)
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-TMLPanel compareWithOther(VCDocumentInfo vcDoc1, VCDocumentInfo vcDoc2);
+XmlTreeDiff compareWithOther(VCDocumentInfo vcDoc1, VCDocumentInfo vcDoc2);
 
 
 /**
@@ -55,7 +56,7 @@ TMLPanel compareWithOther(VCDocumentInfo vcDoc1, VCDocumentInfo vcDoc2);
  * Creation date: (5/27/2004 2:59:24 PM)
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-TMLPanel compareWithSaved(VCDocument document);
+XmlTreeDiff compareWithSaved(VCDocument document);
 
 
 /**
@@ -323,5 +324,7 @@ void updateStatusNow();
 
 void checkClientServerSoftwareVersion();
 
-void showComparisonResults(TopLevelWindowManager requester, TMLPanel comparePanel);
+void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff comparePanel, String baselineDesc, String modifiedDesc);
+
+void prepareDocumentToLoad(VCDocument doc) throws Exception;
 }

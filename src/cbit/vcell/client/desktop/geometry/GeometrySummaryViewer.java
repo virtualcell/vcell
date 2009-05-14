@@ -3,7 +3,6 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-import org.vcell.util.gui.SwingDispatcherSync;
 
 /**
  * Insert the type's description here.
@@ -344,17 +343,8 @@ private void initialize() {
  * Comment
  */
 private void initSurfaceButton() {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			boolean bSpatial =
-				getGeometry() != null &&
-				getGeometry().getDimension() > 0;
-
-			getJButtonViewSurfaces().setEnabled(bSpatial);
-			return null;
-		}
-	}.dispatchWrapRuntime();
-
+	boolean bSpatial = (getGeometry() != null) && (getGeometry().getDimension() > 0);
+	getJButtonViewSurfaces().setEnabled(bSpatial);
 }
 
 

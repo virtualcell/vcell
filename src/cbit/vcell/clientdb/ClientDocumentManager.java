@@ -17,12 +17,10 @@ import org.vcell.util.ISize;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
@@ -1381,7 +1379,6 @@ public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimul
 	}
 }
 
-
 	public SessionManager getSessionManager() {
 
 		return sessionManager;
@@ -1955,6 +1952,13 @@ private boolean isChangedVersion(Version v) {
 }
 
 
+public void preloadSimulationStatus(VCSimulationIdentifier[] simIDs) {
+	KeyValue simKeys[] = new KeyValue[simIDs.length];
+	for (int i = 0; i < simIDs.length; i++){
+		simKeys[i] = simIDs[i].getSimulationKey();
+	}
+	preloadSimulationStatus(simKeys);
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/1/2004 12:33:16 PM)

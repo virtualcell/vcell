@@ -9,12 +9,11 @@ import cbit.rmi.event.PerformanceData;
 import cbit.rmi.event.PerformanceDataEntry;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
+import cbit.vcell.client.RequestManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 /**
@@ -39,6 +38,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	VCDocument currentDocument = documentWindowManager.getVCDocument();
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
+	RequestManager requestManager = (RequestManager)hashTable.get("requestManager");
 	boolean bAsNew = hashTable.containsKey("newName");
 	String newName = bAsNew ? (String)hashTable.get("newName") : null;
 	Simulation simulationsToRun[] = (Simulation[])hashTable.get("simulations");
@@ -68,7 +68,6 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			} else {
 				savedDocument = documentManager.save((BioModel)currentDocument, independentSims);
 			}
-			((BioModelWindowManager)documentWindowManager).preloadSavedModelSimulationStatus((BioModel)savedDocument);
 			break;
 		}
 		case VCDocument.MATHMODEL_DOC: {
@@ -89,7 +88,6 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			} else {
 				savedDocument = documentManager.save((MathModel)currentDocument, independentSims);
 			}
-			((MathModelWindowManager)documentWindowManager).preloadSavedModelSimulationStatus((MathModel)savedDocument);
 			break;
 		}
 		case VCDocument.GEOMETRY_DOC: {
@@ -101,18 +99,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			break;
 		}
 	}
-	if (savedDocument instanceof MathModel) {
-		Geometry geometry = ((MathModel)savedDocument).getMathDescription().getGeometry();
-		geometry.precomputeAll();
-	} else if (savedDocument instanceof Geometry) {
-		((Geometry)savedDocument).precomputeAll();
-	} else if (savedDocument instanceof BioModel) {
-		BioModel bioModel = (BioModel)savedDocument;
-		SimulationContext[] simContexts = bioModel.getSimulationContexts();
-		for (SimulationContext simContext : simContexts) {
-			simContext.getGeometry().precomputeAll();
-		}
-	}
+	requestManager.prepareDocumentToLoad(savedDocument);
+	
 	hashTable.put("savedDocument", savedDocument);
 	
 	// generate PerformanceMonitorEvent

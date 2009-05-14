@@ -9,7 +9,6 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import org.vcell.util.Issue;
-import org.vcell.util.gui.SwingDispatcherSync;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -1930,22 +1929,17 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void mathDescription_This() {
-	new SwingDispatcherSync () {
-		public Object runSwing() throws Exception {
-			if (getmathDescription()!=null){
-				try {
-					getVCMLEditorPane().setText(getmathDescription().getVCML_database());
-					getVCMLEditorPane().setCaretPosition(0);
-				}catch (Exception e){
-					e.printStackTrace(System.out);
-					getVCMLEditorPane().setText("error displaying math language: "+e.getMessage());
-				}
-			}else{
-				getVCMLEditorPane().setText("");
-			}
-			return null;
+	if (getmathDescription()!=null){
+		try {
+			getVCMLEditorPane().setText(getmathDescription().getVCML_database());
+			getVCMLEditorPane().setCaretPosition(0);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+			getVCMLEditorPane().setText("error displaying math language: "+e.getMessage());
 		}
-	}.dispatchWrapRuntime();
+	}else{
+		getVCMLEditorPane().setText("");
+	}
 }
 
 

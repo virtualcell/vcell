@@ -15,7 +15,6 @@ import org.vcell.util.Range;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
 import cbit.image.*;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (10/3/00 3:21:23 PM)
@@ -254,7 +253,7 @@ public DataIdentifier[] getDataIdentifiers() {
  * Creation date: (5/22/2001 4:32:00 PM)
  * @return cbit.image.Range
  */
-private org.vcell.util.Range getDataRange() {
+private Range getDataRange() {
 	return dataRange;
 }
 
@@ -584,17 +583,9 @@ public abstract void removeFunction(cbit.vcell.math.AnnotatedFunction function) 
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
 }
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * Insert the method's description here.

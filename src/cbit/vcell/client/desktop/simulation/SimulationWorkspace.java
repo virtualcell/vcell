@@ -1,15 +1,13 @@
 package cbit.vcell.client.desktop.simulation;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-
-import org.vcell.util.gui.SwingDispatcherSync;
-
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
@@ -710,16 +708,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 
 
@@ -760,18 +751,12 @@ public void setSimulations(final cbit.vcell.solver.Simulation[] simulations) {
 	if (simulations == null) {
 		setStatusBars(null);
 	} else {
-		new SwingDispatcherSync (){
-			public Object runSwing() throws Exception{
-				setStatusBars(new JProgressBar[simulations.length]);
-				for (int i = 0; i < getStatusBars().length; i++){
-					JProgressBar bar = new JProgressBar();
-					bar.setStringPainted(true);
-					getStatusBars()[i] = bar;
-				}
-				return null;
-			}
-		}.dispatchWrapRuntime();
-
+		setStatusBars(new JProgressBar[simulations.length]);
+		for (int i = 0; i < getStatusBars().length; i++){
+			JProgressBar bar = new JProgressBar();
+			bar.setStringPainted(true);
+			getStatusBars()[i] = bar;
+		}
 	}
 	firePropertyChange("simulations", oldValue, simulations);
 }

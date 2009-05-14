@@ -4,9 +4,6 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import cbit.vcell.biomodel.BioModel;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.gui.SwingDispatcherSync;
-
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;
@@ -301,31 +298,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 }
 @Override
 public void nodeChanged(final TreeNode node) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			BioModelTreeModel.super.nodeChanged(node);
-			return null;
-		}
-	}.dispatchConsumeException();
+	BioModelTreeModel.super.nodeChanged(node);
 }
 @Override
 public void nodeStructureChanged(final TreeNode node) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			BioModelTreeModel.super.nodeStructureChanged(node);
-			return null;
-		}
-	}.dispatchConsumeException();
+	BioModelTreeModel.super.nodeStructureChanged(node);
 }
 @Override
 public void removeNodeFromParent(final MutableTreeNode node) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			BioModelTreeModel.super.removeNodeFromParent(node);
-			return null;
-		}
-	}.dispatchConsumeException();
-
+	BioModelTreeModel.super.removeNodeFromParent(node);
 }
 /**
  * Insert the method's description here.

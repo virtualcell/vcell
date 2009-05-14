@@ -5,13 +5,12 @@ package cbit.vcell.geometry.gui;
 ©*/
 
 import java.awt.image.MemoryImageSource;
-
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.gui.ColorIcon;
-import org.vcell.util.gui.SwingDispatcherSync;
-
 import org.vcell.util.document.BioModelChildSummary;
+
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.*;
 import cbit.image.*;
 /**
@@ -1007,34 +1006,27 @@ private void initConnections() throws java.lang.Exception {
  */
 private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 	final boolean bSpatial = getGeometry() != null && getGeometry().getDimension() > 0;
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			getImagePlaneManagerPanel1().setVisible(bSpatial);
-			getJPanelOrigin().setVisible(bSpatial);
-			getJPanelSize().setVisible(bSpatial);
-			return null;
-		}
-	}.dispatchWrapRuntime();
-
+	getImagePlaneManagerPanel1().setVisible(bSpatial);
+	getJPanelOrigin().setVisible(bSpatial);
+	getJPanelSize().setVisible(bSpatial);
 	
 	if(getGeometry() != null){
 		try{
-			cbit.image.VCImage vcImage = getGeometry().getGeometrySpec().getSampledImage();
+			VCImage vcImage = getGeometry().getGeometrySpec().getSampledImage();
 			byte[] pixels = vcImage.getPixels();
 			
-			cbit.image.DisplayAdapterService das = new cbit.image.DisplayAdapterService();
+			DisplayAdapterService das = new DisplayAdapterService();
 			das.setActiveScaleRange(new org.vcell.util.Range(0, 255));
 			das.setValueDomain(new org.vcell.util.Range(0, 255));
-			das.addColorModelForValues(cbit.image.DisplayAdapterService.createContrastColorModel(), cbit.image.DisplayAdapterService.createGraySpecialColors(), "Contrast");
+			das.addColorModelForValues(DisplayAdapterService.createContrastColorModel(), DisplayAdapterService.createGraySpecialColors(), "Contrast");
 			das.setActiveColorModelID("Contrast");
 			int[] rgb = new int[pixels.length];
 			for(int i=0;i<rgb.length;i+= 1){
 				rgb[i] = das.getColorFromIndex(pixels[i]);
 			}
 		
-			cbit.image.SourceDataInfo sdi =
-				new cbit.image.SourceDataInfo(
-					cbit.image.SourceDataInfo.INT_RGB_TYPE,
+			SourceDataInfo sdi =
+				new SourceDataInfo(SourceDataInfo.INT_RGB_TYPE,
 					rgb,
 					getGeometry().getExtent(),
 					getGeometry().getOrigin(),
@@ -1046,7 +1038,7 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 				);
 			getImagePlaneManagerPanel1().setSourceDataInfo(sdi);
 		}catch(Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(e.getMessage());
 		}
 	}else{
 		getImagePlaneManagerPanel1().setSourceDataInfo(null);
@@ -1170,17 +1162,12 @@ private void setgeometry1(cbit.vcell.geometry.Geometry newValue) {
 		try {
 			cbit.vcell.geometry.Geometry oldValue = getgeometry1();
 			ivjgeometry1 = newValue;
-			new SwingDispatcherSync (){
-				public Object runSwing() throws Exception{
-					connPtoP3SetSource();
-					connEtoM3(ivjgeometry1);
-					connEtoM5(ivjgeometry1);
-					connEtoM8(ivjgeometry1);
-					connEtoM9(ivjgeometry1);
-					connEtoM10(ivjgeometry1);
-					return null;
-				}
-			}.dispatchWrapRuntime();
+			connPtoP3SetSource();
+			connEtoM3(ivjgeometry1);
+			connEtoM5(ivjgeometry1);
+			connEtoM8(ivjgeometry1);
+			connEtoM9(ivjgeometry1);
+			connEtoM10(ivjgeometry1);
 			
 			connEtoC1(ivjgeometry1);
 			firePropertyChange("geometry", oldValue, newValue);

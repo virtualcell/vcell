@@ -1,8 +1,5 @@
 package cbit.vcell.math.gui;
 import java.util.Enumeration;
-
-import org.vcell.util.gui.SwingDispatcherSync;
-
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -287,16 +284,11 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (2/14/01 3:50:24 PM)
  */
 private void refreshTree() {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception {
-			if (getMathDescription()!=null){
-				setRoot(createBaseTree());
-			}else{
-				setRoot(new BioModelNode("empty"));
-			}
-			return null;
-		}
-	}.dispatchWrapRuntime();
+	if (getMathDescription()!=null){
+		setRoot(createBaseTree());
+	}else{
+		setRoot(new BioModelNode("empty"));
+	}
 }
 
 
