@@ -1,6 +1,5 @@
 package cbit.vcell.math.gui;
 
-import org.vcell.util.gui.SwingDispatcherSync;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -43,17 +42,11 @@ public MathViewerPanel() {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(cbit.vcell.math.MathDescription value) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception {
-			try {
-				getJEditorPane1().setText(getVCMDL(getmathDescription1()));
-				return null;			
-			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-			return null;
-		}
-	}.dispatchWrapRuntime();
+	try {
+		getJEditorPane1().setText(getVCMDL(getmathDescription1()));
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
 }
 
 

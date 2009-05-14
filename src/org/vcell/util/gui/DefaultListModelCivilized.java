@@ -483,22 +483,15 @@ public class DefaultListModelCivilized extends AbstractListModel {
 	 *            java.lang.Object[]
 	 */
 	public void setContents(final Object[] newList) {
-
-		new SwingDispatcherSync() {
-			public Object runSwing() throws Exception {
-				clear();
-				synchronized (DefaultListModelCivilized.this) {
-					if (newList != null) {
-						for (int i = 0; i < newList.length; i++) {
-							delegate.addElement(newList[i]);
-						}
-						fireIntervalAdded(DefaultListModelCivilized.this, 0, delegate.size() - 1);
-					}
+		clear();
+		synchronized (DefaultListModelCivilized.this) {
+			if (newList != null) {
+				for (int i = 0; i < newList.length; i++) {
+					delegate.addElement(newList[i]);
 				}
-				return null;
+				fireIntervalAdded(DefaultListModelCivilized.this, 0, delegate.size() - 1);
 			}
-		}.dispatchWrapRuntime();
-
+		}
 	}
 
 	/**

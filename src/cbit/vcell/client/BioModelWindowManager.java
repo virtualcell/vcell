@@ -455,20 +455,15 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
  * @param newDocument cbit.vcell.document.VCDocument
  */
 public void resetDocument(final org.vcell.util.document.VCDocument newDocument) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			setBioModel((BioModel)newDocument);
-			setDocumentID(getBioModel());
-			getBioModelEditor().setBioModel(getBioModel());
-			checkValidApplicationFrames(true);
-			Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
-			while (en.hasMoreElements()) {
-				close((JInternalFrame)en.nextElement(), getJDesktopPane());
-			}
-			getRequestManager().updateStatusNow();
-			return null;
-		}
-	}.dispatchWrapRuntime();
+	setBioModel((BioModel)newDocument);
+	setDocumentID(getBioModel());
+	getBioModelEditor().setBioModel(getBioModel());
+	checkValidApplicationFrames(true);
+	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
+	while (en.hasMoreElements()) {
+		close((JInternalFrame)en.nextElement(), getJDesktopPane());
+	}
+	getRequestManager().updateStatusNow();
 }
 
 
@@ -851,26 +846,4 @@ public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
 	}
 }
 
-public void preloadSavedModelSimulationStatus(BioModel bioModel) {
-	SimulationContext[] scs = bioModel.getSimulationContexts();
-	
-	Enumeration<SimulationContext> en = getApplicationsHash().keys();
-	while (en.hasMoreElements()) {
-		SimulationContext sc = en.nextElement();
-		ApplicationComponents appComponents = getApplicationsHash().get(sc);
-		// find one with the same name, if available		
-		SimulationContext found = null;
-		if (scs != null) {
-			for (int i = 0; i < scs.length; i++){
-				if (scs[i].getName().equals(sc.getName())) {
-					found = scs[i];
-					break;
-				}
-			}
-		}
-		if (found != null) {
-			appComponents.preloadSimulationStatus(found.getSimulations());
-		}
-	}
-}
 }

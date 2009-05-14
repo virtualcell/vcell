@@ -15,13 +15,14 @@ import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
+
 import java.beans.*;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
 import cbit.rmi.event.ExportEvent;
-import swingthreads.*;
 import java.awt.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
@@ -40,6 +41,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
@@ -305,8 +307,10 @@ public boolean closeWindow(java.lang.String windowID, boolean exitIfLast) {
 }
 
 
-private TMLPanel compareDocuments(final VCDocument doc1, final VCDocument doc2, String comparisonSetting, final String baselineDesc, final String modifiedDesc) throws Exception {
+private XmlTreeDiff compareDocuments(final VCDocument doc1, final VCDocument doc2, String comparisonSetting) throws Exception {
 
+	VCellThreadChecker.checkCpuIntensiveInvocation();
+	
 	if (!TMLPanel.COMPARE_DOCS_SAVED.equals(comparisonSetting) && 
 		!TMLPanel.COMPARE_DOCS_OTHER.equals(comparisonSetting)) {
 		throw new RuntimeException("Unsupported comparison setting: " + comparisonSetting);
@@ -334,17 +338,7 @@ private TMLPanel compareDocuments(final VCDocument doc1, final VCDocument doc2, 
 		}
 	}
 	final XmlTreeDiff diffTree = XmlHelper.compareMerge(doc1XML, doc2XML, comparisonSetting, true);
-	TMLPanel aTMLPanel = (TMLPanel) new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			TMLPanel aTMLPanel = new cbit.xml.merge.TMLPanel();
-			aTMLPanel.setXmlTreeDiff(diffTree);
-			aTMLPanel.setBaselineVersionDescription(baselineDesc);
-			aTMLPanel.setModifiedVersionDescription(modifiedDesc);
-			return aTMLPanel;
-		}
-	}.dispatchWithException();	
-	
-	return aTMLPanel;
+	return diffTree;
 }
 
 
@@ -353,7 +347,7 @@ private TMLPanel compareDocuments(final VCDocument doc1, final VCDocument doc2, 
  * Creation date: (6/9/2004 1:07:09 PM)
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public TMLPanel compareWithOther(final VCDocumentInfo docInfo1, final VCDocumentInfo docInfo2) {
+public XmlTreeDiff compareWithOther(final VCDocumentInfo docInfo1, final VCDocumentInfo docInfo2) {
 
 	VCDocument document1, document2;
 
@@ -371,10 +365,7 @@ public TMLPanel compareWithOther(final VCDocumentInfo docInfo1, final VCDocument
 		} else {
 			throw new IllegalArgumentException("The two documents are invalid or of different types.");
 		}
-		String baselineDesc = document2.getVersion().getName() + ", " + document2.getVersion().getDate();
-		String modifiedDesc = document1.getVersion().getName() + ", " + document1.getVersion().getDate();		
-		TMLPanel comparePanel = compareDocuments(document1, document2, TMLPanel.COMPARE_DOCS_OTHER, baselineDesc, modifiedDesc);
-		return comparePanel;
+		return compareDocuments(document1, document2, TMLPanel.COMPARE_DOCS_OTHER);
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
@@ -387,7 +378,7 @@ public TMLPanel compareWithOther(final VCDocumentInfo docInfo1, final VCDocument
  * Creation date: (6/9/2004 1:07:09 PM)
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public TMLPanel compareWithSaved(VCDocument document) {
+public XmlTreeDiff compareWithSaved(VCDocument document) {
 	
 	VCDocument savedVersion = null;
 	try {
@@ -412,10 +403,7 @@ public TMLPanel compareWithSaved(VCDocument document) {
 				break;
 			}
 		}
-		String baselineDesc = savedVersion.getName()+ ", " + (savedVersion.getVersion() == null ? "not saved" : savedVersion.getVersion().getDate());
-		String modifiedDesc = "Opened document instance";
-		TMLPanel comparePanel = compareDocuments(savedVersion, document, TMLPanel.COMPARE_DOCS_SAVED, baselineDesc, modifiedDesc);
-		return comparePanel;
+		return compareDocuments(savedVersion, document, TMLPanel.COMPARE_DOCS_SAVED);
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
@@ -887,34 +875,38 @@ protected void downloadExportedData(final ExportEvent evt) {
 			fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
 		    String name = evt.getVCDataIdentifier().getID();
 		    String suffix = "_exported.zip";
-		    java.io.File file = new java.io.File(name + suffix);
+		    File file = new File(name + suffix);
 		    if (file.exists()) {
 			    int count = 0;
 			    do {
-			    	file = new java.io.File(name + "_" + count + suffix);
+			    	file = new File(name + "_" + count + suffix);
 			    } while (file.exists());
 		    }
 
 		    fileChooser.setSelectedFile(file);
 			fileChooser.setDialogTitle("Save exported dataset...");
 			int approve = fileChooser.showSaveDialog((Component)null);
-			if (approve != JFileChooser.APPROVE_OPTION) {
+			if (approve == JFileChooser.APPROVE_OPTION) {
+				hashTable.put("selectedFile", fileChooser.getSelectedFile());
+			} else {
 				fileChooser.setSelectedFile(null);
 			}
-		    hashTable.put("selectedFile", fileChooser.getSelectedFile());
 		}
 	};
 	AsynchClientTask task3 = new AsynchClientTask("saving to file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+		public void run(Hashtable<String, Object> hashTable) throws Exception {			
 			File selectedFile = (File)hashTable.get("selectedFile");
+			if (selectedFile == null) {
+				return;
+			}
+			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 			String newPath = selectedFile.getParent();
 	        if (!newPath.equals(defaultPath)) {
 				getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
 	        }
-	        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
+//	        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
 			//
 			if (selectedFile.exists()) {
 				String question = PopupGenerator.showWarningDialog((Component)null, getUserPreferences(), UserMessage.warn_OverwriteFile,selectedFile.getAbsolutePath());
@@ -923,7 +915,7 @@ protected void downloadExportedData(final ExportEvent evt) {
 				}
 			}
 			byte[] bytes = (byte[])hashTable.get("bytes");
-            java.io.FileOutputStream fo = new java.io.FileOutputStream(selectedFile);
+            FileOutputStream fo = new FileOutputStream(selectedFile);
             fo.write(bytes);
             fo.close();
 		}
@@ -1250,7 +1242,6 @@ public void onVCellMessageEvent(final cbit.rmi.event.VCellMessageEvent event) {
 	}
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 9:37:46 PM)
@@ -1317,19 +1308,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}
 			}
-			if (doc instanceof MathModel) {
-				Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
-				geometry.precomputeAll();
-			} else if (doc instanceof Geometry) {
-				((Geometry)doc).precomputeAll();
-			} else if (doc instanceof BioModel) {
-				BioModel bioModel = (BioModel)doc;
-				SimulationContext[] simContexts = bioModel.getSimulationContexts();
-				getClientTaskStatusSupport().setMessage("preloading applications");
-				for (SimulationContext simContext : simContexts) {
-					simContext.getGeometry().precomputeAll();
-				}
-			}
+			prepareDocumentToLoad(doc);
 			hashTable.put("doc", doc);
 		}
 	};
@@ -1566,25 +1545,22 @@ public void reconnect() {
  * @param vcDocument cbit.vcell.document.VCDocument
  */
 public void revertToSaved(DocumentWindowManager documentWindowManager) {
-	getMdiManager().blockWindow(documentWindowManager.getManagerID());
 	// make the info
 	VCDocument document = documentWindowManager.getVCDocument();
 	VCDocumentInfo info = null;
 	try {
+		KeyValue versionKey = document.getVersion().getVersionKey();
 		switch (document.getDocumentType()) {
 			case VCDocument.BIOMODEL_DOC: {
-				BioModel bioModel = (BioModel)document;
-				info = getDocumentManager().getBioModelInfo(bioModel.getVersion().getVersionKey());
+				info = getDocumentManager().getBioModelInfo(versionKey);
 				break;
 			}
 			case VCDocument.MATHMODEL_DOC: {
-				MathModel mathModel = (MathModel)document;
-				info = getDocumentManager().getMathModelInfo(mathModel.getVersion().getVersionKey());
+				info = getDocumentManager().getMathModelInfo(versionKey);
 				break;
 			}
 			case VCDocument.GEOMETRY_DOC: {
-				Geometry geometry = (Geometry)document;
-				info = getDocumentManager().getGeometryInfo(geometry.getKey());
+				info = getDocumentManager().getGeometryInfo(versionKey);
 				break;
 			}
 		}
@@ -1686,11 +1662,14 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 	hash.put("clientSimManager", clientSimManager);
 	hash.put("simulations", simulations);
 	hash.put("jobManager", getClientServerManager().getJobManager());
+	hash.put("requestManager", this);
+	
 	/* create tasks */
 	AsynchClientTask[] tasks = null;
 	if (needSaveAs) {
 		// check document consistency first
 		AsynchClientTask documentValid = new DocumentValid();
+		AsynchClientTask setMathDescription = new SetMathDescription();
 		// get a new name
 		AsynchClientTask newName = new NewName();
 		// save it
@@ -1702,6 +1681,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		// assemble array
 		tasks = new AsynchClientTask[] {
 			documentValid,
+			setMathDescription,
 			newName,
 			saveDocument,
 			finishSave,
@@ -1710,6 +1690,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 	} else {
 		// check document consistency first
 		AsynchClientTask documentValid = new DocumentValid();
+		AsynchClientTask setMathDescription = new SetMathDescription();
 		// check if unchanged document
 		AsynchClientTask checkUnchanged = new CheckUnchanged(true);
 		// save it
@@ -1725,6 +1706,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		// assemble array
 		tasks = new AsynchClientTask[] {
 			documentValid,
+			setMathDescription,
 			checkUnchanged,
 			saveDocument,
 			checkBeforeDelete,
@@ -1779,9 +1761,12 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 	hash.put("documentManager", getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
+	hash.put("requestManager", this);
+	
 	/* create tasks */
 	// check document consistency first
 	AsynchClientTask documentValid = new DocumentValid();
+	AsynchClientTask setMathDescription = new SetMathDescription();
 	// check if unchanged document
 	AsynchClientTask checkUnchanged = new CheckUnchanged(false);
 	// save it
@@ -1797,6 +1782,7 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 	if (replace) {
 		tasks = new AsynchClientTask[] {
 			documentValid,
+			setMathDescription,
 			checkUnchanged,
 			saveDocument,
 			checkBeforeDelete,
@@ -1806,6 +1792,7 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 	} else {
 		tasks = new AsynchClientTask[] {
 			documentValid,
+			setMathDescription,
 			checkUnchanged,
 			saveDocument,
 			finishSave
@@ -1831,9 +1818,12 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
 	hash.put("documentManager", getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
+	hash.put("requestManager", this);
+	
 	/* create tasks */
 	// check document consistency first
 	AsynchClientTask documentValid = new DocumentValid();
+	AsynchClientTask setMathDescription = new SetMathDescription();
 	// get a new name
 	AsynchClientTask newName = new NewName();
 	// save it
@@ -1843,6 +1833,7 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
 	// assemble array
 	AsynchClientTask[] tasks = new AsynchClientTask[] {
 		documentValid,
+		setMathDescription,
 		newName,
 		saveDocument,
 		finishSave
@@ -2059,7 +2050,7 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 							}
 						}
 					}
-				}else if(vcDoc.getDocumentType() == VCDocument.MATHMODEL_DOC	){
+				}else if(vcDoc.getDocumentType() == VCDocument.MATHMODEL_DOC) {
 					MathModel mathModel =
 						getDocumentManager().getMathModel(vcDoc.getVersion().getVersionKey());
 					if(mathModel.getMathDescription() == null || mathModel.getMathDescription().getGeometry() == null){
@@ -2094,7 +2085,12 @@ public void checkClientServerSoftwareVersion() {
 	getClientServerManager().checkClientServerSoftwareVersion();	
 }
 
-public void showComparisonResults(TopLevelWindowManager requester, TMLPanel comparePanel) {
+public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff diffTree, String baselineDesc, String modifiedDesc) {
+	TMLPanel comparePanel = new cbit.xml.merge.TMLPanel();
+	comparePanel.setXmlTreeDiff(diffTree);
+	comparePanel.setBaselineVersionDescription(baselineDesc);
+	comparePanel.setModifiedVersionDescription(modifiedDesc);
+	
 	JOptionPane comparePane = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Apply Changes", "Close"});
 	comparePane.setMessage(comparePanel);
 	JDialog compareDialog = comparePane.createDialog(requester.getComponent(), "Compare Models");
@@ -2116,6 +2112,32 @@ public void showComparisonResults(TopLevelWindowManager requester, TMLPanel comp
 				BeanUtils.setCursorThroughout((Container)requester.getComponent(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 		} 
+	}
+}
+
+public void prepareDocumentToLoad(VCDocument doc) throws Exception {
+	Simulation[] simulations = null;
+	if (doc instanceof MathModel) {
+		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
+		geometry.precomputeAll();
+		simulations = ((MathModel)doc).getSimulations();		
+	} else if (doc instanceof Geometry) {
+		((Geometry)doc).precomputeAll();		
+	} else if (doc instanceof BioModel) {
+		BioModel bioModel = (BioModel)doc;
+		SimulationContext[] simContexts = bioModel.getSimulationContexts();
+		for (SimulationContext simContext : simContexts) {
+			simContext.getGeometry().precomputeAll();
+		}
+		simulations = ((BioModel)doc).getSimulations();		
+	}
+	if (simulations != null) {	
+		// preload simulation status
+		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+		for (int i = 0; i < simulations.length; i++){
+			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		}
+		getDocumentManager().preloadSimulationStatus(simIDs);
 	}
 }
 }

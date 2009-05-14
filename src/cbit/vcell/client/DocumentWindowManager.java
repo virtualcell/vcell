@@ -13,7 +13,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.rmi.event.DataJobEvent;
@@ -26,7 +25,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.xml.merge.TMLPanel;
+import cbit.xml.merge.XmlTreeDiff;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:01:37 PM)
@@ -114,8 +113,8 @@ public void compareWithSaved() {
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			TMLPanel comparePanel = getRequestManager().compareWithSaved(getVCDocument());
-			hashTable.put("comparePanel", comparePanel);
+			XmlTreeDiff xmlTreeDiff = getRequestManager().compareWithSaved(getVCDocument());
+			hashTable.put("xmlTreeDiff", xmlTreeDiff);
 		}			
 	};
 	AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
@@ -124,8 +123,10 @@ public void compareWithSaved() {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
 				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
-					TMLPanel comparePanel = (TMLPanel)hashTable.get("comparePanel");
-					getRequestManager().showComparisonResults(DocumentWindowManager.this, comparePanel);
+					XmlTreeDiff xmlTreeDiff = (XmlTreeDiff)hashTable.get("xmlTreeDiff");
+					String baselineDesc = getVCDocument()+ ", " + (getVCDocument().getVersion() == null ? "not saved" : getVCDocument().getVersion().getDate());
+					String modifiedDesc = "Opened document instance";
+					getRequestManager().showComparisonResults(DocumentWindowManager.this, xmlTreeDiff, baselineDesc, modifiedDesc);
 				}
 			} finally {
 				mdiManager.unBlockWindow(getManagerID());

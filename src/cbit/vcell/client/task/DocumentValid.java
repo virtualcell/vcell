@@ -32,33 +32,37 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		// try to successfully generate math and geometry region info
 		BioModel bioModel = (BioModel)documentWindowManager.getVCDocument();
 		SimulationContext scArray[] = bioModel.getSimulationContexts();
-		for (int i = 0;scArray!=null && i < scArray.length; i++){
-			//check if all structure sizes are specified
-			scArray[i].checkValidity();
-			//
-			// compute Geometric Regions if necessary
-			//
-			cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
-			if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
-				cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+		if (scArray!=null) {
+			MathDescription[] mathDescArray = new MathDescription[scArray.length];
+			for (int i = 0; i < scArray.length; i++){
+				//check if all structure sizes are specified
+				scArray[i].checkValidity();
+				//
+				// compute Geometric Regions if necessary
+				//
+				cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
+				if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
+					cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+				}
+				if (scArray[i].getModel() != bioModel.getModel()){
+					throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
+				}
+				//
+				// create new MathDescription
+				//
+				MathDescription math = null;
+				if(!scArray[i].isStoch())
+					math = (new MathMapping(scArray[i])).getMathDescription();
+				else
+					math = (new StochMathMapping(scArray[i])).getMathDescription();
+	
+				//
+				// load MathDescription into SimulationContext 
+				// (BioModel is responsible for propagating this to all applicable Simulations).
+				//
+				mathDescArray[i] = math;
 			}
-			if (scArray[i].getModel() != bioModel.getModel()){
-				throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
-			}
-			//
-			// create new MathDescription
-			//
-			MathDescription math = null;
-			if(!scArray[i].isStoch())
-				math = (new MathMapping(scArray[i])).getMathDescription();
-			else
-				math = (new StochMathMapping(scArray[i])).getMathDescription();
-
-			//
-			// load MathDescription into SimulationContext 
-			// (BioModel is responsible for propagating this to all applicable Simulations).
-			//
-			scArray[i].setMathDescription(math);
+			hashTable.put("mathDescArray", mathDescArray);
 		}
 		// check issues for errors
 		Vector<Issue> issueList = new Vector<Issue>();

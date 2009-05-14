@@ -5,8 +5,12 @@ import cbit.util.xml.XmlUtil;
 
 import org.jdom.Element;
 import org.jdom.Attribute;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 /**
@@ -18,7 +22,7 @@ public class XmlTreeDiff {
 
 	private static final String BASELINE_NODE = "baseline_node";
 	private static final String MODIFIED_NODE = "modified_node";
-	private java.util.HashMap elementTable;
+	private HashMap<String, String> elementTable = new HashMap<String, String>();
 	private boolean ignoreVersionInfo = false;         //allows ignoring version info from the modified. 
 	private NodeInfo fieldRootNode;
 
@@ -29,10 +33,9 @@ public class XmlTreeDiff {
 public XmlTreeDiff() throws java.io.IOException {
 	super();
 	final String RULES_FILENAME = "/rulesTable.xml";
-	elementTable = new java.util.HashMap();
-	java.io.InputStream tableInputStream = getClass().getResourceAsStream(RULES_FILENAME);
+	InputStream tableInputStream = getClass().getResourceAsStream(RULES_FILENAME);
 	if (tableInputStream==null){
-		throw new java.io.FileNotFoundException(RULES_FILENAME+" not found");
+		throw new FileNotFoundException(RULES_FILENAME+" not found");
 	}
 	readTable(tableInputStream);
 }
@@ -149,10 +152,8 @@ public String getMangledName(Element param) throws java.lang.IllegalArgumentExce
  */
 public NodeInfo merge(org.jdom.Document docA, org.jdom.Document docB, String comparisonSetting) throws java.io.IOException {
 
-	if (TMLPanel.COMPARE_DOCS_SAVED.equals(comparisonSetting)) {
+	if (TMLPanel.COMPARE_DOCS_SAVED.equals(comparisonSetting)|| TMLPanel.COMPARE_DOCS_OTHER.equals(comparisonSetting)) { // always use docA as baseline
 		fieldRootNode = this.merge(docA.getRootElement(), docB.getRootElement(), comparisonSetting);
-	} else if (TMLPanel.COMPARE_DOCS_OTHER.equals(comparisonSetting)) {
-		fieldRootNode = this.merge(docB.getRootElement(), docA.getRootElement(), comparisonSetting);
 	} else {
 		throw new IllegalArgumentException("Invalid comparison setting: " + comparisonSetting);
 	}

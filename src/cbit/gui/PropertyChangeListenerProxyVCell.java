@@ -3,6 +3,7 @@ package cbit.gui;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.ListModel;
@@ -47,4 +48,13 @@ public class PropertyChangeListenerProxyVCell implements PropertyChangeListener 
 		}
 	}
 
+	public static void removeProxyListener(PropertyChangeSupport pcs, PropertyChangeListener listener) {	
+		PropertyChangeListener[] listeners = pcs.getPropertyChangeListeners();
+		for (PropertyChangeListener pcl : listeners) {
+			if (pcl instanceof PropertyChangeListenerProxyVCell && ((PropertyChangeListenerProxyVCell)pcl).listener == listener) {
+				pcs.removePropertyChangeListener(pcl);
+				return;
+			}
+		}
+	}
 }
