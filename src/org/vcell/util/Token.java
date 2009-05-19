@@ -12,7 +12,6 @@ package org.vcell.util;
 public class Token {
 	private String value = null;
 	private int startColIndex = -1;
-	private int endColIndex = -1;
 	private int lineIndex = -1;
 /**
  * Token constructor comment.
@@ -23,7 +22,6 @@ public Token(String argTokenString, int argStartColIndex, int argLineIndex) {
 	}
 	this.value = argTokenString;
 	this.startColIndex = argStartColIndex;
-	this.endColIndex = argStartColIndex+value.length()-1;
 	this.lineIndex = argLineIndex;
 }
 /**
@@ -32,7 +30,7 @@ public Token(String argTokenString, int argStartColIndex, int argLineIndex) {
  * @return int
  */
 public int getEndColumnIndex() {
-	return endColIndex;
+	return startColIndex+value.length()-1;
 }
 /**
  * Insert the method's description here.
@@ -67,11 +65,10 @@ public void join(Token token) {
 	if (this.lineIndex != token.lineIndex){
 		throw new IllegalArgumentException("can't join tokens from different lines, "+toString()+", "+token.toString());
 	}
-	if (this.endColIndex != token.startColIndex-1){
+	if (this.getEndColumnIndex() != token.startColIndex-1){
 		throw new IllegalArgumentException("can't join tokens that aren't contiguous, "+toString()+", "+token.toString());
 	}
 	this.value += token.value;
-	this.endColIndex = token.endColIndex;
 }
 /**
  * Insert the method's description here.

@@ -26,9 +26,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VersionFlag;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.BioModelWindowManager;
@@ -3099,25 +3097,31 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void newDocument(java.awt.event.ActionEvent actionEvent) {
+	AsynchClientTask[] taskArray = null;
 	if (actionEvent.getActionCommand().equals("BioModel")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
 	} else if (actionEvent.getActionCommand().equals("Non-Spatial")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
 	} else if (actionEvent.getActionCommand().equals("Spatial")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL));
 	} else if (actionEvent.getActionCommand().equals("From BioModel")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
 	} else if (actionEvent.getActionCommand().equals("1-D")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D));
 	} else if (actionEvent.getActionCommand().equals("2-D")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D));
 	} else if (actionEvent.getActionCommand().equals("3-D")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D));
 	} else if (actionEvent.getActionCommand().equals("Existing Image ...")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE));
 	} else if (actionEvent.getActionCommand().equals("Choose Image from File ...")) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE));
+	} else {
+		return;
 	}
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	hash.put("requestManager", getWindowManager().getRequestManager());
+	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 }
 
 

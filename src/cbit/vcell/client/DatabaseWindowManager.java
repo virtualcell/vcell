@@ -7,8 +7,6 @@ import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.geometry.*;
-import cbit.vcell.geometry.gui.ImageAttributePanel;
-import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -23,15 +21,11 @@ import javax.swing.Timer;
 
 import cbit.vcell.desktop.*;
 import cbit.vcell.client.desktop.geometry.ImageBrowser;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
 import javax.swing.filechooser.FileFilter;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
@@ -41,11 +35,10 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.gui.FileFilters;
-import org.vcell.util.gui.SwingDispatcherSync;
+import org.vcell.util.gui.ZEnforcer;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 5:06:46 PM)
@@ -72,8 +65,6 @@ public class DatabaseWindowManager extends TopLevelWindowManager{
 			return bWasDoubleClicked;
 		}
 	}	
-
-	private final int PIXEL_CLASS_WARNING_LIMIT = 10;
 	
 	public static class ImageHelper{
 		public int[] imageData;
@@ -115,125 +106,126 @@ public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestMan
  * Creation date: (5/14/2004 5:35:55 PM)
  */
 public void accessPermissions()  {
-	VersionInfo selectedVersionInfo = null;
-
-	if (getPanelSelection() != null) {
-		selectedVersionInfo = getPanelSelection();
-	}
-
-	getAclEditor().clearACLList();	
-	GroupAccess groupAccess = selectedVersionInfo.getVersion().getGroupAccess();
-	getAclEditor().setACLState(new ACLEditor.ACLState(groupAccess));
-	DocumentManager docManager = getRequestManager().getDocumentManager();
+	final VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
+	final GroupAccess groupAccess = selectedVersionInfo.getVersion().getGroupAccess();
+	final DocumentManager docManager = getRequestManager().getDocumentManager();
 	
-	Object choice = showAccessPermissionDialog(getAclEditor(), getDatabaseWindowPanel());
+	AsynchClientTask task1 = new AsynchClientTask("show dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
-	if (choice != null && choice.equals("OK")) {
-		ACLEditor.ACLState aclState = getAclEditor().getACLState();
-		if (aclState != null) {
-			if (aclState.isAccessPrivate() || (aclState.getAccessList() != null && aclState.getAccessList().length == 0)) {
-				try {
-					VersionInfo vInfo = null;
-					if(selectedVersionInfo instanceof BioModelInfo){
-						vInfo = docManager.setGroupPrivate((BioModelInfo)selectedVersionInfo);
-					}else if(selectedVersionInfo instanceof MathModelInfo){
-						vInfo = docManager.setGroupPrivate((MathModelInfo)selectedVersionInfo);
-					}else if(selectedVersionInfo instanceof GeometryInfo){
-						vInfo = docManager.setGroupPrivate((GeometryInfo)selectedVersionInfo);
-					}else if(selectedVersionInfo instanceof VCImageInfo){
-						vInfo = docManager.setGroupPrivate((VCImageInfo)selectedVersionInfo);
-					}
-				} catch (DataAccessException e) {
-					PopupGenerator.showErrorDialog("Error Changing Permission "+e.getMessage());
-				}
-			} else if (aclState.isAccessPublic()) {
-				try {
-					VersionInfo vInfo = null;
-					if(selectedVersionInfo instanceof BioModelInfo){
-						vInfo = docManager.setGroupPublic((BioModelInfo)selectedVersionInfo);
-					}else if(selectedVersionInfo instanceof MathModelInfo){
-						vInfo = docManager.setGroupPublic((MathModelInfo)selectedVersionInfo);
-					}else if(selectedVersionInfo instanceof GeometryInfo){
-						vInfo = docManager.setGroupPublic((GeometryInfo)selectedVersionInfo);
-					}else if(selectedVersionInfo instanceof VCImageInfo){
-						vInfo = docManager.setGroupPublic((VCImageInfo)selectedVersionInfo);
-					}
-				} catch (DataAccessException e) {
-					PopupGenerator.showErrorDialog("Error Changing Permission "+e.getMessage());
-				}
-			} else {
-				String[] aclUserNames = aclState.getAccessList();
-				String[] originalGroupAccesNames = new String[0];
-				//Turn User[] into String[]
-				if (groupAccess instanceof GroupAccessSome){
-					GroupAccessSome gas = (GroupAccessSome)groupAccess;
-					User[] originalUsers = gas.getNormalGroupMembers();
-					for(int i=0;i<originalUsers.length;i+= 1){
-						originalGroupAccesNames = (String[])BeanUtils.addElement(originalGroupAccesNames,originalUsers[i].getName());
-					}
-				}
-				//Determine users needing adding
-				String[] needToAddUsers = new String[0];
-				for(int i=0;i<aclUserNames.length;i+= 1){
-					if(!BeanUtils.arrayContains(originalGroupAccesNames,aclUserNames[i])){
-System.out.println("Added user="+aclUserNames[i]);
-						needToAddUsers = (String[])BeanUtils.addElement(needToAddUsers,aclUserNames[i]);
-					}
-				}
-				//Determine users needing removing
-				String[] needToRemoveUsers = new String[0];
-				for(int i=0;i<originalGroupAccesNames.length;i+= 1){
-					if(!BeanUtils.arrayContains(aclUserNames,originalGroupAccesNames[i])){
-System.out.println("Removed user="+originalGroupAccesNames[i]);
-						needToRemoveUsers = (String[])BeanUtils.addElement(needToRemoveUsers,originalGroupAccesNames[i]);
-					}
-				}
-				
-				VersionInfo vInfo = null;
-				String errorNames = "";
-				//Add Users to Group Access List
-				for (int i = 0; i < needToAddUsers.length; i++) {
-					try {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			getAclEditor().clearACLList();	
+			getAclEditor().setACLState(new ACLEditor.ACLState(groupAccess));
+			Object choice = showAccessPermissionDialog(getAclEditor(), getDatabaseWindowPanel());
+			if (choice != null) {
+				hashTable.put("choice", choice);
+			}		
+		}		
+	};
+	
+	AsynchClientTask task2 = new AsynchClientTask("access permission", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Object choice = hashTable.get("choice");
+			if (choice != null && choice.equals("OK")) {
+				ACLEditor.ACLState aclState = getAclEditor().getACLState();
+				if (aclState != null) {
+					if (aclState.isAccessPrivate() || (aclState.getAccessList() != null && aclState.getAccessList().length == 0)) {						
+						VersionInfo vInfo = null;
 						if(selectedVersionInfo instanceof BioModelInfo){
-							vInfo = docManager.addUserToGroup((BioModelInfo)selectedVersionInfo, needToAddUsers[i]);
+							vInfo = docManager.setGroupPrivate((BioModelInfo)selectedVersionInfo);
 						}else if(selectedVersionInfo instanceof MathModelInfo){
-							vInfo = docManager.addUserToGroup((MathModelInfo)selectedVersionInfo, needToAddUsers[i]);
+							vInfo = docManager.setGroupPrivate((MathModelInfo)selectedVersionInfo);
 						}else if(selectedVersionInfo instanceof GeometryInfo){
-							vInfo = docManager.addUserToGroup((GeometryInfo)selectedVersionInfo, needToAddUsers[i]);
+							vInfo = docManager.setGroupPrivate((GeometryInfo)selectedVersionInfo);
 						}else if(selectedVersionInfo instanceof VCImageInfo){
-							vInfo = docManager.addUserToGroup((cbit.image.VCImageInfo)selectedVersionInfo, needToAddUsers[i]);
+							vInfo = docManager.setGroupPrivate((VCImageInfo)selectedVersionInfo);
 						}
-					} catch (DataAccessException e) {
-						errorNames += "Error Adding name '"+needToAddUsers[i]+"'\n  -----"+e.getMessage()+"\n";
-					}
-				}
-				// Remove users from Group Access List
-				for (int i = 0; i < needToRemoveUsers.length; i++) {
-					try {
+					} else if (aclState.isAccessPublic()) {
+						VersionInfo vInfo = null;
 						if(selectedVersionInfo instanceof BioModelInfo){
-							vInfo = docManager.removeUserFromGroup((BioModelInfo)selectedVersionInfo, needToRemoveUsers[i]);
+							vInfo = docManager.setGroupPublic((BioModelInfo)selectedVersionInfo);
 						}else if(selectedVersionInfo instanceof MathModelInfo){
-							vInfo = docManager.removeUserFromGroup((MathModelInfo)selectedVersionInfo, needToRemoveUsers[i]);
+							vInfo = docManager.setGroupPublic((MathModelInfo)selectedVersionInfo);
 						}else if(selectedVersionInfo instanceof GeometryInfo){
-							vInfo = docManager.removeUserFromGroup((GeometryInfo)selectedVersionInfo, needToRemoveUsers[i]);
+							vInfo = docManager.setGroupPublic((GeometryInfo)selectedVersionInfo);
 						}else if(selectedVersionInfo instanceof VCImageInfo){
-							vInfo = docManager.removeUserFromGroup((cbit.image.VCImageInfo)selectedVersionInfo, needToRemoveUsers[i]);
+							vInfo = docManager.setGroupPublic((VCImageInfo)selectedVersionInfo);
 						}
-					} catch (DataAccessException e) {
-						errorNames += "Error Removing name '"+needToRemoveUsers[i]+"'\n  -----"+e.getMessage()+"\n";
+					} else {
+						String[] aclUserNames = aclState.getAccessList();
+						String[] originalGroupAccesNames = new String[0];
+						//Turn User[] into String[]
+						if (groupAccess instanceof GroupAccessSome){
+							GroupAccessSome gas = (GroupAccessSome)groupAccess;
+							User[] originalUsers = gas.getNormalGroupMembers();
+							for(int i=0;i<originalUsers.length;i+= 1){
+								originalGroupAccesNames = (String[])BeanUtils.addElement(originalGroupAccesNames,originalUsers[i].getName());
+							}
+						}
+						//Determine users needing adding
+						String[] needToAddUsers = new String[0];
+						for(int i=0;i<aclUserNames.length;i+= 1){
+							if(!BeanUtils.arrayContains(originalGroupAccesNames,aclUserNames[i])){
+								System.out.println("Added user="+aclUserNames[i]);
+								needToAddUsers = (String[])BeanUtils.addElement(needToAddUsers,aclUserNames[i]);
+							}
+						}
+						//Determine users needing removing
+						String[] needToRemoveUsers = new String[0];
+						for(int i=0;i<originalGroupAccesNames.length;i+= 1){
+							if(!BeanUtils.arrayContains(aclUserNames,originalGroupAccesNames[i])){
+								System.out.println("Removed user="+originalGroupAccesNames[i]);
+								needToRemoveUsers = (String[])BeanUtils.addElement(needToRemoveUsers,originalGroupAccesNames[i]);
+							}
+						}
+						
+						VersionInfo vInfo = null;
+						String errorNames = "";
+						//Add Users to Group Access List
+						for (int i = 0; i < needToAddUsers.length; i++) {
+							try {
+								if(selectedVersionInfo instanceof BioModelInfo){
+									vInfo = docManager.addUserToGroup((BioModelInfo)selectedVersionInfo, needToAddUsers[i]);
+								}else if(selectedVersionInfo instanceof MathModelInfo){
+									vInfo = docManager.addUserToGroup((MathModelInfo)selectedVersionInfo, needToAddUsers[i]);
+								}else if(selectedVersionInfo instanceof GeometryInfo){
+									vInfo = docManager.addUserToGroup((GeometryInfo)selectedVersionInfo, needToAddUsers[i]);
+								}else if(selectedVersionInfo instanceof VCImageInfo){
+									vInfo = docManager.addUserToGroup((cbit.image.VCImageInfo)selectedVersionInfo, needToAddUsers[i]);
+								}
+							} catch (DataAccessException e) {
+								errorNames += "Error adding user '"+needToAddUsers[i]+"' : "+e.getMessage()+"\n";
+							}
+						}
+						// Remove users from Group Access List
+						for (int i = 0; i < needToRemoveUsers.length; i++) {
+							try {
+								if(selectedVersionInfo instanceof BioModelInfo){
+									vInfo = docManager.removeUserFromGroup((BioModelInfo)selectedVersionInfo, needToRemoveUsers[i]);
+								}else if(selectedVersionInfo instanceof MathModelInfo){
+									vInfo = docManager.removeUserFromGroup((MathModelInfo)selectedVersionInfo, needToRemoveUsers[i]);
+								}else if(selectedVersionInfo instanceof GeometryInfo){
+									vInfo = docManager.removeUserFromGroup((GeometryInfo)selectedVersionInfo, needToRemoveUsers[i]);
+								}else if(selectedVersionInfo instanceof VCImageInfo){
+									vInfo = docManager.removeUserFromGroup((cbit.image.VCImageInfo)selectedVersionInfo, needToRemoveUsers[i]);
+								}
+							} catch (DataAccessException e) {
+								errorNames += "Error Removing user '"+needToRemoveUsers[i]+"'\n  -----"+e.getMessage()+"\n";
+							}
+						}
+						if (errorNames.length() > 0) {
+							PopupGenerator.showErrorDialog(errorNames);
+							accessPermissions();
+						}
 					}
-				}
-				if (errorNames.length() > 0) {
-					PopupGenerator.showErrorDialog("Error Adding Users\n"+errorNames);
-					accessPermissions();
+		
 				}
 			}
-
 		}
-	}
-	//else if choice == JOptionPane.CANCEL_OPTION) {
-		//throw UserCancelException.CANCEL_DB_SELECTION;
-	//}
+	};
+	
+	ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
 }
 
 
@@ -663,99 +655,9 @@ public void deleteSelected() {
 	getRequestManager().deleteDocument(getPanelSelection(), this);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 5:35:55 PM)
- */
-public static VCImage editImageAttributes(final VCImage image,final ClientTaskStatusSupport pp,final RequestManager theRequestManager) throws Exception{
-	return (VCImage)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			VCImage editedImage = null;
-			if (image == null) {
-				PopupGenerator.showErrorDialog("No image!");
-				return null;
-			}
-
-			//Set image on panel and see if there are any error before proceeding
-			ImageAttributePanel imageAttributePanel = new cbit.vcell.geometry.gui.ImageAttributePanel();
-
-			try{
-				imageAttributePanel.setImage(image);
-			}catch(Throwable e){
-				throw new cbit.image.ImageException("Failed to setup ImageAttributes\n"+(e.getMessage() != null?e.getMessage():null));
-			}
-
-			Object choice = showImagePropertiesDialog(imageAttributePanel);
-			
-			if (choice != null && choice.equals("Import")) {
-				VCImageInfo imageInfos[] = null;
-				pp.setMessage("Getting existing Image names");
-				try {
-					imageInfos = theRequestManager.getDocumentManager().getImageInfos();
-				}catch (DataAccessException e){
-					e.printStackTrace(System.out);
-				}
-				pp.setMessage("found "+(imageInfos != null?imageInfos.length:0)+" existing image names");
-				String newName = null;
-				boolean bNameIsGood = false;
-				while (!bNameIsGood){
-					newName = PopupGenerator.showInputDialog((Component)null,
-							"type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
-					if (newName == null || newName.length() == 0){
-						bNameIsGood = false;
-						continue;
-					}
-					if (imageInfos==null){
-						bNameIsGood = true; // if no image information assume image name is good
-					}else{	
-						boolean bNameExists = false;
-						for (int i = 0; i < imageInfos.length; i++){
-							if (imageInfos[i].getVersion().getName().equals(newName)){
-								bNameExists = true;
-								break;
-							}
-						}
-						if (bNameExists){
-							PopupGenerator.showErrorDialog("IMAGE name '"+newName+"' already exists, please enter new name");
-						}else{
-							bNameIsGood = true;
-						}
-					}
-				}
-				pp.setMessage("Saving new Image "+newName);
-				try {
-					editedImage = theRequestManager.getDocumentManager().saveAsNew(image,newName);
-				} catch (DataAccessException e) {
-					throw new DataAccessException((e.getMessage() != null?e.getMessage():null));
-				}
-				pp.setMessage("Save finished for "+newName);
-				//
-				// check that save actually occured (it should have since an insert should be new)
-				//
-				Version newVersion = editedImage.getVersion();
-				Version oldVersion = image.getVersion();
-				if ((oldVersion != null) && newVersion.getVersionKey().compareEqual(oldVersion.getVersionKey())){
-					throw new DataAccessException("Save New Image failed, Old version has same id as New");
-				}	
-			}else{
-				throw org.vcell.util.UserCancelException.CANCEL_EDIT_IMG_ATTR;
-			}
-			
-			
-			return editedImage;
-		}
-	}.dispatchWithException();
-
+public void exportDocument() {
+	getRequestManager().exportDocument(this);
 }
-
-
-	public void exportDocument() {
-
-		getRequestManager().exportDocument(this);
-	}
-
 
 /**
  * Insert the method's description here.
@@ -1181,14 +1083,11 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public VCImage selectImageFromDatabase() throws DataAccessException, UserCancelException {
-	Object choice = showImageSelectorDialog(getImageBrowser(), null);
-	if (choice != null && choice.equals("OK")) {
-		if (getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo() != null) {
-			return getRequestManager().getDocumentManager().getImage((VCImageInfo)getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo());
-		} 
+public VCImage selectImageFromDatabase() throws DataAccessException {
+	if (getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo() != null) {
+		return getRequestManager().getDocumentManager().getImage((VCImageInfo)getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo());
 	}
-	throw UserCancelException.CANCEL_DB_SELECTION;
+	return null;
 }
 
 public static ImageHelper readFromImageFile(ClientTaskStatusSupport pp,File imageFile)
@@ -1237,135 +1136,22 @@ public static ImageHelper readFromImageFile(ClientTaskStatusSupport pp,File imag
 	
 	return ih;
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 5:35:55 PM)
- */
-public VCImage selectImageFromFile(final ClientTaskStatusSupport pp) throws Exception{
-
-	VCImage vcImage;
 	
-	// Choose image from File
-	File imageFile = showFileChooserDialog(FileFilters.FILE_FILTER_GEOMIMAGES);
-	long fileSize = imageFile.length();
-	pp.setMessage("Reading file "+imageFile.getName()+" size="+fileSize);
-	if(fileSize > GeometrySpec.IMAGE_SIZE_LIMIT){
-		throw new cbit.image.ImageException("File "+imageFile.getName()+" size="+fileSize+"\ntoo large.  Size must be less than "+GeometrySpec.IMAGE_SIZE_LIMIT);
-	}
-	// Get file bytes
-	byte[] fileBytes = new byte[(int)fileSize];
-	FileInputStream fis = null;
-	try{
-		fis = new FileInputStream(imageFile);
-		fis.read(fileBytes);
-	}finally{
-		if(fis != null){fis.close();}
-	}
-	// Parse bytes
-	try{
-		ImageHelper ih = null;
-		if(imageFile.getName().toLowerCase().endsWith(".gif")){
-			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as gif");
-			ih = convertGIF(fileBytes);
-			
-		}else if(imageFile.getName().toLowerCase().endsWith(".tif") || imageFile.getName().toLowerCase().endsWith(".tiff")){
-			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as tif");
-			ih = convertTIF(fileBytes);
-				
-		}else if(	imageFile.getName().toLowerCase().endsWith(".zip")){
-			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as zip");
-			ih = convertZIP(fileBytes,pp);
-		}else{
-			throw new Exception("File name "+imageFile.getName()+" not recognized, must end with .gif,.tif,.tiff -or- zip containing gif,tif for each Z-slice");
-		}
-
-		vcImage = new cbit.image.VCImageUncompressed(null,ih.imageData,new Extent(ih.xsize,ih.ysize,ih.zsize),ih.xsize,ih.ysize,ih.zsize);
-		
-		pp.setMessage("Finished loading "+imageFile.getName()+" ("+vcImage.getNumX()+","+vcImage.getNumY()+","+vcImage.getNumZ()+")");
-	}catch(Throwable e){
-		throw new cbit.image.ImageException("Error loading image "+imageFile.getAbsolutePath()+"\n"+(e.getMessage() == null?e.getClass().getName():e.getMessage()));
-	}
-
-	if(vcImage.getPixelClasses().length > PIXEL_CLASS_WARNING_LIMIT){
-		PopupGenerator.showInfoDialog(
-					"Warning: IMAGE "+imageFile.getName()+" has "+vcImage.getPixelClasses().length+
-					" distinct values, all will be assigned regions.\n"+
-					"If this is unexpected, process the IMAGE to remove noise or unwanted values and re-load");
-	}
-    //Edit image and save , 
-	return editImageAttributes(vcImage,pp,getRequestManager());
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public MathModel selectMathFromBio() throws UserCancelException {
-
-	MathModel newMathModel = new MathModel(null);
+public BioModelInfo selectBioModelInfo() throws Exception {
+	
 	Object choice = showOpenDialog(getBioModelDbTreePanel(), this);
 
 	// Get Biomodelinfo from bioMOdelDBTreePanel
-	BioModelInfo bioModelInfo = null;
 	if (choice != null && choice.equals("Open")) {
-		bioModelInfo = (BioModelInfo)getBioModelDbTreePanel().getSelectedVersionInfo();
+		return (BioModelInfo)getBioModelDbTreePanel().getSelectedVersionInfo();
 	} else {
 		throw UserCancelException.CANCEL_DB_SELECTION;
 	}
-
-	try {
-		// Get the simContexts in the corresponding BioModel 
-		SimulationContext[] simContexts = getRequestManager().getDocumentManager().getBioModel(bioModelInfo).getSimulationContexts();
-
-		String[] simContextNames = new String[simContexts.length];
-		if (simContextNames.length > 0) {
-			for (int i = 0; i < simContexts.length; i++){
-				simContextNames[i] = simContexts[i].getName();
-			}
-			// Get the simContext names, so that user can choose which simContext math to import
-			String simContextChoice = (String)PopupGenerator.showListDialog(this, simContextNames, "Please select Application");
-			if (simContextChoice == null) {
-				PopupGenerator.showErrorDialog("User cancelled application selection");
-				return null;
-			}
-			SimulationContext chosenSimContext = null;
-			for (int i = 0; i < simContexts.length; i++){
-				if (simContexts[i].getName().equals(simContextChoice)) {
-					chosenSimContext = simContexts[i];
-					break;
-				}
-			}
-			//Get corresponding mathDesc to create new mathModel and return.
-			String newName = bioModelInfo.getVersion().getName()+"_"+chosenSimContext.getName();
-			MathDescription bioMathDesc = chosenSimContext.getMathDescription();
-			MathDescription newMathDesc = null;
-			newMathDesc = new MathDescription(newName+"_"+(new java.util.Random()).nextInt());
-			try {
-				if (bioMathDesc.getGeometry().getDimension()>0 && bioMathDesc.getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
-					bioMathDesc.getGeometry().getGeometrySurfaceDescription().updateAll();
-				}
-			}catch (cbit.image.ImageException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
-			}catch (cbit.vcell.geometry.GeometryException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
-			}
-			newMathDesc.setGeometry(bioMathDesc.getGeometry());
-			newMathDesc.read_database(new CommentStringTokenizer(bioMathDesc.getVCML_database()));
-			newMathDesc.isValid();
-
-			newMathModel.setName(newName);
-			newMathModel.setMathDescription(newMathDesc);		
-		}
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-	}
-
-	return newMathModel;
-}			
+}
 
 /**
  * Insert the method's description here.
@@ -1390,20 +1176,15 @@ public void setLatestOnly(boolean latestOnly) {
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showAccessPermissionDialog(final JComponent aclEditor,final Component requester) {
-	return new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-			aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
-			accessPermissionDialog.setMessage("");
-			accessPermissionDialog.setMessage(aclEditor);
-			accessPermissionDialog.setValue(null);
-			JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
-			d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-			return accessPermissionDialog.getValue();
-		}
-	}.dispatchWrapRuntime();
-
+	JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
+	aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
+	accessPermissionDialog.setMessage("");
+	accessPermissionDialog.setMessage(aclEditor);
+	accessPermissionDialog.setValue(null);
+	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
+	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+	return accessPermissionDialog.getValue();
 }
 
 
@@ -1422,118 +1203,79 @@ private File showFileChooserDialog(FileFilter fileFilter) throws Exception {
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 public static File showFileChooserDialog(final FileFilter fileFilter, final UserPreferences currentUserPreferences) throws Exception{
-	return (File)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			// the boolean isXMLNotImage is true if we are trying to choose an XML file
-			// It is false if we are trying to choose an image file
-			// This is used to set the appropriate File filters.
+	// the boolean isXMLNotImage is true if we are trying to choose an XML file
+	// It is false if we are trying to choose an image file
+	// This is used to set the appropriate File filters.
 
-			String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
-			org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
-			fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+	String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
+	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
-			// setting fileFilter for xml files
-			fileChooser.setFileFilter(fileFilter);
-			
-		    int returnval = fileChooser.showOpenDialog(null);
-		    if (returnval == JFileChooser.APPROVE_OPTION) {
-		        File selectedFile = fileChooser.getSelectedFile();
-		        //reset the user preference for the default path, if needed.
-		        String newPath = selectedFile.getParent();
-		        if (!newPath.equals(defaultPath)) {
-					if(currentUserPreferences != null){
-						currentUserPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
-					}
-		        }
-		        //System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
-		        return selectedFile;
-		    }else{ // user didn't select a file
-			    throw UserCancelException.CANCEL_FILE_SELECTION;
-		    }
-		}
-	}.dispatchWithException();
-
+	// setting fileFilter for xml files
+	fileChooser.setFileFilter(fileFilter);
+	
+    int returnval = fileChooser.showOpenDialog(null);
+    if (returnval == JFileChooser.APPROVE_OPTION) {
+        File selectedFile = fileChooser.getSelectedFile();
+        //reset the user preference for the default path, if needed.
+        String newPath = selectedFile.getParent();
+        if (!newPath.equals(defaultPath)) {
+			if(currentUserPreferences != null){
+				currentUserPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+			}
+        }
+        //System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
+        return selectedFile;
+    }else{ // user didn't select a file
+	    throw UserCancelException.CANCEL_FILE_SELECTION;
+    }
 }
-
 
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private static Object showImagePropertiesDialog(final ImageAttributePanel imageAttributePanel) {
-	return new SwingDispatcherSync() {
-		public Object runSwing() throws Exception {
-			// Cannot use JOptionPane because it will not allow some children to resize
-			JDialog d = new JDialog();
-			d.setModal(true);
-			d.getContentPane().add(imageAttributePanel);
-			imageAttributePanel.setDialogParent(d);
-			d.setSize(400,600);
-			d.setLocation(300,200);
-			BeanUtils.centerOnComponent(d,null);
-			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,null);
-			return imageAttributePanel.getStatus();
-		}
-	}.dispatchWrapRuntime();
+public Object showImageSelectorDialog() {
+	ImageBrowser imageBrowser = getImageBrowser();
+	JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
+	imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
+	imageSelectDialog.setMessage("");
+	imageSelectDialog.setMessage(imageBrowser);
+	JDialog d = imageSelectDialog.createDialog(null, "Select Image:");
+	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,null);
+	return imageSelectDialog.getValue();
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:11:35 PM)
- */
-private Object showImageSelectorDialog(final JComponent imageBrowser, final Component requester) {
-	return new SwingDispatcherSync() {
-		public Object runSwing() throws Exception {
-			JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-			imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
-			imageSelectDialog.setMessage("");
-			imageSelectDialog.setMessage(imageBrowser);
-			JDialog d = imageSelectDialog.createDialog(requester, "Select Image:");
-			d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-			return imageSelectDialog.getValue();
-		}
-	}.dispatchWrapRuntime();
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager requester) {
-	return new SwingDispatcherSync() {
-		public Object runSwing() throws Exception{
-			JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
-			tree.setPreferredSize(new java.awt.Dimension(300, 600));
-			openDialog.setMessage("");
-			openDialog.setMessage(tree);
-			final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select document:");
-			theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			
-			DoubleClickListener doubleClickListener = new DoubleClickListener(theJDialog);
-			
+	JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
+	tree.setPreferredSize(new java.awt.Dimension(300, 600));
+	openDialog.setMessage("");
+	openDialog.setMessage(tree);
+	final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select document:");
+	theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	
+	DoubleClickListener doubleClickListener = new DoubleClickListener(theJDialog);
+	
 
-			getBioModelDbTreePanel().addActionListener(doubleClickListener);
-			getMathModelDbTreePanel().addActionListener(doubleClickListener);
-			getGeometryTreePanel().addActionListener(doubleClickListener);
+	getBioModelDbTreePanel().addActionListener(doubleClickListener);
+	getMathModelDbTreePanel().addActionListener(doubleClickListener);
+	getGeometryTreePanel().addActionListener(doubleClickListener);
 
-			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
-			
-			getBioModelDbTreePanel().removeActionListener(doubleClickListener);
-			getMathModelDbTreePanel().removeActionListener(doubleClickListener);
-			getGeometryTreePanel().removeActionListener(doubleClickListener);
-			
-			if (doubleClickListener.wasDoubleClicked()) {
-				return "Open";
-			}
+	ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
+	
+	getBioModelDbTreePanel().removeActionListener(doubleClickListener);
+	getMathModelDbTreePanel().removeActionListener(doubleClickListener);
+	getGeometryTreePanel().removeActionListener(doubleClickListener);
+	
+	if (doubleClickListener.wasDoubleClicked()) {
+		return "Open";
+	}
 
-			return openDialog.getValue();
-		}
-	}.dispatchWrapRuntime();
-
+	return openDialog.getValue();
 }
 
 
@@ -1542,57 +1284,51 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 public String showSaveDialog(final int documentType, final Component requester, final String oldName) throws Exception {
-	return (String)
-	new SwingDispatcherSync() {
-		public Object runSwing() throws Exception{
-			JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
-			saveDialog.setWantsInput(true);
-			saveDialog.setInitialSelectionValue(oldName);
-			JPanel panel = new JPanel(new BorderLayout());
-			JComponent tree = null;
-			switch (documentType) {
-				case VCDocument.BIOMODEL_DOC: {
-					tree = getBioModelDbTreePanel();
-					break;
-				}
-				case VCDocument.MATHMODEL_DOC: {
-					tree = getMathModelDbTreePanel();
-					break;
-				}
-				case VCDocument.GEOMETRY_DOC: {
-					tree = getGeometryTreePanel();
-					break;
-				}
-				default: {
-					throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
-				}
-			}
-			tree.setPreferredSize(new java.awt.Dimension(300, 600));
-			panel.add(tree, BorderLayout.CENTER);
-			panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
-			saveDialog.setMessage("");
-			saveDialog.setMessage(panel);
-			JDialog d = saveDialog.createDialog(requester, "Save document:");
-			d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			final JOptionPane finalSaveDialog = saveDialog;
-			ActionListener al = new ActionListener() {
-				public void actionPerformed(ActionEvent ae){
-					finalSaveDialog.selectInitialValue();
-				 }
-			};
-			final Timer getFocus = new Timer(100, al);
-			getFocus.setRepeats(false);
-			getFocus.start();	
-			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-			if ("Save".equals(saveDialog.getValue())) {
-				return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
-			} else {
-				// user cancelled
-				throw UserCancelException.CANCEL_NEW_NAME;
-			}
+	JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
+	saveDialog.setWantsInput(true);
+	saveDialog.setInitialSelectionValue(oldName);
+	JPanel panel = new JPanel(new BorderLayout());
+	JComponent tree = null;
+	switch (documentType) {
+		case VCDocument.BIOMODEL_DOC: {
+			tree = getBioModelDbTreePanel();
+			break;
 		}
-	}.dispatchWithException();
-
+		case VCDocument.MATHMODEL_DOC: {
+			tree = getMathModelDbTreePanel();
+			break;
+		}
+		case VCDocument.GEOMETRY_DOC: {
+			tree = getGeometryTreePanel();
+			break;
+		}
+		default: {
+			throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
+		}
+	}
+	tree.setPreferredSize(new java.awt.Dimension(300, 600));
+	panel.add(tree, BorderLayout.CENTER);
+	panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
+	saveDialog.setMessage("");
+	saveDialog.setMessage(panel);
+	JDialog d = saveDialog.createDialog(requester, "Save document:");
+	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	final JOptionPane finalSaveDialog = saveDialog;
+	ActionListener al = new ActionListener() {
+		public void actionPerformed(ActionEvent ae){
+			finalSaveDialog.selectInitialValue();
+		 }
+	};
+	final Timer getFocus = new Timer(100, al);
+	getFocus.setRepeats(false);
+	getFocus.start();	
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+	if ("Save".equals(saveDialog.getValue())) {
+		return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
+	} else {
+		// user cancelled
+		throw UserCancelException.CANCEL_NEW_NAME;
+	}
 }
 
 public void reconnect() {

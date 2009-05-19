@@ -24,7 +24,7 @@ public class ClientTaskDispatcher {
 	private static boolean bInProgress = false;
 
 /**
- * Insert the method's description here.
+ * don't show popup.
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
@@ -50,11 +50,14 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	// check tasks - swing non-blocking can be only at the end
 //	if (bInProgress) {
 //		Thread.dumpStack();
-//	}	
+//	}
+	final ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	
 	for (int i = 0; i < tasks.length; i++){
 		if (tasks[i].getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING && i < tasks.length - 1) {
 			throw new RuntimeException("SWING_NONBLOCKING task only permitted as last task");
 		}
+		taskList.add(tasks[i]);
 	}
 	// dispatch tasks to a new worker
 	SwingWorker worker = new SwingWorker() {
@@ -65,31 +68,31 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", false, bKnowProgress, cancelable, progressDialogListener);			
 				pp.start();
 			}
-			for (int i = 0; i < tasks.length; i++){
+			for (int i = 0; i < taskList.size(); i++){
 				// run all tasks
 				// after abort, run only non-skippable tasks
 				// also skip selected tasks specified by conditionalSkip tag 
-				final AsynchClientTask currentTask = tasks[i];
+				final AsynchClientTask currentTask = taskList.get(i);
 				currentTask.setClientTaskStatusSupport(pp);
 				
 //System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
 				if (pp != null) {
-					pp.setProgress(i*100/tasks.length); // beginning of task
+					pp.setProgress(i*100/taskList.size()); // beginning of task
 					pp.setMessage(currentTask.getTaskName());
 				}
 				boolean shouldRun = true;
-				if (hash.containsKey(TASK_ABORTED_BY_ERROR) && tasks[i].skipIfAbort()) {
+				if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
 					shouldRun = false;
 				}
 				if (hash.containsKey(TASKS_TO_BE_SKIPPED)) {
 					String[] toSkip = (String[])hash.get(TASKS_TO_BE_SKIPPED);
-					if (BeanUtils.arrayContains(toSkip, tasks[i].getClass().getName())) {
+					if (BeanUtils.arrayContains(toSkip, currentTask.getClass().getName())) {
 						shouldRun = false;
 					}
 				}
 				if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 					UserCancelException exc = (UserCancelException)hash.get(TASK_ABORTED_BY_USER);
-					if (tasks[i].skipIfCancel(exc)) {
+					if (currentTask.skipIfCancel(exc)) {
 						shouldRun = false;
 					}
 				}
@@ -122,6 +125,12 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 						recordException(exc, hash);
 					}
 				}
+//				AsynchClientTask[] followupTasks = currentTask.getFollowupTasks();
+//				if (followupTasks != null) {
+//					for (int j = 0; j < followupTasks.length; j++) {
+//						taskList.add(i+j+1, followupTasks[j]);
+//					}					
+//				}
 			}
 			return hash;
 		}

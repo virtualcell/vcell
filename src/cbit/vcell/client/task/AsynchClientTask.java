@@ -24,6 +24,7 @@ public abstract class AsynchClientTask {
 	private int taskType = TASKTYPE_NONSWING_BLOCKING;
 	private String taskName = "";
 	private ClientTaskStatusSupport clientTaskStatusSupport = null;
+	//private AsynchClientTask[] followupTasks = null;
 	
 	public AsynchClientTask(String name, int taskType) {
 		this(name, taskType, true, true);
@@ -66,4 +67,12 @@ public abstract class AsynchClientTask {
 	public void setClientTaskStatusSupport(ClientTaskStatusSupport clientTaskStatusSupport) {
 		this.clientTaskStatusSupport = clientTaskStatusSupport;
 	}
+
+//	public AsynchClientTask[] getFollowupTasks() {
+//		return followupTasks;
+//	}
+//
+//	public void setFollowupTasks(AsynchClientTask[] followupTasks) {
+//		this.followupTasks = followupTasks;
+//	}
 }

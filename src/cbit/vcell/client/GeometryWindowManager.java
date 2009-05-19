@@ -5,7 +5,6 @@ import java.awt.*;
 import javax.swing.*;
 
 import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.client.desktop.geometry.*;
@@ -35,25 +34,18 @@ public class GeometryWindowManager extends DocumentWindowManager implements java
  */
 public GeometryWindowManager(JPanel panel, cbit.vcell.client.RequestManager requestManager, final Geometry aGeometry, int newlyCreatedDesktops) {
 	super(panel, requestManager, aGeometry, newlyCreatedDesktops);
-
-	new SwingDispatcherSync() {
-		public Object runSwing() throws Exception{
-			surfaceViewer = new SurfaceViewerPanel();
-			geoViewer = new GeometryDisplayPanel();
-			setGeometry(aGeometry);
-			setJDesktopPane(new JDesktopPane());
-			getJPanel().setLayout(new BorderLayout());
-			getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-			createGeometryEditor();
-			initializeInternalFrames();
-			getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);
-			if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-				showGeometryViewer(true);
-			}
-			return null;
-		}
-	}.dispatchWrapRuntime();
-
+	surfaceViewer = new SurfaceViewerPanel();
+	geoViewer = new GeometryDisplayPanel();
+	setGeometry(aGeometry);
+	setJDesktopPane(new JDesktopPane());
+	getJPanel().setLayout(new BorderLayout());
+	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+	createGeometryEditor();
+	initializeInternalFrames();
+	getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);
+	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
+		showGeometryViewer(true);
+	}
 }
 
 

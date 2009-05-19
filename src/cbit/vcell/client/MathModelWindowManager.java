@@ -9,7 +9,6 @@ import javax.swing.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
@@ -58,30 +57,24 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
  */
 public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, final MathModel aMathModel, int newlyCreatedDesktops) {
 	super(panel, aRequestManager, aMathModel, newlyCreatedDesktops);
-	new SwingDispatcherSync() {
-		public Object runSwing() throws Exception{
-			equnsViewer = new EquationViewerPanel();
-			geoViewer = new GeometrySummaryViewer();
-			simsPanel = new SimulationListPanel();
-			vcmlEditor = new VCMLEditorPanel();
-			surfaceViewer = new SurfaceViewerPanel();
-			setJDesktopPane(new JDesktopPane());
-			getJPanel().setLayout(new BorderLayout());
-			getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-			setMathModel(aMathModel);
-			createMathModelEditor();
+	equnsViewer = new EquationViewerPanel();
+	geoViewer = new GeometrySummaryViewer();
+	simsPanel = new SimulationListPanel();
+	vcmlEditor = new VCMLEditorPanel();
+	surfaceViewer = new SurfaceViewerPanel();
+	setJDesktopPane(new JDesktopPane());
+	getJPanel().setLayout(new BorderLayout());
+	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+	setMathModel(aMathModel);
+	createMathModelEditor();
 
-			initializeInternalFrames();
-	
-			geoViewer.addActionListener(MathModelWindowManager.this);
-			getJPanel().add(getMathModelEditor(), BorderLayout.NORTH);
-			if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-				showVCMLEditor(true);
-			}	
-			return null;
-		}
-	}.dispatchWrapRuntime();
+	initializeInternalFrames();
 
+	geoViewer.addActionListener(MathModelWindowManager.this);
+	getJPanel().add(getMathModelEditor(), BorderLayout.NORTH);
+	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
+		showVCMLEditor(true);
+	}	
 }
 
 
@@ -326,7 +319,7 @@ cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSim
  * Creation date: (5/5/2004 9:44:15 PM)
  */
 private void initializeInternalFrames() {
-
+	// Initialize VCML Editor internal frame
 	String vcmlEditorTitle = "VCML Editor";
 	vcmlEditor.setMathModel(getMathModel());
 	VCMLEditorFrame = new JInternalFrameEnhanced(vcmlEditorTitle, true, true, true, true);

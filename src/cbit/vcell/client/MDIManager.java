@@ -149,4 +149,6 @@ void updateMemoryStatus(long freeBytes, long totalBytes);
  * @param progress int
  */
 void updateWhileInitializing(int progress);
+
+FieldDataWindowManager getFieldDataWindowManager();
 }

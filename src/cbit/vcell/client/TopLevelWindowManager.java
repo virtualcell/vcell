@@ -6,7 +6,8 @@ import org.vcell.util.document.VCDocument;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
-import cbit.vcell.client.server.*;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
 /**
@@ -229,7 +230,7 @@ public void removeExportListener(ExportListener newListener) {
 /**
  * Comment
  */
-public void newDocument(VCDocument.DocumentCreationInfo documentCreationInfo) {
-	getRequestManager().newDocument(documentCreationInfo);
+public AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCreationInfo) {
+	return getRequestManager().newDocument(documentCreationInfo);
 }
 }

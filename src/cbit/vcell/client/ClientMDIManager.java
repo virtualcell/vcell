@@ -328,6 +328,9 @@ public DatabaseWindowManager getDatabaseWindowManager() {
 }
 
 
+public FieldDataWindowManager getFieldDataWindowManager() {
+	return (FieldDataWindowManager)getManagersHash().get(FIELDDATA_WINDOW_ID);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 12:48:08 PM)
