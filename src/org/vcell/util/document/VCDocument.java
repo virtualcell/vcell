@@ -45,36 +45,58 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		}
 	};
 	public static class GeomFromFieldDataCreationInfo extends DocumentCreationInfo{
-		private byte[] imageData;
-		private ISize imageSize;
-		private Version imageVersion;
-		private Extent imageExtent;
-		private String imageDescription;
-		public GeomFromFieldDataCreationInfo(int documentType,int option,
-				byte[] imageData,ISize imageSize,Extent imageExtent,Version imageVersion,String imageDescription){
-			super(documentType,option);
-			this.imageData = imageData;
-			this.imageSize = imageSize;
-			this.imageVersion = imageVersion;
-			this.imageExtent = imageExtent;
-			this.imageDescription = imageDescription;
+
+		private ExternalDataIdentifier externalDataID = null;
+		private String varName = null;
+		private int timeIndex = 0;
+		public GeomFromFieldDataCreationInfo(ExternalDataIdentifier edi, String v, int ti) {
+			super(GEOMETRY_DOC,GEOM_OPTION_FIELDDATA);
+			externalDataID = edi;
+			varName = v;
+			timeIndex = ti;
 		}
-		public byte[] getImageData() {
-			return imageData;
+		public ExternalDataIdentifier getExternalDataID() {
+			return externalDataID;
 		}
-		public ISize getImageSize() {
-			return imageSize;
+		public String getVarName() {
+			return varName;
 		}
-		public Version getImageVersion() {
-			return imageVersion;
+		public int getTimeIndex() {
+			return timeIndex;
 		}
-		public Extent getImageExtent() {
-			return imageExtent;
-		}
-		public String getImageDescription(){
-			return imageDescription;
-		}
-	};
+		
+	}
+//	public static class GeomFromFieldDataCreationInfo extends DocumentCreationInfo{
+//		private byte[] imageData;
+//		private ISize imageSize;
+//		private Version imageVersion;
+//		private Extent imageExtent;
+//		private String imageDescription;
+//		public GeomFromFieldDataCreationInfo(int documentType,int option,
+//				byte[] imageData,ISize imageSize,Extent imageExtent,Version imageVersion,String imageDescription){
+//			super(documentType,option);
+//			this.imageData = imageData;
+//			this.imageSize = imageSize;
+//			this.imageVersion = imageVersion;
+//			this.imageExtent = imageExtent;
+//			this.imageDescription = imageDescription;
+//		}
+//		public byte[] getImageData() {
+//			return imageData;
+//		}
+//		public ISize getImageSize() {
+//			return imageSize;
+//		}
+//		public Version getImageVersion() {
+//			return imageVersion;
+//		}
+//		public Extent getImageExtent() {
+//			return imageExtent;
+//		}
+//		public String getImageDescription(){
+//			return imageDescription;
+//		}
+//	};
 /**
  * Insert the method's description here.
  * Creation date: (5/17/2004 1:03:55 PM)

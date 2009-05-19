@@ -1239,9 +1239,8 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
 	
-	javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
-	final javax.swing.tree.DefaultMutableTreeNode mainNode =
-		(javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
+	TreePath selPath = getJTree1().getSelectionPath();
+	final DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)selPath.getLastPathComponent();
 	final FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
 	
 	if(!fieldDataMainList.externalDataIdentifier.getOwner().equals(
@@ -1294,9 +1293,8 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 
 private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
-	javax.swing.tree.DefaultMutableTreeNode varNode =
-		(javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
-	DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)varNode.getParent().getParent();
+	final DefaultMutableTreeNode varNode = (DefaultMutableTreeNode)selPath.getLastPathComponent();
+	final DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)varNode.getParent().getParent();
 	Enumeration<DefaultMutableTreeNode> children = mainNode.children();
 	double[] times = null;
 	while(children.hasMoreElements()){
@@ -1338,37 +1336,12 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 		VCellTransferable.sendToClipboard(fieldFunctionReference);
 	}else if(actionEvent.getSource() == getJButtonCreateGeom()){
 		try {
-			PDEDataContext pdeDataContext =
-				fieldDataWindowManager.getPDEDataContext(((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier);
-			pdeDataContext.setVariableAndTime(((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(), pdeDataContext.getTimePoints()[begIndex]);
-			double[] data = pdeDataContext.getDataValues();
-			byte[] segmentedData = new byte[data.length];
-			Vector<Double> distinctValues = new Vector<Double>();
-			int index = -1;
-			for (int i = 0; i < data.length; i++) {
-				if((index = distinctValues.indexOf(data[i])) == -1){
-					index = distinctValues.size();
-					distinctValues.add(data[i]);
-					if(distinctValues.size() > 256){
-						throw new Exception("FieldData "+
-								((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName()+
-								" has more than 256 distinct values.");
-					}
-				}
-				segmentedData[i] = (byte)index;
-			}
-			fieldDataWindowManager.newDocument(
-				new VCDocument.GeomFromFieldDataCreationInfo(
-					VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FIELDDATA,
-					segmentedData,
-					new ISize(pdeDataContext.getCartesianMesh().getSizeX(),pdeDataContext.getCartesianMesh().getSizeY(),pdeDataContext.getCartesianMesh().getSizeZ()),
-					pdeDataContext.getCartesianMesh().getExtent(),
-					null,
-					"Created from Field Data "+
-					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName()+":\n"+
-					"Variable="+pdeDataContext.getVariableName()+" Time="+pdeDataContext.getTimePoint()
-				)
-			);
+			VCDocument.DocumentCreationInfo docCreateInfo = new VCDocument.GeomFromFieldDataCreationInfo(((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier, 
+					((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(), begIndex);
+			AsynchClientTask[] taskArray = fieldDataWindowManager.newDocument(docCreateInfo);
+			Hashtable<String, Object> hash = new Hashtable<String, Object>();
+			hash.put("requestManager", fieldDataWindowManager.getRequestManager());
+			ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			PopupGenerator.showErrorDialog("Error creating Geometry\n"+e.getMessage());

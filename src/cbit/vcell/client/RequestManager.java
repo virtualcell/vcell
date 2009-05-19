@@ -12,6 +12,7 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.DynamicDataManager;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.export.server.ExportSpecs;
@@ -191,7 +192,7 @@ void managerIDchanged(String oldID, String newID);
  * Creation date: (5/21/2004 2:37:55 AM)
  * @param documentType int
  */
-void newDocument(VCDocument.DocumentCreationInfo documentCreationInfo);
+AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCreationInfo);
 
 
 /**

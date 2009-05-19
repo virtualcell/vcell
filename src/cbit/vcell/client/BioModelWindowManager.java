@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
@@ -73,17 +72,12 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
  */
 public BioModelWindowManager(JPanel panel, RequestManager requestManager, final BioModel bioModel, int newlyCreatedDesktops) {
 	super(panel, requestManager, bioModel, newlyCreatedDesktops);
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			setJDesktopPane(new JDesktopPane());
-			getJPanel().setLayout(new BorderLayout());
-			getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-			setBioModel(bioModel);
-			setBioModelEditor(new BioModelEditor());
-			createBioModelFrame();
-			return null;
-		}
-	}.dispatchWrapRuntime();
+	setJDesktopPane(new JDesktopPane());
+	getJPanel().setLayout(new BorderLayout());
+	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+	setBioModel(bioModel);
+	setBioModelEditor(new BioModelEditor());
+	createBioModelFrame();
 }
 
 
@@ -465,7 +459,6 @@ public void resetDocument(final org.vcell.util.document.VCDocument newDocument) 
 	}
 	getRequestManager().updateStatusNow();
 }
-
 
 /**
  * Insert the method's description here.

@@ -47,8 +47,11 @@ public class UserMessage {
 	public final static UserMessage warn_SaveNotOwner = new UserMessage("You are not the owner of the document - do you want to save a copy of the document under your account?",
 				new String[] {OPTION_SAVE_AS_NEW, OPTION_CANCEL},				OPTION_SAVE_AS_NEW,		UserPreferences.WARN_SAVE_NOT_OWNER);
 
-	public final static UserMessage warn_DeleteSelectedApp = new UserMessage("Are you sure you want to delete application '"+TEXT_REPLACE+"'?",
+	public final static UserMessage warn_DeleteSelectedAppWithSims = new UserMessage("Application '"+TEXT_REPLACE+"' has simulations. Are you sure you want to delete application '"+TEXT_REPLACE+"'?",
 				new String[] {OPTION_DELETE, OPTION_CANCEL},					OPTION_DELETE,			UserPreferences.WARN_DELETE_APPLICATION);
+	
+	public final static UserMessage warn_DeleteSelectedApp = new UserMessage("Are you sure you want to delete application '"+TEXT_REPLACE+"'?",
+			new String[] {OPTION_DELETE, OPTION_CANCEL},					OPTION_DELETE,			UserPreferences.WARN_DELETE_APPLICATION);
 
 	public final static UserMessage question_LostResults = new UserMessage("Saving model will overwrite existing simulation results for\n"+TEXT_REPLACE+"\noverwrite sim results or save as new edition?",
 				new String[] {OPTION_DISCARD_RESULTS, OPTION_SAVE_AS_NEW_EDITION},		OPTION_DISCARD_RESULTS,		-1);
