@@ -108,9 +108,8 @@ public class FRAPStudy implements Matchable{
 	private transient String directory = null;
 	public static final String EXTRACELLULAR_NAME = "extracellular";
 	public static final String CYTOSOL_NAME = "cytosol";
-	public static final String SPECIES_NAME_PREFIX_MOBILE_OLD = "fluor_primary_mobile"; //to load old reference simulation results
-	public static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_free_particle"; 
-	public static final String SPECIES_NAME_PREFIX_SLOW_MOBILE = "fluor_complex";
+	public static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_primary_mobile"; 
+	public static final String SPECIES_NAME_PREFIX_SLOW_MOBILE = "fluor_secondary_mobile";
 	public static final String SPECIES_NAME_PREFIX_BINDING_SITE = "binding_site";
 	public static final String SPECIES_NAME_PREFIX_IMMOBILE = "fluor_immobile"; 
 	public static final String SPECIES_NAME_PREFIX_COMBINED = "fluor_combined"; 
@@ -898,8 +897,8 @@ public class FRAPStudy implements Matchable{
 	{
 			VCDataIdentifier[] vcIdentifierArray = new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId};
 			MergedDataInfo mergedDataInfo =
-				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),vcIdentifierArray
-					,MergedDataInfo.createDefaultPrefixNames(vcIdentifierArray.length));
+				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
+					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId}, FRAPStudyPanel.VFRAP_DS_PREFIX);
 			return
 				new File(simDataDirectory,
 					mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);

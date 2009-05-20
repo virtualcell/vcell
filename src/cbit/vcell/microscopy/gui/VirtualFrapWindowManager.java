@@ -29,6 +29,8 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	protected transient java.util.Vector aExportListener = null;
 	protected transient java.util.Vector aDataJobListener = null;
 	private LocalWorkspace localWorkSpace = null;
+	private boolean bSaveAsZip = true;
+	private ExportEvent exportEvt = null;
 	
 	/**
 	 * Method to support listener events.
@@ -142,6 +144,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 //			DocumentWindowManager.showFrame(plotFrames[i], jdp);
 //		}
 	}
+	
 	public void startExport(ExportSpecs exportSpecs){
 		try {
 			SessionLog log = new StdoutSessionLog("export");
@@ -160,6 +163,29 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 			e.printStackTrace();
 		}
 	}
+	
+	public ExportEvent startExportMovie(ExportSpecs exportSpecs){
+		ExportEvent exportEvt = null;
+		try {
+			SessionLog log = new StdoutSessionLog("export");
+			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));
+			DataServerImpl dataServerImpl = new DataServerImpl(log,localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
+			exportServiceImpl.addExportListener(new ExportListener() {
+				public void exportMessage(ExportEvent event) {
+					System.out.println(event.toString());
+				}
+			});
+			//the last parameter denotes whether the saved file is comporessed or not.
+			exportEvt = exportServiceImpl.makeRemoteFile(LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false);
+		}catch (DataAccessException e){
+			e.printStackTrace(System.out);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return exportEvt;
+	}
+		
 	public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	}
 	public User getUser() {
@@ -175,4 +201,5 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	public void setLocalWorkSpace(LocalWorkspace arg_localWorkSpace) {
 		this.localWorkSpace = arg_localWorkSpace;
 	}
+	
 }
