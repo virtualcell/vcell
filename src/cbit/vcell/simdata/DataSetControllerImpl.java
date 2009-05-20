@@ -12,7 +12,6 @@ import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.simdata.gui.SpatialSelectionContour;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.parser.*;
-import cbit.vcell.geometry.*;
 import cbit.vcell.math.*;
 import cbit.plot.*;
 
@@ -41,7 +40,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
-import cbit.vcell.server.*;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -2498,7 +2496,10 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 	//Automatically 'special' (non-optimized timedata retrieval) if isAllowOptimizedTimeDataRetrieval() == false
 	boolean bIsSpecial = !isAllowOptimizedTimeDataRetrieval();
 	if(!bIsSpecial){
-		VCData simData = getVCData(vcdID);
+		VCData simData = getVCData(vcdID);		
+		// refresh functions in case functions are added by other data services.
+		simData.getFunctions();
+
 		//
 		//Gradient and FieldData functions are special.
 		//They have to be evaluated using the 'full data' method using evaluateFunction(...).
@@ -2690,6 +2691,7 @@ private org.vcell.util.TimeSeriesJobResults getTimeSeriesValues_private(final VC
 		}
 		//
 		VCData vcData = getVCData(vcdID);
+		
 		//
 		//Determine Memory Usage for this job to protect server
 		//

@@ -5,7 +5,6 @@ package cbit.vcell.simdata;
  * All rights reserved.
 ©*/
 
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -19,10 +18,8 @@ import cbit.vcell.math.*;
 import java.io.*;
 import java.util.*;
 
-import cbit.vcell.server.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.parser.*;
-import cbit.util.*;
 import java.util.zip.*;
 
 import org.vcell.util.BeanUtils;
@@ -500,14 +497,7 @@ public SymbolTableEntry getEntry(String identifier) {
 	if (entry != null){
 		return entry;
 	}
-	
-	// refresh functions in case functions are added by other data services.
-	try {
-		getFunctionDataIdentifiers();
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-	}
-	
+		
 	entry = getDataSetIdentifier(identifier);
 	if (entry != null){
 		return entry;
@@ -1051,88 +1041,6 @@ public synchronized SimDataBlock getSimDataBlock(String varName, double time) th
 		return null;
 	}
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
-public synchronized double[][] getSimDataLineScan(String[] varNames,int[][] indexes,double desiredTime) throws DataAccessException,IOException{
-
-	
-	refreshLogFile();
-
-	//try {
-		//getFunctionDataIdentifiers();
-	//} catch (Exception ex) {
-		//ex.printStackTrace(System.out);
-	//}
-
-	// Setup parameters for SimDataReader
-	boolean[] wantsThisTime = new boolean[this.dataTimes.length];
-	Arrays.fill(wantsThisTime,false);
-	for(int i=0;i<dataTimes.length;i+= 1){
-		if(dataTimes[i] == desiredTime){
-			wantsThisTime[i] = true;
-			break;
-		}
-	}
-
-	double[][][] timeResults = getSimDataTimeSeries(varNames,indexes,wantsThisTime,null);
-	double[][] results = new double[varNames.length][];
-	for(int i=0;i<varNames.length;i+= 1){
-		results[i] = new double[indexes[i].length];
-		for( int j=0;j<indexes[i].length;j+= 1){
-			results[i][j] = timeResults[0][i][j];
-		}
-	}
-	return results;
-	/*
-	String[] tempZipFileNames = new String[zipFilenames.length];
-	String[] tempSimDataFileNames = new String[dataFilenames.length];
-	for(int i=0;i<dataFilenames.length;i+= 1){
-		tempZipFileNames[i] = getPDEDataZipFile(dataTimes[i]).getAbsolutePath();
-		tempSimDataFileNames[i] = getPDEDataFile(dataTimes[i]).getAbsolutePath();
-	}
-	SimDataReader sdr = null;
-
-	double[] results = new double[indexes.length];
-	
-	try{
-		sdr =
-			new SimDataReader(
-				wantsThisTime,
-				dataTimes,
-				tempZipFileNames,
-				tempSimDataFileNames,
-				new String[]{varName},
-				new int[][]{indexes}
-			);
-		double[][] currentVals = new double[1][indexes.length];
-		int counter = 0;
-		while(sdr.hasMoreData()){
-			sdr.getNextDataAtCurrentTime(currentVals);
-			// Copy data to results
-			if(wantsThisTime[counter]){
-				System.arraycopy(currentVals[0],0,results,0,indexes.length);
-				return results;
-			}
-			counter+= 1;
-		}
-		return null;
-	}catch(Throwable e){
-		throw new DataAccessException(e.getMessage());
-	}finally{
-		if(sdr != null){
-			sdr.close();
-		}
-	}
-	*/
-}
-
-
 
 /**
  * This method was created in VisualAge.
