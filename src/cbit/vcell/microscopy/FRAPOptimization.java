@@ -61,13 +61,7 @@ public class FRAPOptimization {
 		double[][] newData = new double[roiLen][simTimes.length];
 		double[] simData = null;
 		for (int j = 0; j < simTimes.length; j++) {
-			try
-			{
-				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,simTimes[j]).getData();
-			}catch(DataAccessException e)
-			{
-				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE_OLD,simTimes[j]).getData();
-			}
+			simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,simTimes[j]).getData();
 			for(int i = 0; i < roiLen; i++){
 				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
 			}

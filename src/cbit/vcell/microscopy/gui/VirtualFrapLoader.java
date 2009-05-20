@@ -63,14 +63,19 @@ public class VirtualFrapLoader {
 	//get paths
 	//get current working directory
 	//filefilters for VFrap
-	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter("lsm","Zeiss Lsm Images");
-	public final static  VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter("tif", "TIFF Images");
 	public static final String VFRAP_EXTENSION = "vfrap";
+	public static final String LSM_EXTENSION = "lsm";
+	public static final String TIFF_EXTENSION = "tif";
+	public static final String QT_EXTENSION = "mov";
+	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter(LSM_EXTENSION,"Zeiss Lsm Images");
+	public final static  VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter(TIFF_EXTENSION, "TIFF Images");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter(VFRAP_EXTENSION,"Virtual FRAP Files");
+	public final static  VirtualFrapMainFrame.AFileFilter filter_qt = new VirtualFrapMainFrame.AFileFilter(QT_EXTENSION,"Quick Time Movie Files");
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
     public static JFileChooser openFileChooser; 
     public static JFileChooser saveFileChooser; 
     public static JFileChooser multiOpenFileChooser; 
+    public static JFileChooser saveMovieFileChooser;
     //set default font 
     public static Font defaultFont = new Font("Tahoma", Font.PLAIN, 11); 
     //set the only one instance of the main frame 
@@ -121,7 +126,10 @@ public class VirtualFrapLoader {
 			    multiOpenFileChooser = new JFileChooser(); 
 			    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser.setMultiSelectionEnabled(true);
-	
+			    saveMovieFileChooser = new JFileChooser();
+			    saveMovieFileChooser.addChoosableFileFilter(filter_qt);
+			    saveMovieFileChooser.setAcceptAllFileFilterUsed(false);
+			    saveMovieFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
 	            
 	            // setup component font
 		        UIManager.put ("InternalFrame.titleFont", defaultFont);

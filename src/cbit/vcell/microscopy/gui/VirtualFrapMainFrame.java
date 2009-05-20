@@ -34,6 +34,7 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 
@@ -299,9 +300,8 @@ public class VirtualFrapMainFrame extends JFrame
 		      }
 		      else if(arg.equals(EXIT_ACTION_COMMAND))
 			  {
-		    	  int result = JOptionPane.showConfirmDialog(
-		    			 VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!","Exit?", JOptionPane.YES_NO_OPTION);
-	    	      if (result == JOptionPane.YES_OPTION)
+		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!", new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
+		    	  if (result == UserMessage.OPTION_CLOSE)
 	    	      {
 	    	    	  System.exit(0);
 	    	      }
@@ -454,7 +454,7 @@ public class VirtualFrapMainFrame extends JFrame
       );
 	  System.setProperty(PropertyLoader.localSimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 	  System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
-	  System.setProperty(PropertyLoader.exportBaseDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+	  System.setProperty(PropertyLoader.exportBaseDirProperty, localWorkspace.getDefaultSimDataDirectory());
       System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());
 
 	  frapStudyPanel.setLocalWorkspace(localWorkspace);
@@ -560,8 +560,8 @@ public class VirtualFrapMainFrame extends JFrame
 
   public boolean close()
   {
-      int v=JOptionPane.showConfirmDialog(this, "Do you want to Exit Virtual Frap? Files unsaved will be lost!","Exit?", JOptionPane.YES_NO_OPTION);
-      if (v == JOptionPane.YES_OPTION)
+	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!", new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
+	  if (result == UserMessage.OPTION_CLOSE)
       {
     	  return true;
       }
