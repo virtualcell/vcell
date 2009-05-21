@@ -14,7 +14,6 @@ import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
 import cbit.vcell.biomodel.*;
 /**
@@ -311,43 +310,21 @@ public static void login(final RequestManager requestManager,final ClientServerI
 					}
 				}).start();
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
-				SwingUtilities.invokeLater(new Runnable(){public void run() {loginDialog.dispose();}});
-				new Thread(new Runnable() {
-					public void run() {
-						try {
-							UserInfo registeredUserInfo =
-								UserRegistrationOP.registrationOperationGUI(
-										clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
-							ClientServerInfo newClientServerInfo =
-								createClientServerInfo(
-										clientServerInfo,
-										registeredUserInfo.userid,
-										registeredUserInfo.password);
-							requestManager.connectToServer(newClientServerInfo);
-						} catch (UserCancelException e) {
-							//do nothing
-						} catch (Exception e) {
-							e.printStackTrace();
-							PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
-						}finally{
-							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
-							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-									SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-										VCellClient.login(requestManager,clientServerInfo);
-									}});
-								//new Thread(new Runnable() {public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
-							}
-						}
-					}
-				}).start();
+				loginDialog.dispose();
+				try {
+					UserRegistrationOP.registrationOperationGUI(requestManager,	clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
+				} catch (UserCancelException e) {
+					//do nothing
+				} catch (Exception e) {
+					e.printStackTrace();
+					PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+				}
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
 				new Thread(new Runnable() {
 					public void run() {
 						try {
-							ClientServerInfo newClientServerInfo =
-								createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
-							UserRegistrationOP.registrationOperationGUI(
-										newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
+							ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
+							UserRegistrationOP.registrationOperationGUI(requestManager, newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
 						} catch (UserCancelException e) {
 							//do nothing
 						} catch (Exception e) {

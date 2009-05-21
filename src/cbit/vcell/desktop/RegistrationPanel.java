@@ -157,7 +157,7 @@ public class RegistrationPanel extends JPanel {
 		add(textFieldPassword1, gridBagConstraints_6);
 
 		final JLabel passwordLabel_1 = new JLabel();
-		passwordLabel_1.setText("Password *");
+		passwordLabel_1.setText("Re-type Password *");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_5.gridy = 3;
@@ -425,5 +425,25 @@ public class RegistrationPanel extends JPanel {
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(600,600);
+	}
+	
+	public void reset(){
+		textFieldLoginID.setEnabled(true);
+		textFieldLoginID.setText("");
+		
+		textFieldPassword1.setText("");
+		textFieldPassword2.setText("");
+		textFieldEMail.setText("");
+		textFieldFirstName.setText("");
+		textFieldLastName.setText("");
+		textFieldTitle.setText("");
+		textFieldOrganization.setText("");
+		textFieldAddress1.setText("");
+		textFieldAddress2.setText("");
+		comboBoxCountry.setSelectedItem("");
+		textFieldCity.setText("");
+		textFieldState.setText("");
+		textFieldZIP.setText("");
+		checkBoxNoEmail.setSelected(false);
 	}
 }

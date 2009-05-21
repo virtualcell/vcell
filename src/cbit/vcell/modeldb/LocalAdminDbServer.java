@@ -4,6 +4,7 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+import java.util.List;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -14,6 +15,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
+import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 
 /**
@@ -71,7 +73,7 @@ public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex)
 /**
  * getSimulationJobStatus method comment.
  */
-public java.util.List getSimulationJobStatus(java.lang.String conditions) throws DataAccessException {
+public List<SimpleJobStatus> getSimulationJobStatus(java.lang.String conditions) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(conditions,true);
 	}catch (Throwable e){
@@ -195,7 +197,7 @@ public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) thr
 		return adminDbTop.getUserInfo(key,true);
 	}catch (Throwable e){
 		log.exception(e);
-		throw new DataAccessException("failure inserting user '"+newUserInfo.userid+"'\n"+e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}
 }
 

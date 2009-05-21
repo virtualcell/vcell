@@ -1,7 +1,7 @@
 package cbit.vcell.geometry.surface;
 import org.vcell.util.Compare;
 
-import cbit.image.VCImage;
+import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.*;
 /**
@@ -96,17 +96,8 @@ public GeometrySurfaceDescription(Geometry geometry, GeometrySurfaceDescription 
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
 }
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
@@ -463,15 +454,6 @@ public void refreshDependencies() {
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.

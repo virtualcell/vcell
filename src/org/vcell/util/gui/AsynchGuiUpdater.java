@@ -1,6 +1,8 @@
 package org.vcell.util.gui;
-import java.awt.event.*;
-import javax.swing.*;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Timer;
 
 
 /**
@@ -32,14 +34,7 @@ public abstract class AsynchGuiUpdater {
  * @param listener java.awt.event.ActionListener
  */
 public AsynchGuiUpdater() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			timer = new Timer(100, new AsynchGuiUpdater.Listener());
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	timer = new Timer(100, new AsynchGuiUpdater.Listener());
 }
 
 /*
@@ -75,14 +70,7 @@ protected abstract void guiToDo(Object params);
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void restart() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			timer.restart();
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	timer.restart();
 }
 
 
@@ -91,14 +79,7 @@ public void restart() {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void setDelay(final int millis) {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			timer.setDelay(millis);
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	timer.setDelay(millis);
 }
 
 
@@ -107,14 +88,7 @@ public void setDelay(final int millis) {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void start() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			timer.start();
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	timer.start();
 }
 
 
@@ -123,14 +97,7 @@ public void start() {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void stop() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			timer.stop();
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	timer.stop();
 }
 
 
@@ -139,14 +106,7 @@ public void stop() {
  * Creation date: (5/19/2004 1:58:22 AM)
  */
 public final void updateNow() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			guiToDo();
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	guiToDo();
 }
 
 
@@ -155,13 +115,6 @@ public final void updateNow() {
  * Creation date: (5/19/2004 1:58:22 AM)
  */
 public final void updateNow(final Object parameter) {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			guiToDo(parameter);
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	guiToDo(parameter);
 }
 }
