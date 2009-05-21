@@ -1671,15 +1671,21 @@ private String[] getVariableNamesToCompare(Simulation sim1, Simulation sim2) {
  * Creation date: (5/14/2004 5:28:23 PM)
  */
 public void initializeAllPanels() {
-	try {
-		DocumentManager documentManager = getRequestManager().getDocumentManager();
-		getTestingFrameworkWindowPanel().setDocumentManager(documentManager);
-		getAddTestSuitePanel().setTestingFrameworkWindowManager(this);
-		getTestCaseAddPanel().setTestingFrameworkWindowManager(this);
-		getEditTestCriteriaPanel().setTestingFrameworkWindowManager(this);
-	} catch (Throwable exc) {
-		exc.printStackTrace(System.out);
-	}
+	AsynchClientTask task1 = new AsynchClientTask("initializeAllPanels", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try {
+				DocumentManager documentManager = getRequestManager().getDocumentManager();
+				getTestingFrameworkWindowPanel().setDocumentManager(documentManager);
+				getAddTestSuitePanel().setTestingFrameworkWindowManager(TestingFrameworkWindowManager.this);
+				getTestCaseAddPanel().setTestingFrameworkWindowManager(TestingFrameworkWindowManager.this);
+				getEditTestCriteriaPanel().setTestingFrameworkWindowManager(TestingFrameworkWindowManager.this);
+			} catch (Throwable exc) {
+				exc.printStackTrace(System.out);
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 }
 
 

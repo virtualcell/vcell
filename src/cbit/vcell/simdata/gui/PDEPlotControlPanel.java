@@ -184,274 +184,83 @@ public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
  */
 private void addFunction() {
 
-	initFunctionsList();
-	
-	cbit.vcell.simdata.gui.FunctionSpecifierPanel fsp =
-		new cbit.vcell.simdata.gui.FunctionSpecifierPanel();
-	fsp.initFunctionInfo(
-			getJList1().getSelectedValue().toString(),
-			getPdeDataContext().getDataIdentifiers(),
-			functionsList.toArray(new AnnotatedFunction[0]));
-	final javax.swing.JDialog jd = new javax.swing.JDialog();
-	jd.setTitle("View/Add/Delete/Edit Functions");
-	jd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-	jd.setModal(true);
-	jd.getContentPane().add(fsp);
-//	jd.pack();
-	jd.setSize(450,250);
-	BeanUtils.centerOnComponent(jd, this);
-	
-	fsp.addActionListener(
-		new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				jd.dispose();
-			}
-		}
-	);
+	AsynchClientTask task1 = new AsynchClientTask("init functin list", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
-	while(true){
-		ZEnforcer.showModalDialogOnTop(jd);
-		if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_CANCEL){
-			break;
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			initFunctionsList();
 		}
-		AnnotatedFunction newFunction = null;
-		try{
+	};
+	
+	final FunctionSpecifierPanel fsp = new FunctionSpecifierPanel();
+	
+	AsynchClientTask task2 = new AsynchClientTask("show dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			fsp.initFunctionInfo(getJList1().getSelectedValue().toString(), getPdeDataContext().getDataIdentifiers(), functionsList.toArray(new AnnotatedFunction[0]));
+			final JDialog jd = new JDialog();
+			jd.setTitle("View/Add/Delete/Edit Functions");
+			jd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			jd.setModal(true);
+			jd.getContentPane().add(fsp);
+			jd.setSize(450,250);
+			BeanUtils.centerOnComponent(jd, PDEPlotControlPanel.this);
+			
+			fsp.addActionListener(new ActionListener(){
+					public void actionPerformed(ActionEvent e) {
+						jd.dispose();
+					}
+				}
+			);
+			ZEnforcer.showModalDialogOnTop(jd);
+		}
+	};
+	
+	AsynchClientTask task3 = new AsynchClientTask("add/delete/replace function", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_CANCEL){
+				return;
+			}
 			if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_ADDNEW){
-				newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
-				getPdeDataContext().addFunctions(
-						new AnnotatedFunction[] {newFunction}, new boolean[] {false});
+				AnnotatedFunction newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
+				getPdeDataContext().addFunctions(new AnnotatedFunction[] {newFunction}, new boolean[] {false});
 				functionsList.add(newFunction);
 			}else if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_DELETE){
 				getPdeDataContext().removeFunction(fsp.getSelectedAnnotatedFunction());
 				functionsList.removeElement(fsp.getSelectedAnnotatedFunction());
 			}else if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_REPLACE){
-				newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
-				getPdeDataContext().addFunctions(
-						new AnnotatedFunction[] {newFunction}, new boolean[] {true});
+				AnnotatedFunction newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
+				getPdeDataContext().addFunctions(new AnnotatedFunction[] {newFunction}, new boolean[] {true});
 				functionsList.remove(fsp.getSelectedAnnotatedFunction());
 				functionsList.add(newFunction);
 				getPdeDataContext().externalRefresh();
 			}
-			break;
-		}catch(Exception e){
-			e.printStackTrace();
-			PopupGenerator.showErrorDialog("Error "+e.getMessage());
-			continue;
-		}finally{
-			new Thread(
-				new Runnable(){
-					public void run(){
-						try{
-							BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-							getPdeDataContext().refreshIdentifiers();
-						}finally{
-							BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-						}
-					}
-				}
-			).start();
 		}
-	}
+	};
 	
-//	if(bReplaceFunc){
-//		functionsList.remove(defaultFunction);
-//		getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {true});
-//		functionsList.add(newFunction);
-//	}else{
-//		getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {false});
-//		functionsList.add(newFunction);
-//	}
-
+	AsynchClientTask task4 = new AsynchClientTask("change cursor to wait cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		}
+	};
 	
+	AsynchClientTask task5 = new AsynchClientTask("refresh identifiers", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			getPdeDataContext().refreshIdentifiers();
+		}		
+	};
 	
+	AsynchClientTask task6 = new AsynchClientTask("change cursor back to default cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}		
+	};
 	
-	
-//	// Get a default name for the user defined function
-//	String[] existingVariableNames = getpdeDataContext1().getVariableNames();
-//	String defaultName = null;
-//	int count = 1;
-//	boolean nameUsed = true;
-//	while (nameUsed) {
-//		nameUsed = false;
-//		defaultName = getpdeDataContext1().getVariableName()+"_"+count;
-//		for (int i = 0; existingVariableNames != null && i < existingVariableNames.length; i++){
-//			if (existingVariableNames[i].equals(defaultName)) {
-//				nameUsed = true;
-//				break;
-//			}
-//		}
-//		count++;
-//	}
-//
-//	initFunctionsList();
-//	defaultName = 
-//		(isDeletableFunction(getpdeDataContext1().getVariableName())?getpdeDataContext1().getVariableName():defaultName);
-//	String defaultExpression = "0.0";
-//	AnnotatedFunction defaultFunction = null;
-//	for(int i=0;functionsList != null && i<functionsList.size();i+= 1){
-//		if(functionsList.elementAt(i).getName().equals(getpdeDataContext1().getVariableName())){
-//			defaultFunction = functionsList.elementAt(i);
-////			defaultExpression = functionsList.elementAt(i).getSimplifiedExpression().infix();
-//			defaultExpression = functionsList.elementAt(i).getExpression().infix();
-//		}
-//	}
-//	javax.swing.JPanel fnPanel = getFunctionPanel();
-//	getFunctionNameTextField().setText(defaultName);
-//	getFunctionExpressionTextField().setText(defaultExpression);
-//	fnPanel.setSize(400,250);
-//
-//	//
-//	// Show the editor with a default name and default expression for the function. If the OK option is chosen, 
-//	// get the new name and expression for the function and add it to the list of columns. 
-//	// Else, pop-up an error dialog indicating that function cannot be added.
-//	//
-//	int ok = -1;
-//	boolean bReplaceFunc = false;
-//	while (true) {
-//		// User-defined Function name cannot have spaces; if user inputs a name with spaces, 
-//		// pop up the 'Add Function' dialog to prompt the user to input a function name without spaces.
-//		ok = PopupGenerator.showComponentOKCancelDialog(this,fnPanel,"Add Function");
-//		//ok = JOptionPane.showOptionDialog(this, fnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-//		if (ok != javax.swing.JOptionPane.OK_OPTION) {
-//			break;
-//		}
-//		String fnName = getFunctionNameTextField().getText();
-//		if (fnName.indexOf(" " ) > 0) {
-//			cbit.vcell.client.PopupGenerator.showErrorDialog("Function name cannot have spaces, please change function name.");
-//			continue;
-//		}
-//		try{
-//			//preliminary expression check
-//			new Expression(getFunctionExpressionTextField().getText()).flatten();
-//		}catch(Exception e){
-//			PopupGenerator.showErrorDialog("Error \n"+getFunctionExpressionTextField().getText()+"\n"+e.getMessage());
-//			continue;
-//		}
-//		if(isDeletableFunction(getPdeDataContext().getVariableName()) && fnName.equals(defaultName)){
-//			JTextArea jta = new JTextArea("Replace function '"+defaultName+"'\n"+
-//					"original= '"+defaultExpression+"'\n"+
-//					"new     = '"+getFunctionExpressionTextField().getText()+"'");
-//			jta.setEditable(false);
-//			int confirm = PopupGenerator.showComponentOKCancelDialog(this,jta,"Confirm Expression Replacement");
-//			if(confirm == JOptionPane.OK_OPTION){
-//				bReplaceFunc = true;
-//			}else{
-//				continue;
-//			}
-//		}else{
-//			boolean bIsNameLegal = true;
-//			for (int i = 0; existingVariableNames != null && i < existingVariableNames.length; i++) {
-//				if(existingVariableNames[i].equals(fnName)){
-//					PopupGenerator.showErrorDialog("Error: function name '"+
-//							fnName+"' is already used by a non-replaceable variable name");
-//					bIsNameLegal = false;
-//					break;
-//				}
-//			}
-//			if(!bIsNameLegal){
-//				continue;
-//			}
-//		}
-//		break;
-//	}
-//	if (ok == javax.swing.JOptionPane.OK_OPTION) {
-//		
-//		String funcName = null;
-////		String tempFuncName = null;
-//		AnnotatedFunction newFunction = null;
-//		try {
-//			DataIdentifier[] dataIdentifiers = getpdeDataContext1().getDataIdentifiers();
-//			String[] dataIdNames = new String[dataIdentifiers.length];
-//			VariableType[] dataIdVarTypes = new VariableType[dataIdentifiers.length];
-//			
-//			for (int i = 0; i < dataIdNames.length; i++){
-//				dataIdNames[i] = dataIdentifiers[i].getName();
-//				dataIdVarTypes[i] = dataIdentifiers[i].getVariableType();
-//			}
-//
-////			AnnotatedFunction tempOldFunction = null;
-////			if(bReplaceFunc){
-////				tempFuncName = defaultName+"_old";
-////				while(true){
-////					boolean bOK = true;
-////					for(int i=0;i<existingFunctionsNames.length;i+= 1){
-////						if(existingFunctionsNames[i].equals(tempFuncName)){
-////							tempFuncName = TokenMangler.getNextEnumeratedToken(tempFuncName);
-////							bOK = false;
-////							break;
-////						}
-////					}
-////					if(bOK){
-////						break;
-////					}
-////				}
-////				Expression funcExp = new Expression(defaultExpression);
-////				Function function = new Function(tempFuncName,funcExp );
-////				VariableType funcType = FVSolver.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
-////				tempOldFunction = new AnnotatedFunction(tempFuncName, funcExp, "", funcType, true);
-////			}
-//		
-//		
-//		
-//			funcName = getFunctionNameTextField().getText();
-//			cbit.vcell.parser.Expression funcExp = null;
-//			funcExp = new Expression(getFunctionExpressionTextField().getText());
-//
-//
-//			Function function = new Function(funcName, funcExp);
-//			VariableType funcType = FVSolver.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
-//			newFunction = new AnnotatedFunction(funcName, funcExp, "", funcType, true);
-//			if(bReplaceFunc){
-//				functionsList.remove(defaultFunction);
-//				getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {true});
-//				functionsList.add(newFunction);
-//			}else{
-//				getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {false});
-//				functionsList.add(newFunction);
-//			}
-//		} catch (Exception e) {
-//			newFunction = null;
-//			e.printStackTrace(System.out);
-//			PopupGenerator.showErrorDialog("Error adding/editing function\n"+e.getMessage());
-//		}finally{
-//			final AnnotatedFunction finalNewFunc = newFunction;
-//			AsynchClientTask funcUpdate = new AsynchClientTask() {
-//				public String getTaskName() { return "function update"; }
-//				public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
-//				public void run(java.util.Hashtable hash) throws Exception{
-//					getpdeDataContext1().refreshIdentifiers();
-//					getpdeDataContext1().refreshTimes();
-//					if (finalNewFunc == null){
-//						functionsList = null;
-//						initFunctionsList();
-//					}else{
-//						ListModel dlm = getJList1().getModel();
-//						for(int i=0;i<dlm.getSize();i+= 1){
-//							if(dlm.getElementAt(i).equals(finalNewFunc.getName())){
-//								if(getJList1().getSelectedIndex() != i){
-//									getJList1().setSelectedIndex(i);
-//								}else{
-//									ListSelectionEvent lse = new ListSelectionEvent(this,i,i,false);
-//									setUserDefinedFnExpressionLabel(lse);
-//									getPdeDataContext().refreshData();
-//								}
-//								break;
-//							}
-//						}
-//					}
-//				}
-//				public boolean skipIfAbort() {
-//					return false;
-//				}
-//				public boolean skipIfCancel(UserCancelException e) {
-//					return false;
-//				}
-//			};
-//			AsynchClientTask[] tasks = new AsynchClientTask[] {funcUpdate};
-//			cbit.vcell.client.task.ClientTaskDispatcher.dispatch(this, new Hashtable(), tasks, false);
-//
-//		}
-//	}
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3, task4, task5, task6});
 }
 
 

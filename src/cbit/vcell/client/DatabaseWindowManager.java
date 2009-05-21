@@ -926,16 +926,22 @@ public VCDocumentInfo getPanelSelection() {
  * Creation date: (5/14/2004 5:28:23 PM)
  */
 public void initializeAll() {
-	try {
-		DocumentManager documentManager = getRequestManager().getDocumentManager();
-		getBioModelDbTreePanel().setDocumentManager(documentManager);
-		getMathModelDbTreePanel().setDocumentManager(documentManager);
-		getGeometryTreePanel().setDocumentManager(documentManager);
-		getDatabaseWindowPanel().setDocumentManager(documentManager);
-		getImageBrowser().getImageDbTreePanel1().setDocumentManager(documentManager);
-	} catch (Throwable exc) {
-		exc.printStackTrace(System.out);
-	}
+	AsynchClientTask task1 = new AsynchClientTask("initializeAll", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {		
+			try {
+				DocumentManager documentManager = getRequestManager().getDocumentManager();
+				getBioModelDbTreePanel().setDocumentManager(documentManager);
+				getMathModelDbTreePanel().setDocumentManager(documentManager);
+				getGeometryTreePanel().setDocumentManager(documentManager);
+				getDatabaseWindowPanel().setDocumentManager(documentManager);
+				getImageBrowser().getImageDbTreePanel1().setDocumentManager(documentManager);
+			} catch (Throwable exc) {
+				exc.printStackTrace(System.out);
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 }
 
 

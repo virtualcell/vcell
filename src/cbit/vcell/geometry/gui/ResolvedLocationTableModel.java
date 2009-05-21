@@ -1,5 +1,4 @@
 package cbit.vcell.geometry.gui;
-import org.vcell.util.gui.SwingDispatcherSync;
 
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -166,12 +165,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof cbit.vcell.geometry.surface.GeometrySurfaceDescription && evt.getPropertyName().equals("geometricRegions")) {
-		new SwingDispatcherSync (){
-			public Object runSwing() throws Exception{
-				fireTableDataChanged();
-				return null;
-			}
-		}.dispatchConsumeException();
+		fireTableDataChanged();
 	}
 }
 

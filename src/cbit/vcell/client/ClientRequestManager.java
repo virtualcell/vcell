@@ -47,7 +47,6 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
@@ -938,63 +937,31 @@ public void curateDocument(final VCDocumentInfo documentInfo, final int curateTy
 
 
 public void updateUserRegistration(final boolean bNewUser){
-	new Thread(new Runnable() {
-		public void run() {
-			UserInfo registeredUserInfo = null;
-			try {
-				registeredUserInfo =
-					UserRegistrationOP.registrationOperationGUI(
-							getClientServerManager().getClientServerInfo(),
-							(bNewUser?LoginDialog.USERACTION_REGISTER:LoginDialog.USERACTION_EDITINFO),
-							(bNewUser?null:getClientServerManager()));
-			} catch (UserCancelException e) {
-				return;
-			} catch (Exception e) {
-				e.printStackTrace();
-				PopupGenerator.showErrorDialog((bNewUser?"Create new":"Update")+" user Registration error:\n"+e.getMessage());
-				return;
-			}
-			if (bNewUser) {
-				try{
-					ClientServerInfo newClientServerInfo = VCellClient
-						.createClientServerInfo(getClientServerManager()
-								.getClientServerInfo(),
-								registeredUserInfo.userid,
-								registeredUserInfo.password);
-					connectToServer(newClientServerInfo);
-				}finally{
-					ConnectionStatus connectionStatus = getConnectionStatus();
-					if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-						PopupGenerator.showInfoDialog(
-							"Automatic login of New user '"+registeredUserInfo.userid+"' failed.\n"+
-							"Restart VCell and login as '"+registeredUserInfo.userid+"' to use new VCell account."
-						);
-					}
-				}
-			}
-
-		}
-	}).start();
+	try {
+		UserRegistrationOP.registrationOperationGUI(this, 
+				getClientServerManager().getClientServerInfo(),
+				(bNewUser?LoginDialog.USERACTION_REGISTER:LoginDialog.USERACTION_EDITINFO),
+				(bNewUser?null:getClientServerManager()));
+	} catch (UserCancelException e) {
+		return;
+	} catch (Exception e) {
+		e.printStackTrace();
+		PopupGenerator.showErrorDialog((bNewUser?"Create new":"Update")+" user Registration error:\n"+e.getMessage());
+		return;
+	}
 }
 
 public void sendLostPassword(final String userid){
-	new Thread(new Runnable() {
-		public void run() {
-			try {
-				UserInfo registeredUserInfo = 
-					UserRegistrationOP.registrationOperationGUI(
-							VCellClient.createClientServerInfo(
-								getClientServerManager().getClientServerInfo(), userid, null),
-							LoginDialog.USERACTION_LOSTPASSWORD,
-							null);
-			} catch (UserCancelException e) {
-				//do nothing
-			} catch (Exception e) {
-				e.printStackTrace();
-				PopupGenerator.showErrorDialog("Update user Registration error:\n"+e.getMessage());
-			}
-		}
-	}).start();	
+	try {
+		UserRegistrationOP.registrationOperationGUI(this, 
+				VCellClient.createClientServerInfo(
+					getClientServerManager().getClientServerInfo(), userid, null),
+				LoginDialog.USERACTION_LOSTPASSWORD,
+				null);
+	} catch (Exception e) {
+		e.printStackTrace();
+		PopupGenerator.showErrorDialog("Update user Registration error:\n"+e.getMessage());
+	}
 }
 /**
  * Insert the method's description here.
@@ -2203,7 +2170,14 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
  */
 public void updateStatusNow() {
 	// thread safe update of gui
-	getVcellClient().getStatusUpdater().updateNow(getVcellClient().getClientServerManager().getConnectionStatus());
+	AsynchClientTask task1 = new AsynchClientTask("updateStatusNow", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			getVcellClient().getStatusUpdater().updateNow(getVcellClient().getClientServerManager().getConnectionStatus());
+			
+		}
+	};
+	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 }
 
 public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
