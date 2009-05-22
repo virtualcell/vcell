@@ -201,6 +201,7 @@ public class UserRegistrationOP implements Serializable{
 				throw UserCancelException.CANCEL_GENERIC;
 			}
 			registrationProvider.sendLostPassword(currentClientServerInfo.getUsername());
+			return;
 		}
 		
 		final RegistrationProvider finalRegistrationProvider = registrationProvider;
