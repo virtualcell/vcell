@@ -320,19 +320,15 @@ public static void login(final RequestManager requestManager,final ClientServerI
 					PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
 				}
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
-				new Thread(new Runnable() {
-					public void run() {
-						try {
-							ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
-							UserRegistrationOP.registrationOperationGUI(requestManager, newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
-						} catch (UserCancelException e) {
-							//do nothing
-						} catch (Exception e) {
-							e.printStackTrace();
-							PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
-						}
-					}
-				}).start();
+				try {
+					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
+					UserRegistrationOP.registrationOperationGUI(requestManager, newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
+				} catch (UserCancelException e) {
+					//do nothing
+				} catch (Exception e) {
+					e.printStackTrace();
+					PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+				}
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_CANCEL)){
 				PopupGenerator.showInfoDialog(
 					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");

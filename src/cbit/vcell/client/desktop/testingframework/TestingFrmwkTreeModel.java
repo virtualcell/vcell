@@ -446,14 +446,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  */
 public void refreshTree(TestSuiteInfoNew tsin) {
 	
-	if (getDocumentManager() != null){
+	if (getDocumentManager() != null && getDocumentManager().getUser() != null){
 		if(getDocumentManager().getUser().isTestAccount()){
 			(new Thread(new GetTestSuites(tsin))).start();
 		}else{
 			setRoot(new BioModelNode(getDocumentManager().getUser().getName()+" Not TestAccount User"));
 		}
 	}else{
-		setRoot(new BioModelNode("No DocumentManager"));
+		setRoot(new BioModelNode("empty"));
 	}
 }
 /**

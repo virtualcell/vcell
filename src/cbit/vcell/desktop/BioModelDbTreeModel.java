@@ -317,7 +317,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (2/14/01 3:50:24 PM)
  */
 public void refreshTree() {
-	if (getDocumentManager()!=null){
+	if (getDocumentManager()!=null && getDocumentManager().getUser() != null){
 		try {
 			setRoot(createBaseTree());
 		}catch (DataAccessException e){
