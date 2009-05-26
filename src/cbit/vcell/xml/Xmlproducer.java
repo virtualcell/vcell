@@ -3023,7 +3023,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
 		solvertask.addContent( getXML(param.getSensitivityParameter()) );
 	}
 	//Add solver name
-	solvertask.setAttribute(XMLTags.SolverNameTag, param.getSolverDescription().getName());
+	solvertask.setAttribute(XMLTags.SolverNameTag, param.getSolverDescription().getDatabaseName());
 	
 	return solvertask;
 }

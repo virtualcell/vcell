@@ -695,7 +695,7 @@ private void connEtoM6(java.awt.event.ItemEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setSolverDescription(this.getSolverDescriptionFromName((String)getSolverComboBox().getSelectedItem()));
+		getTornOffSolverTaskDescription().setSolverDescription(this.getSolverDescriptionFromDisplayLabel((String)getSolverComboBox().getSelectedItem()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -982,37 +982,37 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	}
 	// remember cuurent solver so we can put it back as the selected one after creating the list
 	// otherwise, iterating while adding elements will fire events that wil change it on the TornoffSolverTaskDescription...
-	String currentSolverDescriptionName = null;
+	SolverDescription currentSolverDescription = null;
 	if (newSolverTaskDescription != null && newSolverTaskDescription.getSolverDescription() != null) {
-		currentSolverDescriptionName = newSolverTaskDescription.getSolverDescription().getName();
+		currentSolverDescription = newSolverTaskDescription.getSolverDescription();
 	}
 	//
 	fieldSolverComboBoxModel.removeAllElements();
 	if(getSolverTaskDescription() != null) {
-		String[] solverDescriptionNames = new String[0];
+		SolverDescription[] solverDescriptions = new SolverDescription[0];
 		if (getSolverTaskDescription().getSimulation().getIsSpatial()) 
 		{
-			solverDescriptionNames = SolverDescription.getPDESolverDescriptions();
+			solverDescriptions = SolverDescription.getPDESolverDescriptions();
 		}
 		else if (getSolverTaskDescription().getSimulation().getMathDescription().isStoch()) //amended Sept.27, 2006
 		{
-			solverDescriptionNames = SolverDescription.getStochSolverDescriptions();
+			solverDescriptions = SolverDescription.getStochSolverDescriptions();
 		} 
 		else 
 		{
 			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // ODE with FastSystem
-				solverDescriptionNames = SolverDescription.getODEWithFastSystemSolverDescriptions();
+				solverDescriptions = SolverDescription.getODEWithFastSystemSolverDescriptions();
 			} else {
-				solverDescriptionNames = SolverDescription.getODESolverDescriptions();
+				solverDescriptions = SolverDescription.getODESolverDescriptions();
 			}
 		}
-		for (int i = 0; i < solverDescriptionNames.length; i++) {
-			fieldSolverComboBoxModel.addElement(solverDescriptionNames[i]);
+		for (int i = 0; i < solverDescriptions.length; i++) {
+			fieldSolverComboBoxModel.addElement(solverDescriptions[i].getDisplayLabel());
 		}
 	}
 	//
-	if (currentSolverDescriptionName != null) {
-		fieldSolverComboBoxModel.setSelectedItem(currentSolverDescriptionName);
+	if (currentSolverDescription != null) {
+		fieldSolverComboBoxModel.setSelectedItem(currentSolverDescription.getDisplayLabel());
 	}
 	return (fieldSolverComboBoxModel);
 }
@@ -2114,8 +2114,8 @@ private java.lang.Object getSolverComboBoxModel() {
 /**
  * Comment
  */
-public cbit.vcell.solver.SolverDescription getSolverDescriptionFromName(String argSolverName) {
-	return cbit.vcell.solver.SolverDescription.fromName(argSolverName);
+public cbit.vcell.solver.SolverDescription getSolverDescriptionFromDisplayLabel(String argSolverName) {
+	return cbit.vcell.solver.SolverDescription.fromDisplayLabel(argSolverName);
 }
 
 
@@ -2834,11 +2834,11 @@ private void updateSolverNameDisplay(cbit.vcell.solver.SolverDescription argSolv
 		//
 		// if already selected, don't reselect (break the loop of events)
 		//
-		if (getSolverComboBox().getSelectedItem()!=null && getSolverComboBox().getSelectedItem().equals(argSolverDescription.getName())){
+		if (getSolverComboBox().getSelectedItem()!=null && getSolverComboBox().getSelectedItem().equals(argSolverDescription.getDisplayLabel())){
 			return;
 		}
 		if (getSolverComboBox().getModel().getSize()>0){
-			getSolverComboBox().setSelectedItem(argSolverDescription.getName());
+			getSolverComboBox().setSelectedItem(argSolverDescription.getDisplayLabel());
 		}
 	}
 }

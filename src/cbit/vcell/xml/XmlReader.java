@@ -3854,7 +3854,7 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 	//set Attributes
 	try {
 		//set solver
-		sd = cbit.vcell.solver.SolverDescription.fromName(solverName);
+		sd = cbit.vcell.solver.SolverDescription.fromDatabaseName(solverName);
 		solverTaskDesc.setSolverDescription(sd);
 		
 		if ( taskType.equalsIgnoreCase(XMLTags.UnsteadyTag) ) {
