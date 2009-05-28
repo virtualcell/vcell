@@ -258,7 +258,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		aProgressDialog.show();
+		aProgressDialog.setVisible(true);
 		java.awt.Insets insets = aProgressDialog.getInsets();
 		aProgressDialog.setSize(aProgressDialog.getWidth() + insets.left + insets.right, aProgressDialog.getHeight() + insets.top + insets.bottom);
 		aProgressDialog.setVisible(true);
@@ -315,5 +315,9 @@ void setProgress(int progress) {
  */
 void setProgressBarString(String progressString) {
 	getJProgressBar1().setString(progressString);
+}
+
+public void disableCancelButton() {
+	getCancelButton().setEnabled(false);
 }
 }

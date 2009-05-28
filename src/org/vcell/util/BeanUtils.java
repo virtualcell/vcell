@@ -858,22 +858,17 @@ public static void setCursorThroughout(final Container container, final Cursor c
 	if (container==null){
 		return;
 	}
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			Component[] components = container.getComponents();
-			for (int i=0;i<components.length;i++) {
-				components[i].setCursor(cursor);
-				if(components[i] instanceof JRootPane){
-					BeanUtils.setCursorThroughout(((JRootPane)components[i]).getContentPane(), cursor);
-				}else if (components[i] instanceof Container) {
-					if (((Container)components[i]).getComponentCount() > 0) {
-						BeanUtils.setCursorThroughout((Container)components[i], cursor);
-					}
-				}
+	Component[] components = container.getComponents();
+	for (int i=0;i<components.length;i++) {
+		components[i].setCursor(cursor);
+		if(components[i] instanceof JRootPane){
+			BeanUtils.setCursorThroughout(((JRootPane)components[i]).getContentPane(), cursor);
+		}else if (components[i] instanceof Container) {
+			if (((Container)components[i]).getComponentCount() > 0) {
+				BeanUtils.setCursorThroughout((Container)components[i], cursor);
 			}
-			return null;
 		}
-	}.dispatchWrapRuntime();
+	}
 }
 
 

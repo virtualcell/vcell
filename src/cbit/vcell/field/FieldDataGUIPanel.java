@@ -1850,9 +1850,8 @@ private void getPslidSelections(final int mode) {
 	final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
 	pp[0] =
 		new AsynchProgressPopup(
-//				FieldDataGUIPanel.this,"Accessing PSLID Information","",true,false,
-				FieldDataGUIPanel.this,"Accessing PSLID Information","",true,true,
-			true,
+				FieldDataGUIPanel.this,"Accessing PSLID Information","",Thread.currentThread(),
+				true,true,true,
 			new ProgressDialogListener(){
 				public void cancelButton_actionPerformed(EventObject newEvent) {
 					pp[0].stop();
@@ -1865,7 +1864,6 @@ private void getPslidSelections(final int mode) {
 	pslidThread[0] = new Thread(
 		new Runnable(){
 			public void run() {
-//								FileOutputStream fos = null;
 				try {
 					threadState = Thread.currentThread();
 					pslidPanel.initCellProteinList( fieldDataWindowManager.getUserPreferences(),pp[0],mode);
@@ -1881,34 +1879,6 @@ private void getPslidSelections(final int mode) {
 						System.out.println(pslidSelInfo.proteinImageURL);
 						System.out.println(pslidSelInfo.compartmentImageURL);
 						jButtonFDFromFile_ActionPerformed(null, pslidSelInfo.fdos, initFDName);
-						
-//										File proteinImageFile = File.createTempFile("pslidProt",null);
-//										proteinImageFile.deleteOnExit();
-//										fos = new FileOutputStream(proteinImageFile);
-//										fos.write(pslidSelInfo.proteinImage);
-//										fos.close();
-//										
-//										File compartmentImageFile = File.createTempFile("pslidComp",null);
-//										compartmentImageFile.deleteOnExit();
-//										fos = new FileOutputStream(compartmentImageFile);
-//										fos.write(pslidSelInfo.compartmentImage);
-//										fos.close();
-//
-//										FieldDataFileOperationSpec fdos_protein = createFDOSFromImageFile(proteinImageFile);
-//										FieldDataFileOperationSpec fdos_compartment = createFDOSFromImageFile(compartmentImageFile);
-//										FieldDataFileOperationSpec fdos_composite = new FieldDataFileOperationSpec();
-//										fdos_composite.variableTypes =
-//											new VariableType[] {fdos_protein.variableTypes[0],fdos_compartment.variableTypes[0]};
-//										fdos_composite.varNames =
-//											new String[] {fdos_protein.varNames[0],fdos_compartment.varNames[0]};
-//										fdos_composite.shortSpecData =
-//											new short[][][] {{fdos_protein.shortSpecData[0][0],fdos_compartment.shortSpecData[0][0]}};
-//										fdos_composite.times = new double[] {0};
-//										fdos_composite.origin = pslidSelInfo.origin;
-//										fdos_composite.extent = pslidSelInfo.extent;
-//										fdos_composite.isize = pslidSelInfo.isize;
-						
-						//jButtonFDFromFile_ActionPerformed(null, fdos_composite,initFDName);
 					}
 				} catch (Exception e) {
 					pp[0].stop();
@@ -1917,41 +1887,12 @@ private void getPslidSelections(final int mode) {
 						PopupGenerator.showErrorDialog("Error displaying PSLID Information.\n"+e.getMessage());
 					}
 				} finally {
-//									if(fos != null){try{fos.close();}catch(Exception e){}}
 					pp[0].stop();
 				}
 			}
 		}
 	);
 	pslidThread[0].start();
-
-//					//Create Timer thread to kill PSLID thread if taking too long (hang)
-//					final long MAX_WAIT_TIME_MILLISEC = 45000;
-//					final long MAX_WARNING_TIME_MILLISEC = 15000;
-//					final javax.swing.Timer pslidBlockTimer = new javax.swing.Timer(1000,null);
-//					pslidBlockTimer.addActionListener(
-//						new java.awt.event.ActionListener(){
-//							long startTime = System.currentTimeMillis();
-//							public void actionPerformed(java.awt.event.ActionEvent e){
-//								if(!pslidThread.isAlive()){
-//									pslidBlockTimer.stop();
-//									return;
-//								}
-//								long elapsedTime = System.currentTimeMillis()-startTime;
-//								if(elapsedTime < MAX_WAIT_TIME_MILLISEC){
-//									if(elapsedTime > MAX_WARNING_TIME_MILLISEC){
-//										pp.setMessage("Waiting for PSLID information... "+((MAX_WAIT_TIME_MILLISEC-elapsedTime)/1000));
-//									}
-//									pslidBlockTimer.restart();
-//								}else{
-//									pslidBlockTimer.stop();
-//									pp.stop();
-//									pslidThread.interrupt();
-//								}
-//							}
-//						}
-//					);
-//					pslidBlockTimer.restart();
 }
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"
