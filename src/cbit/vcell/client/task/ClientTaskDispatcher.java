@@ -1,6 +1,7 @@
 package cbit.vcell.client.task;
 import java.awt.*;
 import java.util.*;
+
 import swingthreads.*;
 import javax.swing.*;
 
@@ -28,25 +29,31 @@ public class ClientTaskDispatcher {
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
-public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks) {
-	dispatch(requester,hash,tasks,false, false, false, null);
-}
-	
-public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final boolean bKnowProgress) {
-	dispatch(requester,hash,tasks, bKnowProgress,false, null);
+public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks) {
+	dispatch(requester,hash,tasks,false, false, false, null, false);
 }
 
-public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final boolean bKnowProgress, 
-		final boolean cancelable, final ProgressDialogListener progressDialogListener) {
-	dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener);
+public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress) {
+	dispatch(requester,hash,tasks, true, bKnowProgress, false, null, false);
 }
+
+public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress, 
+		boolean cancelable, ProgressDialogListener progressDialogListener) {
+	dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener, false);
+}
+
+public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress, 
+		boolean cancelable, ProgressDialogListener progressDialogListener, boolean bInputBlocking) {
+	dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
 public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, 
-		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener) {
+		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
 	// check tasks - swing non-blocking can be only at the end
 //	if (bInProgress) {
 //		Thread.dumpStack();
@@ -65,8 +72,12 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		public Object construct() {
 			bInProgress = true;
 			if (bShowProgressPopup) {
-				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", false, bKnowProgress, cancelable, progressDialogListener);			
-				pp.start();
+				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
+				if (bInputBlocking) {
+					pp.startKeepOnTop();
+				} else {
+					pp.start();
+				}
 			}
 			for (int i = 0; i < taskList.size(); i++){
 				// run all tasks
@@ -90,6 +101,10 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 						shouldRun = false;
 					}
 				}
+				if (pp != null && pp.isInterrupted()) {
+					recordException(UserCancelException.CANCEL_GENERIC, hash);
+				}
+				
 				if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 					UserCancelException exc = (UserCancelException)hash.get(TASK_ABORTED_BY_USER);
 					if (currentTask.skipIfCancel(exc)) {

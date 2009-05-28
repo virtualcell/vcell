@@ -1,6 +1,7 @@
 package org.vcell.util.gui;
 
 import java.awt.*;
+import java.util.EventObject;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 /**
@@ -46,6 +47,9 @@ public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskS
 	private String message = null;  
 	private boolean bCancelable = false;
 	private ProgressDialogListener progressDialogListener = null;
+	private Thread nonswingThread = null;
+	
+	boolean bInterrupted = false;
 /**
  * Insert the method's description here.
  * Creation date: (5/19/2004 3:11:01 PM)
@@ -54,8 +58,8 @@ public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskS
  * @param inputBlocking boolean
  * @param knowsProgress boolean
  */
-public AsynchProgressPopup(Component requester, String title, String message, boolean inputBlocking, boolean knowsProgress) {
-	this(requester,title,message,inputBlocking,knowsProgress,false,null);
+public AsynchProgressPopup(Component requester, String title, String message, Thread nonswingThread, boolean inputBlocking, boolean knowsProgress) {
+	this(requester,title,message,nonswingThread, inputBlocking,knowsProgress,false,null);
 }
 
 /**
@@ -66,15 +70,28 @@ public AsynchProgressPopup(Component requester, String title, String message, bo
  * @param inputBlocking boolean
  * @param knowsProgress boolean
  */
-public AsynchProgressPopup(Component requester, String title, String message, boolean inputBlocking, 
-		boolean knowsProgress, boolean cancelable, ProgressDialogListener progressDialogListener) {
+public AsynchProgressPopup(Component requester, String title, String message, Thread arg_nonswingThread, boolean inputBlocking, 
+		boolean knowsProgress, boolean cancelable, final ProgressDialogListener arg_progressDialogListener) {
 	this.requester = requester;
 	this.title = title;
 	this.message = message;
+	this.nonswingThread = arg_nonswingThread;
 	this.inputBlocking = inputBlocking;
 	this.knowsProgress = knowsProgress;
 	this.bCancelable = cancelable;
-	this.progressDialogListener = progressDialogListener;
+	this.progressDialogListener = new ProgressDialogListener() {
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			if (bCancelable) {
+				dialog.disableCancelButton();
+				setMessage("Cancelling, please wait...");
+				interrupt();
+				nonswingThread.interrupt();
+			}
+			if (arg_progressDialogListener != null) {
+				arg_progressDialogListener.cancelButton_actionPerformed(newEvent);
+			}
+		}
+	};
 }
 
 private ProgressDialog getDialog() {
@@ -247,5 +264,13 @@ public void stop() {
 			e.printStackTrace();
 		}
 	}.dispatch();
+}
+
+public synchronized boolean isInterrupted() {
+	return bInterrupted;
+}
+
+private synchronized void interrupt() {
+	bInterrupted = true;
 }
 }

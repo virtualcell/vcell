@@ -58,7 +58,7 @@ public class TestingFrmwkTreeModel
 	class GetTestSuites implements Runnable{
 		private TestSuiteInfoNew tsin;
 		org.vcell.util.gui.AsynchProgressPopup pp = 
-			new org.vcell.util.gui.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",false,true);
+			new org.vcell.util.gui.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",null,false,true);
 		public GetTestSuites(TestSuiteInfoNew argtsin){
 			tsin = argtsin;
 		}

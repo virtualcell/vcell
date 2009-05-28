@@ -1,20 +1,23 @@
 package cbit.vcell.client.data;
+
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -23,22 +26,26 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.TSJobResultsNoStats;
 import org.vcell.util.TSJobResultsSpaceStats;
-import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
-import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.ProgressDialogListener;
-import org.vcell.util.gui.SwingDispatcherSync;
+import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.LineBorderBean;
+import org.vcell.util.gui.TitledBorderBean;
+import org.vcell.util.gui.VCFileChooser;
 
 import cbit.image.DisplayAdapterService;
 import cbit.plot.*;
 import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.simdata.gui.*;
 import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
-
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solvers.CartesianMesh;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,13 +53,15 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
 import java.util.Map.Entry;
-
 import cbit.vcell.client.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
+import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.export.quicktime.MediaMethods;
 import cbit.vcell.export.quicktime.MediaMovie;
 import cbit.vcell.export.quicktime.MediaSample;
@@ -60,115 +69,104 @@ import cbit.vcell.export.quicktime.MediaTrack;
 import cbit.vcell.export.quicktime.VideoMediaChunk;
 import cbit.vcell.export.quicktime.VideoMediaSampleRaw;
 import cbit.vcell.export.quicktime.atoms.UserDataEntry;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
 import cbit.vcell.geometry.gui.SurfaceCanvas;
 import cbit.vcell.geometry.gui.SurfaceMovieSettingsPanel;
+import cbit.vcell.geometry.surface.Surface;
+import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.geometry.surface.TaubinSmoothing;
+import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
+import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
  * @author: Ion Moraru
  */
-public class PDEDataViewer extends DataViewer {
-	//
-	private class ThreadSafeDataJobInfo {
-		public AsynchProgressPopup pp;
-		TimeSeriesJobResultsAction timeSeriesJobResultsAction;
-		public ThreadSafeDataJobInfo(AsynchProgressPopup pp,TimeSeriesJobResultsAction timeSeriesJobResultsAction){
-			this.pp = pp;
-			this.timeSeriesJobResultsAction = timeSeriesJobResultsAction;
+public class PDEDataViewer extends DataViewer implements DataJobSender {
+	private Vector<DataJobListener> dataJobListenerList = new Vector<DataJobListener>();
+	 
+	static String StringKey_timeSeriesJobResults =  "timeSeriesJobResults";
+	static String StringKey_timeSeriesJobException =  "timeSeriesJobException";
+	static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
+	
+	public static class TimeSeriesDataJobListener implements DataJobListener {
+		private ClientTaskStatusSupport clientTaskStatusSupport = null;
+		private Hashtable<String, Object> hashTable = null;
+		private VCDataJobID vcDataJobID = null;
+		private double oldProgress = 0;
+		
+		public TimeSeriesDataJobListener(VCDataJobID id, Hashtable<String, Object> hash, ClientTaskStatusSupport ctss) {
+			vcDataJobID = id;
+			clientTaskStatusSupport = ctss;
+			hashTable = hash;
+		}			
+			
+		public void dataJobMessage(final DataJobEvent dje) {
+			if (!dje.getVcDataJobID().equals(vcDataJobID)) {
+				return;
+			}
+			switch (dje.getEventTypeID()) {
+			case MessageEvent.DATA_START:
+				break;
+			case MessageEvent.DATA_PROGRESS:
+				Double progress = dje.getProgress();
+				if (progress != null && progress.doubleValue() > oldProgress) {
+					oldProgress = progress.doubleValue();								
+					clientTaskStatusSupport.setProgress(progress.intValue());
+				}
+				break;
+			case MessageEvent.DATA_COMPLETE:
+				hashTable.put(StringKey_timeSeriesJobResults, dje.getTimeSeriesJobResults());
+				break;
+			case MessageEvent.DATA_FAILURE:
+				hashTable.put(StringKey_timeSeriesJobException,dje.getFailedJobException());
+				break;
+			}
 		}
 	};
-	public interface TimeSeriesJobStarter {
-		void startTimeSeriesJob(TimeSeriesJobSpec tsjs,TimeSeriesJobResultsAction resultsAction,boolean bInputBlocking);
-	}
-	public interface TimeSeriesJobResultsAction extends Runnable{
-		void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults);
-		void setTimeSeriesJobFailed(Throwable e);
-	}
-	private class PlotSpaceStats implements TimeSeriesJobResultsAction{
-		private TimeSeriesJobResults timeSeriesJobResults;
-		private Throwable timeSeriesJobFailed;
-		public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults){
-			this.timeSeriesJobResults = timeSeriesJobResults;
+	
+	public class TimeSeriesDataRetrievalTask extends AsynchClientTask {
+		public TimeSeriesDataRetrievalTask(String title) {
+			super(title, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
 		}
-		public void setTimeSeriesJobFailed(Throwable e){
-			timeSeriesJobFailed = e;
-		}
-		public void run() {
-			if(timeSeriesJobFailed != null){
-				return;//Do Nothing Special
-			}
-			final TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)timeSeriesJobResults;
-			//Determine if Volume or Membrane
-			DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
-			boolean bVolume = true;
-			for(int i=0;i<diArr.length;i+= 1){
-				if(diArr[i].getName().equals(tsjrss.getVariableNames()[0])){
-					if(diArr[i].getVariableType().equals(VariableType.MEMBRANE) || diArr[i].getVariableType().equals(VariableType.MEMBRANE_REGION)){
-						bVolume = false;
+	
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			TimeSeriesJobSpec timeSeriesJobSpec = (TimeSeriesJobSpec)hashTable.get(StringKey_timeSeriesJobSpec);
+			PDEDataViewer.this.getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
+			DataJobListener djl = new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
+			try {
+				PDEDataViewer.this.addDataJobListener(djl);
+				while (true) {
+					Throwable timeSeriesJobFailed = (Throwable)hashTable.get(StringKey_timeSeriesJobException);
+					if (timeSeriesJobFailed != null) {
+						throw new Exception(timeSeriesJobFailed.getMessage());
+					}
+					if (hashTable.get(StringKey_timeSeriesJobResults) != null) {
 						break;
 					}
-				}
-			}
-
-			cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
-			if(tsjrss.getVariableNames().length == 1){
-				symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
-			//for(int i=0;i<symbolTableEntries.length;i+= 1){
-				try{
-					if(getSimulation() != null && getSimulation().getMathDescription() != null){
-						symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjrss.getVariableNames()[0]);
-					}else{
-						symbolTableEntries[0] = new SimpleSymbolTable(tsjrss.getVariableNames()).getEntry(tsjrss.getVariableNames()[0]);
+					if (getClientTaskStatusSupport().isInterrupted()) {
+						break;
 					}
-					symbolTableEntries[1] = symbolTableEntries[0];
-					symbolTableEntries[2] = symbolTableEntries[0];
-					//symbolTableEntries[3] = symbolTableEntries[0];
-				}catch(cbit.vcell.parser.ExpressionBindingException e){
-					e.printStackTrace();
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						if (getClientTaskStatusSupport().isInterrupted()) {
+							throw UserCancelException.CANCEL_GENERIC;
+						} else {
+							throw e;
+						}
+					}
 				}
-			//}
+			} finally {
+				PDEDataViewer.this.removeDataJobListener(djl);
 			}
-			final SymbolTableEntry[] finalSymbolTableEntries = symbolTableEntries;
-			final boolean finalBVolume = bVolume;
-			SwingUtilities.invokeLater(new Runnable(){public void run(){
-			cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
-			plotPane.setPlot2D(
-				new cbit.plot.SingleXPlot2D(finalSymbolTableEntries,"Time",
-				new String[] {
-						"Max",
-						(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
-						"Min"/*,
-						(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
-				new double[][] {
-						tsjrss.getTimes(),
-						tsjrss.getMaximums()[0],
-						(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
-						tsjrss.getMinimums()[0]/*,
-						(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
-				new String[] {
-					"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(finalBVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
-					"Time (s)",
-					"[" + tsjrss.getVariableNames()[0] + "]"}));
-
-
-			showComponentInFrame(plotPane,"Statistics: ("+tsjrss.getVariableNames()[0]+") "+
-					(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName():""));
-			}});
 		}
 	};
-	//
-	private HashMap<VCDataJobID, AsynchProgressPopup> jobIDProgressHash =
-		new HashMap<VCDataJobID, AsynchProgressPopup>();
-	private HashMap<VCDataJobID, TimeSeriesJobResultsAction> jobIDActionHash =
-		new HashMap<VCDataJobID, TimeSeriesJobResultsAction>();
-	//
-	private class StatsJobInfo{
-		public DataIdentifier dataIdentifier;
-		public Double beginTime;
-		public Double endTime;
-	};
+
 	//
 	private JInternalFrame dataValueSurfaceViewerJIF = null;
 	private cbit.vcell.geometry.gui.DataValueSurfaceViewer fieldDataValueSurfaceViewer = null;
@@ -208,7 +206,7 @@ public class PDEDataViewer extends DataViewer {
 
 	private static final String EXPORT_DATA_TABNAME = "Export Data";
 	
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == PDEDataViewer.this.getJButtonSpatial()) 
 				connEtoC2(e);
@@ -223,14 +221,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == PDEDataViewer.this &&
-				(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO)
-					||
-					evt.getPropertyName().equals("pdeDataContext"))
-			){
-				if(getPdeDataContext() != null && getSimulationModelInfo() != null){
-					getPDEDataContextPanel1().setDataInfoProvider(
-							new DataViewer.DataInfoProvider(getPdeDataContext().getCartesianMesh(),getSimulationModelInfo()));
-				}else{
+					(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals("pdeDataContext"))) {
+				if (getPdeDataContext() != null && getSimulationModelInfo() != null){
+					getPDEDataContextPanel1().setDataInfoProvider(new DataViewer.DataInfoProvider(getPdeDataContext().getCartesianMesh(),getSimulationModelInfo()));
+				} else {
 					getPDEDataContextPanel1().setDataInfoProvider(null);
 				}
 			}
@@ -246,8 +240,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP3SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1()) 
 				connEtoC1(evt);
-//			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("spatialSelection"))) 
-//				connPtoP8SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("slice"))) 
 				connPtoP7SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getPDEExportPanel1() && (evt.getPropertyName().equals("slice"))) 
@@ -284,102 +276,15 @@ public void setDataIdentifierFilter(PDEPlotControlPanel.DataIdentifierFilter dat
 	getPDEPlotControlPanel1().setDataIdentifierFilter(dataIdentifierFilter);
 }
 
-private StatsJobInfo calcStatsGetUserInfo() throws UserCancelException{
-	
-	StatsJobInfo statsJobInfo = null;
-	//Get all variable names and sort by name
-	TreeSet<DataIdentifier> dataIdentifierTreeSet =
-		new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
-			public int compare(DataIdentifier o1, DataIdentifier o2) {
-				return o1.getName().compareToIgnoreCase(o2.getName());
-			}});
-	DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
-	dataIdentifierTreeSet.addAll(Arrays.asList(dataIdentifierArr));
-
-	DataIdentifier[] sortedDataIdentiferArr = dataIdentifierTreeSet.toArray(new DataIdentifier[0]);
-	String[] volVarnamesArr = new String[sortedDataIdentiferArr.length];
-	for (int i = 0; i < volVarnamesArr.length; i++) {
-		volVarnamesArr[i] = sortedDataIdentiferArr[i].getName()+"  ("+sortedDataIdentiferArr[i].getVariableType().getTypeName()+")";
-	}
-	double[] timePoints = getPdeDataContext().getTimePoints();
-	Double[] timePointsD = new Double[timePoints.length];
-	for(int i=0;i<timePoints.length;i+= 1){
-		timePointsD[i] = new Double(timePoints[i]);
-	}
-	//
-	//Show GUI
-	//
-	JPanel jPanel = new JPanel();
-	BoxLayout mainBL = new BoxLayout(jPanel,BoxLayout.Y_AXIS);
-	jPanel.setLayout(mainBL);
-	JList varList = new JList(volVarnamesArr);
-	varList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	JScrollPane jsp = new JScrollPane(varList);
-	jPanel.add(jsp);
-	JComboBox jcb_time_begin = new JComboBox(timePointsD);
-	jcb_time_begin.setMaximumSize(new Dimension(100, 25));
-	JComboBox jcb_time_end = new JComboBox(timePointsD);
-	jcb_time_end.setSelectedIndex(timePointsD.length-1);
-	jcb_time_end.setMaximumSize(new Dimension(100, 25));
-	JPanel beginTimePanel = new JPanel();
-	beginTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-	BoxLayout btBL = new BoxLayout(beginTimePanel,BoxLayout.X_AXIS);
-	beginTimePanel.setLayout(btBL);
-	JLabel beginLabel = new JLabel("begin Time");
-	beginTimePanel.add(jcb_time_begin);
-	beginTimePanel.add(beginLabel);
-	JPanel endTimePanel = new JPanel();
-	endTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-	BoxLayout etBL = new BoxLayout(endTimePanel,BoxLayout.X_AXIS);
-	endTimePanel.setLayout(etBL);
-	JLabel endLabel = new JLabel("end Time");
-	endTimePanel.add(jcb_time_end);
-	endTimePanel.add(endLabel);
-	jPanel.add(beginTimePanel);
-	jPanel.add(endTimePanel);
-	jPanel.setPreferredSize(new Dimension(350,200));
-
-	while(true){
-		int okCancel =
-			PopupGenerator.showComponentOKCancelDialog(this, jPanel, "Calculate Statistics for: (Choose Variable and Times)");
-		if(okCancel == JOptionPane.OK_OPTION){
-			statsJobInfo = new StatsJobInfo();//User created Info
-			statsJobInfo.dataIdentifier = (varList.getSelectedIndex() < 0?null:sortedDataIdentiferArr[varList.getSelectedIndex()]);
-			statsJobInfo.beginTime = (Double)jcb_time_begin.getSelectedItem();
-			statsJobInfo.endTime = (Double)jcb_time_end.getSelectedItem();
-			if(statsJobInfo.dataIdentifier == null){//User Info Error
-				statsJobInfo = null;
-				PopupGenerator.showErrorDialog("Variable name must be selected from list");					
-			}else if(statsJobInfo.beginTime > statsJobInfo.endTime){//User Info Error
-				statsJobInfo = null;
-				PopupGenerator.showErrorDialog("Desired begintime must be less than or equal to endtime");
-			}else{
-				break;//User Info OK
-			}
-		}else{
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-	}
-	return statsJobInfo;
-}
 /**
  * Comment
  */
-private void calcStatistics(final java.awt.event.ActionEvent actionEvent) {
-
-	new Thread(
-		new Runnable(){
-			public void run(){
-				try{
-//					calcStatistics2();
-					roiAction();
-				}catch(Throwable e){
-					PopupGenerator.showErrorDialog("Error calculating statistics\n"+e.getMessage());
-				}
-			}
-		}
-	).start();	
-	
+private void calcStatistics(final ActionEvent actionEvent) {
+	try {
+		roiAction();
+	}catch(Throwable e){
+		PopupGenerator.showErrorDialog("Error calculating statistics\n"+e.getMessage());
+	}
 }
 
 
@@ -389,25 +294,15 @@ private BitSet getFillROI(SpatialSelectionVolume spatialSelectionVolume){
 	}
 	BitSet fillROI = null;
 	SSHelper ssHelper = spatialSelectionVolume.getIndexSamples(0, 1);
-	if(ssHelper != null &&
-		ssHelper.getSampledIndexes()[0] ==
-		ssHelper.getSampledIndexes()[ssHelper.getSampledIndexes().length-1]){
+	if(ssHelper != null && ssHelper.getSampledIndexes()[0] == ssHelper.getSampledIndexes()[ssHelper.getSampledIndexes().length-1]){
 		Point projMin = null;
 		Point projMax = null;
 		Point[] projVolCI = new Point[ssHelper.getSampledIndexes().length];
 		for (int i = 0; i < ssHelper.getSampledIndexes().length; i++) {
-			CoordinateIndex vCI =
-				getPdeDataContext().
-				getCartesianMesh().getCoordinateIndexFromVolumeIndex(
-					ssHelper.getSampledIndexes()[i]);
+			CoordinateIndex vCI = getPdeDataContext().getCartesianMesh().getCoordinateIndexFromVolumeIndex(ssHelper.getSampledIndexes()[i]);
 			int normalAxis = getPDEDataContextPanel1().getNormalAxis();
-			projVolCI[i] =
-				new Point(
-					(int)Coordinate.convertAxisFromStandardXYZToNormal(
-						vCI.x, vCI.y,vCI.z, Coordinate.X_AXIS, normalAxis),
-					(int)Coordinate.convertAxisFromStandardXYZToNormal(
-						vCI.x, vCI.y,vCI.z, Coordinate.Y_AXIS, normalAxis)
-				);
+			projVolCI[i] = new Point((int)Coordinate.convertAxisFromStandardXYZToNormal(vCI.x, vCI.y,vCI.z, Coordinate.X_AXIS, normalAxis),
+					(int)Coordinate.convertAxisFromStandardXYZToNormal(vCI.x, vCI.y,vCI.z, Coordinate.Y_AXIS, normalAxis));
 			if(i==0){
 				projMin = new Point(projVolCI[i]);
 				projMax = new Point(projMin);
@@ -603,8 +498,7 @@ private BitSet getFillROI(SpatialSelectionVolume spatialSelectionVolume){
 					Coordinate.convertCoordinateIndexFromNormalToStandardXYZ(
 						coordinateIndex, getPDEDataContextPanel1().getNormalAxis());
 //					System.out.println(coordinateIndex);
-					int volIndex =
-						getPdeDataContext().getCartesianMesh().getVolumeIndex(coordinateIndex);
+					int volIndex = getPdeDataContext().getCartesianMesh().getVolumeIndex(coordinateIndex);
 					fillROI.set(volIndex);
 				}
 			}
@@ -614,479 +508,293 @@ private BitSet getFillROI(SpatialSelectionVolume spatialSelectionVolume){
 	return fillROI;
 }
 
+void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
+	//Determine if Volume or Membrane
+	DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
+	boolean bVolume = true;
+	for(int i=0;i<diArr.length;i+= 1){
+		if(diArr[i].getName().equals(tsjrss.getVariableNames()[0])){
+			if(diArr[i].getVariableType().equals(VariableType.MEMBRANE) || diArr[i].getVariableType().equals(VariableType.MEMBRANE_REGION)){
+				bVolume = false;
+				break;
+			}
+		}
+	}
+
+	SymbolTableEntry[] symbolTableEntries = null;
+	if(tsjrss.getVariableNames().length == 1){
+		symbolTableEntries = new SymbolTableEntry[3/*4*/];//max.mean.min,sum
+		try{
+			if(getSimulation() != null && getSimulation().getMathDescription() != null){
+				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjrss.getVariableNames()[0]);
+			}else{
+				symbolTableEntries[0] = new SimpleSymbolTable(tsjrss.getVariableNames()).getEntry(tsjrss.getVariableNames()[0]);
+			}
+			symbolTableEntries[1] = symbolTableEntries[0];
+			symbolTableEntries[2] = symbolTableEntries[0];
+		}catch(ExpressionBindingException e){
+			e.printStackTrace();
+		}
+	}
+	SymbolTableEntry[] finalSymbolTableEntries = symbolTableEntries;
+	boolean finalBVolume = bVolume;
+	PlotPane plotPane = new cbit.plot.PlotPane();
+	plotPane.setPlot2D(
+		new SingleXPlot2D(finalSymbolTableEntries,"Time",
+		new String[] {
+				"Max",
+				(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
+				"Min"/*,
+				(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
+		new double[][] {
+				tsjrss.getTimes(),
+				tsjrss.getMaximums()[0],
+				(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
+				tsjrss.getMinimums()[0]/*,
+				(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
+		new String[] {
+			"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(finalBVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
+			"Time (s)",
+			"[" + tsjrss.getVariableNames()[0] + "]"}));
+
+
+	showComponentInFrame(plotPane,"Statistics: ("+tsjrss.getVariableNames()[0]+") "+
+			(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName():""));
+}		
+
+
 private void roiAction(){
 	BeanUtils.setCursorThroughout(this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	try{
-	final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
-	//final int AUX_INFO_INDEX = ROI_COLUMN_NAMES.length;
-	final Vector<Object> auxInfoV = new Vector<Object>();
-	
-	final boolean isVolume =
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION);
-	
-	final DefaultTableModel tableModel = new DefaultTableModel(){
-	    public boolean isCellEditable(int row, int column) {
-	        return false;
-	    }
-	};
-	for (int i = 0; i < ROI_COLUMN_NAMES.length; i++) {
-		tableModel.addColumn(ROI_COLUMN_NAMES[i]);
-	}
-	//Add Snapshot ROI
-	if((isVolume?volumeSnapshotROI:membraneSnapshotROI) != null){
-		tableModel.addRow(
-				new Object[] {
-					(isVolume?"Volume":"Membrane")+" Variables and Functions",
-					"Snapshot",
-					(isVolume?volumeSnapshotROIDescription:membraneSnapshotROIDescription)+
-					", (values = 1.0)"
+		final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
+		final Vector<Object> auxInfoV = new Vector<Object>();
+		
+		final DataIdentifier dataIdentifier = getPdeDataContext().getDataIdentifier();
+		VariableType variableType = dataIdentifier.getVariableType();
+		final boolean isVolume = variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.VOLUME_REGION);
+		
+		DefaultTableModel tableModel = new DefaultTableModel(){
+		    public boolean isCellEditable(int row, int column) {
+		        return false;
+		    }
+		};
+		for (int i = 0; i < ROI_COLUMN_NAMES.length; i++) {
+			tableModel.addColumn(ROI_COLUMN_NAMES[i]);
+		}
+		//Add Snapshot ROI
+		if((isVolume?volumeSnapshotROI:membraneSnapshotROI) != null){
+			tableModel.addRow(new Object[] {(isVolume?"Volume":"Membrane")+" Variables and Functions",
+						"Snapshot", (isVolume ? volumeSnapshotROIDescription : membraneSnapshotROIDescription) + ", (values = 1.0)"});
+			auxInfoV.add((isVolume?volumeSnapshotROI:membraneSnapshotROI));
+		}
+		//Add user ROIs
+		SpatialSelection[] userROIArr = getPDEDataContextPanel1().fetchSpatialSelections(true,false);
+		for (int i = 0; userROIArr != null && i < userROIArr.length; i += 1) {
+			String descr = null;
+			boolean bPoint = false;
+			if (isVolume) {
+				if (userROIArr[i] instanceof SpatialSelectionVolume) {
+					Curve curve = ((SpatialSelectionVolume)userROIArr[i]).getCurveSelectionInfo().getCurve();
+					descr = curve.getDescription();
+					if (curve instanceof SinglePoint) {
+						bPoint = true;
+					}
 				}
-		);
-		auxInfoV.add((isVolume?volumeSnapshotROI:membraneSnapshotROI));
-	}
-	//Add user ROIs
-	SpatialSelection[] userROIArr =
-		getPDEDataContextPanel1().fetchSpatialSelections(true,false);
-	for (int i = 0; userROIArr != null && i < userROIArr.length; i += 1) {
-		String descr =
-			(isVolume
-				?(userROIArr[i] instanceof SpatialSelectionVolume
-					?((SpatialSelectionVolume)userROIArr[i]).getCurveSelectionInfo().getCurve().getDescription():null)
-				:(userROIArr[i] instanceof SpatialSelectionMembrane
-					?((SpatialSelectionMembrane)userROIArr[i]).getSelectionSource().getDescription():null));
-		//Add Area User ROI
-		BitSet fillBitSet = null;
-		if(userROIArr[i] instanceof SpatialSelectionVolume){
-			fillBitSet = getFillROI((SpatialSelectionVolume)userROIArr[i]);
-			if(fillBitSet != null){
-				tableModel.addRow(
-						new Object[] {
-							"User Defined",
-							descr,
-							"Area Enclosed Volume ROI"
-						}
-				);
-				auxInfoV.add(fillBitSet);
+			} else {
+				if (userROIArr[i] instanceof SpatialSelectionMembrane) {
+					SampledCurve selectionSource = ((SpatialSelectionMembrane)userROIArr[i]).getSelectionSource();
+					descr = selectionSource.getDescription();
+					if (selectionSource instanceof SinglePoint) {
+						bPoint = true;
+					}
+				}
+			}
+			
+			//Add Area User ROI
+			BitSet fillBitSet = null;
+			if(userROIArr[i] instanceof SpatialSelectionVolume){
+				fillBitSet = getFillROI((SpatialSelectionVolume)userROIArr[i]);
+				if(fillBitSet != null){
+					tableModel.addRow(new Object[] {"User Defined",	descr, "Area Enclosed Volume ROI"});
+					auxInfoV.add(fillBitSet);
+				}
+			}
+			//Add Point and Line User ROI
+			if(fillBitSet == null){
+				tableModel.addRow(new Object[] {"User Defined", descr, (bPoint?"Point":"Line") + (isVolume?" Volume":" Membrane") + " ROI "} );
+				auxInfoV.add(userROIArr[i]);
 			}
 		}
-		//Add Point and Line User ROI
-		if(fillBitSet == null){
-			tableModel.addRow(
-					new Object[] {
-						"User Defined",
-						descr,
-						(userROIArr[i].getCurveSelectionInfo().getCurve() instanceof SinglePoint?"Point":"Line")+
-						(isVolume?" Volume ROI ":" Membrane ROI ")
-							
-					}
-			);
-			auxInfoV.add(userROIArr[i]);
-		}
-	}
-	//Add sorted Geometry ROI
-	HashMap<Integer,?> regionMapSubvolumesHashMap =
-		(isVolume
-			?getPdeDataContext().getCartesianMesh().getVolumeRegionMapSubvolume()
-			:getPdeDataContext().getCartesianMesh().getMembraneRegionMapSubvolumesInOut());
-	Set<?> regionMapSubvolumesEntrySet = regionMapSubvolumesHashMap.entrySet();
-	Iterator<?> regionMapSubvolumesEntryIter = regionMapSubvolumesEntrySet.iterator();
-	TreeSet<Object[]> sortedGeomROITreeSet =
-		new TreeSet<Object[]>(
+		//Add sorted Geometry ROI
+		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+		HashMap<Integer,?> regionMapSubvolumesHashMap = (isVolume ? cartesianMesh.getVolumeRegionMapSubvolume()	: cartesianMesh.getMembraneRegionMapSubvolumesInOut());
+		Set<?> regionMapSubvolumesEntrySet = regionMapSubvolumesHashMap.entrySet();
+		Iterator<?> regionMapSubvolumesEntryIter = regionMapSubvolumesEntrySet.iterator();
+		TreeSet<Object[]> sortedGeomROITreeSet = new TreeSet<Object[]>(
 			new Comparator<Object[]>(){
 				public int compare(Object[] o1, Object[] o2) {
-					int result =
-						((String)((Object[])o1[0])[1]).compareToIgnoreCase((String)((Object[])o2[0])[1]);
-					if(result == 0){
-						result =
-							((Integer)((Entry<Integer, ?>)o1[1]).getKey()).compareTo(
-								(Integer)((Entry<Integer, ?>)o2[1]).getKey());
+					int result = ((String)((Object[])o1[0])[1]).compareToIgnoreCase((String)((Object[])o2[0])[1]);
+					if (result == 0){
+						result = (((Entry<Integer, ?>)o1[1]).getKey()).compareTo(((Entry<Integer, ?>)o2[1]).getKey());
 					}
 					return result;
 				}
 			}
 		);
-	while(regionMapSubvolumesEntryIter.hasNext()){
-		Entry<Integer,?> regionMapSubvolumesEntry = (Entry<Integer, ?>) regionMapSubvolumesEntryIter.next();
-//		((DefaultTableModel)roiTable.getModel()).addRow(
-		sortedGeomROITreeSet.add(
-				new Object[] {new Object[] {
-					"Geometry",
-					(isVolume
-						?getSimulationModelInfo().getVolumeNamePhysiology(((Integer)regionMapSubvolumesEntry.getValue()))
-						:getSimulationModelInfo().getMembraneName(
-							((int[])regionMapSubvolumesEntry.getValue())[0],
-							((int[])regionMapSubvolumesEntry.getValue())[1])
-					),
-					(isVolume?"(svID="+regionMapSubvolumesEntry.getValue()+" ":"(")+
-					"vrID="+regionMapSubvolumesEntry.getKey()+") Predefined "+(isVolume?"volume":"membrane")+" region"
-				},
+		while(regionMapSubvolumesEntryIter.hasNext()){
+			Entry<Integer,?> regionMapSubvolumesEntry = (Entry<Integer, ?>) regionMapSubvolumesEntryIter.next();
+			sortedGeomROITreeSet.add(new Object[] {
+				new Object[] { "Geometry",
+					(isVolume ? getSimulationModelInfo().getVolumeNamePhysiology(((Integer)regionMapSubvolumesEntry.getValue()))
+						: getSimulationModelInfo().getMembraneName(((int[])regionMapSubvolumesEntry.getValue())[0], ((int[])regionMapSubvolumesEntry.getValue())[1])),
+					(isVolume ? "(svID="+regionMapSubvolumesEntry.getValue()+ " " : "(") + "vrID="+regionMapSubvolumesEntry.getKey()+") Predefined "
+					+ (isVolume ? "volume" : "membrane") + " region"}, 
 				regionMapSubvolumesEntry}
-		);
-//		auxInfoV.add(regionMapSubvolumesEntry);
-	}
-	Iterator<Object[]> sortedGeomROIIter = sortedGeomROITreeSet.iterator();
-	while(sortedGeomROIIter.hasNext()){
-		Object[] sortedGeomROIObjArr = (Object[])sortedGeomROIIter.next();
-		tableModel.addRow((Object[])sortedGeomROIObjArr[0]);
-		auxInfoV.add(sortedGeomROIObjArr[1]);
-	}
-	SwingUtilities.invokeLater(new Runnable(){public void run(){
-	final JTable roiTable = new JTable(tableModel);
-	roiTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-	ScopedExpressionTableCellRenderer.formatTableCellSizes(roiTable, null, null);
+			);
+		}
+		Iterator<Object[]> sortedGeomROIIter = sortedGeomROITreeSet.iterator();
+		while(sortedGeomROIIter.hasNext()){
+			Object[] sortedGeomROIObjArr = (Object[])sortedGeomROIIter.next();
+			tableModel.addRow((Object[])sortedGeomROIObjArr[0]);
+			auxInfoV.add(sortedGeomROIObjArr[1]);
+		}
+		
+		final JTable roiTable = new JTable(tableModel);
+		roiTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	
-	JScrollPane scrollPane = new JScrollPane(roiTable);
-	roiTable.setPreferredScrollableViewportSize(new Dimension(500, 250));
-
-	final JPanel mainJPanel = new JPanel();
-	BoxLayout mainBL = new BoxLayout(mainJPanel,BoxLayout.Y_AXIS);
-	mainJPanel.setLayout(mainBL);
+		ScopedExpressionTableCellRenderer.formatTableCellSizes(roiTable, null, null);
+		
+		JScrollPane scrollPane = new JScrollPane(roiTable);
+		roiTable.setPreferredScrollableViewportSize(new Dimension(500, 250));
 	
-	JPanel timeJPanel = new JPanel();
-	BoxLayout timeBL = new BoxLayout(timeJPanel,BoxLayout.X_AXIS);
-	timeJPanel.setLayout(timeBL);
-	double[] timePoints = getPdeDataContext().getTimePoints();
-	Double[] timePointsD = new Double[timePoints.length];
-	for(int i=0;i<timePoints.length;i+= 1){
-		timePointsD[i] = new Double(timePoints[i]);
-	}
-	final JComboBox jcb_time_begin = new JComboBox(timePointsD);
-	jcb_time_begin.setMaximumSize(new Dimension(100, 25));
-	final JComboBox jcb_time_end = new JComboBox(timePointsD);
-	jcb_time_end.setSelectedIndex(timePointsD.length-1);
-	jcb_time_end.setMaximumSize(new Dimension(100, 25));
-	timeJPanel.add(new JLabel("Begin Time:"));
-	timeJPanel.add(jcb_time_begin);
-	timeJPanel.add(new JLabel("End Time:"));
-	timeJPanel.add(jcb_time_end);
-	timeJPanel.setBorder(new EmptyBorder(4,4,4,4));
-	
-	JPanel okCancelJPanel = new JPanel();
-	BoxLayout okCancelBL = new BoxLayout(okCancelJPanel,BoxLayout.X_AXIS);
-	okCancelJPanel.setLayout(okCancelBL);
-	final JButton okButton = new JButton("OK");
-	okButton.setEnabled(false);
-	okButton.addActionListener(new ActionListener(){
-		public void actionPerformed(ActionEvent e) {
-			if(((Double)jcb_time_begin.getSelectedItem()).compareTo((Double)jcb_time_end.getSelectedItem()) > 0){
-				PopupGenerator.showErrorDialog("Selected 'Begin Time' must be less than or equal to 'End Time'");
-				return;
-			}
-			int[] selectedRows = roiTable.getSelectedRows();
-			if(selectedRows != null){
-				try {
-					BitSet dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-					//int SNAPSHOT_INDEX = 0;
-					for (int i = 0; i < selectedRows.length; i++) {
-						Object auxInfo = auxInfoV.elementAt(selectedRows[i]);
-						if(auxInfo instanceof BitSet){
-							dataBitSet.or((BitSet)auxInfo);
-						}else if(auxInfo instanceof SpatialSelectionMembrane){
-							int[] roiIndexes =
-								((SpatialSelectionMembrane)auxInfo).getIndexSamples().getSampledIndexes();
-							for (int j = 0; j < roiIndexes.length; j += 1) {
-								dataBitSet.set(roiIndexes[j], true);
-							}
-						}else if(auxInfo instanceof SpatialSelectionVolume){
-							int[] roiIndexes =
-								((SpatialSelectionVolume)auxInfo).getIndexSamples(0,1).getSampledIndexes();
-							for (int j = 0; j < roiIndexes.length; j += 1) {
-								dataBitSet.set(roiIndexes[j], true);
-							}
-						}else if (auxInfo instanceof Entry){
-							if(isVolume){
-								int volumeRegionID = (Integer)((Entry<Integer, Integer>)auxInfo).getKey();
-								dataBitSet.or(getPdeDataContext().getCartesianMesh().getVolumeROIFromVolumeRegionID(volumeRegionID));
+		final JPanel mainJPanel = new JPanel();
+		BoxLayout mainBL = new BoxLayout(mainJPanel,BoxLayout.Y_AXIS);
+		mainJPanel.setLayout(mainBL);
+		
+		JPanel timeJPanel = new JPanel();
+		BoxLayout timeBL = new BoxLayout(timeJPanel,BoxLayout.X_AXIS);
+		timeJPanel.setLayout(timeBL);
+		double[] timePoints = getPdeDataContext().getTimePoints();
+		Double[] timePointsD = new Double[timePoints.length];
+		for(int i=0;i<timePoints.length;i+= 1){
+			timePointsD[i] = new Double(timePoints[i]);
+		}
+		final JComboBox jcb_time_begin = new JComboBox(timePointsD);
+		jcb_time_begin.setMaximumSize(new Dimension(100, 25));
+		final JComboBox jcb_time_end = new JComboBox(timePointsD);
+		jcb_time_end.setSelectedIndex(timePointsD.length-1);
+		jcb_time_end.setMaximumSize(new Dimension(100, 25));
+		timeJPanel.add(new JLabel("Begin Time:"));
+		timeJPanel.add(jcb_time_begin);
+		timeJPanel.add(new JLabel("End Time:"));
+		timeJPanel.add(jcb_time_end);
+		timeJPanel.setBorder(new EmptyBorder(4,4,4,4));
+		
+		JPanel okCancelJPanel = new JPanel();
+		BoxLayout okCancelBL = new BoxLayout(okCancelJPanel,BoxLayout.X_AXIS);
+		okCancelJPanel.setLayout(okCancelBL);
+		final JButton okButton = new JButton("OK");
+		okButton.setEnabled(false);
+		okButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				if(((Double)jcb_time_begin.getSelectedItem()).compareTo((Double)jcb_time_end.getSelectedItem()) > 0){
+					PopupGenerator.showErrorDialog("Selected 'Begin Time' must be less than or equal to 'End Time'");
+					return;
+				}
+				int[] selectedRows = roiTable.getSelectedRows();
+				if(selectedRows != null){
+					try {
+						BitSet dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+						for (int i = 0; i < selectedRows.length; i++) {
+							Object auxInfo = auxInfoV.elementAt(selectedRows[i]);
+							if(auxInfo instanceof BitSet){
+								dataBitSet.or((BitSet)auxInfo);
+							}else if(auxInfo instanceof SpatialSelectionMembrane){
+								int[] roiIndexes =
+									((SpatialSelectionMembrane)auxInfo).getIndexSamples().getSampledIndexes();
+								for (int j = 0; j < roiIndexes.length; j += 1) {
+									dataBitSet.set(roiIndexes[j], true);
+								}
+							}else if(auxInfo instanceof SpatialSelectionVolume){
+								int[] roiIndexes =
+									((SpatialSelectionVolume)auxInfo).getIndexSamples(0,1).getSampledIndexes();
+								for (int j = 0; j < roiIndexes.length; j += 1) {
+									dataBitSet.set(roiIndexes[j], true);
+								}
+							}else if (auxInfo instanceof Entry){
+								if(isVolume){
+									int volumeRegionID = (Integer)((Entry<Integer, Integer>)auxInfo).getKey();
+									dataBitSet.or(cartesianMesh.getVolumeROIFromVolumeRegionID(volumeRegionID));
+								}else{
+									int membraneRegionID = (Integer)((Entry<Integer, int[]>)auxInfo).getKey();
+									dataBitSet.or(cartesianMesh.getMembraneROIFromMembraneRegionID(membraneRegionID));
+								}
+							}else if(auxInfo instanceof BitSet){
+								dataBitSet.or((BitSet)auxInfo);
 							}else{
-								int membraneRegionID = (Integer)((Entry<Integer, int[]>)auxInfo).getKey();
-								dataBitSet.or(getPdeDataContext().getCartesianMesh().getMembraneROIFromMembraneRegionID(membraneRegionID));
+								throw new Exception("ROI table, Unknown data type: "+auxInfo.getClass().getName());
 							}
-						}else if(auxInfo instanceof BitSet){
-							dataBitSet.or((BitSet)auxInfo);
-						}else{
-							throw new Exception("ROI table, Unknown data type: "+auxInfo.getClass().getName());
 						}
-					}
-					org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new org.vcell.util.TimeSeriesJobSpec(
-							new String[] {getPdeDataContext().getDataIdentifier().getName()},
-							new BitSet[] {dataBitSet},
-							((Double)jcb_time_begin.getSelectedItem()).doubleValue(),
-							1,
-							((Double)jcb_time_end.getSelectedItem()).doubleValue(),
-							true,false,
-							VCDataJobID.createVCDataJobID(
-									getDataViewerManager().getUser(),
-									true));
-
-					startTimeSeriesJob(timeSeriesJobSpec,new PlotSpaceStats(),false);
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					PopupGenerator.showErrorDialog("ROI Error.\n"+e1.getMessage());
-				}
-			}
-			BeanUtils.dispose(mainJPanel);
-		}});
-	okCancelJPanel.add(okButton);
-	roiTable.getSelectionModel().addListSelectionListener(
-			new ListSelectionListener(){
-				public void valueChanged(ListSelectionEvent e) {
-					if(roiTable.getSelectedRows() != null && roiTable.getSelectedRows().length > 0){
-						okButton.setEnabled(true);
-					}else{
-						okButton.setEnabled(false);
+						TimeSeriesJobSpec timeSeriesJobSpec = new TimeSeriesJobSpec(
+								new String[] {dataIdentifier.getName()}, new BitSet[] {dataBitSet},
+								((Double)jcb_time_begin.getSelectedItem()).doubleValue(), 1,
+								((Double)jcb_time_end.getSelectedItem()).doubleValue(),
+								true,false, VCDataJobID.createVCDataJobID(getDataViewerManager().getUser(),	true));
+						
+						Hashtable<String, Object> hash = new Hashtable<String, Object>();
+						hash.put(StringKey_timeSeriesJobSpec, timeSeriesJobSpec);
+	
+						AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieve data for '" + dataIdentifier + "'");
+						AsynchClientTask task2 = new AsynchClientTask("Showing stat for '" + dataIdentifier + "'", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	
+							@Override
+							public void run(Hashtable<String, Object> hashTable) throws Exception {
+								TSJobResultsSpaceStats tsJobResultsSpaceStats = (TSJobResultsSpaceStats)hashTable.get(StringKey_timeSeriesJobResults);
+								plotSpaceStats(tsJobResultsSpaceStats);
+							}
+						};		
+						ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+					} catch (Exception e1) {
+						e1.printStackTrace();
+						PopupGenerator.showErrorDialog("ROI Error.\n"+e1.getMessage());
 					}
 				}
+				BeanUtils.dispose(mainJPanel);
 			}
-	);
+		});
+		okCancelJPanel.add(okButton);
+		roiTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+				if(roiTable.getSelectedRows() != null && roiTable.getSelectedRows().length > 0){
+					okButton.setEnabled(true);
+				}else{
+					okButton.setEnabled(false);
+				}
+			}
+		});
+		
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				BeanUtils.dispose(mainJPanel);
+			}
+		});
+		okCancelJPanel.add(cancelButton);
+		okCancelJPanel.setBorder(new EmptyBorder(4,4,4,4));
 	
-	JButton cancelButton = new JButton("Cancel");
-	cancelButton.addActionListener(new ActionListener(){
-		public void actionPerformed(ActionEvent e) {
-			BeanUtils.dispose(mainJPanel);
-		}});
-	okCancelJPanel.add(cancelButton);
-	okCancelJPanel.setBorder(new EmptyBorder(4,4,4,4));
+		mainJPanel.add(timeJPanel);
+		mainJPanel.add(scrollPane);
+		mainJPanel.add(okCancelJPanel);
 	
-//	JPanel descriptionJPanel = new JPanel();
-//	BoxLayout descriptionBL = new BoxLayout(descriptionJPanel,BoxLayout.Y_AXIS);
-//	descriptionJPanel.setLayout(descriptionBL);
-//	descriptionJPanel.add(new JLabel("Statistics will be calculated for all time points selected below."));
-//	descriptionJPanel.add(new JLabel("Select 1 or more Regions of Interest (ROI) below."));
-//	descriptionJPanel.add(new JLabel("Multiple ROI selections will be merged into 1 composite ROI."));
-//	mainJPanel.add(descriptionJPanel);
-
-	mainJPanel.add(timeJPanel);
-	mainJPanel.add(scrollPane);
-	mainJPanel.add(okCancelJPanel);
-
-	showComponentInFrame(mainJPanel,
-		"Calculate "+(isVolume?"volume":"membrane")+" statistics for '"+getPdeDataContext().getVariableName()+"'."+
-		"  Choose times and 1 or more ROI(s).");
-
-//	int result = DialogUtils.showComponentOKCancelDialog(requester, scrollPane, title);
-//	if(result != JOptionPane.OK_OPTION){
-//		throw UserCancelException.CANCEL_GENERIC;
-//	}
-	}});
-	}finally{
+		showComponentInFrame(mainJPanel,
+			"Calculate "+(isVolume?"volume":"membrane")+" statistics for '"+getPdeDataContext().getVariableName()+"'."+
+			"  Choose times and 1 or more ROI(s).");
+	
+	} finally {
 		BeanUtils.setCursorThroughout(this, Cursor.getDefaultCursor());
 	}
 
 }
-/**
- * Comment
- */
-//private void calcStatistics2() {
-//
-//	final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
-//	BitSet dataBitSet = null;
-//	StatsJobInfo statsJobInfo = null;
-//	
-//	//Get Time and variable data desired for statistics calculation
-//	try {
-//		statsJobInfo = calcStatsGetUserInfo();
-//	}catch (UserCancelException e) {
-//		return;
-//	}
-//
-//	if(statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.VOLUME) ||
-//		statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.VOLUME_REGION)){
-//
-////		final int DATA_DEFINED_ROI_INDEX = 0;
-////		HashMap<Integer, Integer> volRegionMapSubVolHashMap =
-////			getPdeDataContext().getCartesianMesh().getVolumeRegionMapSubvolume();
-////		Object[][] roiS = new Object[volRegionMapSubVolHashMap.size()+1][ROI_COLUMN_NAMES.length];
-////		roiS[DATA_DEFINED_ROI_INDEX][0] = "Volume Variables and Functions";
-////		roiS[DATA_DEFINED_ROI_INDEX][1] = "Snapshot";
-////		roiS[DATA_DEFINED_ROI_INDEX][2] = volumeSnapshotROIDescription;
-////		Set<Entry<Integer, Integer>> volRegMapSubvolEntrySet = volRegionMapSubVolHashMap.entrySet();
-////		Iterator<Entry<Integer, Integer>> iter = volRegMapSubvolEntrySet.iterator();
-////		int geomVolROICount = 0;
-////		int[] tableIndexMapVolRegionID = new int[roiS.length];
-////		while(iter.hasNext()){
-////			Entry<Integer, Integer> volRegMapSubvolEntry = iter.next();
-////			roiS[geomVolROICount+1][0] = "Geometry";
-////			roiS[geomVolROICount+1][1] = getSimulationModelInfo().getVolumeNamePhysiology(volRegMapSubvolEntry.getValue());//+"  (region ID="+volRegionMapSubVolArr[i].volumeRegionID+")";
-////			roiS[geomVolROICount+1][2] = "Predefined volume region - (Region ID="+volRegMapSubvolEntry.getKey()+")";
-////			tableIndexMapVolRegionID[geomVolROICount+1] = volRegMapSubvolEntry.getKey();
-////			geomVolROICount+= 1;
-////		}
-//		//----------------------
-////		roiS[0][1] = new String[] {"var1","var2","var3","var4"};
-////		showTableList(this, "test",ROI_COLUMN_NAMES, roiS,ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,tableIndexMapVolRegionID);
-//		showTableList();
-//		//----------------------
-////		int[] selArr = null;
-////		try {
-////			selArr = PopupGenerator.showComponentOKCancelTableList(this,
-////					"Statistics Region Of Interest (Select 1 or more)",
-////					ROI_COLUMN_NAMES, roiS,
-////					ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-////		} catch (UserCancelException e) {
-////			return;
-////		}
-////		
-////		boolean hasDataDefinedROI = false;
-////		if (selArr != null && selArr.length > 0) {
-////			for (int i = 0; i < selArr.length; i++) {
-////				if(selArr[i] == DATA_DEFINED_ROI_INDEX){
-////					hasDataDefinedROI = true;
-////					break;
-////				}
-////			}
-////		}else{
-////			PopupGenerator.showErrorDialog("No ROI selection defined");
-////			return;
-////		}
-////		if (hasDataDefinedROI) {
-////			//Count how many indexes are in the ROI
-////			int vaoiCount = 0;
-////			double[] data = getPdeDataContext().getDataValues();
-////			for (int i = 0; i < data.length; i += 1) {
-////				if (data[i] == 1.0) {
-////					vaoiCount += 1;
-////				}
-////			}
-////			if (vaoiCount == 0) {
-////				PopupGenerator.showErrorDialog("No values of 1.0 found in Data defined ROI for variable "+ getPdeDataContext().getVariableName());
-////				return;
-////			}
-////		}
-////		//
-////		//Data ROI
-////		//
-////		if(hasDataDefinedROI){
-////			dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-////			for(int i=0;i<getPdeDataContext().getDataValues().length;i+= 1){
-////				if(getPdeDataContext().getDataValues()[i] == 1.0){
-////					dataBitSet.set(i, true);
-////				}else{
-////					dataBitSet.set(i, false);
-////				}
-////			}
-////
-////		}
-////		//
-////		//Geometric ROI
-////		//
-////		for (int i = 0; i < selArr.length; i++) {
-////			if(selArr[i] != DATA_DEFINED_ROI_INDEX){
-////				if(dataBitSet == null){
-////					dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-////				}
-////				int volumeRegionID = tableIndexMapVolRegionID[selArr[i]];
-////				dataBitSet.or(getPdeDataContext().getCartesianMesh().getVolumeROIFromVolumeRegionID(volumeRegionID));
-////			}
-////		}
-//
-//	}else if(statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.MEMBRANE) ||
-//		statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.MEMBRANE_REGION)){
-//		if(getPdeDataContext().getCartesianMesh().getGeometryDimension() < 3){
-//
-//			SpatialSelection[] tempSelArr = getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),true,false);
-//			int MEMBR_SPATIAL_SELECT_COUNT = 0;
-//			Vector<SpatialSelectionMembrane> membrSpatialSelV = new Vector<SpatialSelectionMembrane>();
-//			for (int i = 0; tempSelArr != null && i < tempSelArr.length; i += 1) {
-//				if (tempSelArr[i] instanceof SpatialSelectionMembrane) {
-//					membrSpatialSelV.add((SpatialSelectionMembrane)tempSelArr[i]);
-//					MEMBR_SPATIAL_SELECT_COUNT+= 1;
-//				}
-//			}
-//			
-////			HashMap<Integer, int[]> membrRegionMapSubvolumesHashMap =
-////				getPdeDataContext().getCartesianMesh().getMembraneRegionMapSubvolumesInOut();
-////			Object[][] roiS = new Object[membrRegionMapSubvolumesHashMap.size()+MEMBR_SPATIAL_SELECT_COUNT][ROI_COLUMN_NAMES.length];
-////			for (int i = 0; i < MEMBR_SPATIAL_SELECT_COUNT; i++) {
-//////				CurveSelectionInfo csi = membrSpatialSelV.elementAt(i).getCurveSelectionInfo();
-//////				Curve samplecurve = csi.getCurve();
-//////				Coordinate beginCoord = samplecurve.getCoordinate(csi.getCurveUfromSelectionU(0.0));
-////				roiS[i][0] = "User Defined";
-////				roiS[i][1] = membrSpatialSelV.elementAt(i).getSelectionSource().getDescription();
-////				roiS[i][2] = "Membrane ROI";			
-////			}
-////			Set<Entry<Integer, int[]>> membrRegionMapSubvolumesEntrySet = membrRegionMapSubvolumesHashMap.entrySet();
-////			Iterator<Entry<Integer, int[]>> iter = membrRegionMapSubvolumesEntrySet.iterator();
-////			int geomMembrROICount = 0;
-////			int[] tableIndexMapMembRegionID = new int[roiS.length];
-////			while(iter.hasNext()){
-////				Entry<Integer, int[]> membrRegionMapSubvolumesEntry = iter.next();
-////				roiS[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT][0] = "Geometry";
-////				roiS[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT][1] = getSimulationModelInfo().getMembraneName(membrRegionMapSubvolumesEntry.getValue()[0], membrRegionMapSubvolumesEntry.getValue()[1]);
-////				roiS[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT][2] = "Predefined membrane region - (Region ID="+membrRegionMapSubvolumesEntry.getKey()+")";
-////				tableIndexMapMembRegionID[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT] = membrRegionMapSubvolumesEntry.getKey();
-////				geomMembrROICount+= 1;
-////			}
-//			
-//			showTableList();
-////			showTableList(this, "test",ROI_COLUMN_NAMES, roiS,ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,tableIndexMapMembRegionID);
-//
-////			int[] selArr = null;
-////			try {
-////				selArr = PopupGenerator.showComponentOKCancelTableList(this,
-////						"Statistics Region Of Interest (Select 1 or more)",
-////						ROI_COLUMN_NAMES, roiS,
-////						ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-////			} catch (UserCancelException e) {
-////				return;
-////			}
-////
-//////			if (MEMBR_SPATIAL_SELECT_COUNT > 0) {
-//////				dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-//////				for (int i = 0; i < membrSpatialSelV.size(); i += 1) {
-//////					int[] indexes = membrSpatialSelV.elementAt(i).getIndexSamples().getSampledIndexes();
-//////					for (int j = 0; j < indexes.length; j += 1) {
-//////						dataBitSet.set(indexes[j], true);
-//////					}
-//////				}
-//////			}
-////			//
-////			//Geometric ROI
-////			//
-////			dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-////			for (int i = 0; i < selArr.length; i++) {
-////				if(selArr[i] >= MEMBR_SPATIAL_SELECT_COUNT){
-//////					if(dataBitSet == null){
-//////						dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-//////					}
-////					int membrRegionID = tableIndexMapMembRegionID[selArr[i]];
-////					dataBitSet.or(getPdeDataContext().getCartesianMesh().getMembraneROIFromMembraneRegionID(membrRegionID));
-////				}else{
-////					int[] indexes = membrSpatialSelV.elementAt(selArr[i]).getIndexSamples().getSampledIndexes();
-////					for (int j = 0; j < indexes.length; j += 1) {
-////						dataBitSet.set(indexes[j], true);
-////					}
-////
-////				}
-////			}
-//
-//		}else{
-//			PopupGenerator.showInfoDialog("Use the Membrane Surface Viewer to calculate statistics for 3D membranes");
-//			return;
-//		}
-//	}
-//
-//	if(dataBitSet != null){
-//		cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-//			new cbit.util.TimeSeriesJobSpec(
-//				new String[] {statsJobInfo.dataIdentifier.getName()},
-//				new BitSet[] {dataBitSet},
-//				statsJobInfo.beginTime,1,statsJobInfo.endTime,
-//				true,false,
-//				VCDataJobID.createVCDataJobID(
-//						getDataViewerManager().getUser(),
-//						true));
-//
-//			startTimeSeriesJob(timeSeriesJobSpec,new PlotSpaceStats(),false);
-//	}else{
-//		PopupGenerator.showErrorDialog("Error: Couldn't find indexes to calculate statistics on");
-//	}
-//	
-//	
-//}
-
 
 /**
  * connEtoC1:  (PDEDataContextPanel1.propertyChange.propertyChange(java.beans.PropertyChangeEvent) --> PDEDataViewer.updateDataSamplerContext(Ljava.beans.PropertyChangeEvent;)V)
@@ -1596,32 +1304,6 @@ private void connPtoP7SetTarget() {
 	}
 }
 
-
-///**
-// * connPtoP8SetTarget:  (PDEDataContextPanel1.spatialSelection <--> PDEExportPanel1.selectedRegion)
-// */
-///* WARNING: THIS METHOD WILL BE REGENERATED. */
-//private void connPtoP8SetTarget() {
-//	/* Set the target from the source */
-//	try {
-//		if (ivjConnPtoP8Aligning == false) {
-//			// user code begin {1}
-//			// user code end
-//			ivjConnPtoP8Aligning = true;
-//			getPDEExportPanel1().setSelectedRegion(getPDEDataContextPanel1().getSpatialSelection());
-//			// user code begin {2}
-//			// user code end
-//			ivjConnPtoP8Aligning = false;
-//		}
-//	} catch (java.lang.Throwable ivjExc) {
-//		ivjConnPtoP8Aligning = false;
-//		// user code begin {3}
-//		// user code end
-//		handleException(ivjExc);
-//	}
-//}
-
-
 /**
  * connPtoP9SetSource:  (PDEDataViewer.dataViewerManager <--> PDEExportPanel1.dataViewerManager)
  */
@@ -1671,57 +1353,11 @@ private void connPtoP9SetTarget() {
 	}
 }
 
-private synchronized ThreadSafeDataJobInfo getThreadSafeDataJobInfo(VCDataJobID vcDataJobID){
-	if(!jobIDProgressHash.containsKey(vcDataJobID)){
-		return null;
-	}
-	return new ThreadSafeDataJobInfo(jobIDProgressHash.get(vcDataJobID),jobIDActionHash.get(vcDataJobID));
-}
-private synchronized void dataJobCleanup(VCDataJobID vcDataJobID){
-	jobIDProgressHash.remove(vcDataJobID);
-	jobIDActionHash.remove(vcDataJobID);
-}
-private synchronized void dataJobFailed(VCDataJobID vcDataJobID,final Exception failException){
-	final ThreadSafeDataJobInfo threadSafeDataJobInfo = getThreadSafeDataJobInfo(vcDataJobID);
-	if(threadSafeDataJobInfo != null){
-		dataJobCleanup(vcDataJobID);
-		SwingUtilities.invokeLater(new Runnable(){public void run(){threadSafeDataJobInfo.pp.stop();}});
-		if(threadSafeDataJobInfo.timeSeriesJobResultsAction != null){
-			threadSafeDataJobInfo.timeSeriesJobResultsAction.setTimeSeriesJobFailed((failException != null?failException:new Exception("Data Job Failed")));
-			new Thread(threadSafeDataJobInfo.timeSeriesJobResultsAction).start();
-		}
-	}
-	if(!(failException instanceof UserCancelException)){
-		new Thread(new Runnable(){
-			public void run() {
-				PopupGenerator.showErrorDialog(
-						"Error executing Data Job:\n"+
-						(failException != null?failException.getMessage():"Unknown Reason"));
-			}
-		}).start();
-	}
 
-}
 public void dataJobMessage(final DataJobEvent dje) {
-
-	new Thread(new Runnable(){public void run(){
-	final ThreadSafeDataJobInfo threadSafeDataJobInfo = getThreadSafeDataJobInfo(dje.getVcDataJobID());
-	if(threadSafeDataJobInfo == null){
-		return;
+	for (DataJobListener djl : dataJobListenerList) {
+		djl.dataJobMessage(dje);
 	}
-	if(dje.getEventTypeID() == MessageEvent.DATA_FAILURE){
-		dataJobFailed(dje.getVcDataJobID(),dje.getFailedJobException());
-	}else{
-		if(!(dje.getEventTypeID() == MessageEvent.DATA_COMPLETE)){
-			SwingUtilities.invokeLater(new Runnable(){public void run(){threadSafeDataJobInfo.pp.setMessage("Progress ("+NumberUtils.formatNumber(dje.getProgress(),3)+"%)");}});
-			return;
-		}
-		dataJobCleanup(dje.getVcDataJobID());
-		SwingUtilities.invokeLater(new Runnable(){public void run(){threadSafeDataJobInfo.pp.stop();}});
-		threadSafeDataJobInfo.timeSeriesJobResultsAction.setTimeSeriesJobResults(dje.getTimeSeriesJobResults());
-		new Thread(threadSafeDataJobInfo.timeSeriesJobResultsAction).start();
-	}
-	}}).start();
 }
 	
 
@@ -1729,25 +1365,24 @@ public void dataJobMessage(final DataJobEvent dje) {
  * Insert the method's description here.
  * Creation date: (9/25/2005 1:53:00 PM)
  */
-private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer() {
+private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 
 	try{
 	if(fieldDataValueSurfaceViewer == null){
 		//Surfaces
-		meshRegionSurfaces =
-			new MeshDisplayAdapter(getPdeDataContext().getCartesianMesh()).generateMeshRegionSurfaces();
-		cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = meshRegionSurfaces.getSurfaceCollection();
+		CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+		meshRegionSurfaces = new MeshDisplayAdapter(cartesianMesh).generateMeshRegionSurfaces();
+		SurfaceCollection surfaceCollection = meshRegionSurfaces.getSurfaceCollection();
 
 		//SurfaceNames
 		final String[] surfaceNames = new String[meshRegionSurfaces.getSurfaceCollection().getSurfaceCount()];
 		for (int i = 0; i < meshRegionSurfaces.getSurfaceCollection().getSurfaceCount(); i++){
 			cbit.vcell.solvers.MembraneElement me = //Get the first element, any will do, all have same inside/outside volumeIndex
-				getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(i,0)];
+				cartesianMesh.getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(i,0)];
 			if(getSimulationModelInfo() != null){
-				surfaceNames[i] =
-				getSimulationModelInfo().getMembraneName(
-					getPdeDataContext().getCartesianMesh().getSubVolumeFromVolumeIndex(me.getInsideVolumeIndex()),
-					getPdeDataContext().getCartesianMesh().getSubVolumeFromVolumeIndex(me.getOutsideVolumeIndex())
+				surfaceNames[i] = getSimulationModelInfo().getMembraneName(
+					cartesianMesh.getSubVolumeFromVolumeIndex(me.getInsideVolumeIndex()),
+					cartesianMesh.getSubVolumeFromVolumeIndex(me.getOutsideVolumeIndex())
 				);
 			}else{
 				surfaceNames[i] = i+"";
@@ -1757,29 +1392,29 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 		//SurfaceAreas
 		final Double[] surfaceAreas = new Double[meshRegionSurfaces.getSurfaceCollection().getSurfaceCount()];
 		for (int i = 0; i < meshRegionSurfaces.getSurfaceCollection().getSurfaceCount(); i++){
-			surfaceAreas[i] = new Double(getPdeDataContext().getCartesianMesh().getRegionMembraneSurfaceAreaFromMembraneIndex(meshRegionSurfaces.getMembraneIndexForPolygon(i,0)));
+			surfaceAreas[i] = new Double(cartesianMesh.getRegionMembraneSurfaceAreaFromMembraneIndex(meshRegionSurfaces.getMembraneIndexForPolygon(i,0)));
 		}
 
-		cbit.vcell.geometry.gui.DataValueSurfaceViewer fieldDataValueSurfaceViewer0 = new cbit.vcell.geometry.gui.DataValueSurfaceViewer();
+		DataValueSurfaceViewer fieldDataValueSurfaceViewer0 = new DataValueSurfaceViewer();
 
-		cbit.vcell.geometry.surface.TaubinSmoothing taubinSmoothing = new cbit.vcell.geometry.surface.TaubinSmoothingWrong();
-		cbit.vcell.geometry.surface.TaubinSmoothingSpecification taubinSpec = cbit.vcell.geometry.surface.TaubinSmoothingSpecification.getInstance(.3);
+		TaubinSmoothing taubinSmoothing = new TaubinSmoothingWrong();
+		TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.getInstance(.3);
 		taubinSmoothing.smooth(surfaceCollection,taubinSpec);
 		fieldDataValueSurfaceViewer0.init(
 			meshRegionSurfaces.getSurfaceCollection(),
-			getPdeDataContext().getCartesianMesh().getOrigin(),
-			getPdeDataContext().getCartesianMesh().getExtent(),
+			cartesianMesh.getOrigin(),
+			cartesianMesh.getExtent(),
 			surfaceNames,
 			surfaceAreas,
-			getPdeDataContext().getCartesianMesh().getGeometryDimension()
+			cartesianMesh.getGeometryDimension()
 		);
 		
-		dataValueSurfaceViewerJIF = new org.vcell.util.gui.JInternalFrameEnhanced("DataValueSurfaceViewer",true,true,true,true);
+		dataValueSurfaceViewerJIF = new JInternalFrameEnhanced("DataValueSurfaceViewer",true,true,true,true);
 		dataValueSurfaceViewerJIF.setContentPane(fieldDataValueSurfaceViewer0);
 		//dataValueSurfaceViewerJIF.pack();
 		dataValueSurfaceViewerJIF.setSize(800,800);
-		dataValueSurfaceViewerJIF.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-			public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+		dataValueSurfaceViewerJIF.addInternalFrameListener(new InternalFrameAdapter() {
+			public void internalFrameClosing(InternalFrameEvent e) {
 				getJButtonSurfaces().setText(SHOW_MEMB_SURFACE_BUTTON_STRING);
 			};
 		});		
@@ -1822,7 +1457,7 @@ private javax.swing.JPanel getExportData() {
  * Method generated to support the promotion of the exportMonitorPanel attribute.
  * @return cbit.vcell.export.ExportMonitorPanel
  */
-public cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel() {
+public ExportMonitorPanel getExportMonitorPanel() {
 	return getExportMonitorPanel1();
 }
 
@@ -1832,19 +1467,19 @@ public cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel() {
  * @return cbit.vcell.export.ExportMonitorPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel1() {
+private ExportMonitorPanel getExportMonitorPanel1() {
 	if (ivjExportMonitorPanel1 == null) {
 		try {
-			org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
-			ivjLocalBorder1.setLineColor(java.awt.Color.blue);
-			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
+			LineBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new LineBorderBean();
+			ivjLocalBorder1.setLineColor(Color.blue);
+			TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new TitledBorderBean();
 			ivjLocalBorder.setBorder(ivjLocalBorder1);
 			ivjLocalBorder.setTitle("Export jobs");
-			ivjExportMonitorPanel1 = new cbit.vcell.export.ExportMonitorPanel();
+			ivjExportMonitorPanel1 = new ExportMonitorPanel();
 			ivjExportMonitorPanel1.setName("ExportMonitorPanel1");
-			ivjExportMonitorPanel1.setPreferredSize(new java.awt.Dimension(453, 150));
+			ivjExportMonitorPanel1.setPreferredSize(new Dimension(453, 150));
 			ivjExportMonitorPanel1.setBorder(ivjLocalBorder);
 			// user code begin {1}
 			// user code end
@@ -1865,12 +1500,12 @@ private cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel1() {
 private javax.swing.JButton getJButtonSpatial() {
 	if (ivjJButtonSpatial == null) {
 		try {
-			ivjJButtonSpatial = new javax.swing.JButton();
+			ivjJButtonSpatial = new JButton();
 			ivjJButtonSpatial.setName("JButtonSpatial");
 			ivjJButtonSpatial.setText("Show Spatial Plot");
 			// user code begin {1}
 			// user code end
-		} catch (java.lang.Throwable ivjExc) {
+		} catch (Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
 			handleException(ivjExc);
@@ -1902,28 +1537,6 @@ private javax.swing.JButton getJButtonStatistics() {
 	return ivjJButtonStatistics;
 }
 
-
-//private JPanel getJPanelSnapshotROI(){
-//	if(ivjJPanelSnapshotROI == null){
-//		try{
-//			ivjJPanelSnapshotROI = new JPanel();
-//			BoxLayout mainBL = new BoxLayout(ivjJPanelSnapshotROI,BoxLayout.X_AXIS);
-//			ivjJPanelSnapshotROI.setLayout(mainBL);
-//			ivjJPanelSnapshotROI.add(getJButtonSnapshotROI());
-////			ivjJCheckBoxSnapshotROI = new JCheckBox("showROI");
-////			ivjJCheckBoxSnapshotROI.setEnabled(false);
-////			ivjJCheckBoxSnapshotROI.addActionListener(new ActionListener(){
-////				public void actionPerformed(ActionEvent e) {
-////				}});
-////			ivjJPanelSnapshotROI.add(ivjJCheckBoxSnapshotROI);
-//			ivjJPanelSnapshotROI.setBorder(new CompoundBorder(new LineBorder(getForeground(),1),new EmptyBorder(1,1,1,1)));
-//		}catch (java.lang.Throwable ivjExc) {
-//				handleException(ivjExc);
-//		}
-//	}
-//	return ivjJPanelSnapshotROI;
-//}
-
 private javax.swing.JButton getJButtonSnapshotROI() {
 	if (ivjJButtonSnapshotROI == null) {
 		try {
@@ -1933,56 +1546,32 @@ private javax.swing.JButton getJButtonSnapshotROI() {
 			ivjJButtonSnapshotROI.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					double[] dataValues = getPdeDataContext().getDataValues();
-//					CartesianMesh cartMesh = getPdeDataContext().getCartesianMesh();
-					boolean isVolumeType = 
-						(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
-						getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION));
-//					double sum = 0;
-//					double wsum = 0;
-//					double min = dataValues[0];
-//					double max = min;
-//					double spaceSum = 0;
+					VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+					boolean isVolumeType = (variableType.equals(VariableType.VOLUME) ||	variableType.equals(VariableType.VOLUME_REGION));
 					BitSet snapshotROI = new BitSet(dataValues.length);
 					for (int i = 0; i < dataValues.length; i++) {
 						snapshotROI.set(i,(dataValues[i] == 1.0));
-//						if(snapshotROI.get(i)){
-//							sum+= dataValues[i];
-//							if(isVolumeType){
-//								spaceSum+= cartMesh.calculateMeshElementVolumeFromVolumeIndex(i);
-//								wsum+= dataValues[i]*cartMesh.calculateMeshElementVolumeFromVolumeIndex(i);
-//							}else{
-//								spaceSum+= cartMesh.getMembraneElements()[i].getArea();
-//								wsum+= dataValues[i]*cartMesh.getRegionMembraneSurfaceAreaFromMembraneIndex(i);
-//							}
-//							min = Math.min(min, dataValues[i]);
-//							max = Math.max(max, dataValues[i]);
-//						}
 					}
+					String variableName = getPdeDataContext().getVariableName();
+					double timePoint = getPdeDataContext().getTimePoint();
 					if(snapshotROI.cardinality() == 0){
 						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
-								"No data values for variable '"+getPdeDataContext().getVariableName()+"'\n"+
-								"at time '"+getPdeDataContext().getTimePoint()+"' have values equal to 1.0");
+								"No data values for variable '"+variableName+"'\n"+
+								"at time '"+timePoint+"' have values equal to 1.0");
 					}else{
 						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI updated.\n"+
-								"Variable '"+getPdeDataContext().getVariableName()+"' "+
-								"Time '"+getPdeDataContext().getTimePoint()+"'\n"+
+								"Variable '"+variableName+"' "+
+								"Time '"+timePoint+"'\n"+
 								"Current Snapshot ROI:\n"+
 								"Count = "+snapshotROI.cardinality()+" of "+dataValues.length+"\n"
-//								(cartMesh.getGeometryDimension()<3?(cartMesh.getGeometryDimension()<2?"length":(isVolumeType?"area":"length")):(isVolumeType?"volume":"area"))+" = "+spaceSum+"\n"
-//								"Minimum = "+min+"\n"+
-//								"Maximum = "+max+"\n"+
-//								"Mean = "+sum/snapshotROI.cardinality()+"\n"+
-//								"Weighted Mean = "+wsum/spaceSum
 								);						
 					}
 					if(isVolumeType){
 						volumeSnapshotROI = snapshotROI;
-						volumeSnapshotROIDescription =
-							"Variable='"+getPdeDataContext().getVariableName()+"', Timepoint= "+getPdeDataContext().getTimePoint();
+						volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
 					}else{
 						membraneSnapshotROI = snapshotROI;
-						membraneSnapshotROIDescription =
-							"Variable='"+getPdeDataContext().getVariableName()+"', Timepoint= "+getPdeDataContext().getTimePoint();
+						membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
 					}
 				}});
 			// user code begin {1}
@@ -2207,7 +1796,7 @@ private cbit.vcell.simdata.gui.PDEDataContextPanel getPDEDataContextPanel1() {
 private NewPDEExportPanel getPDEExportPanel1() {
 	if (ivjPDEExportPanel1 == null) {
 		try {
-			ivjPDEExportPanel1 = new cbit.vcell.client.data.NewPDEExportPanel();
+			ivjPDEExportPanel1 = new NewPDEExportPanel();
 			ivjPDEExportPanel1.setName("PDEExportPanel1");
 			// user code begin {1}
 			// user code end
@@ -2248,7 +1837,7 @@ private cbit.vcell.simdata.gui.PDEPlotControlPanel getPDEPlotControlPanel1() {
  * @return The simulation property value.
  * @see #setSimulation
  */
-public cbit.vcell.solver.Simulation getSimulation() {
+private Simulation getSimulation() {
 	return fieldSimulation;
 }
 
@@ -2373,7 +1962,7 @@ public static void main(java.lang.String[] args) {
  * @return java.lang.String
  * @param coord cbit.vcell.geometry.Coordinate
  */
-private String niceCoordinateString(org.vcell.util.Coordinate coord) {
+private String niceCoordinateString(Coordinate coord) {
 
 	//reduce fraction digits of the form XX.xxxxxxxxxxxxxxy
 	//to something more reasonable
@@ -2413,68 +2002,21 @@ private void pdeDataContext1_VariableName() {
 		}
 	}
 	
-	if(getPdeDataContext().getDataIdentifier() != null && (getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION))){
-
-			getJButtonSurfaces().setEnabled(true);
+	if(getPdeDataContext().getDataIdentifier() != null && 
+			(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
+			getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION))){
+		getJButtonSurfaces().setEnabled(true);
 	}else{
 		getJButtonSurfaces().setEnabled(false);
 	}
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/24/2006 10:52:52 AM)
- */
-private void startTimeSeriesJob(final TimeSeriesJobSpec tsjs,TimeSeriesJobResultsAction resultsAction,boolean bInputBlocking){
-
-	if(tsjs.getVcDataJobID() == null || !tsjs.getVcDataJobID().isBackgroundTask()){
-		throw new RuntimeException("Use getTimeSeries(...) if not a background job");
-	}
-	AsynchProgressPopup pp = null;
-	try{
-		pp = new AsynchProgressPopup(PDEDataViewer.this,
-			"Retrieving Data for '"+tsjs.getVariableNames()[0]+"' jobID("+tsjs.getVcDataJobID().getJobID()+")",
-			"Sending request to data server...",
-			bInputBlocking,false,
-			true,
-			new ProgressDialogListener(){
-				public void cancelButton_actionPerformed(EventObject newEvent) {
-					dataJobFailed(tsjs.getVcDataJobID(), UserCancelException.CANCEL_GENERIC);
-				}
-			}
-		);
-	
-		jobIDProgressHash.put(tsjs.getVcDataJobID(),pp);
-		if(resultsAction != null){
-			jobIDActionHash.put(tsjs.getVcDataJobID(), resultsAction);
-		}
-		final AsynchProgressPopup finalPP = pp;
-		SwingUtilities.invokeLater(new Runnable(){public void run(){finalPP.start();}});
-		new Thread(new Runnable(){public void run(){
-			try {
-				getPdeDataContext().getTimeSeriesValues(tsjs);
-			} catch (DataAccessException e) {
-				dataJobFailed(tsjs.getVcDataJobID(), e);
-			}
-		}}).start();
-	}catch(Exception e){
-		final AsynchProgressPopup finalPP = pp;
-		if(pp != null){SwingUtilities.invokeLater(new Runnable(){public void run(){finalPP.stop();}});}
-		dataJobFailed(tsjs.getVcDataJobID(), e);
-	}
-}
-
-
-
 
 /**
  * Sets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) {
+public void setPdeDataContext(PDEDataContext pdeDataContext) {
 
 	if(dataValueSurfaceViewerJIF != null){
 		dataValueSurfaceViewerJIF.dispose();
@@ -2484,7 +2026,7 @@ public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) 
 	fieldDataValueSurfaceViewer = null;
 	meshRegionSurfaces = null;
 	
-	cbit.vcell.simdata.PDEDataContext oldValue = fieldPdeDataContext;
+	PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
 }
@@ -2495,10 +2037,10 @@ public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) 
  * @param newValue cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(cbit.vcell.simdata.PDEDataContext newValue) {
+private void setpdeDataContext1(PDEDataContext newValue) {
 	if (ivjpdeDataContext1 != newValue) {
 		try {
-			cbit.vcell.simdata.PDEDataContext oldValue = getpdeDataContext1();
+			PDEDataContext oldValue = getpdeDataContext1();
 			/* Stop listening for events from the current object */
 			if (ivjpdeDataContext1 != null) {
 				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
@@ -2546,7 +2088,7 @@ protected void showComponentInFrame(final Component comp,final String title) {
 		final JInternalFrame frame = new JInternalFrame(title, true, true, true, true);
 		frame.getContentPane().add(comp);
 		frame.pack();
-		org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+		BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
 		DocumentWindowManager.showFrame(frame,jDesktopPane);		
 	}else{
 		final Frame dialogOwner = (Frame)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, Frame.class);
@@ -2554,7 +2096,7 @@ protected void showComponentInFrame(final Component comp,final String title) {
 
 		frame.getContentPane().add(comp);
 		frame.pack();
-		org.vcell.util.BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+		BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
 		frame.setVisible(true);
 	}
 }
@@ -2586,55 +2128,41 @@ private void showKymograph() {
 	
 	try {
 		VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
-		if(lineSSOnly.size() > 0){
-			int[] indices = null;
-			int[] crossingMembraneIndices = null;
-			double[] accumDistances = null;
-			for (int i = 0; i < lineSSOnly.size(); i++){
-				if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-					SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
-					SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
-					indices = ssh.getSampledIndexes();
-					crossingMembraneIndices = ssh.getMembraneIndexesInOut();
-					accumDistances = ssh.getWorldCoordinateLengths();
-				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-					SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)lineSSOnly.get(i);
-					SpatialSelection.SSHelper ssh = ssm.getIndexSamples();
-					indices = ssh.getSampledIndexes();
-					accumDistances = ssh.getWorldCoordinateLengths();
-				}
-	
-				KymographPanel  kymographPanel = new KymographPanel();
-				String title = "Kymograph: ";
-				if (getSimulationModelInfo()!=null){
-					title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-				}
-				showComponentInFrame(kymographPanel, title);
-				SymbolTable symbolTable;
-				if(getSimulation() != null && getSimulation().getMathDescription() != null){
-					symbolTable = getSimulation().getMathDescription();
-				}else{
-					symbolTable = new SimpleSymbolTable(new String[] {getPdeDataContext().getDataIdentifier().getName()});
-				}
-				
-				kymographPanel.initDataManager(
-					getDataViewerManager().getUser(),
-					((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
-					getPdeDataContext().getVariableName(),
-					getPdeDataContext().getTimePoints()[0],
-					1,
-					getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
-					indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
-					symbolTable,
-					new PDEDataViewer.TimeSeriesJobStarter(){
-						public void startTimeSeriesJob(
-								TimeSeriesJobSpec tsjs,
-								TimeSeriesJobResultsAction resultsAction,
-								boolean inputBlocking) {
-							PDEDataViewer.this.startTimeSeriesJob(tsjs, resultsAction, inputBlocking);
-						}
-					});
+		int[] indices = null;
+		int[] crossingMembraneIndices = null;
+		double[] accumDistances = null;
+		for (int i = 0; i < lineSSOnly.size(); i++){
+			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+				SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
+				SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
+				indices = ssh.getSampledIndexes();
+				crossingMembraneIndices = ssh.getMembraneIndexesInOut();
+				accumDistances = ssh.getWorldCoordinateLengths();
+			}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+				SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)lineSSOnly.get(i);
+				SpatialSelection.SSHelper ssh = ssm.getIndexSamples();
+				indices = ssh.getSampledIndexes();
+				accumDistances = ssh.getWorldCoordinateLengths();
+			}	
+			
+			String title = "Kymograph: ";
+			if (getSimulationModelInfo()!=null){
+				title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
 			}
+			KymographPanel  kymographPanel = new KymographPanel(this, title);
+			
+			SymbolTable symbolTable;
+			if(getSimulation() != null && getSimulation().getMathDescription() != null){
+				symbolTable = getSimulation().getMathDescription();
+			}else{
+				symbolTable = new SimpleSymbolTable(new String[] {getPdeDataContext().getDataIdentifier().getName()});
+			}
+			
+			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
+				getPdeDataContext().getVariableName(), getPdeDataContext().getTimePoints()[0], 1,
+				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
+				indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
+				symbolTable);
 		}
 	} catch (Exception e) {
 		PopupGenerator.showErrorDialog(this.getClass().getName()+".showKymograph: "+e.getMessage());
@@ -2674,28 +2202,27 @@ private void showSpatialPlot() {
 			break;
 		}
 	}
-	
+	final String varName = getPdeDataContext().getVariableName();
+	final double timePoint = getPdeDataContext().getTimePoint();
 	final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[1];
 	try{
 		if(getSimulation() != null && getSimulation().getMathDescription() != null){
-			symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
+			symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(varName);
 		}
 		if(symbolTableEntries[0] == null){
-			symbolTableEntries[0] = new VolVariable(getPdeDataContext().getDataIdentifier().getName());
+			symbolTableEntries[0] = new VolVariable(varName);
 		}
 	} catch (ExpressionBindingException e){
 		e.printStackTrace();
 	}
 	
-	AsynchClientTask task1 = new AsynchClientTask("Retrieving spatial series for variable '" + getPdeDataContext().getVariableName(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task1 = new AsynchClientTask("Retrieving spatial series for variable '" + varName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// get plots, ignoring points
 			PlotData[] plotDatas = new PlotData[sl.length];
 			for (int i = 0; i < sl.length; i++){				
-				String varName = getPdeDataContext().getVariableName();
-				double timePoint = getPdeDataContext().getTimePoint();
 				PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[i]);
 				plotDatas[i] = plotData;								
 			}
@@ -2703,21 +2230,18 @@ private void showSpatialPlot() {
 		}
 	};
 				
-	AsynchClientTask task2 = new AsynchClientTask("Showing spatial plot for variable" + getPdeDataContext().getVariableName(), AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	AsynchClientTask task2 = new AsynchClientTask("Showing spatial plot for variable" + varName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			String varName = getPdeDataContext().getVariableName();
 			PlotData[] plotDatas = (PlotData[])hashTable.get("plotDatas");
 			for (PlotData plotData : plotDatas){
 				if (plotData != null) {			
 					PlotPane plotPane = new PlotPane();
-					plotPane.setPlot2D(
-							new Plot2D(
-								symbolTableEntries,
-								new String[] { varName },new PlotData[] { plotData },
-								new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"}));
-					String title = "Line Plot: ("+varName+")";
+					Plot2D plot2D = new Plot2D(symbolTableEntries, new String[] { varName },new PlotData[] { plotData },
+								new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"});
+					plotPane.setPlot2D(	plot2D);
+					String title = "Spatial Plot: ("+varName+")";
 					if (getSimulationModelInfo()!=null){
 						title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
 					}
@@ -2738,109 +2262,87 @@ private void showTimePlot() {
 	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(true,true);
 	final Vector<SpatialSelection> singlePointSSOnly = new Vector<SpatialSelection>();
 	if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
-		//
 		for (int i = 0; i < spatialSelectionArr.length; i++){
 			if(spatialSelectionArr[i].isPoint() ||
-				(	spatialSelectionArr[i] instanceof SpatialSelectionMembrane && 
-					((SpatialSelectionMembrane)spatialSelectionArr[i]).getSelectionSource() instanceof cbit.vcell.geometry.SinglePoint)){
+				(spatialSelectionArr[i] instanceof SpatialSelectionMembrane &&
+					((SpatialSelectionMembrane)spatialSelectionArr[i]).getSelectionSource() instanceof SinglePoint)){
 				singlePointSSOnly.add(spatialSelectionArr[i]);
 			}
 		}
 	}
-	//
+	final String varName = getPdeDataContext().getVariableName();
+	VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();	
 	if(singlePointSSOnly.size() == 0){
-		PopupGenerator.showErrorDialog(this, "No Time sampling points match DataType="+getPdeDataContext().getDataIdentifier().getVariableType());
+		PopupGenerator.showErrorDialog(this, "No Time sampling points match DataType="+varType);
 		return;
 	}
 	
-	try {
-		VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
-		if(singlePointSSOnly.size() > 0){
-			int[] indices = null;
-			//
-			indices = new int[singlePointSSOnly.size()];
-			final String[] plotNames = new String[singlePointSSOnly.size()];
-			final cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[plotNames.length];
-			for (int i = 0; i < singlePointSSOnly.size(); i++){
-				org.vcell.util.Coordinate tp = null;
-				if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-					SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
-					indices[i] = ssv.getIndex(0);
-					tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
-				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-					SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)singlePointSSOnly.get(i);
-					indices[i] = ssm.getIndex(0);
-					double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
-					tp = ((cbit.vcell.geometry.SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
-				}
-				plotNames[i] = "P["+i+"] ("+niceCoordinateString(tp)+")";
-				try{
-					if(getSimulation() != null && getSimulation().getMathDescription() != null){
-						symbolTableEntries[0] =
-							getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
-					}
-					if(symbolTableEntries[0] == null){
-						symbolTableEntries[0] =
-							new VolVariable(getPdeDataContext().getDataIdentifier().getName());
-					}
-				}catch(cbit.vcell.parser.ExpressionBindingException e){
-					e.printStackTrace();
-				}
+	try {		
+		int[] indices = null;
+		//
+		indices = new int[singlePointSSOnly.size()];
+		final String[] plotNames = new String[singlePointSSOnly.size()];
+		final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotNames.length];
+		for (int i = 0; i < singlePointSSOnly.size(); i++){
+			Coordinate tp = null;
+			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+				SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
+				indices[i] = ssv.getIndex(0);
+				tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
+			}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+				SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)singlePointSSOnly.get(i);
+				indices[i] = ssm.getIndex(0);
+				double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
+				tp = ((cbit.vcell.geometry.SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
 			}
-	
-			PDEDataViewer.this.startTimeSeriesJob(
-					new TimeSeriesJobSpec(
-							new String[] {getPdeDataContext().getVariableName()},
-							new int[][] {indices},null,
-							getPdeDataContext().getTimePoints()[0],
-							1,
-							getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
-							VCDataJobID.createVCDataJobID(
-									getDataViewerManager().getUser(),
-									true)
-					),
-					new PDEDataViewer.TimeSeriesJobResultsAction(){
-						private Throwable timeSeriesJobFailed;
-						private TSJobResultsNoStats tsJobResultsNoStats;
-						public void setTimeSeriesJobFailed(Throwable e) {
-							timeSeriesJobFailed = e;
-						}
-						public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults) {
-							this.tsJobResultsNoStats = (TSJobResultsNoStats)timeSeriesJobResults;
-						}
-						public void run() {
-							if(timeSeriesJobFailed != null){
-								PopupGenerator.showErrorDialog("showTimePlot failed:\n"+timeSeriesJobFailed.getMessage());
-							}else{
-								new SwingDispatcherSync (){
-									public Object runSwing() throws Exception{
-										PlotPane plotPane = new PlotPane();
-										plotPane.setPlot2D(
-												new SingleXPlot2D(
-														symbolTableEntries,
-														"Time",
-														plotNames,
-														tsJobResultsNoStats.getTimesAndValuesForVariable(tsJobResultsNoStats.getVariableNames()[0]),
-														new String[] {"Time series for " + getPdeDataContext().getVariableName(), "Time (s)", "[" + tsJobResultsNoStats.getVariableNames()[0] + "]"}));
-										String title = "Timeplot: ("+tsJobResultsNoStats.getVariableNames()[0]+")";
-										if (getSimulationModelInfo()!=null){
-											title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-										}
-										showComponentInFrame(plotPane, title);							
-										return null;
-									}
-								}.dispatchConsumeException();
-
-							}
-						}
-					},false);
+			plotNames[i] = "P["+i+"] ("+niceCoordinateString(tp)+")";
+			try{				
+				if(getSimulation() != null && getSimulation().getMathDescription() != null){
+					symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(varName);
+				}
+				if(symbolTableEntries[0] == null){
+					symbolTableEntries[0] = new VolVariable(varName);
+				}
+			}catch(ExpressionBindingException e){
+				e.printStackTrace();
+			}
 		}
+
+		double[] timePoints = getPdeDataContext().getTimePoints();
+		TimeSeriesJobSpec tsjs = new TimeSeriesJobSpec(	new String[] {varName},
+				new int[][] {indices}, null, timePoints[0], 1, timePoints[timePoints.length-1],
+				VCDataJobID.createVCDataJobID(getDataViewerManager().getUser(), true));
+
+		if (!tsjs.getVcDataJobID().isBackgroundTask()){
+			throw new RuntimeException("Use getTimeSeries(...) if not a background job");
+		}
+		
+		Hashtable<String, Object> hash = new Hashtable<String, Object>();
+		hash.put(StringKey_timeSeriesJobSpec, tsjs);
+		
+		AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieving Data for '"+varName+"'...");	
+		AsynchClientTask task2 = new AsynchClientTask("showing time plot for '"+varName+"'", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
+				PlotPane plotPane = new PlotPane();
+				SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries, "Time", plotNames,
+					tsJobResultsNoStats.getTimesAndValuesForVariable(varName),
+					new String[] {"Time series for " + varName, "Time (s)", "[" + varName + "]"});
+				plotPane.setPlot2D(plot2D);
+				String title = "Timeplot: ("+varName+")";
+				if (getSimulationModelInfo()!=null){
+					title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+				}
+				showComponentInFrame(plotPane, title);				
+			}						
+		};		
+		ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
 	}
-
 }
-
 
 /**
  * Comment
@@ -2851,10 +2353,7 @@ private void updateDataSamplerContext(java.beans.PropertyChangeEvent propertyCha
 		getJButtonTime().setEnabled(((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
 	}else if(propertyChangeEvent.getPropertyName().equals("spatialDataSamplers")){
 		getJButtonSpatial().setEnabled(((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
-		getKymographJButton().setEnabled(
-			(getPdeDataContext().getTimePoints().length > 1) &&
-			((Boolean)(propertyChangeEvent.getNewValue())).booleanValue()
-			);
+		getKymographJButton().setEnabled((getPdeDataContext().getTimePoints().length > 1) && ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
 	}
 }
 
@@ -2884,82 +2383,72 @@ private void updateDataValueSurfaceViewer() {
 	}
 	
 
-	DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider svdp =
-		new DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider(){
-			private DisplayAdapterService updatedDAS = new DisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
-			private String updatedVariableName = getPdeDataContext().getVariableName();
-			private double updatedTimePoint = getPdeDataContext().getTimePoint();
-			private double[] updatedVariableValues = getPdeDataContext().getDataValues();
-			private VCDataIdentifier updatedVCDataIdentifier = getPdeDataContext().getVCDataIdentifier();
-			public void makeMovie(SurfaceCanvas surfaceCanvas){
-				makeSurfaceMovie(surfaceCanvas,
-					updatedVariableValues.length,updatedVariableName,updatedDAS,updatedVCDataIdentifier);
-			}
-			public double getValue(int surfaceIndex,int polygonIndex){
-				return updatedVariableValues[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)];
-			}
-			public String getValueDescription(int surfaceIndex,int polygonIndex){
-				return updatedVariableName;
-			}
-			public int[][] getSurfacePolygonColors(){
-				return surfaceColors;
-			}
-			public org.vcell.util.Coordinate getCentroid(int surfaceIndex,int polygonIndex){
-				return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getCentroid();
-			}
-			public float getArea(int surfaceIndex,int polygonIndex){
-				return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getArea();
-			}
-			public cbit.vcell.render.Vect3d getNormal(int surfaceIndex,int polygonIndex){
-				return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getNormal();
-			}
-			public int getMembraneIndex(int surfaceIndex,int polygonIndex){
-				return meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex);
-			}
-			public java.awt.Color getROIHighlightColor(){
-				return new java.awt.Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
-			}
-			public void showComponentInFrame(Component comp,String title){
-				PDEDataViewer.this.showComponentInFrame(comp,title);
-			}
-			public void plotTimeSeriesData(
-					int[][] indices,
-					boolean bAllTimes,
-					boolean bTimeStats,
-					boolean bSpaceStats) throws DataAccessException/*,DataValueSurfaceViewer.UnsynchronizedDataException*/{
-				
-//				try{
-//					if(!updatedVariableName.equals(getPdeDataContext().getVariableName())){
-//						throw new DataValueSurfaceViewer.UnsynchronizedDataException("SurfaceViewer variable name not match DataViewer variable name");
-//					}
-					double beginTime = (bAllTimes?getPdeDataContext().getTimePoints()[0]:updatedTimePoint);
-					double endTime = (bAllTimes?getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1]:beginTime);
-					String[] varNames = new String[indices.length];
-					for(int i=0;i<varNames.length;i+= 1){
-						varNames[i] = updatedVariableName;
-					}
-					final org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new org.vcell.util.TimeSeriesJobSpec(
-								varNames,indices,beginTime,1,endTime,bSpaceStats,bTimeStats,
-								VCDataJobID.createVCDataJobID(
-										getDataViewerManager().getUser(),
-										true)
-								);
+	DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider svdp = new DataValueSurfaceViewer.SurfaceCollectionDataInfoProvider(){
+		private DisplayAdapterService updatedDAS = new DisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+		private String updatedVariableName = getPdeDataContext().getVariableName();
+		private double updatedTimePoint = getPdeDataContext().getTimePoint();
+		private double[] updatedVariableValues = getPdeDataContext().getDataValues();
+		private VCDataIdentifier updatedVCDataIdentifier = getPdeDataContext().getVCDataIdentifier();
+		public void makeMovie(SurfaceCanvas surfaceCanvas){
+			makeSurfaceMovie(surfaceCanvas, updatedVariableValues.length,updatedVariableName,updatedDAS,updatedVCDataIdentifier);
+		}
+		public double getValue(int surfaceIndex,int polygonIndex){
+			return updatedVariableValues[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)];
+		}
+		public String getValueDescription(int surfaceIndex,int polygonIndex){
+			return updatedVariableName;
+		}
+		public int[][] getSurfacePolygonColors(){
+			return surfaceColors;
+		}
+		public Coordinate getCentroid(int surfaceIndex,int polygonIndex){
+			return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getCentroid();
+		}
+		public float getArea(int surfaceIndex,int polygonIndex){
+			return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getArea();
+		}
+		public Vect3d getNormal(int surfaceIndex,int polygonIndex){
+			return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getNormal();
+		}
+		public int getMembraneIndex(int surfaceIndex,int polygonIndex){
+			return meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex);
+		}
+		public Color getROIHighlightColor(){
+			return new Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
+		}
+		public void showComponentInFrame(Component comp,String title){
+			PDEDataViewer.this.showComponentInFrame(comp,title);
+		}
+		public void plotTimeSeriesData(
+				int[][] indices,
+				boolean bAllTimes,
+				boolean bTimeStats,
+				boolean bSpaceStats) throws DataAccessException{
 
-//					new Thread(
-//						new Runnable(){
-//							public void run(){
-								startTimeSeriesJob(timeSeriesJobSpec,new PlotSpaceStats(),false);
-//							}
-//						}
-//					).start();
-					//
-//					return null;
-//				}catch(Throwable e){
-//					PopupGenerator.showErrorDialog(e.getMessage());
-//					return null;
-//				}
-			}
+				double[] timePoints = getPdeDataContext().getTimePoints();
+				double beginTime = (bAllTimes?timePoints[0]:updatedTimePoint);
+				double endTime = (bAllTimes?timePoints[timePoints.length-1]:beginTime);
+				String[] varNames = new String[indices.length];
+				for(int i=0;i<varNames.length;i+= 1){
+					varNames[i] = updatedVariableName;
+				}
+				TimeSeriesJobSpec timeSeriesJobSpec =	new TimeSeriesJobSpec(varNames,indices,beginTime,1,endTime,bSpaceStats,bTimeStats,
+							VCDataJobID.createVCDataJobID(getDataViewerManager().getUser(),	true));
+
+				Hashtable<String, Object> hash = new Hashtable<String, Object>();
+				hash.put(StringKey_timeSeriesJobSpec, timeSeriesJobSpec);
+
+				AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieve data");
+				AsynchClientTask task2 = new AsynchClientTask("Showing surface", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						TSJobResultsSpaceStats tsJobResultsSpaceStats = (TSJobResultsSpaceStats)hashTable.get(StringKey_timeSeriesJobResults);
+						plotSpaceStats(tsJobResultsSpaceStats);
+					}
+				};		
+				ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);				
+		}
 	};
 
 	getDataValueSurfaceViewer().setSurfaceCollectionDataInfoProvider(svdp);
@@ -2968,21 +2457,23 @@ private void updateDataValueSurfaceViewer() {
 		(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+"::"+"SIM("+getSimulationModelInfo().getSimulationName()+")::":"")+
 		"VAR("+getPdeDataContext().getVariableName()+")::"+
 		"TIME("+getPdeDataContext().getTimePoint()+")");
-
-	
 }
-private void makeSurfaceMovie(
-		final SurfaceCanvas surfaceCanvas,
+
+private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 		final int varTotalNumIndices, final String movieDataVarName, final DisplayAdapterService movieDAS,
 		final VCDataIdentifier movieVCDataIdentifier){
 
 	final SurfaceMovieSettingsPanel smsp = new SurfaceMovieSettingsPanel();
-	smsp.init(surfaceCanvas.getWidth(), surfaceCanvas.getHeight(), getPdeDataContext().getTimePoints());
-	while(true){
+	final double[] timePoints = getPdeDataContext().getTimePoints();
+	final int surfaceWidth = surfaceCanvas.getWidth();
+	final int surfaceHeight = surfaceCanvas.getHeight();
+	smsp.init(surfaceWidth, surfaceHeight, timePoints);
+	
+	while (true){
 		if(PopupGenerator.showComponentOKCancelDialog(dataValueSurfaceViewerJIF, smsp, "Movie Settings for var "+movieDataVarName) != JOptionPane.OK_OPTION){
 			return;
 		}
-		long movieSize =(smsp.getTotalFrames()*surfaceCanvas.getWidth()*surfaceCanvas.getHeight()*3);
+		long movieSize =(smsp.getTotalFrames()*surfaceWidth*surfaceHeight*3);
 		long rawDataSize = (smsp.getTotalFrames()*varTotalNumIndices*8);//raw data size;
 		if(movieSize+rawDataSize > 50000000){
 			final String YES_RESULT = "Yes";
@@ -2995,183 +2486,161 @@ private void makeSurfaceMovie(
 			break;
 		}
 	}
+	
 	final int beginTimeIndex = smsp.getBeginTimeIndex();
 	final int endTimeIndex = smsp.getEndTimeIndex();
 	final int step = smsp.getSkipParameter()+1;
-	
-	new Thread(new Runnable(){public void run(){
-	try {
-		final String[] varNames = new String[] {movieDataVarName};
-		int[] allIndices = new int[varTotalNumIndices];
-		for (int i = 0; i < allIndices.length; i++) {
-			allIndices[i] = i;
-		}
-		final org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
-			new org.vcell.util.TimeSeriesJobSpec(
-				varNames,
-				new int[][] {allIndices},null,
-				getPdeDataContext().getTimePoints()[beginTimeIndex],
-				step,
-				getPdeDataContext().getTimePoints()[endTimeIndex],
-				VCDataJobID.createVCDataJobID(
-						getDataViewerManager().getUser(),
-						true));
-		startTimeSeriesJob(timeSeriesJobSpec,
-			new TimeSeriesJobResultsAction(){
-				private TimeSeriesJobResults timeSeriesJobResults;
-				private Throwable timeSeriesJobFailed;
-				public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults) {
-					this.timeSeriesJobResults = timeSeriesJobResults;
-				}
-				public void setTimeSeriesJobFailed(Throwable e) {
-					timeSeriesJobFailed = e;
-				}
-				public void run() {
-					if(timeSeriesJobFailed != null){
-						return;//Do Nothing Special
-					}
-					JFileChooser jfChooser = new JFileChooser();
-					while(true){
-						if(jfChooser.showSaveDialog(PDEDataViewer.this) != JFileChooser.APPROVE_OPTION){
-							return;
-						}
-						if(jfChooser.getSelectedFile().exists()){
-							final String YES_RESULT = "Yes";
-							String result = PopupGenerator.showWarningDialog(PDEDataViewer.this, "Overwrite exisitng file:\n"+jfChooser.getSelectedFile().getAbsolutePath()+"?", new String[] {YES_RESULT,"No"}, YES_RESULT);
-							if(result != null && result.equals(YES_RESULT)){
-								break;
-							}
-						}else{
-							break;
-						}
-					}
-					
-
-					final AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this,
-							"Creating Movie...","Creating Movie...",
-							true,false);
-
-					try{
-						SwingUtilities.invokeLater(new Runnable(){public void run(){pp.start();}});
-						double[][] timeSeries = ((TSJobResultsNoStats)timeSeriesJobResults).getTimesAndValuesForVariable(movieDataVarName);
-	
-						int[] singleFrame = new int[surfaceCanvas.getWidth()*surfaceCanvas.getHeight()];
-						BufferedImage bufferedImage = new BufferedImage(surfaceCanvas.getWidth(), surfaceCanvas.getHeight(),BufferedImage.TYPE_3BYTE_BGR);
-						Graphics2D g2D = bufferedImage.createGraphics();
-						VideoMediaChunk[] chunks = new VideoMediaChunk[timeSeriesJobResults.getTimes().length];	
-						VideoMediaSampleRaw sample;
-						int sampleDuration = 0;
-//						int timeScale = 1000;
-						int timeScale = smsp.getFramesPerSecond();
-						int bitsPerPixel = 32;
-						boolean isGrayscale = false;
-//						final double[] allTimes = new double[endTimeIndex-beginTimeIndex+1];
-//						double interval = allTimes[endTimeIndex] - allTimes[beginTimeIndex];
-//						double duration = interval*100;
-						DisplayAdapterService das = new DisplayAdapterService(movieDAS);
-						int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
-						try {
-							for (int t = 0; t < timeSeriesJobResults.getTimes().length; t++) {
-//								if(bCancelFlag[0]){System.out.println("Cancelled...");return;}
-								final int finalT = t;
-								SwingUtilities.invokeLater(new Runnable(){public void run(){pp.setMessage("Creating Movie... Progress "+NumberUtils.formatNumber(100.0*((double)finalT/(double)timeSeriesJobResults.getTimes().length),3)+"%");}});
-								
-								double min = Double.POSITIVE_INFINITY;
-								double max = Double.NEGATIVE_INFINITY;
-								for (int index = 1; index < timeSeries.length; index++) {
-									if(!Double.isNaN(timeSeries[index][t]) && !Double.isInfinite(timeSeries[index][t])){
-										min = Math.min(min, timeSeries[index][t]);
-										max = Math.max(max, timeSeries[index][t]);
-									}
-								}
-								das.setValueDomain(new Range(min,max));
-								if(das.getAutoScale()){
-									das.setActiveScaleRange(new Range(min,max));
-								}
-								int[][] surfacesColors = new int[surfaceCanvas.getSurfaceCollection().getSurfaceCount()][];
-								for (int i = 0; i < surfaceCanvas.getSurfaceCollection().getSurfaceCount(); i += 1) {
-									cbit.vcell.geometry.surface.Surface surface = surfaceCanvas.getSurfaceCollection().getSurfaces(i);
-									surfacesColors[i] = new int[surface.getPolygonCount()];
-									for (int j = 0; j < surface.getPolygonCount(); j += 1) {
-										int membIndex = meshRegionSurfaces.getMembraneIndexForPolygon(i, j);
-										surfacesColors[i][j] = das.getColorFromValue(timeSeries[membIndex+1][t]);
-									}
-								}
-								surfaceCanvas.setSurfacesColors(surfacesColors);
-								
-								surfaceCanvas.paintImmediately(0, 0, surfaceCanvas.getWidth(), surfaceCanvas.getHeight());
-								surfaceCanvas.paint(g2D);
-								bufferedImage.getRGB(0, 0, surfaceCanvas.getWidth(), surfaceCanvas.getHeight(), singleFrame, 0, surfaceCanvas.getWidth());
-//						ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-//						GIFOutputStream gifOut = new GIFOutputStream(bytesOut);
-//						GIFUtils.GIFImage gifImage = new GIFUtils.GIFImage(singleFrame, surfaceCanvas.getWidth());
-//						gifImage.write(gifOut);
-//						gifOut.close();
-//						byte[] data = bytesOut.toByteArray();
-//								if (t == endTimeIndex){
-//									//Keep the last non-zero duration
-//									//sampleDuration = 0;
-//								}else{
-									sampleDuration = 1;
-////									sampleDuration = (int)Math.ceil((allTimes[t + 1] - allTimes[t]) / interval * duration);
-//								}
-								ByteArrayOutputStream sampleBytes = new ByteArrayOutputStream();
-								DataOutputStream sampleData = new DataOutputStream(sampleBytes);
-								for (int j=0;j<singleFrame.length;j++){
-									sampleData.writeInt(singleFrame[j]);
-								}
-								sampleData.close();
-								byte[] bytes = sampleBytes.toByteArray();
-//						sample = new VideoMediaSampleRaw(surfaceCanvas.getWidth(), surfaceCanvas.getHeight() * varNames.length, sampleDuration, bytes, bitsPerPixel, isGrayscale);
-								sample = new VideoMediaSampleRaw(surfaceCanvas.getWidth(), surfaceCanvas.getHeight() * varNames.length, sampleDuration,
-										new MediaSample.MediaSampleStream(bytes),bytes.length,
-										bitsPerPixel, isGrayscale);
-								chunks[t] = new VideoMediaChunk(sample);
-							}
-						}finally{
-							surfaceCanvas.setSurfacesColors(origSurfacesColors);
-							surfaceCanvas.paintImmediately(0, 0, surfaceCanvas.getWidth(), surfaceCanvas.getHeight());
-						}
-						MediaTrack videoTrack = new MediaTrack(chunks);
-						MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), timeScale);
-						newMovie.addUserDataEntry(new UserDataEntry("cpy", "©" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
-						newMovie.addUserDataEntry(new UserDataEntry("des", "Dataset name: " + movieVCDataIdentifier.getID()));
-						newMovie.addUserDataEntry(new UserDataEntry("cmt", "Time range: " + getPdeDataContext().getTimePoints()[beginTimeIndex] + " - " + getPdeDataContext().getTimePoints()[endTimeIndex]));
-						for (int k=0;k<varNames.length;k++) {
-							String entryType;
-							if (k < 10) entryType = "v0" + k;
-							else entryType = "v" + k;
-							newMovie.addUserDataEntry(new UserDataEntry(entryType,
-								"Variable name: " + varNames[k] +
-								"\nmin: " + das.getValueDomain().getMin() +
-								"\nmax: " + das.getValueDomain().getMax()
-								));
-						}
-	//					ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-	//					byte[] data = bytesOut.toByteArray();
-
-						pp.setMessage("Writing Movie to disk...");
-						FileOutputStream fos = new FileOutputStream(jfChooser.getSelectedFile());
-						DataOutputStream movieOutput = new DataOutputStream(new BufferedOutputStream(fos));
-						MediaMethods.writeMovie(movieOutput, newMovie);
-						movieOutput.close();
-//						fos.write(data);
-						fos.close();
-
-					} catch (Exception e) {
-						e.printStackTrace();
-						PopupGenerator.showErrorDialog("Error getting movie data\n"+e.getMessage());
-					}finally{
-						if(pp != null){pp.stop();}
-					}
-				}
-			},true//blocking
-		);
-		
-	} catch (Exception e) {
-		e.printStackTrace();
-		PopupGenerator.showErrorDialog("Error getting movie data\n"+e.getMessage());
+	final String[] varNames = new String[] {movieDataVarName};
+	int[] allIndices = new int[varTotalNumIndices];
+	for (int i = 0; i < allIndices.length; i++) {
+		allIndices[i] = i;
 	}
-	}}).start();
+	final TimeSeriesJobSpec timeSeriesJobSpec =	new TimeSeriesJobSpec(varNames,	new int[][] {allIndices},null,
+			timePoints[beginTimeIndex], step, timePoints[endTimeIndex],
+			VCDataJobID.createVCDataJobID(getDataViewerManager().getUser(),	true));
+	
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	hash.put(StringKey_timeSeriesJobSpec, timeSeriesJobSpec);
+
+	AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieving data for variable '" + movieDataVarName + "'");
+	AsynchClientTask task2 = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			VCFileChooser fileChooser = new VCFileChooser();
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fileChooser.setMultiSelectionEnabled(false);
+			fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MOV);
+			// Set the default file filter...
+			fileChooser.setFileFilter(FileFilters.FILE_FILTER_MOV);
+			// remove all selector
+			fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());		    
+			
+			fileChooser.setDialogTitle("Saving surface movie");
+			
+			File selectedFile = null;
+			while(true){
+				if(fileChooser.showSaveDialog(PDEDataViewer.this) != JFileChooser.APPROVE_OPTION){
+					return;
+				}
+				selectedFile = fileChooser.getSelectedFile();
+				if (!selectedFile.getName().endsWith(".mov")) {
+					selectedFile = new File(selectedFile.getAbsolutePath() + ".mov");
+				}
+				if (selectedFile.exists()){
+					final String YES_RESULT = "Yes";
+					String result = PopupGenerator.showWarningDialog(PDEDataViewer.this, "Overwrite exisitng file:\n"+selectedFile.getAbsolutePath()+"?", new String[] {YES_RESULT,"No"}, YES_RESULT);
+					if (result != null && result.equals(YES_RESULT)){						
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+			hashTable.put("selectedFile", selectedFile);
+		}							
+	};
+		
+	AsynchClientTask task3 = new AsynchClientTask("create movie", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			File selectedFile = (File)hashTable.get("selectedFile");
+			if (selectedFile == null) {
+				return;
+			}
+			
+			TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
+			
+			double[][] timeSeries = tsJobResultsNoStats.getTimesAndValuesForVariable(movieDataVarName);			
+			int[] singleFrame = new int[surfaceWidth*surfaceHeight];
+			BufferedImage bufferedImage = new BufferedImage(surfaceWidth, surfaceHeight,BufferedImage.TYPE_3BYTE_BGR);
+			Graphics2D g2D = bufferedImage.createGraphics();
+			VideoMediaChunk[] chunks = new VideoMediaChunk[tsJobResultsNoStats.getTimes().length];	
+			VideoMediaSampleRaw sample;
+			int sampleDuration = 0;
+			int timeScale = smsp.getFramesPerSecond();
+			int bitsPerPixel = 32;
+			boolean isGrayscale = false;
+			DisplayAdapterService das = new DisplayAdapterService(movieDAS);
+			int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
+			try {
+				for (int t = 0; t < tsJobResultsNoStats.getTimes().length; t++) {
+					getClientTaskStatusSupport().setMessage("Creating Movie... Progress "+NumberUtils.formatNumber(100.0*((double)t/(double)tsJobResultsNoStats.getTimes().length),3)+"%");
+					
+					double min = Double.POSITIVE_INFINITY;
+					double max = Double.NEGATIVE_INFINITY;
+					for (int index = 1; index < timeSeries.length; index++) {
+						double v = timeSeries[index][t];
+						if(!Double.isNaN(v) && !Double.isInfinite(v)){
+							min = Math.min(min, v);
+							max = Math.max(max, v);
+						}
+					}
+					das.setValueDomain(new Range(min,max));
+					if(das.getAutoScale()){
+						das.setActiveScaleRange(new Range(min,max));
+					}
+					int[][] surfacesColors = new int[surfaceCanvas.getSurfaceCollection().getSurfaceCount()][];
+					for (int i = 0; i < surfaceCanvas.getSurfaceCollection().getSurfaceCount(); i += 1) {
+						Surface surface = surfaceCanvas.getSurfaceCollection().getSurfaces(i);
+						surfacesColors[i] = new int[surface.getPolygonCount()];
+						for (int j = 0; j < surface.getPolygonCount(); j += 1) {
+							int membIndex = meshRegionSurfaces.getMembraneIndexForPolygon(i, j);
+							surfacesColors[i][j] = das.getColorFromValue(timeSeries[membIndex+1][t]);
+						}
+					}
+					surfaceCanvas.setSurfacesColors(surfacesColors);
+					
+					surfaceCanvas.paintImmediately(0, 0, surfaceWidth, surfaceHeight);
+					surfaceCanvas.paint(g2D);
+					bufferedImage.getRGB(0, 0, surfaceWidth, surfaceHeight, singleFrame, 0, surfaceWidth);
+					sampleDuration = 1;
+					ByteArrayOutputStream sampleBytes = new ByteArrayOutputStream();
+					DataOutputStream sampleData = new DataOutputStream(sampleBytes);
+					for (int j=0;j<singleFrame.length;j++){
+						sampleData.writeInt(singleFrame[j]);
+					}
+					sampleData.close();
+					byte[] bytes = sampleBytes.toByteArray();
+					sample = new VideoMediaSampleRaw(surfaceWidth, surfaceHeight * varNames.length, sampleDuration,
+							new MediaSample.MediaSampleStream(bytes),bytes.length,
+							bitsPerPixel, isGrayscale);
+					chunks[t] = new VideoMediaChunk(sample);
+				}
+			}finally{
+				surfaceCanvas.setSurfacesColors(origSurfacesColors);
+				surfaceCanvas.paintImmediately(0, 0, surfaceWidth, surfaceHeight);
+			}
+			MediaTrack videoTrack = new MediaTrack(chunks);
+			MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), timeScale);
+			newMovie.addUserDataEntry(new UserDataEntry("cpy", "©" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
+			newMovie.addUserDataEntry(new UserDataEntry("des", "Dataset name: " + movieVCDataIdentifier.getID()));
+			newMovie.addUserDataEntry(new UserDataEntry("cmt", "Time range: " + timePoints[beginTimeIndex] + " - " + timePoints[endTimeIndex]));
+			for (int k = 0; k < varNames.length; k ++) {
+				String entryType = "v" + (k < 10 ? "0" : "") + k; // pad with 0 if k < 10
+				UserDataEntry entry = new UserDataEntry(entryType,	"Variable name: " + varNames[k] + " min: " + das.getValueDomain().getMin() 
+						+ " max: " + das.getValueDomain().getMax());
+				newMovie.addUserDataEntry(entry);
+			}
+			getClientTaskStatusSupport().setMessage("Writing Movie to disk...");
+			FileOutputStream fos = new FileOutputStream(selectedFile);
+			DataOutputStream movieOutput = new DataOutputStream(new BufferedOutputStream(fos));
+			MediaMethods.writeMovie(movieOutput, newMovie);
+			movieOutput.close();
+			fos.close();
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
+}
+
+public void addDataJobListener(DataJobListener listener) {
+	dataJobListenerList.add(listener);
+	
+}
+
+public void removeDataJobListener(DataJobListener listener) {
+	dataJobListenerList.remove(listener);
+	
 }
 }

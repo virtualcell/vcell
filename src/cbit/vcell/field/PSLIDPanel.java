@@ -1,11 +1,8 @@
 package cbit.vcell.field;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -16,32 +13,21 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.EventObject;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.concurrent.TimeoutException;
-
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
-
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -49,19 +35,14 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Preference;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.ProgressDialogListener;
-
 import loci.formats.AWTImageTools;
-import loci.formats.ImageTools;
-
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.pslid.WebClientInterface;
 import cbit.vcell.simdata.VariableType;
 
-import cbit.vcell.pslid.*;
 
 public class PSLIDPanel extends JPanel{
 	
@@ -506,7 +487,7 @@ public class PSLIDPanel extends JPanel{
 			final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
 			pp[0] =
 				new AsynchProgressPopup(
-					this,"Query PSLID ("+cell_proteinArr[0]+"/"+cell_proteinArr[1]+")","",true, true,
+					this,"Query PSLID ("+cell_proteinArr[0]+"/"+cell_proteinArr[1]+")","",Thread.currentThread(),true, true,
 					true,
 					new ProgressDialogListener(){
 						public void cancelButton_actionPerformed(EventObject newEvent) {
@@ -648,7 +629,7 @@ public class PSLIDPanel extends JPanel{
 
 		final Thread[] pslidThread = new Thread[1];
 		final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
-		pp[0] = new AsynchProgressPopup(this, "Downloading PSLID Image Set (generated)", "", true, true, true,
+		pp[0] = new AsynchProgressPopup(this, "Downloading PSLID Image Set (generated)", "",Thread.currentThread(), true, true, true,
 				new ProgressDialogListener() {
 					public void cancelButton_actionPerformed(EventObject newEvent) {
 						pp[0].stop();
@@ -884,7 +865,7 @@ try {
 	final Thread[] pslidThread = new Thread[1];
 	final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
 	pp[0] = new AsynchProgressPopup(this, "Downloading PSLID Image Set ("
-			+ imageIDcomboBox.getSelectedItem() + ")", "", true, true, true,
+			+ imageIDcomboBox.getSelectedItem() + ")", "",Thread.currentThread(), true, true, true,
 			new ProgressDialogListener() {
 				public void cancelButton_actionPerformed(EventObject newEvent) {
 					pp[0].stop();

@@ -1,27 +1,34 @@
 package cbit.vcell.client.data;
+
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-
 import cbit.image.DisplayAdapterService;
-import cbit.vcell.client.PopupGenerator;
+import cbit.image.SourceDataInfo;
+import cbit.image.ZoomEvent;
+import cbit.plot.Plot2D;
+import cbit.plot.PlotData;
+import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.VariableType;
-
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
 import org.vcell.util.TSJobResultsNoStats;
-import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
-
 import java.awt.GridBagConstraints;
+import java.awt.Point;
+import java.text.DecimalFormat;
 import java.util.Hashtable;
 /**
  * Insert the type's description here.
@@ -29,8 +36,6 @@ import java.util.Hashtable;
  * @author: Frank Morgan
  */
 public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geometry.gui.DrawPaneModel {
-	
-	private PDEDataViewer.TimeSeriesJobStarter timeSeriesJobStarter;
 	
 	User userRequestingData;
 	//
@@ -203,12 +208,16 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.K
 	};
 	private javax.swing.JMenuItem ivjScaleImageUDJMenuItem = null;
 	private JCheckBox jCheckBoxColor = null;
+	private PDEDataViewer pdeDataViewer = null;
+	private String title = null;
 
 /**
  * Kymograph constructor comment.
  */
-public KymographPanel() {
+public KymographPanel(PDEDataViewer pdeDataViewer, String title) {
 	super();
+	this.pdeDataViewer = pdeDataViewer;
+	this.title = title;
 	initialize();
 
 }
@@ -227,19 +236,17 @@ private MinMaxMeanHolder calcMMM(double[] data) {
 	double mean = 0;
 	long validCounter = 0;
 	for(int j=0;j<data.length;j+= 1){
-		//for(int k=0;k<data[j].length;k+= 1){
-			double value = data[j];//[k];
-			if(!Double.isNaN(value) && !Double.isInfinite(value)){
-				if(value < min){
-					min = value;
-				}
-				if(value > max){
-					max = value;
-				}
-				mean+= value;
-				validCounter+= 1;
+		double value = data[j];
+		if(!Double.isNaN(value) && !Double.isInfinite(value)){
+			if(value < min){
+				min = value;
 			}
-		//}
+			if(value > max){
+				max = value;
+			}
+			mean+= value;
+			validCounter+= 1;
+		}
 	}
 
 	if(validCounter != 0){
@@ -347,7 +354,7 @@ private void configurePlotData(int imgX,int imgY) {
 	
 	
 	final int MAX_TITLE_VAL_LENGTH = 9;
-	java.text.DecimalFormat nf = new java.text.DecimalFormat();
+	DecimalFormat nf = new DecimalFormat();
 	String valS = null;
 	valS = currentDistances[imgX]+"";
 	if(valS.length() > MAX_TITLE_VAL_LENGTH){
@@ -356,7 +363,7 @@ private void configurePlotData(int imgX,int imgY) {
 	}
 	
 	currentTimeSeriesPlot2D =
-		new cbit.plot.SingleXPlot2D(new cbit.vcell.parser.SymbolTableEntry[] {currentSymbolTablEntry},"Time", new String[]{currentInfo}, timeData, new String[] {"Time Series (d="+valS+") Vert","Time"/*"Time (s)"*/,"Value"});
+		new SingleXPlot2D(new SymbolTableEntry[] {currentSymbolTablEntry},"Time", new String[]{currentInfo}, timeData, new String[] {"Time Series (d="+valS+") Vert","Time"/*"Time (s)"*/,"Value"});
 	getPlotPaneTimeSeries().setPlot2D(currentTimeSeriesPlot2D);
 
 	
@@ -371,14 +378,14 @@ private void configurePlotData(int imgX,int imgY) {
 
 	localDistDataMMMH = calcMMM(lineData);
 	
-	cbit.plot.PlotData plotData = new cbit.plot.PlotData(lineScanDistances,lineData);	
+	PlotData plotData = new PlotData(lineScanDistances,lineData);	
 	valS = currentTimes[imgY]+"";
 	if(valS.length() > MAX_TITLE_VAL_LENGTH){
 		valS = nf.format(currentTimes[imgY]);
 	}
 
 	currentLineScanPlot2D =
-		new cbit.plot.Plot2D(new cbit.vcell.parser.SymbolTableEntry[] {currentSymbolTablEntry},new String[] { currentInfo },new cbit.plot.PlotData[] { plotData }, new String[] {"Line Scan (t="+valS+") Horz","Distance"/*"Distance (\u00b5m)"*/, "Value"});
+		new Plot2D(new SymbolTableEntry[] {currentSymbolTablEntry},new String[] { currentInfo },new PlotData[] { plotData }, new String[] {"Line Scan (t="+valS+") Horz","Distance"/*"Distance (\u00b5m)"*/, "Value"});
 	getPlotPaneLineScan().setPlot2D(currentLineScanPlot2D);
 
 
@@ -894,7 +901,7 @@ private void copyLineScanJMenuItem_ActionPerformed(java.awt.event.ActionEvent ac
 		sb.append(currentLineScanPlot2D.getPlotDatas()[0].getDependent()[i]+"\n");
 	}
 	
-	cbit.vcell.desktop.VCellTransferable.sendToClipboard(sb.toString());
+	VCellTransferable.sendToClipboard(sb.toString());
 
 }
 
@@ -917,7 +924,7 @@ private void copyTimeDataJMenuItem_ActionPerformed(java.awt.event.ActionEvent ac
 		sb.append(currentTimeSeriesPlot2D.getPlotDatas()[0].getDependent()[i]+"\n");
 	}
 
-	cbit.vcell.desktop.VCellTransferable.sendToClipboard(sb.toString());
+	VCellTransferable.sendToClipboard(sb.toString());
 }
 
 
@@ -1855,21 +1862,17 @@ private void initConnections() throws java.lang.Exception {
  */
 public void initDataManager(
 	User argUserRequestingData,
-	cbit.vcell.desktop.controls.DataManager argDataManager,
+	DataManager argDataManager,
 	final String variableName,double initTime,int step,double endTime,
 	int[] indices,int[] argCrossingMembraneIndices,
 	double[] accumDistances,
 	boolean waitOnInitialLoad,
 	double argInitialLineScanTime,
-	cbit.vcell.parser.SymbolTable argSymbolTable,
-	PDEDataViewer.TimeSeriesJobStarter argTimeSeriesJobStarter)
-				throws org.vcell.util.DataAccessException{
+	SymbolTable argSymbolTable)	throws DataAccessException{
 
-	timeSeriesJobStarter = argTimeSeriesJobStarter;
 	userRequestingData = argUserRequestingData;
 	symbolTable = argSymbolTable;
 	currentSymbolTablEntry = null;
-//	bBlockInitialLoad = waitOnInitialLoad;
 	resampleStepOrig = step;
 	resampleStartTimeOrig = initTime;
 	resampleEndTimeOrig = endTime;
@@ -1885,13 +1888,13 @@ public void initDataManager(
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	
-	AsynchClientTask task1  = new AsynchClientTask("Retrieving time points", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task1  = new AsynchClientTask("Retrieving list of variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			DataIdentifier[] sortedDataIDs = VariableType.collectSimilarDataTypes(variableName,dataManager.getDataIdentifiers());
 			hashTable.put("sortedDataIDs", sortedDataIDs);
 		}
 	};
-	AsynchClientTask task2 = new AsynchClientTask("Setting time points", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	AsynchClientTask task2 = new AsynchClientTask("Setting list of variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			DataIdentifier[] sortedDataIDs = (DataIdentifier[])hashTable.get("sortedDataIDs");
 	
@@ -1908,68 +1911,44 @@ public void initDataManager(
 		}
 	};
 	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
-	ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
+	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 }
 
 
 private boolean failMethod(final Throwable timeSeriesJobFailed,final String varName){
-	try {
-		if(timeSeriesJobFailed != null){
-			javax.swing.SwingUtilities.invokeAndWait(
-					new Runnable(){
-						public void run(){
-							NONE_MESSAGE = "ERROR ("+varName+") -- "+timeSeriesJobFailed.getMessage();
-							getDisplayJLabel().setText(NONE_MESSAGE);
-							currentSelectionImg.x = 0;
-							currentSelectionImg.y = 0;
-							currentSelectionUnit = new Point2D.Double(0,0);
-							try {
-								initStandAloneTimeSeries_private(new double[][] {{0,1},{0,0},{0,0}}, new double[] {0,1});
-							} catch (DataAccessException e) {
-								failMethod(e, varName);
-								e.printStackTrace();
-							}
-//						getImagePaneScroller1().setVisible(false);
-							getPlotPaneLineScan().setPlot2D(null);
-							getPlotPaneTimeSeries().setPlot2D(null);
-							getZoomUpJButton().setEnabled(false);
-							getZoomDownJButton().setEnabled(false);
-							getJCheckBox1().setEnabled(false);
-							getJCheckBoxColor().setEnabled(false);
-							getCopyJButton().setEnabled(false);
-//						getPlotPaneLineScan().setEnabled(false);
-//						getPlotPaneTimeSeries().setEnabled(false);
-							BeanUtils.enableComponents(getCopyJPopupMenu(), false);
-						}
-					}
-				);
-			return true;
-		}else{
-			javax.swing.SwingUtilities.invokeAndWait(
-					new Runnable(){
-						public void run(){
-							NONE_MESSAGE = NORMAL_MESSAGE;
-//						getImagePaneScroller1().setVisible(true);
-							getZoomUpJButton().setEnabled(true);
-							getZoomDownJButton().setEnabled(true);
-							getJCheckBox1().setEnabled(true);
-							getJCheckBoxColor().setEnabled(true);
-							getCopyJButton().setEnabled(true);
-							getCopyJPopupMenu().setEnabled(true);
-//						getPlotPaneLineScan().setEnabled(true);
-//						getPlotPaneTimeSeries().setEnabled(true);
-							BeanUtils.enableComponents(getCopyJPopupMenu(), true);
-						}
-					}
-				);
-			return false;
+	if(timeSeriesJobFailed != null){
+		NONE_MESSAGE = "ERROR ("+varName+") -- "+timeSeriesJobFailed.getMessage();
+		getDisplayJLabel().setText(NONE_MESSAGE);
+		currentSelectionImg.x = 0;
+		currentSelectionImg.y = 0;
+		currentSelectionUnit = new Point2D.Double(0,0);
+		try {
+			initStandAloneTimeSeries_private(new double[][] {{0,1},{0,0},{0,0}}, new double[] {0,1});
+		} catch (DataAccessException e) {
+			failMethod(e, varName);
+			e.printStackTrace();
 		}
-	} catch (Exception e) {
-		PopupGenerator.showErrorDialog(this.getClass().getName()+".failMethod: "+e.getMessage());
-		e.printStackTrace();
+		
+		getPlotPaneLineScan().setPlot2D(null);
+		getPlotPaneTimeSeries().setPlot2D(null);
+		getZoomUpJButton().setEnabled(false);
+		getZoomDownJButton().setEnabled(false);
+		getJCheckBox1().setEnabled(false);
+		getJCheckBoxColor().setEnabled(false);
+		getCopyJButton().setEnabled(false);
+		BeanUtils.enableComponents(getCopyJPopupMenu(), false);	
 		return true;
+	}else{
+		NONE_MESSAGE = NORMAL_MESSAGE;
+		getZoomUpJButton().setEnabled(true);
+		getZoomDownJButton().setEnabled(true);
+		getJCheckBox1().setEnabled(true);
+		getJCheckBoxColor().setEnabled(true);
+		getCopyJButton().setEnabled(true);
+		getCopyJPopupMenu().setEnabled(true);
+		BeanUtils.enableComponents(getCopyJPopupMenu(), true);
+		return false;
 	}
-
 }
 /**
  * Insert the method's description here.
@@ -1982,106 +1961,69 @@ private void initDataManagerVariable(final String finalVarName) {
 	//Create SymbolTableEntry for Copy/Paste functionality
 	try{
 		currentSymbolTablEntry = (symbolTable != null?symbolTable.getEntry(finalVarName):null);
-	}catch(cbit.vcell.parser.ExpressionBindingException e){
+	}catch(ExpressionBindingException e){
 		e.printStackTrace();
 	}
 	
-	try{
-		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-		
-		AsynchClientTask task1  = new AsynchClientTask("Retrieving time points", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {	
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				double[] timeValues = dataManager.getDataSetTimes();
-				hashTable.put("times", timeValues);
+	String taskName = "Retrieving data for variable '" + finalVarName + "'";
+	AsynchClientTask task1  = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {	
+		public void run(final Hashtable<String, Object> hashTable) throws Exception {
+			double[] timeValues = dataManager.getDataSetTimes();
+			final TimeSeriesJobSpec timeSeriesJobSpec = new TimeSeriesJobSpec(
+						new String[] {finalVarName}, new int[][] {dataManagerIndices},
+						(crossingMembraneIndices != null?new int[][] {crossingMembraneIndices}:null),
+						resampleStartTimeOrig,resampleStepOrig,timeValues[timeValues.length-1],
+						VCDataJobID.createVCDataJobID(userRequestingData, true));
+			hashTable.put(PDEDataViewer.StringKey_timeSeriesJobSpec, timeSeriesJobSpec);
+		}
+	};
+	AsynchClientTask task2 = pdeDataViewer.new TimeSeriesDataRetrievalTask(taskName);
+	
+	AsynchClientTask task3  = new AsynchClientTask("Showing kymograph", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			
+			Throwable timeSeriesJobFailed = (Throwable)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobException);
+			if (timeSeriesJobFailed == null) {
+				timeSeriesJobFailed = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER);	
 			}
-		};
-		AsynchClientTask task2  = new AsynchClientTask("Retrieving time series", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				double[] timeValues = (double[])hashTable.get("times");
-				TimeSeriesJobSpec timeSeriesJobSpec =
-					new TimeSeriesJobSpec(
-							new String[] {finalVarName},
-							new int[][] {dataManagerIndices},
-							(crossingMembraneIndices != null?new int[][] {crossingMembraneIndices}:null),
-							resampleStartTimeOrig,resampleStepOrig,timeValues[timeValues.length-1]/*resampleEndTimeOrig*/,
-							VCDataJobID.createVCDataJobID(userRequestingData, true));
-				
-				PDEDataViewer.TimeSeriesJobResultsAction action = new PDEDataViewer.TimeSeriesJobResultsAction(){
-					private TimeSeriesJobResults timeSeriesJobResults;
-					private Throwable timeSeriesJobFailed;
-					
-					public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults) {
-						this.timeSeriesJobResults = timeSeriesJobResults;
-					}
-					public void setTimeSeriesJobFailed(Throwable e) {
-						timeSeriesJobFailed = e;
-					}
-		
-					public void run() {
-						try {
-							currentInfo = finalVarName;
-							if(failMethod(timeSeriesJobFailed,finalVarName)){return;}
-							final double[][] timeSeries = ((TSJobResultsNoStats)timeSeriesJobResults).getTimesAndValuesForVariable(finalVarName);
-							javax.swing.SwingUtilities.invokeAndWait(
-								new Runnable(){
-									public void run(){
-										try {
-											initStandAloneTimeSeries_private(timeSeries,dataManagerAccumDistances);
-										} catch (Exception e) {
-											failMethod(e,finalVarName);
-											e.printStackTrace();
-										}
-									}
-								}
-							);
-							if(isInit){// set crosshair to init time
-								double initTime = initialLineScanTime;//resampleStartTimeOrig;
-								isInit = false;
-								int closestTimeIndex = 0;
-								double closestDiff = Double.MAX_VALUE;
-								for(int i=0;i<currentTimes.length;i+= 1){
-									double diff = Math.abs(initTime-currentTimes[i]);
-									if( diff < closestDiff){
-										closestTimeIndex = i;
-										closestDiff = diff;
-									}
-								}
-								currentSelectionImg = new java.awt.Point(0,closestTimeIndex);
-								currentSelectionUnit = new java.awt.geom.Point2D.Double(0,(double)closestTimeIndex/(double)(currentTimes.length-1));
-								javax.swing.SwingUtilities.invokeAndWait(
-									new Runnable(){
-										public void run(){
-											configurePlotData((int)currentSelectionImg.getX(),(int)currentSelectionImg.getY());
-										}
-									}
-								);
-								javax.swing.SwingUtilities.invokeAndWait(
-										new Runnable(){
-											public void run(){
-												zoomToFill();
-											}
-										}
-									);
-								
-							}else{
-								getImagePaneScroller1().zooming(new cbit.image.ZoomEvent(getimagePaneView1(),0,0));
-							}
-						} catch (Exception e) {
-							PopupGenerator.showErrorDialog("Kymograph: "+e.getMessage());
-							e.printStackTrace();
-						}
-					}
-				};
-				timeSeriesJobStarter.startTimeSeriesJob(timeSeriesJobSpec, action, false);
+			if (failMethod(timeSeriesJobFailed, finalVarName)) {
+				return;
 			}
-		};
-		AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
-		ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
-	}catch(Throwable e){
-		final Throwable finale = e;
-					cbit.vcell.client.PopupGenerator.showErrorDialog(
-						"Error init variable "+finalVarName+" "+finale.getClass().getName()+" "+finale.getMessage());
-	}	
+			
+			TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobResults);	
+			
+			currentInfo = finalVarName;
+			
+			final double[][] timeSeries = tsJobResultsNoStats.getTimesAndValuesForVariable(finalVarName);
+			try {
+				initStandAloneTimeSeries_private(timeSeries,dataManagerAccumDistances);
+			} catch (Exception e) {
+				failMethod(e,finalVarName);
+				throw e;
+			}
+			if(isInit){// set crosshair to init time
+				double initTime = initialLineScanTime;//resampleStartTimeOrig;
+				isInit = false;
+				int closestTimeIndex = 0;
+				double closestDiff = Double.MAX_VALUE;
+				for(int i=0;i<currentTimes.length;i+= 1){
+					double diff = Math.abs(initTime-currentTimes[i]);
+					if( diff < closestDiff){
+						closestTimeIndex = i;
+						closestDiff = diff;
+					}
+				}
+				currentSelectionImg = new Point(0,closestTimeIndex);
+				currentSelectionUnit = new Point2D.Double(0,(double)closestTimeIndex/(double)(currentTimes.length-1));
+				configurePlotData((int)currentSelectionImg.getX(),(int)currentSelectionImg.getY());	
+				pdeDataViewer.showComponentInFrame(KymographPanel.this, title);
+				zoomToFill();
+			}else{
+				getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,0));
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
 }
 
 
@@ -2131,7 +2073,7 @@ private void initialize() {
 		add(getButtonsJPanel(), constraintsButtonsJPanel);
 		initConnections();
 		connEtoC1();
-	} catch (java.lang.Throwable ivjExc) {
+	} catch (Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 	// user code begin {2}
@@ -2224,9 +2166,9 @@ private void initStandAloneTimeSeries_private(double[][] timeSeriesOrig,double[]
 		minmaxRange = allDataMMMH.getRange();
 	}
 	
-	cbit.image.SourceDataInfo sdi =
-		new cbit.image.SourceDataInfo(
-			cbit.image.SourceDataInfo.RAW_VALUE_TYPE,
+	SourceDataInfo sdi =
+		new SourceDataInfo(
+			SourceDataInfo.RAW_VALUE_TYPE,
 			rawValues,
 			minmaxRange,
 			0,
@@ -2331,7 +2273,7 @@ public static void main(java.lang.String[] args) {
 			
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		KymographPanel aKymograph;
-		aKymograph = new KymographPanel();
+		aKymograph = new KymographPanel(null, "Kymograph");
 		frame.setContentPane(aKymograph);
 		frame.setSize(aKymograph.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -2478,7 +2420,7 @@ private void updateColorMapDisplay() {
  * Comment
  */
 private void zoomDownJButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	getImagePaneScroller1().zooming(new cbit.image.ZoomEvent(getimagePaneView1(),0,-1));
+	getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,-1));
 }
 
 
@@ -2489,7 +2431,7 @@ private void zoomDownJButton_ActionPerformed(java.awt.event.ActionEvent actionEv
 private void zoomToFill() {
 
 	getimagePaneView1().getImagePaneModel().changeZoomToFillViewport();
-	getImagePaneScroller1().zooming(new cbit.image.ZoomEvent(getimagePaneView1(),0,0));
+	getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,0));
 }
 
 
@@ -2497,7 +2439,7 @@ private void zoomToFill() {
  * Comment
  */
 private void zoomUpJButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	getImagePaneScroller1().zooming(new cbit.image.ZoomEvent(getimagePaneView1(),0,1));
+	getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,1));
 }
 
 /**
