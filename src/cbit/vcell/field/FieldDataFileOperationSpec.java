@@ -83,12 +83,13 @@ public static FieldDataFileOperationSpec createDeleteFieldDataFileOperationSpec(
 	fieldDataFileOperationSpec.specEDI = deleteExtDataID;
 	return fieldDataFileOperationSpec;
 }
-public static FieldDataFileOperationSpec createDependantFuncsFieldDataFileOperationSpec(
-		ExternalDataIdentifier targetExtDataID){
-	FieldDataFileOperationSpec fieldDataFileOperationSpec =
-		new FieldDataFileOperationSpec();
-	fieldDataFileOperationSpec.opType = FDOS_DEPENDANTFUNCS;
-	fieldDataFileOperationSpec.specEDI = targetExtDataID;
-	return fieldDataFileOperationSpec;
-}
+//too expensive, takes forever
+//public static FieldDataFileOperationSpec createDependantFuncsFieldDataFileOperationSpec(
+//		ExternalDataIdentifier targetExtDataID){
+//	FieldDataFileOperationSpec fieldDataFileOperationSpec =
+//		new FieldDataFileOperationSpec();
+//	fieldDataFileOperationSpec.opType = FDOS_DEPENDANTFUNCS;
+//	fieldDataFileOperationSpec.specEDI = targetExtDataID;
+//	return fieldDataFileOperationSpec;
+//}
 }

@@ -1355,12 +1355,12 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		}
 		return null;
 	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE){
-		if(fieldDataFileOperation(
-			FieldDataFileOperationSpec.
-				createDependantFuncsFieldDataFileOperationSpec(
-					fieldDataFileOperationSpec.specEDI)) != null){
-			throw new RuntimeException("Error: Delete failed, reference to FieldData '"+fieldDataFileOperationSpec.specEDI.getName()+"' found in Simulation Data function");
-		}
+//		if(fieldDataFileOperation(
+//			FieldDataFileOperationSpec.
+//				createDependantFuncsFieldDataFileOperationSpec(
+//					fieldDataFileOperationSpec.specEDI)) != null){
+//			throw new RuntimeException("Error: Delete failed, reference to FieldData '"+fieldDataFileOperationSpec.specEDI.getName()+"' found in Simulation Data function");
+//		}
 		//
 		//Remove FieldData from caches
 		//
