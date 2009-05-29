@@ -12,7 +12,6 @@ import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeMap;
-import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.zip.DataFormatException;
 import javax.swing.BoxLayout;
@@ -25,7 +24,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
@@ -38,12 +36,13 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
 import javax.swing.JButton;
@@ -68,7 +67,6 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.ProgressDialogListener;
-import org.vcell.util.gui.SwingDispatcherSync;
 
 public class FieldDataGUIPanel extends JPanel{
 
@@ -971,38 +969,34 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 
 		final FieldDataWindowManager.SimInfoHolder simInfoHolder = fieldDataWindowManager.selectSimulationFromDesktop(this);
 		if(simInfoHolder == null){
-			PopupGenerator.showErrorDialog(
-					"Please open a Bio or Math model containing the spatial (non-compartmental)\nsimulation you wish to use to create a new Field Data");
+			PopupGenerator.showErrorDialog("Please open a Bio or Math model containing the spatial (non-compartmental) simulation you wish to use to create a new Field Data");
 			return;
 		}
 		//Check that the sim is in a state that can be copied
-		SimulationStatus simStatus =
-			clientRequestManager.getServerSimulationStatus(simInfoHolder.simInfo);
+		final SimulationInfo simInfo = simInfoHolder.simInfo;
+		SimulationStatus simStatus = clientRequestManager.getServerSimulationStatus(simInfo);
 		if(simStatus != null && (simStatus.isRunning() || simStatus.isStartRequested())){
-			throw new Exception("Can't copy 'running' simulation data from sim '"+simInfoHolder.simInfo.getName()+"'");
+			throw new Exception("Can't copy 'running' simulation data from sim '"+simInfo.getName()+"'");
 		}
 
-		final FieldDataFileOperationSpec fdos =
-			FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
-					null,
-					(simInfoHolder.simInfo.getParentSimulationReference() != null?
-							simInfoHolder.simInfo.getParentSimulationReference():
-							simInfoHolder.simInfo.getSimulationVersion().getVersionKey()
-					), 
-					simInfoHolder.simInfo.getOwner(),
-					simInfoHolder.jobIndex,
-					clientRequestManager.getDocumentManager().getUser());
+		final FieldDataFileOperationSpec fdos =	FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(	null,
+			(simInfo.getParentSimulationReference() != null?simInfo.getParentSimulationReference():	simInfo.getSimulationVersion().getVersionKey()), 
+			simInfo.getOwner(),	simInfoHolder.jobIndex, clientRequestManager.getDocumentManager().getUser());
 
-		AsynchClientTask CreateFDFromSim = new AsynchClientTask("Create Field Data from Simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hash) throws Exception {
+		AsynchClientTask[] addTasks = addNewExternalData(true);
+		AsynchClientTask[] taskArray = new AsynchClientTask[1 + addTasks.length];
+		System.arraycopy(addTasks, 0, taskArray, 1, addTasks.length); // add to the end
+
+		taskArray[0] = new AsynchClientTask("Create Field Data from Simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				FieldDataFileOperationResults fdor =
 					clientRequestManager.getDocumentManager().fieldDataFileOperation(
 							FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(
-									(simInfoHolder.simInfo.getParentSimulationReference() != null?
-											simInfoHolder.simInfo.getParentSimulationReference():
-											simInfoHolder.simInfo.getSimulationVersion().getVersionKey()
+									(simInfo.getParentSimulationReference() != null?
+											simInfo.getParentSimulationReference():
+											simInfo.getSimulationVersion().getVersionKey()
 									),
-									simInfoHolder.simInfo.getOwner(),
+									simInfo.getOwner(),
 									simInfoHolder.jobIndex));
 				//Create (non-editable) info for display
 				fdos.origin = fdor.origin;
@@ -1016,13 +1010,14 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 						(fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.MEMBRANE)?"(mbr) ":"")+
 						fdor.dataIdentifierArr[i].getName();
 				}
-				addNewExternalData(clientRequestManager, fdos, simInfoHolder.simInfo.getName(), true);
+				hashTable.put("fdos", fdos);
+				hashTable.put("initFDName", simInfo.getName());
+				//addNewExternalData(clientRequestManager, fdos, simInfoHolder.simInfo.getName(), true);
 			}
 		};
-
-		AsynchClientTask tasks[] = new AsynchClientTask[] { CreateFDFromSim};
+	
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-		ClientTaskDispatcher.dispatch(this,hash,tasks,false);
+		ClientTaskDispatcher.dispatch(this,hash,taskArray,false);
 		
 	}catch(UserCancelException e){
 		return;
@@ -1101,20 +1096,32 @@ public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,
 private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent actionEvent,final FieldDataFileOperationSpec argfdos,final String arginitFDName) {
 	
 	final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
-		
 	try{
-	
-		AsynchClientTask importImageTask = new AsynchClientTask("Import image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hash) throws Exception {
+		AsynchClientTask[] addTasks = addNewExternalData(false);
+		AsynchClientTask[] taskArray = new AsynchClientTask[2 + addTasks.length];
+		System.arraycopy(addTasks, 0, taskArray, 2, addTasks.length); // add to the end
+		
+		taskArray[0] = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			public void run(Hashtable<String, Object> hashTable) throws Exception {				
+				if (argfdos == null) {
+					File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
+					hashTable.put("imageFile", imageFile);
+				}
+			}
+		};
+		taskArray[1] = new AsynchClientTask("Import image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				FieldDataFileOperationSpec fdos = null;
 				String initFDName = null;
 				
 				if (argfdos == null) {
-					File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
+					File imageFile = (File)hashTable.get("imageFile");
+					if (imageFile == null) {
+						return;
+					}
 					initFDName = imageFile.getName();
 					//read VCell Special
 					DatabaseWindowManager.ImageHelper imageHelper = null;
-					//				if(imagedataSet == null){
 					try {
 						fdos = new FieldDataFileOperationSpec();
 						imageHelper = DatabaseWindowManager.readFromImageFile(
@@ -1132,24 +1139,13 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 						fdos.shortSpecData = new short[][][] { { shortPixels } };
 						fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
 					} catch (Exception e) {
-						System.out
-								.println("VCell simple image import couldn't read "
-										+ e.getMessage());
-						fdos = null;
-					}
-					//				}
-					//read BioFormat
-					if (fdos == null) {
+						System.out.println("VCell simple image import couldn't read " + e.getMessage());						
+						//read BioFormat
 						try {
 							fdos = createFDOSFromImageFile(imageFile,true);
-						} catch (DataFormatException e) {
-							System.out.println("BioFormat couldn't read "
-									+ e.getMessage());
-							fdos = null;
+						} catch (DataFormatException ex) {
+							throw new Exception("Neither BioFormats nor VCell can read image " + imageFile.getAbsolutePath());
 						}
-					}
-					if(fdos == null){
-						throw new Exception("Neither BioFormats or VCell can read image "+imageFile.getAbsolutePath());
 					}
 				}else{
 					fdos = argfdos;
@@ -1158,80 +1154,18 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 				
 				fdos.owner = clientRequestManager.getDocumentManager().getUser();
 				fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-				addNewExternalData(clientRequestManager, fdos, initFDName, false);
+				hashTable.put("fdos", fdos);
+				hashTable.put("initFDName", initFDName);
+				//addNewExternalData(clientRequestManager, fdos, initFDName, false);
 			}
 		};
 		//
 		//Execute Field Data Info - JTree tasks
 		//
-		AsynchClientTask tasks[] = new AsynchClientTask[] {importImageTask};
-		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-		ClientTaskDispatcher.dispatch(this,hash,tasks,false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), taskArray, false);
 	}catch(UserCancelException e){
 		return;
 	}
-}
-
-private FieldDataFileOperationSpec getExternalDataInfoFromUser(
-		FieldDataInfoPanel fdip,
-		RequestManager clientRequestManager) throws UserCancelException{
-	FieldDataFileOperationSpec tempFDOS;
-	while(true){
-		tempFDOS = new FieldDataFileOperationSpec();
-		if(PopupGenerator.showComponentOKCancelDialog(FieldDataGUIPanel.this, fdip, "Field Data Info") == JOptionPane.OK_OPTION){
-			//Check values
-			try{
-				tempFDOS.extent = fdip.getExtent();
-			}catch(Exception e){
-				PopupGenerator.showErrorDialog("Problem with Extent values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
-				continue;
-				}
-			try{
-				tempFDOS.origin = fdip.getOrigin();
-			}catch(Exception e){
-				PopupGenerator.showErrorDialog("Problem with Origin values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
-				continue;
-			}
-			try{
-				tempFDOS.varNames = fdip.getVariableNames();
-			}catch(Exception e){
-				PopupGenerator.showErrorDialog("Problem with Variable names. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
-				continue;
-			}
-			tempFDOS.annotation = fdip.getAnnotation();
-			tempFDOS.times = fdip.getTimes();
-			try{
-				if(fdip.getFieldName() == null ||
-					fdip.getFieldName().length() == 0 ||
-					!fdip.getFieldName().equals(TokenMangler.fixTokenStrict(fdip.getFieldName()))){
-					throw new Exception("Field Data names can contain only letters,digits and underscores");
-				}
-				//Check to see if this name is already used
-				DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)getJTree1().getModel().getRoot();
-				for(int i=0;i<rootNode.getChildCount();i+= 1){
-					ExternalDataIdentifier extDataID =
-						((FieldDataMainList)((DefaultMutableTreeNode)rootNode.getChildAt(i)).getUserObject()).externalDataIdentifier;
-					if(fdip.getFieldName().equals(extDataID.getName())){
-						throw new Exception("New Field Data name "+fdip.getFieldName()+" already used.");
-					}
-				}
-				//save Database
-				tempFDOS.specEDI =
-					clientRequestManager.getDocumentManager().fieldDataDBOperation(
-							FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
-									clientRequestManager.getDocumentManager().getUser(),
-									fdip.getFieldName(),tempFDOS.annotation)).extDataID;
-			}catch(Exception e){
-				PopupGenerator.showErrorDialog("Error saving Field Data Name to Database. Try again.\n"+e.getMessage());
-				continue;
-			}
-			return tempFDOS;
-		}else{
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-
-	}
-	
 }
 
 private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
@@ -1274,8 +1208,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 		public void run(Hashtable<String, Object> hash) throws Exception {
 			//Remove from Disk
 			FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
-			FieldDataFileOperationSpec fdos = 
-				FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
+			FieldDataFileOperationSpec fdos = FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
 					fieldDataMainList.externalDataIdentifier);
 			clientRequestManager.getDocumentManager().fieldDataFileOperation(fdos);
 			//Remove from DB
@@ -1292,7 +1225,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 }
 
 private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
+	TreePath selPath = getJTree1().getSelectionPath();
 	final DefaultMutableTreeNode varNode = (DefaultMutableTreeNode)selPath.getLastPathComponent();
 	final DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)varNode.getParent().getParent();
 	Enumeration<DefaultMutableTreeNode> children = mainNode.children();
@@ -1516,16 +1449,19 @@ public void setFieldDataWindowManager(FieldDataWindowManager fdwm){
 	fieldDataWindowManager = fdwm;
 }
 
-private void addNewExternalData(
-		RequestManager clientRequestManager,
-		final FieldDataFileOperationSpec fdos,
-		final String initialExtDataName,
-		final boolean isFromSimulation) throws Exception{
-
-	fdos.specEDI = null;
+private AsynchClientTask[] addNewExternalData(final boolean isFromSimulation) {
 	
-	FieldDataInfoPanel fdip = (FieldDataInfoPanel) new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
+	final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
+	
+	AsynchClientTask task1 = new AsynchClientTask("creating field data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
+			String initialExtDataName = (String)hashTable.get("initFDName");
+			
+			fdos.specEDI = null;
+			
 			FieldDataInfoPanel fdip = new FieldDataInfoPanel();			
 			fdip.setSimulationMode(isFromSimulation);
 			fdip.initISize(fdos.isize);
@@ -1534,16 +1470,75 @@ private void addNewExternalData(
 			fdip.initTimes(fdos.times);
 			fdip.initNames(TokenMangler.fixTokenStrict(initialExtDataName), fdos.varNames);
 			fdip.setAnnotation(fdos.annotation);
-			return fdip;
+			
+			FieldDataFileOperationSpec userDefinedFDOS = new FieldDataFileOperationSpec();
+			while(true) {
+				int choice = PopupGenerator.showComponentOKCancelDialog(FieldDataGUIPanel.this, fdip, "Create new field data");
+				if (choice == JOptionPane.OK_OPTION){
+					//Check values
+					try{
+						userDefinedFDOS.extent = fdip.getExtent();
+					}catch(Exception e){
+						PopupGenerator.showErrorDialog("Problem with Extent values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						continue;
+						}
+					try{
+						userDefinedFDOS.origin = fdip.getOrigin();
+					}catch(Exception e){
+						PopupGenerator.showErrorDialog("Problem with Origin values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						continue;
+					}
+					try{
+						userDefinedFDOS.varNames = fdip.getVariableNames();
+					}catch(Exception e){
+						PopupGenerator.showErrorDialog("Problem with Variable names. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						continue;
+					}
+					userDefinedFDOS.annotation = fdip.getAnnotation();
+					userDefinedFDOS.times = fdip.getTimes();
+					try{
+						if(fdip.getFieldName() == null || fdip.getFieldName().length() == 0 ||
+							!fdip.getFieldName().equals(TokenMangler.fixTokenStrict(fdip.getFieldName()))){
+							throw new Exception("Field Data names can contain only letters,digits and underscores");
+						}
+						//Check to see if this name is already used
+						DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)getJTree1().getModel().getRoot();
+						for(int i=0;i<rootNode.getChildCount();i+= 1){
+							ExternalDataIdentifier extDataID = 
+								((FieldDataMainList)((DefaultMutableTreeNode)rootNode.getChildAt(i)).getUserObject()).externalDataIdentifier;
+							if(fdip.getFieldName().equals(extDataID.getName())){
+								throw new Exception("New Field Data name "+fdip.getFieldName()+" already used.");
+							}
+						}
+					}catch(Exception e){
+						PopupGenerator.showErrorDialog("Error saving Field Data Name to Database. Try again.\n"+e.getMessage());
+						continue;
+					}
+					hashTable.put("userDefinedFDOS", userDefinedFDOS);
+					hashTable.put("fieldName", fdip.getFieldName());
+					break;
+				} else {
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+			}
 		}
-	}.dispatchWithException();
-
-	while(true){
-		try{
-			//Adds to Server DB while getting Info
-			FieldDataFileOperationSpec tempFDOS =
-				getExternalDataInfoFromUser(fdip,clientRequestManager);
+	};
+	
+	AsynchClientTask task2 = new AsynchClientTask("saving field data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			//Add to Server Disk
+			//save Database
+			FieldDataFileOperationSpec tempFDOS = (FieldDataFileOperationSpec)hashTable.get("userDefinedFDOS");
+			String fieldName = (String)hashTable.get("fieldName");
+			
+			FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
+			DocumentManager documentManager = clientRequestManager.getDocumentManager();
+			FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(documentManager.getUser(),fieldName,tempFDOS.annotation);
+			tempFDOS.specEDI = documentManager.fieldDataDBOperation(newExtDataIDSpec).extDataID;
 			fdos.specEDI = tempFDOS.specEDI;
+			fdos.annotation = tempFDOS.annotation;
+
 			try{
 				if(!isFromSimulation){
 					fdos.extent = tempFDOS.extent;
@@ -1553,97 +1548,55 @@ private void addNewExternalData(
 					//
 					//Subvolumes and Regions NOT implemented now
 					//
-					fdos.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(
-							fdos.origin, fdos.extent, fdos.isize,
-							new RegionImage(
-									new VCImageUncompressed(
-											null,
-											new byte[fdos.isize.getXYZ()],//empty regions
-											fdos.extent,
-											fdos.isize.getX(),fdos.isize.getY(),fdos.isize.getZ()
-											),0,null,null,RegionImage.NO_SMOOTHING));
+					fdos.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(fdos.origin, fdos.extent, fdos.isize,
+						new RegionImage(new VCImageUncompressed(null, new byte[fdos.isize.getXYZ()],//empty regions
+							fdos.extent, fdos.isize.getX(),fdos.isize.getY(),fdos.isize.getZ()),
+							0,null,null,RegionImage.NO_SMOOTHING));
 				}
 				
 				//Add to Server Disk
-				clientRequestManager.getDocumentManager().fieldDataFileOperation(fdos);
-			}catch(Exception e){
+				documentManager.fieldDataFileOperation(fdos);
+			} catch (Exception e) {
 				try{
 					//try to cleanup new ExtDataID
-					clientRequestManager.getDocumentManager().fieldDataDBOperation(
-							FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
+					documentManager.fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
 				}catch(Exception e2){
 					//ignore
-				}finally{
-					fdos.specEDI = null;
-					e.printStackTrace();
-					PopupGenerator.showErrorDialog("Error saving Field Data to server disk\n"+e.getMessage());
-				}
-				continue;
+				} 
+				fdos.specEDI = null;
+				throw e;
 			}
-			//Everything succeeded, Add node to tree
-			try{
-				DefaultMutableTreeNode root = ((DefaultMutableTreeNode)getJTree1().getModel().getRoot());
-				if(root.getChildCount() == 0){
-					updateJTree(fieldDataWindowManager.getLocalRequestManager());
-				}else{
-					final int[] alphabeticalIndexArr = new int[] {-1};
-					for(int i=0;i<root.getChildCount();i+= 1){
-						if((((FieldDataMainList)((DefaultMutableTreeNode)root.getChildAt(i)).getUserObject())).
-							externalDataIdentifier.getName().
-								compareToIgnoreCase(fdos.specEDI.getName()) > 0){
-							alphabeticalIndexArr[0] = i;
-							break;
-						}
-					}
-					if(alphabeticalIndexArr[0] == -1){
-						alphabeticalIndexArr[0] = root.getChildCount();
-					}
-					final DefaultMutableTreeNode mainNode =
-						new DefaultMutableTreeNode(new FieldDataMainList(fdos.specEDI,tempFDOS.annotation));
-					mainNode.add(new DefaultMutableTreeNode(new FieldDataVarMainList()));
-					SwingUtilities.invokeAndWait(
-						new Runnable (){
-							public void run(){
-								((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(
-										mainNode, (MutableTreeNode)(getJTree1().getModel().getRoot()), alphabeticalIndexArr[0]);
-							}
-						}
-					);
-				}
-			}catch(Exception e){
-				e.printStackTrace();
-				PopupGenerator.showInfoDialog(
-						"saving Field Data "+fdos.specEDI.getName()+" succeeded -but-\n"+
-						" the GUI refresh had an error\n"+e.getMessage());
-			}
-			
-			break;
-		}catch(UserCancelException uce){
-			if(fdos.specEDI != null){
-				//Try to undo the DB part of External Data
-				try{
-					clientRequestManager.getDocumentManager().fieldDataDBOperation(
-							FieldDataDBOperationSpec.
-								createDeleteExtDataIDSpec(fdos.specEDI));
-				}catch(Exception e){
-					//Nothing else we can do
-					e.printStackTrace();
-				}
-				//Try to undo the File part of External Data
-				try{
-					clientRequestManager.getDocumentManager().
-						fieldDataFileOperation(
-								FieldDataFileOperationSpec.
-									createDeleteFieldDataFileOperationSpec(fdos.specEDI)
-								);
-				}catch(Exception e){
-					//Nothing else we can do
-					e.printStackTrace();
-				}
-			}
-			throw uce;
 		}
-	}
+	};
+	
+	AsynchClientTask task3 = new AsynchClientTask("refreshing field data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
+			
+			DefaultMutableTreeNode root = ((DefaultMutableTreeNode)getJTree1().getModel().getRoot());
+			if (root.getChildCount() == 0) {
+				updateJTree(fieldDataWindowManager.getLocalRequestManager());
+			} else {
+				int alphabeticalIndex = -1;
+				for(int i=0;i<root.getChildCount(); i+= 1){
+					if ((((FieldDataMainList)((DefaultMutableTreeNode)root.getChildAt(i)).getUserObject())).externalDataIdentifier.getName().
+							compareToIgnoreCase(fdos.specEDI.getName()) > 0){
+						alphabeticalIndex = i;
+						break;
+					}
+				}
+				if (alphabeticalIndex == -1){
+					alphabeticalIndex = root.getChildCount();
+				}
+				DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(new FieldDataMainList(fdos.specEDI,fdos.annotation));
+				mainNode.add(new DefaultMutableTreeNode(new FieldDataVarMainList()));
+				((DefaultTreeModel)getJTree1().getModel()).insertNodeInto(mainNode, root, alphabeticalIndex);
+			}
+		}
+	};
+	
+	return new AsynchClientTask[] { task1, task2, task3 };
 }
 
 /**
@@ -1658,28 +1611,19 @@ private JButton getJButtonFindRefModel() {
 		jButtonFindRefModel.setEnabled(false);
 		jButtonFindRefModel.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
-				javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
-				javax.swing.tree.DefaultMutableTreeNode mainNode =
-					(javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
+				TreePath selPath = getJTree1().getSelectionPath();
+				DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)selPath.getLastPathComponent();
 				if(mainNode.getUserObject() instanceof FieldDataMainList){
-					final ExternalDataIdentifier extDataID =
-						((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier;
-					new Thread(new Runnable(){
-						public void run(){
-							try{
-								BeanUtils.setCursorThroughout(FieldDataGUIPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-								fieldDataWindowManager.findReferencingModels(extDataID,true);
-								}catch(UserCancelException e){
-									//ignore
-								}catch(DataAccessException e){
-									PopupGenerator.showErrorDialog(
-											"Error Finding Model references for "+extDataID.getName()+"\n"+e.getMessage());
-								}
-								finally{
-									BeanUtils.setCursorThroughout(FieldDataGUIPanel.this, Cursor.getDefaultCursor());
-								}
-					}
-				}).start();
+					final ExternalDataIdentifier extDataID = ((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier;
+					
+					AsynchClientTask task1 = new AsynchClientTask("find model references", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							fieldDataWindowManager.findReferencingModels(extDataID,true);
+						}
+					};
+					ClientTaskDispatcher.dispatch(FieldDataGUIPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1 }, false);
 				}
 			}
 		});

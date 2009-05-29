@@ -2,6 +2,10 @@ package org.vcell.util.gui;
 
 import java.awt.*;
 import java.util.EventObject;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 /**
@@ -50,6 +54,26 @@ public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskS
 	private Thread nonswingThread = null;
 	
 	boolean bInterrupted = false;
+	
+	static abstract class SwingDispatcherAsync {
+		
+		public abstract void runSwing();
+		public abstract void handleException(Throwable ex);
+		
+		public void dispatch() {
+			Runnable runnable = new Runnable(){
+				public void run(){
+					try {
+						runSwing();
+					} catch(Throwable e){
+						handleException(e);
+					}
+				}
+			};
+			SwingUtilities.invokeLater(runnable);
+		}
+	}
+	
 /**
  * Insert the method's description here.
  * Creation date: (5/19/2004 3:11:01 PM)
@@ -96,7 +120,7 @@ public AsynchProgressPopup(Component requester, String title, String message, Th
 
 private ProgressDialog getDialog() {
 	if (dialog == null) {
-		Frame owner = javax.swing.JOptionPane.getFrameForComponent(requester);
+		Frame owner = JOptionPane.getFrameForComponent(requester);
 		dialog = new ProgressDialog(owner);
 		if (bCancelable && progressDialogListener!=null){
 			dialog.setCancelButtonVisible(true);

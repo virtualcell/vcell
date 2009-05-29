@@ -1,22 +1,25 @@
-package org.vcell.util;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.awt.geom.*;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
+package org.vcell.util;
+
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.awt.geom.*;
 import java.awt.*;
+import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.*;
-
-import org.vcell.util.gui.SwingDispatcherSync;
-
-
 import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
@@ -48,7 +51,7 @@ public final class BeanUtils {
  * @param o java.lang.Object
  */
 public static Object[] addElement(Object[] oArray, Object o) {
-	Vector v = new Vector();
+	Vector<Object> v = new Vector<Object>();
 	for (int c = 0; c < oArray.length; c += 1) {
 		v.addElement(oArray[c]);
 	}
@@ -65,7 +68,7 @@ public static Object[] addElement(Object[] oArray, Object o) {
  * @param o java.lang.Object
  */
 public static Object[] addElements(Object[] oArray1, Object[] oArray2) {
-	Vector v = new Vector();
+	Vector<Object> v = new Vector<Object>();
 	for (int c = 0; c < oArray1.length; c += 1) {
 		v.addElement(oArray1[c]);
 	}
@@ -135,17 +138,17 @@ public static void attemptMaximize(Frame frame) {
 	// not supported on all platforms
 	// not supported by JRE's 1.3 and earlier
 	// when not supported, frame will stay unchanged
-	Class c = frame.getClass();
-	java.lang.reflect.Method[] ms = c.getMethods();
-	java.lang.reflect.Method m = null;
+	Class<? extends Frame> c = frame.getClass();
+	Method[] ms = c.getMethods();
+	Method m = null;
 	for (int i = 0; i < ms.length; i++){
 		if (ms[i].getName().equals("setExtendedState")) {
 			m = ms[i];
 			break;
 		}
 	}
-	java.lang.reflect.Field[] fs = c.getFields();
-	java.lang.reflect.Field f = null;
+	Field[] fs = c.getFields();
+	Field f = null;
 	for (int i = 0; i < fs.length; i++){
 		if (fs[i].getName().equals("MAXIMIZED_BOTH")) {
 			f = fs[i];
@@ -171,8 +174,8 @@ public static void attemptResizeWeight(JSplitPane pane, double weight) {
 	// not supported on all platforms
 	// not supported by JRE's 1.2.x and earlier
 	// when not supported, pane will stay unchanged
-	java.lang.reflect.Method[] ms = pane.getClass().getMethods();
-	java.lang.reflect.Method m = null;
+	Method[] ms = pane.getClass().getMethods();
+	Method m = null;
 	for (int i = 0; i < ms.length; i++){
 		if (ms[i].getName().equals("setResizeWeight")) {
 			m = ms[i];
@@ -455,7 +458,7 @@ public static void enableComponents(Container container, boolean b) {
  * Insert the method's description here.
  * Creation date: (5/13/2003 6:55:05 PM)
  */
-public static Container findTypeParentOfComponent(Component component,Class parentType) {
+public static Container findTypeParentOfComponent(Component component,Class<?> parentType) {
 	for (Container p = component.getParent(); p != null; p = p.getParent()) {
 		if(parentType.isAssignableFrom(p.getClass())) {
 			return p;
@@ -540,11 +543,11 @@ public static Serializable fromCompressedSerialized(byte[] objData) throws Class
  * @return cbit.sql.Cacheable
  * @param objData byte[]
  */
-public static Serializable fromSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
+public static Serializable fromSerialized(byte[] objData) throws ClassNotFoundException, IOException {
 //	long before = System.currentTimeMillis();
 
-	java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);
-	java.io.ObjectInputStream ois = new java.io.ObjectInputStream(bis);
+	ByteArrayInputStream bis = new ByteArrayInputStream(objData);
+	ObjectInputStream ois = new ObjectInputStream(bis);
 	Serializable cacheClone = (Serializable) ois.readObject();
 	ois.close();
 	bis.close();
@@ -563,12 +566,12 @@ public static Serializable fromSerialized(byte[] objData) throws ClassNotFoundEx
  * @param oArray java.lang.Object[]
  * @param o java.lang.Object
  */
-public static Object[] getArray(java.util.Enumeration enumeration, Class elementType) {
-	Vector v = new Vector();
+public static Object[] getArray(Enumeration<?> enumeration, Class<?> elementType) {
+	Vector<Object> v = new Vector<Object>();
 	while (enumeration.hasMoreElements()){
 		v.addElement(enumeration.nextElement());
 	}
-	Object[] a = (Object[]) java.lang.reflect.Array.newInstance(elementType, v.size());
+	Object[] a = (Object[])Array.newInstance(elementType, v.size());
 	v.copyInto(a);
 	return a;
 }
@@ -581,8 +584,8 @@ public static Object[] getArray(java.util.Enumeration enumeration, Class element
  * @param oArray java.lang.Object[]
  * @param o java.lang.Object
  */
-public static Object[] getArray(java.util.Vector vector, Class elementType) {
-	Object[] a = (Object[]) java.lang.reflect.Array.newInstance(elementType, vector.size());
+public static Object[] getArray(Vector<?> vector, Class<?> elementType) {
+	Object[] a = (Object[]) Array.newInstance(elementType, vector.size());
 	vector.copyInto(a);
 	return a;
 }
@@ -818,13 +821,13 @@ public static void printComponentInfo(Container container) {
  * @param o java.lang.Object
  */
 public static Object[] removeElement(Object[] oArray, Object o) {
-	Vector v = new Vector();
+	Vector<Object> v = new Vector<Object>();
 	for (int c = 0; c < oArray.length; c += 1) {
 		v.addElement(oArray[c]);
 	}
 	if (v.contains(o)) {
 		v.remove(o);
-		Object[] a = (Object[]) java.lang.reflect.Array.newInstance(oArray.getClass().getComponentType(), v.size());
+		Object[] a = (Object[]) Array.newInstance(oArray.getClass().getComponentType(), v.size());
 		v.copyInto(a);
 		return a;
 	}
