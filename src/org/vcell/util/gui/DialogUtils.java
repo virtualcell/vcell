@@ -1,14 +1,15 @@
 package org.vcell.util.gui;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-
 import org.vcell.util.UserCancelException;
-
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
-
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 /**
  * Insert the type's description here.
@@ -17,10 +18,162 @@ import java.util.*;
  */
 public class DialogUtils {
 	
+	static abstract class SwingDispatcherSync {
+
+		private Object returnValue = null;
+		
+		static class SwingDispatchException extends RuntimeException{
+			public SwingDispatchException(Throwable e){
+				super(e);
+			}
+		};
+		
+		public abstract Object runSwing() throws Exception;
+
+		private static Exception handleThrowableAsException(Throwable throwable){
+			if (throwable instanceof Exception){
+				return (Exception) throwable;
+			}
+			throw (Error) throwable;
+		}
+		private static RuntimeException handleThrowableAsRuntimeException(Throwable throwable) {
+			if (throwable instanceof RuntimeException){
+				return (RuntimeException) throwable;
+			}
+			if (throwable instanceof Exception){
+				return new RuntimeException(throwable.getMessage(),throwable);
+			}
+			throw (Error) throwable;
+		}
+		
+		private Object dispatch() throws Throwable{
+			if (SwingUtilities.isEventDispatchThread()) {
+				return runSwing();
+			}			
+			Runnable runnable =	new Runnable(){
+				public void run(){
+					try{
+						returnValue = runSwing();
+					}catch(Throwable e){
+						throw new SwingDispatchException(e);
+					}
+				}
+			};
+			try {
+				SwingUtilities.invokeAndWait(runnable);
+				return returnValue;
+			} catch(Throwable e) {
+				if (e instanceof InvocationTargetException){
+					if (e.getCause() instanceof SwingDispatchException){
+						throw e.getCause().getCause();
+					}
+					if (e.getCause() != null){
+						throw e.getCause();
+					}
+				}
+				throw e;
+			}
+		}	
+
+		public Object dispatchWithException() throws Exception{
+			try{
+				return dispatch();
+			} catch(Throwable throwable){
+				printStack(throwable);
+				throw handleThrowableAsException(throwable);
+			}
+		}
+		public Object dispatchWrapRuntime(){
+			try{
+				return dispatch();
+			}catch(Throwable throwable){
+				printStack(throwable);
+				throw handleThrowableAsRuntimeException(throwable);
+			}
+		}
+		public Object dispatchConsumeException(){
+			try{
+				return dispatch();
+			}catch(Throwable throwable){
+				printStack(throwable);
+				return null;
+			}
+		}
+		private void printStack(Throwable throwable){
+			if(!(throwable instanceof UserCancelException)){
+				throwable.printStackTrace();
+			}
+		}
+	}
 	
 	private interface OKEnabler{
 		void setJOptionPane(JOptionPane joptionPane);
 	}
+	
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:23:18 AM)
+	 * @return int
+	 * @param owner java.awt.Component
+	 * @param message java.lang.String
+	 * @param preferences cbit.vcell.client.UserPreferences
+	 * @param preferenceName java.lang.String
+	 */
+	protected static String showDialog(final Component requester, final UserPreferences preferences, final UserMessage userMessage, final String replacementText, final int jOptionPaneMessageType) {
+		return (String)
+		new SwingDispatcherSync() {
+			public Object runSwing() throws Exception{
+				//
+				// if userMessage is a warning that can be ignored, and the preference is to ignore it, then return default selection.
+				//
+				if (userMessage.getUserPreferenceWarning() > -1 && preferences!=null && !preferences.getShowWarning(userMessage.getUserPreferenceWarning())){
+					return userMessage.getDefaultSelection();
+				}
+
+				
+				String message = userMessage.getMessage(replacementText);
+				JPanel panel = createMessagePanel(message);
+				JCheckBox checkBox = null;
+				if (userMessage.getUserPreferenceWarning() >= 0){
+					checkBox = new JCheckBox("Do not show this warning again");
+					panel.add(checkBox, BorderLayout.SOUTH);
+				}
+				JOptionPane pane = new JOptionPane(panel, jOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
+				final JDialog dialog = pane.createDialog(requester, "");
+				switch (jOptionPaneMessageType) {
+					case JOptionPane.WARNING_MESSAGE: {
+						dialog.setTitle("WARNING:");
+						break;
+					}
+					case JOptionPane.ERROR_MESSAGE: {
+						dialog.setTitle("ERROR:");
+						break;
+					}
+					case JOptionPane.INFORMATION_MESSAGE: {
+						dialog.setTitle("INFO:");
+						break;
+					}
+				}
+				dialog.setResizable(true);
+				dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+				try {
+					ZEnforcer.showModalDialogOnTop(dialog,requester);
+					if (checkBox!=null){
+						preferences.setShowWarning(userMessage.getUserPreferenceWarning(), ! checkBox.isSelected());
+					}
+					Object selectedValue = pane.getValue();
+					if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
+						return UserMessage.OPTION_CANCEL;
+					} else {
+						return (String)selectedValue;
+					}
+				}finally {
+					dialog.dispose();
+				}
+			}
+		}.dispatchWrapRuntime();
+	}
+	
 /**
  * Insert the method's description here.
  * Creation date: (8/26/2005 3:26:35 PM)

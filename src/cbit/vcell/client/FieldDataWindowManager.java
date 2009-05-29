@@ -16,22 +16,28 @@ import javax.swing.ListSelectionModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ReferenceQueryResult;
+import org.vcell.util.ReferenceQuerySpec;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
+
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataDBEvent;
@@ -192,7 +198,7 @@ public class FieldDataWindowManager
 			}
 			String[][] rows = new String[rowsV.size()][];
 			rowsV.copyInto(rows);
-			org.vcell.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
 					getComponent(), "Select Simulation for Field Data",
 					colNames, rows, ListSelectionModel.SINGLE_SELECTION);
@@ -201,7 +207,7 @@ public class FieldDataWindowManager
 			}
 			throw UserCancelException.CANCEL_GENERIC;
 		} finally {
-			org.vcell.util.BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			BeanUtils.setCursorThroughout(c, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
 	
@@ -217,7 +223,7 @@ public void viewData(final ExternalDataIdentifier eDI){
 					currentlyViewedJFrame.getExtendedState() & (~Frame.ICONIFIED));
 		}
 		currentlyViewedJFrame.setVisible(true);
-	}else{
+	} else {
 		if(currentlyViewedPDEDV != null){
 			if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
 				getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
@@ -235,79 +241,91 @@ public void viewData(final ExternalDataIdentifier eDI){
 		if(eDI == null){
 			return;
 		}
-		try{
-			final JDesktopPane jdp = new JDesktopPane();
 		
-			currentlyViewedPDEDV = new PDEDataViewer();
-//			PDEDataManager pdeDatamanager =
-//				(PDEDataManager)getRequestManager().getDataManager(eDI, true);
-//			PDEDataContext newPDEDataContext = pdeDatamanager.getPDEDataContext();
-			PDEDataContext newPDEDataContext = getPDEDataContext(eDI);
-			currentlyViewedPDEDV.setPdeDataContext(newPDEDataContext);
-			newPDEDataContext.addPropertyChangeListener(this);
-			getLocalRequestManager().getAsynchMessageManager().addDataJobListener(currentlyViewedPDEDV);
-			
-			DataViewerManager dvm = new DataViewerManager(){
-				public void dataJobMessage(DataJobEvent event){
-				}
-				public void exportMessage(ExportEvent event){
-				}
-				public void addDataListener(DataListener newListener){
-				}
-				public UserPreferences getUserPreferences(){
-					return getRequestManager().getUserPreferences();
-				}
-				public void removeDataListener(DataListener newListener){
-				}
-				public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames){
-					for(int i=0;i<plotFrames.length;i+= 1){
-						plotFrames[i].setLocation(100,100);
-						DocumentWindowManager.showFrame(plotFrames[i], jdp);
-					}
-				}
-				public void startExport(ExportSpecs exportSpecs){
-				}
-				public void simStatusChanged(SimStatusEvent simStatusEvent) {
-				}
-				public User getUser() {
-					return getRequestManager().getDocumentManager().getUser();
-				}
-			};
-		
-			try {
-				currentlyViewedPDEDV.setDataViewerManager(dvm);
-			} catch (PropertyVetoException e) {
-				e.printStackTrace();
-			}
-			
-			JInternalFrameEnhanced jif = new JInternalFrameEnhanced("Field Data", true, false, true, true);
-			jif.setContentPane(currentlyViewedPDEDV);
-			jif.setSize(600,500);
-			jif.setClosable(false);
-			jif.setVisible(true);
-			
-			jdp.add(jif);
+		AsynchClientTask task1 = new AsynchClientTask("retrieve data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
-			JFrame jFrame = new JFrame("Field Data Viewer ("+eDI.getName()+")");
-			jFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-			jFrame.setContentPane(jdp);
-			jFrame.setSize(650, 550);
-			jFrame.setVisible(true);
-			
-			currentlyViewedJFrame = jFrame;
-			currentlyViewedEDI = eDI;
-		}catch(Throwable e){
-			if(currentlyViewedPDEDV != null){
-				if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
-					getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
-				}
-				if(currentlyViewedPDEDV.getPdeDataContext() != null){
-					currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(this);
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				PDEDataContext newPDEDataContext = getPDEDataContext(eDI);
+				hashTable.put("newPDEDataContext", newPDEDataContext);
+			}				
+		};
+		AsynchClientTask task2 = new AsynchClientTask("show data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {				
+				try{
+					final JDesktopPane jdp = new JDesktopPane();				
+					currentlyViewedPDEDV = new PDEDataViewer();
+					PDEDataContext newPDEDataContext = (PDEDataContext)hashTable.get("newPDEDataContext");
+					currentlyViewedPDEDV.setPdeDataContext(newPDEDataContext);
+					newPDEDataContext.addPropertyChangeListener(FieldDataWindowManager.this);
+					getLocalRequestManager().getAsynchMessageManager().addDataJobListener(currentlyViewedPDEDV);
+					
+					DataViewerManager dvm = new DataViewerManager(){
+						public void dataJobMessage(DataJobEvent event){
+						}
+						public void exportMessage(ExportEvent event){
+						}
+						public void addDataListener(DataListener newListener){
+						}
+						public UserPreferences getUserPreferences(){
+							return getRequestManager().getUserPreferences();
+						}
+						public void removeDataListener(DataListener newListener){
+						}
+						public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames){
+							for(int i=0;i<plotFrames.length;i+= 1){
+								plotFrames[i].setLocation(100,100);
+								DocumentWindowManager.showFrame(plotFrames[i], jdp);
+							}
+						}
+						public void startExport(ExportSpecs exportSpecs){
+						}
+						public void simStatusChanged(SimStatusEvent simStatusEvent) {
+						}
+						public User getUser() {
+							return getRequestManager().getDocumentManager().getUser();
+						}
+					};
+				
+					try {
+						currentlyViewedPDEDV.setDataViewerManager(dvm);
+					} catch (PropertyVetoException e) {
+						e.printStackTrace();
+					}
+					
+					JInternalFrameEnhanced jif = new JInternalFrameEnhanced("Field Data", true, false, true, true);
+					jif.setContentPane(currentlyViewedPDEDV);
+					jif.setSize(600,500);
+					jif.setClosable(false);
+					jif.setVisible(true);
+					
+					jdp.add(jif);
+		
+					JFrame jFrame = new JFrame("Field Data Viewer ("+eDI.getName()+")");
+					jFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+					jFrame.setContentPane(jdp);
+					jFrame.setSize(650, 550);
+					jFrame.setVisible(true);
+					
+					currentlyViewedJFrame = jFrame;
+					currentlyViewedEDI = eDI;
+				} catch (Exception e){
+					if(currentlyViewedPDEDV != null){
+						if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
+							getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
+						}
+						if(currentlyViewedPDEDV.getPdeDataContext() != null){
+							currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(FieldDataWindowManager.this);
+						}
+					}
+					throw e;
 				}
 			}
-			PopupGenerator.showErrorDialog("Error showing Field Data Viewer\n"+e.getMessage());
-		}
-	}	
+		};
+		ClientTaskDispatcher.dispatch(this.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
+	}
 }
 public void propertyChange(PropertyChangeEvent evt) {
 	if(evt.getSource() == currentlyViewedPDEDV.getPdeDataContext() &&
@@ -323,29 +341,30 @@ public void propertyChange(PropertyChangeEvent evt) {
 public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataID,boolean bShowReferencingModelsList)
 	throws DataAccessException,UserCancelException{
 
-	org.vcell.util.ReferenceQuerySpec rqs =
-		new org.vcell.util.ReferenceQuerySpec(targetExtDataID);
+	ReferenceQuerySpec rqs = new ReferenceQuerySpec(targetExtDataID);
 
-	org.vcell.util.ReferenceQueryResult rqr =
-		getRequestManager().getDocumentManager().findReferences(rqs);
-	org.vcell.util.document.VersionableTypeVersion[] dependants = null;
+	ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
+	VersionableTypeVersion[] dependants = null;
 	Hashtable<VersionableTypeVersion,String[]> choices = new Hashtable<VersionableTypeVersion,String[]>();
 	boolean bDanglingReferences = false;
+	
+	VersionableType bioModelType = VersionableType.BioModelMetaData;
+	VersionableType mathModelType = VersionableType.MathModelMetaData;
+	
 	if(rqr != null){
-		dependants =
-			(rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
+		dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
 		if(dependants != null){
 			for(int i=0;i<dependants.length;i+= 1){
-				boolean isBioModel = dependants[i].getVType().equals(VersionableType.BioModelMetaData);
-				boolean isTop = isBioModel || dependants[i].getVType().equals(VersionableType.MathModelMetaData);
+				boolean isBioModel = dependants[i].getVType().equals(bioModelType);
+				boolean isTop = isBioModel || dependants[i].getVType().equals(mathModelType);
 				if(isTop){
-					org.vcell.util.document.VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
+					VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
 					for(int j=0;j<vrArr2.length;j+= 1){
 						if( (vrArr2[j].from() == dependants[i]) &&
-							vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){
+								vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){
 							for(int k=0;k<vrArr2.length;k+= 1){
 								boolean bAdd =false;
-								if(k==j && vrArr2[k].from().getVType().equals(VersionableType.MathModelMetaData)){
+								if(k==j && vrArr2[k].from().getVType().equals(mathModelType)){
 									bAdd = true;
 								}
 								if((vrArr2[k].from() == vrArr2[j].to()) &&
@@ -353,14 +372,14 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 									bAdd = true;
 								}
 								if(bAdd){
-										choices.put(dependants[i],
-												new String[] {
+									choices.put(dependants[i],
+											new String[] {
 												dependants[i].getVersion().getName(),
-												(isBioModel?VersionableType.BioModelMetaData.getTypeName():VersionableType.MathModelMetaData.getTypeName()),
+												(isBioModel?bioModelType.getTypeName():mathModelType.getTypeName()),
 												(isBioModel?vrArr2[k].from().getVersion().getName():""),
 												dependants[i].getVersion().getVersionKey().toString()
-												}
-										);
+											}
+									);
 								}
 							}
 						}
@@ -373,10 +392,9 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 		}
 	}
 			
-	FieldDataFileOperationResults fdfor =
-		getRequestManager().getDocumentManager().fieldDataFileOperation(
-			FieldDataFileOperationSpec.createDependantFuncsFieldDataFileOperationSpec(targetExtDataID)
-		);
+//	FieldDataFileOperationResults fdfor = getRequestManager().getDocumentManager().fieldDataFileOperation(
+//			FieldDataFileOperationSpec.createDependantFuncsFieldDataFileOperationSpec(targetExtDataID));	
+	FieldDataFileOperationResults fdfor = null;
 	
 	boolean bHasReferences = false;
 	if(choices.size() > 0 || fdfor != null){
@@ -388,13 +406,11 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 			Vector<String[]> choicesV= new Vector<String[]>();
 			String[][] modelListData = choices.values().toArray(new String[0][0]);
 			for (int i = 0; i < modelListData.length; i++) {
-				choicesV.add(new String[]{
-						modelListData[i][0],
-						modelListData[i][1],
+				choicesV.add(new String[]{modelListData[i][0], modelListData[i][1],
 						"Model Variable - "+(modelListData[i][2].length() == 0?"":"App='"+modelListData[i][2]+"'")+" version["+modelListData[i][3]+"]"
 					}
 				);
-				varTypeV.add((modelListData[i][1].equals(VersionableType.BioModelMetaData.getTypeName())?VersionableType.BioModelMetaData:VersionableType.MathModelMetaData));
+				varTypeV.add((modelListData[i][1].equals(bioModelType.getTypeName())?bioModelType:mathModelType));
 				keyValV.add(new KeyValue(modelListData[i][3]));
 			}
 			for (int i = 0; fdfor != null && i < fdfor.dependantFunctionInfo.length; i++) {
@@ -413,36 +429,31 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 				);				
 				if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(FieldDataFileOperationResults.FieldDataReferenceInfo.FIELDDATATYPENAME)){
 					varTypeV.add(null);
-				}else if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(VersionableType.BioModelMetaData.getTypeName())){
-					varTypeV.add(VersionableType.BioModelMetaData);
-				}else if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(VersionableType.MathModelMetaData.getTypeName())){
-					varTypeV.add(VersionableType.MathModelMetaData);
+				}else if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(bioModelType.getTypeName())){
+					varTypeV.add(bioModelType);
+				}else if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(mathModelType.getTypeName())){
+					varTypeV.add(mathModelType);
 				}else{
 					throw new IllegalArgumentException("Unknown reference source type "+fdfor.dependantFunctionInfo[i].referenceSourceType);
 				}
 				keyValV.add(fdfor.dependantFunctionInfo[i].refSourceVersionKey);
 			}
-			int[] selectionArr =
-				PopupGenerator.showComponentOKCancelTableList(
+			int[] selectionArr = PopupGenerator.showComponentOKCancelTableList(
 					getComponent(), "References to Field Data (Select To Open) "+targetExtDataID.getName(),
 					columnNames, choicesV.toArray(new String[0][0]), ListSelectionModel.SINGLE_SELECTION);
 			if(selectionArr != null && selectionArr.length > 0){
 				if(varTypeV.elementAt(selectionArr[0]) != null){
-//					VersionableTypeVersion[] vtvArr = choices.keySet().toArray(new VersionableTypeVersion[0]);
-//					cbit.vcell.modeldb.VersionableTypeVersion v = vtvArr[selectionArr[0]];
-					//System.out.println(v);
-					if(varTypeV.elementAt(selectionArr[0]).equals(VersionableType.BioModelMetaData)){
+					if(varTypeV.elementAt(selectionArr[0]).equals(bioModelType)){
 						BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(keyValV.elementAt(selectionArr[0]));
 						getRequestManager().openDocument(bmi,FieldDataWindowManager.this,true);
-					}else if(varTypeV.elementAt(selectionArr[0]).equals(VersionableType.MathModelMetaData)){
+					}else if(varTypeV.elementAt(selectionArr[0]).equals(mathModelType)){
 						MathModelInfo mmi = getRequestManager().getDocumentManager().getMathModelInfo(keyValV.elementAt(selectionArr[0]));
 						getRequestManager().openDocument(mmi,FieldDataWindowManager.this,true);
 					}else{
 						throw new IllegalArgumentException("Not expecting varType "+varTypeV.elementAt(selectionArr[0]));
 					}
 				}else{
-					DialogUtils.showInfoDialog("use FiledDataManager to view FieldData '"+
-							choicesV.elementAt(selectionArr[0])[0]+"'");
+					DialogUtils.showInfoDialog("use FiledDataManager to view FieldData '" + choicesV.elementAt(selectionArr[0])[0]+"'");
 				}
 			}
 		}
@@ -450,14 +461,12 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 		if(!bDanglingReferences){
 			bHasReferences = false;
 			if(bShowReferencingModelsList){
-				org.vcell.util.gui.DialogUtils.showInfoDialog(
-					"No Model references found for Field Data "+targetExtDataID.getName());
+				DialogUtils.showInfoDialog("No Model references found for Field Data "+targetExtDataID.getName());
 			}
 		}else{
 			bHasReferences = true;
 			if(bShowReferencingModelsList){
-				org.vcell.util.gui.DialogUtils.showInfoDialog(
-					"No current Model references found.\n"+
+				DialogUtils.showInfoDialog("No current Model references found.\n"+
 					"Field Data has internal database references from\n"+
 					"previously linked Model(s) that have been deleted.\n"+
 					"Note: Field Data '"+targetExtDataID.getName()+"' is not deletable\n"+

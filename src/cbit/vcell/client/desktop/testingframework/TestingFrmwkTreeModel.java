@@ -2,6 +2,7 @@ package cbit.vcell.client.desktop.testingframework;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Hashtable;
 
 import org.vcell.util.DataAccessException;
 
@@ -10,6 +11,8 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.solver.SimulationInfo;
 /**
  * Insert the type's description here.
@@ -54,96 +57,7 @@ public class TestingFrmwkTreeModel
 		public TestSuiteGroup(){
 		}
 	};
-	//
-	class GetTestSuites implements Runnable{
-		private TestSuiteInfoNew tsin;
-		org.vcell.util.gui.AsynchProgressPopup pp = 
-			new org.vcell.util.gui.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",null,false,true);
-		public GetTestSuites(TestSuiteInfoNew argtsin){
-			tsin = argtsin;
-		}
-		public void run(){
-			pp.start();
-			TestSuiteGroup tsg = new TestSuiteGroup();
-			boolean bRemove = false;
-			try{
-				TestSuiteInfoNew[] latestTestSuiteInfos = null;
-//				TestSuiteNew[] latestTestSuites = null;
-				TestSuiteNew latestTestSuite = null;
-				boolean hadUpdateTSError = false;
-				if(getDocumentManager() != null){
-					TestSuiteInfoNew[] testSuiteInfos = null;
-					try{
-						pp.setMessage("Getting TestsuiteInfos");
-						testSuiteInfos = getDocumentManager().getTestSuiteInfos();
-					}catch(Throwable e){
-						hadUpdateTSError = true;
-					}
-					if(testSuiteInfos != null){
-						latestTestSuiteInfos = testSuiteInfos;
-						if(tsin == null){
-//							latestTestSuites = new TestSuiteNew[testSuiteInfos.length];
-//							for (int i=0;i<testSuiteInfos.length;i++){
-//								try {
-//									pp.setProgress(i*100/(testSuiteInfos.length+1));
-//									pp.setMessage("Getting Testsuite "+testSuiteInfos[i].getTSID());
-//									latestTestSuites[i] = getDocumentManager().getTestSuite(testSuiteInfos[i].getTSKey());
-//								} catch (cbit.vcell.server.DataAccessException e) {
-//									latestTestSuites[i] = null;
-//								}
-//							}
-						}else{
-							try {
-								pp.setProgress(50);
-								if(tsin.getTSKey() != null){//from Refesh or remove TestSuite
-									bRemove = true;
-									for (int i=0;i<testSuiteInfos.length;i++){
-										if(testSuiteInfos[i].getTSKey().equals(tsin.getTSKey())){
-											bRemove = false;
-											break;
-										}
-									}
-									if(!bRemove){
-										pp.setMessage("Getting Testsuite "+tsin.getTSID());
-										latestTestSuite = getDocumentManager().getTestSuite(tsin.getTSKey());
-//										if(latestTestSuite.getTestCases() == null || latestTestSuite.getTestCases().length == 0){
-//											return;
-//										}
-									}else{
-										pp.setMessage("Remove Testsuite "+tsin.getTSID());
-										latestTestSuiteInfos = new TestSuiteInfoNew[] {tsin};
-									}
-								}else{//from Duplicate TestSuite
-									for (int i=0;i<testSuiteInfos.length;i++){
-										if(testSuiteInfos[i].getTSID().equals(tsin.getTSID())){
-											latestTestSuite = getDocumentManager().getTestSuite(testSuiteInfos[i].getTSKey());
-											break;
-										}
-									}
-								}
-							} catch (org.vcell.util.DataAccessException e) {
-								tsg = new TestSuiteGroup();
-								PopupGenerator.showErrorDialog(e.getMessage());
-								return;
-							}
-						}
-					}
-				}
-				
-				tsg.latestTestSuiteInfos = latestTestSuiteInfos;
-//				tsg.latestTestSuites = latestTestSuites;
-				tsg.latestTestSuite = latestTestSuite;
-				tsg.hadUpdateTSError = hadUpdateTSError;
-			}finally{
-				if(tsg.latestTestSuiteInfos != null){
-					pp.setProgress(tsg.latestTestSuiteInfos.length*100/(tsg.latestTestSuiteInfos.length+1));
-				}
-				pp.setMessage("Updating Display");
-				updateTree(tsg,bRemove);
-				pp.stop();
-			}
-		}
-	};
+
 /**
  * TestingFrmwkTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -444,11 +358,86 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Insert the method's description here.
  * Creation date: (2/14/01 3:50:24 PM)
  */
-public void refreshTree(TestSuiteInfoNew tsin) {
-	
+public void refreshTree(final TestSuiteInfoNew tsin) {
 	if (getDocumentManager() != null && getDocumentManager().getUser() != null){
 		if(getDocumentManager().getUser().isTestAccount()){
-			(new Thread(new GetTestSuites(tsin))).start();
+			AsynchClientTask GetTestSuites = new AsynchClientTask("Refresh Testing FrameWork Display", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					TestSuiteGroup tsg = new TestSuiteGroup();
+					boolean bRemove = false;
+					try{
+						TestSuiteInfoNew[] latestTestSuiteInfos = null;
+						TestSuiteNew latestTestSuite = null;
+						boolean hadUpdateTSError = false;
+						if(getDocumentManager() != null){
+							TestSuiteInfoNew[] testSuiteInfos = null;
+							getClientTaskStatusSupport().setMessage("Getting TestsuiteInfos");
+							try{								
+								testSuiteInfos = getDocumentManager().getTestSuiteInfos();
+							}catch(Throwable e){
+								e.printStackTrace();
+								hadUpdateTSError = true;
+							}
+							if(testSuiteInfos != null){
+								latestTestSuiteInfos = testSuiteInfos;
+								if(tsin != null){
+									try {
+										getClientTaskStatusSupport().setProgress(50);
+										if(tsin.getTSKey() != null){//from Refesh or remove TestSuite
+											bRemove = true;
+											for (int i=0;i<testSuiteInfos.length;i++){
+												if(testSuiteInfos[i].getTSKey().equals(tsin.getTSKey())){
+													bRemove = false;
+													break;
+												}
+											}
+											if(!bRemove){
+												getClientTaskStatusSupport().setMessage("Getting Testsuite "+tsin.getTSID());
+												latestTestSuite = getDocumentManager().getTestSuite(tsin.getTSKey());
+											}else{
+												getClientTaskStatusSupport().setMessage("Remove Testsuite "+tsin.getTSID());
+												latestTestSuiteInfos = new TestSuiteInfoNew[] {tsin};
+											}
+										}else{//from Duplicate TestSuite
+											for (int i=0;i<testSuiteInfos.length;i++){
+												if(testSuiteInfos[i].getTSID().equals(tsin.getTSID())){
+													latestTestSuite = getDocumentManager().getTestSuite(testSuiteInfos[i].getTSKey());
+													break;
+												}
+											}
+										}
+									} catch (DataAccessException e) {
+										tsg = new TestSuiteGroup();
+										throw e;
+									}
+								}
+							}
+						}
+						
+						tsg.latestTestSuiteInfos = latestTestSuiteInfos;
+						tsg.latestTestSuite = latestTestSuite;
+						tsg.hadUpdateTSError = hadUpdateTSError;
+					}finally{
+						if(tsg.latestTestSuiteInfos != null){
+							getClientTaskStatusSupport().setProgress(tsg.latestTestSuiteInfos.length*100/(tsg.latestTestSuiteInfos.length+1));
+						}						
+						hashTable.put("tsg", tsg);
+						hashTable.put("bRemove", bRemove);
+					}
+				}		
+			};
+			AsynchClientTask updateTreeTask = new AsynchClientTask("Refresh Testing FrameWork Display", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					TestSuiteGroup tsg = (TestSuiteGroup)hashTable.get("tsg");
+					boolean bRemove = (Boolean)hashTable.get("bRemove");
+					updateTree(tsg,bRemove);
+				}
+			};
+			ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] { GetTestSuites, updateTreeTask }, false);
 		}else{
 			setRoot(new BioModelNode(getDocumentManager().getUser().getName()+" Not TestAccount User"));
 		}
@@ -483,83 +472,50 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManag
 	/**
 	 * Invoked when an action occurs.
 	 */
-private void updateTree(final TestSuiteGroup tsg,boolean bRemove) {
+private void updateTree(final TestSuiteGroup tsg,boolean bRemove) throws Exception {
 	
 	if(tsg != null){
-		if(tsg.latestTestSuite == null && tsg.latestTestSuiteInfos != null && !bRemove /*tsg.latestTestSuites != null  && !bRemove*/){
+		if(tsg.latestTestSuite == null && tsg.latestTestSuiteInfos != null && !bRemove){
 			BioModelNode finalNode = null;
-			Throwable error = null;
 			try {
 				finalNode = createBaseTree(tsg);
 				final BioModelNode ffNode = finalNode;
-				javax.swing.SwingUtilities.invokeLater(
-					new Runnable(){
-						public void run(){
-							setRoot(ffNode);
-						}
-					}
-				);
-			}catch (Throwable exc){
-				exc.printStackTrace();
-				error = exc;
+				setRoot(ffNode);
 			}finally{
 				if(finalNode == null){
-					setRoot(new BioModelNode("Error Creating TF Tree"+(error != null?error.getClass().getName():""),false));
+					setRoot(new BioModelNode("Error Creating TF Tree",false));
 				}
 			}
 		}else if(tsg.latestTestSuite != null && !bRemove){
-
-				javax.swing.SwingUtilities.invokeLater(
-					new Runnable(){
-						public void run(){
-							try{
-								BioModelNode finalNode = null;
-								BioModelNode rootNode = (BioModelNode)getRoot();
-								finalNode = createTestSuiteSubTree(tsg.latestTestSuite);
-								for (int i = 0; i < rootNode.getChildCount(); i++) {
-									BioModelNode childNode = (BioModelNode)rootNode.getChildAt(i);
-									TestSuiteInfoNew childtsin = (TestSuiteInfoNew)childNode.getUserObject();
-									if(childtsin.getTSKey().equals(tsg.latestTestSuite.getTSInfoNew().getTSKey())){
-										removeNodeFromParent(childNode);
-										insertNodeInto(finalNode, rootNode, i);
-										firePropertyChange(TS_NODE_REFRESH, childNode, finalNode);
-										return;
-									}
-								}
-								//Must be NEW TeestSuite
-								//insert at top
-								
-								insertNodeInto(finalNode, rootNode, rootNode.getChildCount());
-							}catch(Throwable e){
-								e.printStackTrace();
-								PopupGenerator.showErrorDialog("Error updating tree.  "+e.getMessage());
-							}
-						}
-					}
-				);
+			BioModelNode finalNode = null;
+			BioModelNode rootNode = (BioModelNode)getRoot();
+			finalNode = createTestSuiteSubTree(tsg.latestTestSuite);
+			for (int i = 0; i < rootNode.getChildCount(); i++) {
+				BioModelNode childNode = (BioModelNode)rootNode.getChildAt(i);
+				TestSuiteInfoNew childtsin = (TestSuiteInfoNew)childNode.getUserObject();
+				if(childtsin.getTSKey().equals(tsg.latestTestSuite.getTSInfoNew().getTSKey())){
+					removeNodeFromParent(childNode);
+					insertNodeInto(finalNode, rootNode, i);
+					firePropertyChange(TS_NODE_REFRESH, childNode, finalNode);
+					return;
+				}
+			}
+			//Must be NEW TeestSuite
+			//insert at top
+			
+			insertNodeInto(finalNode, rootNode, rootNode.getChildCount());
 		}else if(tsg.latestTestSuiteInfos != null && bRemove){//Remove tree nodes that aren't in DB
-			javax.swing.SwingUtilities.invokeLater(
-				new Runnable(){
-					public void run(){
-						try{
-							BioModelNode rootNode = (BioModelNode)getRoot();
-							for (int j = 0; j < tsg.latestTestSuiteInfos.length; j++) {
-								for (int i = 0; i < rootNode.getChildCount(); i++) {
-									BioModelNode childNode = (BioModelNode)rootNode.getChildAt(i);
-									TestSuiteInfoNew childtsin = (TestSuiteInfoNew)childNode.getUserObject();
-									if(childtsin.getTSKey().equals(tsg.latestTestSuiteInfos[j].getTSKey())){
-										removeNodeFromParent(childNode);
-										break;
-									}
-								}
-							}
-						}catch(Throwable e){
-							e.printStackTrace();
-							PopupGenerator.showErrorDialog("Error updating tree.  "+e.getMessage());
-						}
+			BioModelNode rootNode = (BioModelNode)getRoot();
+			for (int j = 0; j < tsg.latestTestSuiteInfos.length; j++) {
+				for (int i = 0; i < rootNode.getChildCount(); i++) {
+					BioModelNode childNode = (BioModelNode)rootNode.getChildAt(i);
+					TestSuiteInfoNew childtsin = (TestSuiteInfoNew)childNode.getUserObject();
+					if(childtsin.getTSKey().equals(tsg.latestTestSuiteInfos[j].getTSKey())){
+						removeNodeFromParent(childNode);
+						break;
 					}
 				}
-			);
+			}
 		}
 	}
 }
