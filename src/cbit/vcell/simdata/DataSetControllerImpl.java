@@ -2458,6 +2458,8 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 	boolean bIsSpecial = !isAllowOptimizedTimeDataRetrieval();
 	if(!bIsSpecial){
 		VCData simData = getVCData(vcdID);
+		simData.getFunctions();
+		
 		//
 		//Gradient and FieldData functions are special.
 		//They have to be evaluated using the 'full data' method using evaluateFunction(...).
