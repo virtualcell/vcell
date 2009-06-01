@@ -307,10 +307,11 @@ private VCellConnection connectToServer() {
 				String[] hosts = getClientServerInfo().getHosts();
 				for (int i = 0; i < hosts.length; i ++) {
 					try {
+						getClientServerInfo().setActiveHost(hosts[i]);
+						
 						vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUsername(), getClientServerInfo().getPassword());
 						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), hosts[i], ConnectionStatus.INITIALIZING));
-						newVCellConnection = vcConnFactory.createVCellConnection();
-						getClientServerInfo().setActiveHost(hosts[i]);
+						newVCellConnection = vcConnFactory.createVCellConnection();						
 						break;
 					} catch (AuthenticationException ex) {
 						throw ex;
@@ -324,13 +325,15 @@ private VCellConnection connectToServer() {
 			}
 			case ClientServerInfo.SERVER_LOCAL: {
 				new PropertyLoader();
+				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);
+				
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
 				Class localVCConnFactoryClass = Class.forName("cbit.vcell.server.LocalVCellConnectionFactory");
 				Constructor constructor = localVCConnFactoryClass.getConstructor(new Class[] {String.class, String.class, SessionLog.class, boolean.class});
 				vcConnFactory = (VCellConnectionFactory)constructor.newInstance(new Object[] {getClientServerInfo().getUsername(), getClientServerInfo().getPassword(), log, Boolean.TRUE});
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
-				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);
+				
 				break;
 			}
 		}		
