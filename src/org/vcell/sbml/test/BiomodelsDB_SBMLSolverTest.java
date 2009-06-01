@@ -18,6 +18,8 @@ import org.vcell.sbml.vcell.VCellSBMLSolver;
 
 import cbit.util.NumberUtils;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
@@ -25,18 +27,9 @@ import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 
 public class BiomodelsDB_SBMLSolverTest {
-	static
-	{
-		try {
-			System.loadLibrary("expat");
-			System.loadLibrary("sbml");
-			System.loadLibrary("sbmlj");
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-		}
-	}
-
+	
 	public static void main(String[] args){
+		
 		try {
 			if (args.length!=2){
 				System.out.println("usage: CopasiSBMLSolver sbmlDirectory outputDirectory");
@@ -50,6 +43,8 @@ public class BiomodelsDB_SBMLSolverTest {
 			if (!outDir.exists()){
 				outDir.mkdirs();
 			}
+			ResourceUtil.loadlibSbmlLibray();
+			
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log")));
 			try {
 				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
@@ -62,7 +57,7 @@ public class BiomodelsDB_SBMLSolverTest {
 					// *** BIOMD_24, 25, 34, 154, 155 : Copasi simulation fails; VCell doesn't import (csymbol not handled); 
 					// so ignore model for present *** 
 					if (filePrefix.equals("BIOMD0000000024") || filePrefix.equals("BIOMD0000000025") || filePrefix.equals("BIOMD0000000034") || 
-						filePrefix.equals("BIOMD0000000154") || filePrefix.equals("BIOMD0000000155")) {
+						filePrefix.equals("BIOMD0000000154") || filePrefix.equals("BIOMD0000000155") || filePrefix.equals("BIOMD0000000196")) {
 						printWriter.println("Ignoring model : " + filePrefix + " because it has <csymbol> delay term nota handled in VCell.");
 						continue;
 					}
@@ -180,15 +175,16 @@ public class BiomodelsDB_SBMLSolverTest {
 							//
 							if (copasiResults!=null && vcellResults_RT!=null){
 								try {
-									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, vcellResults_RT, varsToTest, 1e-5, 1e-5);
+									SimulationComparisonSummary summary = MathTestingUtilities.compareResultSets(copasiResults, vcellResults_RT, varsToTest, TestCaseNew.REGRESSION, 1e-5, 1e-5);
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
 										cv_passedString = "%Y%";
 										relErrorVCCopasiString = NumberUtils.formatNumber(maxRelError,3);
 									}else{
 										relErrorVCCopasiString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
-										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
-										for (VariableComparisonSummary vcSummary : vcSummaries){
+//										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
+										VariableComparisonSummary[] failedVCSummaries = summary.getFailingVariableComparisonSummaries(1e-5, 1e-5);
+										for (VariableComparisonSummary vcSummary : failedVCSummaries){
 											System.out.println(vcSummary.toShortString());
 										}
 									}
@@ -237,8 +233,9 @@ public class BiomodelsDB_SBMLSolverTest {
 										mv_passedString = "%Y%";
 									}else{
 										relErrorVCMathSBMLString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
-										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
-										for (VariableComparisonSummary vcSummary : vcSummaries){
+//										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
+										VariableComparisonSummary[] failedVCSummaries = summary.getFailingVariableComparisonSummaries(1e-5, 1e-5);
+										for (VariableComparisonSummary vcSummary : failedVCSummaries){
 											System.out.println(vcSummary.toShortString());
 										}
 									}

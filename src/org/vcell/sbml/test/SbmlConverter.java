@@ -276,7 +276,7 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 
 		// use the idastandalone solver
 		File idaOutputFile = new File(filePathName.replace(".vcml", ".ida"));
-		Executable executable = new Executable("IDAStandalone " + idaInputFile + " " + idaOutputFile);
+		Executable executable = new Executable("./IDAStandalone " + idaInputFile + " " + idaOutputFile);
 		executable.start();
 
 		// Generate .cvodeInput string
