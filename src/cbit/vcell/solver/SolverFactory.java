@@ -5,12 +5,9 @@ import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.stoch.HybridSolver;
-
 import java.io.*;
-
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -45,7 +42,7 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 		solver = new IDASolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.CVODE)) {
 		solver = new CVodeSolverStandalone(simJob, directory, sessionLog);
-	} else if (solverDescription.equals(SolverDescription.SUNDIALS)) {
+	} else if (solverDescription.equals(SolverDescription.CombinedSundials)) {
 		solver = new CombinedSundialsSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
 		solver = new FVSolver(simJob, directory, sessionLog);
