@@ -1,21 +1,13 @@
 package cbit.vcell.pslid;
 
-// import javax.swing.*;
-//import javax.imageio.*;
-
-//import java.awt.*;
 import java.io.*;
-//import java.io.IOException;
-//import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
-
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 
-import org.vcell.util.gui.AsynchProgressPopup;
+import cbit.vcell.client.server.VCellThreadChecker;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 
 public class WebClient {
@@ -24,13 +16,14 @@ public class WebClient {
 	static final int modeReturnBytes = 1;
 	static final int modeSaveImage = 2;
 
-	public static StringBuffer doWork(String args, int mode, AsynchProgressPopup pp) {
+	public static StringBuffer doWork(String args, int mode, ClientTaskStatusSupport pp) throws IOException {
+		VCellThreadChecker.checkRemoteInvocation();
 		
 //        System.out.println("http.proxyHost: " + System.getProperty("http.proxyHost"));
 //        System.out.println("http.proxyPort: " + System.getProperty("http.proxyPort"));
 //        System.out.println("networkaddress.cache.ttl: " + System.getProperty("networkaddress.cache.ttl"));
 		StringBuffer results = null;
-		try {
+//		try {
 			switch(mode) {
 			case modeReturnText:
 				results = fetchReturnText(new URL(args), pp);
@@ -40,19 +33,19 @@ public class WebClient {
 				results = fetchSaveImage(new URL(args), pp);
 				break;
 			}
-		} 
-		catch (MalformedURLException e) {
-			System.err.println("Malformed URL: " + args);
-		} 
-		catch (IOException e) {
-			System.err.println("Failed to fetch URL " + args + ": " + e.getMessage());
-			e.printStackTrace();
-		}
+//		} 
+//		catch (MalformedURLException e) {
+//			System.err.println("Malformed URL: " + args);
+//		} 
+//		catch (IOException e) {
+//			System.err.println("Failed to fetch URL " + args + ": " + e.getMessage());
+//			e.printStackTrace();
+//		}
 //        System.out.println("WebClient: exiting doWork()");
 		return results;
 	}
 	
-	private static StringBuffer fetchReturnText(URL url, AsynchProgressPopup pp) throws IOException {
+	private static StringBuffer fetchReturnText(URL url, ClientTaskStatusSupport pp) throws IOException {
 		
 		if(pp != null) {
 			pp.setMessage("Contacting PSLID service...");
@@ -85,7 +78,7 @@ public class WebClient {
 
 	// saves content as a file
 	// used when we download an image
-	private static StringBuffer fetchSaveImage(URL url, AsynchProgressPopup pp) throws IOException {
+	private static StringBuffer fetchSaveImage(URL url, ClientTaskStatusSupport pp) throws IOException {
 
 		if(pp != null) {
 			pp.setMessage("Contacting PSLID service...");

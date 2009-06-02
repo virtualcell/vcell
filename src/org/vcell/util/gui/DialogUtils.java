@@ -8,6 +8,10 @@ import org.vcell.util.UserCancelException;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import edu.stanford.ejalbert.BrowserLauncher;
+import edu.stanford.ejalbert.BrowserLauncherRunner;
+import edu.stanford.ejalbert.exceptionhandler.BrowserLauncherErrorHandler;
+
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -179,42 +183,33 @@ public class DialogUtils {
  * Creation date: (8/26/2005 3:26:35 PM)
  */
 public static void browserLauncher(final String targetURL,final String messageToUserIfFail,final boolean isApplet) {
-
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			//(isApplet==true)
-			//  Do not use BrowserLauncher as it will sometimes destroy VCell Applets
-			//  depending on which browser is running the applet and which OS the
-			//  browser is running on.
-			
-			//(messageToUserIfFail)
-			//  Should provide the user with the URL they can
-			//  manually navigate to for the information requested
-			
-			try{
-				if(isApplet){
-					throw new Exception("VCell Applet forbidden to launch local WWW Browser");
-				}
-				new Thread(
-					new edu.stanford.ejalbert.BrowserLauncherRunner(
-						new edu.stanford.ejalbert.BrowserLauncher(null),
-						targetURL,
-						new edu.stanford.ejalbert.exceptionhandler.BrowserLauncherErrorHandler() {
-							public void handleException(Exception e){
-								browserLauncherError(e,messageToUserIfFail);
-							}
-						}
-					)
-					).start();
-			}catch(Throwable e){
-				browserLauncherError(e,messageToUserIfFail);
-			}
-			return null;
-		}
-	}.dispatchWrapRuntime();
-
-
+	//(isApplet==true)
+	//  Do not use BrowserLauncher as it will sometimes destroy VCell Applets
+	//  depending on which browser is running the applet and which OS the
+	//  browser is running on.
 	
+	//(messageToUserIfFail)
+	//  Should provide the user with the URL they can
+	//  manually navigate to for the information requested
+	
+	try{
+		if(isApplet){
+			throw new Exception("VCell Applet forbidden to launch local WWW Browser");
+		}
+		new Thread(
+			new BrowserLauncherRunner(
+				new BrowserLauncher(null),
+				targetURL,
+				new BrowserLauncherErrorHandler() {
+					public void handleException(Exception e){
+						browserLauncherError(e,messageToUserIfFail);
+					}
+				}
+			)
+			).start();
+	}catch(Throwable e){
+		browserLauncherError(e,messageToUserIfFail);
+	}
 }
 
 
@@ -237,36 +232,30 @@ private static void browserLauncherError(final Throwable e, final String userMes
  * @param message java.lang.Object
  */
 
-protected static JPanel createMessagePanel(final String message) {
-	return (JPanel)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			JTextArea textArea = new JTextArea(message);
-			textArea.setEditable(false);
-			textArea.setWrapStyleWord(true);
-			textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
-			textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+private static JPanel createMessagePanel(final String message) {
+	JTextArea textArea = new JTextArea(message);
+	textArea.setEditable(false);
+	textArea.setWrapStyleWord(true);
+	textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
+	textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
-			//
-			// determine "natural" TextArea prefered size (what it would like if it didn't wrap lines)
-			// and try to set size accordingly (within limits ... e.g. 200<=X<=500 and 100<=Y<=400).
-			//
-			textArea.setLineWrap(false);
-			Dimension textAreaPreferredSize = textArea.getPreferredSize();
-			textArea.setLineWrap(true);
-			Dimension preferredSize = new Dimension((int)Math.min(500,Math.max(200,textAreaPreferredSize.getWidth()+20)),
-													(int)Math.min(400,Math.max(100,textAreaPreferredSize.getHeight()+20)));
+	//
+	// determine "natural" TextArea prefered size (what it would like if it didn't wrap lines)
+	// and try to set size accordingly (within limits ... e.g. 200<=X<=500 and 100<=Y<=400).
+	//
+	textArea.setLineWrap(false);
+	Dimension textAreaPreferredSize = textArea.getPreferredSize();
+	textArea.setLineWrap(true);
+	Dimension preferredSize = new Dimension((int)Math.min(500,Math.max(200,textAreaPreferredSize.getWidth()+20)),
+											(int)Math.min(400,Math.max(100,textAreaPreferredSize.getHeight()+20)));
 
-			
-			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			JPanel panel = new JPanel(new BorderLayout());
-			scroller.setViewportView(textArea);
-			scroller.getViewport().setPreferredSize(preferredSize);
-			panel.add(scroller, BorderLayout.CENTER);
-			return panel;
-		}
-	}.dispatchWrapRuntime();
-
+	
+	JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	JPanel panel = new JPanel(new BorderLayout());
+	scroller.setViewportView(textArea);
+	scroller.getViewport().setPreferredSize(preferredSize);
+	panel.add(scroller, BorderLayout.CENTER);
+	return panel;
 }
 
 
@@ -276,27 +265,19 @@ protected static JPanel createMessagePanel(final String message) {
  * @param message java.lang.Object
  */
 private static JDialog prepareErrorDialog(final Component requester,final String message) {
-	return (JDialog) new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			JPanel panel = createMessagePanel(message);
-			JOptionPane pane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
-			JDialog dialog = pane.createDialog(requester, "ERROR:");
-			dialog.setResizable(true);
-			return dialog;
-		}
-	}.dispatchWrapRuntime();
+	JPanel panel = createMessagePanel(message);
+	JOptionPane pane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
+	JDialog dialog = pane.createDialog(requester, "ERROR:");
+	dialog.setResizable(true);
+	return dialog;
 }
 
 private static JDialog prepareWarningDialog(final Component requester,final String message) {
-	return (JDialog) new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			JPanel panel = createMessagePanel(message);
-			JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
-			JDialog dialog = pane.createDialog(requester, "Warning:");
-			dialog.setResizable(true);
-			return dialog;
-		}
-	}.dispatchWrapRuntime();
+	JPanel panel = createMessagePanel(message);
+	JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
+	JDialog dialog = pane.createDialog(requester, "Warning:");
+	dialog.setResizable(true);
+	return dialog;
 }
 
 /**
@@ -305,15 +286,11 @@ private static JDialog prepareWarningDialog(final Component requester,final Stri
  * @param message java.lang.Object
  */
 private static JDialog prepareInfoDialog(final Component requester,final String message) {
-	return (JDialog) new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			JPanel panel = createMessagePanel(message);
-			JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-			JDialog dialog = pane.createDialog(requester, "");
-			dialog.setResizable(true);
-			return dialog;
-		}
-	}.dispatchWrapRuntime();
+	JPanel panel = createMessagePanel(message);
+	JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
+	JDialog dialog = pane.createDialog(requester, "");
+	dialog.setResizable(true);
+	return dialog;
 }
 
 
@@ -324,26 +301,21 @@ private static JDialog prepareInfoDialog(final Component requester,final String 
  * @param bEnabled boolean
  */
 private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bEnabled) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-		  	Component[] componentsArr = jop.getComponents();
-		  	for(int i=0;i<componentsArr.length;i+= 1){
-			  	if(componentsArr[i] instanceof Container){
-				  	for(int j=0;j<((Container)componentsArr[i]).getComponentCount();j+= 1){
-					  	if(((Container)componentsArr[i]).getComponent(j) instanceof JButton &&
-						  	((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase("OK")){
-						  	if(bEnabled){
-							  	((Container)componentsArr[i]).getComponent(j).setEnabled(true);
-						  	}else{
-							  	((Container)componentsArr[i]).getComponent(j).setEnabled(false);
-						  	}
-					  	}
+  	Component[] componentsArr = jop.getComponents();
+  	for(int i=0;i<componentsArr.length;i+= 1){
+	  	if(componentsArr[i] instanceof Container){
+		  	for(int j=0;j<((Container)componentsArr[i]).getComponentCount();j+= 1){
+			  	if(((Container)componentsArr[i]).getComponent(j) instanceof JButton &&
+				  	((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase("OK")){
+				  	if(bEnabled){
+					  	((Container)componentsArr[i]).getComponent(j).setEnabled(true);
+				  	}else{
+					  	((Container)componentsArr[i]).getComponent(j).setEnabled(false);
 				  	}
 			  	}
 		  	}
-		  	return null;
-		}
-	}.dispatchWrapRuntime();
+	  	}
+  	}
 }
 
 
@@ -416,8 +388,13 @@ public static void showComponentCloseDialog(final Component requester,final Comp
 
 }
 
-public static int showComponentOKCancelDialog(final Component requester,Component stayOnTopComponent,String title) {
-	return showComponentOKCancelDialog(requester,stayOnTopComponent,title,null);
+public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent, final String title) {
+	return (Integer)
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{	
+			return showComponentOKCancelDialog(requester,stayOnTopComponent,title,null);
+		}
+	}.dispatchWrapRuntime();
 }
 
 /**
@@ -427,27 +404,21 @@ public static int showComponentOKCancelDialog(final Component requester,Componen
  * @param message java.lang.Object
  */
 private static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
-	return (Integer)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-			final JDialog d = inputDialog.createDialog(requester, title);
-			d.setResizable(true);
-			if(okEnabler != null){okEnabler.setJOptionPane(inputDialog);}
-			try {
-				ZEnforcer.showModalDialogOnTop(d,requester);
-				if(inputDialog.getValue() instanceof Integer){
-					return ((Integer)inputDialog.getValue()).intValue();
-				}else if(inputDialog.getValue() == null){
-					return JOptionPane.CLOSED_OPTION;
-				}
-				throw new RuntimeException("Unexpected return value="+inputDialog.getValue().toString());
-			}finally {
-				d.dispose();
-			}
+	JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+	final JDialog d = inputDialog.createDialog(requester, title);
+	d.setResizable(true);
+	if(okEnabler != null){okEnabler.setJOptionPane(inputDialog);}
+	try {
+		ZEnforcer.showModalDialogOnTop(d,requester);
+		if(inputDialog.getValue() instanceof Integer){
+			return ((Integer)inputDialog.getValue()).intValue();
+		}else if(inputDialog.getValue() == null){
+			return JOptionPane.CLOSED_OPTION;
 		}
-	}.dispatchWrapRuntime();
-
+		throw new RuntimeException("Unexpected return value="+inputDialog.getValue().toString());
+	}finally {
+		d.dispose();
+	}
 }
 
 public static int[] showComponentOKCancelTableList(final Component requester,final String title,
@@ -519,28 +490,23 @@ public static int[] showComponentOKCancelTableList(final Component requester,fin
  * @param preferenceName java.lang.String
  */
 private static String showDialog(final Component requester, final SimpleUserMessage userMessage, final String replacementText, final int JOptionPaneMessageType) {
-	return (String)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			String message = userMessage.getMessage(replacementText);
-			JPanel panel = createMessagePanel(message);
-			JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
-			final JDialog dialog = pane.createDialog(requester, "");
-			dialog.setResizable(true);
-			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-			try {
-				ZEnforcer.showModalDialogOnTop(dialog,requester);
-				Object selectedValue = pane.getValue();
-				if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
-					return SimpleUserMessage.OPTION_CANCEL;
-				} else {
-					return selectedValue.toString();
-				}
-			}finally {
-				dialog.dispose();
-			}
+	String message = userMessage.getMessage(replacementText);
+	JPanel panel = createMessagePanel(message);
+	JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
+	final JDialog dialog = pane.createDialog(requester, "");
+	dialog.setResizable(true);
+	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	try {
+		ZEnforcer.showModalDialogOnTop(dialog,requester);
+		Object selectedValue = pane.getValue();
+		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
+			return SimpleUserMessage.OPTION_CANCEL;
+		} else {
+			return selectedValue.toString();
 		}
-	}.dispatchWrapRuntime();
+	}finally {
+		dialog.dispose();
+	}
 }
 
 

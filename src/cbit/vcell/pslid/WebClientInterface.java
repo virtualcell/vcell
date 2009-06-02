@@ -1,15 +1,14 @@
 package cbit.vcell.pslid;
 
-import swingthreads.SwingWorker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
 import org.vcell.util.Preference;
-import org.vcell.util.gui.AsynchProgressPopup;
 
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.PSLIDPanel;
 
 public class WebClientInterface {
@@ -27,11 +26,11 @@ public class WebClientInterface {
 	private boolean expired = false;
 	
 	// automated testing possible with pp = null
-	public AsynchProgressPopup pp;
-	private PSLIDPanel panel;
-	private UserPreferences userPreferences;
+	public ClientTaskStatusSupport pp = null;
+	private PSLIDPanel panel = null;
+	private UserPreferences userPreferences = null;
 
-	public WebClientInterface (PSLIDPanel pslidPanel, UserPreferences userPreferences,AsynchProgressPopup app) {
+	public WebClientInterface (PSLIDPanel pslidPanel, UserPreferences userPreferences,ClientTaskStatusSupport app) {
 		if(userPreferences == null){
 			throw new RuntimeException("UserPreferences can't be null");
 		}
@@ -41,33 +40,30 @@ public class WebClientInterface {
 		} else {
 			panel = null;
 		}
-		if(app != null) {
-			pp = app;
-		} else {
-			pp = null;
-		}
+
+		pp = app;
 	}
 
 	// high lvl API - specific to PSLID
-	public void requestAllProteinList() {					// returns list of all proteins
+	public void requestAllProteinList() throws IOException {					// returns list of all proteins
 		System.out.println("request list of all proteins");
 		final String pslidURL = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidAllProteinListURL);
 		//  "http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=target";
  		execute(pslidURL, modeReturnText);
 	}
-	public void requestCellProteinListExperimental() {		// returns list of all proteins separated by cell type (exp results)
+	public void requestCellProteinListExperimental() throws IOException {		// returns list of all proteins separated by cell type (exp results)
         System.out.println("request list of all proteins separated by cell type (exp)");
         final String pslidURL = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinListExpURL);
 //		final String pslidURL = "http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=target_cell_name";
 		execute(pslidURL, modeReturnText);
 	}
-	public void requestCellProteinListGenerated() {			// returns list of all proteins separated by cell type (generatd model)
+	public void requestCellProteinListGenerated() throws IOException {			// returns list of all proteins separated by cell type (generatd model)
         System.out.println("request list of all proteins separated by cell type (gen)");
         final String pslidURL = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinListGenURL);
 //		final String pslidURL = "http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=gen_model";
 		execute(pslidURL, modeReturnText);
 	}
-	public void requestProteinCellDetails(String protein, String cell) {	// returns info about a protein/cell pair
+	public void requestProteinCellDetails(String protein, String cell) throws IOException {	// returns info about a protein/cell pair
 		//   ex:  http://pslid.cbi.cmu.edu/develop/searchreturnxml.jsp?target=LAMP2&cell_name=HeLa
 		final String baseURL1 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageInfoExpURL);
 		final String baseURL2 = "&cell_name=";
@@ -76,17 +72,17 @@ public class WebClientInterface {
         System.out.println("request list images for protein/cell pair at: " + builtURL);
 		execute(builtURL, modeReturnText);
 	}
-	public void requestURL(String url) {			// saves to a file the requested image
+	public void requestURL(String url) throws IOException {			// saves to a file the requested image
         System.out.println("requestURL(): " + url);
 		myURL = url;
 		execute(myURL, modeReturnText);
 	}
-	public void requestImage(String url) {			// saves to a file the requested image
+	public void requestImage(String url) throws IOException {			// saves to a file the requested image
         System.out.println("requestImage() "+url);
 		myURL = url;
 		execute(myURL, modeSaveImage);
 	}
-	public void requestGenerativeModelImage(String protset, String activity) {	// returns 
+	public void requestGenerativeModelImage(String protset, String activity) throws IOException {	// returns 
 		final String baseURL1 = "http://pslid.cbi.cmu.edu/tcnp/genmodel_TCNP.jsp?protset1=";
 		final String baseURL2 = "&selectset2=";
 		final String baseURL3 = "&settype=regionset&settitle=2d+region+set&task=genmodel&table=tblregion_Sets&setnum=2&multisel=0&next=Continue";
@@ -95,7 +91,7 @@ public class WebClientInterface {
 		execute(builtURL, modeSaveImage);
 //		execute("http://pslid.cbi.cmu.edu/develop/genmodel_TCNP.jsp?protset1=central_slice_lys_2&selectset2=using&settype=regionset&settitle=2d+region+set&task=genmodel&table=tblregion_Sets&setnum=2&multisel=0&next=Continue", modeSaveImage);
 	}
-	public void test(String testURL) {					// returns list of all proteins
+	public void test(String testURL) throws IOException {					// returns list of all proteins
         System.out.println("testing URL: " + testURL);
 		execute(testURL, modeReturnText);
 	}
@@ -138,7 +134,7 @@ public class WebClientInterface {
 				expired = true;
 				return;
 			}
-			if(panel != null && (panel.getThreadState() != Thread.currentThread()) ) {
+			if(panel != null && pp.isInterrupted() ) {
 				System.out.println("Thread is interrupted!");
 				expired = true;
 				return;
@@ -179,102 +175,16 @@ public class WebClientInterface {
     
     //==============================================================
 	// generic API lvel
-	private void execute(String url, int mode) {
+	private void execute(String url, int mode) throws IOException {
 		this.done = false;
 		this.mode = mode;
 		this.myURL = url;
-		worker.start();
-	}
-	
-	private SwingWorker worker = new SwingWorker() {
 		
-		public StringBuffer construct() {
-			return WebClient.doWork(myURL, mode, pp);
-		}
-		public void finished() {
-	        try {
-        		doc = (StringBuffer)getValue();
-	            done = true;
-	            System.out.println("  finished(): Done");
-	            //fire....
-//	        } catch (InterruptedException ignore) {}
-//	        catch (java.util.concurrent.ExecutionException e) {
-	        }  catch (Exception e) {
-	            String why = null;
-	            Throwable cause = e.getCause();
-	            if (cause != null) {
-	                why = cause.getMessage();
-	            } else {
-	                why = e.getMessage();
-	            }
-	            System.err.println("Error fetching data: " + why);
-	        }
-		}
-	};
+		doc = WebClient.doWork(myURL, mode, pp);
+        done = true;
+        System.out.println("  finished(): Done");
+	}	
 }
-
-/*
-worker = new SwingWorker() {
-   public Object construct() {
-      return doWork();
-   }
-   public void finished() {
-      startButton.setEnabled(true);
-      interruptButton.setEnabled(false);
-      statusField.setText(get().toString());
-   }
-};
-*/
-
-/*
-private SwingWorker worker = new SwingWorker<StringBuffer, Void>() {
-	public StringBuffer doInBackground() {
-		return WebClient.execute(myURL, mode);
-	}
-	
-	public void done() {
-        try {
-            doc = get();
-            done = true;
-//            System.out.println(doc);
-            System.out.println("--------- get() Done");
-            //fire....
-        } catch (InterruptedException ignore) {}
-        catch (java.util.concurrent.ExecutionException e) {
-            String why = null;
-            Throwable cause = e.getCause();
-            if (cause != null) {
-                why = cause.getMessage();
-            } else {
-                why = e.getMessage();
-            }
-            System.err.println("Error fetching data: " + why);
-        }
-	}
-};
-*/
-
-/*		doc = new StringBuffer();						// simulation mode
-doc.append("atp5a1\n");
-doc.append("LAMP2");   */
-
-/* 
-	// !!!  obsolete - do not call
-	public void requestProteinData(String protein) {	// returns xml document with list of images
-		final String baseURL = "http://pslid.cbi.cmu.edu/develop/searchreturnxml.jsp?protein=";
-        System.out.println("requestProteinData()");
-		myURL = baseURL+protein;
-		execute(myURL, modeReturn);
-	}
-	// !!!  obsolete - do not call
-	public void requestImageList(StringBuffer xmlFile) {	// parses xml document and extracts images
-		done = false;
-        System.out.println("requestImageList()");
-		done = true;
-	}
-	
-	*/
-
 
 /*
 	import java.net.URL;

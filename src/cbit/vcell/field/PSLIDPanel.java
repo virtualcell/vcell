@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Comparator;
-import java.util.EventObject;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
@@ -27,7 +27,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
+import org.jdom.Element;
+import org.jdom.filter.Filter;
+import org.vcell.cellml.JDOMTreeWalker;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -35,11 +37,12 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Preference;
-import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.ProgressDialogListener;
 import loci.formats.AWTImageTools;
-import cbit.vcell.client.PopupGenerator;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.pslid.WebClientInterface;
 import cbit.vcell.simdata.VariableType;
 
@@ -48,14 +51,6 @@ public class PSLIDPanel extends JPanel{
 	
 	final int modePslidExperimentalData = 0;
 	final int modePslidGeneratedModel = 1;
-
-	private volatile Thread threadState;
-    public void stopThread() {
-    	threadState = null;
-    }
-    public Thread getThreadState() {
-    	return threadState;
-    }
 
     private PSLIDPanel thisPanel;
 	private JRadioButton compartmentRadioButton;
@@ -320,48 +315,63 @@ public class PSLIDPanel extends JPanel{
 
 	// reads cell - protein data sets for either experimental data or generative models
 	// populates combobox with pairs
-	public void initCellProteinList(UserPreferences userPreferences,AsynchProgressPopup pp, int mode) throws Exception{
+	public AsynchClientTask[] initCellProteinList(UserPreferences userPreferences, final int mode) {
 		this.userPreferences = userPreferences;
 		if(proteinCellcomboBox.getModel().getSize() > 0){
-			return;
+			return new AsynchClientTask[0];
 		}
-		  try {
-			  TreeSet<String[]> combinedTreeSet = null;
-			  
-			  switch(mode) {
-			  case modePslidExperimentalData:
-//			http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=target_cell_name
-				  TreeSet<String[]> sortedCellProteinTreeSet = readCellProteinListExperimental(pp);
-				  combinedTreeSet = new TreeSet<String[]>(sortedCellProteinTreeSet);
-				  break;
-			  case modePslidGeneratedModel:
-		      TreeSet<String[]> sortedGeneratedModelTreeSet = readCellProteinListGenerated(pp);
-		    		//new java.net.URL("http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=gen_model"),pp);
-	    			//new java.net.URL("http://pslid.cbi.cmu.edu/tcnp/return_xml_list.jsp?listtype=gen_model"),pp);
-		      combinedTreeSet = new TreeSet<String[]>(sortedGeneratedModelTreeSet);
-		      break;
-			  }
-	    	  sortedCellProtenV = new Vector<String[]>();
-		      proteinCellcomboBox.removeAllItems();
-		      Iterator<String[]> iter = combinedTreeSet.iterator();
-		      while(iter.hasNext()){
-		    	  String[] cellProteinPair = iter.next();
-		    	  sortedCellProtenV.add(cellProteinPair);
-//		    	  proteinCellcomboBox.addItem(cellProteinPair[0]+"_"+cellProteinPair[1]+"_"+cellProteinPair[2]);
-		    	  proteinCellcomboBox.addItem(cellProteinPair[0]+",  "+cellProteinPair[1]);
-		      }
-		      proteinCellcomboBox.setSelectedIndex(0);
-		  } catch (Exception e) {
-			  sortedCellProtenV = null;
-			  proteinCellcomboBox.removeAllItems();
-			  throw e;
-		  }
+		AsynchClientTask task1 = new AsynchClientTask("initializing cell protein list", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+			
+				  TreeSet<String[]> combinedTreeSet = null;
+				  
+				  switch(mode) {
+				  case modePslidExperimentalData:
+					  //	http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=target_cell_name
+					  TreeSet<String[]> sortedCellProteinTreeSet = readCellProteinListExperimental(getClientTaskStatusSupport());
+					  combinedTreeSet = new TreeSet<String[]>(sortedCellProteinTreeSet);
+					  break;
+				  case modePslidGeneratedModel:
+				      TreeSet<String[]> sortedGeneratedModelTreeSet = readCellProteinListGenerated(getClientTaskStatusSupport());
+				    		//new java.net.URL("http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=gen_model"),pp);
+			    			//new java.net.URL("http://pslid.cbi.cmu.edu/tcnp/return_xml_list.jsp?listtype=gen_model"),pp);
+				      combinedTreeSet = new TreeSet<String[]>(sortedGeneratedModelTreeSet);
+				      break;
+				  }
+				  hashTable.put("combinedTreeSet", combinedTreeSet);
+			}
+		};
+		AsynchClientTask task2 = new AsynchClientTask("initializing cell protein list", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+	
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+			
+				TreeSet<String[]> combinedTreeSet = (TreeSet<String[]>)hashTable.get("combinedTreeSet");
+				if (combinedTreeSet != null) {
+			    	  sortedCellProtenV = new Vector<String[]>();
+				      proteinCellcomboBox.removeAllItems();
+				      Iterator<String[]> iter = combinedTreeSet.iterator();
+				      while(iter.hasNext()){
+				    	  String[] cellProteinPair = iter.next();
+				    	  sortedCellProtenV.add(cellProteinPair);
+				    	  proteinCellcomboBox.addItem(cellProteinPair[0]+",  "+cellProteinPair[1]);
+				      }
+				      proteinCellcomboBox.setSelectedIndex(0);
+				  } else {
+					  sortedCellProtenV = null;
+					  proteinCellcomboBox.removeAllItems();
+				  }
+			}
+		};
+		
+		return new AsynchClientTask[] { task1, task2};
 	}
 
-	private TreeSet<String[]> readCellProteinListExperimental(AsynchProgressPopup pp) throws IOException{
+	private TreeSet<String[]> readCellProteinListExperimental(ClientTaskStatusSupport pp) throws IOException {
 		
 		  WebClientInterface wci;
-		  threadState = Thread.currentThread();
 		  wci = new WebClientInterface(thisPanel, userPreferences,pp);
 		  wci.requestCellProteinListExperimental();
 		  wci.handshake();
@@ -370,17 +380,15 @@ public class PSLIDPanel extends JPanel{
 				return null;
 			}
 		  
-		  org.jdom.Element element = cbit.util.xml.XmlUtil.stringToXML(wci.getDoc().toString(), null);
-		  org.vcell.cellml.JDOMTreeWalker jdtw = new org.vcell.cellml.JDOMTreeWalker(
-				element, new org.jdom.filter.Filter() {
-				public boolean matches(java.lang.Object obj) {
-				//System.out.println(obj);
-					if (obj instanceof org.jdom.Element
-							&& ((org.jdom.Element) obj).getName()
-							.equals("target_cell_name_result")) {
-						return true;
+		  Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null);
+		  JDOMTreeWalker jdtw = new JDOMTreeWalker(
+				element, new Filter() {
+					public boolean matches(Object obj) {
+					//System.out.println(obj);
+						if (obj instanceof Element && ((Element) obj).getName().equals("target_cell_name_result")) {
+							return true;
 						}
-					return false;
+						return false;
 					}
 				});
 		  TreeSet<String[]> sortedCellProteinTreeSet = new TreeSet<String[]>(
@@ -393,7 +401,7 @@ public class PSLIDPanel extends JPanel{
 					}
 				});
 		  while (jdtw.hasNext()) {
-			  org.jdom.Element ele = (org.jdom.Element) jdtw.next();
+			  Element ele = (Element) jdtw.next();
 			  String[] cellProteinPair = new String[] {
 					ele.getChild("cell_name").getTextTrim(),
 					ele.getChild("target").getTextTrim(),
@@ -404,25 +412,21 @@ public class PSLIDPanel extends JPanel{
 	}
 	
 	
-	private TreeSet<String[]> readCellProteinListGenerated(AsynchProgressPopup pp) throws IOException{
+	private TreeSet<String[]> readCellProteinListGenerated(ClientTaskStatusSupport pp) throws IOException{
 
-		WebClientInterface wci;
-		threadState = Thread.currentThread();
-		wci = new WebClientInterface(thisPanel, userPreferences,pp);
+		WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,pp);
 		wci.requestCellProteinListGenerated();
 		wci.handshake();
 		if(wci.isExpired()) {
 			System.out.println("Fetch request has expired");
 			return null;
 		}
-		org.jdom.Element element = cbit.util.xml.XmlUtil.stringToXML(wci.getDoc().toString(), null);
-		org.vcell.cellml.JDOMTreeWalker jdtw = new org.vcell.cellml.JDOMTreeWalker(
-					element, new org.jdom.filter.Filter() {
+		Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null);
+		JDOMTreeWalker jdtw = new JDOMTreeWalker(
+					element, new Filter() {
 						public boolean matches(java.lang.Object obj) {
 							//System.out.println(obj);
-							if (obj instanceof org.jdom.Element
-									&& ((org.jdom.Element) obj).getName()
-											.equals("gen_model_result")) {
+							if (obj instanceof org.jdom.Element && ((Element) obj).getName().equals("gen_model_result")) {
 								return true;
 							}
 							return false;
@@ -438,7 +442,7 @@ public class PSLIDPanel extends JPanel{
 						}
 					});
 		while (jdtw.hasNext()) {
-				org.jdom.Element ele = (org.jdom.Element) jdtw.next();
+				Element ele = (Element) jdtw.next();
 				String[] cellProteinPair = new String[] {
 						"Cell",
 						ele.getChild("gen_model").getTextTrim(),
@@ -478,141 +482,115 @@ public class PSLIDPanel extends JPanel{
 	}
 	
 	private void initExperimentalCellProteinImageInfo() {
-	
-		try{
-			int selectedIndex = proteinCellcomboBox.getSelectedIndex();
-			final String[] cell_proteinArr = sortedCellProtenV.elementAt(selectedIndex);
-	
-			final Thread[] pslidThread = new Thread[1];
-			final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
-			pp[0] =
-				new AsynchProgressPopup(
-					this,"Query PSLID ("+cell_proteinArr[0]+"/"+cell_proteinArr[1]+")","",Thread.currentThread(),true, true,
-					true,
-					new ProgressDialogListener(){
-						public void cancelButton_actionPerformed(EventObject newEvent) {
-							pp[0].stop();
-							pslidThread[0].interrupt();
-							stopThread();
-						}
-					}
-				);
-			SwingUtilities.invokeLater(new Runnable(){public void run() {pp[0].startKeepOnTop();}});
-			pslidThread[0] =
-				new Thread(
-					new Runnable(){
-						public void run() {
-	
-							java.io.InputStream is = null;
-							try {
-							    imageIDcomboBox.removeAllItems();
-							    imageID_ProteinImageURL_Hash = new TreeMap<Integer, String>();
-							    imageID_CompartmentImageURL_Hash = new TreeMap<Integer, String>();
-							    imageID_DimHash = new TreeMap<Integer, ISize>();
-							    imageID_PixelSizeHash = new TreeMap<Integer, Coordinate>();
-							    imageID_ProtocolTitle_Hash = new TreeMap<Integer, String>();
-							    imageID_MicroscopeName_Hash = new TreeMap<Integer, String>();
-							    
-								WebClientInterface wci;
-								threadState = Thread.currentThread();
-								wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
-								wci.requestProteinCellDetails(cell_proteinArr[PROTEIN_INDEX], cell_proteinArr[CELL_INDEX]);
-								wci.handshake();
-								if(wci.isExpired()) {
-									System.out.println("Fetch request has expired");
-									return;
-								}
+		int selectedIndex = proteinCellcomboBox.getSelectedIndex();
+		final String[] cell_proteinArr = sortedCellProtenV.elementAt(selectedIndex);
 
-							    org.jdom.Element element = cbit.util.xml.XmlUtil.stringToXML(wci.getDoc().toString(),null);
-							    org.vcell.cellml.JDOMTreeWalker jdtw =
-							    	  	new org.vcell.cellml.JDOMTreeWalker(element,
-							    			new org.jdom.filter.Filter(){
-												public boolean matches(java.lang.Object obj){
-													if(	obj instanceof org.jdom.Element &&
-														((org.jdom.Element)obj).getName().equals("search_result")){
-														return true;
-													}
-													return false;
-												}
-											}
-							    		);
-							      
-							    while(jdtw.hasNext()){
-							    	  org.jdom.Element ele = (org.jdom.Element)jdtw.next();
-							    	  String imageID = ele.getChild("image_id").getTextTrim();
-							    	  String imageURL = ele.getChild("image_url").getTextTrim();
-							    	  String proteinImageURL = ele.getChild("protein_image_url").getTextTrim();
-							    	  String compartmentImageURL = ele.getChild("compartment_image_url").getTextTrim();
-							    	  String regionMaskURL = ele.getChild("region_mask_url").getTextTrim();
-							    	  int xDim = new Integer(ele.getChild("x_dim").getTextTrim()).intValue();
-							    	  int yDim = new Integer(ele.getChild("y_dim").getTextTrim()).intValue();
-							    	  int zDim = new Integer(ele.getChild("z_dim").getTextTrim()).intValue();
-							    	  double xPixSize = new Double(ele.getChild("x_pixel_size").getTextTrim()).doubleValue();
-							    	  double yPixSize = new Double(ele.getChild("y_pixel_size").getTextTrim()).doubleValue();
-							    	  double zPixSize = new Double(ele.getChild("z_pixel_size").getTextTrim()).doubleValue();
-							    	  
-							    	  int stackPos = new Integer(ele.getChild("stack_pos").getTextTrim()).intValue();
-							    	  String cellName = ele.getChild("cell_name").getTextTrim();					// HeLa
-							    	  String cellOrganism = ele.getChild("cell_organism").getTextTrim();			// Homo Sapiens
-							    	  String target = ele.getChild("target").getTextTrim();							// LAMP2
-							    	  String segmenter = ele.getChild("segmenter").getTextTrim();
-							    	  String experimentTitle = ele.getChild("exp_title").getTextTrim();				// Hela-h4b4
-							    	  String experimentURL = ele.getChild("experiment_url").getTextTrim();
-							    	  String protocolTitle = ele.getChild("protocol_title").getTextTrim();			// Immunofluorescence Labelling of HeLa cells
-							    	  String protocolURL = ele.getChild("protocol_url").getTextTrim();
-							    	  String microscopeName = ele.getChild("microscope_name").getTextTrim();		// ZEISS AXIOVERT
-							    	  String microscopyFilter = ele.getChild("microscopy_filter_url").getTextTrim();
-							    	  
-							    	  imageID_ProteinImageURL_Hash.put(new Integer(imageID), proteinImageURL);
-							    	  imageID_ProteinImageURL_Hash.put(new Integer(imageID), proteinImageURL);
-							    	  imageID_CompartmentImageURL_Hash.put(new Integer(imageID), compartmentImageURL);
-							    	  imageID_DimHash.put(new Integer(imageID),new ISize(xDim,yDim,zDim));
-							    	  imageID_PixelSizeHash.put(new Integer(imageID),new Coordinate(xPixSize,yPixSize,zPixSize));
-							    	  imageID_ProtocolTitle_Hash.put(new Integer(imageID), protocolTitle);
-							    	  imageID_MicroscopeName_Hash.put(new Integer(imageID), microscopeName);
-					//		    	  System.out.println(imageID);
-					//		    	  System.out.println("  "+imageURL);
-					//		    	  System.out.println("  "+proteinImageURL);
-					//		    	  System.out.println("  "+compartmentImageURL);
-					//		    	  System.out.println("  "+regionMaskURL);
-					//		    	  System.out.println();
-							      }
-							      if(imageID_ProteinImageURL_Hash.size() == 0){
-							    	  throw new Exception("No Image entries found");
-							      }
-							      Set<Integer> idSet = imageID_ProteinImageURL_Hash.keySet();
-							      Iterator<Integer> idIter = idSet.iterator();
-							      while(idIter.hasNext()){
-							    	  imageIDcomboBox.addItem(idIter.next());
-							      }
-							      imageIDcomboBox.setSelectedIndex(0);
-							      lastQueriedPSLIDCellProteinSeries = proteinCellcomboBox.getSelectedItem();
-							} catch (Exception e) {
-								lastQueriedPSLIDCellProteinSeries = null;
-								  if(is != null){
-									  try{
-										  is.close();
-									  }catch(IOException e2){
-										  //do Nothing}
-									  }
-								  }
-								  pp[0].stop();
-								  if(!(e instanceof InterruptedException)){
-									  PopupGenerator.showErrorDialog("Error getting Image information for cell/protein pair\n"+
-										(cell_proteinArr!= null?"\""+cell_proteinArr[0]+"\"":"?")+"/"+(cell_proteinArr!= null?"\""+cell_proteinArr[1]+"\"":"?")+"\n"+
-										e.getMessage());
-								  }
-							}finally{
-								pp[0].stop();
-								guiState();
-							}
+		String taskName = "Query PSLID ("+cell_proteinArr[0]+"/"+cell_proteinArr[1]+")";
+		AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+
+				InputStream is = null;
+				try {				    
+				    imageID_ProteinImageURL_Hash = new TreeMap<Integer, String>();
+				    imageID_CompartmentImageURL_Hash = new TreeMap<Integer, String>();
+				    imageID_DimHash = new TreeMap<Integer, ISize>();
+				    imageID_PixelSizeHash = new TreeMap<Integer, Coordinate>();
+				    imageID_ProtocolTitle_Hash = new TreeMap<Integer, String>();
+				    imageID_MicroscopeName_Hash = new TreeMap<Integer, String>();
+				    
+					WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,getClientTaskStatusSupport());
+					wci.requestProteinCellDetails(cell_proteinArr[PROTEIN_INDEX], cell_proteinArr[CELL_INDEX]);
+					wci.handshake();
+					if(wci.isExpired()) {
+						System.out.println("Fetch request has expired");
+						return;
+					}
+
+				    Element element = XmlUtil.stringToXML(wci.getDoc().toString(),null);
+				    JDOMTreeWalker jdtw = new JDOMTreeWalker(element,
+				    			new Filter(){
+									public boolean matches(Object obj){
+										if(	obj instanceof Element &&
+											((Element)obj).getName().equals("search_result")){
+											return true;
+										}
+										return false;
+									}
+								}
+				    		);
+				      
+				    while(jdtw.hasNext()){
+				    	  org.jdom.Element ele = (org.jdom.Element)jdtw.next();
+				    	  String imageID = ele.getChild("image_id").getTextTrim();
+				    	  String imageURL = ele.getChild("image_url").getTextTrim();
+				    	  String proteinImageURL = ele.getChild("protein_image_url").getTextTrim();
+				    	  String compartmentImageURL = ele.getChild("compartment_image_url").getTextTrim();
+				    	  String regionMaskURL = ele.getChild("region_mask_url").getTextTrim();
+				    	  int xDim = new Integer(ele.getChild("x_dim").getTextTrim()).intValue();
+				    	  int yDim = new Integer(ele.getChild("y_dim").getTextTrim()).intValue();
+				    	  int zDim = new Integer(ele.getChild("z_dim").getTextTrim()).intValue();
+				    	  double xPixSize = new Double(ele.getChild("x_pixel_size").getTextTrim()).doubleValue();
+				    	  double yPixSize = new Double(ele.getChild("y_pixel_size").getTextTrim()).doubleValue();
+				    	  double zPixSize = new Double(ele.getChild("z_pixel_size").getTextTrim()).doubleValue();
+				    	  
+				    	  int stackPos = new Integer(ele.getChild("stack_pos").getTextTrim()).intValue();
+				    	  String cellName = ele.getChild("cell_name").getTextTrim();					// HeLa
+				    	  String cellOrganism = ele.getChild("cell_organism").getTextTrim();			// Homo Sapiens
+				    	  String target = ele.getChild("target").getTextTrim();							// LAMP2
+				    	  String segmenter = ele.getChild("segmenter").getTextTrim();
+				    	  String experimentTitle = ele.getChild("exp_title").getTextTrim();				// Hela-h4b4
+				    	  String experimentURL = ele.getChild("experiment_url").getTextTrim();
+				    	  String protocolTitle = ele.getChild("protocol_title").getTextTrim();			// Immunofluorescence Labelling of HeLa cells
+				    	  String protocolURL = ele.getChild("protocol_url").getTextTrim();
+				    	  String microscopeName = ele.getChild("microscope_name").getTextTrim();		// ZEISS AXIOVERT
+				    	  String microscopyFilter = ele.getChild("microscopy_filter_url").getTextTrim();
+				    	  
+				    	  imageID_ProteinImageURL_Hash.put(new Integer(imageID), proteinImageURL);
+				    	  imageID_ProteinImageURL_Hash.put(new Integer(imageID), proteinImageURL);
+				    	  imageID_CompartmentImageURL_Hash.put(new Integer(imageID), compartmentImageURL);
+				    	  imageID_DimHash.put(new Integer(imageID),new ISize(xDim,yDim,zDim));
+				    	  imageID_PixelSizeHash.put(new Integer(imageID),new Coordinate(xPixSize,yPixSize,zPixSize));
+				    	  imageID_ProtocolTitle_Hash.put(new Integer(imageID), protocolTitle);
+				    	  imageID_MicroscopeName_Hash.put(new Integer(imageID), microscopeName);
+				      }
+				      if(imageID_ProteinImageURL_Hash.size() == 0){
+				    	  throw new Exception("No Image entries found");
+				      }
+				} catch (Exception e) {
+					lastQueriedPSLIDCellProteinSeries = null;
+					 
+					throw new Exception("Error getting Image information for cell/protein pair\n"+
+							(cell_proteinArr!= null?"\""+cell_proteinArr[0]+"\"":"?")
+							+"/"+(cell_proteinArr!= null?"\""+cell_proteinArr[1]+"\"":"?")+"\n"+e.getMessage());
+				} finally {
+					if(is != null){
+						try {
+							is.close();
+						} catch(IOException e2) {
+							//do Nothing
 						}
 					}
-				);
-			pslidThread[0].start();
-		}catch(Exception e){
-			PopupGenerator.showErrorDialog(e.getMessage());
-		}
+				}
+			}
+		};
+		AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				imageIDcomboBox.removeAllItems();
+				Set<Integer> idSet = imageID_ProteinImageURL_Hash.keySet();
+				Iterator<Integer> idIter = idSet.iterator();
+				while(idIter.hasNext()){
+					imageIDcomboBox.addItem(idIter.next());
+				}
+				imageIDcomboBox.setSelectedIndex(0);
+				lastQueriedPSLIDCellProteinSeries = proteinCellcomboBox.getSelectedItem();
+				guiState();					
+			}
+		};
+		
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 }, false, true, null, true);		
 	}
 	
 	private void downloadPSLIDData(){
@@ -623,381 +601,345 @@ public class PSLIDPanel extends JPanel{
 			downloadExperimentalCellProteinData();
 		}
 	}
-
+	
 	// download generated image
 	private void downloadGeneratedCellProteinData(){
 
-		final Thread[] pslidThread = new Thread[1];
-		final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
-		pp[0] = new AsynchProgressPopup(this, "Downloading PSLID Image Set (generated)", "",Thread.currentThread(), true, true, true,
-				new ProgressDialogListener() {
-					public void cancelButton_actionPerformed(EventObject newEvent) {
-						pp[0].stop();
-						pslidThread[0].interrupt();
+		String taskName = "Downloading PSLID Image Set (generated)";
+		AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				InputStream is = null;
+				FileOutputStream fos = null;
+				try{
+				    imageID_ProteinImageURL_Hash = new TreeMap<Integer, String>();
+				    imageID_CompartmentImageURL_Hash = new TreeMap<Integer, String>();
+					final String baseURL1 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageGenURL_1);
+					final String baseURL2 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageGenURL_2);
+
+					URL generatedCellProteinImageURL =
+						new URL( baseURL1 + 	// "http://pslid.cbi.cmu.edu/tcnp/genmodel_TCNP.jsp?protset1="+
+							sortedCellProtenV.elementAt(proteinCellcomboBox.getSelectedIndex())[PROTEIN_INDEX]+
+							baseURL2);			// "&selectset2=using&settype=regionset&settitle=2d+region+set&task=genmodel&table=tblregion_Sets&setnum=2&multisel=0&next=Continue");
+
+					imageID_ProteinImageURL_Hash.put(new Integer(0), generatedCellProteinImageURL.toString());
+					imageID_CompartmentImageURL_Hash.put(new Integer(0),generatedCellProteinImageURL.toString());
+
+					WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,getClientTaskStatusSupport());
+					wci.requestImage(generatedCellProteinImageURL.toString());
+					wci.handshake();
+					if(wci.isExpired()) {
+						System.out.println("Fetch request has expired");
+						return;
 					}
-				});
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				pp[0].startKeepOnTop();
-			}
-		});
-		pslidThread[0] =
-			new Thread(
-				new Runnable() {
-					public void run() {
-						InputStream is = null;
-						FileOutputStream fos = null;
-						try{
-						    imageID_ProteinImageURL_Hash = new TreeMap<Integer, String>();
-						    imageID_CompartmentImageURL_Hash = new TreeMap<Integer, String>();
-							final String baseURL1 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageGenURL_1);
-							final String baseURL2 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageGenURL_2);
+			        File fileP = new File(wci.getDoc().toString());
+			        byte[] generatedCellProteinImage = WebClientInterface.getBytesFromFile(fileP);
+					
+					File generatedImageFile = File.createTempFile("pslidGenerated", ".tif");
+					generatedImageFile.deleteOnExit();
+					fos = new FileOutputStream(generatedImageFile);
+					fos.write(generatedCellProteinImage);
+					fos.close();
+					loci.formats.ImageReader generatedImageReader = new loci.formats.ImageReader();
+					loci.formats.IFormatReader generatedFormatReader = generatedImageReader.getReader(generatedImageFile.getAbsolutePath());
+					generatedFormatReader.setId(generatedImageFile.getAbsolutePath());
+					short[][] generatedChannels = AWTImageTools.getShorts(generatedFormatReader.openImage(0));
+					final int PROTEIN_CHANNEL = 1;
+					final int CELL_CHANNEL = 2;
+					final int NUCLEUS_CHANNEL = 0;
+					final int EXTRACELLULAR_PIXEL_VAL = 128;
+					final int CELL_PIXEL_VAL = 196;
+					final int NUCLEUS_PIXEL_VAL = 255;
+					short[] proteinShorts = generatedChannels[PROTEIN_CHANNEL];
+					short[] compartmentShorts = new short[proteinShorts.length];
+					for (int i = 0; i < compartmentShorts.length; i++) {
+						compartmentShorts[i] =
+							(generatedChannels[NUCLEUS_CHANNEL][i] != 0?(short)NUCLEUS_PIXEL_VAL:(generatedChannels[CELL_CHANNEL][i] != 0?(short)CELL_PIXEL_VAL:(short)0) );
+					}
+					int xsize_uncrop = generatedFormatReader.getSizeX();
+					int ysize_uncrop = generatedFormatReader.getSizeY();
 
-							URL generatedCellProteinImageURL =
-								new URL( baseURL1 + 	// "http://pslid.cbi.cmu.edu/tcnp/genmodel_TCNP.jsp?protset1="+
-									sortedCellProtenV.elementAt(proteinCellcomboBox.getSelectedIndex())[PROTEIN_INDEX]+
-									baseURL2);			// "&selectset2=using&settype=regionset&settitle=2d+region+set&task=genmodel&table=tblregion_Sets&setnum=2&multisel=0&next=Continue");
-
-							imageID_ProteinImageURL_Hash.put(new Integer(0), generatedCellProteinImageURL.toString());
-							imageID_CompartmentImageURL_Hash.put(new Integer(0),generatedCellProteinImageURL.toString());
-
-							WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
-							threadState = Thread.currentThread();
-							wci.requestImage(generatedCellProteinImageURL.toString());
-							wci.handshake();
-							if(wci.isExpired()) {
-								System.out.println("Fetch request has expired");
-								return;
+					//Fill
+					int MASTER_INDEX = 0;
+					int XINDEX = 1;
+					int YINDEX = 2;
+					compartmentShorts[0] = EXTRACELLULAR_PIXEL_VAL;
+					for(int i=0;i<3;i+= 1){
+						getClientTaskStatusSupport().setMessage("Filling "+(i==0?"outside":(i==1?"cell":"nucleus"))+" of Generated Cell/Protein Image)...");
+						short FILL_FLAG = (i==0?(short)EXTRACELLULAR_PIXEL_VAL:(i==1?(short)CELL_PIXEL_VAL:(short)NUCLEUS_PIXEL_VAL));
+						Vector<int[]> pendingChecks = new Vector<int[]>();
+						for (int j = 0; j < compartmentShorts.length; j++) {
+							if(compartmentShorts[j] == FILL_FLAG && compartmentShorts[j+1] == 0){
+								pendingChecks.add(new int[] {j,j%xsize_uncrop,j/xsize_uncrop});
+								break;
 							}
-					        File fileP = new File(wci.getDoc().toString());
-					        byte[] generatedCellProteinImage = WebClientInterface.getBytesFromFile(fileP);
-							
-							File generatedImageFile = File.createTempFile("pslidGenerated", ".tif");
-							generatedImageFile.deleteOnExit();
-							fos = new FileOutputStream(generatedImageFile);
-							fos.write(generatedCellProteinImage);
-							fos.close();
-							loci.formats.ImageReader generatedImageReader = new loci.formats.ImageReader();
-							loci.formats.IFormatReader generatedFormatReader = generatedImageReader.getReader(generatedImageFile.getAbsolutePath());
-							generatedFormatReader.setId(generatedImageFile.getAbsolutePath());
-							short[][] generatedChannels = AWTImageTools.getShorts(generatedFormatReader.openImage(0));
-							final int PROTEIN_CHANNEL = 1;
-							final int CELL_CHANNEL = 2;
-							final int NUCLEUS_CHANNEL = 0;
-							final int EXTRACELLULAR_PIXEL_VAL = 128;
-							final int CELL_PIXEL_VAL = 196;
-							final int NUCLEUS_PIXEL_VAL = 255;
-							short[] proteinShorts = generatedChannels[PROTEIN_CHANNEL];
-							short[] compartmentShorts = new short[proteinShorts.length];
-							for (int i = 0; i < compartmentShorts.length; i++) {
-								compartmentShorts[i] =
-									(generatedChannels[NUCLEUS_CHANNEL][i] != 0?(short)NUCLEUS_PIXEL_VAL:(generatedChannels[CELL_CHANNEL][i] != 0?(short)CELL_PIXEL_VAL:(short)0) );
-							}
-							int xsize_uncrop = generatedFormatReader.getSizeX();
-							int ysize_uncrop = generatedFormatReader.getSizeY();
-
-							//Fill
-							int MASTER_INDEX = 0;
-							int XINDEX = 1;
-							int YINDEX = 2;
-							compartmentShorts[0] = EXTRACELLULAR_PIXEL_VAL;
-							for(int i=0;i<3;i+= 1){
-								pp[0].setMessage("Filling "+(i==0?"outside":(i==1?"cell":"nucleus"))+" of Generated Cell/Protein Image)...");
-								short FILL_FLAG = (i==0?(short)EXTRACELLULAR_PIXEL_VAL:(i==1?(short)CELL_PIXEL_VAL:(short)NUCLEUS_PIXEL_VAL));
-								Vector<int[]> pendingChecks = new Vector<int[]>();
-								for (int j = 0; j < compartmentShorts.length; j++) {
-									if(compartmentShorts[j] == FILL_FLAG && compartmentShorts[j+1] == 0){
-										pendingChecks.add(new int[] {j,j%xsize_uncrop,j/xsize_uncrop});
-										break;
-									}
-								}
-								while(pendingChecks.size() > 0){
-									int[] data = pendingChecks.remove(0);
-										if(data[XINDEX]-1 >= 0 && compartmentShorts[data[MASTER_INDEX]-1] == 0){
-											pendingChecks.add(new int[] {data[MASTER_INDEX]-1,data[XINDEX]-1,data[YINDEX]});
-											compartmentShorts[data[MASTER_INDEX]-1] = FILL_FLAG;
-										}
-										if(data[YINDEX]-1 >= 0 && compartmentShorts[data[MASTER_INDEX]-xsize_uncrop] == 0){
-											pendingChecks.add(new int[] {data[MASTER_INDEX]-xsize_uncrop,data[XINDEX],data[YINDEX]-1});
-											compartmentShorts[data[MASTER_INDEX]-xsize_uncrop] = FILL_FLAG;
-										}
-										if(data[XINDEX]+1 < xsize_uncrop && compartmentShorts[data[MASTER_INDEX]+1] == 0){
-											pendingChecks.add(new int[] {data[MASTER_INDEX]+1,data[XINDEX]+1,data[YINDEX]});
-											compartmentShorts[data[MASTER_INDEX]+1] = FILL_FLAG;
-										}
-										if(data[YINDEX]+1 < ysize_uncrop && compartmentShorts[data[MASTER_INDEX]+xsize_uncrop] == 0){
-											pendingChecks.add(new int[] {data[MASTER_INDEX]+xsize_uncrop,data[XINDEX],data[YINDEX]+1});
-											compartmentShorts[data[MASTER_INDEX]+xsize_uncrop] = FILL_FLAG;
-										}
-								}
-							}
-							
-//							BufferedImage tempProtImage = ImageTools.makeImage(proteinShorts,xsize_uncrop,ysize_uncrop);
-//							tempProtImage = ImageTools.scale2D(tempProtImage, xsize_uncrop/2, ysize_uncrop/2, Image.SCALE_REPLICATE,tempProtImage.getColorModel());
-//							proteinShorts = ImageTools.getShorts(tempProtImage)[0];
-//							BufferedImage tempCompImage = ImageTools.makeImage(compartmentShorts,xsize_uncrop,ysize_uncrop);
-//							tempCompImage = ImageTools.scale2D(tempCompImage, xsize_uncrop/2, ysize_uncrop/2, Image.SCALE_REPLICATE,tempCompImage.getColorModel());
-//							compartmentShorts = ImageTools.getShorts(tempCompImage)[0];
-//							xsize_uncrop = tempCompImage.getWidth();
-//							ysize_uncrop = tempCompImage.getHeight();
-							//Scale
-							int scaleIndex = 0;
-							short[] proteinScaleShorts = new short[xsize_uncrop/2 * ysize_uncrop/2];
-							short[] compartmentScaleShorts = new short[proteinScaleShorts.length];
-							for (int y = 0; y < ysize_uncrop; y+= 2) {
-								for (int x = 0; x < xsize_uncrop; x+= 2) {
-									proteinScaleShorts[scaleIndex] = proteinShorts[y*xsize_uncrop+x];
-									compartmentScaleShorts[scaleIndex] = compartmentShorts[y*xsize_uncrop+x];
-									scaleIndex++;
-								}
-							}
-							proteinShorts = proteinScaleShorts;
-							compartmentShorts = compartmentScaleShorts;
-							xsize_uncrop = xsize_uncrop/2;
-							ysize_uncrop = ysize_uncrop/2;
-							
-							
-							//Min Bounding
-							int minx = xsize_uncrop;
-							int miny = ysize_uncrop;
-							int maxx = 0;
-							int maxy = 0;
-							for (int i = 0; i < compartmentShorts.length; i++) {
-								if(compartmentShorts[i] == CELL_PIXEL_VAL){
-									minx = Math.min(minx,i%xsize_uncrop);
-									miny = Math.min(miny,i/xsize_uncrop);
-									maxx = Math.max(maxx,i%xsize_uncrop);
-									maxy = Math.max(maxy,i/xsize_uncrop);
-								}
-							}
-							//Pad
-							minx = Math.max(minx-3,0);
-							miny = Math.max(miny-3,0);
-							maxx = Math.min(maxx+3,xsize_uncrop);
-							maxy = Math.min(maxy+3,ysize_uncrop);
-							//Crop
-							int cropIndex = 0;
-							short[] proteinCropShorts = new short[(maxx-minx+1) * (maxy-miny+1)];
-							short[] compartmentCropShorts = new short[proteinCropShorts.length];
-							for (int y = 0; y < ysize_uncrop; y++) {
-								for (int x = 0; x < xsize_uncrop; x++) {
-									if(y>= miny && y<= maxy && x>= minx && x <= maxx){
-										proteinCropShorts[cropIndex] = proteinShorts[y*xsize_uncrop+x];
-										compartmentCropShorts[cropIndex] = compartmentShorts[y*xsize_uncrop+x];
-										cropIndex++;
-									}
-								}
-							}
-							final int xsize = maxx-minx+1;
-							final int ysize = maxy-miny+1;
-							
-							FieldDataFileOperationSpec fdos_composite = new FieldDataFileOperationSpec();
-							fdos_composite.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME };
-							fdos_composite.varNames = new String[] { "protein_"+"generated","compartment_"+"generated" };
-							fdos_composite.shortSpecData = new short[][][] {{proteinCropShorts,compartmentCropShorts}};
-							fdos_composite.times = new double[] { 0 };
-							fdos_composite.origin = new Origin(0,0,0);
-							fdos_composite.extent = new Extent(10,10,.5);
-							fdos_composite.isize = new ISize(xsize,ysize,1);
-							fdos_composite.annotation = "Protocol: ";
-							selectedFDOS = fdos_composite;
-							
-							SwingUtilities.invokeLater(new Runnable(){
-								public void run() {
-									xsizeLabel_1.setText(xsize+"");
-									ysizeLabel_1.setText(ysize+"");
-									zsizeLabel_1.setText(1+"");
-								}});
-							//Make Display Image
-							proteinDisplayImage =
-								new java.awt.image.BufferedImage(xsize,ysize,java.awt.image.BufferedImage.TYPE_INT_ARGB);
-							compartmentDisplayImage =
-								new java.awt.image.BufferedImage(xsize,ysize,java.awt.image.BufferedImage.TYPE_INT_ARGB);
-							int index=0;
-							for (int y = 0; y < ysize; y++) {
-								for (int x = 0; x < xsize; x++) {
-									proteinDisplayImage.setRGB(x, y, 0xFF000000 |
-											(0x000000FF & proteinCropShorts[index]) |
-											(0x0000FF00 & proteinCropShorts[index]<<8) |
-											(0x00FF0000 & proteinCropShorts[index]<<16)
-									);
-									compartmentDisplayImage.setRGB(x, y, 0xFF000000 |
-											//(0x00FF0000 & compartmentCropShorts[index]<<16)
-											(compartmentCropShorts[index] == EXTRACELLULAR_PIXEL_VAL?0x00000000:0x00000000) |
-											(compartmentCropShorts[index] == CELL_PIXEL_VAL?0x00FF0000:0x00000000) |
-											(compartmentCropShorts[index] == NUCLEUS_PIXEL_VAL?0x0000FF00:0x00000000)
-									);
-									index+= 1;
-								}
-							}
-							lastDownloadedImageSetID = imageIDcomboBox.getSelectedItem();
-							
-						} catch (Exception e) {
-							lastDownloadedImageSetID = null;
-							pp[0].stop();
-							e.printStackTrace();
-							if (!(e instanceof InterruptedException)) {
-								PopupGenerator.showErrorDialog(
-									"Error downloading PSLID Image Set (generated).\n"
-									+ e.getMessage());
-							}
-						} finally {
-							if(is != null){try{is.close();}catch(Exception e){}}
-							if(fos != null){try{fos.close();}catch(Exception e){}}
-							pp[0].stop();
-							guiState();
-							getProteinRadioButton().doClick();
 						}
-
+						while(pendingChecks.size() > 0){
+							int[] data = pendingChecks.remove(0);
+								if(data[XINDEX]-1 >= 0 && compartmentShorts[data[MASTER_INDEX]-1] == 0){
+									pendingChecks.add(new int[] {data[MASTER_INDEX]-1,data[XINDEX]-1,data[YINDEX]});
+									compartmentShorts[data[MASTER_INDEX]-1] = FILL_FLAG;
+								}
+								if(data[YINDEX]-1 >= 0 && compartmentShorts[data[MASTER_INDEX]-xsize_uncrop] == 0){
+									pendingChecks.add(new int[] {data[MASTER_INDEX]-xsize_uncrop,data[XINDEX],data[YINDEX]-1});
+									compartmentShorts[data[MASTER_INDEX]-xsize_uncrop] = FILL_FLAG;
+								}
+								if(data[XINDEX]+1 < xsize_uncrop && compartmentShorts[data[MASTER_INDEX]+1] == 0){
+									pendingChecks.add(new int[] {data[MASTER_INDEX]+1,data[XINDEX]+1,data[YINDEX]});
+									compartmentShorts[data[MASTER_INDEX]+1] = FILL_FLAG;
+								}
+								if(data[YINDEX]+1 < ysize_uncrop && compartmentShorts[data[MASTER_INDEX]+xsize_uncrop] == 0){
+									pendingChecks.add(new int[] {data[MASTER_INDEX]+xsize_uncrop,data[XINDEX],data[YINDEX]+1});
+									compartmentShorts[data[MASTER_INDEX]+xsize_uncrop] = FILL_FLAG;
+								}
+						}
 					}
+					
+					//Scale
+					int scaleIndex = 0;
+					short[] proteinScaleShorts = new short[xsize_uncrop/2 * ysize_uncrop/2];
+					short[] compartmentScaleShorts = new short[proteinScaleShorts.length];
+					for (int y = 0; y < ysize_uncrop; y+= 2) {
+						for (int x = 0; x < xsize_uncrop; x+= 2) {
+							proteinScaleShorts[scaleIndex] = proteinShorts[y*xsize_uncrop+x];
+							compartmentScaleShorts[scaleIndex] = compartmentShorts[y*xsize_uncrop+x];
+							scaleIndex++;
+						}
+					}
+					proteinShorts = proteinScaleShorts;
+					compartmentShorts = compartmentScaleShorts;
+					xsize_uncrop = xsize_uncrop/2;
+					ysize_uncrop = ysize_uncrop/2;
+					
+					
+					//Min Bounding
+					int minx = xsize_uncrop;
+					int miny = ysize_uncrop;
+					int maxx = 0;
+					int maxy = 0;
+					for (int i = 0; i < compartmentShorts.length; i++) {
+						if(compartmentShorts[i] == CELL_PIXEL_VAL){
+							minx = Math.min(minx,i%xsize_uncrop);
+							miny = Math.min(miny,i/xsize_uncrop);
+							maxx = Math.max(maxx,i%xsize_uncrop);
+							maxy = Math.max(maxy,i/xsize_uncrop);
+						}
+					}
+					//Pad
+					minx = Math.max(minx-3,0);
+					miny = Math.max(miny-3,0);
+					maxx = Math.min(maxx+3,xsize_uncrop);
+					maxy = Math.min(maxy+3,ysize_uncrop);
+					//Crop
+					int cropIndex = 0;
+					short[] proteinCropShorts = new short[(maxx-minx+1) * (maxy-miny+1)];
+					short[] compartmentCropShorts = new short[proteinCropShorts.length];
+					for (int y = 0; y < ysize_uncrop; y++) {
+						for (int x = 0; x < xsize_uncrop; x++) {
+							if(y>= miny && y<= maxy && x>= minx && x <= maxx){
+								proteinCropShorts[cropIndex] = proteinShorts[y*xsize_uncrop+x];
+								compartmentCropShorts[cropIndex] = compartmentShorts[y*xsize_uncrop+x];
+								cropIndex++;
+							}
+						}
+					}
+					final int xsize = maxx-minx+1;
+					final int ysize = maxy-miny+1;
+					
+					FieldDataFileOperationSpec fdos_composite = new FieldDataFileOperationSpec();
+					fdos_composite.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME };
+					fdos_composite.varNames = new String[] { "protein_"+"generated","compartment_"+"generated" };
+					fdos_composite.shortSpecData = new short[][][] {{proteinCropShorts,compartmentCropShorts}};
+					fdos_composite.times = new double[] { 0 };
+					fdos_composite.origin = new Origin(0,0,0);
+					fdos_composite.extent = new Extent(10,10,.5);
+					fdos_composite.isize = new ISize(xsize,ysize,1);
+					fdos_composite.annotation = "Protocol: ";
+					selectedFDOS = fdos_composite;
+					
+					hashTable.put("isize", fdos_composite.isize);
+					
+					//Make Display Image
+					proteinDisplayImage =
+						new java.awt.image.BufferedImage(xsize,ysize,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+					compartmentDisplayImage =
+						new java.awt.image.BufferedImage(xsize,ysize,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+					int index=0;
+					for (int y = 0; y < ysize; y++) {
+						for (int x = 0; x < xsize; x++) {
+							proteinDisplayImage.setRGB(x, y, 0xFF000000 |
+									(0x000000FF & proteinCropShorts[index]) |
+									(0x0000FF00 & proteinCropShorts[index]<<8) |
+									(0x00FF0000 & proteinCropShorts[index]<<16)
+							);
+							compartmentDisplayImage.setRGB(x, y, 0xFF000000 |
+									//(0x00FF0000 & compartmentCropShorts[index]<<16)
+									(compartmentCropShorts[index] == EXTRACELLULAR_PIXEL_VAL?0x00000000:0x00000000) |
+									(compartmentCropShorts[index] == CELL_PIXEL_VAL?0x00FF0000:0x00000000) |
+									(compartmentCropShorts[index] == NUCLEUS_PIXEL_VAL?0x0000FF00:0x00000000)
+							);
+							index+= 1;
+						}
+					}
+					lastDownloadedImageSetID = imageIDcomboBox.getSelectedItem();
+					
+				} catch (Exception e) {
+					lastDownloadedImageSetID = null;
+					e.printStackTrace();
+					throw new Exception("Error downloading PSLID Image Set (generated).\n" + e.getMessage());					
+				} finally {
+					if(is != null){
+						try {
+							is.close();
+						} catch(Exception e){
+							
+						}
+					}
+					if(fos != null){
+						try {
+							fos.close();
+						} catch(Exception e){
+							
+						}
+					}					
 				}
-			);
-		pslidThread[0].start();
+
+			}
+		};
+		
+		AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ISize isize = (ISize)hashTable.get("isize");
+				xsizeLabel_1.setText(isize.getX()+"");
+				ysizeLabel_1.setText(isize.getY()+"");
+				zsizeLabel_1.setText(isize.getZ()+"");
+				
+				guiState();
+				getProteinRadioButton().doClick();
+			}
+		};
+		
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 }, false, true, null, true);
 	}
+
+	
 	
 	private void downloadExperimentalCellProteinData() {
 
-try {
-	final Integer selectedImageSet = (Integer)imageIDcomboBox.getSelectedItem();
-//	final URL pslidProteinImageURL = new URL(imageID_ProteinImageURL_Hash.get(selectedImageSet));
-//	final URL pslidCompartmentImageURL = new URL(imageID_CompartmentImageURL_Hash.get(selectedImageSet));
-	final ISize pslidImageDim = imageID_DimHash.get(selectedImageSet);
-	final Thread[] pslidThread = new Thread[1];
-	final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
-	pp[0] = new AsynchProgressPopup(this, "Downloading PSLID Image Set ("
-			+ imageIDcomboBox.getSelectedItem() + ")", "",Thread.currentThread(), true, true, true,
-			new ProgressDialogListener() {
-				public void cancelButton_actionPerformed(EventObject newEvent) {
-					pp[0].stop();
-					pslidThread[0].interrupt();
-				}
-			});
-	SwingUtilities.invokeLater(new Runnable() {
-		public void run() {
-			pp[0].startKeepOnTop();
-		}
-	});
-	pslidThread[0] = new Thread(new Runnable() {
-		public void run() {
+		final Integer selectedImageSet = (Integer)imageIDcomboBox.getSelectedItem();
+	//	final URL pslidProteinImageURL = new URL(imageID_ProteinImageURL_Hash.get(selectedImageSet));
+	//	final URL pslidCompartmentImageURL = new URL(imageID_CompartmentImageURL_Hash.get(selectedImageSet));
+//			final ISize pslidImageDim = imageID_DimHash.get(selectedImageSet);
+		String taskName = "Downloading PSLID Image Set (" + imageIDcomboBox.getSelectedItem() + ")";
+		AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
-			InputStream is = null;		
-			try {
-				WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
-				threadState = Thread.currentThread();
-				wci.requestImage(imageID_ProteinImageURL_Hash.get(selectedImageSet));
-				wci.handshake();
-				if(wci.isExpired()) {
-					System.out.println("Fetch request has expired");
-					return;
-				}
-		        File fileP = new File(wci.getDoc().toString());
-		        byte[] selectedProteinImage = WebClientInterface.getBytesFromFile(fileP);
-		        
-				wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
-				threadState = Thread.currentThread();
-				wci.requestImage(imageID_CompartmentImageURL_Hash.get(selectedImageSet));
-				wci.handshake();
-				if(wci.isExpired()) {
-					System.out.println("Fetch request has expired");
-					return;
-				}
-				File fileC = new File(wci.getDoc().toString());
-		        byte[] selectedCompartmentImage = WebClientInterface.getBytesFromFile(fileC);
-				
-//				ISize isize = imageID_DimHash.get(imageIDcomboBox.getSelectedItem());
-				Coordinate pixelSizes = imageID_PixelSizeHash.get(imageIDcomboBox.getSelectedItem());
-				
-				final String[] cell_proteinArr = sortedCellProtenV.elementAt(proteinCellcomboBox.getSelectedIndex());
-				final FieldDataFileOperationSpec fdos =
-					PSLIDPanel.createCompositeFDOS(selectedProteinImage, selectedCompartmentImage,
-							pixelSizes,cell_proteinArr[0]+"_"+cell_proteinArr[1]+"_"+selectedImageSet.toString());
-				
-				String protocolTitle = imageID_ProtocolTitle_Hash.get(imageIDcomboBox.getSelectedItem());
-				String microscopeName = imageID_MicroscopeName_Hash.get(imageIDcomboBox.getSelectedItem());
-				fdos.annotation = "Protocol: " + protocolTitle + '\n' + "Microscope Name: "+ microscopeName;
-				selectedFDOS = fdos;
-				
-				proteinDisplayImage =
-					new java.awt.image.BufferedImage(fdos.isize.getX(),fdos.isize.getY(),java.awt.image.BufferedImage.TYPE_INT_ARGB);
-				compartmentDisplayImage =
-					new java.awt.image.BufferedImage(fdos.isize.getX(),fdos.isize.getY(),java.awt.image.BufferedImage.TYPE_INT_ARGB);
-//				final ImageIcon imageIcon = new ImageIcon(proteinDisplayImage);
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {			
 
-				int index = 0;
-				double minProt = fdos.shortSpecData[0][0][0];
-				double maxProt = minProt;
-				double minComp = fdos.shortSpecData[0][1][0];
-				double maxComp = minComp;
-				for (int y = 0; y < fdos.isize.getY(); y++) {
-					for (int x = 0; x < fdos.isize.getX(); x++) {
-						minProt = Math.min(minProt,fdos.shortSpecData[0][0][index]);
-						maxProt = Math.max(maxProt,fdos.shortSpecData[0][0][index]);
-						minComp = Math.min(minComp,fdos.shortSpecData[0][1][index]);
-						maxComp = Math.max(maxComp,fdos.shortSpecData[0][1][index]);
-						index+= 1;
+				InputStream is = null;		
+				try {
+					WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences, getClientTaskStatusSupport());
+					wci.requestImage(imageID_ProteinImageURL_Hash.get(selectedImageSet));
+					wci.handshake();
+					if(wci.isExpired()) {
+						System.out.println("Fetch request has expired");
+						return;
+					}
+			        File fileP = new File(wci.getDoc().toString());
+			        byte[] selectedProteinImage = WebClientInterface.getBytesFromFile(fileP);
+			        
+					wci = new WebClientInterface(thisPanel, userPreferences,getClientTaskStatusSupport());
+					wci.requestImage(imageID_CompartmentImageURL_Hash.get(selectedImageSet));
+					wci.handshake();
+					if(wci.isExpired()) {
+						System.out.println("Fetch request has expired");
+						return;
+					}
+					File fileC = new File(wci.getDoc().toString());
+			        byte[] selectedCompartmentImage = WebClientInterface.getBytesFromFile(fileC);
+					
+					Coordinate pixelSizes = imageID_PixelSizeHash.get(imageIDcomboBox.getSelectedItem());
+					
+					final String[] cell_proteinArr = sortedCellProtenV.elementAt(proteinCellcomboBox.getSelectedIndex());
+					final FieldDataFileOperationSpec fdos = createCompositeFDOS(selectedProteinImage, selectedCompartmentImage,
+								pixelSizes,cell_proteinArr[0]+"_"+cell_proteinArr[1]+"_"+selectedImageSet.toString());
+					
+					String protocolTitle = imageID_ProtocolTitle_Hash.get(imageIDcomboBox.getSelectedItem());
+					String microscopeName = imageID_MicroscopeName_Hash.get(imageIDcomboBox.getSelectedItem());
+					fdos.annotation = "Protocol: " + protocolTitle + '\n' + "Microscope Name: "+ microscopeName;
+					selectedFDOS = fdos;
+					
+					proteinDisplayImage = new BufferedImage(fdos.isize.getX(),fdos.isize.getY(),BufferedImage.TYPE_INT_ARGB);
+					compartmentDisplayImage = new BufferedImage(fdos.isize.getX(),fdos.isize.getY(),BufferedImage.TYPE_INT_ARGB);
+	
+					int index = 0;
+					double minProt = fdos.shortSpecData[0][0][0];
+					double maxProt = minProt;
+					double minComp = fdos.shortSpecData[0][1][0];
+					double maxComp = minComp;
+					for (int y = 0; y < fdos.isize.getY(); y++) {
+						for (int x = 0; x < fdos.isize.getX(); x++) {
+							minProt = Math.min(minProt,fdos.shortSpecData[0][0][index]);
+							maxProt = Math.max(maxProt,fdos.shortSpecData[0][0][index]);
+							minComp = Math.min(minComp,fdos.shortSpecData[0][1][index]);
+							maxComp = Math.max(maxComp,fdos.shortSpecData[0][1][index]);
+							index+= 1;
+						}
+					}
+					
+					//System.out.println(minProt+" "+maxProt+" "+minComp+" "+maxComp);
+					double diff = (double)(maxProt-minProt);
+					index = 0;
+					int[] compValues = new int[]{0xFF000000,0xFFFF0000,0xFF00FF00};
+					for (int y = 0; y < fdos.isize.getY(); y++) {
+						for (int x = 0; x < fdos.isize.getX(); x++) {
+							double scaleVal =
+								(diff == 0?(double)fdos.shortSpecData[0][0][index]:((double)fdos.shortSpecData[0][0][index]-minProt)/diff*255.0);
+							short protVal = (short)scaleVal;//fdos.shortSpecData[0][0][index];
+							proteinDisplayImage.setRGB(x, y, 0xFF000000 |
+									(0x000000FF & protVal) |
+									(0x0000FF00 & protVal<<8) |
+									(0x00FF0000 & protVal<<16)
+							);
+							compartmentDisplayImage.setRGB(x, y,compValues[fdos.shortSpecData[0][1][index]]);//0xFF000000 | (0x00FFFF00 & (fdos.shortSpecData[0][1][index]<<8)));
+							index+= 1;
+						}
+					}
+	
+					lastDownloadedImageSetID = imageIDcomboBox.getSelectedItem();
+				} catch (Exception e) {
+					lastDownloadedImageSetID = null;
+					e.printStackTrace();
+					if (!(e instanceof InterruptedException)) {
+						throw new Exception("Error downloading PSLID Image Set ("+selectedImageSet+").\n" + e.getMessage());
+					}
+				} finally {
+					if (is != null){
+						try {
+							is.close();
+						} catch(Exception e){
+							
+						}
 					}
 				}
-				
-				//System.out.println(minProt+" "+maxProt+" "+minComp+" "+maxComp);
-				double diff = (double)(maxProt-minProt);
-				index = 0;
-				int[] compValues = new int[]{0xFF000000,0xFFFF0000,0xFF00FF00};
-				for (int y = 0; y < fdos.isize.getY(); y++) {
-					for (int x = 0; x < fdos.isize.getX(); x++) {
-						double scaleVal =
-							(diff == 0?(double)fdos.shortSpecData[0][0][index]:((double)fdos.shortSpecData[0][0][index]-minProt)/diff*255.0);
-						short protVal = (short)scaleVal;//fdos.shortSpecData[0][0][index];
-						proteinDisplayImage.setRGB(x, y, 0xFF000000 |
-								(0x000000FF & protVal) |
-								(0x0000FF00 & protVal<<8) |
-								(0x00FF0000 & protVal<<16)
-						);
-						compartmentDisplayImage.setRGB(x, y,compValues[fdos.shortSpecData[0][1][index]]);//0xFF000000 | (0x00FFFF00 & (fdos.shortSpecData[0][1][index]<<8)));
-						index+= 1;
-					}
-				}
-
-//				SwingUtilities.invokeLater(new Runnable(){
-//				public void run() {
-//					scrollPane.setViewportView(new JLabel(imageIcon));
-//				}});
-				
-//				Image image = Toolkit.getDefaultToolkit().createImage(imageBytes);
-//				final ImageIcon imageIcon = new ImageIcon(image);
-//				SwingUtilities.invokeLater(new Runnable(){
-//					public void run() {
-//						scrollPane.setViewportView(new JLabel(imageIcon));
-//					}});
-				lastDownloadedImageSetID = imageIDcomboBox.getSelectedItem();
-			} catch (Exception e) {
-				lastDownloadedImageSetID = null;
-				pp[0].stop();
-				e.printStackTrace();
-				if (!(e instanceof InterruptedException)) {
-					PopupGenerator
-							.showErrorDialog("Error downloading PSLID Image Set ("+selectedImageSet+").\n"
-									+ e.getMessage());
-				}
-			} finally {
-				if(is != null){try{is.close();}catch(Exception e){}}
-				pp[0].stop();
+			}
+		};
+		AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				guiState();
 				getProteinRadioButton().doClick();
 				if(selectedFDOS != null){
-					SwingUtilities.invokeLater(new Runnable(){
-						public void run() {
-							xsizeLabel_1.setText(selectedFDOS.isize.getX()+"");
-							ysizeLabel_1.setText(selectedFDOS.isize.getY()+"");
-							zsizeLabel_1.setText(selectedFDOS.isize.getZ()+"");
-					}});
+					xsizeLabel_1.setText(selectedFDOS.isize.getX()+"");
+					ysizeLabel_1.setText(selectedFDOS.isize.getY()+"");
+					zsizeLabel_1.setText(selectedFDOS.isize.getZ()+"");
 				}
 			}
-		}
-	});
-	pslidThread[0].start();
-} catch (Exception e) {
-		PopupGenerator.showErrorDialog("Error downloading\n"+e.getMessage());
-}
+		};
+		
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 }, false, true, null, true);
 	}
 	
 	
@@ -1233,7 +1175,7 @@ try {
 			proteinRadioButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					if(getProteinRadioButton().isSelected()){
-						SwingUtilities.invokeLater(new Runnable(){public void run() {scrollPane.setViewportView(new JLabel(new ImageIcon(proteinDisplayImage)));}});
+						scrollPane.setViewportView(new JLabel(new ImageIcon(proteinDisplayImage)));
 					}
 				}
 			});
@@ -1260,7 +1202,7 @@ try {
 			compartmentRadioButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					if(getCompartmentRadioButton().isSelected()){
-						SwingUtilities.invokeLater(new Runnable(){public void run() {scrollPane.setViewportView(new JLabel(new ImageIcon(compartmentDisplayImage)));}});
+						scrollPane.setViewportView(new JLabel(new ImageIcon(compartmentDisplayImage)));
 					}
 				}
 			});
