@@ -3,6 +3,7 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.Constant;
 import cbit.vcell.parser.Expression;
 /**
@@ -413,20 +414,7 @@ public void setValueAt(Object object, int r, int c) {
 			}
 		}
 	} catch (Throwable exc) {
-		// we do it this way so that we properly deal with duplicate events
-		class Runner implements Runnable {
-			private String message = "";
-			public void setMessage(String newMessage) {
-				message = newMessage;
-			}
-			public void run() {
-				cbit.vcell.client.PopupGenerator.showErrorDialog(message + "\nOld value was restored.");
-			}
-		};
-		Runner rr = new Runner();
-		rr.setMessage(exc.getMessage());
-		javax.swing.SwingUtilities.invokeLater(rr);
-		
+		PopupGenerator.showErrorDialog(exc.getMessage() + "\nOld value was restored.");		
 	}
 }
 

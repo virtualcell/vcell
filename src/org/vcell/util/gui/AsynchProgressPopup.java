@@ -55,7 +55,7 @@ public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskS
 	
 	boolean bInterrupted = false;
 	
-	static abstract class SwingDispatcherAsync {
+	private static abstract class SwingDispatcherAsync {
 		
 		public abstract void runSwing();
 		public abstract void handleException(Throwable ex);

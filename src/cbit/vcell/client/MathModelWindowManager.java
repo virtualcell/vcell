@@ -1,18 +1,23 @@
 package cbit.vcell.client;
 
 import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.*;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.mathmodel.*;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import java.util.Hashtable;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
@@ -83,9 +88,9 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 	 */
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	
-	if(e.getSource() instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer && e.getActionCommand().equals("Open Geometry")){
+	if(e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Open Geometry")){
 		//KeyValue geometryKey = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry().getVersion().getVersionKey();
-		openGeometryDocumentWindow(((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry());
+		openGeometryDocumentWindow(((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry());
 	}
 
 	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Change Geometry...")) {
@@ -96,38 +101,17 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		if(getMathModel() != null && getMathModel().getMathDescription() != null &&
 			getMathModel().getMathDescription().getGeometry() != null &&
 			getMathModel().getMathDescription().getGeometry().getGeometrySurfaceDescription() != null &&
-			(	surfaceViewer.getGeometry() == null || 
+			(surfaceViewer.getGeometry() == null || 
 				getMathModel().getMathDescription().getGeometry().getGeometrySurfaceDescription().getSurfaceCollection() == null)){
-			//Thread surfThread =
-			//new Thread(
-				//new Runnable (){
-					//public void run(){
-						try{
-							final cbit.vcell.geometry.Geometry geom = getMathModel().getMathDescription().getGeometry();
-							//SwingUtilities.invokeAndWait(
-								//new Runnable() {
-									//public void run(){
-										//try{
-											surfaceViewer.setGeometry(geom);
-											setDefaultTitle(surfaceViewerFrame);
-										//}catch(Throwable e){
-											//cbit.gui.DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e.getClass().getName()+"\n"+e.getMessage());
-										//}
-									//}
-								//}
-							//);
-							surfaceViewer.updateSurfaces();
-						}catch(Exception e2){
-							org.vcell.util.gui.DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
-						}
-					//}
-				//}
-			//);
-			//surfThread.start();
+				try{
+					Geometry geom = getMathModel().getMathDescription().getGeometry();
+					surfaceViewer.setGeometry(geom);
+					setDefaultTitle(surfaceViewerFrame);
+					surfaceViewer.updateSurfaces();
+				} catch(Exception e2){
+					DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
+				}
 		}
-		//else{
-			//surfaceViewer.setGeometry(null);
-		//}
 	}	
 }
 
@@ -158,11 +142,11 @@ public void addResultsFrame(SimulationWindow simWindow) {
  * Creation date: (7/20/2004 1:13:06 PM)
  */
 private void checkValidSimulationDataViewerFrames() {
-	SimulationWindow[] simWindows = (SimulationWindow[])org.vcell.util.BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
+	SimulationWindow[] simWindows = (SimulationWindow[])BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
 	Simulation[] sims = getMathModel().getSimulations();
 	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<VCSimulationIdentifier, Simulation>();
 	for (int i = 0; i < sims.length; i++){
-		cbit.vcell.solver.SimulationInfo simInfo = sims[i].getSimulationInfo();
+		SimulationInfo simInfo = sims[i].getSimulationInfo();
 		if (simInfo != null) {
 			VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
 			hash.put(vcSimulationIdentifier, sims[i]);
@@ -411,12 +395,12 @@ public boolean isRecyclable() {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
-	if(evt.getSource() instanceof cbit.vcell.math.MathDescription && evt.getPropertyName().equals("geometry")){
+	if(evt.getSource() instanceof MathDescription && evt.getPropertyName().equals("geometry")){
 		surfaceViewer.setGeometry(null);
 		if(surfaceViewerFrame != null){
 			close(surfaceViewerFrame,getJDesktopPane());
 		}
-		cbit.vcell.geometry.Geometry geom = ((cbit.vcell.math.MathDescription)evt.getSource()).getGeometry();
+		Geometry geom = ((MathDescription)evt.getSource()).getGeometry();
 		geoViewer.setGeometry(geom);
 		setDefaultTitle(geometryViewerEditorFrame);
 	}
@@ -653,7 +637,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	simManager.updateStatusFromServer(simulation);
 	// is there new data?
 	if (simStatusEvent.isNewDataEvent()) {
-		fireNewData(new DataEvent(this, new cbit.vcell.solver.VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simStatusEvent.getJobIndex())));
+		fireNewData(new DataEvent(this, new VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simStatusEvent.getJobIndex())));
 	}
 }
 

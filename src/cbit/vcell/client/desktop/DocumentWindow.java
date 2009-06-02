@@ -2209,7 +2209,7 @@ private JDialog getLoginDialog() {
 				if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)){
 					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
 				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
-					SwingUtilities.invokeLater(new Runnable(){public void run() {loginDialog.dispose();}});
+					loginDialog.dispose();
 					getWindowManager().getRequestManager().updateUserRegistration(true);
 				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
 					getWindowManager().getRequestManager().sendLostPassword(loginDialog.getUser());

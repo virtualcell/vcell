@@ -464,13 +464,7 @@ public void connectAs(final String user,  final String password, TopLevelWindowM
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
 public void connectToServer(final ClientServerInfo clientServerInfo) {
-//	// asynch & nothing to do on Swing queue (updates handled by events)
-//	Thread worker = new Thread(new Runnable() {
-//		public void run() {
-			getClientServerManager().connect(clientServerInfo);
-//		}
-//	});
-//	worker.start();
+	getClientServerManager().connect(clientServerInfo);
 }
 
 
@@ -1685,12 +1679,15 @@ public void propertyChange(final PropertyChangeEvent evt) {
  */
 public void reconnect() {
 	// asynch & nothing to do on Swing queue (updates handled by events)
-	Thread worker = new Thread(new Runnable() {
-		public void run() {
-			getClientServerManager().reconnect();
-		}
-	});
-	worker.start();
+	AsynchClientTask task1 = new AsynchClientTask("reconnect", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getClientServerManager().reconnect();
+				
+			}
+	};
+	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] { task1 });
 }
 
 
@@ -2248,7 +2245,7 @@ public void checkClientServerSoftwareVersion() {
 }
 
 public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff diffTree, String baselineDesc, String modifiedDesc) {
-	TMLPanel comparePanel = new cbit.xml.merge.TMLPanel();
+	TMLPanel comparePanel = new TMLPanel();
 	comparePanel.setXmlTreeDiff(diffTree);
 	comparePanel.setBaselineVersionDescription(baselineDesc);
 	comparePanel.setModifiedVersionDescription(modifiedDesc);

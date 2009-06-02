@@ -288,27 +288,27 @@ public static void login(final RequestManager requestManager,final ClientServerI
 	ActionListener listener = new ActionListener() {
 		public void actionPerformed(ActionEvent evt) {
 			if (evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)) {
-				new Thread(new Runnable() {
-					public void run() {
-						try {
-							ClientServerInfo newClientServerInfo = createClientServerInfo(
-									clientServerInfo, loginDialog.getUser(),
-									loginDialog.getPassword());
-							requestManager.connectToServer(newClientServerInfo);
-						} catch (RuntimeException e) {
-							e.printStackTrace();
-							PopupGenerator.showErrorDialog("Login error:\n"+e.getMessage());
-						}finally{
-							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
-							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-								SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-									VCellClient.login(requestManager,clientServerInfo);
-								}});
-								//new Thread(new Runnable(){public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
-							}
+				AsynchClientTask task1 = new AsynchClientTask("connect to server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, loginDialog.getUser(),
+								loginDialog.getPassword());
+						requestManager.connectToServer(newClientServerInfo);
+					}					
+				};
+				AsynchClientTask task2 = new AsynchClientTask("logging in", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
+						if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
+							login(requestManager,clientServerInfo);
 						}
 					}
-				}).start();
+				};
+				ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+			
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
 				loginDialog.dispose();
 				try {
@@ -350,46 +350,6 @@ public static ClientServerInfo createClientServerInfo(ClientServerInfo clientSer
 		}
 	};
 	return null;
-}
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 3:51:06 PM)
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
-public static void startClientFromApplet(VCellClientApplet vcellClientApplet) {
-	// instantiate appl
-	vcellClientApplet.showStatus("instantiating application");
-	final VCellClient vcellClient = new VCellClient();
-	vcellClient.isApplet = true;
-	// start management layer
-	vcellClientApplet.showStatus("starting managemnt layer");
-	vcellClient.setClientServerManager(new ClientServerManager());
-	vcellClient.setRequestManager(new ClientRequestManager(vcellClient));
-	vcellClient.setMdiManager(new ClientMDIManager(vcellClient.getRequestManager()));
-	// start auxilliary stuff
-	vcellClientApplet.showStatus("starting auxilliary threads");
-	vcellClient.startStatusThreads();
-	// generate blank document to start with
-	vcellClientApplet.showStatus("preparing blank BioModel");
-	VCDocument startupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC);
-	// fire up the GUI
-	vcellClientApplet.showStatus("starting the user interface");
-	String build = vcellClientApplet.getParameter("VERSION");
-	if (build != null){
-		DocumentWindowAboutBox.BUILD_NO = build;
-	}
-    vcellClient.createAndShowGUI(startupDoc, true);
-	// update the applet
-	vcellClientApplet.setClient(vcellClient);
-	vcellClientApplet.showStatus("VCell client application running");
-	vcellClientApplet.getSplashWindow().dispose();
-    // try server connection
-    final ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo(
-	    new String[] {vcellClientApplet.getParameter("HOST")+":"+vcellClientApplet.getParameter("PORT")},
-	    vcellClientApplet.getParameter("USERID"),
-	    vcellClientApplet.getParameter("PASSWORD")
-	    );
-	new Thread(new Runnable(){public void run(){vcellClient.getRequestManager().connectToServer(clientServerInfo);}}).start();
 }
 	
 /**

@@ -1,16 +1,18 @@
 package cbit.vcell.client.task;
-import java.awt.*;
-import java.util.*;
+import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Hashtable;
 
-import swingthreads.*;
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.ProgressDialogListener;
 
-import cbit.vcell.client.*;
+import swingthreads.SwingWorker;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
 /**
  * Insert the type's description here.
  * Creation date: (5/28/2004 2:44:22 AM)
