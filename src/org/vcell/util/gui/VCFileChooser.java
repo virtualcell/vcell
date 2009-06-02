@@ -152,15 +152,7 @@ public int showDialog(final Component parent, String approveButtonText) {
 
 	localDialog.setResizable(false);
 	try {
-		if (SwingUtilities.isEventDispatchThread()) {
-			ZEnforcer.showModalDialogOnTop(localDialog, parent);
-		} else {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				public void run() {
-					ZEnforcer.showModalDialogOnTop(localDialog, parent);
-				}
-			});
-		}
+		ZEnforcer.showModalDialogOnTop(localDialog, parent);
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		throw new RuntimeException(exc.getMessage());

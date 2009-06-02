@@ -1,14 +1,12 @@
 package cbit.vcell.field;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -20,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -53,8 +50,6 @@ import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import javax.swing.JMenuItem;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -63,17 +58,10 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
-import org.vcell.util.gui.ProgressDialogListener;
 
 public class FieldDataGUIPanel extends JPanel{
-
-	private volatile Thread threadState;
-    public void stopThread() {
-    	threadState = null;
-    }
 
 	final int modePslidExperimentalData = 0;
 	final int modePslidGeneratedModel = 1;
@@ -429,7 +417,7 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.jButtonFDFromFile_ActionPerformed(arg1,null,null);
+		this.jButtonFDFromFile_ActionPerformed(arg1);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -508,66 +496,57 @@ public void updateJTree(final RequestManager clientRequestManager){
 		DefaultMutableTreeNode emptyNode = new DefaultMutableTreeNode("No Info Available");
 		getJTree1().setModel(new DefaultTreeModel(emptyNode));
 	}else{
-		DefaultMutableTreeNode startupNode =
-			new DefaultMutableTreeNode("Gathering Field Data Information... (Please wait)");
+		DefaultMutableTreeNode startupNode = new DefaultMutableTreeNode("Gathering Field Data Information... (Please wait)");
 		getJTree1().setModel(new DefaultTreeModel(startupNode));
-		Runnable gatherInfo = new Runnable() {
-			public void run(){
-				try{
+		AsynchClientTask gatherInfo = new AsynchClientTask("gatherInfo", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {				
+				try {					
+					DocumentManager documentManager = clientRequestManager.getDocumentManager();
+					FieldDataDBOperationSpec fdos = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
+					FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.fieldDataDBOperation(fdos);
 					
-						FieldDataDBOperationResults fieldDataDBOperationResults =
-						clientRequestManager.getDocumentManager().fieldDataDBOperation(
-								FieldDataDBOperationSpec.createGetExtDataIDsSpec(
-										clientRequestManager.getDocumentManager().getUser()));
-						
-						ExternalDataIdentifier[] externalDataIdentifierArr =
-							fieldDataDBOperationResults.extDataIDArr;
-						String[] extDataAnnotArr = fieldDataDBOperationResults.extDataAnnotArr;
-						
-						TreeMap<ExternalDataIdentifier, String> sortedExtDataIDTreeMap =
-							new TreeMap<ExternalDataIdentifier, String>(
-									new Comparator<ExternalDataIdentifier>(){
-									public int compare(ExternalDataIdentifier o1, ExternalDataIdentifier o2) {
-										return o1.getName().compareToIgnoreCase(o2.getName());
-									}
-								}									
-							);
-						for(int i=0;i<externalDataIdentifierArr.length;i+= 1){
-							sortedExtDataIDTreeMap.put(externalDataIdentifierArr[i],extDataAnnotArr[i]);
+					ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
+					String[] extDataAnnotArr = fieldDataDBOperationResults.extDataAnnotArr;
+					
+					TreeMap<ExternalDataIdentifier, String> sortedExtDataIDTreeMap = new TreeMap<ExternalDataIdentifier, String>(
+						new Comparator<ExternalDataIdentifier>() {
+							public int compare(ExternalDataIdentifier o1, ExternalDataIdentifier o2) {
+								return o1.getName().compareToIgnoreCase(o2.getName());
+							}
 						}
-					final DefaultMutableTreeNode rootNode =
-						new DefaultMutableTreeNode(new InitializedRootNode(
+					);
+					for(int i=0;i<externalDataIdentifierArr.length;i+= 1){
+						sortedExtDataIDTreeMap.put(externalDataIdentifierArr[i],extDataAnnotArr[i]);
+					}
+					DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new InitializedRootNode(
 								"Field Data Info"+(externalDataIdentifierArr.length==0?" (None Defined)":"")));
 					
-					Iterator<Entry<ExternalDataIdentifier, String>> sortIter =
-						sortedExtDataIDTreeMap.entrySet().iterator();
+					Iterator<Entry<ExternalDataIdentifier, String>> sortIter = sortedExtDataIDTreeMap.entrySet().iterator();
 					while(sortIter.hasNext()){
 						Entry<ExternalDataIdentifier, String> entry = sortIter.next();
-//					for(int i=0;i<externalDataIdentifierArr.length;i+= 1){
-						javax.swing.tree.DefaultMutableTreeNode mainNode =
-							new javax.swing.tree.DefaultMutableTreeNode(
-									new FieldDataMainList(entry.getKey(),entry.getValue()));
+						DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(new FieldDataMainList(entry.getKey(),entry.getValue()));
 						mainNode.add(new DefaultMutableTreeNode(new FieldDataVarMainList()));
 						rootNode.add(mainNode);
 					}
-					SwingUtilities.invokeLater(new Runnable(){
-						public void run(){
-							getJTree1().setModel(new DefaultTreeModel(rootNode));
-						}
-					});
+					hashTable.put("rootNode", rootNode);
 				}catch(Exception e){
-					final DefaultMutableTreeNode errorNode = new DefaultMutableTreeNode("Error Getting Field Data Information");
-					SwingUtilities.invokeLater(new Runnable(){
-						public void run(){
-							getJTree1().setModel(new DefaultTreeModel(errorNode));
-						}
-					});
-					e.printStackTrace();
-					PopupGenerator.showErrorDialog("Error Getting Field Data Info\n"+e.getMessage());
+					DefaultMutableTreeNode errorNode = new DefaultMutableTreeNode("Error Getting Field Data Information");
+					hashTable.put("rootNode", errorNode);
+					throw e;
 				}
 			}
 		};
-		new Thread(gatherInfo).start();
+		AsynchClientTask updateTree = new AsynchClientTask("updateTree", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+			@Override			
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)hashTable.get("rootNode");
+				getJTree1().setModel(new DefaultTreeModel(rootNode));
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {gatherInfo, updateTree});
 	}
 }
 
@@ -1093,79 +1072,82 @@ public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,
 }
 
 
-private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent actionEvent,final FieldDataFileOperationSpec argfdos,final String arginitFDName) {
+private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	
+	AsynchClientTask[] tasks = fdFromFile();	
+	ClientTaskDispatcher.dispatch(this, hash, tasks, false, true, null);
+
+}
+	
+private AsynchClientTask[] fdFromFile() {
 	final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
-	try{
-		AsynchClientTask[] addTasks = addNewExternalData(false);
-		AsynchClientTask[] taskArray = new AsynchClientTask[2 + addTasks.length];
-		System.arraycopy(addTasks, 0, taskArray, 2, addTasks.length); // add to the end
-		
-		taskArray[0] = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hashTable) throws Exception {				
-				if (argfdos == null) {
-					File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
-					hashTable.put("imageFile", imageFile);
-				}
+	AsynchClientTask[] addTasks = addNewExternalData(false);
+	AsynchClientTask[] taskArray = new AsynchClientTask[2 + addTasks.length];
+	System.arraycopy(addTasks, 0, taskArray, 2, addTasks.length); // add to the end
+	
+	taskArray[0] = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec)hashTable.get("argfdos");
+			if (argfdos == null) {
+				File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
+				hashTable.put("imageFile", imageFile);
 			}
-		};
-		taskArray[1] = new AsynchClientTask("Import image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				FieldDataFileOperationSpec fdos = null;
-				String initFDName = null;
-				
-				if (argfdos == null) {
-					File imageFile = (File)hashTable.get("imageFile");
-					if (imageFile == null) {
-						return;
+		}
+	};
+	taskArray[1] = new AsynchClientTask("Import image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			FieldDataFileOperationSpec fdos = null;
+			String initFDName = null;
+			
+			FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec)hashTable.get("argfdos");
+			String arginitFDName = (String)hashTable.get("arginitFDName");
+			if (argfdos == null) {
+				File imageFile = (File)hashTable.get("imageFile");
+				if (imageFile == null) {
+					return;
+				}
+				initFDName = imageFile.getName();
+				//read VCell Special
+				DatabaseWindowManager.ImageHelper imageHelper = null;
+				try {
+					fdos = new FieldDataFileOperationSpec();
+					imageHelper = DatabaseWindowManager.readFromImageFile(
+							getClientTaskStatusSupport(), imageFile);
+					fdos.times = new double[] { 0 };
+					fdos.varNames = new String[] { "variableName" };
+					fdos.origin = new Origin(0, 0, 0);
+					fdos.extent = new Extent(1, 1, 1);
+					fdos.isize = new ISize(imageHelper.xsize,
+							imageHelper.ysize, imageHelper.zsize);
+					short[] shortPixels = new short[imageHelper.imageData.length];
+					for (int i = 0; i < shortPixels.length; i += 1) {
+						shortPixels[i] = (short) (0x000000FF & imageHelper.imageData[i]);
 					}
-					initFDName = imageFile.getName();
-					//read VCell Special
-					DatabaseWindowManager.ImageHelper imageHelper = null;
+					fdos.shortSpecData = new short[][][] { { shortPixels } };
+					fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
+				} catch (Exception e) {
+					System.out.println("VCell simple image import couldn't read " + e.getMessage());						
+					//read BioFormat
 					try {
-						fdos = new FieldDataFileOperationSpec();
-						imageHelper = DatabaseWindowManager.readFromImageFile(
-								getClientTaskStatusSupport(), imageFile);
-						fdos.times = new double[] { 0 };
-						fdos.varNames = new String[] { "variableName" };
-						fdos.origin = new Origin(0, 0, 0);
-						fdos.extent = new Extent(1, 1, 1);
-						fdos.isize = new ISize(imageHelper.xsize,
-								imageHelper.ysize, imageHelper.zsize);
-						short[] shortPixels = new short[imageHelper.imageData.length];
-						for (int i = 0; i < shortPixels.length; i += 1) {
-							shortPixels[i] = (short) (0x000000FF & imageHelper.imageData[i]);
-						}
-						fdos.shortSpecData = new short[][][] { { shortPixels } };
-						fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
-					} catch (Exception e) {
-						System.out.println("VCell simple image import couldn't read " + e.getMessage());						
-						//read BioFormat
-						try {
-							fdos = createFDOSFromImageFile(imageFile,true);
-						} catch (DataFormatException ex) {
-							throw new Exception("Neither BioFormats nor VCell can read image " + imageFile.getAbsolutePath());
-						}
+						fdos = createFDOSFromImageFile(imageFile,true);
+					} catch (DataFormatException ex) {
+						throw new Exception("Neither BioFormats nor VCell can read image " + imageFile.getAbsolutePath());
 					}
-				}else{
-					fdos = argfdos;
-					initFDName = arginitFDName;
 				}
-				
-				fdos.owner = clientRequestManager.getDocumentManager().getUser();
-				fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-				hashTable.put("fdos", fdos);
-				hashTable.put("initFDName", initFDName);
-				//addNewExternalData(clientRequestManager, fdos, initFDName, false);
+			}else{
+				fdos = argfdos;
+				initFDName = arginitFDName;
 			}
-		};
-		//
-		//Execute Field Data Info - JTree tasks
-		//
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), taskArray, false);
-	}catch(UserCancelException e){
-		return;
-	}
+			
+			fdos.owner = clientRequestManager.getDocumentManager().getUser();
+			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+			hashTable.put("fdos", fdos);
+			hashTable.put("initFDName", initFDName);
+			//addNewExternalData(clientRequestManager, fdos, initFDName, false);
+		}
+	};	
+	return taskArray;
 }
 
 private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
@@ -1789,54 +1771,38 @@ private JButton getJButtonViewAnnot() {
 private void getPslidSelections(final int mode) {
 	final PSLIDPanel pslidPanel = new PSLIDPanel();
 	pslidPanel.setPreferredSize(new Dimension(550,600));
+	
+	AsynchClientTask[] initTasks = pslidPanel.initCellProteinList( fieldDataWindowManager.getUserPreferences(), mode);
 
-	final Thread[] pslidThread = new Thread[1];
-	final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
-	pp[0] =
-		new AsynchProgressPopup(
-				FieldDataGUIPanel.this,"Accessing PSLID Information","",Thread.currentThread(),
-				true,true,true,
-			new ProgressDialogListener(){
-				public void cancelButton_actionPerformed(EventObject newEvent) {
-					pp[0].stop();
-					pslidThread[0].interrupt();
-					stopThread();
-				}
-			}
-		);
-	SwingUtilities.invokeLater(new Runnable(){public void run() {pp[0].startKeepOnTop();}});
-	pslidThread[0] = new Thread(
-		new Runnable(){
-			public void run() {
-				try {
-					threadState = Thread.currentThread();
-					pslidPanel.initCellProteinList( fieldDataWindowManager.getUserPreferences(),pp[0],mode);
-					if(threadState != Thread.currentThread()) {
-						return;
-					}
-					pp[0].stop();
-					if(PopupGenerator.showComponentOKCancelDialog(FieldDataGUIPanel.this, pslidPanel,"PSLID Browser") == JOptionPane.OK_OPTION){
-						PSLIDPanel.PSLIDSelectionInfo pslidSelInfo =
-							pslidPanel.getPSLIDSelectionInfo();
-						String initFDName = pslidSelInfo.cellName+"_"+pslidSelInfo.proteinName+"_"+pslidSelInfo.imageSetID;
-						System.out.println(initFDName);
-						System.out.println(pslidSelInfo.proteinImageURL);
-						System.out.println(pslidSelInfo.compartmentImageURL);
-						jButtonFDFromFile_ActionPerformed(null, pslidSelInfo.fdos, initFDName);
-					}
-				} catch (Exception e) {
-					pp[0].stop();
-					e.printStackTrace();
-					if(!(e instanceof InterruptedException)){
-						PopupGenerator.showErrorDialog("Error displaying PSLID Information.\n"+e.getMessage());
-					}
-				} finally {
-					pp[0].stop();
-				}
+	AsynchClientTask[] fromFileTasks = fdFromFile();
+	
+	AsynchClientTask[] tasks = new AsynchClientTask[initTasks.length + fromFileTasks.length + 1];
+	
+	System.arraycopy(initTasks, 0, tasks, 0, initTasks.length);
+	System.arraycopy(fromFileTasks, 0, tasks, initTasks.length + 1, fromFileTasks.length);
+	
+	String taskName = "Accessing PSLID Information";
+	tasks[initTasks.length] = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(PopupGenerator.showComponentOKCancelDialog(FieldDataGUIPanel.this, pslidPanel,"PSLID Browser") == JOptionPane.OK_OPTION){
+				PSLIDPanel.PSLIDSelectionInfo pslidSelInfo = pslidPanel.getPSLIDSelectionInfo();
+				String initFDName = pslidSelInfo.cellName+"_"+pslidSelInfo.proteinName+"_"+pslidSelInfo.imageSetID;
+				System.out.println(initFDName);
+				System.out.println(pslidSelInfo.proteinImageURL);
+				System.out.println(pslidSelInfo.compartmentImageURL);
+				hashTable.put("argfdos", pslidSelInfo.fdos);
+				hashTable.put("arginitFDName", initFDName);
+			} else {
+				throw UserCancelException.CANCEL_GENERIC;
 			}
 		}
-	);
-	pslidThread[0].start();
+	};
+	
+	
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false, true, null);
+
 }
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"
