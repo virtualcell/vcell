@@ -1,6 +1,5 @@
 package cbit.vcell.dictionary;
 
-import cbit.vcell.webparser.*;
 import java.util.Vector;
 /**
  * Superclass of all possible species to be added to the VCell
