@@ -27,7 +27,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	private static final int TYPE_HYBRID_MIL_Adaptive = 10; //added adaptive milstein solver on July 12, 2007
 	private static final int TYPE_CVODE = 11;
 	private static final int TYPE_FINITE_VOLUME_STANDALONE = 12;
-	private static final int TYPE_SUNDIALS_STANDALONE = 13;
+	private static final int TYPE_COMBINED_IDA_CVODE = 13;
 	private static final int TYPE_SUNDIALS_PDE = 14;
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
@@ -232,7 +232,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		false,	// TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
 		true,	// TYPE_FINITE_VOLUME_STANDALONE
-		true,	// TYPE_SUNDIALS_STANDALONE
+		true,	// TYPE_COMBINED_IDA_CVODE
 		false,	// TYPE_SUNDIALS_PDE
 	};
 	private static final boolean[] IS_ODE = {
@@ -249,7 +249,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		false,	// TYPE_HYBRID_MIL_Adaptive
 		true,	// TYPE_CVODE
 		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		true,	// TYPE_SUNDIALS_STANDALONE
+		true,	// TYPE_COMBINED_IDA_CVODE
 		false,	// TYPE_SUNDIALS_PDE
 	};
 	private static final boolean[] IS_STOCH = {
@@ -266,7 +266,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		true,	// TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
 		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		false,	// TYPE_SUNDIALS_STANDALONE
+		false,	// TYPE_COMBINED_IDA_CVODE
 		false,	// TYPE_SUNDIALS_PDE
 	};
 	private static final boolean[] IS_INTERPRETED = {
@@ -283,7 +283,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		false,  // TYPE_HYBRID_MIL_Adaptive
 		false,	// TYPE_CVODE
 		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		false,	// TYPE_SUNDIALS_STANDALONE
+		false,	// TYPE_COMBINED_IDA_CVODE
 		false,	// TYPE_SUNDIALS_PDE
 	};
 	// for all sundials solvers, the time order is variable from 1 to 5, we choose an intermediate order of 3
@@ -302,7 +302,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		1,	// TYPE_HYBRID_MIL_Adaptive
 		3,	// TYPE_CVODE
 		1,	// TYPE_FINITE_VOLUME_STANDALONE
-		3,	// TYPE_SUNDIALS_STANDALONE
+		3,	// TYPE_COMBINED_IDA_CVODE
 		3,	// TYPE_SUNDIALS_PDE
 	};
 	private static final boolean[] resolves_discontinuties = {
@@ -319,7 +319,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		false,  // TYPE_HYBRID_MIL_Adaptive
 		true,	// TYPE_CVODE
 		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		true,	// TYPE_SUNDIALS_STANDALONE
+		true,	// TYPE_COMBINED_IDA_CVODE
 		true,	// TYPE_SUNDIALS_PDE
 	};		
 			
@@ -336,7 +336,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	public static final SolverDescription HybridMilAdaptive     = new SolverDescription(TYPE_HYBRID_MIL_Adaptive);
 	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
 	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
-	public static final SolverDescription SUNDIALS				= new SolverDescription(TYPE_SUNDIALS_STANDALONE);
+	public static final SolverDescription CombinedSundials		= new SolverDescription(TYPE_COMBINED_IDA_CVODE);
 	public static final SolverDescription SundialsPDE			= new SolverDescription(TYPE_SUNDIALS_PDE);
 
 	private static SolverDescription[] fieldODESolverDescriptions = new SolverDescription[] {
@@ -347,12 +347,12 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		RungeKuttaFehlberg,
 		IDA,
 		CVODE,
-		SUNDIALS,
+		CombinedSundials,
 	};
 	private static SolverDescription[] fieldODEWithFastSolverDescriptions = new SolverDescription[] {
 		ForwardEuler,
 		IDA,
-		SUNDIALS,
+		CombinedSundials,
 	};	
 	private static SolverDescription[] fieldPDEWithFastSolverDescriptions = new SolverDescription[] {
 		FiniteVolume,
@@ -394,7 +394,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @see #setSolver
  */
 public static SolverDescription getDefaultODESolverDescription() {
-	return SUNDIALS;
+	return CombinedSundials;
 }
 
 
@@ -518,7 +518,7 @@ public boolean hasVariableTimestep() {
 		case TYPE_IDA:
 		case TYPE_RUNGE_KUTTA_FEHLBERG:
 		case TYPE_CVODE:
-		case TYPE_SUNDIALS_STANDALONE:
+		case TYPE_COMBINED_IDA_CVODE:
 		case TYPE_STOCH_GIBSON:
 		case TYPE_HYBRID_MIL_Adaptive:
 		case TYPE_SUNDIALS_PDE: {
@@ -535,7 +535,7 @@ public boolean hasErrorTolerance() {
 		case TYPE_IDA:
 		case TYPE_RUNGE_KUTTA_FEHLBERG:
 		case TYPE_CVODE:
-		case TYPE_SUNDIALS_STANDALONE:
+		case TYPE_COMBINED_IDA_CVODE:
 		case TYPE_SUNDIALS_PDE: {
 			return true;
 		}
@@ -598,7 +598,7 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 	switch (type) {
 		case TYPE_IDA: 
 		case TYPE_CVODE:
-		case TYPE_SUNDIALS_STANDALONE: {
+		case TYPE_COMBINED_IDA_CVODE: {
 			return (outputTimeSpec.isDefault() || outputTimeSpec.isExplicit() || outputTimeSpec.isUniform());
 		}
 		case TYPE_STOCH_GIBSON:{
@@ -620,7 +620,7 @@ public boolean supportsUniformExplicitOutput() {
 	switch (type) {
 	case TYPE_IDA: 
 	case TYPE_CVODE:
-	case TYPE_SUNDIALS_STANDALONE: {			
+	case TYPE_COMBINED_IDA_CVODE: {
 		return true;
 	}
 	default: {
