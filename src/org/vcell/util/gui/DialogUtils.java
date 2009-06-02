@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class DialogUtils {
 	
-	static abstract class SwingDispatcherSync {
+	private static abstract class SwingDispatcherSync {
 
 		private Object returnValue = null;
 		

@@ -1355,15 +1355,7 @@ private void showCustomEditor(java.awt.event.MouseEvent mouseEvent) {
 				okButton.addActionListener(al);
 				cancelButton.addActionListener(al);
 
-				try {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							ZEnforcer.showModalDialogOnTop(dialog1,InitialConditionsPanel.this);
-						}
-					});
-				} catch (Exception exc) {
-					exc.printStackTrace();
-				}
+				ZEnforcer.showModalDialogOnTop(dialog1,InitialConditionsPanel.this);
 				return;
 			}
 		}

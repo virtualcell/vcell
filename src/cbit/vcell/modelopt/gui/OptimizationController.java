@@ -1,4 +1,6 @@
 package cbit.vcell.modelopt.gui;
+import javax.swing.SwingUtilities;
+
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -247,12 +249,20 @@ public void solve() {
 					optSolverUpdater.setDelay(100);
 					optSolverUpdater.start();
 					setRunning(true);
-					cbit.vcell.opt.OptimizationResultSet optResultSet = optTestPanel.getOptimizationService().solve(optSpec,optSolverSpec,optSolverCallbacks);
-					optSolverUpdater.guiToDo(optResultSet);
-					optTestPanel.getJProgressBar1().setValue(100);
-				}catch (Exception e){
+					final OptimizationResultSet optResultSet = optTestPanel.getOptimizationService().solve(optSpec,optSolverSpec,optSolverCallbacks);
+					SwingUtilities.invokeLater(new Runnable(){
+						public void run() {							
+							optSolverUpdater.guiToDo(optResultSet);
+							optTestPanel.getJProgressBar1().setValue(100);
+						}
+					});
+				}catch (final Exception e){
 					e.printStackTrace(System.out);
-					optSolverUpdater.guiToDo(e);
+					SwingUtilities.invokeLater(new Runnable(){
+						public void run() {	
+							optSolverUpdater.guiToDo(e);
+						}
+					});
 				}finally{
 					optSolverUpdater.stop();
 					setRunning(false);
