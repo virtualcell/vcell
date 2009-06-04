@@ -459,58 +459,64 @@ protected void addParameters() throws PropertyVetoException {
 			for (int j = 0; j < vcSpContexts.length; j++) {
 				// Check if valueExpr has the species, if so, add the species conc factor, else, do nothing.
 				if (valueExpr.hasSymbol(vcSpContexts[j].getName())) {
-					if (spConcFactorInModelParamsList.contains(vcSpContexts[j].getName())) {
-						continue;
-					}
 			    	Species sp = sbmlModel.getSpecies(vcSpContexts[j].getName());
-					SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
-					VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
-					VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
-									
-					// the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
-					//   within the expr; we convert concs into SBML (using 'sp_conc_factor'), so that the SBML expression is consistent;  
-					try {
-						SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", vcUnit, sbUnit);
-						if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) ) {
-							// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
-							// No conversion is required, and we don't need to include a concentration scale factor for the species.
-						} else {
-							// Substitute any occurrence of speciesName in global param expression with 'speciesName*concScaleFactor'
-							String CONCFACTOR_PARAMETER = sp.getId() + "_ConcFactor";
-							// check if CONC_FACTOR is already defined in VCell model.
-							ModelParameter concParam = vcModel.getModelParameter(CONCFACTOR_PARAMETER);
-							if (concParam != null) {
-								// if it already exists in list of global params, see if its expression/val matches the current param.
-								Expression concParamValueExpr = concParam.getExpression();
-								// If CONCFACTOR_PARAM exists in VC globals, check its expression with concScaleFactor. 
-								// If they are not equal, multiply CONCFACTOR_PARAM expression with concScaleFactor expr,
-								// since the new concFactor is in addition to existing CONCFACTOR value; no need to add another CONCFACTOR param.
-								if (concParamValueExpr != null && concScaleFactor.getExpression() != null) {
-									concParamValueExpr = Expression.mult(concParamValueExpr, concScaleFactor.getExpression());
-									concParam.setExpression(concParamValueExpr);
-									// if the expressions are being multiplied, the units should be too, as long as both are not TBD.
-									if ((concParam.getUnitDefinition() != VCUnitDefinition.UNIT_TBD) && (concScaleFactor.getUnitDefinition() != VCUnitDefinition.UNIT_TBD)) {
-										concParam.setUnitDefinition(concParam.getUnitDefinition().multiplyBy(concScaleFactor.getUnitDefinition()));
-									}
-								} 
-								// ?? no need to do anything if the 2 expressions are the same ??
+					String CONCFACTOR_PARAMETER = sp.getId() + "_ConcFactor";
+					if (spConcFactorInModelParamsList.contains(vcSpContexts[j].getName())) {
+						SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
+						VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
+						VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
+										
+						// the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
+						//   within the expr; we convert concs into SBML (using 'sp_conc_factor'), so that the SBML expression is consistent;  
+						try {
+							SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", vcUnit, sbUnit);
+							if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) ) {
+								// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
+								// No conversion is required, and we don't need to include a concentration scale factor for the species.
 							} else {
-								// If no matching param for concentration factor was found in sbml model, 
-								// add CONCFACTOR_PARAM as a global param in VCell before setting this global.
-								ModelParameter concScaleParam = vcModel.new ModelParameter(CONCFACTOR_PARAMETER, concScaleFactor.getExpression().flatten(), Model.ROLE_UserDefined, concScaleFactor.getUnitDefinition());
-								vcModel.addModelParameter(concScaleParam);	
+								// Substitute any occurrence of speciesName in global param expression with 'speciesName*concScaleFactor'
+								// check if CONC_FACTOR is already defined in VCell model.
+								ModelParameter concParam = vcModel.getModelParameter(CONCFACTOR_PARAMETER);
+								if (concParam != null) {
+									// if it already exists in list of global params, see if its expression/val matches the current param.
+									Expression concParamValueExpr = concParam.getExpression();
+									// If CONCFACTOR_PARAM exists in VC globals, check its expression with concScaleFactor. 
+									// If they are not equal, multiply CONCFACTOR_PARAM expression with concScaleFactor expr,
+									// since the new concFactor is in addition to existing CONCFACTOR value; no need to add another CONCFACTOR param.
+									if (concParamValueExpr != null && concScaleFactor.getExpression() != null) {
+										concParamValueExpr = Expression.mult(concParamValueExpr, concScaleFactor.getExpression());
+										concParam.setExpression(concParamValueExpr);
+										// if the expressions are being multiplied, the units should be too, as long as both are not TBD.
+										if ((concParam.getUnitDefinition() != VCUnitDefinition.UNIT_TBD) && (concScaleFactor.getUnitDefinition() != VCUnitDefinition.UNIT_TBD)) {
+											concParam.setUnitDefinition(concParam.getUnitDefinition().multiplyBy(concScaleFactor.getUnitDefinition()));
+										}
+									} 
+									// ?? no need to do anything if the 2 expressions are the same ??
+								} else {
+									// If no matching param for concentration factor was found in sbml model, 
+									// add CONCFACTOR_PARAM as a global param in VCell before setting this global.
+									ModelParameter concScaleParam = vcModel.new ModelParameter(CONCFACTOR_PARAMETER, concScaleFactor.getExpression().flatten(), Model.ROLE_UserDefined, concScaleFactor.getUnitDefinition());
+									String annotation = "Conversion from VC concentration units to SBML concentration units";
+									concScaleParam.setModelParameterAnnotation(annotation);
+									vcModel.addModelParameter(concScaleParam);	
+								}
 							}
-							// any occurrence of "sp" in param valeExpr should be replaced by "sp*CONCFACTOR_PARAM", if not already present.
-							if (!valueExpr.hasSymbol(CONCFACTOR_PARAMETER)) {
-								valueExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
-							}
+						} catch (ExpressionException e) {
+							e.printStackTrace(System.out);
+							throw new RuntimeException(e.getMessage());
+						}	// end try - catch
+						// add this speciesContext name to vector 'spConcFactorInModelParamsList' so that its val isn't modified if used in another param expr.
+						spConcFactorInModelParamsList.add(vcSpContexts[j].getName());
+					} // end 'spConcFactorInModelParamsList' !contain spContext
+					// any occurance of "sp" in param valeExpr should be replaced by "sp*CONCFACTOR_PARAM", if not already present.
+					if ((vcModel.getModelParameter(CONCFACTOR_PARAMETER) != null) && !valueExpr.hasSymbol(CONCFACTOR_PARAMETER)) {
+						try {
+							valueExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
+						} catch (ExpressionException e) {
+							e.printStackTrace();
+							throw new RuntimeException(e.getMessage());
 						}
-					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException(e.getMessage());
-					}	// end try - catch
-					// add this speciesContext name to vector 'spConcFactorInModelParamsList' so that its val isn't modified if used in another param expr.
-					spConcFactorInModelParamsList.add(vcSpContexts[j].getName());
+					}
 				}	// end if (valExp contains spContext)
 			}	// end for j - spContexts
 		}	// end valExpr.Symbols != null
@@ -1637,7 +1643,9 @@ public BioModel getBioModel() {
 	
 	long numProblems = document.getNumErrors();
 	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");
+//	document.printErrors();
 	
+
 	sbmlModel = document.getModel();
 	
 	// Convert SBML Model to VCell model
@@ -1667,7 +1675,21 @@ public BioModel getBioModel() {
 	cbit.vcell.biomodel.BioModel bioModel = null;
 	try {
 		bioModel = new BioModel(null);
-		bioModel.setName(modelName);
+
+		// **** TEMPORARY BLOCK - to name the biomodel with proper name, rather than model id
+		String biomodelName = sbmlModel.getName();
+		// if name is not set, use id
+		if ((biomodelName == null) || biomodelName.trim().equals("")) {
+			biomodelName = sbmlModel.getId();
+		}
+		// if id is not set, use a default, say, 'newModel'
+		if ((biomodelName == null) || biomodelName.trim().equals("")) {
+			biomodelName = "newBioModel";
+		}
+		bioModel.setName(biomodelName);
+		// **** end - TEMPORARY BLOCK
+		
+		// bioModel.setName(modelName);
 		bioModel.setModel(simContext.getModel());
 		bioModel.setSimulationContexts(new SimulationContext[] {simContext});			
 	} catch (Exception e) {
