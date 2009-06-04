@@ -54,8 +54,8 @@ protected void writeEquations() throws MathException, ExpressionException {
 			initExpr = new Expression(((SensStateVariable)stateVar).getInitialRateExpression());
 		}
 		
-		initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 		initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable).flatten();
+		initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 		rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
 		
 		Vector<Discontinuity> v = rateExpr.getDiscontinuities();		

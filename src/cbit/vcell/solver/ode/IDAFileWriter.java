@@ -215,8 +215,8 @@ protected void writeEquations() throws MathException, ExpressionException {
 				initExpr = new Expression(((SensStateVariable)stateVar).getInitialRateExpression());
 			}		
 			
-			initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 			initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable);
+			initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 			sb.append("VAR " + stateVar.getVariable().getName() + " INIT " + initExpr.flatten().infix() + ";\n");
 		}
 		
