@@ -1,6 +1,6 @@
 package cbit.vcell.simdata.gui;
 
-import cbit.vcell.client.PopupGenerator;
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.AnnotatedFunction;
@@ -10,6 +10,7 @@ import cbit.vcell.simdata.VariableType;
 import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.ZEnforcer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -47,9 +48,9 @@ public class PDEPlotControlPanel extends JPanel {
 	private boolean ivjConnPtoP4Aligning = false;
 	private BoundedRangeModel ivjmodel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.image.DisplayAdapterService fieldDisplayAdapterService = new cbit.image.DisplayAdapterService();
+	private DisplayAdapterService fieldDisplayAdapterService = new DisplayAdapterService();
 	private boolean ivjConnPtoP3Aligning = false;
-	private cbit.image.DisplayAdapterService ivjdisplayAdapterService1 = null;
+	private DisplayAdapterService ivjdisplayAdapterService1 = null;
 	private JPanel ivjTimeSliderJPanel = null;
 	private JButton ivjAddFunctionButton = null;
 	private Vector<AnnotatedFunction> functionsList = new Vector<AnnotatedFunction>();  //  @jve:decl-index=0:
@@ -329,7 +330,7 @@ private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoC4(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -450,7 +451,7 @@ private void connEtoC9(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoM1(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -489,7 +490,7 @@ private void connEtoM2() {
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoM3(PDEDataContext value) {
 	try {
 		filterVariableNames();
 		// user code begin {2}
@@ -526,7 +527,7 @@ private void connEtoM4(javax.swing.event.ListDataEvent arg1) {
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoM6(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -545,7 +546,7 @@ private void connEtoM6(cbit.vcell.simdata.PDEDataContext value) {
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoM7(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -867,10 +868,10 @@ private javax.swing.JButton getAddFunctionButton() {
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilized1() {
+private DefaultListModelCivilized getDefaultListModelCivilized1() {
 	if (ivjDefaultListModelCivilized1 == null) {
 		try {
-			ivjDefaultListModelCivilized1 = new org.vcell.util.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilized1 = new DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -888,7 +889,7 @@ private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilize
  * @return The displayAdapterService property value.
  * @see #setDisplayAdapterService
  */
-public cbit.image.DisplayAdapterService getDisplayAdapterService() {
+public DisplayAdapterService getDisplayAdapterService() {
 	return fieldDisplayAdapterService;
 }
 
@@ -898,7 +899,7 @@ public cbit.image.DisplayAdapterService getDisplayAdapterService() {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.DisplayAdapterService getdisplayAdapterService1() {
+private DisplayAdapterService getdisplayAdapterService1() {
 	// user code begin {1}
 	// user code end
 	return ivjdisplayAdapterService1;
@@ -1223,7 +1224,7 @@ private javax.swing.BoundedRangeModel getmodel1() {
  * @return The pdeDataContext property value.
  * @see #setPdeDataContext
  */
-public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
+public PDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 
@@ -1233,7 +1234,7 @@ public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
  * @return cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.simdata.PDEDataContext getpdeDataContext1() {
+private PDEDataContext getpdeDataContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjpdeDataContext1;
@@ -1422,8 +1423,8 @@ private void setCursorForWindow(Cursor cursor) {
  * @param displayAdapterService The new value for the property.
  * @see #getDisplayAdapterService
  */
-public void setDisplayAdapterService(cbit.image.DisplayAdapterService displayAdapterService) {
-	cbit.image.DisplayAdapterService oldValue = fieldDisplayAdapterService;
+public void setDisplayAdapterService(DisplayAdapterService displayAdapterService) {
+	DisplayAdapterService oldValue = fieldDisplayAdapterService;
 	fieldDisplayAdapterService = displayAdapterService;
 	firePropertyChange("displayAdapterService", oldValue, displayAdapterService);
 }
@@ -1434,10 +1435,10 @@ public void setDisplayAdapterService(cbit.image.DisplayAdapterService displayAda
  * @param newValue cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdisplayAdapterService1(cbit.image.DisplayAdapterService newValue) {
+private void setdisplayAdapterService1(DisplayAdapterService newValue) {
 	if (ivjdisplayAdapterService1 != newValue) {
 		try {
-			cbit.image.DisplayAdapterService oldValue = getdisplayAdapterService1();
+			DisplayAdapterService oldValue = getdisplayAdapterService1();
 			/* Stop listening for events from the current object */
 			if (ivjdisplayAdapterService1 != null) {
 				ivjdisplayAdapterService1.removePropertyChangeListener(ivjEventHandler);
@@ -1498,7 +1499,7 @@ private void setmodel1(javax.swing.BoundedRangeModel newValue) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) {
+public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	cbit.vcell.simdata.PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
@@ -1510,10 +1511,10 @@ public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) 
  * @param newValue cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(cbit.vcell.simdata.PDEDataContext newValue) {
+private void setpdeDataContext1(PDEDataContext newValue) {
 	if (ivjpdeDataContext1 != newValue) {
 		try {
-			cbit.vcell.simdata.PDEDataContext oldValue = getpdeDataContext1();
+			PDEDataContext oldValue = getpdeDataContext1();
 			/* Stop listening for events from the current object */
 			if (ivjpdeDataContext1 != null) {
 				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
@@ -1565,9 +1566,11 @@ private void setTimeFromSlider(int sliderPosition) {
 			};
 			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					try {				
+					try {
 						Exception exc = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-						if (exc != null) {				
+						if (exc == null) {
+							updateTimeTextField(getPdeDataContext().getTimePoint());
+						} else {
 							int index = -1;
 							if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
 								double[] timePoints = getPdeDataContext().getTimePoints();
@@ -1592,7 +1595,7 @@ private void setTimeFromSlider(int sliderPosition) {
 			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
 			ClientTaskDispatcher.dispatch(this, hash, taskArray);
 		}else{
-			getJTextField1().setText(timepoint+"");
+			updateTimeTextField(timepoint);
 		}
 	} else {
 		getJTextField1().setText("");
