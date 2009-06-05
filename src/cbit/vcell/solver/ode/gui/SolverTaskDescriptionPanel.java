@@ -3,10 +3,13 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.*;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.math.Constant;
 import java.awt.Color;
 import java.util.*;
+
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 
@@ -26,7 +29,6 @@ public class SolverTaskDescriptionPanel extends javax.swing.JPanel {
 	private java.awt.Panel ivjPanel2 = null;
 	private java.awt.Panel ivjPlotSpecificationPanel = null;
 	private javax.swing.JCheckBox ivjPerformSensitivityAnalysisCheckbox = null;
-	private int fieldODESolverIndex = 0;
 	private javax.swing.JLabel ivjStartTimeLabel = null;
 	private javax.swing.JTextField ivjStartTimeTextField = null;
 	private cbit.vcell.solver.SolverTaskDescription fieldSolverTaskDescription = null;
@@ -849,24 +851,6 @@ private javax.swing.JTextField getJTextFieldKeepEvery() {
 }
 
 /**
- * Gets the mathDescription property (cbit.vcell.math.MathDescription) value.
- * @return The mathDescription property value.
- * @see #setMathDescription
- */
-private cbit.vcell.math.MathDescription getMathDescription() {
-	if (getSolverTaskDescription() == null) return (null);
-	if (getSolverTaskDescription().getSimulation() == null) return (null);
-	return (getSolverTaskDescription().getSimulation().getMathDescription());
-}
-
-
-/**
- */
-private int getODESolverIndex () {
-	return (fieldODESolverIndex);
-}
-
-/**
  * Return the Panel2 property value.
  * @return java.awt.Panel
  */
@@ -943,9 +927,9 @@ private cbit.vcell.math.Constant getSelectedSensitivityParameter(String constant
 		getSolverTaskDescription().getSimulation().getMathDescription()!=null){
 		
 		if (constantName != null && bPerformSensAnal){
-			Enumeration enum1 = getSolverTaskDescription().getSimulation().getMathDescription().getConstants();
+			Enumeration<Constant> enum1 = getSolverTaskDescription().getSimulation().getMathDescription().getConstants();
 			while (enum1.hasMoreElements()){
-				Constant constant = (Constant)enum1.nextElement();
+				Constant constant = enum1.nextElement();
 				if (constant.getName().equals(constantName)){
 					return constant;
 				}
@@ -1027,46 +1011,22 @@ private javax.swing.JTextField getStartTimeTextField() {
  * @return cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeBounds gettimeBounds1() {
+private TimeBounds gettimeBounds1() {
 	// user code begin {1}
 	// user code end
 	return ivjtimeBounds1;
 }
 
 /**
- * Return the TimeBoundsFactory property value.
- * @return cbit.vcell.solver.TimeBounds
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeBounds getTimeBoundsFactory() {
-	// user code begin {1}
-	// user code end
-	return ivjTimeBoundsFactory;
-}
-
-
-/**
  * Return the timeStep1 property value.
  * @return cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeStep gettimeStep1() {
+private TimeStep gettimeStep1() {
 	// user code begin {1}
 	// user code end
 	return ivjtimeStep1;
 }
-
-/**
- * Return the TimeStepFactory property value.
- * @return cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeStep getTimeStepFactory() {
-	// user code begin {1}
-	// user code end
-	return ivjTimeStepFactory;
-}
-
 
 /**
  * Return the TimeStepLabel property value.
@@ -1135,17 +1095,8 @@ private cbit.vcell.solver.SolverTaskDescription getTornOffSolverTaskDescription(
 private void handleException(Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	System.out.println("--------- UNCAUGHT EXCEPTION --------- in OdePanel");
+	System.out.println("--------- UNCAUGHT EXCEPTION --------- in SolverTaskDescriptionPanel");
 	exception.printStackTrace(System.out);
-	if (!(exception instanceof NullPointerException)){
-		java.awt.Point location = new java.awt.Point(200, 200);
-		try {
-			location = getLocationOnScreen();
-		} catch (java.awt.IllegalComponentStateException e) {
-		}
-		org.vcell.util.gui.DialogUtils.showWarningDialog(this, "Error in value : " + exception.getMessage(), new String[] {"Ok"}, "Ok");
-		// javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Warning", javax.swing.JOptionPane.WARNING_MESSAGE);
-	}
 }
 
 
@@ -1317,7 +1268,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1359,21 +1310,19 @@ private void performSensitivityAnalysisCheckbox_ItemStateChanged(java.awt.event.
 /**
  * Comment
  */
-public void setKeepEvery(cbit.vcell.solver.SolverTaskDescription arg1) {
-	if (arg1 == null || !arg1.getOutputTimeSpec().isDefault()) {	
-		getJTextFieldKeepEvery().setText("");	
-		BeanUtils.enableComponents(getJPanelKeepEvery(), false);
-	} else {
-		getJTextFieldKeepEvery().setText(((DefaultOutputTimeSpec)arg1.getOutputTimeSpec()).getKeepEvery() + "");	
-		BeanUtils.enableComponents(getJPanelKeepEvery(), true);
+public void setKeepEvery(SolverTaskDescription arg1) {
+	getJTextFieldKeepEvery().setText("");
+	BeanUtils.enableComponents(getJPanelKeepEvery(), false);
+	if (arg1 == null) { 
+		return;	
 	}
-}
-
-
-/**
- */
-private void setODESolverIndex (int odeSolverIndex) {
-	fieldODESolverIndex = odeSolverIndex;
+	if (arg1.getOutputTimeSpec().isDefault()) {
+		getJTextFieldKeepEvery().setText(((DefaultOutputTimeSpec)arg1.getOutputTimeSpec()).getKeepEvery() + "");		
+	} else if (arg1.getOutputTimeSpec().isUniform()) {
+		getJTextFieldKeepEvery().setText(((UniformOutputTimeSpec)arg1.getOutputTimeSpec()).getOutputTimeStep() + "");
+		getJLabelTimeSamples().setText("seconds");
+	}
+	BeanUtils.enableComponents(getJPanelKeepEvery(), true);
 }
 
 /**
@@ -1531,18 +1480,18 @@ private void updateConstantChoiceComboBox() {
 		if (getSolverTaskDescription() != null && getSolverTaskDescription().getSimulation() != null) {
 			cbit.vcell.math.MathDescription mathDescription = getSolverTaskDescription().getSimulation().getMathDescription();
 			if (mathDescription != null) {
-				java.util.Enumeration enum1 = mathDescription.getConstants();
+				Enumeration<Constant> enum1 = mathDescription.getConstants();
 				if (enum1.hasMoreElements()){
 					((javax.swing.DefaultComboBoxModel)(getConstantChoice().getModel())).addElement(SELECT_PARAMETER);
 				}
 				
 				//Sort Constants, ignore case
-				java.util.TreeSet sortedConstants = new java.util.TreeSet(
-					new java.util.Comparator(){
-						public int compare(Object o1, Object o2){
-							int ignoreCaseB = ((String)o1).compareToIgnoreCase((String)o2);
+				TreeSet<String> sortedConstants = new TreeSet<String>(
+					new Comparator<String>(){
+						public int compare(String o1, String o2){
+							int ignoreCaseB = o1.compareToIgnoreCase(o2);
 							if(ignoreCaseB == 0){
-								return ((String)o1).compareTo((String)o2);
+								return o1.compareTo(o2);
 							}
 							return ignoreCaseB;
 						}
@@ -1572,12 +1521,53 @@ private void updateConstantChoiceComboBox() {
  */
 public void updateKeepEvery() {
 	SolverTaskDescription std = getSolverTaskDescription();
-	if (std != null && std.getOutputTimeSpec().isDefault()) {
-		try {
-			std.setOutputTimeSpec(new DefaultOutputTimeSpec(Integer.parseInt(getJTextFieldKeepEvery().getText())));
-		} catch (java.beans.PropertyVetoException ex) {
-			ex.printStackTrace(System.out);
-			cbit.vcell.client.PopupGenerator.showErrorDialog(ex.getMessage());
+	if (std != null) {
+		if (std.getOutputTimeSpec().isDefault()) {
+			try {
+				std.setOutputTimeSpec(new DefaultOutputTimeSpec(Integer.parseInt(getJTextFieldKeepEvery().getText())));
+			} catch (java.beans.PropertyVetoException ex) {
+				ex.printStackTrace(System.out);
+				PopupGenerator.showErrorDialog(ex.getMessage());
+			}
+		} else if (std.getOutputTimeSpec().isUniform()) {
+			try {
+				double outputTime = Double.parseDouble(getJTextFieldKeepEvery().getText());
+				if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
+						getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+					double timeStep = getTornOffSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+					boolean bValid = true;
+					String suggestedInterval = outputTime + "";
+					if (outputTime < timeStep) {
+						suggestedInterval = timeStep + "";
+						bValid = false;
+					} else {
+						float n = (float)(outputTime/timeStep);
+						if (n != (int)n) {
+							bValid = false;
+							suggestedInterval = ((float)((int)(n + 0.5) * timeStep)) + "";
+						}
+					}
+					if (!bValid) {
+						String ret = PopupGenerator.showWarningDialog(this, "Output Interval must be integer multiple of time step. " 
+								+ "OK to change Output Interval to " + suggestedInterval + "?", 
+								new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+						if (ret.equals(UserMessage.OPTION_YES)) {
+							outputTime = Double.parseDouble(suggestedInterval);
+						} else {
+							SwingUtilities.invokeLater(new Runnable() { 
+							    public void run() { 
+							    	getJTextFieldKeepEvery().requestFocus();
+							    }
+							});
+						}
+					}
+				}
+				UniformOutputTimeSpec ots = new UniformOutputTimeSpec(outputTime);	
+				std.setOutputTimeSpec(ots);
+			} catch (java.beans.PropertyVetoException ex) {
+				ex.printStackTrace(System.out);
+				PopupGenerator.showErrorDialog(ex.getMessage());
+			}
 		}
 	}
 }

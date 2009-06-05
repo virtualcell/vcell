@@ -3,7 +3,6 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.*;
 import java.util.*;
 import java.io.*;
 
@@ -264,14 +263,22 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	
 	out.println("\tSimTool::create();");	
 	out.println("\tsprintf(tempString, \"%s%c" + simulationJob.getSimulationJobID() + "\\0\", outputPath, DIRECTORY_SEPARATOR);");
-	out.println("\tSimTool::getInstance()->setBaseFilename(tempString);");	
-	out.println("\tSimTool::getInstance()->setTimeStep("+taskDesc.getTimeStep().getDefaultTimeStep()+");");
+	out.println("\tSimTool::getInstance()->setBaseFilename(tempString);");
+	
+	double defaultTimeStep = taskDesc.getTimeStep().getDefaultTimeStep();
+	out.println("\tSimTool::getInstance()->setTimeStep("+defaultTimeStep+");");
 	out.println("\tSimTool::getInstance()->setEndTimeSec("+taskDesc.getTimeBounds().getEndingTime()+");");
-	if (taskDesc.getOutputTimeSpec().isDefault()){
-		out.println("\tSimTool::getInstance()->setKeepEvery("+((DefaultOutputTimeSpec)taskDesc.getOutputTimeSpec()).getKeepEvery()+");");
-	}else{
-		throw new RuntimeException("unexpected OutputTime specification type :"+taskDesc.getOutputTimeSpec().getClass().getName());
+	int keepEvery = 1;
+	OutputTimeSpec outputTimeSpec = taskDesc.getOutputTimeSpec();
+	if (outputTimeSpec.isDefault()){
+		keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
+	}else if (outputTimeSpec.isUniform()) {
+		keepEvery = (int)((float)((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep()/defaultTimeStep);		
+	} else {
+		throw new RuntimeException("unexpected OutputTime specification type :"+outputTimeSpec.getClass().getName());
 	}
+	out.println("\tSimTool::getInstance()->setKeepEvery("+ keepEvery +");");
+	
 	if (simulation.getSolverTaskDescription().isStopAtSpatiallyUniform()) {
 		out.println("\tSimTool::getInstance()->setCheckSpatiallyUniform();");
 		out.println("\tSimTool::getInstance()->setSpatiallyUniformAbsErrorTolerance(" + taskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + ");");

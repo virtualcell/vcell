@@ -16,7 +16,6 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
-import cbit.util.*;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:15 PM)
@@ -582,27 +581,22 @@ private boolean isAllowableSolverDescription(SolverDescription argSolverDescript
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && (evt.getPropertyName().equals("solverDescription"))) {
-		if (!getSolverDescription().supports(getOutputTimeSpec())){
-			try {
-				if (getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-					TimeBounds timeBounds = getTimeBounds();
-					double outputTime = timeBounds.getEndingTime()/10;
-					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
-				} else { 
-					setOutputTimeSpec(getSolverDescription().createOutputTimeSpec(this));
-				}
-			} catch (java.beans.PropertyVetoException ex) {
-				ex.printStackTrace(System.out);
+		try {
+			if (getSolverDescription().equals(SolverDescription.SundialsPDE) 
+				|| getSolverDescription().equals(SolverDescription.FiniteVolume)
+				|| getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+				TimeBounds timeBounds = getTimeBounds();
+				double outputTime = timeBounds.getEndingTime()/10;
+				setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+			} else if (!getSolverDescription().supports(getOutputTimeSpec())){
+				setOutputTimeSpec(getSolverDescription().createOutputTimeSpec(this));
 			}
-		}
-		if (getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-			try {
+			if (getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 				setErrorTolerance(new ErrorTolerance(1e-9, 1e-7));
-			} catch (PropertyVetoException e) {
-				e.printStackTrace();
 			}
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
 		}		
-		
 	}
 }
 

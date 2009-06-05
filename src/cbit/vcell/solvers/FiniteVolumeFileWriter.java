@@ -740,18 +740,26 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	}
 	printWriter.println("BASE_FILE_NAME " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
     printWriter.println("ENDING_TIME " + solverTaskDesc.getTimeBounds().getEndingTime());    
-    OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();
+    OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
 	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 		if (outputTimeSpec.isDefault()) {
-			printWriter.println("KEEP_EVERY ONE_STEP " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery());
-			printWriter.println("KEEP_AT_MOST " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepAtMost());
+			DefaultOutputTimeSpec defaultOutputTimeSpec = (DefaultOutputTimeSpec)outputTimeSpec;
+			printWriter.println("KEEP_EVERY ONE_STEP " + defaultOutputTimeSpec.getKeepEvery());
+			printWriter.println("KEEP_AT_MOST " + defaultOutputTimeSpec.getKeepAtMost());
 		} else {
 			printWriter.println("TIME_STEP " + ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
 			printWriter.println("KEEP_EVERY 1");
 		}
     } else {
-    	printWriter.println("TIME_STEP " + solverTaskDesc.getTimeStep().getDefaultTimeStep());
-    	printWriter.println("KEEP_EVERY " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery());
+    	double defaultTimeStep = solverTaskDesc.getTimeStep().getDefaultTimeStep();
+    	printWriter.println("TIME_STEP " + defaultTimeStep);
+    	int keepEvery = 1;
+		if (outputTimeSpec.isDefault()) {
+        	keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
+		} else if (outputTimeSpec.isUniform()) {
+	    	keepEvery = (int)((float)((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep()/defaultTimeStep);
+		}
+		printWriter.println("KEEP_EVERY " +  keepEvery);
     }
     if (solverTaskDesc.isStopAtSpatiallyUniform()) {
     	printWriter.println("CHECK_SPATIALLY_UNIFORM " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());

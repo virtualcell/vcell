@@ -9,6 +9,7 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -19,7 +20,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -28,11 +28,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
+
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:25 PM)
@@ -1168,103 +1170,51 @@ private void enableOutputOptionPanel() {
 	// enables the panel where the output interval is set if the solver is IDA
 	// Otherwise, that panel is disabled. 
 
+	getDefaultOutputRadioButton().setEnabled(false);
+	getUniformOutputRadioButton().setEnabled(false);	
+	getExplicitOutputRadioButton().setEnabled(false);
+	BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+	BeanUtils.enableComponents(getUniformOutputPanel(), false);
+	BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+
 	SolverTaskDescription solverTaskDescription = getSolverTaskDescription();
 	if (solverTaskDescription==null || solverTaskDescription.getSolverDescription()==null){
 		// if solver is not IDA, if the output Time step radio button had been set, 
 		// change the setting to the 'keep every' radio button and flush the contents of the output timestep text field. 
 		// Also, disable its radiobutton and fields.		
-		getDefaultOutputRadioButton().setEnabled(false);
-		getUniformOutputRadioButton().setEnabled(false);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		return;
 	}
-
-	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
 	
-	if (solverDesc.supportsUniformExplicitOutput()) {
-		getDefaultOutputRadioButton().setEnabled(true);
-		getUniformOutputRadioButton().setEnabled(true);	
-		getExplicitOutputRadioButton().setEnabled(true);
-		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), true);
-		if (solverTaskDescription.getOutputTimeSpec().isDefault()){
-			getKeepAtMostTextField().setEnabled(true);
-			getKeepEveryTextField().setEnabled(true);
-			getOutputTimeStepTextField().setEnabled(false);
-			getOutputTimesTextField().setEnabled(false);
-		}else if (solverTaskDescription.getOutputTimeSpec().isUniform()){
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(false);
-			getOutputTimeStepTextField().setEnabled(true);
-			getOutputTimesTextField().setEnabled(false);
-		}else if (solverTaskDescription.getOutputTimeSpec().isExplicit()){
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(false);
-			getOutputTimeStepTextField().setEnabled(false);
-			getOutputTimesTextField().setEnabled(true);
-		}
-	} else if ((solverDesc.equals(SolverDescription.HybridEuler))
-			||(solverDesc.equals(SolverDescription.HybridMilstein))
-			||(solverDesc.equals(SolverDescription.HybridMilAdaptive))){
-		getDefaultOutputRadioButton().setEnabled(false);
-		getUniformOutputRadioButton().setEnabled(true);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		getKeepAtMostTextField().setEnabled(false);
-		getKeepEveryTextField().setEnabled(false);
-		getOutputTimeStepTextField().setEnabled(true);
-		getOutputTimesTextField().setEnabled(false);
-	} else if (solverDesc.equals(SolverDescription.SundialsPDE)) {
-		getDefaultOutputRadioButton().setEnabled(true);
-		getUniformOutputRadioButton().setEnabled(true);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		getKeepAtMostTextField().setEnabled(true);
-		getKeepEveryTextField().setEnabled(true);
-		getOutputTimeStepTextField().setEnabled(true);
-		getOutputTimesTextField().setEnabled(false);
-	} else if (solverDesc.equals(SolverDescription.StochGibson)){
-		//amended July 9th, 2007 to enable uniformaOutputTimeSpec for gibson method
-		getDefaultOutputRadioButton().setEnabled(true);
-		getUniformOutputRadioButton().setEnabled(true);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		if (solverTaskDescription.getOutputTimeSpec().isDefault()){
-			getKeepAtMostTextField().setText("");
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(true);
-			getOutputTimeStepTextField().setEnabled(false);
-			getOutputTimesTextField().setEnabled(false);
-		}else if (solverTaskDescription.getOutputTimeSpec().isUniform()){
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(false);
-			getOutputTimeStepTextField().setEnabled(true);
-			getOutputTimesTextField().setEnabled(false);
-		}
-	}else {
-		getDefaultOutputRadioButton().setEnabled(true);
-		getUniformOutputRadioButton().setEnabled(false);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		if (solverDesc.equals(SolverDescription.FiniteVolume)
-			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
-			getKeepAtMostLabel().setEnabled(false);
-			getPointsLabel().setEnabled(false);
-			getKeepAtMostTextField().setEnabled(false);
+	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
+	OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
+	
+	DefaultOutputTimeSpec dots = new DefaultOutputTimeSpec();
+	UniformOutputTimeSpec uots = new UniformOutputTimeSpec(0.1);
+	ExplicitOutputTimeSpec eots = new ExplicitOutputTimeSpec(new double[] {0.1});
+	
+	if (solverDesc.supports(dots)) {
+		if (!solverDesc.equals(SolverDescription.FiniteVolume) && !solverDesc.equals(SolverDescription.FiniteVolumeStandalone) 
+				|| ots.isDefault()) {
+			getDefaultOutputRadioButton().setEnabled(true);
+			BeanUtils.enableComponents(getDefaultOutputPanel(), true);
 		}
 	}
+	if (solverDesc.supports(uots)) {
+		getUniformOutputRadioButton().setEnabled(true);
+		BeanUtils.enableComponents(getUniformOutputPanel(), true);
+	}
+	if (solverDesc.supports(eots)) {
+		getExplicitOutputRadioButton().setEnabled(true);
+		BeanUtils.enableComponents(getExplicitOutputPanel(), true);
+	}
+	if (solverDesc.equals(SolverDescription.StochGibson) 
+			|| solverDesc.equals(SolverDescription.FiniteVolume)
+			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)
+		){
+		getKeepAtMostTextField().setText("");
+		getKeepAtMostTextField().setEnabled(false);
+	}
+
 	
 	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
 		stopSpatiallyUniformPanel.setVisible(true);
@@ -2767,7 +2717,9 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 		OutputTimeSpec ots = null;
 		if(getDefaultOutputRadioButton().isSelected()){
 			int keepEvery = Integer.parseInt(getKeepEveryTextField().getText());
-			if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)||getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)) 
+			if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
+					getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone) ||
+					getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)) 
 			{
 				ots = new DefaultOutputTimeSpec(keepEvery);
 			} else {
@@ -2776,6 +2728,36 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 			}
 		} else if(getUniformOutputRadioButton().isSelected()) {
 			double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
+			if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
+					getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+				double timeStep = getTornOffSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+				boolean bValid = true;
+				String suggestedInterval = outputTime + "";
+				if (outputTime < timeStep) {
+					suggestedInterval = timeStep + "";
+					bValid = false;
+				} else {
+					float n = (float)(outputTime/timeStep);
+					if (n != (int)n) {
+						bValid = false;
+						suggestedInterval = ((float)((int)(n + 0.5) * timeStep)) + "";
+					}
+				}
+				if (!bValid) {
+					String ret = PopupGenerator.showWarningDialog(this, "Output Interval must be integer multiple of time step. " 
+							+ "OK to change Output Interval to " + suggestedInterval + "?", 
+							new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+					if (ret.equals(UserMessage.OPTION_YES)) {
+						outputTime = Double.parseDouble(suggestedInterval);
+					} else {
+						SwingUtilities.invokeLater(new Runnable() { 
+						    public void run() { 
+						    	getOutputTimeStepTextField().requestFocus();
+						    }
+						});
+					}
+				}
+			}
 			ots = new UniformOutputTimeSpec(outputTime);		
 		} else if (getExplicitOutputRadioButton().isSelected()) {
 			String line = getOutputTimesTextField().getText();
@@ -2785,18 +2767,16 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 			double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
 			
 			if (times[0] < startingTime || times[times.length - 1] > endingTime) {
-				String ret = cbit.vcell.client.PopupGenerator.showWarningDialog(this, "Output times should be within [" + startingTime + "," + endingTime + "], OK to change END TIME?", 
-					new String[]{ cbit.vcell.client.UserMessage.OPTION_YES, cbit.vcell.client.UserMessage.OPTION_NO}, cbit.vcell.client.UserMessage.OPTION_YES);
-				if (ret.equals(cbit.vcell.client.UserMessage.OPTION_YES)) {
+				String ret = PopupGenerator.showWarningDialog(this, "Output times should be within [" + startingTime + "," + endingTime + "], OK to change END TIME?", 
+					new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+				if (ret.equals(UserMessage.OPTION_YES)) {
 					getTornOffSolverTaskDescription().setTimeBounds(new TimeBounds(startingTime, times[times.length - 1]));
 				} else {
-					javax.swing.SwingUtilities.invokeLater(new Runnable() { 
+					SwingUtilities.invokeLater(new Runnable() { 
 					    public void run() { 
-					          getOutputTimesTextField().requestFocus();
-					    } 
-		
-					});					
-					
+					         getOutputTimesTextField().requestFocus();
+					    }
+					});
 				}
 			}
 
@@ -2808,7 +2788,7 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 			throw new RuntimeException("Problems while setting the output options " + e.getMessage());
 		}
 	} catch (Exception e) {
-		org.vcell.util.gui.DialogUtils.showErrorDialog("Error in Value : " + e.getMessage());
+		DialogUtils.showErrorDialog("Error in Value : " + e.getMessage());
 	}
 }
 
