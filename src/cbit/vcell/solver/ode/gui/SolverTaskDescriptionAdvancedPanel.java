@@ -33,6 +33,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
 /**
@@ -126,14 +128,21 @@ private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) t
 		return;
 	}
 
-	if(itemEvent.getSource() == getDefaultOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isDefault()){
+	OutputTimeSpec outputTimeSpec = getSolverTaskDescription().getOutputTimeSpec();
+	if(itemEvent.getSource() == getDefaultOutputRadioButton() && !outputTimeSpec.isDefault()){
 		getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec());
-	} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isUniform()){
-		TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
-		org.vcell.util.Range outputTimeRange = org.vcell.util.NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
-		double outputTime = outputTimeRange.getMax();
+	} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !outputTimeSpec.isUniform()){
+		double outputTime = 0.0;
+		if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
+				getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+			outputTime = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+		} else {
+			TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
+			Range outputTimeRange = NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
+			outputTime = outputTimeRange.getMax();
+		}
 		getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
-	} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isExplicit()){
+	} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !outputTimeSpec.isExplicit()){
 		TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
 		getSolverTaskDescription().setOutputTimeSpec(new ExplicitOutputTimeSpec(new double[]{timeBounds.getStartingTime(), timeBounds.getEndingTime()}));
 	}
