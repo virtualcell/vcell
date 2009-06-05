@@ -2,13 +2,37 @@ package cbit.vcell.client.desktop.biomodel;
 
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.solver.*;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.simulation.SimulationListPanel;
+import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
+import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.mapping.gui.ReactionSpecsPanel;
+import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.gui.MathDescEditor;
+import cbit.vcell.math.gui.MathDescPanel;
+import cbit.vcell.modelopt.AnalysisTask;
+import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel;
+import cbit.vcell.modelopt.gui.OptTestPanel;
+import cbit.vcell.opt.solvers.OptimizationService;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Hashtable;
+
 import javax.swing.*;
 
 import org.vcell.util.Issue;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -19,15 +43,15 @@ public class ApplicationEditor extends JPanel {
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP2Aligning = false;
-	private cbit.vcell.client.desktop.simulation.SimulationWorkspace fieldSimulationWorkspace = null;
+	private SimulationWorkspace fieldSimulationWorkspace = null;
     protected transient ActionListener actionListener = null;
-	private cbit.vcell.client.desktop.simulation.SimulationWorkspace ivjsimulationWorkspace1 = null;
-	private cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel ivjElectricalMembraneMappingPanel = null;
-	private cbit.vcell.mapping.gui.InitialConditionsPanel ivjInitialConditionsPanel = null;
+	private SimulationWorkspace ivjsimulationWorkspace1 = null;
+	private ElectricalMembraneMappingPanel ivjElectricalMembraneMappingPanel = null;
+	private InitialConditionsPanel ivjInitialConditionsPanel = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
-	private cbit.vcell.mapping.gui.ReactionSpecsPanel ivjReactionSpecsPanel = null;
-	private cbit.vcell.client.desktop.simulation.SimulationListPanel ivjSimulationListPanel = null;
-	private cbit.vcell.mapping.gui.StructureMappingCartoonPanel ivjStaticCartoonPanel = null;
+	private ReactionSpecsPanel ivjReactionSpecsPanel = null;
+	private SimulationListPanel ivjSimulationListPanel = null;
+	private StructureMappingCartoonPanel ivjStaticCartoonPanel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
@@ -40,24 +64,24 @@ public class ApplicationEditor extends JPanel {
 	private JRadioButton ivjViewEqunsRadioButton = null;
 	private JPanel ivjViewMathPanel = null;
 	private JRadioButton ivjViewVCMDLRadioButton = null;
-	private cbit.vcell.math.gui.MathDescPanel ivjMathDescPanel1 = null;
+	private MathDescPanel ivjMathDescPanel1 = null;
 	private JPanel ivjMathViewerPanel = null;
 	
 	private MultiPurposeTextPanel ivjVCMLEditorPane = null;
 	private JPanel ivjVCMLPanel = null;
-	private cbit.vcell.math.MathDescription ivjmathDescription = null;
+	private MathDescription ivjmathDescription = null;
 	private CardLayout ivjcardLayout = null;
 	private ButtonGroup ivjbuttonGroup = null;
 	private JPanel ivjButtonsPanel = null;
 	private JButton ivjCreateMathModelButton = null;
 	private JButton ivjRefreshMathButton = null;
 	private JPanel ivjJPanel2 = null;
-	private cbit.vcell.modelopt.gui.OptTestPanel ivjoptTestPanel = null;
+	private OptTestPanel ivjoptTestPanel = null;
 	private JPanel ivjParameterEstimationPanel = null;
 	private JComboBox ivjAnalysisTaskComboBox = null;
 	private JButton ivjDeleteAnalysisTaskButton = null;
 	private JButton ivjNewAnalysisTaskButton = null;
-	private cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel ivjAnalysisTaskComboBoxModel = null;
+	private AnalysisTaskComboBoxModel ivjAnalysisTaskComboBoxModel = null;
 	private boolean ivjConnPtoP8Aligning = false;
 	private ComboBoxModel ivjmodel1 = null;
 	private JButton ivjCopyButton = null; 
@@ -142,7 +166,7 @@ public synchronized void addActionListener(ActionListener l) {
  * Comment
  */
 private void analysisTaskComboBox_ActionPerformed() {
-	getoptTestPanel().setParameterEstimationTask((cbit.vcell.modelopt.ParameterEstimationTask)getAnalysisTaskComboBoxModel().getSelectedItem());
+	getoptTestPanel().setParameterEstimationTask((ParameterEstimationTask)getAnalysisTaskComboBoxModel().getSelectedItem());
 	return;
 }
 
@@ -192,7 +216,7 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoC11(SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -274,7 +298,7 @@ private void connEtoC4(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.updateMath();
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), updateMath(), false);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -328,7 +352,7 @@ private void connEtoC6(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.math.MathDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(cbit.vcell.math.MathDescription value) {
+private void connEtoC7(MathDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -390,7 +414,7 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		setsimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+		setsimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -425,7 +449,7 @@ private void connEtoM10() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM2(SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -445,7 +469,7 @@ private void connEtoM2(cbit.vcell.mapping.SimulationContext value) {
  * @param value cbit.vcell.client.desktop.simulation.SimulationWorkspace
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.client.desktop.simulation.SimulationWorkspace value) {
+private void connEtoM3(SimulationWorkspace value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -501,7 +525,7 @@ private void connEtoM5() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM6(SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -545,7 +569,7 @@ private void connEtoM7(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.math.MathDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.math.MathDescription value) {
+private void connEtoM8(MathDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -567,7 +591,7 @@ private void connEtoM8(cbit.vcell.math.MathDescription value) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM9(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM9(SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -722,7 +746,7 @@ private void connPtoP3SetTarget() {
 			// user code end
 			ivjConnPtoP3Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getStaticCartoonPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getStaticCartoonPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -776,7 +800,7 @@ private void connPtoP4SetTarget() {
 			// user code end
 			ivjConnPtoP4Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getInitialConditionsPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getInitialConditionsPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -830,7 +854,7 @@ private void connPtoP5SetTarget() {
 			// user code end
 			ivjConnPtoP5Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getReactionSpecsPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getReactionSpecsPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -884,7 +908,7 @@ private void connPtoP6SetTarget() {
 			// user code end
 			ivjConnPtoP6Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getElectricalMembraneMappingPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getElectricalMembraneMappingPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -994,9 +1018,9 @@ private void connPtoP8SetTarget() {
  */
 private void copyAnalysisTaskButton_ActionPerformed() {
 	try {
-		cbit.vcell.modelopt.AnalysisTask taskToCopy = (cbit.vcell.modelopt.AnalysisTask) getAnalysisTaskComboBoxModel().getSelectedItem();
+		AnalysisTask taskToCopy = (AnalysisTask) getAnalysisTaskComboBoxModel().getSelectedItem();
 		if (getSimulationContext() != null && taskToCopy != null){
-			cbit.vcell.modelopt.AnalysisTask newAnalysisTask = getsimulationContext().copyAnalysisTask(taskToCopy);
+			AnalysisTask newAnalysisTask = getsimulationContext().copyAnalysisTask(taskToCopy);
 			getAnalysisTaskComboBox().setSelectedItem(newAnalysisTask);
 		}
 	}catch (Exception e){
@@ -1006,10 +1030,21 @@ private void copyAnalysisTaskButton_ActionPerformed() {
 }
 
 
-private void createMathModel(ActionEvent e) {
+private void createMathModel(final ActionEvent e) {
 	// relays an action event with this as the source
-	if (updateMath())
-		refireActionPerformed(e);
+	AsynchClientTask[] updateTasks = updateMath();
+	AsynchClientTask[] tasks = new AsynchClientTask[updateTasks.length + 1];
+	System.arraycopy(updateTasks, 0, tasks, 0, updateTasks.length);
+	
+	tasks[updateTasks.length] = new AsynchClientTask("creating math model", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			refireActionPerformed(e);
+		}
+	};
+	
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false);
 }
 
 
@@ -1017,7 +1052,7 @@ private void createMathModel(ActionEvent e) {
  * Comment
  */
 private void deleteAnalysisTaskButton_ActionPerformed() throws java.beans.PropertyVetoException {
-	cbit.vcell.modelopt.AnalysisTask taskToDelete = (cbit.vcell.modelopt.AnalysisTask) getAnalysisTaskComboBoxModel().getSelectedItem();
+	AnalysisTask taskToDelete = (AnalysisTask) getAnalysisTaskComboBoxModel().getSelectedItem();
 	if (taskToDelete != null && getSimulationContext() != null) {
 		getSimulationContext().removeAnalysisTask(taskToDelete);
 	}
@@ -1043,7 +1078,7 @@ private javax.swing.JComboBox getAnalysisTaskComboBox() {
 			ivjAnalysisTaskComboBox = new javax.swing.JComboBox();
 			ivjAnalysisTaskComboBox.setName("AnalysisTaskComboBox");
 			ivjAnalysisTaskComboBox.setPreferredSize(new java.awt.Dimension(300, 23));
-			ivjAnalysisTaskComboBox.setRenderer(new cbit.vcell.client.desktop.biomodel.AnalysisTaskListCellRenderer());
+			ivjAnalysisTaskComboBox.setRenderer(new AnalysisTaskListCellRenderer());
 			ivjAnalysisTaskComboBox.setMinimumSize(new java.awt.Dimension(300, 23));
 			ivjAnalysisTaskComboBox.setEnabled(false);
 			// user code begin {1}
@@ -1062,10 +1097,10 @@ private javax.swing.JComboBox getAnalysisTaskComboBox() {
  * @return cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel getAnalysisTaskComboBoxModel() {
+private AnalysisTaskComboBoxModel getAnalysisTaskComboBoxModel() {
 	if (ivjAnalysisTaskComboBoxModel == null) {
 		try {
-			ivjAnalysisTaskComboBoxModel = new cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel();
+			ivjAnalysisTaskComboBoxModel = new AnalysisTaskComboBoxModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1215,10 +1250,10 @@ private javax.swing.JButton getDeleteAnalysisTaskButton() {
  * @return cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel getElectricalMembraneMappingPanel() {
+private ElectricalMembraneMappingPanel getElectricalMembraneMappingPanel() {
 	if (ivjElectricalMembraneMappingPanel == null) {
 		try {
-			ivjElectricalMembraneMappingPanel = new cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel();
+			ivjElectricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 			ivjElectricalMembraneMappingPanel.setName("ElectricalMembraneMappingPanel");
 			// user code begin {1}
 			// user code end
@@ -1234,7 +1269,7 @@ private cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel getElectricalMembr
 /**
  * Comment
  */
-private cbit.vcell.mapping.GeometryContext getGeometryContext() {
+private GeometryContext getGeometryContext() {
 	if (getsimulationContext()==null){
 		return null;
 	}else{
@@ -1248,10 +1283,10 @@ private cbit.vcell.mapping.GeometryContext getGeometryContext() {
  * @return cbit.vcell.mapping.gui.InitialConditionsPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.gui.InitialConditionsPanel getInitialConditionsPanel() {
+private InitialConditionsPanel getInitialConditionsPanel() {
 	if (ivjInitialConditionsPanel == null) {
 		try {
-			ivjInitialConditionsPanel = new cbit.vcell.mapping.gui.InitialConditionsPanel();
+			ivjInitialConditionsPanel = new InitialConditionsPanel();
 			ivjInitialConditionsPanel.setName("InitialConditionsPanel");
 			// user code begin {1}
 			// user code end
@@ -1350,10 +1385,10 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
  * @return cbit.vcell.math.gui.MathDescPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.math.gui.MathDescPanel getMathDescPanel1() {
+private MathDescPanel getMathDescPanel1() {
 	if (ivjMathDescPanel1 == null) {
 		try {
-			ivjMathDescPanel1 = new cbit.vcell.math.gui.MathDescPanel();
+			ivjMathDescPanel1 = new MathDescPanel();
 			ivjMathDescPanel1.setName("MathDescPanel1");
 			// user code begin {1}
 			// user code end
@@ -1372,7 +1407,7 @@ private cbit.vcell.math.gui.MathDescPanel getMathDescPanel1() {
  * @return cbit.vcell.math.MathDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.math.MathDescription getmathDescription() {
+private MathDescription getmathDescription() {
 	// user code begin {1}
 	// user code end
 	return ivjmathDescription;
@@ -1443,7 +1478,7 @@ private javax.swing.JButton getNewAnalysisTaskButton() {
  * Method generated to support the promotion of the optimizationService attribute.
  * @return cbit.vcell.opt.solvers.OptimizationService
  */
-public cbit.vcell.opt.solvers.OptimizationService getOptimizationService() {
+public OptimizationService getOptimizationService() {
 	return getoptTestPanel().getOptimizationService();
 }
 
@@ -1453,10 +1488,10 @@ public cbit.vcell.opt.solvers.OptimizationService getOptimizationService() {
  * @return cbit.vcell.modelopt.gui.OptTestPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.modelopt.gui.OptTestPanel getoptTestPanel() {
+private OptTestPanel getoptTestPanel() {
 	if (ivjoptTestPanel == null) {
 		try {
-			ivjoptTestPanel = new cbit.vcell.modelopt.gui.OptTestPanel();
+			ivjoptTestPanel = new OptTestPanel();
 			ivjoptTestPanel.setName("optTestPanel");
 			// user code begin {1}
 			// user code end
@@ -1502,10 +1537,10 @@ private javax.swing.JPanel getParameterEstimationPanel() {
  * @return cbit.vcell.mapping.gui.ReactionSpecsPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.gui.ReactionSpecsPanel getReactionSpecsPanel() {
+private ReactionSpecsPanel getReactionSpecsPanel() {
 	if (ivjReactionSpecsPanel == null) {
 		try {
-			ivjReactionSpecsPanel = new cbit.vcell.mapping.gui.ReactionSpecsPanel();
+			ivjReactionSpecsPanel = new ReactionSpecsPanel();
 			ivjReactionSpecsPanel.setName("ReactionSpecsPanel");
 			// user code begin {1}
 			// user code end
@@ -1547,7 +1582,7 @@ private javax.swing.JButton getRefreshMathButton() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext() {
+private SimulationContext getsimulationContext() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext;
@@ -1557,7 +1592,7 @@ private cbit.vcell.mapping.SimulationContext getsimulationContext() {
 /**
  * Comment
  */
-private cbit.vcell.mapping.SimulationContext getSimulationContext() {
+private SimulationContext getSimulationContext() {
 	if (getSimulationWorkspace()==null || getSimulationWorkspace().getSimulationOwner()==null){
 		return null;
 	}else{
@@ -1571,10 +1606,10 @@ private cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.client.desktop.simulation.SimulationListPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.client.desktop.simulation.SimulationListPanel getSimulationListPanel() {
+private SimulationListPanel getSimulationListPanel() {
 	if (ivjSimulationListPanel == null) {
 		try {
-			ivjSimulationListPanel = new cbit.vcell.client.desktop.simulation.SimulationListPanel();
+			ivjSimulationListPanel = new SimulationListPanel();
 			ivjSimulationListPanel.setName("SimulationListPanel");
 			// user code begin {1}
 			// user code end
@@ -1592,7 +1627,7 @@ private cbit.vcell.client.desktop.simulation.SimulationListPanel getSimulationLi
  * @return The simulationWorkspace property value.
  * @see #setSimulationWorkspace
  */
-public cbit.vcell.client.desktop.simulation.SimulationWorkspace getSimulationWorkspace() {
+public SimulationWorkspace getSimulationWorkspace() {
 	return fieldSimulationWorkspace;
 }
 
@@ -1602,7 +1637,7 @@ public cbit.vcell.client.desktop.simulation.SimulationWorkspace getSimulationWor
  * @return cbit.vcell.client.desktop.simulation.SimulationWorkspace
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.client.desktop.simulation.SimulationWorkspace getsimulationWorkspace1() {
+private SimulationWorkspace getsimulationWorkspace1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationWorkspace1;
@@ -1614,10 +1649,10 @@ private cbit.vcell.client.desktop.simulation.SimulationWorkspace getsimulationWo
  * @return cbit.vcell.mapping.gui.StructureMappingCartoonPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.gui.StructureMappingCartoonPanel getStaticCartoonPanel() {
+private StructureMappingCartoonPanel getStaticCartoonPanel() {
 	if (ivjStaticCartoonPanel == null) {
 		try {
-			ivjStaticCartoonPanel = new cbit.vcell.mapping.gui.StructureMappingCartoonPanel();
+			ivjStaticCartoonPanel = new StructureMappingCartoonPanel();
 			ivjStaticCartoonPanel.setName("StaticCartoonPanel");
 			// user code begin {1}
 			// user code end
@@ -1659,7 +1694,7 @@ private javax.swing.JPanel getStructureMappingPanel() {
  * Method generated to support the promotion of the userPreferences attribute.
  * @return cbit.vcell.client.server.UserPreferences
  */
-public cbit.vcell.client.server.UserPreferences getUserPreferences() {
+public UserPreferences getUserPreferences() {
 	return getoptTestPanel().getUserPreferences();
 }
 
@@ -1892,7 +1927,7 @@ private void refreshAnalysisTab()
  * Comment
  */
 private void initializeComboBoxModel() {
-	cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel analysisTaskCBModel = new cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel();
+	AnalysisTaskComboBoxModel analysisTaskCBModel = new AnalysisTaskComboBoxModel();
 	analysisTaskCBModel.setSimulationContext(getSimulationContext());
 	getAnalysisTaskComboBox().setModel(analysisTaskCBModel);
 }
@@ -1953,11 +1988,11 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 			return;
 		}
 
-		cbit.vcell.modelopt.AnalysisTask analysisTasks[] = getSimulationContext().getAnalysisTasks();
+		AnalysisTask analysisTasks[] = getSimulationContext().getAnalysisTasks();
 		boolean found = true;
 		while (found) {
 			found = false;
-			parameterEstimationName = org.vcell.util.TokenMangler.getNextEnumeratedToken(parameterEstimationName);
+			parameterEstimationName = TokenMangler.getNextEnumeratedToken(parameterEstimationName);
 			for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
 				if (analysisTasks[i].getName().equals(parameterEstimationName)){
 					found = true;
@@ -1968,16 +2003,16 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 
 		String newParameterEstimationName = null;
 		try {
-			newParameterEstimationName = org.vcell.util.gui.DialogUtils.showInputDialog0(this,"name for new parameter estimation set",parameterEstimationName);
-		} catch (org.vcell.util.gui.UtilCancelException ex) {
+			newParameterEstimationName = DialogUtils.showInputDialog0(this,"name for new parameter estimation set",parameterEstimationName);
+		} catch (UtilCancelException ex) {
 			// user canceled; it's ok
 		}
 
 		if (newParameterEstimationName != null) {
 			if (newParameterEstimationName.length() == 0) {
-				cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Error:\n name for new parameter estimation can't be empty" );
+				PopupGenerator.showErrorDialog(this,"Error:\n name for new parameter estimation can't be empty" );
 			} else {
-				cbit.vcell.modelopt.ParameterEstimationTask newParameterEstimationTask = new cbit.vcell.modelopt.ParameterEstimationTask(getsimulationContext());
+				ParameterEstimationTask newParameterEstimationTask = new ParameterEstimationTask(getsimulationContext());
 				newParameterEstimationTask.setName(newParameterEstimationName);
 				getsimulationContext().addAnalysisTask(newParameterEstimationTask);
 				getAnalysisTaskComboBoxModel().setSelectedItem(newParameterEstimationTask);
@@ -1986,7 +2021,7 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 		refreshAnalysisTaskEnables();
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		DialogUtils.showErrorDialog(this,e.getMessage());
 	}
 }
 
@@ -2073,7 +2108,7 @@ private void setcardLayout(java.awt.CardLayout newValue) {
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext(GeometryContext newValue) {
 	if (ivjgeometryContext != newValue) {
 		try {
 			ivjgeometryContext = newValue;
@@ -2094,7 +2129,7 @@ private void setgeometryContext(cbit.vcell.mapping.GeometryContext newValue) {
  * @param newValue cbit.vcell.math.MathDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setmathDescription(cbit.vcell.math.MathDescription newValue) {
+private void setmathDescription(MathDescription newValue) {
 	if (ivjmathDescription != newValue) {
 		try {
 			ivjmathDescription = newValue;
@@ -2139,7 +2174,7 @@ private void setmodel1(javax.swing.ComboBoxModel newValue) {
  * Method generated to support the promotion of the optimizationService attribute.
  * @param arg1 cbit.vcell.opt.solvers.OptimizationService
  */
-public void setOptimizationService(cbit.vcell.opt.solvers.OptimizationService arg1) {
+public void setOptimizationService(OptimizationService arg1) {
 	getoptTestPanel().setOptimizationService(arg1);
 }
 
@@ -2149,7 +2184,7 @@ public void setOptimizationService(cbit.vcell.opt.solvers.OptimizationService ar
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext(SimulationContext newValue) {
 	if (ivjsimulationContext != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -2183,8 +2218,8 @@ private void setsimulationContext(cbit.vcell.mapping.SimulationContext newValue)
  * @param simulationWorkspace The new value for the property.
  * @see #getSimulationWorkspace
  */
-public void setSimulationWorkspace(cbit.vcell.client.desktop.simulation.SimulationWorkspace simulationWorkspace) {
-	cbit.vcell.client.desktop.simulation.SimulationWorkspace oldValue = fieldSimulationWorkspace;
+public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
+	SimulationWorkspace oldValue = fieldSimulationWorkspace;
 	fieldSimulationWorkspace = simulationWorkspace;
 	firePropertyChange("simulationWorkspace", oldValue, simulationWorkspace);
 }
@@ -2195,10 +2230,10 @@ public void setSimulationWorkspace(cbit.vcell.client.desktop.simulation.Simulati
  * @param newValue cbit.vcell.client.desktop.simulation.SimulationWorkspace
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationWorkspace1(cbit.vcell.client.desktop.simulation.SimulationWorkspace newValue) {
+private void setsimulationWorkspace1(SimulationWorkspace newValue) {
 	if (ivjsimulationWorkspace1 != newValue) {
 		try {
-			cbit.vcell.client.desktop.simulation.SimulationWorkspace oldValue = getsimulationWorkspace1();
+			SimulationWorkspace oldValue = getsimulationWorkspace1();
 			/* Stop listening for events from the current object */
 			if (ivjsimulationWorkspace1 != null) {
 				ivjsimulationWorkspace1.removePropertyChangeListener(ivjEventHandler);
@@ -2233,7 +2268,7 @@ private void setsimulationWorkspace1(cbit.vcell.client.desktop.simulation.Simula
  * Method generated to support the promotion of the userPreferences attribute.
  * @param arg1 cbit.vcell.client.server.UserPreferences
  */
-public void setUserPreferences(cbit.vcell.client.server.UserPreferences arg1) {
+public void setUserPreferences(UserPreferences arg1) {
 	getoptTestPanel().setUserPreferences(arg1);
 }
 
@@ -2241,56 +2276,68 @@ public void setUserPreferences(cbit.vcell.client.server.UserPreferences arg1) {
 /**
  * Comment
  */
-private boolean updateMath() {
-	try {
-		SimulationContext simContext = (SimulationContext)getSimulationWorkspace().getSimulationOwner();
-		cbit.vcell.geometry.Geometry geometry = simContext.getGeometry();
-		if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
-			geometry.getGeometrySurfaceDescription().updateAll();
-		}
-		// Use differnt mathmapping for different applications (stoch or non-stoch)
-		simContext.checkValidity();
-		
-		MathMapping mathMapping = null;
-		cbit.vcell.math.MathDescription mathDesc = null;
-		if (!simContext.isStoch())
-		{
-			mathMapping = new MathMapping(simContext);
-			mathDesc = ((MathMapping)mathMapping).getMathDescription();
-		}
-		else
-		{
-			mathMapping = new StochMathMapping(simContext);
-			mathDesc = ((StochMathMapping)mathMapping).getMathDescription();
-		}
-		simContext.setMathDescription(mathDesc);
-		//
-		// inform user if any issues
-		//
-		org.vcell.util.Issue issues[] = mathMapping.getIssues();
-		if (issues!=null && issues.length>0){
-			StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
-			int issueCount=0;
-			for (int i = 0; i < issues.length; i++){
-				if (issues[i].getSeverity()==Issue.SEVERITY_ERROR || issues[i].getSeverity()==Issue.SEVERITY_WARNING){
-					messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
-					issueCount++;
+private AsynchClientTask[] updateMath() {
+	final SimulationContext simContext = (SimulationContext)getSimulationWorkspace().getSimulationOwner();
+	AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Geometry geometry = simContext.getGeometry();
+			if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
+				geometry.getGeometrySurfaceDescription().updateAll();
+			}
+			// Use differnt mathmapping for different applications (stoch or non-stoch)
+			simContext.checkValidity();
+			
+			MathMapping mathMapping = null;
+			MathDescription mathDesc = null;
+			if (!simContext.isStoch())
+			{
+				mathMapping = new MathMapping(simContext);
+				mathDesc = ((MathMapping)mathMapping).getMathDescription();
+			}
+			else
+			{
+				mathMapping = new StochMathMapping(simContext);
+				mathDesc = ((StochMathMapping)mathMapping).getMathDescription();
+			}
+			hashTable.put("mathMapping", mathMapping);
+			hashTable.put("mathDesc", mathDesc);
+		}			
+	};
+	AsynchClientTask task2 = new AsynchClientTask("refreshing math", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			MathMapping mathMapping = (MathMapping)hashTable.get("mathMapping");
+			MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
+			if (mathDesc != null) {
+				simContext.setMathDescription(mathDesc);
+				//
+				// inform user if any issues
+				//					
+				Issue issues[] = mathMapping.getIssues();
+				if (issues!=null && issues.length>0){
+					StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
+					int issueCount=0;
+					for (int i = 0; i < issues.length; i++){
+						if (issues[i].getSeverity()==Issue.SEVERITY_ERROR || issues[i].getSeverity()==Issue.SEVERITY_WARNING){
+							messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
+							issueCount++;
+						}
+					}
+					if (issueCount>0){
+						PopupGenerator.showWarningDialog(ApplicationEditor.this,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
+					}
 				}
 			}
-			if (issueCount>0){
-				cbit.vcell.client.PopupGenerator.showWarningDialog(this,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
-			}
 		}
-		return true;
-	} catch (Exception exc) {
-		exc.printStackTrace(System.out);
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "Failed to generate new Math:\n"+exc.getMessage());
-		return false;
-	}
+	};
+	return new AsynchClientTask[] { task1, task2};
 }
 
-private void viewMath_ItemStateChanged(java.awt.event.ItemEvent itemEvent) {
-	if (itemEvent.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+private void viewMath_ItemStateChanged(ItemEvent itemEvent) {
+	if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 		if (itemEvent.getSource() == getViewEqunsRadioButton()) {
 			JRadioButton source = (JRadioButton)getViewEqunsRadioButton();
 			getcardLayout().show(getMathViewerPanel(), source.getActionCommand());

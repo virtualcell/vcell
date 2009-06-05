@@ -16,6 +16,7 @@ import cbit.vcell.math.*;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 
@@ -1366,6 +1367,8 @@ protected Variable newFunctionOrConstant(String name, Expression exp) {
  */
 private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException {
 //System.out.println("MathMapping.refresh()");
+	VCellThreadChecker.checkCpuIntensiveInvocation();
+	
 	localIssueList.clear();
 	refreshKFluxParameters();
 	refreshSpeciesContextMappings();
