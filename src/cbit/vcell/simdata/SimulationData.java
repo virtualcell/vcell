@@ -61,7 +61,7 @@ public class SimulationData extends VCData implements SymbolTable {
 	private int odeKeepMost = 0;
 	private String odeIdentifier = null;
 
-	private DataMoverThread dataMover = new DataMoverThread();
+	private DataMoverThread dataMover = null;
 	
 	public class DataMoverThread implements Runnable {
 		private File serverDirectory = null;
@@ -422,7 +422,10 @@ public synchronized long getDataBlockTimeStamp(int dataType, double timepoint) t
  * Creation date: (10/9/2002 11:25:31 AM)
  * @return cbit.vcell.simdata.SimResults.DataMoverThread
  */
-public cbit.vcell.simdata.SimulationData.DataMoverThread getDataMover() {
+public SimulationData.DataMoverThread getDataMover() {
+	if (dataMover == null) {
+		dataMover = new DataMoverThread();
+	}
 	return dataMover;
 }
 
@@ -565,7 +568,7 @@ private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFou
 
 		// remove functions from dataIdentifiers since we are reading functions again
 		for (int i = 0; i < dataSetIdentifierList.size(); i ++) {
-			DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
+			DataSetIdentifier dsi = dataSetIdentifierList.elementAt(i);
 			if (dsi.isFunction()) {
 				dataSetIdentifierList.removeElement(dsi);
 				i --;
@@ -784,7 +787,7 @@ private synchronized File getODEDataFile() throws DataAccessException {
 	if (odeFile.exists()) {
 		return odeFile;
 	}
-	throw new DataAccessException("ODE data file not found");
+	throw new DataAccessException("no results are available yet, please wait and try again...");
 }
 
 
@@ -1369,13 +1372,14 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			is.close();
 		}
 	}
-	if (stringBuffer.length() != logFileLength){
+	String logfileContent = stringBuffer.toString();
+	if (logfileContent.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
 	}
-	if ((stringBuffer.toString().startsWith(IDA_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(NETCDF_DATA_IDENTIFIER)))
+	if ((logfileContent.startsWith(IDA_DATA_IDENTIFIER)) || (logfileContent.startsWith(ODE_DATA_IDENTIFIER)) || (logfileContent.startsWith(NETCDF_DATA_IDENTIFIER)))
 	{
 		String newLineDelimiters = "\n\r";
-		StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
+		StringTokenizer lineTokenizer = new StringTokenizer(logfileContent,newLineDelimiters);
 		isODEData = true;
 		//memorize format
 		odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
@@ -1391,7 +1395,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			}
 		}		
 	} else {
-		StringTokenizer st = new StringTokenizer(stringBuffer.toString());
+		StringTokenizer st = new StringTokenizer(logfileContent);
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays
 		isODEData = false;
 		if (!( (bZipFormat2 && st.countTokens()%4 == 0) || (!bZipFormat2 && st.countTokens()%3 == 0))) {
