@@ -103,6 +103,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	private MutableAttributeSet defaultStyle = null;
 	
 	private MyUndoableEditListener undoListener = new MyUndoableEditListener();
+	private int searchPointer = 0;
 
 	class MyPasteAction extends DefaultEditorKit.PasteAction {
 	
@@ -497,6 +498,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		try {
 			setCaretPosition(position);
 			Rectangle r = textPane.modelToView(position);
+			r.width += 1;
 			if (r != null) {
 				Rectangle vr = scrollPane.getViewport().getViewRect();
 				if (!vr.contains(r)) {
@@ -626,6 +628,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	}
 
 	public void search() {
+		searchPointer  = 0;
 		searchStartOffset = -1;
 		searchEndOffset = -1;
 		getHighlighter().removeAllHighlights();
@@ -666,9 +669,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 			return;
 		}
 		int currentPosition = getCaretPosition();
-		int searchPointer = 0;
 		if (bNext) {
-			searchPointer = 0;
 			int oldSearchStartOffset = searchStartOffset;
 			while (true) {
 				searchStartOffset = highlights[searchPointer].getStartOffset();
@@ -685,7 +686,6 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 				}
 			}
 		} else {
-			searchPointer = highlights.length - 1;
 			while (true) {
 				searchStartOffset = highlights[searchPointer].getStartOffset();
 				if (searchStartOffset < currentPosition) {
