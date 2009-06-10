@@ -6,10 +6,9 @@ package cbit.image;
 ©*/
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
 
 /**
  * This type was created in VisualAge.
@@ -99,5 +98,8 @@ public String toString() {
 	}catch (Throwable e){
 		return "exception in VCImageInfo.toString(): "+e.getMessage();
 	}
+}
+public VersionableType getVersionType() {
+	return VersionableType.VCImage;
 }
 }

@@ -16,4 +16,6 @@ public interface VersionInfo extends Immutable, Serializable {
  * @return cbit.sql.Version
  */
 Version getVersion();
+VersionableType getVersionType();
+
 }
