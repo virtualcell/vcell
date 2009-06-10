@@ -26,6 +26,7 @@ import javax.swing.filechooser.FileFilter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
@@ -194,6 +195,11 @@ public void accessPermissions()  {
 								}else if(selectedVersionInfo instanceof VCImageInfo){
 									vInfo = docManager.addUserToGroup((cbit.image.VCImageInfo)selectedVersionInfo, needToAddUsers[i]);
 								}
+							} catch (ObjectNotFoundException e) {
+								errorNames += "Error changing permissions.\n" + selectedVersionInfo.getVersionType().getTypeName() 
+									+ " \"" + selectedVersionInfo.getVersion().getName() + "\" edition (" + selectedVersionInfo.getVersion().getDate() + ")\nnot found, " 
+									+ "your model list may be out of date, please go to menu Server->Reconnect to refresh the model list" +"\n";
+								break;
 							} catch (DataAccessException e) {
 								errorNames += "Error adding user '"+needToAddUsers[i]+"' : "+e.getMessage()+"\n";
 							}

@@ -5,21 +5,56 @@ package cbit.vcell.modeldb;
 ©*/
 import java.math.BigDecimal;
 import java.sql.*;
+
+import cbit.image.VCImageInfo;
 import cbit.sql.*;
+import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.numericstest.AddTestCasesOP;
+import cbit.vcell.numericstest.AddTestCasesOPBioModel;
+import cbit.vcell.numericstest.AddTestCasesOPMathModel;
+import cbit.vcell.numericstest.AddTestCriteriaOPBioModel;
+import cbit.vcell.numericstest.AddTestCriteriaOPMathModel;
+import cbit.vcell.numericstest.AddTestResultsOP;
+import cbit.vcell.numericstest.AddTestSuiteOP;
+import cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP;
+import cbit.vcell.numericstest.EditTestCasesOP;
+import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
+import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
+import cbit.vcell.numericstest.EditTestSuiteOP;
+import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
+import cbit.vcell.numericstest.RemoveTestCasesOP;
+import cbit.vcell.numericstest.RemoveTestCriteriaOP;
 import cbit.vcell.numericstest.RemoveTestResultsOP;
+import cbit.vcell.numericstest.RemoveTestSuiteOP;
 import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
 import cbit.vcell.numericstest.TestCriteriaNew;
-import cbit.vcell.server.*;
+import cbit.vcell.numericstest.TestCriteriaNewBioModel;
+import cbit.vcell.numericstest.TestCriteriaNewMathModel;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOP;
+import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.test.VariableComparisonSummary;
 
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Vector;
 import java.util.Hashtable;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -27,6 +62,8 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
@@ -34,7 +71,9 @@ import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
@@ -59,7 +98,7 @@ public abstract class DbDriver {
 	private static KeyFactory keyFactory = null;
 	
 	protected DBCacheTable dbc = null;
-	private static Hashtable groupAccessHash = new Hashtable();
+	private static Hashtable<BigDecimal, GroupAccess> groupAccessHash = new Hashtable<BigDecimal, GroupAccess>();
 
 	//private static Hashtable testSuiteHash = new Hashtable();
 
@@ -342,12 +381,12 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
  * Insert the method's description here.
  * Creation date: (5/23/2006 10:44:52 AM)
  */
-public static org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
+public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
 
 	VersionableType vType = null;
-	if(curateSpec.getVCDocumentInfo() instanceof org.vcell.util.document.BioModelInfo){
+	if(curateSpec.getVCDocumentInfo() instanceof BioModelInfo){
 		vType = VersionableType.BioModelMetaData;
-	}else if(curateSpec.getVCDocumentInfo() instanceof org.vcell.util.document.MathModelInfo){
+	}else if(curateSpec.getVCDocumentInfo() instanceof MathModelInfo){
 		vType = VersionableType.MathModelMetaData;
 	}else{
 		throw new DataAccessException("Expecting BioModelInfo or MathModelInfo but got type="+curateSpec.getVCDocumentInfo().getClass().getName());
@@ -397,7 +436,7 @@ public static org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpe
 	}
 
 	
-	org.vcell.util.document.VCDocumentInfo dbVCDocumentInfo = (org.vcell.util.document.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
+	VCDocumentInfo dbVCDocumentInfo = (VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
 	return dbVCDocumentInfo;
 }
 
@@ -438,14 +477,14 @@ protected void deleteVersionableInit(Connection con, User user, VersionableType 
 					throws DependencyException,ObjectNotFoundException,SQLException,DataAccessException,
 							PermissionException {
 	
-	Vector versionInfoVector = getVersionableInfos(con,log,user,vType,true,versionKey,true);
+	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,vType,true,versionKey,true);
 	if(versionInfoVector.size() == 0){
 		throw new ObjectNotFoundException("DbDriver:deleteVersionableInit "+vType.getTypeName()+"("+versionKey+") not found for user="+user);
 	}
 	else if (versionInfoVector.size() > 1){
 		throw new DataAccessException("DbDriver:deleteVersionableInit "+vType.getTypeName()+"("+versionKey+") found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
 	}
-	VersionInfo versionInfo = (VersionInfo)versionInfoVector.firstElement();
+	VersionInfo versionInfo = versionInfoVector.firstElement();
 	//
 	// Cannot delete ARCHIVED or PUBLISHED
 	//
@@ -535,11 +574,11 @@ public static void failOnExternalRefs(
 private static void findAllChildren(java.sql.Connection con, VersionableTypeVersion vtv, VersionableFamily refs) throws DataAccessException, SQLException {
 
 	//Get VersionableTypes(tables) which possibly are children of argument vType
-	Vector possibleRefs = VersionTable.getChildVersionableTypes(vtv.getVType());
-	java.util.Enumeration enum1 = possibleRefs.elements();
+	Vector<VersionRef> possibleRefs = VersionTable.getChildVersionableTypes(vtv.getVType());
+	Enumeration<VersionRef> enum1 = possibleRefs.elements();
 	UserTable userTable = UserTable.table;
 	while (enum1.hasMoreElements()) {
-		VersionRef vr = (VersionRef) enum1.nextElement();
+		VersionRef vr = enum1.nextElement();
 		
 		//BEGIN check VersionableType for children of versionKey
 		String sql = null;
@@ -583,7 +622,7 @@ private static void findAllChildren(java.sql.Connection con, VersionableTypeVers
 				" AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
 		}
 		java.sql.Statement stmt = con.createStatement();
-		Vector allChildrenVTV = new Vector();
+		Vector<VersionableTypeVersion> allChildrenVTV = new Vector<VersionableTypeVersion>();
 		try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
 			java.sql.ResultSet rset = stmt.executeQuery(sql);
 			while (rset.next()) {
@@ -602,7 +641,7 @@ private static void findAllChildren(java.sql.Connection con, VersionableTypeVers
 		//END check VersionableType for Children of versionKey
 		//
 		for (int c = 0; c < allChildrenVTV.size(); c += 1) {
-			VersionableTypeVersion childVTV = (VersionableTypeVersion)allChildrenVTV.elementAt(c);
+			VersionableTypeVersion childVTV = allChildrenVTV.elementAt(c);
 			//
 			// Add VersionableRelationship to children of refs
 			//
@@ -623,11 +662,11 @@ private static void findAllChildren(java.sql.Connection con, VersionableTypeVers
 private static void findAllReferences(java.sql.Connection con, VersionableTypeVersion vtv, VersionableFamily refs) throws DataAccessException, SQLException {
 
 	//Get VersionableTypes(tables) which possibly have references to argument vType
-	Vector possibleRefs = VersionTable.getReferencingVersionableTypes(vtv.getVType());
-	java.util.Enumeration enum1 = possibleRefs.elements();
+	Vector<VersionRef> possibleRefs = VersionTable.getReferencingVersionableTypes(vtv.getVType());
+	Enumeration<VersionRef> enum1 = possibleRefs.elements();
 	UserTable userTable = UserTable.table;
 	while (enum1.hasMoreElements()) {
-		VersionRef vr = (VersionRef) enum1.nextElement();
+		VersionRef vr = enum1.nextElement();
 		
 		//BEGIN check VersionableType for references to versionKey
 		String sql = null;
@@ -669,7 +708,7 @@ private static void findAllReferences(java.sql.Connection con, VersionableTypeVe
 				" AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
 		}
 		java.sql.Statement stmt = con.createStatement();
-		Vector allReferencingVTV = new Vector();
+		Vector<VersionableTypeVersion> allReferencingVTV = new Vector<VersionableTypeVersion>();
 		try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
 			java.sql.ResultSet rset = stmt.executeQuery(sql);
 			while (rset.next()) {
@@ -688,7 +727,7 @@ private static void findAllReferences(java.sql.Connection con, VersionableTypeVe
 		//END check VersionableType for references to versionKey
 		//
 		for (int c = 0; c < allReferencingVTV.size(); c += 1) {
-			VersionableTypeVersion referencingVTV = (VersionableTypeVersion)allReferencingVTV.elementAt(c);
+			VersionableTypeVersion referencingVTV = allReferencingVTV.elementAt(c);
 			//
 			// Add VersionableRelationship to dependants of refs
 			//
@@ -732,7 +771,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 			" WHERE " + linkTable.getTableName() + "." + parentField + " = " + parentKey;
 
 	java.sql.Statement stmt = con.createStatement();
-	Vector keyList = new Vector();
+	Vector<KeyValue> keyList = new Vector<KeyValue>();
 	try {
 		java.sql.ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
@@ -745,7 +784,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 	} finally {
 		stmt.close();
 	}
-	return (KeyValue[])org.vcell.util.BeanUtils.getArray(keyList,KeyValue.class);
+	return (KeyValue[])BeanUtils.getArray(keyList,KeyValue.class);
 }
 
 
@@ -766,7 +805,7 @@ private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field
 			" WHERE " + table.getTableName() + "." + field + " = " + versionKey;
 			
 	java.sql.Statement stmt = null;
-	Vector externalRefsV = new Vector();
+	Vector<KeyValue> externalRefsV = new Vector<KeyValue>();
 	try {
 		stmt = con.createStatement();
 		java.sql.ResultSet rset = stmt.executeQuery(sql);
@@ -829,7 +868,7 @@ protected static KeyValue getForeignRefByOwner(java.sql.Connection con,cbit.sql.
 public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigDecimal groupid) throws SQLException{
 
 	if(groupAccessHash.contains(groupid)){
-		return (GroupAccess)groupAccessHash.get(groupid);
+		return groupAccessHash.get(groupid);
 	}
 
 	GroupAccess groupAccess = null;
@@ -852,8 +891,8 @@ public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigD
 				" AND "+	userTable.id.getQualifiedColName()+ " = "+groupTable.userRef.getQualifiedColName();
 		//
 		java.sql.Statement stmt = con.createStatement();
-		Vector groupMembers = new Vector();
-		Vector hiddenFromOwner= new Vector();
+		Vector<User> groupMembers = new Vector<User>();
+		Vector<Boolean> hiddenFromOwner= new Vector<Boolean>();
 		BigDecimal groupMemberHash = null;
 		try {
 			java.sql.ResultSet rset = stmt.executeQuery(sql);
@@ -872,7 +911,7 @@ public static GroupAccess getGroupAccessFromGroupID(java.sql.Connection con,BigD
 		//
 		boolean[] hiddenArr = new boolean[hiddenFromOwner.size()];
 		for(int i = 0;i<hiddenArr.length;i+=1){
-			hiddenArr[i] = ((Boolean)(hiddenFromOwner.get(i))).booleanValue();
+			hiddenArr[i] = ((hiddenFromOwner.get(i))).booleanValue();
 		}
 		User[] groupMembersArr = new User[groupMembers.size()];
 		groupMembers.toArray(groupMembersArr);
@@ -971,7 +1010,7 @@ public static KeyValue getNewKey(Connection con) throws java.sql.SQLException {
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public static org.vcell.util.Preference[] getPreferences(Connection con, User user) throws SQLException {
+public static Preference[] getPreferences(Connection con, User user) throws SQLException {
 	
 	String sql =
 		"SELECT " + 
@@ -1098,17 +1137,17 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 
 	VCInfoContainer results = null;
 	//
-	cbit.image.VCImageInfo[] vcImageInfos = null;
-	cbit.vcell.geometry.GeometryInfo[] geometryInfos = null;
-	org.vcell.util.document.MathModelInfo[] mathModelInfos = null;
-	org.vcell.util.document.BioModelInfo[] bioModelInfos = null;
+	VCImageInfo[] vcImageInfos = null;
+	GeometryInfo[] geometryInfos = null;
+	MathModelInfo[] mathModelInfos = null;
+	BioModelInfo[] bioModelInfos = null;
 	
 	//
 	StringBuffer sql = null;
 	String special = null;
 	ResultSet rset = null;
-	Vector tempInfos = null;
-	Vector distinctV = null;
+	Vector<VersionInfo> tempInfos = null;
+	Vector<String> distinctV = null;
 	boolean enableSpecial = true;
 	boolean enableDistinct = true;
 	
@@ -1126,10 +1165,10 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(BioModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null)));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector();
-			distinctV = new Vector();
+			tempInfos = new Vector<VersionInfo>();
+			distinctV = new Vector<String>();
 			while(rset.next()){
-				org.vcell.util.document.BioModelInfo versionInfo = (org.vcell.util.document.BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
+				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1137,7 +1176,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				bioModelInfos = new org.vcell.util.document.BioModelInfo[tempInfos.size()];
+				bioModelInfos = new BioModelInfo[tempInfos.size()];
 				tempInfos.copyInto(bioModelInfos);
 			}
 			System.out.println("BioModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -1155,10 +1194,10 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(MathModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null)));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector();
-			distinctV = new Vector();
+			tempInfos = new Vector<VersionInfo>();
+			distinctV = new Vector<String>();
 			while(rset.next()){
-				org.vcell.util.document.MathModelInfo versionInfo = (org.vcell.util.document.MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
+				MathModelInfo versionInfo = (MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1166,7 +1205,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				mathModelInfos = new org.vcell.util.document.MathModelInfo[tempInfos.size()];
+				mathModelInfos = new MathModelInfo[tempInfos.size()];
 				tempInfos.copyInto(mathModelInfos);
 			}
 			System.out.println("MathModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -1184,10 +1223,10 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(ImageTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector();
-			distinctV = new Vector();
+			tempInfos = new Vector<VersionInfo>();
+			distinctV = new Vector<String>();
 			while(rset.next()){
-				cbit.image.VCImageInfo versionInfo = (cbit.image.VCImageInfo)ImageTable.table.getInfo(rset,con,mySessionLog);
+				VCImageInfo versionInfo = (VCImageInfo)ImageTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1195,7 +1234,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				vcImageInfos = new cbit.image.VCImageInfo[tempInfos.size()];
+				vcImageInfos = new VCImageInfo[tempInfos.size()];
 				tempInfos.copyInto(vcImageInfos);
 			}
 			System.out.println("ImageInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -1213,10 +1252,10 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			sql = new StringBuffer(GeometryTable.table.getInfoSQL(user,null,(enableSpecial?special:null),true));
 			sql.insert(7,Table.SQL_GLOBAL_HINT+(enableDistinct?"DISTINCT ":""));
 			rset = stmt.executeQuery(sql.toString());
-			tempInfos = new Vector();
-			distinctV = new Vector();
+			tempInfos = new Vector<VersionInfo>();
+			distinctV = new Vector<String>();
 			while(rset.next()){
-				cbit.vcell.geometry.GeometryInfo versionInfo = (cbit.vcell.geometry.GeometryInfo)GeometryTable.table.getInfo(rset,con,mySessionLog);
+				GeometryInfo versionInfo = (GeometryInfo)GeometryTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1224,7 +1263,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				geometryInfos = new cbit.vcell.geometry.GeometryInfo[tempInfos.size()];
+				geometryInfos = new GeometryInfo[tempInfos.size()];
 				tempInfos.copyInto(geometryInfos);
 			}
 			System.out.println("GeometryInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -1249,7 +1288,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
  * @param user cbit.vcell.server.User
  * @param vType int
  */
-public static Vector getVersionableInfos(Connection con,SessionLog gvilog,User user, VersionableType vType, boolean bAll,KeyValue versionKey,boolean bCheckPermission) 
+public static Vector<VersionInfo> getVersionableInfos(Connection con,SessionLog gvilog,User user, VersionableType vType, boolean bAll,KeyValue versionKey,boolean bCheckPermission) 
 							throws ObjectNotFoundException, SQLException, DataAccessException {
 								
 	if (user == null) {
@@ -1300,7 +1339,7 @@ public static Vector getVersionableInfos(Connection con,SessionLog gvilog,User u
 	//
 	//System.out.println("getVersionableInfo--->"+sql);
 	VersionInfo vInfo;
-	java.util.Vector vInfoList = new java.util.Vector();
+	Vector<VersionInfo> vInfoList = new Vector<VersionInfo>();
 	//Connection con = conFact.getConnection();
 	Statement stmt = con.createStatement();
 	try {
@@ -1329,7 +1368,7 @@ public static Vector getVersionableInfos(Connection con,SessionLog gvilog,User u
 			// only add version info record to list if not a duplicate,
 			// this occurs because the DatabasePolicySQL.enforceOwnershipSelect() can get the same record several ways.
 			//
-			VersionInfo previousVInfo = (vInfoList.size()>0)?(VersionInfo)vInfoList.lastElement():null;
+			VersionInfo previousVInfo = (vInfoList.size()>0)?vInfoList.lastElement():null;
 			if (previousVInfo==null || !previousVInfo.getVersion().getVersionKey().compareEqual(vInfo.getVersion().getVersionKey())){
 				vInfoList.addElement(vInfo);
 			}
@@ -1420,12 +1459,19 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
 		java.sql.Statement stmt = con.createStatement();
 		try {
 			java.sql.ResultSet rset = stmt.executeQuery(sql);
-			rset.next();
-			BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-			version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid),null);
+			if (rset.next()) {
+				BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
+				version = VersionTable.getVersion(rset,getGroupAccessFromGroupID(con,groupid),null);
+			} else {
+				throw new ObjectNotFoundException("Failed to find " + vType.getTypeName()+" (Key=" + keyValue + ")");
+			}
+		} catch(ObjectNotFoundException e){
+			e.printStackTrace(System.out);
+			throw e;
 		} catch(Throwable e){
 			e.printStackTrace(System.out);
-			throw new DataAccessException("Error "+e.getMessage()+" getting version from VersionableType="+vType+" KeyValue="+keyValue);
+			throw new DataAccessException("Failed to find " + vType.getTypeName()+" (Key=" + keyValue 
+					+ "). \nError: " + e.getMessage());
 		}finally {
 			stmt.close();
 		}
@@ -1574,7 +1620,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 		//
 		// check if update failed
 		//
-		Vector versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("Add User "+userAddToGroup+" Permission to access failed, "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1710,7 +1756,7 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("Remove User "+userRemoveFromGroup+" Permission to access failed, "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1752,7 +1798,7 @@ public static void groupSetPrivate(Connection con,SessionLog newLog,User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("groupSetPrivate failed "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -1795,7 +1841,7 @@ public static void groupSetPublic(Connection con,SessionLog newLog,User owner,
 		//
 		// check if update failed, or just already updated
 		//
-		Vector versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
+		Vector<VersionInfo> versionInfoList = getVersionableInfos(con,newLog,owner,vType,false,vKey,true);
 		if (versionInfoList.size()==0){
 			throw new DataAccessException("groupSetPublic failed "+vType.getTypeName()+"("+vKey+") record not found");
 		}else{
@@ -2057,7 +2103,7 @@ private static Version permissionInit(Connection con,VersionableType vType,KeyVa
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public static void replacePreferences(Connection con, User user, org.vcell.util.Preference[] preferences) throws SQLException {
+public static void replacePreferences(Connection con, User user, Preference[] preferences) throws SQLException {
 
 	String sql =
 		"DELETE FROM " +
@@ -2078,8 +2124,8 @@ public static void replacePreferences(Connection con, User user, org.vcell.util.
 		for (int i = 0; i < preferences.length; i++){
 			String key = preferences[i].getKey();
 			String value = preferences[i].getValue();
-			pstmt.setString(1,org.vcell.util.TokenMangler.getSQLEscapedString(key));
-			pstmt.setString(2,org.vcell.util.TokenMangler.getSQLEscapedString(value));
+			pstmt.setString(1,TokenMangler.getSQLEscapedString(key));
+			pstmt.setString(2,TokenMangler.getSQLEscapedString(value));
 			pstmt.executeUpdate();
 		}
 	}finally{
@@ -2106,18 +2152,18 @@ public static void setKeyFactory(KeyFactory aKeyFactory) {
  */
 protected void setVersioned(Connection con, User user,Versionable versionable) throws ObjectNotFoundException,SQLException,DataAccessException {
 	String sql;
-	if (versionable instanceof cbit.vcell.mapping.SimulationContext){
-		cbit.vcell.mapping.SimulationContext sc = (cbit.vcell.mapping.SimulationContext)versionable;
+	if (versionable instanceof SimulationContext){
+		SimulationContext sc = (SimulationContext)versionable;
 		setVersioned(con,user,sc.getGeometryContext().getGeometry());
 		setVersioned(con,user,sc.getGeometryContext().getModel());
 		if (sc.getMathDescription()!=null){
 			setVersioned(con,user,sc.getMathDescription());
 		}
-	}else if (versionable instanceof cbit.vcell.math.MathDescription){
-		cbit.vcell.math.MathDescription math = (cbit.vcell.math.MathDescription)versionable;
+	}else if (versionable instanceof MathDescription){
+		MathDescription math = (MathDescription)versionable;
 		setVersioned(con,user,math.getGeometry());
-	}else if (versionable instanceof cbit.vcell.geometry.Geometry){
-		cbit.vcell.geometry.Geometry geo = (cbit.vcell.geometry.Geometry)versionable;
+	}else if (versionable instanceof Geometry){
+		Geometry geo = (Geometry)versionable;
 		if (geo.getGeometrySpec().getImage() != null){
 			setVersioned(con,user,geo.getGeometrySpec().getImage());
 		}
@@ -2159,7 +2205,7 @@ public static void showMetaData(ResultSet rset) throws SQLException {
  * Creation date: (10/16/2004 2:39:49 PM)
  * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
  */
-public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,SessionLog sessionLog)
+public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User user,SessionLog sessionLog)
 			throws SQLException, DataAccessException {
 	
 	if(!user.isTestAccount()){
@@ -2218,7 +2264,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			double timeRelError = rset.getDouble(TFTestResultTable.table.timeRelError.getUnqualifiedColName());
 			int indexRelError = rset.getInt(TFTestResultTable.table.indexRelError.getUnqualifiedColName());
 			Vector v = (Vector)vcsH.get(tcritRef);if(v == null){v = new Vector();vcsH.put(tcritRef,v);}
-			v.add(new cbit.vcell.solver.test.VariableComparisonSummary(varName,minRef,maxRef,absError,relError,mse,timeAbsError,indexAbsError,timeRelError,indexRelError));
+			v.add(new VariableComparisonSummary(varName,minRef,maxRef,absError,relError,mse,timeAbsError,indexAbsError,timeRelError,indexRelError));
 //counter+= 1;
 		}
 //System.out.println("VCS count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
@@ -2276,14 +2322,14 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			else{maxAbsError = new Double(dtemp);}
 			String reportStatus = rset.getString(TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName());
 			if(rset.wasNull()){
-				reportStatus = cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT;
+				reportStatus = TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT;
 			}
 			String reportStatusMessage = rset.getString(TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName());
 			if(rset.wasNull()){
 				reportStatusMessage = null;
 			}
 			if(reportStatusMessage != null && reportStatusMessage.length() > 0){
-				reportStatusMessage = org.vcell.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
+				reportStatusMessage = TokenMangler.getSQLRestoredString(reportStatusMessage);
 			}
 			Vector v = (Vector)tcritH.get(tcaseRef);
 			if(v == null){
@@ -2291,47 +2337,47 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				tcritH.put(tcaseRef,v);
 			}
 
-			cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(simRef);
+			SimulationInfo simInfo = (SimulationInfo)simulationInfoH.get(simRef);
 			if(simInfo == null){
-				Vector simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRef),false);
+				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRef),false);
 				if (simVector != null && simVector.size() > 0) {
-					simInfo = (cbit.vcell.solver.SimulationInfo)simVector.firstElement();
+					simInfo = (SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(simRef,simInfo);
 				}
 			}
 
-			cbit.vcell.solver.SimulationInfo regrSimInfo = null;
-			org.vcell.util.document.MathModelInfo regrMathModelInfo = null;
+			SimulationInfo regrSimInfo = null;
+			MathModelInfo regrMathModelInfo = null;
 			if(simRegrRef != null){
-				regrSimInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(simRegrRef);
+				regrSimInfo = (SimulationInfo)simulationInfoH.get(simRegrRef);
 				if(regrSimInfo == null){
-					Vector regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRegrRef),false);
+					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRegrRef),false);
 					if (regSimVector != null && regSimVector.size() > 0) {
-						regrSimInfo = (cbit.vcell.solver.SimulationInfo)regSimVector.firstElement();
+						regrSimInfo = (SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(simRegrRef,regrSimInfo);
 					}
 				}
-				regrMathModelInfo = (org.vcell.util.document.MathModelInfo)mathModelInfoH.get(mathRegrRef);
+				regrMathModelInfo = (MathModelInfo)mathModelInfoH.get(mathRegrRef);
 				if(regrMathModelInfo == null){
-					Vector regMathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false);
+					Vector<VersionInfo> regMathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false);
 					if (regMathVector != null && regMathVector.size() > 0) {
-						regrMathModelInfo = (org.vcell.util.document.MathModelInfo)regMathVector.firstElement();
+						regrMathModelInfo = (MathModelInfo)regMathVector.firstElement();
 						mathModelInfoH.put(mathRegrRef,regrMathModelInfo);
 					}
 				}
 			}
 			
 			//
-			cbit.vcell.solver.test.VariableComparisonSummary[] neededVCSArr = null;
+			VariableComparisonSummary[] neededVCSArr = null;
 			Vector vcsV = (Vector)vcsH.get(tcritKey);
 			if(vcsV != null){
-				neededVCSArr = new cbit.vcell.solver.test.VariableComparisonSummary[vcsV.size()];
+				neededVCSArr = new VariableComparisonSummary[vcsV.size()];
 				vcsV.copyInto(neededVCSArr);
 			}
 			//
-			cbit.vcell.numericstest.TestCriteriaNew tcn = null;
+			TestCriteriaNew tcn = null;
 			if (simInfo != null) {
-				tcn = new cbit.vcell.numericstest.TestCriteriaNewMathModel(
+				tcn = new TestCriteriaNewMathModel(
 					tcritKey,simInfo,regrMathModelInfo,regrSimInfo,maxRelError,maxAbsError,neededVCSArr,reportStatus,reportStatusMessage);
 				v.add(tcn);
 			}
@@ -2404,14 +2450,14 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			else{maxAbsError = new Double(dtemp);}
 			String reportStatus = rset.getString(TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName());
 			if(rset.wasNull()){
-				reportStatus = cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT;
+				reportStatus = TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT;
 			}
 			String reportStatusMessage = rset.getString(TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName());
 			if(rset.wasNull()){
 				reportStatusMessage = null;
 			}
 			if(reportStatusMessage != null && reportStatusMessage.length() > 0){
-				reportStatusMessage = org.vcell.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
+				reportStatusMessage = TokenMangler.getSQLRestoredString(reportStatusMessage);
 			}
 			Vector v = (Vector)tcritH.get(tcaseRef);
 			if(v == null){
@@ -2419,35 +2465,35 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				tcritH.put(tcaseRef,v);
 			}
 
-			cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(tcSimRef);
+			SimulationInfo simInfo = (SimulationInfo)simulationInfoH.get(tcSimRef);
 			if(simInfo == null){
-				Vector simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(tcSimRef),false);
+				Vector<VersionInfo> simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(tcSimRef),false);
 				if (simVector != null && simVector.size() == 1) {
-					simInfo = (cbit.vcell.solver.SimulationInfo)simVector.firstElement();
+					simInfo = (SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(tcSimRef,simInfo);
 				}else{
 					throw new DataAccessException("Found more than 1 versionable for tcsimRef="+tcSimRef);
 				}
 			}
 
-			cbit.vcell.solver.SimulationInfo regrSimInfo = null;
-			org.vcell.util.document.BioModelInfo regrBioModelInfo = null;
+			SimulationInfo regrSimInfo = null;
+			BioModelInfo regrBioModelInfo = null;
 			if(regrSimRef != null){
-				regrSimInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(regrSimRef);
+				regrSimInfo = (SimulationInfo)simulationInfoH.get(regrSimRef);
 				if(regrSimInfo == null){
-					Vector regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(regrSimRef),false);
+					Vector<VersionInfo> regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(regrSimRef),false);
 					if (regSimVector != null && regSimVector.size() == 1) {
-						regrSimInfo = (cbit.vcell.solver.SimulationInfo)regSimVector.firstElement();
+						regrSimInfo = (SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(regrSimRef,regrSimInfo);
 					}else{
 						throw new DataAccessException("Found more than 1 versionable for simregRef="+regrSimRef);
 					}
 				}
-				regrBioModelInfo = (org.vcell.util.document.BioModelInfo)mathModelInfoH.get(regrBioModelRef);
+				regrBioModelInfo = (BioModelInfo)mathModelInfoH.get(regrBioModelRef);
 				if(regrBioModelInfo == null){
-					Vector regBioModelVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false);
+					Vector<VersionInfo> regBioModelVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false);
 					if (regBioModelVector != null && regBioModelVector.size() == 1) {
-						regrBioModelInfo = (org.vcell.util.document.BioModelInfo)regBioModelVector.firstElement();
+						regrBioModelInfo = (BioModelInfo)regBioModelVector.firstElement();
 						mathModelInfoH.put(regrBioModelRef,regrBioModelInfo);
 					}else{
 						throw new DataAccessException("Found more than 1 versionable for reegrbiomodelRef="+regrBioModelRef);
@@ -2456,16 +2502,16 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			}
 			
 			//
-			cbit.vcell.solver.test.VariableComparisonSummary[] neededVCSArr = null;
+			VariableComparisonSummary[] neededVCSArr = null;
 			Vector vcsV = (Vector)vcsH.get(tcritKey);
 			if(vcsV != null){
-				neededVCSArr = new cbit.vcell.solver.test.VariableComparisonSummary[vcsV.size()];
+				neededVCSArr = new VariableComparisonSummary[vcsV.size()];
 				vcsV.copyInto(neededVCSArr);
 			}
 			//
-			cbit.vcell.numericstest.TestCriteriaNew tcn = null;
+			TestCriteriaNew tcn = null;
 			if (simInfo != null) {
-				tcn = new cbit.vcell.numericstest.TestCriteriaNewBioModel(
+				tcn = new TestCriteriaNewBioModel(
 					tcritKey,simInfo,regrBioModelInfo,regrSCName,regrSimInfo,maxRelError,maxAbsError,neededVCSArr,reportStatus,reportStatusMessage);
 				v.add(tcn);
 			}
@@ -2563,45 +2609,45 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			if(rset.wasNull()){
 				tcAnnot = "";
 			}else{
-				tcAnnot = org.vcell.util.TokenMangler.getSQLRestoredString(tcAnnot);
+				tcAnnot = TokenMangler.getSQLRestoredString(tcAnnot);
 			}
 			java.util.Date tcDate = VersionTable.getDate(rset,TFTestCaseTable.table.creationDate.getUnqualifiedColName());
 
-			org.vcell.util.document.MathModelInfo mmInfo = null;
-			org.vcell.util.document.BioModelInfo bmInfo = null;
+			MathModelInfo mmInfo = null;
+			BioModelInfo bmInfo = null;
 			if(mmRef != null){
-				mmInfo = (org.vcell.util.document.MathModelInfo)mathModelInfoH.get(mmRef);		
+				mmInfo = (MathModelInfo)mathModelInfoH.get(mmRef);		
 				if(mmInfo == null){
-					Vector mathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false);
+					Vector<VersionInfo> mathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false);
 					if (mathVector != null && mathVector.size() > 0) {
-						mmInfo = (org.vcell.util.document.MathModelInfo)mathVector.firstElement();
+						mmInfo = (MathModelInfo)mathVector.firstElement();
 						mathModelInfoH.put(mmRef,mmInfo);
 					}
 				}
 			}else if(bioModelRef != null){
-				bmInfo = (org.vcell.util.document.BioModelInfo)bioModelInfoH.get(bioModelRef);		
+				bmInfo = (BioModelInfo)bioModelInfoH.get(bioModelRef);		
 				if(bmInfo == null){
-					Vector bmAppVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false);
+					Vector<VersionInfo> bmAppVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false);
 					if (bmAppVector != null && bmAppVector.size() > 0) {
-						bmInfo = (org.vcell.util.document.BioModelInfo)bmAppVector.firstElement();
+						bmInfo = (BioModelInfo)bmAppVector.firstElement();
 						bioModelInfoH.put(bioModelRef,bmInfo);
 					}
 				}
 			}else{
 				throw new RuntimeException("Test case in DB does not have MathmodelRef or BioModelAppRef");
 			}
-			cbit.vcell.numericstest.TestCriteriaNew[] neededTcritArr = null;
+			TestCriteriaNew[] neededTcritArr = null;
 			Vector needTcritV = (Vector)tcritH.get(tcaseKey);
 			if(needTcritV != null){
-				neededTcritArr = new cbit.vcell.numericstest.TestCriteriaNew[needTcritV.size()];
+				neededTcritArr = new TestCriteriaNew[needTcritV.size()];
 				needTcritV.copyInto(neededTcritArr);
 			}
-			cbit.vcell.numericstest.TestCaseNew tcn = null;
+			TestCaseNew tcn = null;
 			if (mmInfo != null) {
-				tcn = new cbit.vcell.numericstest.TestCaseNewMathModel(tcaseKey,mmInfo,tcType,tcAnnot,neededTcritArr);
+				tcn = new TestCaseNewMathModel(tcaseKey,mmInfo,tcType,tcAnnot,neededTcritArr);
 				tcV.add(tcn);
 			}else if(bmInfo != null){
-				tcn = new cbit.vcell.numericstest.TestCaseNewBioModel(tcaseKey,bmInfo,simContextName,new KeyValue(simContextRef),tcType,tcAnnot,neededTcritArr);
+				tcn = new TestCaseNewBioModel(tcaseKey,bmInfo,simContextName,new KeyValue(simContextRef),tcType,tcAnnot,neededTcritArr);
 				tcV.add(tcn);
 			}else{
 				//throw new RuntimeException("Expected testCase MathModelInfo or BioModelInfo to be not null");
@@ -2616,9 +2662,9 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 		
 		// Get TestSuite
 		{
-			cbit.vcell.numericstest.TestCaseNew[] tcnArr = null;
+		TestCaseNew[] tcnArr = null;
 		if(tcV.size() > 0){
-			tcnArr = new cbit.vcell.numericstest.TestCaseNew[tcV.size()];
+			tcnArr = new TestCaseNew[tcV.size()];
 			tcV.copyInto(tcnArr);
 		}
 
@@ -2649,10 +2695,9 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 		}
 		rset.close();
 
-		cbit.vcell.numericstest.TestSuiteInfoNew tsiNew =
-			new cbit.vcell.numericstest.TestSuiteInfoNew(tsKey,tsVersion,tsVCBuild,tsNumericsBuild,tsDate,tsAnnot);
+		TestSuiteInfoNew tsiNew = new TestSuiteInfoNew(tsKey,tsVersion,tsVCBuild,tsNumericsBuild,tsDate,tsAnnot);
 
-		cbit.vcell.numericstest.TestSuiteNew tsn = new cbit.vcell.numericstest.TestSuiteNew(tsiNew,tcnArr);
+		TestSuiteNew tsn = new TestSuiteNew(tsiNew,tcnArr);
 		//testSuiteHash.put(tsKey,tsn);
 		return tsn;
 		
@@ -2675,7 +2720,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
  * Creation date: (10/16/2004 2:39:49 PM)
  * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
  */
-public static cbit.vcell.numericstest.TestSuiteInfoNew[] testSuiteInfosGet(Connection con,User user,SessionLog sessionLog) throws SQLException{
+public static TestSuiteInfoNew[] testSuiteInfosGet(Connection con,User user,SessionLog sessionLog) throws SQLException{
 	
 	if(!user.isTestAccount()){
 		throw new PermissionException("User="+user.getName()+" not allowed TestSuiteInfo");
@@ -2684,7 +2729,7 @@ public static cbit.vcell.numericstest.TestSuiteInfoNew[] testSuiteInfosGet(Conne
 	String sql =
 		"SELECT * FROM " + TFTestSuiteTable.table.getTableName();
 
-	Vector tsiV = new Vector();
+	Vector<TestSuiteInfoNew> tsiV = new Vector<TestSuiteInfoNew>();
 	Statement stmt = null;
 	try{
 		stmt = con.createStatement();
@@ -2696,7 +2741,7 @@ public static cbit.vcell.numericstest.TestSuiteInfoNew[] testSuiteInfosGet(Conne
 			String vcNumericS = rset.getString(TFTestSuiteTable.table.vcNumericsVersion.getUnqualifiedColName());
 			java.util.Date date = VersionTable.getDate(rset,TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
 			String tsAnnot = rset.getString(TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName());
-			tsiV.add(new cbit.vcell.numericstest.TestSuiteInfoNew(tsKey,tsID,vcBuildS,vcNumericS,date,tsAnnot));
+			tsiV.add(new TestSuiteInfoNew(tsKey,tsID,vcBuildS,vcNumericS,date,tsAnnot));
 		}
 	}finally{
 		if(stmt != null){
@@ -2705,7 +2750,7 @@ public static cbit.vcell.numericstest.TestSuiteInfoNew[] testSuiteInfosGet(Conne
 	}
 
 	if(tsiV.size() > 0){
-		cbit.vcell.numericstest.TestSuiteInfoNew[] temp = new cbit.vcell.numericstest.TestSuiteInfoNew[tsiV.size()];
+		TestSuiteInfoNew[] temp = new TestSuiteInfoNew[tsiV.size()];
 		tsiV.copyInto(temp);
 		return temp;
 	}
@@ -2720,7 +2765,7 @@ public static cbit.vcell.numericstest.TestSuiteInfoNew[] testSuiteInfosGet(Conne
  * @return cbit.vcell.numericstest.TestSuiteNew
  * @param tsop cbit.vcell.numericstest.TestSuiteOP
  */
-public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop,Connection con,User user,SessionLog sessionLog) 
+public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,User user,SessionLog sessionLog) 
 			throws SQLException,DataAccessException{
 
 	java.util.TreeSet<BigDecimal> changedTestSuiteKeys = new java.util.TreeSet<BigDecimal>();
@@ -2731,14 +2776,14 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 	try{
 		stmt = con.createStatement();
 		
-		if(tsop instanceof cbit.vcell.numericstest.AddTestSuiteOP){
-			cbit.vcell.numericstest.AddTestSuiteOP addts_tsop = (cbit.vcell.numericstest.AddTestSuiteOP)tsop;
+		if(tsop instanceof AddTestSuiteOP){
+			AddTestSuiteOP addts_tsop = (AddTestSuiteOP)tsop;
 			String annotation = addts_tsop.getTestSuiteAnnotation();
 			if(annotation != null){
 				if(annotation.length() == 0){
 					annotation = null;
 				}else{
-					annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
+					annotation = TokenMangler.getSQLEscapedString(annotation);
 				}
 			}
 
@@ -2752,30 +2797,30 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			if(addts_tsop.getAddTestCasesOPs() != null){
 				for(int i=0;i<addts_tsop.getAddTestCasesOPs().length;i+= 1){
 					//Set new TSKey and do child OPs
-					cbit.vcell.numericstest.AddTestCasesOP atcOP = addts_tsop.getAddTestCasesOPs()[i];
-					if(atcOP instanceof cbit.vcell.numericstest.AddTestCasesOPMathModel){
+					AddTestCasesOP atcOP = addts_tsop.getAddTestCasesOPs()[i];
+					if(atcOP instanceof AddTestCasesOPMathModel){
 						testSuiteOP(
-							new cbit.vcell.numericstest.AddTestCasesOPMathModel(
+							new AddTestCasesOPMathModel(
 								changedTSKey,
-								((cbit.vcell.numericstest.AddTestCasesOPMathModel)atcOP).getMathModelKey(),
+								((AddTestCasesOPMathModel)atcOP).getMathModelKey(),
 								atcOP.getTestCaseType(),atcOP.getAnnotation(),
-								((cbit.vcell.numericstest.AddTestCasesOPMathModel)atcOP).getAddTestCriteriaOPsMathModel()),
+								((AddTestCasesOPMathModel)atcOP).getAddTestCriteriaOPsMathModel()),
 							con,user,sessionLog);
-					}else if(atcOP instanceof cbit.vcell.numericstest.AddTestCasesOPBioModel){
+					}else if(atcOP instanceof AddTestCasesOPBioModel){
 						testSuiteOP(
-							new cbit.vcell.numericstest.AddTestCasesOPBioModel(
+							new AddTestCasesOPBioModel(
 								changedTSKey,
-								((cbit.vcell.numericstest.AddTestCasesOPBioModel)atcOP).getBioModelKey(),
-								((cbit.vcell.numericstest.AddTestCasesOPBioModel)atcOP).getSimContextKey(),
+								((AddTestCasesOPBioModel)atcOP).getBioModelKey(),
+								((AddTestCasesOPBioModel)atcOP).getSimContextKey(),
 								atcOP.getTestCaseType(),atcOP.getAnnotation(),
-								((cbit.vcell.numericstest.AddTestCasesOPBioModel)atcOP).getAddTestCriteriaOPsBioModel()),
+								((AddTestCasesOPBioModel)atcOP).getAddTestCriteriaOPsBioModel()),
 							con,user,sessionLog);
 					}
 				}
 			}
 			changedTestSuiteKeys.add(changedTSKey);
-		}else if(tsop instanceof cbit.vcell.numericstest.AddTestCasesOPBioModel){
-			cbit.vcell.numericstest.AddTestCasesOPBioModel addtc_tsop = (cbit.vcell.numericstest.AddTestCasesOPBioModel)tsop;
+		}else if(tsop instanceof AddTestCasesOPBioModel){
+			AddTestCasesOPBioModel addtc_tsop = (AddTestCasesOPBioModel)tsop;
 			//
 			BigDecimal bmSimContextLinkRef = null;
 			//Convert BioModelKey and SimContextKey to bmsimcontext key
@@ -2803,7 +2848,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			BigDecimal tcKey = keyFactory.getUniqueBigDecimal(con);
 			String annotation = addtc_tsop.getAnnotation();
 			if(annotation != null){
-				annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
+				annotation = TokenMangler.getSQLEscapedString(annotation);
 			}
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
@@ -2812,9 +2857,9 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			if(addtc_tsop.getAddTestCriteriaOPsBioModel() != null){
 				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsBioModel().length;i+= 1){
 					//Set new TSKey,TCaseKey and do child OPs
-					cbit.vcell.numericstest.AddTestCriteriaOPBioModel atcritOP = addtc_tsop.getAddTestCriteriaOPsBioModel()[i];
+					AddTestCriteriaOPBioModel atcritOP = addtc_tsop.getAddTestCriteriaOPsBioModel()[i];
 					testSuiteOP(
-						new cbit.vcell.numericstest.AddTestCriteriaOPBioModel(
+						new AddTestCriteriaOPBioModel(
 							tcKey,atcritOP.getBioModelSimKey(),
 							atcritOP.getRegressionBioModelKey(),atcritOP.getRegressionBioModelSimKey(),
 							atcritOP.getMaxAbsoluteError(),atcritOP.getMaxRelativeError(),atcritOP.getAddTestResultsOP()),
@@ -2824,13 +2869,13 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			changedTestSuiteKeys.add(addtc_tsop.getTestSuiteKey());
 
 			
-		}else if(tsop instanceof cbit.vcell.numericstest.AddTestCasesOPMathModel){
-			cbit.vcell.numericstest.AddTestCasesOPMathModel addtc_tsop = (cbit.vcell.numericstest.AddTestCasesOPMathModel)tsop;
+		}else if(tsop instanceof AddTestCasesOPMathModel){
+			AddTestCasesOPMathModel addtc_tsop = (AddTestCasesOPMathModel)tsop;
 			BigDecimal tcKey = keyFactory.getUniqueBigDecimal(con);
 			KeyValue mmKey = addtc_tsop.getMathModelKey();
 			String annotation = addtc_tsop.getAnnotation();
 			if(annotation != null){
-				annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
+				annotation = TokenMangler.getSQLEscapedString(annotation);
 			}
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
@@ -2839,9 +2884,9 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			if(addtc_tsop.getAddTestCriteriaOPsMathModel() != null){
 				for(int i=0;i<addtc_tsop.getAddTestCriteriaOPsMathModel().length;i+= 1){
 					//Set new TSKey,TCaseKey and do child OPs
-					cbit.vcell.numericstest.AddTestCriteriaOPMathModel atcritOP = addtc_tsop.getAddTestCriteriaOPsMathModel()[i];
+					AddTestCriteriaOPMathModel atcritOP = addtc_tsop.getAddTestCriteriaOPsMathModel()[i];
 					testSuiteOP(
-						new cbit.vcell.numericstest.AddTestCriteriaOPMathModel(
+						new AddTestCriteriaOPMathModel(
 							tcKey,atcritOP.getMathModelSimKey(),
 							atcritOP.getRegressionMathModelKey(),
 							atcritOP.getRegressionMathModelSimKey(),
@@ -2850,8 +2895,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				}
 			}
 			changedTestSuiteKeys.add(addtc_tsop.getTestSuiteKey());			
-		}else if(tsop instanceof cbit.vcell.numericstest.RemoveTestCasesOP){
-			cbit.vcell.numericstest.RemoveTestCasesOP removetc_tsop = (cbit.vcell.numericstest.RemoveTestCasesOP)tsop;
+		}else if(tsop instanceof RemoveTestCasesOP){
+			RemoveTestCasesOP removetc_tsop = (RemoveTestCasesOP)tsop;
 			StringBuffer sb = new StringBuffer();
 			for(int i=0;i<removetc_tsop.getTestCasesKeys().length;i+= 1){
 				if(i != 0){sb.append(",");}sb.append(removetc_tsop.getTestCasesKeys()[i].toString());
@@ -2877,8 +2922,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					" removed row count="+numRowsUpdated+" expected "+removetc_tsop.getTestCasesKeys().length);
 			}
 			
-		}else if(tsop instanceof cbit.vcell.numericstest.AddTestCriteriaOPMathModel){
-			cbit.vcell.numericstest.AddTestCriteriaOPMathModel addtcrit_tsop = (cbit.vcell.numericstest.AddTestCriteriaOPMathModel)tsop;
+		}else if(tsop instanceof AddTestCriteriaOPMathModel){
+			AddTestCriteriaOPMathModel addtcrit_tsop = (AddTestCriteriaOPMathModel)tsop;
 			BigDecimal tcritKey = keyFactory.getUniqueBigDecimal(con);
 			BigDecimal tcKey = addtcrit_tsop.getTestCaseKey();
 			KeyValue simKey = addtcrit_tsop.getMathModelSimKey();
@@ -2890,7 +2935,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				" AND " +
 				MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+"="+SimulationTable.table.id.getQualifiedColName()+
 				" AND " +
-				SimulationTable.table.getTableName()+"."+SimulationTable.table.versionParentSimRef_ColumnName+" IS NULL";
+				SimulationTable.table.getTableName()+"."+SimulationTable.versionParentSimRef_ColumnName+" IS NULL";
 			ResultSet rset = stmt.executeQuery(sql);
 			if(rset.next()){
 				if(rset.next()){
@@ -2945,12 +2990,12 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				(addtcrit_tsop.getMaxRelativeError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxRelativeError().toString()+"')":"null")+","+
 				(addtcrit_tsop.getMaxAbsoluteError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"')":"null")+","+
 				"NULL,NULL,"+
-				"'"+cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
+				"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
 			stmt.executeUpdate(sql);
 			if(addtcrit_tsop.getRegressionMathModelSimKey() != null){
 				testSuiteOP(
-					new cbit.vcell.numericstest.EditTestCriteriaOPMathModel(
+					new EditTestCriteriaOPMathModel(
 						tcritKey,
 						addtcrit_tsop.getRegressionMathModelKey(),
 						addtcrit_tsop.getRegressionMathModelSimKey(),
@@ -2958,10 +3003,10 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					con,user,sessionLog);
 			}
 			if(addtcrit_tsop.getAddTestResultsOP() != null){
-				cbit.vcell.numericstest.AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
+				AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
 				//Set new TSKey,TCritKey and do child OPs
 				testSuiteOP(
-					new cbit.vcell.numericstest.AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
+					new AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
 					con,user,sessionLog);
 			}
 			
@@ -2976,8 +3021,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			}
 			rset.close();
 				
-		}else if(tsop instanceof cbit.vcell.numericstest.AddTestCriteriaOPBioModel){
-			cbit.vcell.numericstest.AddTestCriteriaOPBioModel addtcrit_tsop = (cbit.vcell.numericstest.AddTestCriteriaOPBioModel)tsop;
+		}else if(tsop instanceof AddTestCriteriaOPBioModel){
+			AddTestCriteriaOPBioModel addtcrit_tsop = (AddTestCriteriaOPBioModel)tsop;
 			BigDecimal tcritKey = keyFactory.getUniqueBigDecimal(con);
 			BigDecimal tcKey = addtcrit_tsop.getTestCaseKey();
 			KeyValue simKey = addtcrit_tsop.getBioModelSimKey();
@@ -2989,7 +3034,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				" AND " +
 				BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+"="+SimulationTable.table.id.getQualifiedColName()+
 				" AND " +
-				SimulationTable.table.getTableName()+"."+SimulationTable.table.versionParentSimRef_ColumnName+" IS NULL";
+				SimulationTable.table.getTableName()+"."+SimulationTable.versionParentSimRef_ColumnName+" IS NULL";
 			ResultSet rset = stmt.executeQuery(sql);
 			if(rset.next()){
 				if(rset.next()){
@@ -3043,12 +3088,12 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				"null"+","+
 				(addtcrit_tsop.getMaxRelativeError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxRelativeError().toString()+"')":"null")+","+
 				(addtcrit_tsop.getMaxAbsoluteError() != null?"TO_NUMBER('"+addtcrit_tsop.getMaxAbsoluteError().toString()+"')":"null")+","+
-				"NULL,NULL,"+"'"+cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
+				"NULL,NULL,"+"'"+TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+",null"+
 				")";
 			stmt.executeUpdate(sql);
 			if(addtcrit_tsop.getRegressionBioModelSimKey() != null){
 				testSuiteOP(
-					new cbit.vcell.numericstest.EditTestCriteriaOPBioModel(
+					new EditTestCriteriaOPBioModel(
 						tcritKey,
 						addtcrit_tsop.getRegressionBioModelKey(),
 						addtcrit_tsop.getRegressionBioModelSimKey(),
@@ -3056,10 +3101,10 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					con,user,sessionLog);
 			}
 			if(addtcrit_tsop.getAddTestResultsOP() != null){
-				cbit.vcell.numericstest.AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
+				AddTestResultsOP atrOP = addtcrit_tsop.getAddTestResultsOP();
 				//Set new TSKey,TCritKey and do child OPs
 				testSuiteOP(
-					new cbit.vcell.numericstest.AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
+					new AddTestResultsOP(tcritKey,atrOP.getVariableComparisonSummaries()),
 					con,user,sessionLog);
 			}			
 				
@@ -3073,8 +3118,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.RemoveTestCriteriaOP){
-			cbit.vcell.numericstest.RemoveTestCriteriaOP removetcrit_tsop = (cbit.vcell.numericstest.RemoveTestCriteriaOP)tsop;
+		}else if(tsop instanceof RemoveTestCriteriaOP){
+			RemoveTestCriteriaOP removetcrit_tsop = (RemoveTestCriteriaOP)tsop;
 			StringBuffer sb = new StringBuffer();
 			for(int i=0;i< removetcrit_tsop.getTestCriteriaKeys().length;i+= 1){
 				if(i != 0){sb.append(",");}sb.append(removetcrit_tsop.getTestCriteriaKeys()[i].toString());
@@ -3099,8 +3144,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				throw new DataAccessException("Remove TestCriteria keys="+sb.toString()+
 					" removed row count="+numRowsUpdated+" expected "+removetcrit_tsop.getTestCriteriaKeys().length);
 			}
-		}else if(tsop instanceof cbit.vcell.numericstest.RemoveTestSuiteOP){
-			cbit.vcell.numericstest.RemoveTestSuiteOP removets_tsop = (cbit.vcell.numericstest.RemoveTestSuiteOP)tsop;
+		}else if(tsop instanceof RemoveTestSuiteOP){
+			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP)tsop;
 			int numRowsUpdated = stmt.executeUpdate(
 				"DELETE FROM "+TFTestSuiteTable.table.getTableName()+
 				" WHERE "+
@@ -3110,15 +3155,15 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			}
 
 			changedTestSuiteKeys.add(removets_tsop.getTestSuiteKey());	
-		}else if(tsop instanceof cbit.vcell.numericstest.AddTestResultsOP){
-			cbit.vcell.numericstest.AddTestResultsOP addtr_tsop = (cbit.vcell.numericstest.AddTestResultsOP)tsop;
-			cbit.vcell.solver.test.VariableComparisonSummary[] vcs = addtr_tsop.getVariableComparisonSummaries();
+		}else if(tsop instanceof AddTestResultsOP){
+			AddTestResultsOP addtr_tsop = (AddTestResultsOP)tsop;
+			VariableComparisonSummary[] vcs = addtr_tsop.getVariableComparisonSummaries();
 			if(vcs == null || vcs.length == 0){
-				throw new DataAccessException(cbit.vcell.numericstest.RemoveTestCasesOP.class.getName()+" had no TestResults");
+				throw new DataAccessException(RemoveTestCasesOP.class.getName()+" had no TestResults");
 			}
 			for(int i=0;i<vcs.length;i+= 1){
 				if(vcs[i] == null){
-					throw new DataAccessException(cbit.vcell.numericstest.RemoveTestCasesOP.class.getName()+" Array element was null");
+					throw new DataAccessException(RemoveTestCasesOP.class.getName()+" Array element was null");
 				}
 			}
 			ResultSet rset = stmt.executeQuery(
@@ -3154,8 +3199,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.RemoveTestResultsOP){
-			cbit.vcell.numericstest.RemoveTestResultsOP removetr_tsop = (cbit.vcell.numericstest.RemoveTestResultsOP)tsop;
+		}else if(tsop instanceof RemoveTestResultsOP){
+			RemoveTestResultsOP removetr_tsop = (RemoveTestResultsOP)tsop;
 			StringBuffer sb = new StringBuffer();
 			for(int i=0;i<removetr_tsop.getTestCriteriaKeys().length;i+= 1){
 				if(i != 0){sb.append(",");}sb.append(removetr_tsop.getTestCriteriaKeys()[i].toString());
@@ -3175,28 +3220,28 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.EditTestCriteriaOPReportStatus){
-			cbit.vcell.numericstest.EditTestCriteriaOPReportStatus edittcrit_tsop = (cbit.vcell.numericstest.EditTestCriteriaOPReportStatus)tsop;
+		}else if(tsop instanceof EditTestCriteriaOPReportStatus){
+			EditTestCriteriaOPReportStatus edittcrit_tsop = (EditTestCriteriaOPReportStatus)tsop;
 			BigDecimal tcritKey = edittcrit_tsop.getTestCriteriaKey();
 			if(tcritKey == null){
 				throw new DataAccessException(tsop.getClass().getName()+" had no TestCriteria keys");
 			}
 			String newRS = edittcrit_tsop.getNewReportStatus();
 			if(newRS == null ||
-				(!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_FAILEDVARS) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NODATA) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NOREFREGR) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_PASSED) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_RPERROR) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_SIMFAILED) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_SIMRUNNING) &&
-				!newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_SIMNOTRUNFAILDONE))){
+				(!newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_FAILEDVARS) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_NODATA) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_NOREFREGR) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_PASSED) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_RPERROR) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_SIMFAILED) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_SIMRUNNING) &&
+				!newRS.equals(TestCriteriaNew.TCRIT_STATUS_SIMNOTRUNFAILDONE))){
 				throw new DataAccessException("Unsupported ReportStatus="+edittcrit_tsop.getNewReportStatus());
 			}
 			String reportStatusMessage = edittcrit_tsop.getNewReportStatusMessage();
 			if(reportStatusMessage != null){
-				reportStatusMessage = org.vcell.util.TokenMangler.getSQLEscapedString(reportStatusMessage);
+				reportStatusMessage = TokenMangler.getSQLEscapedString(reportStatusMessage);
 				reportStatusMessage =
 					reportStatusMessage.substring(0,Math.min(TFTestCriteriaTable.MAX_MESSAGE_SIZE,reportStatusMessage.length()));
 			}
@@ -3207,7 +3252,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					TFTestCriteriaTable.table.reportMessage.getQualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
-			if(newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
+			if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
 				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user, sessionLog);
 			}
 
@@ -3221,8 +3266,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.EditTestCriteriaOPMathModel){
-			cbit.vcell.numericstest.EditTestCriteriaOPMathModel edittcrit_tsop = (cbit.vcell.numericstest.EditTestCriteriaOPMathModel)tsop;
+		}else if(tsop instanceof EditTestCriteriaOPMathModel){
+			EditTestCriteriaOPMathModel edittcrit_tsop = (EditTestCriteriaOPMathModel)tsop;
 			BigDecimal tcritKey = edittcrit_tsop.getTestCriteriaKey();
 			if(tcritKey == null){
 				throw new DataAccessException(tsop.getClass().getName()+" had no TestCriteria keys");
@@ -3262,7 +3307,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
 
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3274,8 +3319,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.EditTestCriteriaOPBioModel){
-			cbit.vcell.numericstest.EditTestCriteriaOPBioModel edittcrit_tsop = (cbit.vcell.numericstest.EditTestCriteriaOPBioModel)tsop;
+		}else if(tsop instanceof EditTestCriteriaOPBioModel){
+			EditTestCriteriaOPBioModel edittcrit_tsop = (EditTestCriteriaOPBioModel)tsop;
 			BigDecimal tcritKey = edittcrit_tsop.getTestCriteriaKey();
 			if(tcritKey == null){
 				throw new DataAccessException(tsop.getClass().getName()+" had no TestCriteria keys");
@@ -3332,7 +3377,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
-			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
 			
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3344,8 +3389,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP){
-			cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP edittcrit_tsop = (cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP)tsop;
+		}else if(tsop instanceof ChangeTestCriteriaErrorLimitOP){
+			ChangeTestCriteriaErrorLimitOP edittcrit_tsop = (ChangeTestCriteriaErrorLimitOP)tsop;
 			BigDecimal[] tcritKeyArr = edittcrit_tsop.getTestCriteriaKeys();
 			double[] maxAbsErrorArr = edittcrit_tsop.getAbsErrorLimits();
 			double[] maxRelErrorArr = edittcrit_tsop.getRelErrorLimits();
@@ -3364,7 +3409,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+maxRelErrorArr[i]:"")+
 					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
 					);
-				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
+				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
 			}
 			ResultSet rset = stmt.executeQuery(
 					"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3376,8 +3421,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 				}
 
-		}else if(tsop instanceof cbit.vcell.numericstest.EditTestCasesOP){
-			cbit.vcell.numericstest.EditTestCasesOP edittc_tsop = (cbit.vcell.numericstest.EditTestCasesOP)tsop;
+		}else if(tsop instanceof EditTestCasesOP){
+			EditTestCasesOP edittc_tsop = (EditTestCasesOP)tsop;
 			BigDecimal[] tcaseKeys = edittc_tsop.getTestCasesKeys();
 			String[] annots = edittc_tsop.getNewAnnotations();
 			boolean[] newSteadyStates = edittc_tsop.getNewSteadyStates();
@@ -3394,7 +3439,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 						if(annotation.length() == 0){
 							annotation = null;
 						}else{
-							annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
+							annotation = TokenMangler.getSQLEscapedString(annotation);
 						}
 					}
 					stmt.executeUpdate(
@@ -3459,8 +3504,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.EditTestSuiteOP){
-			cbit.vcell.numericstest.EditTestSuiteOP editts_tsop = (cbit.vcell.numericstest.EditTestSuiteOP)tsop;
+		}else if(tsop instanceof EditTestSuiteOP){
+			EditTestSuiteOP editts_tsop = (EditTestSuiteOP)tsop;
 			BigDecimal[] tsKeys = editts_tsop.getTestSuiteKeys();
 			String[] annots = editts_tsop.getNewAnnotations();
 			if(tsKeys == null || tsKeys.length == 0){
@@ -3475,7 +3520,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 						if(annotation.length() == 0){
 							annotation = null;
 						}else{
-							annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
+							annotation = TokenMangler.getSQLEscapedString(annotation);
 						}
 					}
 					stmt.executeUpdate(
@@ -3495,8 +3540,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 				}
 				rset.close();
-		}else if(tsop instanceof cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP){
-			cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP qtcritxr_tsop = (cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP)tsop;
+		}else if(tsop instanceof QueryTestCriteriaCrossRefOP){
+			QueryTestCriteriaCrossRefOP qtcritxr_tsop = (QueryTestCriteriaCrossRefOP)tsop;
 			Vector<TestCriteriaCrossRefOPResults.CrossRefData> crossRefV = new Vector<TestCriteriaCrossRefOPResults.CrossRefData>();
 			//
 			//BioModel query
@@ -3784,7 +3829,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 		System.out.println("TestSuite "+changedTSKeys[i].toString()+" changed");
 		//testSuiteHash.remove(changedTSKeys[i]);
 	}
-	return new cbit.vcell.numericstest.TestSuiteOPResults(null);
+	return new TestSuiteOPResults(null);
 }
 
 
@@ -3804,7 +3849,7 @@ public static void updateAnnotation(Connection con,SessionLog newLog,User user,
 	if (!version.getOwner().compareEqual(user)){
 		throw new PermissionException("Cannot unpublish "+vType.getTypeName()+" \""+version.getName()+"\" ("+vKey+"), not owned by "+user.getName());
 	}
-	annot = org.vcell.util.TokenMangler.getSQLEscapedString(annot);
+	annot = TokenMangler.getSQLEscapedString(annot);
 	newLog.print("GeomDbDriver.updateAnnotation(user=" + user + ", key=" + vKey + "Annot="+annot+")");
 	VersionTable vTable = VersionTable.getVersionTable(vType);
 	String set = vTable.versionAnnot.getQualifiedColName() + " = " + "'" + annot + "'";
@@ -3911,9 +3956,9 @@ protected Version updateVersionableInit(InsertHashtable hash, Connection con, Us
 	//Make sure if the user has changed permission on an open Biomodel,MathModel or Geometry
 	//that we use the database permission
 	//
-	if(versionable instanceof cbit.vcell.biomodel.BioModelMetaData ||
-		versionable instanceof cbit.vcell.mathmodel.MathModelMetaData ||
-		versionable instanceof cbit.vcell.geometry.Geometry){
+	if(versionable instanceof BioModelMetaData ||
+		versionable instanceof MathModelMetaData ||
+		versionable instanceof Geometry){
 		Statement stmt = null;
 		try{
 			stmt = con.createStatement();
@@ -3989,7 +4034,7 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
 			results = null;
 		}else{
 			//Strings have to be SQL unmangled
-			results = org.vcell.util.TokenMangler.getSQLRestoredString(temp);
+			results = TokenMangler.getSQLRestoredString(temp);
 		}
 	}else{
 		//CLOBs do not have to be SQL unmangled
@@ -4009,7 +4054,7 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
  */
 public static boolean varchar2_CLOB_is_Varchar2_OK(String data) {
 
-	return (org.vcell.util.TokenMangler.getSQLEscapedString(data).length() <= ORACLE_VARCHAR2_SIZE_LIMIT);
+	return (TokenMangler.getSQLEscapedString(data).length() <= ORACLE_VARCHAR2_SIZE_LIMIT);
 	
 }
 
@@ -4052,7 +4097,7 @@ public static void varchar2_CLOB_update(
         sb.replace(
             marker_index,
             marker_index + INSERT_VARCHAR2_HERE.length(),
-            "'" + org.vcell.util.TokenMangler.getSQLEscapedString(data) + "'");
+            "'" + TokenMangler.getSQLEscapedString(data) + "'");
         updateCleanSQL(con, sb.toString());
     }else{
 	    throw new RuntimeException("Expected charchar2_CLOB Marker Not Found in sql");

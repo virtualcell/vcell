@@ -42,7 +42,7 @@ public boolean equals(Object object) {
  * Creation date: (11/13/00 4:57:53 PM)
  * @return cbit.sql.KeyValue
  */
-public org.vcell.util.document.KeyValue getMathKey() {
+public KeyValue getMathKey() {
 	return mathKey;
 }
 /**
@@ -57,7 +57,7 @@ public MathModelChildSummary getMathModelChildSummary() {
  * This method was created in VisualAge.
  * @return cbit.sql.Version
  */
-public org.vcell.util.document.Version getVersion() {
+public Version getVersion() {
 	return version;
 }
 /**
@@ -75,5 +75,8 @@ public int hashCode() {
  */
 public String toString() {
 	return "MathModelInfo(mathKey="+mathKey+",Version="+version+")";
+}
+public VersionableType getVersionType() {	
+	return VersionableType.MathModelMetaData;
 }
 }

@@ -1,5 +1,8 @@
 package cbit.vcell.xml;
 
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionableType;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/13/2004 1:37:46 PM)
@@ -18,16 +21,19 @@ public XMLInfo(String newXMLString) {
  * This method was created in VisualAge.
  * @return cbit.sql.Version
  */
-public org.vcell.util.document.Version getVersion() {
+public Version getVersion() {
 	// throw new RuntimeException("Not yet implemented!!");
-	return new org.vcell.util.document.Version("DummyVersion", new org.vcell.util.document.User("anu", new org.vcell.util.document.KeyValue("123")));
+	return new Version("DummyVersion", new org.vcell.util.document.User("anu", new org.vcell.util.document.KeyValue("123")));
 }
 /**
  * Insert the method's description here.
  * Creation date: (6/13/2004 1:50:07 PM)
  * @return java.lang.String
  */
-public java.lang.String getXmlString() {
+public String getXmlString() {
 	return xmlString;
+}
+public VersionableType getVersionType() {	
+	return null;
 }
 }

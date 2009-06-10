@@ -4,9 +4,9 @@ package cbit.vcell.mapping;
  * All rights reserved.
 ©*/
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
 
 /**
  * This type was created in VisualAge.
@@ -98,5 +98,10 @@ public int hashCode() {
 public String toString() {
 		return "SimulationContextInfo(MathRef="+mathRef+",GeometryRef="+geomRef+",ModelRef="+modelRef+
 					"Version="+version+")";
+}
+
+
+public VersionableType getVersionType() {
+	return VersionableType.SimulationContext;
 }
 }

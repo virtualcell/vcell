@@ -76,4 +76,7 @@ public int hashCode() {
 public String toString() {
 	return "BioModelInfo(modelKey="+modelKey+",Version="+version+")";
 }
+public VersionableType getVersionType() {	
+	return VersionableType.BioModelMetaData;
+}
 }
