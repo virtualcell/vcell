@@ -90,7 +90,7 @@ public abstract Object getPixelArray();
 
 public final double getPixelAreaXY(){
 	double deltaX = getExtent().getX()/getNumX();
-	double deltaY = getExtent().getX()/getNumY();
+	double deltaY = getExtent().getY()/getNumY();
 	//double deltaZ = getExtent().getX()/getNumZ();
 	return (deltaX*deltaY);
 }
@@ -113,7 +113,7 @@ static Image crop(Image origImage, Rectangle rect) throws ImageException{
 	}
 	Extent croppedExtent = null;
 	if (origImage.getExtent()!=null){
-		croppedExtent = new Extent(origImage.getExtent().getX()*rect.width/origImage.getNumX(),origImage.getExtent().getX()*rect.height/origImage.getNumY(),origImage.getExtent().getZ());
+		croppedExtent = new Extent(origImage.getExtent().getX()*rect.width/origImage.getNumX(),origImage.getExtent().getY()*rect.height/origImage.getNumY(),origImage.getExtent().getZ());
 	}
 	Origin croppedOrigin = null;
 	if(origImage.getOrigin() != null){
