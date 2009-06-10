@@ -23,7 +23,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +49,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.event.DocumentEvent.EventType;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultHighlighter;
@@ -66,7 +67,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
-public class MultiPurposeTextPanel extends JPanel implements DocumentListener, ActionListener, KeyListener {
+public class MultiPurposeTextPanel extends JPanel implements DocumentListener, ActionListener {
 	private JTextPane textPane = null;
 	private JScrollPane scrollPane = null;
 	private LineNumberPanel numberPanel = null;
@@ -394,29 +395,6 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	}
 
 	/**
-	 * Insert the method's description here. Creation date: (10/10/2006 2:19:21
-	 * PM)
-	 * 
-	 * @param line
-	 *            int
-	 */
-	public int getCaretPosition() {
-		return getTextPane().getCaretPosition();
-	}
-
-	/**
-	 * Insert the method's description here. Creation date: (10/10/2006 2:17:29
-	 * PM)
-	 * 
-	 * @return int
-	 */
-	public int getLineEndOffset(int line) throws javax.swing.text.BadLocationException {
-		Element map = getTextPane().getDocument().getDefaultRootElement();
-        Element lineElem = map.getElement(line);
-        return lineElem.getEndOffset();
-	}
-
-	/**
 	 * Insert the method's description here. Creation date: (10/10/2006 2:17:29
 	 * PM)
 	 * 
@@ -457,7 +435,6 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 			textPane.setHighlighter(getHighlighter());
 			textPane.getDocument().addDocumentListener(this);
 			textPane.getDocument().addUndoableEditListener(undoListener);
-			textPane.addKeyListener(this);
 
 			InputMap im = textPane.getInputMap();
 			im.put(KeyStroke.getKeyStroke("ENTER"), COMMIT_ACTION);
@@ -494,7 +471,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		textPane.setCaretPosition(position);
 	}
 
-	public void scrollToShow(int position) {
+	private void scrollToShow(int position) {
 		try {
 			setCaretPosition(position);
 			Rectangle r = textPane.modelToView(position);
@@ -510,10 +487,6 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-	}
-
-	public void moveCaretPosition(int position) {
-		textPane.moveCaretPosition(position);
 	}
 
 	/**
@@ -549,13 +522,13 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	}
 
 	public void insertUpdate(DocumentEvent ev) {		
-		
+		onDocumentEvent(ev);
+	}
+	
+	private void autoComplete(DocumentEvent ev) { 
 		if (ev.getDocument() == getSearchTextField().getDocument()) {
-			search();
 			return;
 		}
-
-		clearSearchText();
 		
 		if (autoCompletionWords == null || autoCompletionWords.size() < 1 || ev.getLength() != 1) {
 			return;
@@ -627,7 +600,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		return painter;
 	}
 
-	public void search() {
+	private void search() {
 		searchPointer  = 0;
 		searchStartOffset = -1;
 		searchEndOffset = -1;
@@ -668,7 +641,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		if (highlights.length == 0) {
 			return;
 		}
-		int currentPosition = getCaretPosition();
+		int currentPosition = textPane.getCaretPosition();
 		if (bNext) {
 			int oldSearchStartOffset = searchStartOffset;
 			while (true) {
@@ -743,22 +716,45 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	}
 
 	public void changedUpdate(DocumentEvent e) {
+		onDocumentEvent(e);	
+	}
+	
+	private void onDocumentEvent(DocumentEvent e) {
 		if (e.getDocument() == getSearchTextField().getDocument()) {
 			search();
 			return;
 		}
 		clearSearchText();
+		
+		if (e.getLength() > 1) {
+			return;
+		}
+		
+		if (e instanceof AbstractDocument.DefaultDocumentEvent) {
+			if (((AbstractDocument.DefaultDocumentEvent)e).getPresentationName().indexOf("style") >= 0) {
+				return;
+			}
+		} else {
+			return;
+		}
+		
+		SwingUtilities.invokeLater(new Runnable() {
+
+			public void run() {
+				highlightUpdate();
+			}
+		});
+		
+		if (e.getType() == EventType.INSERT) {
+			autoComplete(e);
+		}
 	}
 
 	public void removeUpdate(DocumentEvent e) {
-		if (e.getDocument() == getSearchTextField().getDocument()) {
-			search();
-			return;
-		}		
-		clearSearchText();
+		onDocumentEvent(e);
 	}
 	
-	public void highlightUpdate() {	
+	private void highlightUpdate() {	
 		if (keywords.size() < 1) {
 			return;
 		}		
@@ -830,7 +826,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 
 	}
 
-	public void clearSearchText() {
+	private void clearSearchText() {
 		getSearchTextField().setText("");
 	}
 
@@ -908,26 +904,6 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 			p0 = p0 + token.length();
 		}
 		getTextPane().setCharacterAttributes(getDefaultStyle(), true);
-	}
-	
-	public void keyPressed(KeyEvent e) {
-	}
-
-	public void keyReleased(KeyEvent e) {
-		if (keywords.size() < 1) {
-			return;
-		}
-		int modifier = e.getModifiersEx();
-		if (modifier != 0) {
-			return;
-		}
-		int keyCode = e.getKeyCode();
-		if (!e.isActionKey() && keyCode != KeyEvent.VK_CONTROL && keyCode != KeyEvent.VK_SHIFT) {
-			highlightUpdate();
-		}
-	}
-
-	public void keyTyped(KeyEvent e) {
 	}
 	
 	public static boolean isIdentifierPart(char ch) {
