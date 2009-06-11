@@ -1,5 +1,4 @@
 package cbit.vcell.solver.ode.gui;
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.*;
 /*©
@@ -10,14 +9,18 @@ import cbit.vcell.util.*;
 import cbit.plot.*;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ode.*;
-import cbit.vcell.solver.*;
 import javax.swing.*;
 
-import org.vcell.util.DataAccessException;
+import org.vcell.util.BeanUtils;
 
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.math.Constant;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 
 /**
  * Insert the type's description here.  What we want to do with this
@@ -45,7 +48,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JScrollPane ivjJScrollPaneYAxis = null;
 	private JLabel ivjJLabelSensitivityParameter = null;
 	private JPanel ivjJPanelSensitivity = null;
-	private cbit.vcell.solver.ode.ODESolverResultSet fieldOdeSolverResultSet = null;
+	private ODESolverResultSet fieldOdeSolverResultSet = null;
 	private DefaultListModel ivjDefaultListModelY = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private int[] plottableColumnIndices = new int[0];
@@ -105,7 +108,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC2(e);
 		};
 	};
-	private cbit.vcell.parser.SymbolTable fieldSymbolTable = null;
+	private SymbolTable fieldSymbolTable = null;
 
 /**
  * ODESolverPlotSpecificationPanel constructor comment.
@@ -118,7 +121,7 @@ public ODESolverPlotSpecificationPanel() {
 /**
  * Comment
  */
-private void addFunction(cbit.vcell.solver.ode.ODESolverResultSet odeRS) throws cbit.vcell.parser.ExpressionException {
+private void addFunction(ODESolverResultSet odeRS) throws ExpressionException {
 
 	//
 	// Assign a default name for the new function. Check if any other existing function has the same name.
@@ -162,12 +165,12 @@ private void addFunction(cbit.vcell.solver.ode.ODESolverResultSet odeRS) throws 
 	int ok = JOptionPane.showOptionDialog(this, FnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
 	if (ok == javax.swing.JOptionPane.OK_OPTION) {
 		String funcName = getFunctionNameTextField().getText();
-		cbit.vcell.parser.Expression funcExp = new Expression(getFunctionExpressionTextField().getText());
+		Expression funcExp = new Expression(getFunctionExpressionTextField().getText());
 		fcd = new FunctionColumnDescription(funcExp, funcName, null, funcName+" : "+funcExp.infix(), true);
 
 		try {
 			odeRS.checkFunctionValidity(fcd);
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (ExpressionException e) {
 			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
 			// Commenting the Stack trace for exception .... annoying to have the exception thrown after dealing with pop-up error message!
 			// e.printStackTrace(System.out);
@@ -175,7 +178,7 @@ private void addFunction(cbit.vcell.solver.ode.ODESolverResultSet odeRS) throws 
 		}
 		try {
 			odeRS.addFunctionColumn(fcd);
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (ExpressionException e) {
 			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace(System.out);
 		}
@@ -228,7 +231,7 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(cbit.vcell.solver.ode.ODESolverResultSet value) {
+private void connEtoC11(ODESolverResultSet value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -268,7 +271,7 @@ private void connEtoC12(javax.swing.event.ChangeEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(cbit.vcell.solver.ode.ODESolverResultSet value) {
+private void connEtoC13(ODESolverResultSet value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -430,7 +433,7 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(cbit.vcell.solver.ode.ODESolverResultSet value) {
+private void connEtoC9(ODESolverResultSet value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -575,7 +578,7 @@ private void deleteFunction(int ySelection) {
 			if ( yChoice.equals(funcColDesc.getDisplayName()) ) {
 				try {
 					odeRS.removeFunctionColumn(funcColDesc);
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Cannot remove function column from result set."+e.getMessage());
 				}
@@ -586,7 +589,7 @@ private void deleteFunction(int ySelection) {
 	// updateResultSet
 	try {
 		updateResultSet(odeRS);
-	} catch (cbit.vcell.parser.ExpressionException e) {
+	} catch (ExpressionException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Cannot update result set."+e.getMessage());
 	}
@@ -595,7 +598,7 @@ private void deleteFunction(int ySelection) {
 /**
  * Method to enable the log sensitivity checkbox and slider depending on whether sensitivity analysis is enabled.
  */
-private void enableLogSensitivity() throws cbit.vcell.parser.ExpressionException {
+private void enableLogSensitivity() throws ExpressionException {
 
 	boolean bEnabled = true;
 	
@@ -1048,7 +1051,7 @@ private javax.swing.JLabel getMinLabel() {
  * @return The odeSolverResultSet property value.
  * @see #setOdeSolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
+public ODESolverResultSet getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
 
@@ -1058,7 +1061,7 @@ public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.ode.ODESolverResultSet getodeSolverResultSet1() {
+private ODESolverResultSet getodeSolverResultSet1() {
 	// user code begin {1}
 	// user code end
 	return ivjodeSolverResultSet1;
@@ -1094,37 +1097,6 @@ private java.lang.String[] getResultSetColumnNames() {
 	return resultSetColumnNames;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/8/2001 4:56:15 PM)
- * @param cbit.vcell.solver.ode.ODESolverResultSet
- */
-private int[] getSensitivityIndices(ODESolverResultSet odeSolverResultSet) {
-    // find out how many plottable datasets we have
-    int plottable = 0;
-    for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
-        ColumnDescription cd =
-            (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
-        if (cd.getParameterName() != null) {
-            plottable++; // not a parameter
-        }
-    }
-    // now store their indices
-    int[] indices = new int[plottable];
-    plottable = 0;
-    for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
-        ColumnDescription cd =
-            (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
-        if (cd.getParameterName() != null) {
-            indices[plottable] = i;
-            plottable++;
-        }
-    }
-    return (sortIndices(odeSolverResultSet, indices));
-}
-
-
 /**
  // Method to obtain the sensitivity parameter (if applicable). The method checks the column description names in the
  // result set to find any column description that begins with the substring "sens" and contains the substring "wrt_".
@@ -1134,7 +1106,7 @@ private int[] getSensitivityIndices(ODESolverResultSet odeSolverResultSet) {
  // column description starts with the substring "sens" or if the column for the parameter does not exist in the result
  // set, the method returns null.
  */
-private cbit.vcell.math.Constant getSensitivityParameter() throws cbit.vcell.parser.ExpressionException {
+private Constant getSensitivityParameter() throws ExpressionException {
 	String sensParamName = "";
 	FunctionColumnDescription fcds[] = getOdeSolverResultSet().getFunctionColumnDescriptions();
 
@@ -1164,7 +1136,7 @@ private cbit.vcell.math.Constant getSensitivityParameter() throws cbit.vcell.par
 		return null;
 	}
 
-	cbit.vcell.math.Constant sensParam = new cbit.vcell.math.Constant(sensParamName, new Expression(sensParamValue));
+	Constant sensParam = new Constant(sensParamName, new Expression(sensParamValue));
 	return sensParam;
 }
 
@@ -1244,7 +1216,7 @@ private javax.swing.JSlider getSensitivityParameterSlider() {
 /**
  * Comment
  */
-private double[] getSensValues(ColumnDescription colDesc) throws cbit.vcell.parser.ExpressionException {
+private double[] getSensValues(ColumnDescription colDesc) throws ExpressionException {
 	if (getSensitivityParameter() != null) {
 		double sens[] = null;
 		String[] rsetColNames = getPlottableNames();
@@ -1281,7 +1253,7 @@ public cbit.plot.SingleXPlot2D getSingleXPlot2D() {
  * @return The symbolTable property value.
  * @see #setSymbolTable
  */
-public cbit.vcell.parser.SymbolTable getSymbolTable() {
+public SymbolTable getSymbolTable() {
 	return fieldSymbolTable;
 }
 
@@ -1313,38 +1285,6 @@ private javax.swing.JPanel getUserFunctionPanel() {
 	}
 	return ivjUserFunctionPanel;
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (2/8/2001 4:56:15 PM)
- * @param cbit.vcell.solver.ode.ODESolverResultSet
- */
-private int[] getVariableIndices(ODESolverResultSet odeSolverResultSet) {
-    // find out how many plottable datasets we have
-    int plottable = 0;
-    for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
-        ColumnDescription cd =
-            (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
-        //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
-        //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
-        if ((!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) && (!cd.getName().contains(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) && (cd.getParameterName() == null)) {
-            plottable++; // not a parameter
-        }
-    }
-    // now store their indices
-    int[] indices = new int[plottable];
-    plottable = 0;
-    for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
-        ColumnDescription cd =
-            (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
-        if ((!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) && (!cd.getName().contains(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) && (cd.getParameterName() == null)) {
-            indices[plottable] = i;
-            plottable++;
-        }
-    }
-    return (sortIndices(odeSolverResultSet, indices));
-}
-
 
 /**
  * Return the XAxisComboBox property value.
@@ -1549,7 +1489,7 @@ constraintsJPanelSensitivity.gridheight = 2;
 /**
  * Comment
  */
-private void initializeLogSensCheckBox() throws cbit.vcell.parser.ExpressionException{
+private void initializeLogSensCheckBox() throws ExpressionException{
 	if (getSensitivityParameter() != null) {
 		getLogSensCheckbox().setSelected(true);
 	} else {
@@ -1574,7 +1514,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1778,7 +1718,7 @@ private void refreshVisiblePlots(Plot2D plot2D) {
 /**
  * Comment
  */
-private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
+private void regeneratePlot2D() throws ExpressionException {
 	if (getOdeSolverResultSet() == null) 
 	{
 		return;
@@ -1849,7 +1789,7 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
 				// When log sensitivity checkbox is selected.
 	
 				// Get sensitivity parameter and its value to compute log sensitivity
-				cbit.vcell.math.Constant sensParam = getSensitivityParameter();
+				Constant sensParam = getSensitivityParameter();
 				double sensParamValue = sensParam.getConstantValue();
 				getJLabelSensitivityParameter().setText("Sensitivity wrt Parameter "+sensParam.getName());
 	
@@ -1916,13 +1856,13 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
 				getJLabelSensitivityParameter().setText("");
 			}
 	
-			cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
+			SymbolTableEntry[] symbolTableEntries = null;
 			if(getSymbolTable() != null && yNames != null && yNames.length > 0){
-				symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[yNames.length];
+				symbolTableEntries = new SymbolTableEntry[yNames.length];
 				for(int i=0;i<yNames.length;i+= 1){
 					try{
 						symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
-					}catch(cbit.vcell.parser.ExpressionBindingException e){
+					}catch(ExpressionBindingException e){
 						//Do Nothing
 					}
 				}
@@ -1941,10 +1881,6 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
 		PlotData[] plotData = new PlotData[plottableColumnIndices.length];
 		String[] yNames = getPlottableNames();
 		
-		String title = "";
-		String xLabel = "";
-		String yLabel = "";
-
 		for (int i=0; i<plottableColumnIndices.length; i++)
 		{
 			ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions(getPlottableColumnIndices()[i]);
@@ -1960,14 +1896,14 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
 			plotData[i] =  new PlotData(x,y);
 		}
 		
-		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
+		SymbolTableEntry[] symbolTableEntries = null;
 		if(getSymbolTable() != null && yNames != null && yNames.length > 0){
-			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[yNames.length];
+			symbolTableEntries = new SymbolTableEntry[yNames.length];
 			for(int i=0;i<yNames.length;i+= 1){
 				try{
 					symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
-				}catch(cbit.vcell.parser.ExpressionBindingException e){
-					//Do Nothing
+				}catch(ExpressionBindingException e){
+					e.printStackTrace();
 				}
 			}
 			
@@ -1984,7 +1920,7 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet) {
+public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
 	ODESolverResultSet oldValue = fieldOdeSolverResultSet;
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	if (odeSolverResultSet==null){
@@ -2000,10 +1936,10 @@ public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSo
  * @param newValue cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setodeSolverResultSet1(cbit.vcell.solver.ode.ODESolverResultSet newValue) {
+private void setodeSolverResultSet1(ODESolverResultSet newValue) {
 	if (ivjodeSolverResultSet1 != newValue) {
 		try {
-			cbit.vcell.solver.ode.ODESolverResultSet oldValue = getodeSolverResultSet1();
+			ODESolverResultSet oldValue = getodeSolverResultSet1();
 			/* Stop listening for events from the current object */
 			if (ivjodeSolverResultSet1 != null) {
 				ivjodeSolverResultSet1.removePropertyChangeListener(ivjEventHandler);
@@ -2036,8 +1972,11 @@ private void setodeSolverResultSet1(cbit.vcell.solver.ode.ODESolverResultSet new
  * Creation date: (2/8/2001 5:27:49 PM)
  * @param newPlottableColumnIndices int[]
  */
-private void setPlottableColumnIndices(int[] newPlottableColumnIndices) {
-	plottableColumnIndices = newPlottableColumnIndices;
+private void setPlottableColumnIndices(ArrayList<Integer> newPlottableColumnIndices) {
+	plottableColumnIndices = new int[newPlottableColumnIndices.size()];
+	for (int i = 0; i < newPlottableColumnIndices.size(); i++) {
+		plottableColumnIndices[i] = newPlottableColumnIndices.get(i);
+	}
 }
 
 
@@ -2066,7 +2005,7 @@ private void setResultSetColumnNames(java.lang.String[] newResultSetColumnNames)
  * @param singleXPlot2D The new value for the property.
  * @see #getSingleXPlot2D
  */
-public void setSingleXPlot2D(cbit.plot.SingleXPlot2D singleXPlot2D) {
+public void setSingleXPlot2D(SingleXPlot2D singleXPlot2D) {
 	SingleXPlot2D oldValue = fieldSingleXPlot2D;
 	fieldSingleXPlot2D = singleXPlot2D;
 	firePropertyChange("singleXPlot2D", oldValue, singleXPlot2D);
@@ -2078,8 +2017,8 @@ public void setSingleXPlot2D(cbit.plot.SingleXPlot2D singleXPlot2D) {
  * @param symbolTable The new value for the property.
  * @see #getSymbolTable
  */
-public void setSymbolTable(cbit.vcell.parser.SymbolTable symbolTable) {
-	cbit.vcell.parser.SymbolTable oldValue = fieldSymbolTable;
+public void setSymbolTable(SymbolTable symbolTable) {
+	SymbolTable oldValue = fieldSymbolTable;
 	fieldSymbolTable = symbolTable;
 	firePropertyChange("symbolTable", oldValue, symbolTable);
 }
@@ -2148,23 +2087,17 @@ private synchronized void setYIndicesFromList() {
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private int[] sortIndices(ODESolverResultSet odeSolverResultSet, int[] indices) {
-	//  VERY PRIMITIVE SORTING ALGORITHM...
-	//  REPLACE WITH ELEGANT SORTING ALGORITHM LATER...
-	for (int i = 0; i < indices.length; i++) {
-		for (int j = i + 1; j < indices.length; j++) {
-			ColumnDescription columnDescriptionI =
-	            (ColumnDescription) odeSolverResultSet.getColumnDescriptions(indices[i]);
-	        ColumnDescription columnDescriptionJ =
-	            (ColumnDescription) odeSolverResultSet.getColumnDescriptions(indices[j]);
-	        if (columnDescriptionI.getName().compareTo(columnDescriptionJ.getName()) > 0 && !columnDescriptionI.getName().equals("t")) {
-		        int temporaryIndex = indices[i];
-		        indices[i] = indices[j];
-		        indices[j] = temporaryIndex;
-	        }	
+private void sortIndices(final ODESolverResultSet odeSolverResultSet, ArrayList<Integer> indices) {
+	Collections.sort(indices, new Comparator<Integer>() {
+
+		public int compare(Integer o1, Integer o2) {
+			ColumnDescription columnDescriptionI = odeSolverResultSet.getColumnDescriptions(o1);
+	        ColumnDescription columnDescriptionJ = odeSolverResultSet.getColumnDescriptions(o2);
+	        String nameI = columnDescriptionI.getName();
+			String nameJ = columnDescriptionJ.getName();
+			return nameI.compareTo(nameJ);
 		}
-	}
-	return (indices);
+	});
 }
 
 
@@ -2173,53 +2106,71 @@ private int[] sortIndices(ODESolverResultSet odeSolverResultSet, int[] indices) 
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) throws cbit.vcell.parser.ExpressionException {
-    int[] variableIndices = getVariableIndices(odeSolverResultSet);
-    int[] sensitivityIndices = getSensitivityIndices(odeSolverResultSet);
-    //  Hack this here, Later we can use an array utility...
-    int[] indices;
-    if(!odeSolverResultSet.isMultiTrialData())
-    	indices = new int[variableIndices.length + sensitivityIndices.length];
-    else indices = new int[variableIndices.length];
+private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) throws ExpressionException {
+	if (odeSolverResultSet == null) {
+		return;
+	}
+	ArrayList<Integer> variableIndices = new ArrayList<Integer>();
+	ArrayList<Integer> sensitivityIndices = new ArrayList<Integer>();
+	int timeIndex = -1;
+	
+    for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
+        ColumnDescription cd = odeSolverResultSet.getColumnDescriptions(i);
+        //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
+        //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
+        if (cd.getName().equals(ReservedSymbol.TIME.getName())) {
+        	timeIndex = i;
+        } else if (cd.getParameterName() == null) {
+        	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
+        		variableIndices.add(i);
+        	}
+        } else {
+        	sensitivityIndices.add(i);
+        }
+    }    
+    sortIndices(odeSolverResultSet, variableIndices);
+    sortIndices(odeSolverResultSet, sensitivityIndices); 
     
-    for (int i = 0; i < variableIndices.length; i++) {
-        indices[i] = variableIndices[i];
-    }
-    if(!odeSolverResultSet.isMultiTrialData())
+    //  Hack this here, Later we can use an array utility...
+    ArrayList<Integer> sortedIndices = new ArrayList<Integer>();
+    if (timeIndex >= 0) {
+	    sortedIndices.add(timeIndex); // add time first
+	}
+    
+    boolean bMultiTrailData = odeSolverResultSet.isMultiTrialData();
+    
+    sortedIndices.addAll(variableIndices);
+    if(!bMultiTrailData)
     {
-	    for (int i = 0; i < sensitivityIndices.length; i++) {
-	        indices[variableIndices.length + i] = sensitivityIndices[i];
-	    }
+    	sortedIndices.addAll(sensitivityIndices);
     }
     //  End hack
-    setPlottableColumnIndices(indices);
+    setPlottableColumnIndices(sortedIndices);
     // now store their names
-    String[] names = new String[indices.length];
-    for (int i = 0; i < indices.length; i++) {
-        ColumnDescription column = odeSolverResultSet.getColumnDescriptions(indices[i]);
-        if (column instanceof ODESolverResultSetColumnDescription) {
-            names[i] = ((ODESolverResultSetColumnDescription) column).getDisplayName();
-        } else {
-            names[i] = column.getDisplayName();
-        }
+    String[] names = new String[sortedIndices.size()];
+    for (int i = 0; i < sortedIndices.size(); i++) {
+        ColumnDescription column = odeSolverResultSet.getColumnDescriptions(sortedIndices.get(i));
+        names[i] = column.getDisplayName();
     }
     setPlottableNames(names);
-
+   
     // finally, update widgets
     getComboBoxModelX().removeAllElements();
     getDefaultListModelY().removeAllElements();
-    for (int i = 0; i < indices.length; i++) {
+    for (int i = 0; i < sortedIndices.size(); i++) {
     	// Don't put anything in X Axis, if the results of multifple trials are being displayed.
-    	if((odeSolverResultSet != null) && (!odeSolverResultSet.isMultiTrialData()))
+    	if(!bMultiTrailData) {
     		getComboBoxModelX().addElement(names[i]);
+    	}
         getDefaultListModelY().addElement(names[i]);
     }
     
-    if (indices.length > 0) {
+    if (sortedIndices.size() > 0) {
     	//Don't put anything in X Axis, if the results of multifple trials are being displayed.
-    	if((odeSolverResultSet != null) && (!odeSolverResultSet.isMultiTrialData()))
+    	if(!bMultiTrailData) {
     		getXAxisComboBox().setSelectedIndex(0);
-        getYAxisChoice().setSelectedIndex(indices.length > 1 ? 1 : 0);
+    	}
+        getYAxisChoice().setSelectedIndex(sortedIndices.size() > 1 ? 1 : 0);
     }
     regeneratePlot2D();
 }
@@ -2228,13 +2179,13 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) t
 /**
  * Comment
  */
-private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws cbit.vcell.parser.ExpressionException {
+private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws ExpressionException {
 	String[] columnNames = new String[odeSolverResultSet.getColumnDescriptionsCount()];
 
 	for (int i = 0; i < columnNames.length; i++){
 		columnNames[i] = odeSolverResultSet.getColumnDescriptions(i).getDisplayName();
 	}
-	if (org.vcell.util.BeanUtils.arrayEquals(columnNames, getResultSetColumnNames())) {
+	if (BeanUtils.arrayEquals(columnNames, getResultSetColumnNames())) {
 		// same stuff, maybe more/different data - keep axis choices
 		regeneratePlot2D();
 	} else {
@@ -2273,12 +2224,12 @@ private Point2D[] generateHistogram(double[] rawData)
 		else temp.put(new Integer(val), new Integer(1));
 	}
 	//sort the hashtable ascendantly and also calculate the frequency in terms of percentage.
-	Vector keys = new Vector(temp.keySet());
+	Vector<Integer> keys = new Vector<Integer>(temp.keySet());
 	Collections.sort(keys);
 	Point2D[] result = new Point2D[keys.size()];
 	for (int i=0; i<keys.size(); i++)
 	{
-        Integer key = (Integer)keys.elementAt(i);
+        Integer key = keys.elementAt(i);
         Double valperc = new Double(((double)temp.get(key).intValue())/((double)rawData.length));
         result[i] = new Point2D.Double(key,valperc);
     }

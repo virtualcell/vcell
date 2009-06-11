@@ -1,6 +1,10 @@
 package cbit.vcell.util;
+
 import cbit.vcell.math.*;
 import java.util.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.parser.*;
 /**
@@ -21,7 +25,10 @@ public class RowColumnResultSet implements java.io.Serializable {
 	private Vector<ColumnDescription> fieldFunctionColumnDescriptions = new Vector<ColumnDescription>();
 	private Vector<double[]> fieldValues = new Vector<double[]> ();  // vector of rows (each row is a double[])
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.util.ColumnDescription[] fieldColumnDescriptions = new ColumnDescription[0];
+	private ColumnDescription[] fieldColumnDescriptions = null;
+	
+	private VariableSymbolTable resultSetSymbolTableWithFunction = null;
+	private VariableSymbolTable resultSetSymbolTableWithoutFunction = null; 
 
 /**
  * SimpleODEData constructor comment.
@@ -49,39 +56,57 @@ public RowColumnResultSet(String[] dataColumnNames) {
  *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
  *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
  */
-public void addDataColumn(ColumnDescription columnDescription) {
+public final void addDataColumn(ColumnDescription columnDescription) {
 	// cbit.util.Assertion.assert(getRowCount() == 0);
+	ColumnDescription[] oldValue = fieldColumnDescriptions;
 	fieldDataColumnDescriptions.addElement(columnDescription);
-	refreshColumnDescriptions();
-}
+	
+	fieldColumnDescriptions = null;
+	resultSetSymbolTableWithFunction = null;
+	resultSetSymbolTableWithoutFunction = null;
 
+	if (getPropertyChange().getPropertyChangeListeners().length > 0) {
+		firePropertyChange("columnDescriptions", oldValue, getColumnDescriptions());
+	}
+}
 
 /**
  * getVariableNames method comment.
  *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
  *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
  */
-public void addFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
-	//
-	// create symbol table for binding expression against data columns and functions (of data columns)
-	//
-	VariableSymbolTable resultSetSymbolTable = createResultSetSymbolTable(true);
+public final void addFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
+	ColumnDescription[] oldValue = fieldColumnDescriptions;
+	addFunctionColumnInternal(functionColumnDescription);
+	if (getPropertyChange().getPropertyChangeListeners().length > 0) {
+		firePropertyChange("columnDescriptions", oldValue, getColumnDescriptions());
+	}
+}
 
+/**
+ * getVariableNames method comment.
+ *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
+ *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
+ */
+private final void addFunctionColumnInternal(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
 	//
 	// bind and substitute functions (resulting in expressions of only data columns).
 	//
-	functionColumnDescription.getExpression().bindExpression(resultSetSymbolTable);
-	Expression exp1 = MathUtilities.substituteFunctions(functionColumnDescription.getExpression(),resultSetSymbolTable);
+	functionColumnDescription.getExpression().bindExpression(getResultSetSymbolTableWithFunction());
+	Expression exp1 = MathUtilities.substituteFunctions(functionColumnDescription.getExpression(),getResultSetSymbolTableWithFunction());
 	functionColumnDescription.setExpression(exp1.flatten());
 
 	//
 	// didn't throw a binding exception, add to result set.
 	//
 	fieldFunctionColumnDescriptions.addElement(functionColumnDescription);
-
-	refreshColumnDescriptions();
+	
+	Function func = new Function(functionColumnDescription.getName(),new Expression(functionColumnDescription.getExpression()));
+	getResultSetSymbolTableWithFunction().addVar(func);	
+	func.setIndex(getColumnDescriptionsCount() - 1);
+	
+	fieldColumnDescriptions = null;
 }
-
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -89,15 +114,6 @@ public void addFunctionColumn(FunctionColumnDescription functionColumnDescriptio
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * getVariableNames method comment.
@@ -140,7 +156,7 @@ private double calculateErrorFactor(int t, double a[], double b[], double c[], d
 
 /**
  *  checkFunctionValidity method
- *  This method is used to check if a user defined funtion expression is valid.
+ *  This method is used to check if a user defined function expression is valid.
  *  Takes a FunctionColumnDescription as argument. It substitutes the functions and binds the expression of the new function
  *  to check the functions validity. If it is not valid, it throws an ExpressionException, which is caught and handled by
  *  by the addFunction method in ODESolverPlotSpecificationPanel.
@@ -152,9 +168,8 @@ public void checkFunctionValidity(FunctionColumnDescription fcd) throws Expressi
 		//
 		// must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
 		//
-		SymbolTable symbolTable = createResultSetSymbolTable(true);
-		exp.bindExpression(symbolTable);
-		Expression exp1 = MathUtilities.substituteFunctions(exp, symbolTable);
+		exp.bindExpression(getResultSetSymbolTableWithFunction());
+		Expression exp1 = MathUtilities.substituteFunctions(exp, getResultSetSymbolTableWithFunction());
 		
 		values = new double[getRowCount()];
 		for (int r = 0; r < getRowCount(); r++) {
@@ -205,8 +220,7 @@ public synchronized double[] extractColumn(int c) throws ExpressionException {
 			//
 			// must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
 			//
-			SymbolTable symbolTable = createResultSetSymbolTable(false);
-			exp.bindExpression(symbolTable);
+			exp.bindExpression(getResultSetSymbolTableWithoutFunction());
 			
 			values = new double[getRowCount()];
 			for (int r = 0; r < getRowCount(); r++) {
@@ -280,7 +294,17 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The columnDescriptions property value.
  * @see #setColumnDescriptions
  */
-public cbit.vcell.util.ColumnDescription[] getColumnDescriptions() {
+public final ColumnDescription[] getColumnDescriptions() {
+	if (fieldColumnDescriptions == null) {
+		fieldColumnDescriptions = new ColumnDescription[getDataColumnCount()+getFunctionColumnCount()];
+		int index = 0;
+		for (int i = 0; i < fieldDataColumnDescriptions.size(); i++){
+			fieldColumnDescriptions[index++] = fieldDataColumnDescriptions.elementAt(i);
+		}
+		for (int i = 0; i < fieldFunctionColumnDescriptions.size(); i++){
+			fieldColumnDescriptions[index++] = fieldFunctionColumnDescriptions.elementAt(i);
+		}
+	}
 	return fieldColumnDescriptions;
 }
 
@@ -292,7 +316,13 @@ public cbit.vcell.util.ColumnDescription[] getColumnDescriptions() {
  * @see #setColumnDescriptions
  */
 public ColumnDescription getColumnDescriptions(int index) {
-	return getColumnDescriptions()[index];
+	if (index < fieldDataColumnDescriptions.size()) {
+		return fieldDataColumnDescriptions.get(index);
+	} else if (index < getColumnDescriptionsCount()) {
+		return fieldFunctionColumnDescriptions.get(index - fieldDataColumnDescriptions.size());
+	} else {
+		throw new ArrayIndexOutOfBoundsException("RowColumnResultSet:getColumnDescriptions(int index), index=" + index + " total count=" + getColumnDescriptionsCount());
+	}	
 }
 
 
@@ -302,7 +332,7 @@ public ColumnDescription getColumnDescriptions(int index) {
  * @return int
  */
 public int getColumnDescriptionsCount() {
-	return fieldColumnDescriptions.length;
+	return fieldDataColumnDescriptions.size() + fieldFunctionColumnDescriptions.size();
 }
 
 
@@ -320,7 +350,7 @@ public int getDataColumnCount() {
  * getVariableNames method comment.
  */
 public ColumnDescription[] getDataColumnDescriptions() {
-	return (ColumnDescription[])org.vcell.util.BeanUtils.getArray(fieldDataColumnDescriptions,ColumnDescription.class);
+	return (ColumnDescription[])BeanUtils.getArray(fieldDataColumnDescriptions,ColumnDescription.class);
 }
 
 
@@ -338,7 +368,7 @@ public int getFunctionColumnCount() {
  * getVariableNames method comment.
  */
 public FunctionColumnDescription[] getFunctionColumnDescriptions() {
-	return (FunctionColumnDescription[])org.vcell.util.BeanUtils.getArray(fieldFunctionColumnDescriptions,FunctionColumnDescription.class);
+	return (FunctionColumnDescription[])BeanUtils.getArray(fieldFunctionColumnDescriptions,FunctionColumnDescription.class);
 }
 
 
@@ -408,28 +438,6 @@ private boolean isCorner(int t, double a[], double b[], double c[], double scale
     return false;
 }
 
-
-/**
- * Gets the columnDescriptions property (cbit.vcell.util.ColumnDescription[]) value.
- * @return The columnDescriptions property value.
- */
-private void refreshColumnDescriptions() {
-	//
-	// indexing is [dataColumns ... functionColumns]
-	//
-	ColumnDescription columnDescriptions[] = new ColumnDescription[getDataColumnCount()+getFunctionColumnCount()];
-	int index = 0;
-	for (int i = 0; i < fieldDataColumnDescriptions.size(); i++){
-		columnDescriptions[index++] = (ColumnDescription)fieldDataColumnDescriptions.elementAt(i);
-	}
-	for (int i = 0; i < fieldFunctionColumnDescriptions.size(); i++){
-		columnDescriptions[index++] = (ColumnDescription)fieldFunctionColumnDescriptions.elementAt(i);
-	}
-
-	setColumnDescriptions(columnDescriptions);
-}
-
-
 /**
  * getVariableNames method comment.
  */
@@ -443,7 +451,7 @@ public void removeAllRows() {
  *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
  *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
  */
-public void removeFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
+public final void removeFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
 
 	//
 	// Remove the corresponding FunctionColumnDescription from the fieldFunctionColumnDescriptions vector
@@ -451,9 +459,16 @@ public void removeFunctionColumn(FunctionColumnDescription functionColumnDescrip
 	// column descriptions array.
 	//
 	
+	ColumnDescription[] oldValue = fieldColumnDescriptions;
+	
 	fieldFunctionColumnDescriptions.removeElement(functionColumnDescription);
 
-	refreshColumnDescriptions();
+	fieldColumnDescriptions = null;
+	resultSetSymbolTableWithFunction = null;
+	
+	if (getPropertyChange().getPropertyChangeListeners().length > 0) {
+		firePropertyChange("columnDescriptions", oldValue, getColumnDescriptions());
+	}
 }
 
 
@@ -471,19 +486,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
-
-
-/**
- * Sets the columnDescriptions property (cbit.vcell.util.ColumnDescription[]) value.
- * @param columnDescriptions The new value for the property.
- * @see #getColumnDescriptions
- */
-private void setColumnDescriptions(cbit.vcell.util.ColumnDescription[] columnDescriptions) {
-	cbit.vcell.util.ColumnDescription[] oldValue = fieldColumnDescriptions;
-	fieldColumnDescriptions = columnDescriptions;
-	firePropertyChange("columnDescriptions", oldValue, columnDescriptions);
-}
-
 
 /**
  * getData method comment.
@@ -568,5 +570,21 @@ System.out.println("scale["+i+"] = "+scale[i]);
 	}
 	Vector<double[]> values = new Vector<double[]>(linkedList);
 	fieldValues = values;
+}
+
+
+private VariableSymbolTable getResultSetSymbolTableWithFunction() {
+	if (resultSetSymbolTableWithFunction == null) {
+		resultSetSymbolTableWithFunction = createResultSetSymbolTable(true);
+	}
+	return resultSetSymbolTableWithFunction;
+}
+
+
+private VariableSymbolTable getResultSetSymbolTableWithoutFunction() {
+	if (resultSetSymbolTableWithoutFunction == null) {
+		resultSetSymbolTableWithoutFunction = createResultSetSymbolTable(false);
+	}
+	return resultSetSymbolTableWithoutFunction;
 }
 }

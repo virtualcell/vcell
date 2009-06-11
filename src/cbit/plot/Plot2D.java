@@ -7,13 +7,15 @@ import java.util.*;
 import javax.swing.event.*;
 
 import org.vcell.util.Range;
+
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (2/8/2001 12:43:18 PM)
  * @author: Ion Moraru
  */
 public class Plot2D {
-	private cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries;
+	private SymbolTableEntry[] symbolTableEntries;
 	private String[] plotNames = new String[0];
 	private PlotData[] plotDatas = new PlotData[0];
 	private Range xDataRange = new Range(0,0);
@@ -40,7 +42,7 @@ public class Plot2D {
  * @param labels java.lang.String[]
  * @param visiblePlots boolean[]
  */
-protected Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[] names, double[][] dataValues, String[] labels, boolean[] visiblePlots) {
+protected Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, double[][] dataValues, String[] labels, boolean[] visiblePlots) {
 	/*
 	 for a Plot2D with a "single X" dataset (all PlotDatas share the same independent values)
 	
@@ -68,7 +70,7 @@ protected Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,Stri
  * @param names java.lang.String[]
  * @param plotDatas cbit.plot.PlotData[]
  */
-public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas) {
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas) {
 	this(argSymbolTableEntries,names, plotDatas, null, null);
 }
 
@@ -80,7 +82,7 @@ public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[
  * @param plotDatas cbit.plot.PlotData[]
  * @param labels java.lang.String[]
  */
-public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels) {
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels) {
 	this(argSymbolTableEntries,names, plotDatas, labels, null);
 }
 
@@ -93,7 +95,7 @@ public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[
  * @param labels java.lang.String[]
  * @param visiblePlots boolean[]
  */
-public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots) {
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots) {
 	this(argSymbolTableEntries,names, plotDatas, labels, visiblePlots, null);
 }
 
@@ -106,7 +108,7 @@ public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[
  * @param labels java.lang.String[]
  * @param visiblePlots boolean[]
  */
-public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] argRenderHints) {
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] argRenderHints) {
 	initialize(argSymbolTableEntries,names, plotDatas, labels, visiblePlots, argRenderHints);
 }
 
@@ -241,7 +243,7 @@ public int[] getRenderHints() {
  * Creation date: (7/26/2006 4:29:13 PM)
  * @return cbit.vcell.parser.SymbolTableEntry[]
  */
-public cbit.vcell.parser.SymbolTableEntry[] getSymbolTableEntries() {
+public SymbolTableEntry[] getSymbolTableEntries() {
 	return symbolTableEntries;
 }
 
@@ -397,7 +399,7 @@ public String getYLabel() {
  * @param labels java.lang.String[]
  * @param visiblePlots boolean[]
  */
-private void initialize(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] renderHints) {
+private void initialize(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] renderHints) {
 
 	if(argSymbolTableEntries != null && argSymbolTableEntries.length != plotDatas.length){
 		throw new IllegalArgumentException("Number of SymbolTableEntries does not equal number of Data Columns");
@@ -475,19 +477,4 @@ public void setVisiblePlots(boolean[] visiblePlots, boolean arg_isHistogram) {
 	}
 }
 
-
-/**
- * Sets the visiblePlots index property (boolean[]) value.
- * @param index The index value into the property array.
- * @param visiblePlots The new value for the property.
- * @see #getVisiblePlots
- */
-public void setVisiblePlots(int index, boolean visiblePlots) {
-	try {
-		fieldVisiblePlots[index] = visiblePlots;
-		fireStateChanged();
-	} catch (ArrayIndexOutOfBoundsException exc) {
-		throw new IllegalArgumentException("requested plot index is not available in this Plot2D");
-	}
-}
 }

@@ -2,12 +2,12 @@ package cbit.vcell.solver.ode;
 
 import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.*;
 import cbit.vcell.math.*;
 import java.io.*;
 import java.util.*;
@@ -53,7 +53,7 @@ public ODESimData(VCDataIdentifier vcdId, ODESolverResultSet odeSolverResultSet)
 	for (int c = 0; c < functionColumns.length; c++) {
 		try {
 			addFunctionColumn(new FunctionColumnDescription(functionColumns[c]));
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
@@ -77,24 +77,12 @@ public String getFormatID() {
 	return formatID;
 }
 
-
-/**
- * getVariableNames method comment.
- */
-public MathDescription getMathDescription () {
-	//  Why should this not be called???  JMW needs to doc this class!!!
-	// cbit.util.Assertion.assert(false, "ODESimData.getMathDescription() should not be called");
-	return (null);
-}
-
-
 /**
  * getVariableNames method comment.
  */
 public String getMathName() {
 	return mathName;
 }
-
 
 /**
  * Insert the method's description here.
@@ -103,7 +91,7 @@ public String getMathName() {
  */
 public long getSizeInBytes() {
 	long sizeInBytes = getFormatID().length() + getMathName().length();
-	cbit.vcell.util.ColumnDescription dataColumns[] = getDataColumnDescriptions();
+	ColumnDescription dataColumns[] = getDataColumnDescriptions();
 	for (int c = 0; c < dataColumns.length; c++) {
 		if(dataColumns[c] instanceof ODESolverResultSetColumnDescription)
 		{
@@ -213,10 +201,10 @@ public void readIn(DataInputStream input) throws IOException {
 				try {
 					Expression expression = new Expression(expressionString);
 					addFunctionColumn(new FunctionColumnDescription(expression, columnName, columnParameterName, columnDisplayName, false));
-				}catch (cbit.vcell.parser.ExpressionBindingException e){
+				}catch (ExpressionBindingException e){
 					e.printStackTrace(System.out);
 					System.out.println("ODESimData.readIn(): unable to bind expression '"+expressionString+"'");
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 					System.out.println("ODESimData.readIn(): unable to parse expression '"+expressionString+"'");
 				}
