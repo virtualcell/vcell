@@ -1,26 +1,22 @@
 package cbit.plot;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.awt.event.*;
 import java.awt.*;
-
 import javax.swing.*;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
-
 import java.awt.geom.*;
 import java.text.*;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.Vector;
 
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2001 12:38:12 AM)
@@ -1665,21 +1661,6 @@ public String getCurrentPlotName() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/2/2001 11:12:03 AM)
- * @return java.awt.Paint
- */
-public Paint getCurrentPlotPaint() {
-	if (getCurrentPlotIndex() == -1) {
-		return null;
-	} else {
-		return getPlotPaint(getCurrentPlotIndex());
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2002 11:42:37 AM)
@@ -1838,23 +1819,23 @@ private Plot2DSettingsPanel getPlot2DSettingsPanel1() {
  * Insert the method's description here.
  * Creation date: (3/2/2001 11:05:16 AM)
  * @return java.awt.Paint
- * @param plotIndex int
+ * @param visiblePlotIndex int
  */
-public Paint getPlotPaint(int plotIndex) {
+public Paint getVisiblePlotPaint(int visiblePlotIndex) {
 //	if (getAutoColor()) {
 //		return Color.getHSBColor((float) plotIndex / plotDatas.length, 1.0f, 1.0f);
 //	} else {
 //		return Color.black;
 //	}
 
-	if(userDefinedColors != null && userDefinedColors.length > plotIndex){
-		return userDefinedColors[plotIndex];
+	if(userDefinedColors != null && userDefinedColors.length > visiblePlotIndex){
+		return userDefinedColors[visiblePlotIndex];
 	}
 	if (getAutoColor()) {
-		if(autoContrastColors == null || plotIndex >= autoContrastColors.length){
-			autoContrastColors = generateAutoColor((plotDatas == null?plotIndex+1:plotDatas.length),getBackground(),new Integer(0));
+		if(autoContrastColors == null || visiblePlotIndex >= autoContrastColors.length){
+			autoContrastColors = generateAutoColor(getPlot2D().getNumberOfVisiblePlots(),getBackground(),new Integer(0));
 		}
-		return autoContrastColors[plotIndex];
+		return autoContrastColors[visiblePlotIndex];
 	} else {
 		return Color.black;
 	}
@@ -1877,7 +1858,7 @@ public static Color[] generateAutoColor(int numColors,Color backgroundColor,Inte
 	int blu = 0;
 	final int ITERATION_LIMIT = 200*numColors;
 	final int CONTRAST_DELTA = 10;
-	final int BRIGHT_DELTA = 0;//3;
+	final int BRIGHT_DELTA = 0; //3;
 	
 	int brightThreshold = 200;//90;
 	for (int contrastThreshold = 300; contrastThreshold >= 0; contrastThreshold-= CONTRAST_DELTA) {
@@ -1921,7 +1902,7 @@ public static Color[] generateAutoColor(int numColors,Color backgroundColor,Inte
 				red = newred;
 				grn = newgrn;
 				blu = newblu;
-				colorV.add(new Color(0x00000000|(red<<16)|(grn<<8)|blu));
+				colorV.add(new Color(red, grn, blu));
 			}
 		}
 		if(!bFailed){
@@ -2115,16 +2096,6 @@ public Range getXAutoRange() {
 	return fieldXAutoRange;
 }
 
-
-private Range getXAutoRange0() {
-	if (getXStretch()) {
-		return getPlot2D().getXDataRange();
-	} else {
-		return NumberUtils.getDecimalRange(getPlot2D().getXDataRange(), false, false);
-	}
-}
-
-
 /**
  * Gets the xMajorTicks property (double[]) value.
  * @return The xMajorTicks property value.
@@ -2183,16 +2154,6 @@ public boolean getYAuto() {
 public Range getYAutoRange() {
 	return fieldYAutoRange;
 }
-
-
-private Range getYAutoRange0() {
-	if (getYStretch()) {
-		return getPlot2D().getYDataRange();
-	} else {
-		return NumberUtils.getDecimalRange(getPlot2D().getYDataRange(), false, false);
-	}
-}
-
 
 /**
  * Gets the yMajorTicks property (double[]) value.
@@ -2362,9 +2323,11 @@ public void paintComponent(Graphics g) {
 		Graphics2D g2D = (Graphics2D)g;
 		drawTicks(g2D);
 		drawAxes(g2D);
+		
+		int visiblePlotIndex = 0;
 		for (int i=0;i<plotDatas.length;i++) {
 			if (getPlot2D().isVisiblePlot(i)) {
-				g2D.setPaint(getPlotPaint(i));
+				g2D.setPaint(getVisiblePlotPaint(visiblePlotIndex ++));
 				//amended March 30,2007. draw trajectory or histogram
 				if(getIsHistogram())
 					drawHistogram(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i],10);
@@ -2795,17 +2758,6 @@ public void setStatusLabel(javax.swing.JLabel statusLabel) {
 	fieldStatusLabel = statusLabel;
 	firePropertyChange("statusLabel", oldValue, statusLabel);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/15/2001 10:09:17 AM)
- * @param newTick int
- */
-private void setTick(int newTick) {
-	tick = newTick;
-}
-
 
 /**
  * Insert the method's description here.

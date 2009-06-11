@@ -4,6 +4,13 @@ package cbit.plot;
  * All rights reserved.
 ©*/
 import javax.swing.*;
+
+import org.vcell.util.Range;
+import org.vcell.util.gui.ButtonGroupCivilized;
+import org.vcell.util.gui.EmptyBorderBean;
+import org.vcell.util.gui.EnhancedJLabel;
+import org.vcell.util.gui.JToolBarToggleButton;
+
 import java.awt.*;
 /**
  * Insert the type's description here.
@@ -52,7 +59,6 @@ class LineIcon implements Icon {
 	private Plot2D ivjplot2D1 = null;
 	private JLabel ivjJLabelLegendTitle = null;
 	private JPanel ivjJPanelPlotLegends = null;
-	private BoxLayout ivjJPanelPlotLegendsBoxLayout = null;
 	private JScrollPane ivjPlotLegendsScrollPane = null;
 	private JLabel ivjBlankLabel = null;
 	private JCheckBox ivjJCheckBox_stepLike = null;
@@ -448,7 +454,7 @@ private void connPtoP4SetTarget() {
  * Creation date: (12/16/2004 3:00:42 PM)
  * @param range cbit.util.Range
  */
-public void forceXYRange(org.vcell.util.Range xRange,org.vcell.util.Range yRange) {
+public void forceXYRange(Range xRange, Range yRange) {
 
 	if(xRange == null){
 		getPlot2DPanel1().setXAuto(true);
@@ -509,7 +515,7 @@ private javax.swing.JLabel getBlankLabel() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
 			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
@@ -541,10 +547,10 @@ private java.awt.CardLayout getCardLayout1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JToolBarToggleButton getDataButton() {
+private JToolBarToggleButton getDataButton() {
 	if (ivjDataButton == null) {
 		try {
-			ivjDataButton = new org.vcell.util.gui.JToolBarToggleButton();
+			ivjDataButton = new JToolBarToggleButton();
 			ivjDataButton.setName("DataButton");
 			ivjDataButton.setToolTipText("Show data");
 			ivjDataButton.setText("");
@@ -643,10 +649,10 @@ private javax.swing.JLabel getJLabelBottom() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.EnhancedJLabel getJLabelLeft() {
+private EnhancedJLabel getJLabelLeft() {
 	if (ivjJLabelLeft == null) {
 		try {
-			ivjJLabelLeft = new org.vcell.util.gui.EnhancedJLabel();
+			ivjJLabelLeft = new EnhancedJLabel();
 			ivjJLabelLeft.setName("JLabelLeft");
 			ivjJLabelLeft.setText("JLabel2");
 			ivjJLabelLeft.setForeground(java.awt.Color.black);
@@ -673,8 +679,8 @@ private org.vcell.util.gui.EnhancedJLabel getJLabelLeft() {
 private javax.swing.JLabel getJLabelLegendTitle() {
 	if (ivjJLabelLegendTitle == null) {
 		try {
-			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
+			EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 4, 10, 4));
 			ivjJLabelLegendTitle = new javax.swing.JLabel();
 			ivjJLabelLegendTitle.setName("JLabelLegendTitle");
@@ -697,10 +703,10 @@ private javax.swing.JLabel getJLabelLegendTitle() {
  * @return cbit.gui.EnhancedJLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.EnhancedJLabel getJLabelRight() {
+private EnhancedJLabel getJLabelRight() {
 	if (ivjJLabelRight == null) {
 		try {
-			ivjJLabelRight = new org.vcell.util.gui.EnhancedJLabel();
+			ivjJLabelRight = new EnhancedJLabel();
 			ivjJLabelRight.setName("JLabelRight");
 			ivjJLabelRight.setText("JLabel4");
 			ivjJLabelRight.setForeground(java.awt.Color.black);
@@ -1139,7 +1145,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1321,7 +1327,7 @@ private void updateLegend() {
 	legends = getJPanelPlotLegends().getComponents();
 	// update labels and show them
 	for (int i = 0; i < plotIndices.length; i++){
-		LineIcon icon = new LineIcon(getPlot2DPanel1().getPlotPaint(plotIndices[i]));
+		LineIcon icon = new LineIcon(getPlot2DPanel1().getVisiblePlotPaint(i));
 		String plotLabel = null;
 		if (plot instanceof SingleXPlot2D) {
 			plotLabel = plotLabels[i + 1];

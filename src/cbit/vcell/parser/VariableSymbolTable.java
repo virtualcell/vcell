@@ -9,7 +9,7 @@ import java.util.*;
  * This type was created in VisualAge.
  */
 public class VariableSymbolTable implements SymbolTable {
-	Vector varList = new Vector();
+	Vector<SymbolTableEntry> varList = new Vector<SymbolTableEntry>();
 /**
  * VariableSymbolTable constructor comment.
  */
@@ -30,7 +30,7 @@ public void addVar(SymbolTableEntry var) {
  */
 public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
 	for (int i=0;i<varList.size();i++){
-		SymbolTableEntry var = (SymbolTableEntry)varList.elementAt(i);
+		SymbolTableEntry var = varList.elementAt(i);
 		if (var.getName().equals(identifierString)){
 			return var;
 		}

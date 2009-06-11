@@ -1965,7 +1965,6 @@ public void preloadSimulationStatus(VCSimulationIdentifier[] simIDs) {
  * @param simKeys cbit.sql.KeyValue[]
  */
 private void preloadSimulationStatus(KeyValue[] simKeys) {
-System.out.println("should thread pre-fetch of SimulationJobStatus in ClientDocumentManager.preloadSimulationJobStatus()");
 	boolean bNeedRefreshStatus = false;
 	for (int i = 0; i < simKeys.length; i++){
 		if (!simulationStatusHash.containsKey(simKeys[i])){
