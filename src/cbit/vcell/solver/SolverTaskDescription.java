@@ -10,6 +10,8 @@ import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
+
+import java.beans.PropertyVetoException;
 import java.util.*;
 import cbit.util.*;
 /**
@@ -567,14 +569,18 @@ private boolean isAllowableSolverDescription(SolverDescription argSolverDescript
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && (evt.getPropertyName().equals("solverDescription"))) {
-		if (!getSolverDescription().supports(getOutputTimeSpec())){
-			try {
+		try {
+			if (getSolverDescription().equals(SolverDescription.FiniteVolume)
+				|| getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+				TimeBounds timeBounds = getTimeBounds();
+				double outputTime = timeBounds.getEndingTime()/10;
+				setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+			} else if (!getSolverDescription().supports(getOutputTimeSpec())){
 				setOutputTimeSpec(getSolverDescription().createOutputTimeSpec(this));
-			} catch (java.beans.PropertyVetoException ex) {
-				ex.printStackTrace(System.out);
 			}
-		}
-		// Do something...
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+		}		
 	}
 }
 
