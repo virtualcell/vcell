@@ -135,7 +135,8 @@ private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) t
 		double outputTime = 0.0;
 		if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
 				getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
-			outputTime = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+			String floatStr = "" + (float)(((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+			outputTime = Double.parseDouble(floatStr);
 		} else {
 			TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
 			Range outputTimeRange = NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
@@ -1205,16 +1206,22 @@ private void enableOutputOptionPanel() {
 		if (!solverDesc.equals(SolverDescription.FiniteVolume) && !solverDesc.equals(SolverDescription.FiniteVolumeStandalone) 
 				|| ots.isDefault()) {
 			getDefaultOutputRadioButton().setEnabled(true);
-			BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+			if (getDefaultOutputRadioButton().isSelected() || ots.isDefault()) {
+				BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+			}
 		}
 	}
 	if (solverDesc.supports(uots)) {
 		getUniformOutputRadioButton().setEnabled(true);
-		BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		if (getUniformOutputRadioButton().isSelected() || ots.isUniform()) {
+			BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		}
 	}
 	if (solverDesc.supports(eots)) {
 		getExplicitOutputRadioButton().setEnabled(true);
-		BeanUtils.enableComponents(getExplicitOutputPanel(), true);
+		if (getExplicitOutputRadioButton().isSelected() || ots.isExplicit()) {
+			BeanUtils.enableComponents(getExplicitOutputPanel(), true);
+		}
 	}
 	if (solverDesc.equals(SolverDescription.StochGibson) 
 			|| solverDesc.equals(SolverDescription.FiniteVolume)
@@ -1228,16 +1235,19 @@ private void enableOutputOptionPanel() {
 	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
 		stopSpatiallyUniformPanel.setVisible(true);
 		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
+		dataProcessorCheckBox.setVisible(true);
+		editDataProcessorButton.setVisible(true);
+		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
+		if (dpi != null) {
+			dataProcessorCheckBox.setSelected(true);
+			editDataProcessorButton.setEnabled(true);
+		} else {
+			editDataProcessorButton.setEnabled(false);
+		}
 	} else {
+		dataProcessorCheckBox.setVisible(false);
+		editDataProcessorButton.setVisible(false);
 		stopSpatiallyUniformPanel.setVisible(false);
-	}
-	
-	DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
-	if (dpi != null) {
-		dataProcessorCheckBox.setSelected(true);
-		editDataProcessorButton.setEnabled(true);
-	} else {
-		editDataProcessorButton.setEnabled(false);
 	}
 }
 
@@ -1511,7 +1521,7 @@ private javax.swing.JRadioButton getDefaultOutputRadioButton() {
 		try {
 			ivjDefaultOutputRadioButton = new javax.swing.JRadioButton();
 			ivjDefaultOutputRadioButton.setName("DefaultOutputRadioButton");
-			ivjDefaultOutputRadioButton.setSelected(true);
+//			ivjDefaultOutputRadioButton.setSelected(true);
 			ivjDefaultOutputRadioButton.setText("");
 			// user code begin {1}
 			// user code end
