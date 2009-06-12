@@ -1317,12 +1317,13 @@ public void setKeepEvery(SolverTaskDescription arg1) {
 		return;	
 	}
 	if (arg1.getOutputTimeSpec().isDefault()) {
-		getJTextFieldKeepEvery().setText(((DefaultOutputTimeSpec)arg1.getOutputTimeSpec()).getKeepEvery() + "");		
+		getJTextFieldKeepEvery().setText(((DefaultOutputTimeSpec)arg1.getOutputTimeSpec()).getKeepEvery() + "");
+		BeanUtils.enableComponents(getJPanelKeepEvery(), true);
 	} else if (arg1.getOutputTimeSpec().isUniform()) {
 		getJTextFieldKeepEvery().setText(((UniformOutputTimeSpec)arg1.getOutputTimeSpec()).getOutputTimeStep() + "");
 		getJLabelTimeSamples().setText("seconds");
-	}
-	BeanUtils.enableComponents(getJPanelKeepEvery(), true);
+		BeanUtils.enableComponents(getJPanelKeepEvery(), true);
+	}	
 }
 
 /**
