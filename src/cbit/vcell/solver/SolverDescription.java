@@ -604,7 +604,9 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 		case TYPE_COMBINED_IDA_CVODE: {
 			return (outputTimeSpec.isDefault() || outputTimeSpec.isExplicit() || outputTimeSpec.isUniform());
 		}
-		case TYPE_STOCH_GIBSON:{
+		case TYPE_STOCH_GIBSON:
+		case TYPE_FINITE_VOLUME:
+		case TYPE_FINITE_VOLUME_STANDALONE: {
 			return (outputTimeSpec.isDefault() || outputTimeSpec.isUniform());
 		}
 		case TYPE_HYBRID_EM:

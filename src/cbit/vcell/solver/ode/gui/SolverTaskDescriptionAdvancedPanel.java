@@ -1,5 +1,8 @@
 package cbit.vcell.solver.ode.gui;
 import cbit.gui.DialogUtils;
+import cbit.util.BeanUtils;
+import cbit.util.NumberUtils;
+import cbit.util.Range;
 import cbit.util.graph.Trail;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
@@ -9,6 +12,7 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * All rights reserved.
 ©*/
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -18,6 +22,7 @@ import java.awt.GridLayout;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 /**
@@ -106,14 +111,22 @@ private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) t
 		return;
 	}
 
-	if(itemEvent.getSource() == getDefaultOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isDefault()){
+	OutputTimeSpec outputTimeSpec = getSolverTaskDescription().getOutputTimeSpec();
+	if(itemEvent.getSource() == getDefaultOutputRadioButton() && !outputTimeSpec.isDefault()){
 		getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec());
-	} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isUniform()){
-		TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
-		cbit.util.Range outputTimeRange = cbit.util.NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
-		double outputTime = outputTimeRange.getMax();
+	} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !outputTimeSpec.isUniform()){
+		double outputTime = 0.0;
+		if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
+				getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+			String floatStr = "" + (float)(((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+			outputTime = Double.parseDouble(floatStr);
+		} else {
+			TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
+			Range outputTimeRange = NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
+			outputTime = outputTimeRange.getMax();
+		}
 		getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
-	} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isExplicit()){
+	} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !outputTimeSpec.isExplicit()){
 		TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
 		getSolverTaskDescription().setOutputTimeSpec(new ExplicitOutputTimeSpec(new double[]{timeBounds.getStartingTime(), timeBounds.getEndingTime()}));
 	}
@@ -1058,87 +1071,55 @@ private void enableOutputOptionPanel() {
 	// enables the panel where the output interval is set if the solver is IDA
 	// Otherwise, that panel is disabled. 
 
+	getDefaultOutputRadioButton().setEnabled(false);
+	getUniformOutputRadioButton().setEnabled(false);	
+	getExplicitOutputRadioButton().setEnabled(false);
+	BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+	BeanUtils.enableComponents(getUniformOutputPanel(), false);
+	BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+
 	SolverTaskDescription solverTaskDescription = getSolverTaskDescription();
-	
 	if (solverTaskDescription==null || solverTaskDescription.getSolverDescription()==null){
 		// if solver is not IDA, if the output Time step radio button had been set, 
 		// change the setting to the 'keep every' radio button and flush the contents of the output timestep text field. 
 		// Also, disable its radiobutton and fields.		
-		getDefaultOutputRadioButton().setEnabled(false);
-		getUniformOutputRadioButton().setEnabled(false);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-	} else if (solverTaskDescription.getSolverDescription().equals(SolverDescription.IDA) || solverTaskDescription.getSolverDescription().equals(SolverDescription.CVODE)) {
-		getDefaultOutputRadioButton().setEnabled(true);
-		getUniformOutputRadioButton().setEnabled(true);	
-		getExplicitOutputRadioButton().setEnabled(true);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), true);
-		if (solverTaskDescription.getOutputTimeSpec().isDefault()){
-			getKeepAtMostTextField().setEnabled(true);
-			getKeepEveryTextField().setEnabled(true);
-			getOutputTimeStepTextField().setEnabled(false);
-			getOutputTimesTextField().setEnabled(false);
-		}else if (solverTaskDescription.getOutputTimeSpec().isUniform()){
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(false);
-			getOutputTimeStepTextField().setEnabled(true);
-			getOutputTimesTextField().setEnabled(false);
-		}else if (solverTaskDescription.getOutputTimeSpec().isExplicit()){
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(false);
-			getOutputTimeStepTextField().setEnabled(false);
-			getOutputTimesTextField().setEnabled(true);
-		}
-	}else if ((solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridEuler))||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilstein))||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilAdaptive))){
+		return;
+	}
 	
-		//amended June 5th, 2007 to display uniformOutputTimeSpec for Hybrid methods
-		getDefaultOutputRadioButton().setEnabled(false);
-		getUniformOutputRadioButton().setEnabled(true);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
+	OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
+	
+	DefaultOutputTimeSpec dots = new DefaultOutputTimeSpec();
+	UniformOutputTimeSpec uots = new UniformOutputTimeSpec(0.1);
+	ExplicitOutputTimeSpec eots = new ExplicitOutputTimeSpec(new double[] {0.1});
+	
+	if (solverDesc.supports(dots)) {
+		if (!solverDesc.equals(SolverDescription.FiniteVolume) && !solverDesc.equals(SolverDescription.FiniteVolumeStandalone) 
+				|| ots.isDefault()) {
+			getDefaultOutputRadioButton().setEnabled(true);
+			if (getDefaultOutputRadioButton().isSelected() || ots.isDefault()) {
+				BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+			}
+		}
+	}
+	if (solverDesc.supports(uots)) {
+		getUniformOutputRadioButton().setEnabled(true);
+		if (getUniformOutputRadioButton().isSelected() || ots.isUniform()) {
+			BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		}
+	}
+	if (solverDesc.supports(eots)) {
+		getExplicitOutputRadioButton().setEnabled(true);
+		if (getExplicitOutputRadioButton().isSelected() || ots.isExplicit()) {
+			BeanUtils.enableComponents(getExplicitOutputPanel(), true);
+		}
+	}
+	if (solverDesc.equals(SolverDescription.StochGibson) 
+			|| solverDesc.equals(SolverDescription.FiniteVolume)
+			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)
+		){
+		getKeepAtMostTextField().setText("");
 		getKeepAtMostTextField().setEnabled(false);
-		getKeepEveryTextField().setEnabled(false);
-		getOutputTimeStepTextField().setEnabled(true);
-		getOutputTimesTextField().setEnabled(false);
-	}else if (solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson)){
-		//amended July 9th, 2007 to enable uniformaOutputTimeSpec for gibson method
-		getDefaultOutputRadioButton().setEnabled(true);
-		getUniformOutputRadioButton().setEnabled(true);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		if (solverTaskDescription.getOutputTimeSpec().isDefault()){
-			getKeepAtMostTextField().setText("");
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(true);
-			getOutputTimeStepTextField().setEnabled(false);
-			getOutputTimesTextField().setEnabled(false);
-		}else if (solverTaskDescription.getOutputTimeSpec().isUniform()){
-			getKeepAtMostTextField().setEnabled(false);
-			getKeepEveryTextField().setEnabled(false);
-			getOutputTimeStepTextField().setEnabled(true);
-			getOutputTimesTextField().setEnabled(false);
-		}
-	}else {
-		getDefaultOutputRadioButton().setEnabled(true);
-		getUniformOutputRadioButton().setEnabled(false);	
-		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolume)
-			|| solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
-			getKeepAtMostLabel().setEnabled(false);
-			getPointsLabel().setEnabled(false);
-			getKeepAtMostTextField().setEnabled(false);
-		}
 	}
 }
 
@@ -1149,24 +1130,22 @@ private void enableOutputOptionPanel() {
  */
 private void enableVariableTimeStepOptions() {
 
-	boolean bHasVariableTS = false;
-	if(getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null){
-		bHasVariableTS = getSolverTaskDescription().getSolverDescription().hasVariableTimestep();
+	if (getSolverTaskDescription() == null || getSolverTaskDescription().getSolverDescription() == null) {
+		return;
 	}
-	cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS);
-//	//stochastic solvers are set to be non variable time step, but we still need error tolerance. so, we have to enable error tolerance for it.
-//	if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)||
-//	   getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridEuler) ||
-//	   getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilstein) ||
-//	   getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
-//		cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(), true);
-	//enableSomponents will leave default time step for non variable time step slovers.
+	boolean bHasVariableTS = false;
+	SolverDescription solverDescription = getSolverTaskDescription().getSolverDescription(); 
+	bHasVariableTS = solverDescription.hasVariableTimestep();
+	
+	BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance());
 	//for gibson method, we even don't need default time step.
-	//getTimeStepPanel().enableTimeStep();//enable all time steps first.
 	getTimeStepPanel().enableComponents(bHasVariableTS);
-	if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
-	{
-		getTimeStepPanel().disableTimeStep();
+	if (solverDescription.compareEqual(SolverDescription.StochGibson) ||
+			solverDescription.compareEqual(SolverDescription.HybridEuler)||
+			solverDescription.compareEqual(SolverDescription.HybridMilstein)||
+			solverDescription.compareEqual(SolverDescription.HybridMilAdaptive)	|| 
+			solverDescription.equals(SolverDescription.SundialsPDE)) {
+		getTimeStepPanel().disableMinAndMaxTimeStep();
 	}
 }
 
@@ -1414,7 +1393,7 @@ private javax.swing.JRadioButton getDefaultOutputRadioButton() {
 		try {
 			ivjDefaultOutputRadioButton = new javax.swing.JRadioButton();
 			ivjDefaultOutputRadioButton.setName("DefaultOutputRadioButton");
-			ivjDefaultOutputRadioButton.setSelected(true);
+//			ivjDefaultOutputRadioButton.setSelected(true);
 			ivjDefaultOutputRadioButton.setText("");
 			// user code begin {1}
 			// user code end
@@ -2612,6 +2591,36 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 			}
 		} else if(getUniformOutputRadioButton().isSelected()) {
 			double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
+			if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
+					getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+				double timeStep = getTornOffSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+				boolean bValid = true;
+				String suggestedInterval = outputTime + "";
+				if (outputTime < timeStep) {
+					suggestedInterval = timeStep + "";
+					bValid = false;
+				} else {
+					float n = (float)(outputTime/timeStep);
+					if (n != (int)n) {
+						bValid = false;
+						suggestedInterval = ((float)((int)(n + 0.5) * timeStep)) + "";
+					}
+				}
+				if (!bValid) {
+					String ret = PopupGenerator.showWarningDialog(this, "Output Interval must be integer multiple of time step. " 
+							+ "OK to change Output Interval to " + suggestedInterval + "?", 
+							new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+					if (ret.equals(UserMessage.OPTION_YES)) {
+						outputTime = Double.parseDouble(suggestedInterval);
+					} else {
+						SwingUtilities.invokeLater(new Runnable() { 
+						    public void run() { 
+						    	getOutputTimeStepTextField().requestFocus();
+						    }
+						});
+					}
+				}
+			}
 			ots = new UniformOutputTimeSpec(outputTime);		
 		} else if (getExplicitOutputRadioButton().isSelected()) {
 			String line = getOutputTimesTextField().getText();
@@ -2631,7 +2640,7 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 					          getOutputTimesTextField().requestFocus();
 					    } 
 		
-					});					
+					});
 					
 				}
 			}
@@ -2786,13 +2795,11 @@ private void solverTaskDescriptionAdvancedPanel_Initialize() {
 private void solverTaskDescriptionAdvancedPanel_SolverTaskDescription() {
 	if(getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null){
 		boolean isStoch = getSolverTaskDescription().getSolverDescription().isSTOCHSolver();
-		if(isStoch)
-		{
+		if (isStoch) {
+			getJPanelStoch().setVisible(true);
 			updateStochOptionsDisplay();
-		}
-		else
-		{
-			cbit.util.BeanUtils.enableComponents(getJPanelStoch(),false);
+		} else {
+			getJPanelStoch().setVisible(false);
 		}
 	}
 }
