@@ -27,8 +27,8 @@ public class RowColumnResultSet implements java.io.Serializable {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ColumnDescription[] fieldColumnDescriptions = null;
 	
-	private VariableSymbolTable resultSetSymbolTableWithFunction = null;
-	private VariableSymbolTable resultSetSymbolTableWithoutFunction = null; 
+	private transient VariableSymbolTable resultSetSymbolTableWithFunction = null;
+	private transient VariableSymbolTable resultSetSymbolTableWithoutFunction = null; 
 
 /**
  * SimpleODEData constructor comment.
