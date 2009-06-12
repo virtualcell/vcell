@@ -93,7 +93,7 @@ private void initialize() {
 		setClosable(true);
 		setSize(542, 495);
 		setResizable(true);
-		setContentPane(getTabbedPane());
+		getContentPane().add(getTabbedPane());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
