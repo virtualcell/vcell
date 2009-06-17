@@ -631,6 +631,10 @@ public boolean supportsUniformExplicitOutput() {
 }	
 }
 
+public boolean isSundialsSolver() {
+	return type == TYPE_CVODE || type == TYPE_IDA || type == TYPE_COMBINED_IDA_CVODE || type == TYPE_SUNDIALS_PDE;
+}
+
 public static String getFullDescription(SolverDescription sd) {
 	return FULL_DESCRIPTIONS[sd.type];
 }
