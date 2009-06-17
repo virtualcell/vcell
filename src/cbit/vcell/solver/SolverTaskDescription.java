@@ -592,7 +592,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				setOutputTimeSpec(getSolverDescription().createOutputTimeSpec(this));
 			}
 			if (getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-				setErrorTolerance(new ErrorTolerance(1e-9, 1e-7));
+				setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+				setTimeStep(TimeStep.getDefaultSundialsTimeStep());
 			}
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();

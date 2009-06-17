@@ -346,14 +346,16 @@ private void displayTask() {
 	}
 	try {
 		if (solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
-			getJLabel12().setEnabled(false);
-			getJLabelTimestep().setText("");
+			getJLabel12().setEnabled(true);
+			getJLabel12().setText("max timestep");
+			getJLabelTimestep().setText(solverTaskDescription.getTimeStep().getMaximumTimeStep()+ "");
 			getJLabelRelTol().setEnabled(true);
 			getJLabelAbsTol().setEnabled(true);
 			getJLabelRelTolValue().setText("" + solverTaskDescription.getErrorTolerance().getRelativeErrorTolerance());
 			getJLabelAbsTolValue().setText("" + solverTaskDescription.getErrorTolerance().getAbsoluteErrorTolerance());
 		} else {
 			getJLabel12().setEnabled(true);
+			getJLabel12().setText("timestep");
 			getJLabelTimestep().setText(Double.toString(solverTaskDescription.getTimeStep().getDefaultTimeStep()));
 			getJLabelRelTol().setEnabled(false);
 			getJLabelAbsTol().setEnabled(false);

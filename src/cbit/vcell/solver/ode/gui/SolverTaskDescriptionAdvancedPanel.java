@@ -1271,9 +1271,11 @@ private void enableVariableTimeStepOptions() {
 	if (solverDescription.compareEqual(SolverDescription.StochGibson) ||
 			solverDescription.compareEqual(SolverDescription.HybridEuler)||
 			solverDescription.compareEqual(SolverDescription.HybridMilstein)||
-			solverDescription.compareEqual(SolverDescription.HybridMilAdaptive)	|| 
-			solverDescription.equals(SolverDescription.SundialsPDE)) {
+			solverDescription.compareEqual(SolverDescription.HybridMilAdaptive)) {
 		getTimeStepPanel().disableMinAndMaxTimeStep();
+	}
+	if (solverDescription.isSundialsSolver()) {
+		getTimeStepPanel().disableMinTimeStep();
 	}
 }
 
@@ -2289,7 +2291,7 @@ private TimeBoundsPanel getTimeBoundsPanel() {
 private TimeStepPanel getTimeStepPanel() {
 	if (ivjTimeStepPanel == null) {
 		try {
-			ivjTimeStepPanel = new cbit.vcell.solver.ode.gui.TimeStepPanel();
+			ivjTimeStepPanel = new TimeStepPanel();
 			ivjTimeStepPanel.setName("TimeStepPanel");
 			// user code begin {1}
 			// user code end

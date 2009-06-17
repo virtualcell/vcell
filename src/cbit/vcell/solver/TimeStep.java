@@ -24,6 +24,11 @@ public class TimeStep implements java.io.Serializable, org.vcell.util.Matchable 
 public TimeStep() {
 	super();
 }
+
+public static TimeStep getDefaultSundialsTimeStep() {
+	return new TimeStep(0, 0.1, 0.1);
+}
+
 /**
  * TimeStep constructor comment.
  */

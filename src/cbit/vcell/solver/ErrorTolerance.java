@@ -26,6 +26,11 @@ public ErrorTolerance() {
 public static ErrorTolerance getDefaultSpatiallyUniformErrorTolerance() {
 	return new ErrorTolerance(1e-6, 1e-3);
 }
+
+public static ErrorTolerance getDefaultSundialsErrorTolerance() {
+	return new ErrorTolerance(1e-9, 1e-7);
+}
+
 /**
  * ErrorTolerance constructor comment.
  */
