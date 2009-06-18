@@ -36,6 +36,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String ADD_ENZYME_REACTION_MENU_ACTION = "Add Searchable Reaction";
 	public static final String ADD_FEATURE_MENU_ACTION = "Add Feature";
 	public static final String ADD_SPECIES_MENU_ACTION = "Add Species";
+	public static final String ADD_GLOBAL_PARAM_MENU_ACTION = "Add Global Parameter";
 	public static final String ADD_BINDINGSITE_MENU_ACTION = "Add Binding Site";
 	public static final String ADD_COMPLEX_MENU_ACTION = "Add Complex";
 	public static final String NEW_MENU_ACTION = "New...";
@@ -48,11 +49,13 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String DISABLE_MENU_ACTION = "Disable";
 	public static final String SOLVE_MENU_ACTION = "Solve";
 	public static final String RESET_MENU_ACTION = "Reset";
-	public static final String SHOW_PARAMETERS_MENU_ACTION = "Model Parameters";
+	public static final String SHOW_PARAMETERS_MENU_ACTION = "Parameters and Rate Expressions";
 	//reaction and structure cartoon image actions
 	public static final String HIGH_RES_MENU_ACTION = "High Res (x3.0)";
 	public static final String MED_RES_MENU_ACTION = "Medium Res (x2.0)";
 	public static final String LOW_RES_MENU_ACTION = "Low Res (x1.0)";
+	//MIRIAM
+	public static final String ANNOTATE_MENU_ACTION = "Annotate...";	
 	//
 	public static final String DELETE_MENU_TEXT = DELETE_MENU_ACTION;
 	public static final String PROPERTIES_MENU_TEXT = PROPERTIES_MENU_ACTION;
@@ -60,6 +63,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String ADD_ENZYME_REACTION_MENU_TEXT = ADD_ENZYME_REACTION_MENU_ACTION;
 	public static final String ADD_FEATURE_MENU_TEXT = ADD_FEATURE_MENU_ACTION;
 	public static final String ADD_SPECIES_MENU_TEXT = ADD_SPECIES_MENU_ACTION;
+	public static final String ADD_GLOBAL_PARAM_MENU_TEXT = ADD_GLOBAL_PARAM_MENU_ACTION;
 	public static final String ADD_BINDINGSITE_MENU_TEXT = ADD_BINDINGSITE_MENU_ACTION;
 	public static final String ADD_COMPLEX_MENU_TEXT = ADD_COMPLEX_MENU_ACTION;
 	public static final String NEW_MENU_TEXT = NEW_MENU_ACTION;
@@ -79,6 +83,9 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String MED_RES_MENU_TEXT = MED_RES_MENU_ACTION;
 	public static final String LOW_RES_MENU_TEXT = LOW_RES_MENU_ACTION;
 	//	
+	//MIRIAM
+	public static final String ANNOTATE_MENU_TEXT = ANNOTATE_MENU_ACTION;	
+
 	public static final String[] ACTION_COMMANDS = {"select", "feature", "species", "line", "step", "flux", "spline","addCP","complex","bindingSite","interaction"};
 	
 	public static final int SELECT_MODE = 0;
@@ -100,6 +107,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 		//
 		JMenuItem addFeatureJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem addSpeciesJMenuItem = new javax.swing.JMenuItem();
+		JMenuItem addGlobalParamJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem addEnzymeReactionJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem reactionsJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem propertiesJMenuItem = new javax.swing.JMenuItem();
@@ -123,12 +131,15 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 		JMenuItem pasteJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem pastenewJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem moveJMenuItem = new javax.swing.JMenuItem();
+		//MIRIAM
+		JMenuItem annotateJMenuItem = new JMenuItem();
 		//
 		//Add new JMenuItems here too.  Used for convenience to add and remove actionlisteners
 		private JMenuItem[] jmenuItemArr =
-			{	addFeatureJMenuItem,addSpeciesJMenuItem,addEnzymeReactionJMenuItem,reactionsJMenuItem,propertiesJMenuItem,enableJMenuItem,disableJMenuItem,solveJMenuItem,resetJMenuItem,showParametersJMenuItem,
-				newJMenuItem,copyJMenuItem,deleteJMenuItem,cutJMenuItem,pasteJMenuItem,pastenewJMenuItem,moveJMenuItem,addBindingSiteJMenuItem,addComplexJMenuItem,  
-				saveAsImageJMenu
+			{	addFeatureJMenuItem,addSpeciesJMenuItem,addGlobalParamJMenuItem,addEnzymeReactionJMenuItem,reactionsJMenuItem,propertiesJMenuItem,
+				enableJMenuItem,disableJMenuItem,solveJMenuItem,resetJMenuItem,showParametersJMenuItem,
+				newJMenuItem,copyJMenuItem,deleteJMenuItem,cutJMenuItem,pasteJMenuItem,pastenewJMenuItem,moveJMenuItem,addBindingSiteJMenuItem,
+				addComplexJMenuItem,saveAsImageJMenu,annotateJMenuItem
 			};
 		protected transient java.beans.PropertyChangeSupport propertyChange;
 
@@ -137,6 +148,11 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
  * @param canvas cbit.vcell.graph.CartoonCanvas
  */
 public CartoonTool () {
+	//MIRIAM
+	annotateJMenuItem.setName("JMenuItemAnnotate");
+	annotateJMenuItem.setActionCommand(ANNOTATE_MENU_ACTION);
+//	annotateJMenuItem.setMnemonic('m');
+	annotateJMenuItem.setText(ANNOTATE_MENU_TEXT);
 	//
 	addFeatureJMenuItem.setName("JMenuItemAddFeature");
 	addFeatureJMenuItem.setActionCommand(ADD_FEATURE_MENU_ACTION);
@@ -147,6 +163,11 @@ public CartoonTool () {
 	addSpeciesJMenuItem.setActionCommand(ADD_SPECIES_MENU_ACTION);
 	addSpeciesJMenuItem.setMnemonic('s');
 	addSpeciesJMenuItem.setText(ADD_SPECIES_MENU_TEXT);
+
+	addGlobalParamJMenuItem.setName("JMenuItemAddGlobalParam");
+	addGlobalParamJMenuItem.setActionCommand(ADD_GLOBAL_PARAM_MENU_ACTION);
+	addGlobalParamJMenuItem.setMnemonic('g');
+	addGlobalParamJMenuItem.setText(ADD_GLOBAL_PARAM_MENU_TEXT);
 
 	addComplexJMenuItem.setName("JMenuItemAddComplex");
 	addComplexJMenuItem.setActionCommand(ADD_COMPLEX_MENU_ACTION);
@@ -575,8 +596,10 @@ protected final void popupMenu(Shape shape,int x, int y) throws Exception {
 			for(int i = 0; i < currentMenuList.size();i+= 1){
 				JMenuItem addableJMenuItem = (JMenuItem)currentMenuList.get(i);
 				if(
+					addableJMenuItem == annotateJMenuItem ||
 					addableJMenuItem == addFeatureJMenuItem ||
 					addableJMenuItem == addSpeciesJMenuItem ||
+					addableJMenuItem == addGlobalParamJMenuItem ||
 					addableJMenuItem == addEnzymeReactionJMenuItem ||
 					addableJMenuItem == addFeatureJMenuItem ||
 					addableJMenuItem == reactionsJMenuItem ||
