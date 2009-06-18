@@ -7,7 +7,6 @@ package cbit.util.graph;
 public class Node {
     private String name = null;
     private Object data = null;
-    public int index = -1;
 
 /**
  * Node constructor comment.
