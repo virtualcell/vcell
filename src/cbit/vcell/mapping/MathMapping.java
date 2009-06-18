@@ -1,4 +1,6 @@
 package cbit.vcell.mapping;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
@@ -16,12 +18,16 @@ import cbit.util.Issue;
 import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 
 import java.beans.PropertyVetoException;
 import java.util.*;
+
+import cbit.util.BeanUtils;
+
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
@@ -30,10 +36,12 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class MathMapping implements ScopedSymbolTable {
 	
-	public static final String FUNC_NAME_SUFFIX_VAR_COUNT = "_Count";
-	public static final String FUNC_NAME_SUFFIX_VAR_CONCENTRATION = "_Conc";
-	public static final String FUNC_NAME_SUFFIX_VAR_INIT_COUNT = "_initCount";
-	public static final String FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION = "_init";
+	public static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
+	public static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
+	public static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION = "_init";
 	
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
@@ -52,7 +60,9 @@ public class MathMapping implements ScopedSymbolTable {
 	public static final int PARAMETER_ROLE_KFLUX = 2;
 	public static final int PARAMETER_ROLE_P = 3;
 	public static final int PARAMETER_ROLE_P_reverse = 4;
-	public static final int NUM_PARAMETER_ROLES = 5;
+	public static final int PARAMETER_ROLE_CONCENRATION = 5;
+	public static final int PARAMETER_ROLE_COUNT = 6;
+	public static final int NUM_PARAMETER_ROLES = 7;
 		
 	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
 	
@@ -236,6 +246,32 @@ public class MathMapping implements ScopedSymbolTable {
 
 	}
 	
+	public class SpeciesConcentrationParameter extends MathMappingParameter {
+		private SpeciesContextSpec speciesContextSpec = null;
+		
+		protected SpeciesConcentrationParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContextSpec argscSpec) {
+			super(argName,argExpression,argRole,argVCUnitDefinition);
+			this.speciesContextSpec = argscSpec;
+		}
+
+		public SpeciesContextSpec getSpeciesContextSpec() {
+			return speciesContextSpec;
+		}
+	}
+	
+	public class SpeciesCountParameter extends MathMappingParameter {
+		private SpeciesContextSpec speciesContextSpec = null;
+		
+		protected SpeciesCountParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContextSpec argscSpec) {
+			super(argName,argExpression,argRole,argVCUnitDefinition);
+			this.speciesContextSpec = argscSpec;
+		}
+
+		public SpeciesContextSpec getSpeciesContextSpec() {
+			return speciesContextSpec;
+		}
+	}
+	
 	static {
 		System.out.println("MathMapping: capacitances must not be overridden and must be constant (used as literals in KVL)");
 	};
@@ -301,6 +337,59 @@ MathMapping.ProbabilityParameter addProbabilityParameter(String name, Expression
 	return newParameter;
 }
 
+MathMapping.SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn,SpeciesContextSpec argscSpec) throws PropertyVetoException {
+
+	MathMapping.SpeciesConcentrationParameter newParameter = new MathMapping.SpeciesConcentrationParameter(name,expr,role,unitDefn,argscSpec);
+	MathMapping.MathMappingParameter previousParameter = getMathMappingParameter(name);
+	if(previousParameter != null){
+		System.out.println("MathMapping.MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
+		if(!previousParameter.compareEqual(newParameter)){
+			throw new RuntimeException("MathMapping.MathMappingParameter addConcentrationParameter found duplicate parameter for name '"+name+"'.");
+		}
+		return (MathMapping.SpeciesConcentrationParameter)previousParameter;
+	}
+	//expression.bindExpression(this);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	setMathMapppingParameters(newParameters);
+	return newParameter;
+}
+
+MathMapping.SpeciesCountParameter addSpeciesCountParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn,SpeciesContextSpec argscSpec) throws PropertyVetoException {
+
+	MathMapping.SpeciesCountParameter newParameter = new MathMapping.SpeciesCountParameter(name,expr,role,unitDefn,argscSpec);
+	MathMapping.MathMappingParameter previousParameter = getMathMappingParameter(name);
+	if(previousParameter != null){
+		System.out.println("MathMapping.MathMappingParameter addCountParameter found duplicate parameter for name "+name);
+		if(!previousParameter.compareEqual(newParameter)){
+			throw new RuntimeException("MathMapping.MathMappingParameter addCountParameter found duplicate parameter for name '"+name+"'.");
+		}
+		return (MathMapping.SpeciesCountParameter)previousParameter;
+	}
+	//expression.bindExpression(this);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	setMathMapppingParameters(newParameters);
+	return newParameter;
+}
+
+SpeciesCountParameter getSpeciesCountParameter(SpeciesContext sc) {
+	MathMappingParameter[] mmParams = getMathMappingParameters();
+	for (int i = 0; i < mmParams.length; i++) {
+		if ( (mmParams[i] instanceof SpeciesCountParameter) && (((SpeciesCountParameter)mmParams[i]).getSpeciesContextSpec().getSpeciesContext() == sc)) {
+			return (SpeciesCountParameter)mmParams[i];
+		}
+	}
+	return null;
+}
+
+SpeciesConcentrationParameter getSpeciesConcentrationParameter(SpeciesContext sc) {
+	MathMappingParameter[] mmParams = getMathMappingParameters();
+	for (int i = 0; i < mmParams.length; i++) {
+		if ( (mmParams[i] instanceof SpeciesConcentrationParameter) && (((SpeciesConcentrationParameter)mmParams[i]).getSpeciesContextSpec().getSpeciesContext() == sc)) {
+			return (SpeciesConcentrationParameter)mmParams[i];
+		}
+	}
+	return null;
+}
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -666,6 +755,7 @@ public String getMathSymbol(SymbolTableEntry ste, StructureMapping structureMapp
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
 protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
+	String steName = ste.getName();
 	if (ste instanceof Kinetics.KineticsParameter){
 		int count = 0;
 		ReactionStep reactionSteps[] = simContext.getModel().getReactionSteps();
@@ -678,22 +768,31 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			|| getSimulationContext().getModel().getSpecies(ste.getName()) != null) {
 			count ++;
 		}
-		if (count>1 || ste.getName().equals("J")){
-			return ste.getName()+"_"+ste.getNameScope().getName();
+		if (count>1 || steName.equals("J")){
+			return steName+"_"+ste.getNameScope().getName();
 			//return getNameScope().getSymbolName(ste);
 		}else{
-			return ste.getName();
+			return steName;
 		}
 	}
 	if (ste instanceof MathMapping.ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
 		MathMapping.ProbabilityParameter probParm = (MathMapping.ProbabilityParameter)ste;
 		return probParm.getName();
 	}
+	if (ste instanceof MathMapping.SpeciesConcentrationParameter){
+		MathMapping.SpeciesConcentrationParameter concParm = (MathMapping.SpeciesConcentrationParameter)ste;
+		return concParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
+	}
+	if (ste instanceof MathMapping.SpeciesCountParameter){
+		MathMapping.SpeciesCountParameter countParm = (MathMapping.SpeciesCountParameter)ste;
+		return countParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+	}
+
 	if (ste instanceof ReservedSymbol){
-		return ste.getName();
+		return steName;
 	}
 	if (ste instanceof Membrane.MembraneVoltage){
-		return ste.getName();
+		return steName;
 	}
 	if (ste instanceof Structure.StructureSize){
 		Structure structure = ((Structure.StructureSize)ste).getStructure();
@@ -764,10 +863,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	if (ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)ste;
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialConcentration){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION;
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialCount){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ FUNC_NAME_SUFFIX_VAR_INIT_COUNT;
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_DiffusionRate){
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_diffusionRate";
@@ -841,7 +940,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			//
 			// for any SpeciesContext, replace Symbol name with Variable name
 			//				
-			if (scm.getVariable()!=null && !scm.getVariable().getName().equals(ste.getName())){
+			if (scm.getVariable()!=null && !scm.getVariable().getName().equals(steName)){
 				return scm.getVariable().getName();
 			}
 		//
@@ -855,7 +954,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			// if the speciesContext is also within the membrane, replace SpeciesContext name with Variable name
 			//
 			if (sc.getStructure() instanceof Membrane || ((MembraneMapping)structureMapping).getResolved(simContext)==false){
-				if (scm.getVariable()!=null && !(scm.getVariable().getName().equals(ste.getName()))){
+				if (scm.getVariable()!=null && !(scm.getVariable().getName().equals(steName))){
 					return scm.getVariable().getName();
 				}
 			//
@@ -863,7 +962,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 			//
 			} else {
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
-				if (sc.getStructure()==membrane.getInsideFeature()){
+				if (sc.getStructure()==membrane.getInsideFeature() || sc.getStructure()==membrane.getOutsideFeature()){
 					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
 						if (!scs.isDiffusing()){
 							throw new MappingException("Species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()
@@ -873,22 +972,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 									"\nEnable diffusion in spatial applications by setting a non-zero diffusion rate for species '"+sc.getName()+"'"+
 									" or disable those reaction(s)");
 						}					
-						return scm.getVariable().getName()+"_INSIDE";
-					}else{
-						return scm.getSpeciesContext().getName();
-					}
-				}else if (sc.getStructure()==membrane.getOutsideFeature()){
-					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
-						if (!scs.isDiffusing()){
-							throw new MappingException("Species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()
-									+"') interacts with the spatially resolved membrane '"+membrane.getName()+"'"+
-									" which results in a flux, so it must diffuse."+
-									"\n"+
-									"\nEnable diffusion in spatial applications by setting a non-zero diffusion rate for species '"+sc.getName()+"'"+
-									" or disable those reaction(s)");
-						}
-					
-						return scm.getVariable().getName()+"_OUTSIDE";
+						return scm.getVariable().getName()+ (sc.getStructure()==membrane.getInsideFeature() ? "_INSIDE" : "_OUTSIDE");
 					}else{
 						return scm.getSpeciesContext().getName();
 					}
@@ -900,6 +984,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	}
 	return getNameScope().getSymbolName(ste);
 }
+
 
 
 /**
@@ -921,9 +1006,9 @@ public MathSymbolMapping getMathSymbolMapping()  throws MappingException, MathEx
  * @param membrane cbit.vcell.model.Membrane
  */
 protected MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membrane) {
-	Enumeration enum1 = getStructureAnalyzers();
+	Enumeration<StructureAnalyzer> enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
-		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
+		StructureAnalyzer sa = enum1.nextElement();
 		if (sa instanceof MembraneStructureAnalyzer){
 			MembraneStructureAnalyzer msa = (MembraneStructureAnalyzer)sa;
 			if (msa.getMembrane()==membrane){
@@ -980,9 +1065,9 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param species cbit.vcell.model.Species
  */
 private VolVariable getResolvedVolVariable(Species species) {
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getSpeciesContext().getSpecies()==species){
 			Variable var = scm.getVariable();
 			if (var instanceof VolVariable){
@@ -1070,9 +1155,9 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
 protected VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) {
-	Enumeration enum1 = getStructureAnalyzers();
+	Enumeration<StructureAnalyzer> enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
-		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
+		StructureAnalyzer sa = enum1.nextElement();
 		if (sa instanceof VolumeStructureAnalyzer){
 			VolumeStructureAnalyzer vsa = (VolumeStructureAnalyzer)sa;
 			if (vsa.getSubVolume()==subVolume){
@@ -1471,9 +1556,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	// volume variables
 	//
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getVariable() instanceof VolVariable){
 			if (!(mathDesc.getVariable(scm.getVariable().getName()) instanceof VolVariable)){
 				varHash.addVariable(scm.getVariable());
@@ -1776,14 +1861,35 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		SpeciesContextSpec.SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		Expression initExpr = new Expression(initParm.getExpression());
 		if (initParm!=null){
-			try {
-				double value = initParm.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(initParm,null), new Expression(value)));//getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
-			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(initParm,null),getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+			String[] symbols = initExpr.getSymbols();
+			// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
+			for (int j = 0; symbols != null && j < symbols.length; j++) {
+				// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+				SpeciesContext spC = null;
+				SymbolTableEntry ste = initExpr.getSymbolBinding(symbols[j]);
+				if (ste instanceof SpeciesContextSpecProxyParameter) {
+					SpeciesContextSpecProxyParameter spspp = (SpeciesContextSpecProxyParameter)ste;
+					if (spspp.getTarget() instanceof SpeciesContext) {
+						spC = (SpeciesContext)spspp.getTarget();
+						SpeciesContextSpec spcspec = simContext.getReactionContext().getSpeciesContextSpec(spC);
+						SpeciesContextSpecParameter spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+						// if initConc param expression is null, try initCount
+						if (spCInitParm.getExpression() == null) {
+							spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+						}
+						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+						Expression scsInitExpr = new Expression(getNameScope().getSymbolName(spCInitParm));
+						scsInitExpr.bindExpression(this);
+						initExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
+					}
+				}
 			}
+			// now create the appropriate function for the current speciesContextSpec.
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParm,sm),getIdentifierSubstitutions(initExpr,initParm.getUnitDefinition(),sm)));
 		}
 	}
 	
@@ -1883,13 +1989,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		if (scm.getVariable()==null && scm.getDependencyExpression()!=null){
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
-			Expression exp = getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm);
-			try {
-				double value = exp.evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(scm.getSpeciesContext(),sm),new Expression(value)));
-			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(scm.getSpeciesContext(),sm),exp));
-			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(scm.getSpeciesContext(),sm),getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm)));
 		}
 	}
 
@@ -1959,9 +2059,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		// create equations
 		//
 		VolumeStructureAnalyzer structureAnalyzer = getVolumeStructureAnalyzer(subVolume);
-		Enumeration enumSCM = getSpeciesContextMappings();
+		Enumeration<SpeciesContextMapping> enumSCM = getSpeciesContextMappings();
 		while (enumSCM.hasMoreElements()){
-			SpeciesContextMapping scm = (SpeciesContextMapping)enumSCM.nextElement();
+			SpeciesContextMapping scm = enumSCM.nextElement();
 			//
 			// if an independent volume variable, then create equation for it
 			// ...even if the speciesContext is for another subDomain (e.g. CaCyt in Extracellular)
@@ -2128,9 +2228,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		// create equations for membrane-bound molecular species
 		//
 		MembraneStructureAnalyzer membraneStructureAnalyzer = getMembraneStructureAnalyzer(membrane);
-		Enumeration enumSCM = getSpeciesContextMappings();
+		Enumeration<SpeciesContextMapping> enumSCM = getSpeciesContextMappings();
 		while (enumSCM.hasMoreElements()){
-			SpeciesContextMapping scm = (SpeciesContextMapping)enumSCM.nextElement();
+			SpeciesContextMapping scm = enumSCM.nextElement();
 			SpeciesContext        sc  = scm.getSpeciesContext();
 			SpeciesContextSpec    scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 			//
@@ -2199,9 +2299,9 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		//
 		// create dummy jump conditions for all volume variables that diffuse
 		//
-		Enumeration enum_scm = getSpeciesContextMappings();
+		Enumeration<SpeciesContextMapping> enum_scm = getSpeciesContextMappings();
 		while (enum_scm.hasMoreElements()){
-			SpeciesContextMapping scm = (SpeciesContextMapping)enum_scm.nextElement();
+			SpeciesContextMapping scm = enum_scm.nextElement();
 			if (scm.isDiffusing()){
 				Species species = scm.getSpeciesContext().getSpecies();
 				Variable var = scm.getVariable();
@@ -2420,9 +2520,9 @@ protected void refreshStructureAnalyzers() {
 	//
 	// invoke all structuralAnalyzers
 	//
-	Enumeration enum1 = getStructureAnalyzers();
+	Enumeration<StructureAnalyzer> enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()) {
-		StructureAnalyzer sa = (StructureAnalyzer) enum1.nextElement();
+		StructureAnalyzer sa = enum1.nextElement();
 		sa.refresh();
 	}
 }
@@ -2438,9 +2538,9 @@ private void refreshVariables() throws MappingException {
 	//
 	// non-constant dependant variables require a function
 	//
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
 		if (scm.getDependencyExpression() != null && !scs.isConstant()){
 			//scm.setVariable(new Function(scm.getSpeciesContext().getName(),scm.getDependencyExpression()));
