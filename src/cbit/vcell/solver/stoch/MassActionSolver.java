@@ -15,7 +15,7 @@ import cbit.vcell.model.gui.TransformMassActions.TransformedReaction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
-import cbit.vcell.solver.stoch.FluxSolver.FluxFunction;
+import cbit.vcell.parser.DivideByZeroException;
 
 public class MassActionSolver {
 
@@ -121,14 +121,25 @@ public class MassActionSolver {
 				}
 				for(int i=0; i<products.size(); i++)
 				{
-					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(products.elementAt(i).getName()), new Expression(0)).flatten();
+					try
+					{
+						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(products.elementAt(i).getName()), new Expression(0)).flatten();
+					}catch(DivideByZeroException ex)
+					{
+						throw new MathException("Transform failed in reaction: " + rs.getName() + "." + TransformedReaction.Label_expectedReacForm); 
+					}
 				}
 				forwardExp = duplicatedExp;
 				duplicatedExp = new Expression(orgExp);
 				//get reverse rate by substituting reactants to 0 and products to 1.
 				for(int i=0; i<reactants.size(); i++)
 				{
-					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(reactants.elementAt(i).getName()), new Expression(0)).flatten();
+					try{
+						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(reactants.elementAt(i).getName()), new Expression(0)).flatten();
+					}catch(DivideByZeroException ex)
+					{
+						throw new MathException("Transform failed in reaction: " + rs.getName() + "." + TransformedReaction.Label_expectedReacForm);
+					}
 				}
 				for(int i=0; i<products.size(); i++)
 				{
