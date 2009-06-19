@@ -105,7 +105,7 @@ public class DialogUtils {
 		}
 		private void printStack(Throwable throwable){
 			if(!(throwable instanceof UserCancelException)){
-				throwable.printStackTrace();
+				throwable.printStackTrace(System.out);
 			}
 		}
 	}

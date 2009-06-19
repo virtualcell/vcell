@@ -453,7 +453,7 @@ public boolean compareEqual(Matchable object) {
  */
 public boolean contains(Diagram diagram) {
 	for (int i=0;i<fieldDiagrams.length;i++){
-		if (fieldDiagrams[i].equals(diagram)){
+		if (fieldDiagrams[i] == diagram){
 			return true;
 		}
 	}
@@ -469,7 +469,7 @@ public boolean contains(Diagram diagram) {
  */
 public boolean contains(ModelParameter modelParameter) {
 	for (int i=0;i<fieldModelParameters.length;i++){
-		if (fieldModelParameters[i].equals(modelParameter)){
+		if (fieldModelParameters[i] == modelParameter){
 			return true;
 		}
 	}
@@ -484,7 +484,7 @@ public boolean contains(ModelParameter modelParameter) {
  */
 public boolean contains(ReactionStep reactionStep) {
 	for (int i=0;i<fieldReactionSteps.length;i++){
-		if (fieldReactionSteps[i].equals(reactionStep)){
+		if (fieldReactionSteps[i] == reactionStep){
 			return true;
 		}
 	}
@@ -500,7 +500,7 @@ public boolean contains(ReactionStep reactionStep) {
  */
 public boolean contains(Species species) {
 	for (int i=0;i<fieldSpecies.length;i++){
-		if (fieldSpecies[i].equals(species)){
+		if (fieldSpecies[i] == species){
 			return true;
 		}
 	}
@@ -516,7 +516,7 @@ public boolean contains(Species species) {
  */
 public boolean contains(SpeciesContext speciesContext) {
 	for (int i=0;i<fieldSpeciesContexts.length;i++){
-		if (fieldSpeciesContexts[i].equals(speciesContext)){
+		if (fieldSpeciesContexts[i] == speciesContext){
 			return true;
 		}
 	}
@@ -1121,9 +1121,17 @@ public ModelParameter getModelParameter(String glParamName)
  * @param species cbit.vcell.model.Species
  */
 public SpeciesContext getSpeciesContext(Species species, Structure structure) {
+	if (!contains(species)) {
+		throw new RuntimeException("Species '" + species.getCommonName() + "' not found in model; " +
+				"Could not retrieve speciesContext '" + species.getCommonName() + "_" + structure.getName() + "'.");
+	}
+	if (!contains(structure)) {
+		throw new RuntimeException("Structure '" + structure.getName() + "' not found in model; " +
+				"Could not retrieve speciesContext '" + species.getCommonName() + "_" + structure.getName() + "'.");
+	}
 	for (int i=0;i<fieldSpeciesContexts.length;i++){
-		if (fieldSpeciesContexts[i].getSpecies().compareEqual(species) && 
-			fieldSpeciesContexts[i].getStructure().compareEqual(structure)){
+		if ((fieldSpeciesContexts[i].getSpecies() == species) && 
+			(fieldSpeciesContexts[i].getStructure() == structure)){
 			return fieldSpeciesContexts[i];
 		}
 	}
@@ -2080,17 +2088,23 @@ public void setSpeciesContexts(cbit.vcell.model.SpeciesContext[] speciesContexts
 	//Remove orphaned Species but only for SpeciesContext that were in old and not in new
 	//The API should be changed so that species cannot be added or retrieved independently of SpeciesContexts
 	//
-	List<SpeciesContext> oldSpeciesContextsList = Arrays.asList(oldValue);
-	List<SpeciesContext> newSpeciesContextsList = Arrays.asList(newValue);
-	for(int i = 0;i < oldSpeciesContextsList.size();i+= 1){
-		if(!newSpeciesContextsList.contains(oldSpeciesContextsList.get(i))){
-			try{
-				removeSpecies((oldSpeciesContextsList.get(i)).getSpecies());
-			}catch(Throwable e){
-				e.printStackTrace(System.out);
-				//Do nothing for now since this is only a kludge to cleanup orphan species
-				//so "invisible" species don't interfere with gui operations
-			}
+
+	HashSet<Species> oldSpeciesSet = new HashSet<Species>();
+	for (int i = 0; i < oldValue.length; i++) {
+		oldSpeciesSet.add(oldValue[i].getSpecies());
+	}
+	HashSet<Species> newSpeciesSet = new HashSet<Species>();
+	for (int i = 0; i < newValue.length; i++) {
+		newSpeciesSet.add(newValue[i].getSpecies());
+	}
+	
+	oldSpeciesSet.removeAll(newSpeciesSet);
+	Iterator<Species> spIterator = oldSpeciesSet.iterator();
+	while (spIterator.hasNext()) {
+		try{
+			removeSpecies(spIterator.next());
+		}catch(Throwable e){
+			e.printStackTrace(System.out);
 		}
 	}
 }

@@ -24,6 +24,9 @@ public ScopedExpression(Expression argExpression, NameScope argNameScope) {
  */
 public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable) {
 	super();
+	if (argExpression == null) {
+		throw new RuntimeException("Expression cannot be null");
+	}
 	this.fieldExpression = argExpression;
 	this.fieldNameScope = argNameScope;
 	this.fieldIsUserEditable = argIsUserEditable;

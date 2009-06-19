@@ -947,7 +947,11 @@ private void modelParameterPanel_Initialize() {
 	getmodelParameterTableModel().addTableModelListener(
 		new javax.swing.event.TableModelListener(){
 			public void tableChanged(javax.swing.event.TableModelEvent e){
+				try {
 					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+				} catch (Exception e1) {
+					e1.printStackTrace(System.out);
+				}
 			}
 		}
 	);
