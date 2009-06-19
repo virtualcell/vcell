@@ -22,7 +22,11 @@ import javax.swing.event.UndoableEditListener;
 import java.lang.String;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
+
+import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
@@ -67,7 +71,7 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 	private JLabel jLabelFuncName = null;
 	private JTextField jTextFieldFuncName = null;
 	private JLabel jLabelExpression = null;
-	private JTextField jTextFieldFuncExpression = null;
+	private TextFieldAutoCompletion jTextFieldFuncExpression = null;
 	private JComboBox jComboBoxAllIdentifiers = null;
 	private JLabel jLabelAlldataIdentifiers = null;
 	private JLabel jLabelErrorInfo = null;
@@ -310,9 +314,9 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 	 * 	
 	 * @return javax.swing.JTextField	
 	 */
-	private JTextField getJTextFieldFuncExpression() {
+	private TextFieldAutoCompletion getJTextFieldFuncExpression() {
 		if (jTextFieldFuncExpression == null) {
-			jTextFieldFuncExpression = new JTextField();
+			jTextFieldFuncExpression = new TextFieldAutoCompletion();
 		}
 		return jTextFieldFuncExpression;
 	}
@@ -329,10 +333,14 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 		
 		getJComboBoxAllIdentifiers().removeActionListener(this);
 		getJComboBoxAllIdentifiers().removeAllItems();
+		
+		Set<String> varNames = new HashSet<String>();
 		int selectIndex = -1;
 		for(int i=0;i< allIdentifiers.length;i+= 1){
-			getJComboBoxAllIdentifiers().addItem(allIdentifiers[i].getName());
-			if(allIdentifiers[i].getName().equals(identifierInit)){
+			String varname = allIdentifiers[i].getName();
+			varNames.add(varname);
+			getJComboBoxAllIdentifiers().addItem(varname);
+			if(varname.equals(identifierInit)){
 				selectIndex = i;
 			}
 		}
@@ -340,6 +348,7 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 		if(selectIndex != -1){
 			getJComboBoxAllIdentifiers().setSelectedIndex(selectIndex);
 		}
+		getJTextFieldFuncExpression().setAutoCompletionWords(varNames);
 	}
 
 	/**

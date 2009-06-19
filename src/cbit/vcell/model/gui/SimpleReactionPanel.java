@@ -17,6 +17,7 @@ import cbit.vcell.model.Model.ModelParameter;
 
 import javax.swing.JButton;
 
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -1028,8 +1029,12 @@ private void showGlobalParameters() {
 	String[][] rows = new String[rowsV.size()][];
 	rowsV.copyInto(rows);
 	
-	int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(this, "List of Global Parameters in Model",
-			colNames, rows, ListSelectionModel.SINGLE_SELECTION);
+	try {
+		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(this, "List of Global Parameters in Model",
+				colNames, rows, ListSelectionModel.SINGLE_SELECTION);
+	} catch (UserCancelException ex) {
+		System.out.println("SimpleReactionPanel.showGlobalParameters(), user cancelled");
+	}
 }
 
 /**

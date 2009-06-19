@@ -6,6 +6,7 @@ import java.util.*;
  * All rights reserved.
 ©*/
 import cbit.vcell.util.*;
+import cbit.gui.TextFieldAutoCompletion;
 import cbit.plot.*;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ode.*;
@@ -68,7 +69,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JLabel ivjFunctionExprLabel = null;
 	private JLabel ivjFunctionNameLabel = null;
 	private JPanel ivjFunctionPanel = null;
-	private JTextField ivjFunctionExpressionTextField = null;
+	private TextFieldAutoCompletion ivjFunctionExpressionTextField = null;
 	private JTextField ivjFunctionNameTextField = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListSelectionListener {
@@ -154,6 +155,12 @@ private void addFunction(ODESolverResultSet odeRS) throws ExpressionException {
 	
 	getFunctionNameTextField().setText(defaultName);
 	getFunctionExpressionTextField().setText("0.0");
+	Set<String> autoCompList = new HashSet<String>();
+	for (int i = 0; i < odeRS.getColumnDescriptionsCount(); i++) {
+        ColumnDescription column = odeRS.getColumnDescriptions(i);
+        autoCompList.add(column.getName());
+    }
+	getFunctionExpressionTextField().setAutoCompletionWords(autoCompList);
 
 	//
 	// Show the editor with a default name and default expression for the function
@@ -743,10 +750,10 @@ private javax.swing.JButton getDeleteFunctionButton() {
  * @return javax.swing.JTextField
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getFunctionExpressionTextField() {
+private TextFieldAutoCompletion getFunctionExpressionTextField() {
 	if (ivjFunctionExpressionTextField == null) {
 		try {
-			ivjFunctionExpressionTextField = new javax.swing.JTextField();
+			ivjFunctionExpressionTextField = new TextFieldAutoCompletion();
 			ivjFunctionExpressionTextField.setName("FunctionExpressionTextField");
 			ivjFunctionExpressionTextField.setPreferredSize(new java.awt.Dimension(200, 30));
 			ivjFunctionExpressionTextField.setMaximumSize(new java.awt.Dimension(200, 30));

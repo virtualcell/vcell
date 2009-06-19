@@ -1,5 +1,7 @@
 package cbit.vcell.parser;
 
+import java.util.Map;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/27/2003 11:43:01 AM)
@@ -19,4 +21,5 @@ SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingExcept
  * @return cbit.vcell.parser.NameScope
  */
 NameScope getNameScope();
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap);
 }

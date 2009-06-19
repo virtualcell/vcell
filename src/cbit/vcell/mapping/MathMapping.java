@@ -13,6 +13,7 @@ import cbit.vcell.units.VCUnitException;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.*;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
@@ -25,6 +26,7 @@ import java.util.*;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.units.VCUnitDefinition;
@@ -69,11 +71,11 @@ public class MathMapping implements ScopedSymbolTable {
 	private HashMap<String, Integer> localNameCountHash = new HashMap<String, Integer>();
 
 	public class MathMappingNameScope extends BioNameScope {
-		private cbit.vcell.parser.NameScope nameScopes[] = null;
+		private NameScope nameScopes[] = null;
 		public MathMappingNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// return model namescope
 			//
@@ -97,16 +99,16 @@ public class MathMapping implements ScopedSymbolTable {
 			return nameScopes;
 		}
 		public String getName() {
-			return "MathMapping_for_"+org.vcell.util.TokenMangler.fixTokenStrict(simContext.getName());
+			return "MathMapping_for_"+TokenMangler.fixTokenStrict(simContext.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			//System.out.println("MathMappingNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return MathMapping.this;
 		}
-		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+		public boolean isPeer(NameScope nameScope){
 			if (super.isPeer(nameScope)){
 				return true;
 			}
@@ -140,7 +142,7 @@ public class MathMapping implements ScopedSymbolTable {
 			this.fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
-		public boolean compareEqual(org.vcell.util.Matchable obj) {
+		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof MathMappingParameter)){
 				return false;
 			}
@@ -175,7 +177,7 @@ public class MathMapping implements ScopedSymbolTable {
 			return -1;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldVCUnitDefinition;
 		}
 
@@ -307,7 +309,7 @@ MathMapping.MathMappingParameter addMathMappingParameter(String name, Expression
 		return previousParameter;
 	}
 	expression.bindExpression(this);
-	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])org.vcell.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -333,7 +335,7 @@ MathMapping.ProbabilityParameter addProbabilityParameter(String name, Expression
 		return (MathMapping.ProbabilityParameter)previousParameter;
 	}
 	//expression.bindExpression(this);
-	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])org.vcell.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -491,8 +493,8 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -540,26 +542,26 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 		expUnitDef = VCUnitEvaluator.getUnitDefinition(origExp);
 		if (desiredExpUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are null");
-			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",org.vcell.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', evaluated Units are null");
-			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",org.vcell.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),org.vcell.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),org.vcell.util.Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
 		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
 		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		localIssueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	Expression newExp = new Expression(origExp);
 	for (int i=0;i<symbols.length;i++){
@@ -607,12 +609,12 @@ private static Expression getInsideFluxCorrectionExpression(SimulationContext si
  * Creation date: (11/8/2004 3:36:31 PM)
  * @return cbit.util.Issue
  */
-public org.vcell.util.Issue[] getIssues() {	
+public Issue[] getIssues() {	
 	Vector<Issue> issueList = new Vector<Issue>();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
 	issueList.addAll(localIssueList);
-	return (org.vcell.util.Issue[])org.vcell.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
+	return (Issue[])BeanUtils.getArray(issueList,Issue.class);
 }
 
 
@@ -622,7 +624,7 @@ public org.vcell.util.Issue[] getIssues() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 
 	//
 	// the MathMapping "nameScope" is the union of the Model and SimContext namescopes (with the addition of any locally defined parameters)
@@ -697,7 +699,7 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * This method was created in VisualAge.
  * @return cbit.vcell.math.MathDescription
  */
-public MathDescription getMathDescription() throws MappingException, MathException, cbit.vcell.matrix.MatrixException, ExpressionException, ModelException {
+public MathDescription getMathDescription() throws MappingException, MathException, MatrixException, ExpressionException, ModelException {
 	if (mathDesc==null){
 		refresh();
 	}
@@ -1069,7 +1071,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
  * Creation date: (5/3/2006 4:28:57 PM)
  * @return cbit.vcell.mapping.MathSymbolMapping
  */
-public MathSymbolMapping getMathSymbolMapping()  throws MappingException, MathException, cbit.vcell.matrix.MatrixException, ExpressionException, ModelException {
+public MathSymbolMapping getMathSymbolMapping()  throws MappingException, MathException, MatrixException, ExpressionException, ModelException {
 	
 	mathSymbolMapping.reconcileVarNames(getMathDescription());
 	
@@ -1102,7 +1104,7 @@ protected MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membra
  * Creation date: (4/4/2004 1:01:22 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -1365,7 +1367,7 @@ protected Variable newFunctionOrConstant(String name, Expression exp) {
  * @param obs java.util.Observable
  * @param obj java.lang.Object
  */
-private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException {
+private void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 //System.out.println("MathMapping.refresh()");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
@@ -1390,7 +1392,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 	//
 	for (int i = 0; i < newMathMappingParameters.length; i++){
 		if (newMathMappingParameters[i].getRole() == PARAMETER_ROLE_KFLUX){
-			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.removeElement(newMathMappingParameters,newMathMappingParameters[i]);
+			newMathMappingParameters = (MathMappingParameter[])BeanUtils.removeElement(newMathMappingParameters,newMathMappingParameters[i]);
 		}		
 	}
 	
@@ -1410,7 +1412,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
 			String insideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+insideFeature.getNameScope().getName();
 			KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,insideFeature);
-			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
 
 			//
 			// add "outside" flux correction
@@ -1420,7 +1422,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
 			String outsideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+outsideFeature.getNameScope().getName();
 			KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,outsideFeature);
-			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
 		}
 	}
 	try {
@@ -1479,7 +1481,7 @@ private Expression substituteGlobalParameters(Expression exp) throws ExpressionE
 /**
  * This method was created in VisualAge.
  */
-private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException {
+private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
 	simContext.checkValidity();
@@ -1686,7 +1688,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),cbit.vcell.units.VCUnitDefinition.UNIT_K,null)));
+	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
 
 	//
 	// only calculate potential if at least one MembraneMapping has CalculateVoltage == true
@@ -2634,7 +2636,7 @@ private void refreshVariables() throws MappingException {
  * @param mathMappingParameter cbit.vcell.mapping.MathMapping.MathMappingParameter
  */
 void removeMathMappingParameter(MathMapping.MathMappingParameter mathMappingParameter) throws java.beans.PropertyVetoException {
-	MathMappingParameter newMathMappingParameters[] = (MathMappingParameter[])org.vcell.util.BeanUtils.removeElement(fieldMathMappingParameters,mathMappingParameter);
+	MathMappingParameter newMathMappingParameters[] = (MathMappingParameter[])BeanUtils.removeElement(fieldMathMappingParameters,mathMappingParameter);
 	setMathMapppingParameters(newMathMappingParameters);
 }
 
@@ -2683,4 +2685,20 @@ void setMathMapppingParameters(MathMappingParameter[] mathMappingParameters) thr
 	fieldMathMappingParameters = mathMappingParameters;
 	firePropertyChange("mathMappingParameters", oldValue, mathMappingParameters);
 }
+
+
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {	
+	simContext.getModel().getLocalEntries(entryMap);
+	simContext.getLocalEntries(entryMap);
+	for (SymbolTableEntry ste : fieldMathMappingParameters) {
+		entryMap.put(ste.getName(), ste);
+	}	
+	ReservedSymbol.getAll(entryMap, true, true);
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);
+}
+
 }

@@ -16,6 +16,7 @@ import java.util.*;
 
 import javax.swing.JButton;
 
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 /**
@@ -1113,8 +1114,13 @@ private void showGlobalParameters() {
 	String[][] rows = new String[rowsV.size()][];
 	rowsV.copyInto(rows);
 	
-	int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(this, "List of Global Parameters in Model",
+	try {
+		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(this, "List of Global Parameters in Model",
 			colNames, rows, ListSelectionModel.SINGLE_SELECTION);
+	} catch (UserCancelException ex) {
+		// do nothing
+		System.out.println("FluxReaction_Dialog.showGlobalParameters(), user cancelled");
+	}
 }
 
 

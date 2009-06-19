@@ -35,7 +35,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbolTable;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
@@ -772,7 +772,7 @@ private boolean checkSpeciesInitExprValidity(Expression spInitExpr) {
 			return false;
 		}
 	}
-	cbit.vcell.parser.SymbolTable reservedSymbolTable= new ReservedSymbolTable(true);
+	cbit.vcell.parser.SymbolTable reservedSymbolTable= new ReservedSymbol.ReservedSymbolTable(true);
 	try {
 		spInitExpr.bindExpression(reservedSymbolTable);
 	} catch (ExpressionBindingException e) {

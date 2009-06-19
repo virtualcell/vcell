@@ -3,25 +3,36 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
 import cbit.vcell.math.Constant;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableEntryFilter;
+import cbit.vcell.solver.ConstantArraySpec;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MathOverridesListener;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (10/22/2000 11:46:26 AM)
  * @author: 
  */
-public class MathOverridesTableModel extends javax.swing.table.AbstractTableModel implements cbit.vcell.solver.MathOverridesListener {
+public class MathOverridesTableModel extends javax.swing.table.AbstractTableModel implements MathOverridesListener {
 	private String[] fieldKeys = new String[0];
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.solver.MathOverrides fieldMathOverrides = null;
+	private MathOverrides fieldMathOverrides = null;
 	private boolean fieldModified = false;
 	private boolean fieldEditable = false;
 	public final static int COLUMN_PARAMETER = 0;
 	public final static int COLUMN_DEFAULT = 1;
 	public final static int COLUMN_ACTUAL = 2;
 	public final static int COLUMN_SCAN = 3;
-	private String[] columnNames = new String[] {"Parameter Name", "Default Value", "Change Value", "Scan"};
+	private String[] columnNames = new String[] {"Parameter Name", "Default", "New Value/Expression", "Scan"};
 
 /**
  * MathOverridesTableModel constructor comment.
@@ -38,15 +49,6 @@ public MathOverridesTableModel() {
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * 
@@ -80,15 +82,15 @@ public void constantRemoved(cbit.vcell.solver.MathOverridesEvent event) {
  * Creation date: (9/23/2005 5:06:23 PM)
  */
 private void editScanValues(String name, int r) throws cbit.vcell.parser.DivideByZeroException, cbit.vcell.parser.ExpressionException {
-	cbit.vcell.client.desktop.simulation.ParameterScanPanel panel = new cbit.vcell.client.desktop.simulation.ParameterScanPanel();
-	cbit.vcell.solver.ConstantArraySpec spec = null;
+	ParameterScanPanel panel = new ParameterScanPanel();
+	ConstantArraySpec spec = null;
 	if (getMathOverrides().isScan(name)) {
 		spec = getMathOverrides().getConstantArraySpec(name);
 	} else {
-		spec = cbit.vcell.solver.ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
+		spec = ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
 	}
 	panel.setConstantArraySpec(spec);
-	int confirm = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null, panel, "Scan values for parameter '" + fieldKeys[r]);
+	int confirm = DialogUtils.showComponentOKCancelDialog(null, panel, "Scan values for parameter '" + fieldKeys[r]);
 	if (confirm == javax.swing.JOptionPane.OK_OPTION) {
 		panel.applyValues();
 		getMathOverrides().putConstantArraySpec(panel.getConstantArraySpec());
@@ -134,7 +136,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_PARAMETER:{
 			return String.class;
@@ -143,7 +145,9 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_ACTUAL:{
-			return String.class;
+			// could be ScopedExpression or ConstantArraySpec.
+			// we need auto complete cell editor when it's not scan, it's ok when it's ConstantArraySpec because cell is not editable
+			return ScopedExpression.class; 
 		}
 		case COLUMN_SCAN:{
 			return Boolean.class;
@@ -233,8 +237,23 @@ public Object getValueAt(int row, int column) {
 				if (getMathOverrides().isScan(fieldKeys[row])) {
 					return getMathOverrides().getConstantArraySpec(fieldKeys[row]);
 				} else {
-					if(getMathOverrides().getActualExpression(fieldKeys[row], 0) == null){return null;}
-					return getMathOverrides().getActualExpression(fieldKeys[row], 0).infix();
+					Expression actualExpression = getMathOverrides().getActualExpression(fieldKeys[row], 0);
+					if(actualExpression == null) {
+						return null;
+					}
+					Simulation sim = getMathOverrides().getSimulation();
+					
+					SymbolTableEntryFilter symbolTableEntryFilter = new SymbolTableEntryFilter() {
+
+						public boolean accept(SymbolTableEntry ste) {
+							if (ste instanceof Constant) {
+								return (getMathOverrides().getConstant(ste.getName()) != null);
+							}
+							return false;
+						}
+						
+					};
+					return new ScopedExpression(actualExpression, sim.getNameScope(), true, symbolTableEntryFilter); 
 				}
 			}
 			case COLUMN_SCAN: {
@@ -388,8 +407,21 @@ public void setValueAt(Object object, int r, int c) {
 	try {
 		String name = (String) getValueAt(r,0);
 		if (c == COLUMN_ACTUAL) {
-			if (object instanceof cbit.vcell.solver.ConstantArraySpec) {
+			if (object instanceof ConstantArraySpec) {
 				editScanValues(name, r);
+			} else if (object instanceof ScopedExpression) {
+				ScopedExpression inputValue = (ScopedExpression)object;
+				Expression expression = null;
+				if (inputValue == null) {
+					expression = new Expression((String)getValueAt(r, COLUMN_DEFAULT));
+				} else {
+					expression = inputValue.getExpression();
+				}
+				Constant constant = new Constant(name, expression);
+				getMathOverrides().putConstant(constant);
+				fireTableCellUpdated(r, c);
+				this.fireTableDataChanged();
+				setModified(true);
 			} else if (object instanceof String) {
 				String inputValue = (String)object;
 				Expression expression = null;

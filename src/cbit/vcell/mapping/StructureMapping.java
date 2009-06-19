@@ -1,36 +1,37 @@
 package cbit.vcell.mapping;
-import cbit.vcell.parser.SymbolTableEntry;
-import net.sourceforge.interval.ia_math.RealInterval;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.beans.PropertyVetoException;
-import java.util.*;
+import java.util.Map;
+import java.util.Vector;
+
+import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SimpleBoundsIssue;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.model.*;
-import cbit.vcell.geometry.*;
-import cbit.util.*;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public abstract class StructureMapping implements Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable {
+public abstract class StructureMapping implements Matchable, ScopedSymbolTable, java.io.Serializable {
 	
 	public class StructureMappingNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public StructureMappingNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -39,19 +40,19 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		public String getName() {
 			return TokenMangler.fixTokenStrict(StructureMapping.this.getStructure().getName()+"_mapping");
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			if (StructureMapping.this.simulationContext != null){
 				return StructureMapping.this.simulationContext.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return StructureMapping.this;
 		}
 	}
 
-	public class StructureMappingParameter extends cbit.vcell.model.Parameter implements ExpressionContainer {
+	public class StructureMappingParameter extends Parameter implements ExpressionContainer {
 
 		private int fieldParameterRole = -1;
 		private String fieldParameterName = null;
@@ -59,7 +60,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		private VCUnitDefinition fieldVCUnitDefinition = null;
 
 
-		public StructureMappingParameter(String parmName, cbit.vcell.parser.Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
+		public StructureMappingParameter(String parmName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -75,7 +76,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 			this(structureMappingParameter.getName(),structureMappingParameter.getExpression() == null ? null : new Expression(structureMappingParameter.getExpression()),structureMappingParameter.getRole(),structureMappingParameter.getUnitDefinition());			
 		}
 
-		public boolean compareEqual(org.vcell.util.Matchable obj) {
+		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof StructureMappingParameter)){
 				return false;
 			}
@@ -113,7 +114,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 			super.firePropertyChange("name", oldValue, name);
 		}
 
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException, ExpressionBindingException {
+		public void setExpression(Expression expression) throws java.beans.PropertyVetoException, ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
 				expression.bindExpression(StructureMapping.this);
@@ -124,11 +125,11 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public Expression getExpression() {
 			 return fieldParameterExpression;
 		}
 
@@ -159,7 +160,6 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	private transient NameScope parentNameScope = null;
 	public static final int ROLE_SurfaceToVolumeRatio	= 0;
 	public static final int ROLE_VolumeFraction			= 1;
 	public static final int ROLE_SpecificCapacitance	= 2;
@@ -167,11 +167,11 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 	public static final int ROLE_Size					= 4;
 	public static final int NUM_ROLES		= 5;	//surface area for membrane or volume for feature
 	public static final String RoleTags[] = {
-		cbit.vcell.model.VCMODL.SurfaceToVolume,
-		cbit.vcell.model.VCMODL.VolumeFraction,
-		cbit.vcell.model.VCMODL.SpecificCapacitance,
-		cbit.vcell.model.VCMODL.InitialVoltage,
-		cbit.vcell.model.VCMODL.StructureSize
+		VCMODL.SurfaceToVolume,
+		VCMODL.VolumeFraction,
+		VCMODL.SpecificCapacitance,
+		VCMODL.InitialVoltage,
+		VCMODL.StructureSize
 	};
 	public static final String DefaultNames[] = {
 		"SurfToVolRatio",
@@ -337,7 +337,7 @@ public void fireVetoableChange(String propertyName, boolean oldValue, boolean ne
  * Creation date: (11/1/2005 9:57:23 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector issueVector) {
+public void gatherIssues(Vector<Issue> issueVector) {
 	// size parameter must be set to non zero value for new ode, and all stoch simulations.
 	if (getSizeParameter().getExpression() == null)
 	{
@@ -349,7 +349,7 @@ public void gatherIssues(Vector issueVector) {
 			double val = getSizeParameter().getExpression().evaluateConstant();
 			if(val <= 0)
 				issueVector.add(new Issue(getSizeParameter(), "parameter not set", "Size parameter of "+ getNameScope().getName() +" is compulsory and must be a positive value. \nPlease change it in StructureMapping tab.",Issue.SEVERITY_ERROR));
-		}catch (cbit.vcell.parser.ExpressionException e)
+		}catch (ExpressionException e)
 		{
 			e.printStackTrace();
 			throw new RuntimeException("Parameter "+getSizeParameter().getName()+"cannot be evaluated to a constant.");
@@ -382,9 +382,9 @@ public static double getDefaultAbsoluteSize() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -396,12 +396,10 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 /**
  * Insert the method's description here.
  * Creation date: (12/8/2003 12:47:06 PM)
- * @return cbit.vcell.parser.SymbolTableEntry
+ * @return SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	
-	SymbolTableEntry ste;
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	
 	Parameter parameter = getParameter(identifier);
 	
@@ -414,7 +412,7 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * Creation date: (12/8/2003 12:47:06 PM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -508,7 +506,7 @@ public Structure getStructure() {
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-abstract Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws cbit.vcell.parser.ExpressionException;
+abstract Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws ExpressionException;
 
 
 /**
@@ -547,7 +545,7 @@ public void refreshDependencies(){
 			if (fieldParameters[i].getExpression()!=null){
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (ExpressionException e){
 			System.out.println("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
 		}
 	}
@@ -617,6 +615,16 @@ public void setSimulationContext(SimulationContext argSimulationContext) {
  */
 void setStructure(Structure argStructure) {
 	this.structure = argStructure;
+}
+
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {	
+	for (SymbolTableEntry ste : fieldParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+}
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);		
 }
 
 }

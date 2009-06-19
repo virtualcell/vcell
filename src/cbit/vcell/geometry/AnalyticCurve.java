@@ -4,7 +4,9 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.Map;
 import org.vcell.util.Coordinate;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.Expression;
@@ -64,7 +66,7 @@ public Object clone() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (!super.compareEqual(obj)) {
 		return false;
 	}
@@ -226,4 +228,8 @@ public int setDesiredSampling(int argNumSamplePoints) {
 	setNumSamplePoints(argNumSamplePoints);
 	return getNumSamplePoints();
 }
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	entryMap.put(ReservedParameterSymbol.getU().getName(), ReservedParameterSymbol.getU());	
+}
+
 }

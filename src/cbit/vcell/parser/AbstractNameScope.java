@@ -1,5 +1,7 @@
 package cbit.vcell.parser;
 
+import java.util.Map;
+
 import cbit.vcell.model.ProxyParameter;
 
 /**
@@ -33,7 +35,7 @@ public String getAbsoluteScopePrefix() {
  * Creation date: (8/1/2003 11:04:49 AM)
  * @return cbit.vcell.parser.SymbolTable[]
  */
-public abstract cbit.vcell.parser.NameScope[] getChildren();
+public abstract NameScope[] getChildren();
 /**
  * Insert the method's description here.
  * Creation date: (8/27/2003 11:57:04 AM)
@@ -381,5 +383,12 @@ public boolean isPeer(NameScope nameScope) {
  */
 public String toString() {
 	return getClass().getName() + "@" + Integer.toHexString(hashCode())+": '"+getName()+"'";
+}
+
+public void getExternalEntries(Map<String, SymbolTableEntry> entryMap) {	
+	if (getParent() != null) {
+		getParent().getExternalEntries(entryMap);
+	}
+	getScopedSymbolTable().getLocalEntries(entryMap);
 }
 }

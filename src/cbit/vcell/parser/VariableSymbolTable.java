@@ -37,4 +37,9 @@ public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindi
 	}
 	return null;
 }
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	for (SymbolTableEntry ste : varList) {
+		entryMap.put(ste.getName(), ste);
+	}
+}
 }

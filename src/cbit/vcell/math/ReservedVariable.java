@@ -4,6 +4,10 @@ package cbit.vcell.math;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.Map;
+
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.*;
 public class ReservedVariable extends Variable
 {
@@ -20,7 +24,7 @@ private ReservedVariable(String name, int defaultIndex){
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof ReservedVariable)){
 		return false;
 	}
@@ -113,4 +117,13 @@ public boolean isZ() {
    {
 	   return getName();
    }         
+
+
+public static void getAll(Map<String, SymbolTableEntry> entryMap) {
+	entryMap.put(TIME.getName(), TIME);
+	entryMap.put(X.getName(), X);
+	entryMap.put(Y.getName(), Y);
+	entryMap.put(Z.getName(), Z);
+}
+
 }

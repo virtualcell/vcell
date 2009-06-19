@@ -4,32 +4,29 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
-
-import cbit.vcell.parser.*;
-import cbit.vcell.solver.ode.SensVariable;
-import cbit.vcell.math.Constant;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.PseudoConstant;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.matrix.RationalExpMatrix;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.model.ReactionStep;
+import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.RationalExpUtils;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  */
 public class FastSystemAnalyzer implements SymbolTable {
@@ -196,7 +193,7 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	int numVars = fastVarList.size();
 	int rows = fastSystem.getNumFastInvariants();
 	int cols = numVars + fastSystem.getNumFastInvariants();
-	cbit.vcell.matrix.RationalExpMatrix matrix = new cbit.vcell.matrix.RationalExpMatrix(rows,cols);
+	RationalExpMatrix matrix = new RationalExpMatrix(rows,cols);
 
 	Enumeration<FastInvariant> fastInvariantsEnum = fastSystem.getFastInvariants(); 
 	for (int i = 0; i < rows && fastInvariantsEnum.hasMoreElements(); i++){
@@ -230,8 +227,8 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	System.out.println("reducedMatrix");
 	if (rows > 0){
 		try {
-			matrix.gaussianElimination(new cbit.vcell.matrix.RationalExpMatrix(rows,rows));
-		}catch(cbit.vcell.matrix.MatrixException e){
+			matrix.gaussianElimination(new RationalExpMatrix(rows,rows));
+		}catch(MatrixException e){
 			e.printStackTrace(System.out);
 			throw new MathException(e.getMessage());
 		}
@@ -303,7 +300,7 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	dependencyMatrix = new RationalExpMatrix(rows, new_cols);
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<new_cols;j++){
-			cbit.vcell.matrix.RationalExp rexp = matrix.get(i,j+dependentVarList.size()).simplify().minus();
+			RationalExp rexp = matrix.get(i,j+dependentVarList.size()).simplify().minus();
 			dependencyMatrix.set_elem(i,j,rexp);
 		}
 	}
@@ -353,7 +350,7 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 		//
 		for (int col=0;col<independentVarList.size();col++){
 			Variable indepVar = (Variable)independentVarList.elementAt(col);
-			cbit.vcell.matrix.RationalExp coefExp = dependencyMatrix.get(row,col).simplify();
+			RationalExp coefExp = dependencyMatrix.get(row,col).simplify();
 			if (!coefExp.isZero()){
 				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+indepVar.getName()));
 			}
@@ -363,7 +360,7 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 		//
 		for (int col=independentVarList.size();col<dependencyMatrix.getNumCols();col++){
 			PseudoConstant pc = (PseudoConstant)pseudoConstantList.elementAt(col-independentVarList.size());
-			cbit.vcell.matrix.RationalExp coefExp = dependencyMatrix.get(row,col);
+			RationalExp coefExp = dependencyMatrix.get(row,col);
 			if (!coefExp.isZero()){
 				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+pc.getName()));
 			}
@@ -508,5 +505,12 @@ private FastSystem getFastSystem() {
  */
 public Enumeration<Expression> getFastRateExpressions() {
 	return fastRateExpList.elements();
+}
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	symbolTable.getEntries(entryMap);
+	for (PseudoConstant pc : pseudoConstantList) {
+		entryMap.put(pc.getName(), pc);
+	}
 }
 }

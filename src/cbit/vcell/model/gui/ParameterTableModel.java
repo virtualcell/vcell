@@ -4,31 +4,21 @@ import java.beans.PropertyVetoException;
 
 import javax.swing.JTable;
 
-import org.vcell.util.BeanUtils;
-
-import cbit.vcell.units.VCUnitException;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.ModelQuantity;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.ModelQuantity;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableEntryFilter;
+import cbit.vcell.units.VCUnitException;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -45,6 +35,7 @@ public class ParameterTableModel extends javax.swing.table.AbstractTableModel im
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Kinetics fieldKinetics = null;
 	private JTable fieldParentComponentTable = null;		// needed for DialogUtils.showWarningDialog() 
+	private SymbolTableEntryFilter symbolTableEntryFilter = null;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -218,17 +209,17 @@ public Object getValueAt(int row, int col) {
 					if (rs.isKMOLE()) {
 						// KMOLE is the only ReservedSymbol that has is expressed as a rational number (1/602). Try printing this expression instead of its double value  
 						try {
-							return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable());
+							return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable(), symbolTableEntryFilter);
 						} catch (ExpressionException e) {
 							e.printStackTrace();
 							throw new RuntimeException("Error writing expression for KMOLE reserved symbol" + e.getMessage());
 						}
 					} else {
 						// if reserved symbol is not KMOLE, print it out like other parameters
-						return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), symbolTableEntryFilter);
 					}
 				} else {
-					return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), symbolTableEntryFilter);
 				}
 			}else{
 				return "Variable"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
@@ -339,12 +330,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
+
 /**
  * Sets the geometry property (cbit.vcell.geometry.Geometry) value.
  * @param geometry The new value for the property.
@@ -353,6 +339,9 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
 public void setKinetics(cbit.vcell.model.Kinetics kinetics) {
 	cbit.vcell.model.Kinetics oldValue = fieldKinetics;
 	fieldKinetics = kinetics;
+	if (kinetics != null) {
+		symbolTableEntryFilter = kinetics.getReactionStep().getSymbolTableEntryFilter();
+	}
 	firePropertyChange("kinetics", oldValue, kinetics);
 }
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -456,8 +445,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof ScopedExpression){
+						Expression exp = ((ScopedExpression)aValue).getExpression();
 						if (parameter instanceof Kinetics.KineticsParameter){
 							getKinetics().setParameterValue((Kinetics.KineticsParameter)parameter,exp);
 						}else if (parameter instanceof Kinetics.KineticsProxyParameter){

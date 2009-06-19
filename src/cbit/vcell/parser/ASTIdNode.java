@@ -42,7 +42,8 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 
 	if (symbolTableEntry==null){
 		String id = name;
-		throw new ExpressionBindingException("error binding identifier '" + id + "'", id);
+		throw new ExpressionBindingException("'" + id + "' is not found in your model. " 
+				+ "Check that you have provided the correct and full name (e.g. Ca_Cytosol).");
 	}
 }    
 /**

@@ -3,14 +3,17 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.parser.SymbolTableEntryFilter;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.mapping.ReactionContext;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -27,7 +30,8 @@ public class SpeciesContextSpecsTableModel extends javax.swing.table.AbstractTab
 	
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private SimulationContext fieldSimulationContext = null;
+	private SymbolTableEntryFilter symbolTableEntryFilter = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -91,7 +95,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_SPECIESCONTEXT:{
 			return String.class;
@@ -106,7 +110,7 @@ public Class getColumnClass(int column) {
 			return Boolean.class;
 		}
 		case COLUMN_INITIAL:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -162,7 +166,7 @@ public int getRowCount() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -194,7 +198,8 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_INITIAL:{
 			if(scSpec.getInitialConditionParameter() != null)
 			{
-				return new cbit.vcell.parser.ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope());
+				return new ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope(), 
+						true, symbolTableEntryFilter);
 			}
 			else 
 			{
@@ -254,7 +259,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		case COLUMN_INITIAL:{
 			// editing in place is impractical for expression
 			// this way, we can pop-up a custom dialog to enter a new value (GUI has to take care of this)
-			return false;
+			return true;
 		}
 		default:{
 			return false;
@@ -269,22 +274,21 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() instanceof cbit.vcell.mapping.ReactionContext
+	if (evt.getSource() instanceof ReactionContext
 		&& evt.getPropertyName().equals("speciesContextSpecs")) {
 
-		updateListenersReactionContext((cbit.vcell.mapping.ReactionContext)evt.getSource(),true);
-		updateListenersReactionContext((cbit.vcell.mapping.ReactionContext)evt.getSource(),false);
+		updateListenersReactionContext((ReactionContext)evt.getSource(),true);
+		updateListenersReactionContext((ReactionContext)evt.getSource(),false);
 		fireTableDataChanged();
 		
 	}
-	if (evt.getSource() instanceof cbit.vcell.model.SpeciesContext
-		&& evt.getPropertyName().equals("name")) {
+	if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-	if (evt.getSource() instanceof cbit.vcell.mapping.SpeciesContextSpec) {
+	if (evt.getSource() instanceof SpeciesContextSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-	if (evt.getSource() instanceof cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter) {
+	if (evt.getSource() instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
 }
@@ -311,16 +315,18 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimulationContext;
+public void setSimulationContext(SimulationContext simulationContext) {
+	SimulationContext oldValue = fieldSimulationContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
 		updateListenersReactionContext(oldValue.getReactionContext(),true);
 	}
-	fieldSimulationContext = simulationContext;
+	fieldSimulationContext = simulationContext;	
 	if (simulationContext!=null){
 		simulationContext.addPropertyChangeListener(this);
 		updateListenersReactionContext(simulationContext.getReactionContext(),false);
+		
+		symbolTableEntryFilter  = simulationContext.getSymbolTableEntryFilter();
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 	fireTableDataChanged();
@@ -348,8 +354,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		}
 		case COLUMN_INITIAL:{
 			try {
-				if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-					Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+				if (aValue instanceof ScopedExpression){
+					Expression exp = ((ScopedExpression)aValue).getExpression();
 					if(getSimulationContext().isUsingConcentration())
 					{
 						scSpec.getInitialConcentrationParameter().setExpression(exp);
@@ -376,12 +382,13 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				// don't handle exception here, InitialConditionsPanel needs it.
 				//
 				throw new RuntimeException(e.getMessage());
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				//
 				// don't handle exception here, InitialConditionsPanel needs it.
 				//
-				throw new RuntimeException(e.getMessage());
+				PopupGenerator.showErrorDialog("Wrong Expression:\n" + e.getMessage());
+				//throw new RuntimeException(e.getMessage());
 			}
 			break;
 		}
@@ -393,7 +400,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
  * Insert the method's description here.
  * Creation date: (9/12/2005 2:44:36 PM)
  */
-private void updateListenersReactionContext(cbit.vcell.mapping.ReactionContext reactionContext,boolean bRemove) {
+private void updateListenersReactionContext(ReactionContext reactionContext,boolean bRemove) {
 
 	if(bRemove){
 		reactionContext.removePropertyChangeListener(this);
@@ -401,7 +408,7 @@ private void updateListenersReactionContext(cbit.vcell.mapping.ReactionContext r
 		for (int i=0;i<oldSpecs.length;i++){
 			oldSpecs[i].removePropertyChangeListener(this);
 			oldSpecs[i].getSpeciesContext().removePropertyChangeListener(this);
-			cbit.vcell.model.Parameter oldParameters[] = oldSpecs[i].getParameters();
+			Parameter oldParameters[] = oldSpecs[i].getParameters();
 			for (int j = 0; j < oldParameters.length ; j++){
 				oldParameters[j].removePropertyChangeListener(this);
 			}
@@ -412,7 +419,7 @@ private void updateListenersReactionContext(cbit.vcell.mapping.ReactionContext r
 		for (int i=0;i<newSpecs.length;i++){
 			newSpecs[i].addPropertyChangeListener(this);
 			newSpecs[i].getSpeciesContext().addPropertyChangeListener(this);
-			cbit.vcell.model.Parameter newParameters[] = newSpecs[i].getParameters();
+			Parameter newParameters[] = newSpecs[i].getParameters();
 			for (int j = 0; j < newParameters.length ; j++){
 				newParameters[j].addPropertyChangeListener(this);
 			}

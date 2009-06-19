@@ -1,5 +1,7 @@
 package cbit.vcell.parser;
 
+import java.util.Map;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/31/2003 9:43:42 AM)
@@ -85,4 +87,6 @@ boolean isAncestor(NameScope nameScope);
  * @param nameScope cbit.vcell.parser.NameScope
  */
 boolean isPeer(NameScope nameScope);
+
+public void getExternalEntries(Map<String, SymbolTableEntry> entryMap);
 }

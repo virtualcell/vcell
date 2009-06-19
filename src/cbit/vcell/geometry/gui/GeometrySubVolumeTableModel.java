@@ -3,27 +3,30 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener,org.vcell.util.gui.TableCellValidator {
+public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 	private final int NUM_COLUMNS = 2;
 	private final int COLUMN_NAME = 0;
 	private final int COLUMN_VALUE = 1;
 	private String LABELS[] = { "Name", "Value" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
-	private int[] colormap = cbit.image.DisplayAdapterService.createContrastColorModel();
+//	private int[] colormap = cbit.image.DisplayAdapterService.createContrastColorModel();
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -42,28 +45,11 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 	getPropertyChange().firePropertyChange(evt);
 }
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
@@ -73,13 +59,6 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
 }
 
 
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 
 /**
  * Insert the method's description here.
@@ -87,13 +66,13 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_NAME:{
-			return cbit.vcell.geometry.SubVolume.class;
+			return SubVolume.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -129,7 +108,7 @@ public String getColumnName(int column) {
  * @return The geometry property value.
  * @see #setGeometry
  */
-public cbit.vcell.geometry.Geometry getGeometry() {
+public Geometry getGeometry() {
 	return fieldGeometry;
 }
 
@@ -174,7 +153,8 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_VALUE:{
 			if (subVolume instanceof AnalyticSubVolume){
-				return new cbit.vcell.parser.ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(),cbit.vcell.model.ReservedSymbol.TIME.getNameScope(),true);
+				return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedSymbol.X.getNameScope(),
+						true, new ReservedSymbol.SpatialSymbolTableEntryFilter(getGeometry().getDimension()));
 			}else{
 				return null;
 			}
@@ -241,22 +221,13 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
 /**
  * Sets the geometry property (cbit.vcell.geometry.Geometry) value.
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
-	cbit.vcell.geometry.Geometry oldValue = fieldGeometry;
+public void setGeometry(Geometry geometry) {
+	Geometry oldValue = fieldGeometry;
 	if (oldValue != null){
 		oldValue.getGeometrySpec().removePropertyChangeListener(this);
 	}
@@ -290,8 +261,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				try {
 					if (subVolume instanceof AnalyticSubVolume){
 						AnalyticSubVolume analyticSubVolume = (AnalyticSubVolume)subVolume;
-						if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-							Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+						if (aValue instanceof ScopedExpression){
+							Expression exp = ((ScopedExpression)aValue).getExpression();
 							analyticSubVolume.setExpression(exp);
 						}else if (aValue instanceof String) {
 							String newExpressionString = (String)aValue;
@@ -301,7 +272,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}
 				break;
 			}
@@ -311,39 +282,4 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/13/2005 11:51:43 AM)
- * @return boolean
- * @param obj java.lang.Object
- */
-public org.vcell.util.gui.TableCellValidator.EditValidation validate(java.lang.Object obj,int row,int col) {
-	//
-	//Verify that object(obj) is an appropriate value for a specific class type  in a table cell(row,col)
-	//
-	try{
-		if(col == COLUMN_VALUE && getColumnClass(col).isAssignableFrom(cbit.vcell.parser.ScopedExpression.class)){
-			//ScopedExpression column:
-			//Value needs to be a String Expression appropriate for AnalyticSubVolume
-			if(obj instanceof String){
-					new AnalyticSubVolume("test",new Expression((String)obj));//Try to have and error
-					return org.vcell.util.gui.TableCellValidator.VALIDATE_OK;
-			}
-		}else if(col == COLUMN_NAME && getColumnClass(col).isAssignableFrom(SubVolume.class)){
-			//Subvolume "name" column
-			//Value needs to be String Name appropriate for AnalyticSubVolume
-			if(obj instanceof String){
-					new AnalyticSubVolume((String)obj);//Try to have and error
-					return org.vcell.util.gui.TableCellValidator.VALIDATE_OK;
-			}
-		}
-	}catch(Throwable e){
-		return new org.vcell.util.gui.TableCellValidator.EditValidation(e.getClass().getName()+"\n"+(e.getMessage() != null?e.getMessage():"")+".");
-	}
-	
-	//Couldn't verify object
-	throw new IllegalArgumentException(
-		this.getClass().getName()+" verify not implemented for parameters: target="+obj+" row="+row+" col="+col+".");
-}
 }

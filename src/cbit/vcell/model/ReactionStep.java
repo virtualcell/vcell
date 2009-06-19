@@ -9,22 +9,26 @@ import java.beans.*;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
-import cbit.util.*;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for
@@ -61,9 +65,9 @@ public abstract class ReactionStep
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Kinetics fieldKinetics = null;
-	private transient cbit.vcell.model.Model model = null;
+	private transient Model model = null;
 	private ChargeCarrierValence fieldChargeCarrierValence = null;  // see constructor
-	private cbit.vcell.model.ReactionParticipant[] fieldReactionParticipants = new ReactionParticipant[0];
+	private ReactionParticipant[] fieldReactionParticipants = new ReactionParticipant[0];
 	private ReactionNameScope nameScope = null; // see constructor
 	private MIRIAMAnnotation miriamAnnotation;
 
@@ -72,7 +76,7 @@ public abstract class ReactionStep
 		public ReactionNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -81,14 +85,14 @@ public abstract class ReactionStep
 		public String getName() {
 			return TokenMangler.fixTokenStrict(ReactionStep.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			if (ReactionStep.this.model != null){
 				return ReactionStep.this.model.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return ReactionStep.this;
 		}
 	}
@@ -218,7 +222,7 @@ protected boolean compareEqual0(ReactionStep rs) {
 		return false;
 	}
 	
-	if (!org.vcell.util.Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
+	if (!Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getAnnotation(), rs.getAnnotation())){
@@ -264,13 +268,13 @@ public void fireVetoableChange(
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public abstract void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception;
+public abstract void fromTokens(CommentStringTokenizer tokens, Model model) throws Exception;
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 10:26:42 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(Vector issueList) {
+public void gatherIssues(Vector<Issue> issueList) {
 	
 	if (fieldKinetics!=null){
 		fieldKinetics.gatherIssues(issueList);
@@ -286,7 +290,7 @@ public ChargeCarrierValence getChargeCarrierValence() {
 }
 public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException
 {
-	cbit.vcell.parser.SymbolTableEntry localSTE = getLocalEntry(identifier);
+	SymbolTableEntry localSTE = getLocalEntry(identifier);
 	if (localSTE != null && !(localSTE instanceof Kinetics.UnresolvedParameter)){
 		return localSTE;
 	}
@@ -446,6 +450,11 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 				}
 				return null;
 			}
+
+			public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+				entryMap.put(sizeParameter.getName(), sizeParameter);
+				ReactionStep.this.getEntries(entryMap);				
+			}
 		};
 		
 		LumpedKinetics lumpedKinetics = (LumpedKinetics)getKinetics();
@@ -487,7 +496,7 @@ public ReactionParticipant getReactionParticipantFromSymbol(String reactParticip
  * @return The reactionParticipants property value.
  * @see #setReactionParticipants
  */
-public cbit.vcell.model.ReactionParticipant[] getReactionParticipants() {
+public ReactionParticipant[] getReactionParticipants() {
 	return fieldReactionParticipants;
 }
 /**
@@ -501,7 +510,7 @@ public ReactionParticipant getReactionParticipants(int index) {
 }
 public ReactionParticipant[] getReactionParticipants(Species species, Structure structure){
 	ReactionParticipant rpArray[] = getReactionParticipants();
-	Vector rpVector = new Vector();
+	Vector<ReactionParticipant> rpVector = new Vector<ReactionParticipant>();
 
 	for (int i = 0; i < rpArray.length; i++) {
 		if (species.compareEqual(rpArray[i].getSpecies()) &&
@@ -764,8 +773,8 @@ public void setPhysicsOptions(int physicsOptions) throws java.beans.PropertyVeto
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getReactionParticipants
  */
-public void setReactionParticipants(cbit.vcell.model.ReactionParticipant[] reactionParticipants) throws java.beans.PropertyVetoException {
-	cbit.vcell.model.ReactionParticipant[] oldValue = fieldReactionParticipants;
+public void setReactionParticipants(ReactionParticipant[] reactionParticipants) throws java.beans.PropertyVetoException {
+	ReactionParticipant[] oldValue = fieldReactionParticipants;
 	fireVetoableChange("reactionParticipants", oldValue, reactionParticipants);
 	
 	if (oldValue!=null){
@@ -860,4 +869,62 @@ public String getAnnotation() {
 public void setAnnotation(String annotation) {
 	this.annotation = annotation;
 }
+
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+	for (SymbolTableEntry ste : getKinetics().getProxyParameters()) {
+		entryMap.put(ste.getName(), ste);
+	}
+	
+	for (SymbolTableEntry ste : getKinetics().getUnresolvedParameters()) {
+		entryMap.put(ste.getName(), ste);
+	}
+	
+	for (SymbolTableEntry ste : getKinetics().getKineticsParameters()) {
+		entryMap.put(ste.getName(), ste);
+	}
+	entryMap.put(getChargeCarrierValence().getName(), getChargeCarrierValence());
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);
+}
+
+public SymbolTableEntryFilter getSymbolTableEntryFilter() {
+	SymbolTableEntryFilter stef = new SymbolTableEntryFilter() {		
+		public boolean accept(SymbolTableEntry ste) {		
+			if (ste instanceof StructureSize) {
+				if (((StructureSize)ste).getStructure() != structure) {
+					return false;
+				}
+			} else {			
+				if (structure instanceof Membrane) {
+					Membrane membrane = (Membrane)structure;				
+					if (ste instanceof SpeciesContext) {	
+						Structure entryStructure = ((SpeciesContext)ste).getStructure();
+						if (entryStructure != membrane && entryStructure != membrane.getInsideFeature() && entryStructure != membrane.getOutsideFeature()) {
+							return false;
+						}
+					} else if (ste instanceof MembraneVoltage) {
+						if (((MembraneVoltage)ste).getMembrane() != membrane) {
+							return false;
+						}
+					}					
+				} else {
+					if (ste instanceof SpeciesContext) {
+						Structure entryStructure = ((SpeciesContext)ste).getStructure();
+						if (entryStructure != structure) {
+							return false;
+						}
+					} else if (ste instanceof MembraneVoltage) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+	};
+	return stef;
+}
+
 }
