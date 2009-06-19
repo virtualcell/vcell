@@ -8,6 +8,7 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -126,8 +127,9 @@ protected void menuAction(Shape shape, String menuAction) {
 	}else if (menuAction.equals(PASTE_MENU_ACTION) || menuAction.equals(PASTE_NEW_MENU_ACTION)){
 		if (shape instanceof StructureShape){
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
+			IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 			if(species != null){
-				pasteSpecies(species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION));
+				pasteSpecies(species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
 			}
 		}
 	}else if (menuAction.equals(PROPERTIES_MENU_ACTION)){

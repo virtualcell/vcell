@@ -8,6 +8,7 @@ import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
 import java.awt.event.*;
 import java.awt.*;
+import java.util.IdentityHashMap;
 
 import cbit.vcell.model.*;
 import cbit.gui.*;
@@ -590,12 +591,18 @@ protected void menuAction(Shape shape, String menuAction) {
 			//See if Species
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 			if(species != null){
-				pasteSpecies(species,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION));
+				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
+				pasteSpecies(species,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
 			}
 			//See if ReactionStep[]
 			ReactionStep[] reactionStepArr = (ReactionStep[])VCellTransferable.getFromClipboard(VCellTransferable.REACTIONSTEP_ARRAY_FLAVOR);
 			if(reactionStepArr != null){
-				pasteReactionSteps(reactionStepArr,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION));
+				try {
+					pasteReactionSteps(reactionStepArr,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), getGraphPane());
+				} catch (Exception e) {
+					e.printStackTrace(System.out);
+					cbit.vcell.client.PopupGenerator.showErrorDialog("Error while pasting reaction:\n" + e.getMessage());
+				}
 			}
 		}
 	}else if (menuAction.equals(DELETE_MENU_ACTION) || menuAction.equals(CUT_MENU_ACTION)){
@@ -608,7 +615,9 @@ protected void menuAction(Shape shape, String menuAction) {
 			if (shape instanceof ReactionStepShape){
 				ReactionStep[] reactionStepArr = getReactionStepArray(shape,menuAction);
 				if(reactionStepArr != null){
-					VCellTransferable.sendToClipboard(reactionStepArr);
+					if (menuAction.equals(CUT_MENU_ACTION)){
+						VCellTransferable.sendToClipboard(reactionStepArr);
+					}
 				}
 				for(int i = 0;i<reactionStepArr.length;i+= 1){
 					getReactionCartoon().getModel().removeReactionStep(reactionStepArr[i]);
@@ -652,10 +661,10 @@ protected void menuAction(Shape shape, String menuAction) {
 			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
 		}
 	}else if(menuAction.equals(ANNOTATE_MENU_ACTION)){
-		if(shape instanceof SimpleReactionShape){
+		if(shape instanceof ReactionStepShape){
 			//MIRIAMHelper.showMIRIAMAnnotationDialog(((SimpleReactionShape)shape).getReactionStep());
 			//System.out.println("Menu action annotate activated...");
-			ReactionStep rs = ((SimpleReactionShape)shape).getReactionStep();
+			ReactionStep rs = ((ReactionStepShape)shape).getReactionStep();
 			try{
 				String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(getGraphPane(), rs.getAnnotation());
 				rs.setAnnotation(newAnnotation);
