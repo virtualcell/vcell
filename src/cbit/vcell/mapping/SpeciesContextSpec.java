@@ -1,12 +1,15 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -15,8 +18,10 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
@@ -24,18 +29,19 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, Serializable {
+public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable {
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public SpeciesContextSpecNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -44,25 +50,25 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.
 		public String getName() {
 			return SpeciesContextSpec.this.getSpeciesContext().getName()+"_scs";
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			if (SpeciesContextSpec.this.simulationContext != null){
 				return SpeciesContextSpec.this.simulationContext.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return SpeciesContextSpec.this;
 		}
 	}
 
-	public class SpeciesContextSpecParameter extends cbit.vcell.model.Parameter implements ExpressionContainer {
+	public class SpeciesContextSpecParameter extends Parameter implements ExpressionContainer {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
- 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+ 		private VCUnitDefinition fieldUnitDefinition = null;
 
-		public SpeciesContextSpecParameter(String parmName, cbit.vcell.parser.Expression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
+		public SpeciesContextSpecParameter(String parmName, Expression argExpression, int argRole, VCUnitDefinition argUnitDefinition, String argDescription) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -76,7 +82,7 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.
 			setDescription(argDescription);
 		}
 
-		public boolean compareEqual(org.vcell.util.Matchable obj) {
+		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof SpeciesContextSpecParameter)){
 				return false;
 			}
@@ -107,7 +113,7 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.
 			return false;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 		
@@ -121,12 +127,15 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.
 					public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
 						SymbolTableEntry ste = SpeciesContextSpec.this.getEntry(identifierString);
 						if (ste instanceof SpeciesContextSpecParameter) {
-							throw new ExpressionBindingException("\nCannot use one speciesContextSpec parameter (e.g., diff, initConc, Vel_X, etc.) in another speciesContextSpec parameter expression.");
+							throw new ExpressionBindingException("\nCannot use a speciesContextSpec parameter (e.g., diff, initConc, Vel_X, etc.) in another speciesContextSpec parameter expression.");
 						}
 						return ste;
 					}
-				}
-				);
+
+					public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+						SpeciesContextSpec.this.getEntries(entryMap);
+					}
+				});
 			}
 			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
@@ -134,7 +143,7 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 		
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 		
@@ -270,18 +279,18 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, cbit.vcell.
 	
 	public static final int NUM_ROLES		= 12;
 	public static final String RoleTags[] = {
-		cbit.vcell.model.VCMODL.InitialConcentration,
-		cbit.vcell.model.VCMODL.DiffusionRate,
-		cbit.vcell.model.VCMODL.BoundaryConditionXm,
-		cbit.vcell.model.VCMODL.BoundaryConditionXp,
-		cbit.vcell.model.VCMODL.BoundaryConditionYm,
-		cbit.vcell.model.VCMODL.BoundaryConditionYp,
-		cbit.vcell.model.VCMODL.BoundaryConditionZm,
-		cbit.vcell.model.VCMODL.BoundaryConditionZp,
-		cbit.vcell.model.VCMODL.InitialCount,
-		cbit.vcell.model.VCMODL.VelocityX,
-		cbit.vcell.model.VCMODL.VelocityY,
-		cbit.vcell.model.VCMODL.VelocityZ
+		VCMODL.InitialConcentration,
+		VCMODL.DiffusionRate,
+		VCMODL.BoundaryConditionXm,
+		VCMODL.BoundaryConditionXp,
+		VCMODL.BoundaryConditionYm,
+		VCMODL.BoundaryConditionYp,
+		VCMODL.BoundaryConditionZm,
+		VCMODL.BoundaryConditionZp,
+		VCMODL.InitialCount,
+		VCMODL.VelocityX,
+		VCMODL.VelocityY,
+		VCMODL.VelocityZ
 	};
 	public static final String RoleNames[] = {
 		"initConc",
@@ -528,7 +537,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 10:03:46 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(java.util.Vector issueVector) {
+public void gatherIssues(Vector<Issue> issueVector) {
 	//
 	// add constraints (simpleBounds) for predefined parameters
 	//
@@ -536,7 +545,7 @@ public void gatherIssues(java.util.Vector issueVector) {
 		RealInterval simpleBounds = parameterBounds[fieldParameters[i].getRole()];
 		if (simpleBounds!=null){
 			String parmName = fieldParameters[i].getNameScope().getName()+"."+fieldParameters[i].getName();
-			issueVector.add(new cbit.vcell.model.SimpleBoundsIssue(fieldParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
+			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
 }
@@ -613,9 +622,9 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getVelocityZParameter() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -666,11 +675,11 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getInitialCountParameter()
 /**
  * Insert the method's description here.
  * Creation date: (12/8/2003 11:46:37 AM)
- * @return cbit.vcell.parser.SymbolTableEntry
+ * @return SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+	SymbolTableEntry ste = null;
 
 	ste = ReservedSymbol.fromString(identifier);
 	if (ste!=null){
@@ -696,7 +705,7 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * Creation date: (12/8/2003 11:46:37 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -802,7 +811,7 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getParameterFromRole(int r
  * @return The parameters property value.
  * @see #setParameters
  */
-public cbit.vcell.model.Parameter[] getParameters() {
+public Parameter[] getParameters() {
 	return fieldParameters;
 }
 
@@ -813,9 +822,9 @@ public cbit.vcell.model.Parameter[] getParameters() {
  * @param index The index value into the property array.
  * @see #setParameters
  */
-public cbit.vcell.model.Parameter getParameter(int index) {
+public Parameter getParameter(int index) {
 //	please reference getNumDisplayableParameters()(hardcoded number of parameters) to get more understanding.
-	cbit.vcell.model.Parameter param = null;
+	Parameter param = null;
 	if(index == ROLE_InitialConcentration)//means take the initial conidtion parameter and concentration is being used
 	{
 		param = getInitialConditionParameter();
@@ -1021,13 +1030,13 @@ public final boolean isEnableDiffusing() {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, org.vcell.util.DataAccessException, java.beans.PropertyVetoException {
+public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, DataAccessException, java.beans.PropertyVetoException {
 	resetDefaults();
 	
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new org.vcell.util.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+		throw new DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
 	}			
 	while (tokens.hasMoreTokens()){
 		token = tokens.nextToken();
@@ -1081,7 +1090,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 			continue;
 		}
 
-		throw new org.vcell.util.DataAccessException("unexpected identifier "+token);
+		throw new DataAccessException("unexpected identifier "+token);
 	}
 }
 
@@ -1302,5 +1311,19 @@ public SimulationContext getSimulationContext() {
 	return simulationContext;
 }
 
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {	
+	for (SymbolTableEntry ste : fieldProxyParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+	for (SymbolTableEntry ste : fieldParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+	ReservedSymbol.getAll(entryMap, true, true);
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);		
+}
 
 }

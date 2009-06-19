@@ -11,7 +11,9 @@ import javax.swing.JDesktopPane;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.Kinetics;
@@ -39,7 +41,7 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private ModelParameterTableModel ivjmodelParameterTableModel = null;
-	private org.vcell.util.gui.sorttable.JSortTable ivjScrollPaneTable = null;
+	private JSortTable ivjScrollPaneTable = null;
 	private cbit.vcell.model.Model fieldModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private cbit.vcell.model.Model ivjmodel1 = null;
@@ -52,7 +54,7 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
-	private org.vcell.util.gui.sorttable.JSortTable ivjthis12 = null;
+	private JSortTable ivjthis12 = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -424,7 +426,6 @@ private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
 			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 		} catch (java.lang.Throwable ivjExc) {
@@ -934,6 +935,7 @@ public static void main(java.lang.String[] args) {
 private void modelParameterPanel_Initialize() {
 	
 	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultEditor(cbit.vcell.parser.ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable()));
 	
 	getmodelParameterTableModel().addPropertyChangeListener(
 		new java.beans.PropertyChangeListener(){

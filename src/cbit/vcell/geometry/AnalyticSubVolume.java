@@ -4,8 +4,8 @@ package cbit.vcell.geometry;
  * All rights reserved.
 ©*/
 import java.util.*;
-import java.io.*;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
@@ -78,7 +78,7 @@ public boolean compareEqual(Matchable obj) {
 	}
 	AnalyticSubVolume sv = (AnalyticSubVolume)obj;
 
-	if (!org.vcell.util.Compare.isEqual(exp,sv.exp)){
+	if (!Compare.isEqual(exp,sv.exp)){
 		return false;
 	}
 
@@ -163,5 +163,10 @@ public void setExpression(Expression exp) throws ExpressionBindingException {
 //	if (geometry!=null){
 //		geometry.forceNotifyObservers(this);
 //	}
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	ReservedVariable.getAll(entryMap);
 }
 }

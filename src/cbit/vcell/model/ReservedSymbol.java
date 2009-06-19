@@ -7,6 +7,7 @@ import cbit.vcell.parser.*;
 
 import java.beans.PropertyVetoException;
 import java.io.*;
+import java.util.Map;
 import java.util.Set;
 
 import cbit.vcell.units.VCUnitDefinition;
@@ -28,27 +29,91 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
    private String name = null;
    private Double constantValue = null;
    private String description = null;
-   private cbit.vcell.units.VCUnitDefinition unitDefinition = null;
+   private VCUnitDefinition unitDefinition = null;
 
+   private final static ReservedSymbol[] otherReservedSymbols = {
+	   TEMPERATURE,
+	   GAS_CONSTANT,
+	   FARADAY_CONSTANT,
+	   FARADAY_CONSTANT_NMOLE,
+	   KMOLE,
+	   N_PMOLE,
+	   KMILLIVOLTS,
+	   K_GHK,
+   };
+   
    private static NameScope nameScope = new ReservedSymbol.ReservedSymbolNameScope();
+   
+   public static class SpatialSymbolTableEntryFilter implements SymbolTableEntryFilter {
+	   int dimension = 1;
+	   public SpatialSymbolTableEntryFilter(int dim) {
+		   dimension = dim;
+	   }
+		public boolean accept(SymbolTableEntry ste) {
+			if (ste.equals(X) || dimension > 1 && ste.equals(Y) || dimension > 2 && ste.equals(Z)) {
+				return true;
+			}
+			return false;
+		}	   
+   }
 
+   public static class ReservedSymbolTable implements ScopedSymbolTable {
+		private boolean bIncludeTime = false;
+		/**
+		 * ReservedSymbolTable constructor comment.
+		 */
+		public ReservedSymbolTable(boolean bIncludeTime) {
+			this.bIncludeTime = bIncludeTime;
+		}
+		/**
+		 * getEntry method comment.
+		 */
+		public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+			SymbolTableEntry ste;
+			
+			ste = ReservedSymbol.fromString(identifierString);
+			if (ste != null){
+				if (((ReservedSymbol)ste).isTIME() && !bIncludeTime){
+					throw new ExpressionBindingException("expression must not be a function of time");
+				}else{
+					return ste;
+				}
+			}	
+			
+			throw new ExpressionBindingException("unresolved symbol <"+identifierString+">");
+		}
+		public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+			ReservedSymbol.getAll(entryMap, bIncludeTime, true);
+			
+		}
+		public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+			getEntries(entryMap);
+			
+		}
+		public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+			return getEntry(identifier);
+		}
+		public NameScope getNameScope() {
+			return nameScope;
+		}
+   }
 	public static class ReservedSymbolNameScope extends BioNameScope {
 		private NameScope children[] = new NameScope[0];
 		public ReservedSymbolNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			return children;
 		}
 		public String getName() {
 			return "ReservedSymbols";
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			//System.out.println("ModelNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
-			return null;
+		public ScopedSymbolTable getScopedSymbolTable() {
+			return new ReservedSymbolTable(true);
 		}
 		public boolean isPeer(NameScope nameScope){
 			if (nameScope instanceof BioNameScope){
@@ -59,7 +124,7 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 		}
 	}
 
-private ReservedSymbol(String argName, String argDescription, cbit.vcell.units.VCUnitDefinition argUnitDefinition, Double argConstantValue){
+private ReservedSymbol(String argName, String argDescription, VCUnitDefinition argUnitDefinition, Double argConstantValue){
 	this.name = argName;
 	this.unitDefinition = argUnitDefinition;
 	this.constantValue = argConstantValue;
@@ -85,18 +150,27 @@ public boolean equals(Object obj) {
 }
 
 public static void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries){
+	for (ReservedSymbol rs : otherReservedSymbols) {
+		symbolTableEntries.add(rs);	
+	}
 	symbolTableEntries.add(TIME);
 	symbolTableEntries.add(X);
 	symbolTableEntries.add(Y);
 	symbolTableEntries.add(Z);
-	symbolTableEntries.add(TEMPERATURE);
-	symbolTableEntries.add(GAS_CONSTANT);
-	symbolTableEntries.add(FARADAY_CONSTANT);
-	symbolTableEntries.add(FARADAY_CONSTANT_NMOLE);
-	symbolTableEntries.add(KMOLE);
-	symbolTableEntries.add(N_PMOLE);
-	symbolTableEntries.add(KMILLIVOLTS);
-	symbolTableEntries.add(K_GHK);
+}
+
+public static void getAll(Map<String, SymbolTableEntry> entryMap, boolean bIncludeTime, boolean bIncludeSpace){
+	for (ReservedSymbol rs : otherReservedSymbols) {
+		entryMap.put(rs.getName(), rs);			
+	}
+	if (bIncludeTime) {
+		entryMap.put(TIME.getName(), TIME);
+	}
+	if (bIncludeSpace) {
+		entryMap.put(X.getName(), X);
+		entryMap.put(Y.getName(), Y);
+		entryMap.put(Z.getName(), Z);
+	}
 }
 
 public static ReservedSymbol fromString(String symbolName) {
@@ -195,7 +269,7 @@ public NameScope getNameScope() {
  * Creation date: (3/31/2004 2:11:57 PM)
  * @return cbit.vcell.units.VCUnitDefinition
  */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+public VCUnitDefinition getUnitDefinition() {
 	return unitDefinition;
 }
 
@@ -418,5 +492,6 @@ public void setName(String name) throws PropertyVetoException {
 
 public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
 	throw new RuntimeException("cannot change unit of a reserved symbol");
-}      
+}
+
 }

@@ -362,7 +362,7 @@ public String[] getScannedConstantNames() {
  * Creation date: (9/30/2004 8:48:43 PM)
  * @return cbit.vcell.solver.Simulation
  */
-private Simulation getSimulation() {
+public Simulation getSimulation() {
 	return simulation;
 }
 

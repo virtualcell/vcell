@@ -18,31 +18,35 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.BevelBorderBean;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
 
+import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.math.Variable;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
-
 
 /**
  * This type was created in VisualAge.
  */
 public class InitialConditionsPanel extends javax.swing.JPanel {
 	private SpeciesContextSpecPanel ivjSpeciesContextSpecPanel = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
@@ -94,8 +98,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				connPtoP3SetTarget();
 				updateTopScrollPanel();
 			}
-			if (evt.getSource() == InitialConditionsPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) 
+			
+			if (evt.getSource() == InitialConditionsPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) {
 				connPtoP5SetTarget();
+			}
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == InitialConditionsPanel.this.getselectionModel1()) 
@@ -256,7 +262,7 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM2(SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -294,7 +300,7 @@ private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM6(SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -370,6 +376,7 @@ private void connPtoP4SetTarget() {
 	try {
 		getScrollPaneTable().setModel(getSpeciesContextSpecsTableModel());
 		getScrollPaneTable().createDefaultColumnsFromModel();
+		getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable()));
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -750,7 +757,6 @@ private javax.swing.JTable getScrollPaneTable() {
 			ivjScrollPaneTable = new javax.swing.JTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			ivjScrollPaneTable.setAutoCreateColumnsFromModel(true);
 			// user code begin {1}
@@ -767,7 +773,7 @@ private javax.swing.JTable getScrollPaneTable() {
 /**
  * Comment
  */
-public cbit.vcell.mapping.SpeciesContextSpec getSelectedSpeciesContextSpec(int index) {
+public SpeciesContextSpec getSelectedSpeciesContextSpec(int index) {
 	if (getSimulationContext()!=null && index >= 0){
 		return getSimulationContext().getReactionContext().getSpeciesContextSpecs(index);
 	}
@@ -792,7 +798,7 @@ private javax.swing.ListSelectionModel getselectionModel1() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -802,7 +808,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -817,7 +823,7 @@ private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
 private SpeciesContextSpecPanel getSpeciesContextSpecPanel() {
 	if (ivjSpeciesContextSpecPanel == null) {
 		try {
-			ivjSpeciesContextSpecPanel = new cbit.vcell.mapping.gui.SpeciesContextSpecPanel();
+			ivjSpeciesContextSpecPanel = new SpeciesContextSpecPanel();
 			ivjSpeciesContextSpecPanel.setName("SpeciesContextSpecPanel");
 			// user code begin {1}
 			// user code end
@@ -838,7 +844,7 @@ private SpeciesContextSpecPanel getSpeciesContextSpecPanel() {
 private SpeciesContextSpecsTableModel getSpeciesContextSpecsTableModel() {
 	if (ivjSpeciesContextSpecsTableModel == null) {
 		try {
-			ivjSpeciesContextSpecsTableModel = new cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel();
+			ivjSpeciesContextSpecsTableModel = new SpeciesContextSpecsTableModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -872,7 +878,6 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	getScrollPaneTable().addMouseListener(ivjEventHandler);
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
@@ -946,8 +951,8 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 				}else{
 					for(int j=0;j<scs.getParameters().length;j+= 1){
 						SpeciesContextSpec.SpeciesContextSpecParameter scsp = (SpeciesContextSpec.SpeciesContextSpecParameter)scs.getParameters()[j];
-						if(cbit.vcell.desktop.VCellCopyPasteHelper.isSCSRoleForDimension(scsp.getRole(),getSimulationContext().getGeometry().getDimension())){
-							cbit.vcell.parser.Expression scspExpression = scsp.getExpression();
+						if(VCellCopyPasteHelper.isSCSRoleForDimension(scsp.getRole(),getSimulationContext().getGeometry().getDimension())){
+							Expression scspExpression = scsp.getExpression();
 							sb.append(scs.getSpeciesContext().getName()+"\t"+scsp.getName()+"\t"+(scspExpression != null?scspExpression.infix():"")+"\n");
 							if(scspExpression != null){// "Default" boundary conditions can't be copied
 								primarySymbolTableEntriesV.add(scsp);
@@ -963,14 +968,14 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			VCellTransferable.ResolvedValuesSelection rvs =
 				new VCellTransferable.ResolvedValuesSelection(
-					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
-					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
-					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
+					(SymbolTableEntry[])BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
+					(SymbolTableEntry[])BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
+					(Expression[])BeanUtils.getArray(resolvedValuesV,Expression.class),
 					sb.toString());
 
-			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);
+			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("InitialConditionsPanel Copy failed.  "+e.getMessage());
+			PopupGenerator.showErrorDialog("InitialConditionsPanel Copy failed.  "+e.getMessage());
 		}
 	}
 }
@@ -986,7 +991,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 	Vector<SpeciesContextSpec.SpeciesContextSpecParameter> changedParametersV = new Vector<SpeciesContextSpec.SpeciesContextSpecParameter>();
 	try{
 		if(actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()){
-			Object pasteThis = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
+			Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 			
 			MathMapping mm = null;
 			MathSymbolMapping msm = null;
@@ -1024,20 +1029,20 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 								clipboardBiologicalParameter = (SpeciesContextSpec.SpeciesContextSpecParameter)rvs.getAlternateSymbolTableEntries()[j];
 							}
 							if(clipboardBiologicalParameter == null){
-								cbit.vcell.math.Variable pastedMathVariable = null;
-								if(rvs.getPrimarySymbolTableEntries()[j] instanceof cbit.vcell.math.Variable){
-									pastedMathVariable = (cbit.vcell.math.Variable)rvs.getPrimarySymbolTableEntries()[j];
+								Variable pastedMathVariable = null;
+								if(rvs.getPrimarySymbolTableEntries()[j] instanceof Variable){
+									pastedMathVariable = (Variable)rvs.getPrimarySymbolTableEntries()[j];
 								}else if(rvs.getAlternateSymbolTableEntries() != null &&
-										rvs.getAlternateSymbolTableEntries()[j] instanceof cbit.vcell.math.Variable){
-									pastedMathVariable = (cbit.vcell.math.Variable)rvs.getAlternateSymbolTableEntries()[j];
+										rvs.getAlternateSymbolTableEntries()[j] instanceof Variable){
+									pastedMathVariable = (Variable)rvs.getAlternateSymbolTableEntries()[j];
 								}
 								if(pastedMathVariable != null){
-									cbit.vcell.math.Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
+									Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
 									if(localMathVariable == null){
 										localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+"_init");
 									}
 									if(localMathVariable != null){
-										cbit.vcell.parser.SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);
+										SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);
 										for(int k =0;k<localBiologicalSymbolArr.length;k+= 1){
 											if(localBiologicalSymbolArr[k] instanceof SpeciesContext && scs.getSpeciesContext() == localBiologicalSymbolArr[k]){
 												pasteDestination = scs.getInitialConditionParameter();//need to change
@@ -1071,7 +1076,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 								changedParametersV.add(pasteDestination);
 								newExpressionsV.add(rvs.getExpressionValues()[j]);
 								pasteDescriptionsV.add(
-									cbit.vcell.desktop.VCellCopyPasteHelper.formatPasteList(
+									VCellCopyPasteHelper.formatPasteList(
 										scs.getSpeciesContext().getName(),
 										pasteDestination.getName(),
 										pasteDestination.getExpression().infix(),
@@ -1091,7 +1096,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog("Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
 		return;
 	}
 
@@ -1100,17 +1105,17 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 		if(pasteDescriptionsV.size() > 0){
 			String[] pasteDescriptionArr = new String[pasteDescriptionsV.size()];
 			pasteDescriptionsV.copyInto(pasteDescriptionArr);
-			cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter[] changedParametersArr =
-				new cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter[changedParametersV.size()];
+			SpeciesContextSpec.SpeciesContextSpecParameter[] changedParametersArr = 
+				new SpeciesContextSpec.SpeciesContextSpecParameter[changedParametersV.size()];
 			changedParametersV.copyInto(changedParametersArr);
-			cbit.vcell.parser.Expression[] newExpressionsArr = new cbit.vcell.parser.Expression[newExpressionsV.size()];
+			Expression[] newExpressionsArr = new Expression[newExpressionsV.size()];
 			newExpressionsV.copyInto(newExpressionsArr);
-			cbit.vcell.desktop.VCellCopyPasteHelper.chooseApplyPaste(pasteDescriptionArr,changedParametersArr,newExpressionsArr);
+			VCellCopyPasteHelper.chooseApplyPaste(pasteDescriptionArr,changedParametersArr,newExpressionsArr);
 		}else{
-			cbit.vcell.client.PopupGenerator.showInfoDialog("No paste items match the destination (no changes made).");
+			PopupGenerator.showInfoDialog("No paste items match the destination (no changes made).");
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog("Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
 	}
 
 }
@@ -1148,7 +1153,7 @@ public static void main(java.lang.String[] args) {
  */
 private void scrollPaneTable_MouseButton(java.awt.event.MouseEvent mouseEvent) {
 	if(mouseEvent.isPopupTrigger()){
-		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
+		Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 
 		boolean bPastable =
 			//obj instanceof cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection ||
@@ -1202,7 +1207,7 @@ private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
@@ -1214,10 +1219,10 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			SimulationContext oldValue = getsimulationContext1();
 			ivjsimulationContext1 = newValue;
 			connPtoP3SetSource();
 			connEtoM2(ivjsimulationContext1);
@@ -1244,8 +1249,8 @@ private void showCustomEditor(java.awt.event.MouseEvent mouseEvent) {
 		int col = getScrollPaneTable().getSelectedColumn();
 		switch (getScrollPaneTable().convertColumnIndexToModel(col)) {
 			case SpeciesContextSpecsTableModel.COLUMN_INITIAL: {
-				org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
-				ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
+				BevelBorderBean ivjLocalBorder;
+				ivjLocalBorder = new BevelBorderBean();
 				ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 				ivjLocalBorder.setBevelType(1);
 				final JTextArea  txtArea = new javax.swing.JTextArea();
@@ -1361,6 +1366,5 @@ private void showCustomEditor(java.awt.event.MouseEvent mouseEvent) {
 		}
 	}
 }
-
 
 }

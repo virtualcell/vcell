@@ -1,18 +1,27 @@
 package cbit.vcell.mapping;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ReservedSymbol;
+
+import java.util.Map;
 import java.util.Vector;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
-import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntryFilter;
+import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.model.VCMODL;
@@ -21,25 +30,25 @@ import cbit.vcell.model.VCMODL;
  * Creation date: (4/8/2002 11:14:58 AM)
  * @author: Anuradha Lakshminarayana
  */
-public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+public abstract class ElectricalStimulus implements Matchable, ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
 
 	private static final String GENERAL_PROTOCOL = "General_Protocol";
 	
 	public class ElectricalStimulusNameScope extends BioNameScope {
-		private cbit.vcell.parser.NameScope[] children = new cbit.vcell.parser.NameScope[0];
+		private NameScope[] children = new NameScope[0];
 		public ElectricalStimulusNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			return children;
 		}
 		public String getName() {
-			return org.vcell.util.TokenMangler.fixTokenStrict(ElectricalStimulus.this.getName());
+			return TokenMangler.fixTokenStrict(ElectricalStimulus.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			return ElectricalStimulus.this.simulationContext.getNameScope();
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return ElectricalStimulus.this;
 		}
 	}
@@ -70,7 +79,7 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cb
 			this.fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
-		public boolean compareEqual(org.vcell.util.Matchable obj) {
+		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof ElectricalStimulusParameter)){
 				return false;
 			}
@@ -94,10 +103,10 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cb
 		}
 
 		public boolean isExpressionEditable(){
-			if (ElectricalStimulus.this instanceof cbit.vcell.mapping.CurrentClampStimulus && getRole()==ElectricalStimulus.ROLE_Voltage){
+			if (ElectricalStimulus.this instanceof CurrentClampStimulus && getRole()==ElectricalStimulus.ROLE_Voltage){
 				return false;
 			}
-			if (ElectricalStimulus.this instanceof cbit.vcell.mapping.VoltageClampStimulus && getRole()==ElectricalStimulus.ROLE_Current){
+			if (ElectricalStimulus.this instanceof VoltageClampStimulus && getRole()==ElectricalStimulus.ROLE_Current){
 				return false;
 			}
 			return true;
@@ -119,7 +128,7 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cb
 			return -1;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldVCUnitDefinition;
 		}
 
@@ -135,8 +144,8 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cb
 			return ElectricalStimulus.this.getNameScope();
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldVCUnitDefinition;
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) {
+			VCUnitDefinition oldValue = fieldVCUnitDefinition;
 			fieldVCUnitDefinition = unitDefinition;
 			if (oldValue==unitDefinition){
 				return;
@@ -186,7 +195,7 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cb
 			setDescription("unresolved");
 		}
 
-		public boolean compareEqual(org.vcell.util.Matchable obj) {
+		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof UnresolvedParameter)){
 				return false;
 			}
@@ -233,8 +242,8 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, cb
 			return this.fieldParameterName; 
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
-			return cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
+		public VCUnitDefinition getUnitDefinition() {
+			return VCUnitDefinition.UNIT_TBD;
 		}
 
 		public NameScope getNameScope() {
@@ -351,7 +360,7 @@ public void addUnresolvedParameter(String parameterName) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-public ElectricalStimulusParameter addUserDefinedKineticsParameter(String parameterName, Expression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
+public ElectricalStimulusParameter addUserDefinedKineticsParameter(String parameterName, Expression expression, VCUnitDefinition unit) throws PropertyVetoException {
 	if (getParameter(parameterName)!=null){
 		throw new RuntimeException("parameter '"+parameterName+"' already exists");
 	}
@@ -424,17 +433,17 @@ private final void cleanupParameters() throws ExpressionException, PropertyVetoE
  * @return boolean
  * @param obj java.lang.Object
  */
-protected final boolean compareEqual0(org.vcell.util.Matchable obj) {
+protected final boolean compareEqual0(Matchable obj) {
 	if (obj instanceof ElectricalStimulus){
 		ElectricalStimulus es = (ElectricalStimulus)obj;
 		
-		if (!org.vcell.util.Compare.isEqual(getName(),es.getName())){
+		if (!Compare.isEqual(getName(),es.getName())){
 			return false;
 		}
-		if (!org.vcell.util.Compare.isEqualOrNull(getAnnotation(),es.getAnnotation())){
+		if (!Compare.isEqualOrNull(getAnnotation(),es.getAnnotation())){
 			return false;
 		}
-		if (!org.vcell.util.Compare.isEqual(getElectrode(),es.getElectrode())){
+		if (!Compare.isEqual(getElectrode(),es.getElectrode())){
 			return false;
 		}
 		
@@ -608,8 +617,8 @@ public Electrode getElectrode() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		if (ste instanceof ElectricalStimulusParameter){
 			ElectricalStimulusParameter esParm = (ElectricalStimulusParameter)ste;
@@ -622,6 +631,9 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	return getNameScope().getExternalEntry(identifierString,this);
 }
 
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {	
+	getNameScope().getExternalEntries(entryMap);
+}
 
 /**
  * Insert the method's description here.
@@ -629,10 +641,10 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+	SymbolTableEntry ste = null;
 
-	ste = cbit.vcell.model.ReservedSymbol.fromString(identifier);
+	ste = ReservedSymbol.fromString(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -645,6 +657,12 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 	return null;
 }
 
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+	ReservedSymbol.getAll(entryMap, true, true);
+	for (SymbolTableEntry ste : fieldElectricalStimulusParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+}
 
 /**
  * Gets the name property (java.lang.String) value.
@@ -661,7 +679,7 @@ public java.lang.String getName() {
  * Creation date: (4/6/2004 2:10:26 PM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return this.fieldNameScope;
 }
 
@@ -818,7 +836,7 @@ private boolean isReferenced(Parameter parm, int level) throws ExpressionExcepti
 				String[] symbols = exp.getSymbols();
 				if (symbols!=null){
 					for (int j=0;j<symbols.length;j++){
-						if (cbit.vcell.parser.AbstractNameScope.getStrippedIdentifier(symbols[j]).equals(parm.getName())){
+						if (AbstractNameScope.getStrippedIdentifier(symbols[j]).equals(parm.getName())){
 							bReferenced = true;
 							if (isReferenced(parentParm,level+1)){
 								return true;
@@ -838,13 +856,13 @@ private boolean isReferenced(Parameter parm, int level) throws ExpressionExcepti
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public final void parameterVCMLSet(org.vcell.util.CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
+public final void parameterVCMLSet(CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
 
 	if(tokens == null){
 		return;
 	}
 	
-	Vector esParametersV = new Vector();
+	Vector<ElectricalStimulusParameter> esParametersV = new Vector<ElectricalStimulusParameter>();
 	
 	if (!tokens.nextToken().equalsIgnoreCase(VCMODL.ElectricalStimulus) ||
 		!tokens.nextToken().equalsIgnoreCase(GENERAL_PROTOCOL) ||
@@ -874,7 +892,7 @@ public final void parameterVCMLSet(org.vcell.util.CommentStringTokenizer tokens)
 			Expression exp = new Expression(tokens);
 			
 			String unitsString = tokens.nextToken();
-			cbit.vcell.units.VCUnitDefinition unitDef = cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
+			VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;
 			if (unitsString.startsWith("[")){
 				while (!unitsString.endsWith("]")){
 					String tempToken = tokens.nextToken();
@@ -883,7 +901,7 @@ public final void parameterVCMLSet(org.vcell.util.CommentStringTokenizer tokens)
 				//
 				// now string starts with '[' and ends with ']'
 				//
-				unitDef = cbit.vcell.units.VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
+				unitDef = VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
 			}else{
 				tokens.pushToken(unitsString);
 			}
@@ -928,7 +946,7 @@ public final void parameterVCMLWrite(java.io.PrintWriter pw) {
 		for (int i=0;i<parameters.length;i++){
 			ElectricalStimulusParameter parm = parameters[i];
 			String roleName = RoleTags[parm.getRole()];
-			cbit.vcell.units.VCUnitDefinition unit = parm.getUnitDefinition();
+			VCUnitDefinition unit = parm.getUnitDefinition();
 			pw.println("\t\t\t"+
 				VCMODL.Parameter+" "+
 				roleName + " " +
@@ -1035,15 +1053,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (9/22/2003 9:51:49 AM)
@@ -1066,7 +1075,7 @@ protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-void removeUnresolvedParameters(cbit.vcell.parser.SymbolTable symbolTable) {
+void removeUnresolvedParameters(SymbolTable symbolTable) {
 	ElectricalStimulus.UnresolvedParameter unresolvedParms[] = (ElectricalStimulus.UnresolvedParameter[])fieldUnresolvedParameters.clone();
 	for (int i = 0; i < unresolvedParms.length; i++){
 		try {
@@ -1201,7 +1210,7 @@ public void resolveUndefinedUnits() {
 			for (int i=0;i<fieldElectricalStimulusParameters.length;i++){
 				if (fieldElectricalStimulusParameters[i].getUnitDefinition()==null){
 					return; // not ready to resolve units yet
-				}else if (fieldElectricalStimulusParameters[i].getUnitDefinition().compareEqual(cbit.vcell.units.VCUnitDefinition.UNIT_TBD)){
+				}else if (fieldElectricalStimulusParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
 					bAnyTBDUnits = true;
 				}
 			}
@@ -1209,7 +1218,7 @@ public void resolveUndefinedUnits() {
 			// try to resolve TBD units (will fail if units are inconsistent) ... but these errors are collected in Kinetics.getIssues().
 			//
 			if (bAnyTBDUnits){
-				cbit.vcell.units.VCUnitDefinition vcUnitDefinitions[] = cbit.vcell.parser.VCUnitEvaluator.suggestUnitDefinitions(fieldElectricalStimulusParameters);
+				VCUnitDefinition vcUnitDefinitions[] = VCUnitEvaluator.suggestUnitDefinitions(fieldElectricalStimulusParameters);
 				for (int i = 0; i < fieldElectricalStimulusParameters.length; i++){
 					if (!fieldElectricalStimulusParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
 						fieldElectricalStimulusParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
@@ -1297,7 +1306,7 @@ public void setParameterValue(ElectricalStimulusParameter parm, Expression exp) 
 	try {
 		ElectricalStimulusParameter newElectricalStimulusParameters[] = (ElectricalStimulusParameter[])fieldElectricalStimulusParameters.clone();
 		String symbols[] = exp.getSymbols(getNameScope());
-		Vector symbolsToAdd = new Vector();
+		Vector<String> symbolsToAdd = new Vector<String>();
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
 			if (getEntry(symbols[i])==null){
 				symbolsToAdd.add(symbols[i]);
@@ -1305,7 +1314,7 @@ public void setParameterValue(ElectricalStimulusParameter parm, Expression exp) 
 		}
 		for (int i = 0; i < symbolsToAdd.size(); i++){
 			newElectricalStimulusParameters = (ElectricalStimulusParameter[])BeanUtils.addElement(newElectricalStimulusParameters,
-				new ElectricalStimulusParameter((String)symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
+				new ElectricalStimulusParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,VCUnitDefinition.UNIT_TBD));
 		}
 		parm.setExpression(exp);
 		setElectricalStimulusParameters(newElectricalStimulusParameters);
@@ -1338,5 +1347,12 @@ private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters)
 
 
 public void vetoableChange(java.beans.PropertyChangeEvent e) throws PropertyVetoException {
+}
+
+public SymbolTableEntryFilter getSymbolTableEntryFilter() {
+	if (simulationContext == null) {
+		return null;
+	}
+	return simulationContext.getSymbolTableEntryFilter();
 }
 }

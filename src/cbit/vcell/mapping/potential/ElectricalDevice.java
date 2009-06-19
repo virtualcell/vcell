@@ -1,9 +1,15 @@
 package cbit.vcell.mapping.potential;
 import java.beans.PropertyVetoException;
+import java.util.Map;
 
-import cbit.vcell.math.Function;
+import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.parser.*;
-import cbit.vcell.math.VolVariable;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -13,7 +19,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public abstract class ElectricalDevice implements ScopedSymbolTable {
 	private String name = null;
 	private ElectricalDeviceNameScope nameScope = new ElectricalDeviceNameScope();
-	protected cbit.vcell.mapping.MathMapping mathMapping = null; // for determining NameScope parent only
+	protected MathMapping mathMapping = null; // for determining NameScope parent only
 	private Expression dependentVoltageExpression = null;
 
 	public static final int ROLE_TotalCurrent					= 0;
@@ -31,33 +37,33 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 	};
 	private ElectricalDevice.ElectricalDeviceParameter[] fieldParameters = null;
 	
-	public class ElectricalDeviceNameScope extends cbit.vcell.model.BioNameScope {
+	public class ElectricalDeviceNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public ElectricalDeviceNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// no children to return
 			//
 			return children;
 		}
 		public String getName() {
-			return org.vcell.util.TokenMangler.fixTokenStrict(ElectricalDevice.this.getName());
+			return TokenMangler.fixTokenStrict(ElectricalDevice.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			if (ElectricalDevice.this.mathMapping != null){
 				return ElectricalDevice.this.mathMapping.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return ElectricalDevice.this;
 		}
 	}
 
-	public class ElectricalDeviceParameter extends cbit.vcell.model.Parameter {
+	public class ElectricalDeviceParameter extends Parameter {
 
 		private int fieldParameterRole = -1;
 		private String fieldParameterName = null;
@@ -65,7 +71,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 		private VCUnitDefinition fieldVCUnitDefinition = null;
 
 
-		public ElectricalDeviceParameter(String parmName, cbit.vcell.parser.Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
+		public ElectricalDeviceParameter(String parmName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -77,7 +83,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 			fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
-		public boolean compareEqual(org.vcell.util.Matchable obj) {
+		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof ElectricalDeviceParameter)){
 				return false;
 			}
@@ -119,7 +125,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 			super.firePropertyChange("name", oldValue, name);
 		}
 
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
+		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
 			expression = new Expression(expression);
 			try {
 				expression.bindExpression(ElectricalDevice.this);
@@ -133,11 +139,11 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public Expression getExpression() {
 			return fieldParameterExpression;
 		}
 
@@ -166,7 +172,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 /**
  * ElectricalDevice constructor comment.
  */
-public ElectricalDevice(String argName, cbit.vcell.mapping.MathMapping argMathMapping) {
+public ElectricalDevice(String argName, MathMapping argMathMapping) {
 	this.name = argName;
 	this.mathMapping = argMathMapping;
 }
@@ -185,7 +191,7 @@ public abstract boolean getCalculateVoltage();
  * Creation date: (4/7/2004 12:49:17 PM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getDependentVoltageExpression() {
+public Expression getDependentVoltageExpression() {
 	return dependentVoltageExpression;
 }
 
@@ -193,9 +199,9 @@ public cbit.vcell.parser.Expression getDependentVoltageExpression() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -203,6 +209,16 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	return getNameScope().getExternalEntry(identifierString,this);
 }
 
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+	ReservedSymbol.getAll(entryMap, true, true);
+	for (SymbolTableEntry ste : fieldParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+}
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {	
+	getNameScope().getExternalEntries(entryMap);	
+}
 
 /**
  * Insert the method's description here.
@@ -220,8 +236,8 @@ public final SymbolTableEntry getCurrentSymbol() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	SymbolTableEntry ste = cbit.vcell.model.ReservedSymbol.fromString(identifier);
+public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -247,7 +263,7 @@ public final String getName() {
  * Creation date: (12/8/2003 12:47:06 PM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -355,7 +371,7 @@ public abstract boolean isVoltageSource();
  * Creation date: (4/7/2004 12:49:17 PM)
  * @param newDependentVoltageExpression cbit.vcell.parser.Expression
  */
-public void setDependentVoltageExpression(cbit.vcell.parser.Expression newDependentVoltageExpression) {
+public void setDependentVoltageExpression(Expression newDependentVoltageExpression) {
 	dependentVoltageExpression = newDependentVoltageExpression;
 }
 

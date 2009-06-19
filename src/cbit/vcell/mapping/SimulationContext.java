@@ -4,12 +4,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
@@ -17,11 +20,14 @@ import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
@@ -31,30 +37,33 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext
-	implements
-		org.vcell.util.document.Versionable, Matchable, cbit.vcell.document.SimulationOwner,
-		cbit.vcell.parser.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener,
-		java.io.Serializable,FieldFunctionContainer {
+public class SimulationContext implements Versionable, Matchable, SimulationOwner, 
+	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable,FieldFunctionContainer {
 
 	public class SimulationContextNameScope extends BioNameScope {
-		private transient cbit.vcell.parser.NameScope nameScopes[] = null;
+		private transient NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// return list of structureMappings and speciesContextSpecs
 			//
@@ -80,29 +89,29 @@ public class SimulationContext
 		public String getName() {
 			return TokenMangler.fixTokenStrict(SimulationContext.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			//System.out.println("SimulationContextNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return SimulationContext.this;
 		}
-		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+		public boolean isPeer(NameScope nameScope){
 			if (super.isPeer(nameScope)){
 				return true;
 			}
-			return ((nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+			return ((nameScope instanceof MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
 		}
 	}
 
 	public class SimulationContextParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
-		private cbit.vcell.parser.Expression fieldParameterExpression = null;
+		private Expression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
-		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+		private VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected SimulationContextParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		protected SimulationContextParameter(String argName, Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -148,12 +157,12 @@ public class SimulationContext
 			return true;
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws ExpressionException {
 			return this.fieldParameterExpression.evaluateConstant();
 		}      
 
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public Expression getExpression() {
 			return this.fieldParameterExpression;
 		}
 
@@ -168,7 +177,7 @@ public class SimulationContext
 		}   
 
 
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public NameScope getNameScope() {
 			return SimulationContext.this.nameScope;
 		}
 
@@ -176,18 +185,18 @@ public class SimulationContext
 			return this.fieldParameterRole;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
+			VCUnitDefinition oldValue = fieldUnitDefinition;
 			super.fireVetoableChange("unitDefinition", oldValue, unitDefinition);
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
-			cbit.vcell.parser.Expression oldValue = fieldParameterExpression;
+		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
+			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
@@ -212,12 +221,12 @@ public class SimulationContext
 	private java.lang.String fieldName = new String("NoName");
 	private java.lang.String fieldDescription = new String();
 	private double fieldTemperatureKelvin = 300;
-	private cbit.vcell.mapping.ElectricalStimulus[] fieldElectricalStimuli = new ElectricalStimulus[0];
+	private ElectricalStimulus[] fieldElectricalStimuli = new ElectricalStimulus[0];
 	private Electrode fieldGroundElectrode = null;
 	private SimulationContextNameScope nameScope = new SimulationContextNameScope();
 	private transient BioModel bioModel = null;
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
-	private cbit.vcell.modelopt.AnalysisTask[] fieldAnalysisTasks = null;
+	private AnalysisTask[] fieldAnalysisTasks = null;
 	private boolean isStoch;
 	private boolean bConcentration = true;
 
@@ -344,7 +353,7 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
  * This constructor differs with the previos one with one more boolean input parameter, which specifies whether
  * the new application is a stochastic application or not.
  */
-public SimulationContext(cbit.vcell.model.Model model, cbit.vcell.geometry.Geometry geometry, boolean bStoch) throws PropertyVetoException {
+public SimulationContext(Model model, Geometry geometry, boolean bStoch) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
 
@@ -364,11 +373,11 @@ public SimulationContext(cbit.vcell.model.Model model, cbit.vcell.geometry.Geome
  * @param analysisTasks The new value for the property.
  * @see #getAnalysisTasks
  */
-public void addAnalysisTask(cbit.vcell.modelopt.AnalysisTask analysisTask) throws PropertyVetoException {
+public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoException {
 	if (fieldAnalysisTasks==null){
-		setAnalysisTasks(new cbit.vcell.modelopt.AnalysisTask[] { analysisTask });
+		setAnalysisTasks(new AnalysisTask[] { analysisTask });
 	}else{
-		cbit.vcell.modelopt.AnalysisTask[] newAnalysisTasks = (cbit.vcell.modelopt.AnalysisTask[])BeanUtils.addElement(fieldAnalysisTasks,analysisTask);
+		AnalysisTask[] newAnalysisTasks = (AnalysisTask[])BeanUtils.addElement(fieldAnalysisTasks,analysisTask);
 		setAnalysisTasks(newAnalysisTasks);
 	}
 }
@@ -458,7 +467,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void addSimulation(cbit.vcell.solver.Simulation newSimulation) throws java.beans.PropertyVetoException {
+public void addSimulation(Simulation newSimulation) throws java.beans.PropertyVetoException {
 	if (newSimulation.getMathDescription() == null){
 		throw new IllegalArgumentException("cannot add simulation '"+newSimulation.getName()+"', has no MathDescription");
 	}
@@ -527,10 +536,10 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	 
-	if (!org.vcell.util.Compare.isEqual(getName(),simContext.getName())){
+	if (!Compare.isEqual(getName(),simContext.getName())){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqual(getDescription(),simContext.getDescription())){
+	if (!Compare.isEqual(getDescription(),simContext.getDescription())){
 		return false;
 	}
 	
@@ -592,16 +601,16 @@ public boolean contains(SimulationContextParameter scParameter) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public cbit.vcell.modelopt.AnalysisTask copyAnalysisTask(cbit.vcell.modelopt.AnalysisTask analysisTask) throws java.beans.PropertyVetoException, cbit.vcell.parser.ExpressionException, MappingException, cbit.vcell.math.MathException {
+public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.beans.PropertyVetoException, ExpressionException, MappingException, MathException {
 
-	if (analysisTask instanceof cbit.vcell.modelopt.ParameterEstimationTask){
+	if (analysisTask instanceof ParameterEstimationTask){
 		String parameterEstimationName = analysisTask.getName()+" Copy";
 
-		cbit.vcell.modelopt.AnalysisTask analysisTasks[] = getAnalysisTasks();
+		AnalysisTask analysisTasks[] = getAnalysisTasks();
 		boolean found = true;
 		while (found) {
 			found = false;
-			parameterEstimationName = org.vcell.util.TokenMangler.getNextEnumeratedToken(parameterEstimationName);
+			parameterEstimationName = TokenMangler.getNextEnumeratedToken(parameterEstimationName);
 			for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
 				if (analysisTasks[i].getName().equals(parameterEstimationName)){
 					found = true;
@@ -757,7 +766,7 @@ public void gatherIssues(Vector<Issue> issueVector) {
  * @return The analysisTasks property value.
  * @see #setAnalysisTasks
  */
-public cbit.vcell.modelopt.AnalysisTask[] getAnalysisTasks() {
+public AnalysisTask[] getAnalysisTasks() {
 	return fieldAnalysisTasks;
 }
 
@@ -768,7 +777,7 @@ public cbit.vcell.modelopt.AnalysisTask[] getAnalysisTasks() {
  * @param index The index value into the property array.
  * @see #setAnalysisTasks
  */
-public cbit.vcell.modelopt.AnalysisTask getAnalysisTasks(int index) {
+public AnalysisTask getAnalysisTasks(int index) {
 	return getAnalysisTasks()[index];
 }
 
@@ -807,7 +816,7 @@ public java.lang.String getDescription() {
  * @return The electricalStimuli property value.
  * @see #setElectricalStimuli
  */
-public cbit.vcell.mapping.ElectricalStimulus[] getElectricalStimuli() {
+public ElectricalStimulus[] getElectricalStimuli() {
 	return fieldElectricalStimuli;
 }
 
@@ -879,9 +888,9 @@ public FieldFunctionArguments[] getFieldFunctionArguments() throws MathException
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -928,12 +937,12 @@ public KeyValue getKey() {
 /**
  * Insert the method's description here.
  * Creation date: (12/8/2003 10:17:30 AM)
- * @return cbit.vcell.parser.SymbolTableEntry
+ * @return SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	// try reserved symbols
-	cbit.vcell.parser.SymbolTableEntry ste = cbit.vcell.model.ReservedSymbol.fromString(identifier);
+	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -985,9 +994,9 @@ public java.lang.String getName() {
 /**
  * Insert the method's description here.
  * Creation date: (12/8/2003 10:17:30 AM)
- * @return cbit.vcell.parser.NameScope
+ * @return NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -1054,7 +1063,7 @@ public SimulationContext.SimulationContextParameter getSimulationContextParamete
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public Simulation[] getSimulations() {
 	return extractLocalSimulations(bioModel.getSimulations());
 }
 
@@ -1065,7 +1074,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -1092,7 +1101,7 @@ public String getVCML() throws Exception {
 	//
 	// write Model or ModelRef
 	//
-	buffer.append(cbit.vcell.model.VCMODL.ModelReference+" "+getGeometryContext().getModel().toString()+"\n");
+	buffer.append(VCMODL.ModelReference+" "+getGeometryContext().getModel().toString()+"\n");
 //java.io.StringWriter stringWriter = new java.io.StringWriter();
 //getGeometryContext().getModel().writeTokens(new java.io.PrintWriter(stringWriter));
 //buffer.append(stringWriter.toString()+"\n");
@@ -1199,7 +1208,7 @@ private void refreshCharacteristicSize() throws PropertyVetoException {
 		setCharacteristicSize(null);
 		return;
 	}
-	org.vcell.util.Extent extent = geo.getExtent();
+	Extent extent = geo.getExtent();
 	
 	if (characteristicSize == null){
 		//
@@ -1396,7 +1405,7 @@ private void refreshElectrodes(){
  * @param analysisTasks The new value for the property.
  * @see #getAnalysisTasks
  */
-public void removeAnalysisTask(cbit.vcell.modelopt.AnalysisTask analysisTask) throws PropertyVetoException {
+public void removeAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoException {
 	boolean bFound = false;
 	for (int i = 0; fieldAnalysisTasks!=null && i < fieldAnalysisTasks.length; i++){
 		if (fieldAnalysisTasks[i] == analysisTask){
@@ -1407,7 +1416,7 @@ public void removeAnalysisTask(cbit.vcell.modelopt.AnalysisTask analysisTask) th
 	if (!bFound){
 		throw new RuntimeException("analysis task not found");
 	}
-	cbit.vcell.modelopt.AnalysisTask[] newAnalysisTasks = (cbit.vcell.modelopt.AnalysisTask[])BeanUtils.removeElement(fieldAnalysisTasks,analysisTask);
+	AnalysisTask[] newAnalysisTasks = (AnalysisTask[])BeanUtils.removeElement(fieldAnalysisTasks,analysisTask);
 	setAnalysisTasks(newAnalysisTasks);
 }
 
@@ -1426,7 +1435,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void removeSimulation(cbit.vcell.solver.Simulation simulation) throws java.beans.PropertyVetoException {
+public void removeSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (simulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot remove simulation '"+simulation.getName()+"', has different MathDescription");
 	}
@@ -1468,8 +1477,8 @@ public synchronized void removeVetoableChangeListener(String propertyName, Vetoa
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getAnalysisTasks
  */
-public void setAnalysisTasks(cbit.vcell.modelopt.AnalysisTask[] analysisTasks) throws java.beans.PropertyVetoException {
-	cbit.vcell.modelopt.AnalysisTask[] oldValue = fieldAnalysisTasks;
+public void setAnalysisTasks(AnalysisTask[] analysisTasks) throws java.beans.PropertyVetoException {
+	AnalysisTask[] oldValue = fieldAnalysisTasks;
 	fireVetoableChange("analysisTasks", oldValue, analysisTasks);
 	fieldAnalysisTasks = analysisTasks;
 	firePropertyChange("analysisTasks", oldValue, analysisTasks);
@@ -1531,8 +1540,8 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getElectricalStimuli
  */
-public void setElectricalStimuli(cbit.vcell.mapping.ElectricalStimulus[] electricalStimuli) throws java.beans.PropertyVetoException {
-	cbit.vcell.mapping.ElectricalStimulus[] oldValue = fieldElectricalStimuli;
+public void setElectricalStimuli(ElectricalStimulus[] electricalStimuli) throws java.beans.PropertyVetoException {
+	ElectricalStimulus[] oldValue = fieldElectricalStimuli;
 	fireVetoableChange("electricalStimuli", oldValue, electricalStimuli);
 	fieldElectricalStimuli = electricalStimuli;
 	firePropertyChange("electricalStimuli", oldValue, electricalStimuli);
@@ -1680,7 +1689,7 @@ public void setTemperatureKelvin(double temperatureKelvin) throws java.beans.Pro
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(org.vcell.util.document.Version newVersion) throws PropertyVetoException {
+private void setVersion(Version newVersion) throws PropertyVetoException {
 	this.version = newVersion;
 	if (newVersion != null){
 		setName(newVersion.getName());
@@ -1813,4 +1822,45 @@ public String getMathType()
 	return isStoch ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
 }
 
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+	getModel().getEntries(entryMap);
+	for (SymbolTableEntry ste : fieldSimulationContextParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+	ReservedSymbol.getAll(entryMap, true, true);
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);		
+}
+
+public SymbolTableEntryFilter getSymbolTableEntryFilter() {
+	SymbolTableEntryFilter stef = new SymbolTableEntryFilter() {		
+		public boolean accept(SymbolTableEntry ste) {
+			if (ste instanceof SpeciesContextSpecParameter) {
+				return false;
+			}
+			int dimension = getGeometry().getDimension();
+			if (dimension == 0) {
+				if (ste == ReservedSymbol.X || ste == ReservedSymbol.Y || ste == ReservedSymbol.Z) {
+					return false;
+				}
+			} else {
+				if (dimension < 3) {
+					if (ste == ReservedSymbol.Z) {
+						return false;
+					}
+					if (dimension < 2) {
+						if (ste == ReservedSymbol.Y) {
+							return false;
+						}
+					}
+				}
+			}
+			return true;
+		}
+	};
+	return stef;
+}
 }

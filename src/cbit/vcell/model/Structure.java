@@ -6,9 +6,9 @@ import cbit.vcell.parser.ExpressionBindingException;
  * All rights reserved.
 ©*/
 import java.beans.*;
+import java.io.Serializable;
 import java.util.*;
 
-import org.jdom.Element;
 import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -17,19 +17,17 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
 
-public abstract class Structure
-	implements
-		java.io.Serializable, ScopedSymbolTable, Matchable, Cacheable, java.beans.VetoableChangeListener,
-		MIRIAMAnnotatable
+public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener, MIRIAMAnnotatable
 {
 	private String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private org.vcell.util.document.KeyValue fieldKey = null;
+	private KeyValue fieldKey = null;
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
 	private MIRIAMAnnotation miriamAnnotation;
@@ -42,23 +40,23 @@ public abstract class Structure
 		public StructureNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// no children to return
 			//
 			return children;
 		}
 		public String getName() {
-			return org.vcell.util.TokenMangler.fixTokenStrict(Structure.this.getName());
+			return TokenMangler.fixTokenStrict(Structure.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			if (Structure.this.fieldModel != null){
 				return Structure.this.fieldModel.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return Structure.this;
 		}
 	}
@@ -74,7 +72,7 @@ public abstract class Structure
 			super(name);
 		}
 
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public NameScope getNameScope() {
 			return Structure.this.getNameScope();
 		}
 		
@@ -82,7 +80,7 @@ public abstract class Structure
 			return Structure.this;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			switch (getDimension()){
 				case 0: {
 					return VCUnitDefinition.UNIT_DIMENSIONLESS;
@@ -132,7 +130,7 @@ public StructureSize getStructureSize(){
 }
 
 public static String getDefaultStructureSizeName(String structureName){
-	return org.vcell.util.TokenMangler.fixTokenStrict(structureName);
+	return TokenMangler.fixTokenStrict(structureName);
 }
 
 
@@ -187,9 +185,9 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -200,7 +198,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return The key property value.
  * @see #setKey
  */
-public org.vcell.util.document.KeyValue getKey() {
+public KeyValue getKey() {
 	return fieldKey;
 }
 /**
@@ -209,9 +207,9 @@ public org.vcell.util.document.KeyValue getKey() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
 	if (ste != null){
 		ReservedSymbol rs = (ReservedSymbol)ste;
 		if (rs.isX() || rs.isY() || rs.isZ()){
@@ -257,7 +255,7 @@ public String getName() {
  * Creation date: (4/6/2004 9:59:19 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return fieldNameScope;
 }
 /**
@@ -356,5 +354,18 @@ public abstract void setParentStructure(Structure structure) throws ModelExcepti
  */
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 	TokenMangler.checkNameProperty(this, "structure", e);
+}
+
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {	
+	entryMap.put(getStructureSize().getName(), getStructureSize());
+	if (this instanceof Membrane){
+		Membrane.MembraneVoltage membraneVoltage = ((Membrane)this).getMembraneVoltage();
+		entryMap.put(membraneVoltage.getName(), membraneVoltage);
+	}	
+	ReservedSymbol.getAll(entryMap, true, false);	
+}
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);		
 }
 }

@@ -8,12 +8,14 @@ import cbit.vcell.model.*;
 import cbit.vcell.math.VCML;
 import cbit.vcell.units.VCUnitDefinition;
 import java.beans.PropertyVetoException;
-import cbit.util.*;
 
 import java.io.*;
+import java.util.Map;
+import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
@@ -53,7 +55,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		public ReactionSpecNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -62,25 +64,25 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		public String getName() {
 			return "mapping_"+ReactionSpec.this.getReactionStep().getName();
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			if (ReactionSpec.this.fieldSimulationContext != null){
 				return ReactionSpec.this.fieldSimulationContext.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return ReactionSpec.this;
 		}
 	}
 
-	public class ReactionSpecParameter extends cbit.vcell.model.Parameter implements ExpressionContainer {
+	public class ReactionSpecParameter extends Parameter implements ExpressionContainer {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
- 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+ 		private VCUnitDefinition fieldUnitDefinition = null;
 
-		public ReactionSpecParameter(String parmName, cbit.vcell.parser.Expression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
+		public ReactionSpecParameter(String parmName, Expression argExpression, int argRole, VCUnitDefinition argUnitDefinition, String argDescription) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -93,7 +95,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			setDescription(argDescription);
 		}
 
-		public boolean compareEqual(org.vcell.util.Matchable obj) {
+		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof ReactionSpecParameter)){
 				return false;
 			}
@@ -124,7 +126,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			return false;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 		
@@ -139,7 +141,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 		
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 		
@@ -313,18 +315,18 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 10:06:04 AM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.Vector issueList) {}
+public void gatherIssues(Vector<Issue> issueList) {}
 
 
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
 
 	//
 	// look locally (in the ReactionSpec) to resolve identifier
 	//	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -345,8 +347,8 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+	SymbolTableEntry ste = null;
 
 	ste = ReservedSymbol.fromString(identifier);
 	if (ste!=null){
@@ -375,7 +377,7 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * Creation date: (12/8/2003 11:46:37 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -420,7 +422,7 @@ public int getReactionMapping() {
  * @return int
  */
 public String getReactionMappingDescription() {
-	return this.mappings[getReactionMapping()];
+	return mappings[getReactionMapping()];
 }
 
 
@@ -586,7 +588,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new org.vcell.util.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+		throw new DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
 	}			
 	while (tokens.hasMoreTokens()){
 		token = tokens.nextToken();
@@ -609,7 +611,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 				throw new DataAccessException("unexpected reaction mapping "+mappingType);
 			}
 		}
-		throw new org.vcell.util.DataAccessException("unexpected identifier "+token);
+		throw new DataAccessException("unexpected identifier "+token);
 	}
 }
 
@@ -676,7 +678,7 @@ public void setReactionMapping(int reactionMapping) throws java.beans.PropertyVe
  * @see #getReactionMapping
  */
 public void setReactionMapping(String reactionMapping) throws java.beans.PropertyVetoException{
-	for (int i=0; i<this.mappings.length; i++) {
+	for (int i=0; i<mappings.length; i++) {
 		if ( mappings[i].equalsIgnoreCase(reactionMapping) ) {
 			setReactionMapping(i);
 			return;	//end execution
@@ -754,4 +756,19 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 	}
 }
+
+
+	public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+		
+		fieldSimulationContext.getLocalEntries(entryMap);
+		for (SymbolTableEntry ste : fieldReactionSpecParameters) {
+			entryMap.put(ste.getName(), ste);
+		}
+		ReservedSymbol.getAll(entryMap, true, false);		
+	}
+
+
+	public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+		getNameScope().getExternalEntries(entryMap);		
+	}
 }

@@ -20,6 +20,7 @@ import java.util.*;
 
 import cbit.vcell.solvers.*;
 import cbit.vcell.parser.*;
+
 import java.util.zip.*;
 
 import org.vcell.util.BeanUtils;
@@ -30,7 +31,7 @@ import org.vcell.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationData extends VCData implements SymbolTable {
+public class SimulationData extends VCData {
 	private final static long SizeInBytes = 2000;  // a guess
 
 	private VCDataIdentifier vcDataId = null;
@@ -1853,5 +1854,11 @@ public static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex,
 	return name;
 }
 
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	ReservedVariable.getAll(entryMap);
+	for (DataSetIdentifier dsi : dataSetIdentifierList) {
+		entryMap.put(dsi.getName(), dsi);
+	}
+}
 
 }

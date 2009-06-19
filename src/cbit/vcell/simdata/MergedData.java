@@ -3,21 +3,21 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -29,7 +29,7 @@ import cbit.vcell.util.ColumnDescription;
 /**
  * This type was created in VisualAge.
  */
-public class MergedData extends VCData implements SymbolTable {
+public class MergedData extends VCData {
 
 	private double dataTimes[] = null;
 	private String[] dataSetPrefix = null;
@@ -503,10 +503,10 @@ public CartesianMesh getMesh() throws DataAccessException, MathException {
  */
 public ODEDataBlock getODEDataBlock() throws DataAccessException {
 
-	cbit.vcell.solver.ode.ODESolverResultSet combinedODESolverRSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+	ODESolverResultSet combinedODESolverRSet = new ODESolverResultSet();
 
 	ODEDataBlock refDataBlock = dataSetControllerImpl.getODEDataBlock(datasetsIDList[0]);
-	cbit.vcell.solver.ode.ODESimData refSimData = refDataBlock.getODESimData();
+	ODESimData refSimData = refDataBlock.getODESimData();
 
 	// Can use dataTimes field later (for genuine SimulationData), but for now, obtain it on the fly
 	double times[] = null;
@@ -1141,7 +1141,7 @@ public void removeFunction(AnnotatedFunction function) throws DataAccessExceptio
 			functionFileLength = funcFile.length();
 			functionFileLastModified = funcFile.lastModified();			
 		} catch (Exception e) {
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(e.getMessage());
 		}
 		return;
 	}
@@ -1223,7 +1223,7 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 
 	double[][] resampledData = new double[refTimeArray.length][simData.getDataColumnCount()];
 	for (int i = 0; i < simData.getDataColumnCount(); i++){
-		cbit.vcell.util.ColumnDescription colDesc = simData.getDataColumnDescriptions()[i];
+		ColumnDescription colDesc = simData.getDataColumnDescriptions()[i];
 
 		// If it is the first column (time), set value in new SimData to the timeArray values in refSimData.
 		if (i == 0 && colDesc.getName().equals("t")) {
@@ -1363,6 +1363,13 @@ private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws 
 	}
 	return referringFunctionV.toArray(new AnnotatedFunction[0]);
 	
+}
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	ReservedVariable.getAll(entryMap);
+	for (DataSetIdentifier dsi : dataSetIdentifierList) {
+		entryMap.put(dsi.getName(), dsi);
+	}
 }
 
 }

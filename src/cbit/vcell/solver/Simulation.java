@@ -4,33 +4,57 @@ package cbit.vcell.solver;
  * All rights reserved.
 ©*/
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
+
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VCML;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.parser.Expression;
 import java.util.Enumeration;
+
+import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
-import cbit.vcell.math.*;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.sql.*;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-public class Simulation implements Versionable, org.vcell.util.Matchable, cbit.vcell.parser.SymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
+public class Simulation implements Versionable, Matchable, ScopedSymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
@@ -50,11 +74,11 @@ public class Simulation implements Versionable, org.vcell.util.Matchable, cbit.v
 	/**
 	 * Database version of the Simulation.
 	 */
-	private org.vcell.util.document.SimulationVersion fieldSimulationVersion = null;
+	private SimulationVersion fieldSimulationVersion = null;
 	/**
 	 * Mathematical description of the physiological model.
 	 */
-	private cbit.vcell.math.MathDescription fieldMathDescription = null;
+	private MathDescription fieldMathDescription = null;
 	/**
 	 * An ASCII description of the run.
 	 */
@@ -89,12 +113,40 @@ public class Simulation implements Versionable, org.vcell.util.Matchable, cbit.v
 	 * Working sims created when necessarry with appropriate index
 	 */
 	private int index = 0;
+	private NameScope nameScope = new SimulationNameScope();
 
+	public class SimulationNameScope extends AbstractNameScope {
+		public SimulationNameScope(){
+			super();
+		}
+
+		@Override
+		public NameScope[] getChildren() {
+			return null;
+		}
+
+		@Override
+		public String getName() {
+			return Simulation.this.getName();
+		}
+
+		@Override
+		public NameScope getParent() {
+			return null;
+		}
+
+		@Override
+		public ScopedSymbolTable getScopedSymbolTable() {
+			return Simulation.this;
+		}
+
+	}
+	
 /**
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a new Simulation.
  */
-public Simulation(SimulationVersion argSimulationVersion, cbit.vcell.math.MathDescription mathDescription) {
+public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDescription) {
 	super();
 	addVetoableChangeListener(this);
 	this.fieldSimulationVersion = argSimulationVersion;
@@ -169,7 +221,7 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a new Simulation.
  */
-public Simulation(cbit.vcell.math.MathDescription mathDescription) {
+public Simulation(MathDescription mathDescription) {
 	super();
 	addVetoableChangeListener(this);
 
@@ -275,12 +327,12 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * Creation date: (10/9/2002 10:54:06 PM)
  * @return cbit.vcell.math.MathDescription
  */
-public void applyOverrides(MathDescription newMath) throws ExpressionException, cbit.vcell.mapping.MappingException, MathException {
+public void applyOverrides(MathDescription newMath) throws ExpressionException, MappingException, MathException {
 	
 	//
 	// replace original constants with "Simulation" constants
 	//
-	Variable newVarArray[] = (Variable[])org.vcell.util.BeanUtils.getArray(newMath.getVariables(),Variable.class);
+	Variable newVarArray[] = (Variable[])BeanUtils.getArray(newMath.getVariables(),Variable.class);
 	for (int i = 0; i < newVarArray.length; i++){
 		if (newVarArray[i] instanceof Constant){
 			Constant origConstant = (Constant)newVarArray[i];
@@ -304,7 +356,7 @@ public void clearVersion() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(org.vcell.util.Matchable object) {
+public boolean compareEqual(Matchable object) {
 	if (this == object) {
 		return (true);
 	}
@@ -319,10 +371,10 @@ public boolean compareEqual(org.vcell.util.Matchable object) {
 		//
 		// check for true equality
 		//
-		if (!org.vcell.util.Compare.isEqual(getName(),simulation.getName())){
+		if (!Compare.isEqual(getName(),simulation.getName())){
 			return false;
 		}
-		if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),simulation.getDescription())){
+		if (!Compare.isEqualOrNull(getDescription(),simulation.getDescription())){
 			return false;
 		}
 		return true;
@@ -343,7 +395,7 @@ private boolean compareEqualMathematically(Simulation simulation) {
 	if (!getMathDescription().compareEqual(simulation.getMathDescription())) return (false);
 	if (!getMathOverrides().compareEqual(simulation.getMathOverrides())) return (false);
 	if (!getSolverTaskDescription().compareEqual(simulation.getSolverTaskDescription())) return (false);
-	if (!org.vcell.util.Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
+	if (!Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
 	if (!Compare.isEqualOrNull(dataProcessingInstructions, simulation.dataProcessingInstructions)) return (false);
 
 	return true;
@@ -405,9 +457,9 @@ static Simulation createWorkingSim(Simulation sim, int jobIndex) {
 	// should profile and choose according to best performance
 
 	try {
-		String xml = cbit.vcell.xml.XmlHelper.simToXML(sim);
-		workingSim = cbit.vcell.xml.XmlHelper.XMLToSim(xml);
-	} catch (cbit.vcell.xml.XmlParseException exc) {
+		String xml = XmlHelper.simToXML(sim);
+		workingSim = XmlHelper.XMLToSim(xml);
+	} catch (XmlParseException exc) {
 		throw new RuntimeException("Exception occurred while cloning working simulation\n"+exc);
 	}
 
@@ -516,7 +568,7 @@ public java.lang.String getDescription() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
 	//
 	// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
 	//
@@ -562,7 +614,7 @@ public Function[] getFunctions() {
 		}
 	}
 
-	return (Function[])org.vcell.util.BeanUtils.getArray(functList,Function.class);
+	return (Function[])BeanUtils.getArray(functList,Function.class);
 }
 
 
@@ -710,7 +762,7 @@ private Function getLocalFunction(Function referenceFunction) throws ExpressionE
  * Gets the mathDescription property (cbit.vcell.math.MathDescription) value.
  * @return The mathDescription property value.
  */
-public cbit.vcell.math.MathDescription getMathDescription() {
+public MathDescription getMathDescription() {
 	return fieldMathDescription;
 }
 
@@ -789,7 +841,7 @@ public java.lang.String getSimulationID() {
  * Creation date: (10/30/00 11:48:21 AM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public cbit.vcell.solver.SimulationInfo getSimulationInfo() {
+public SimulationInfo getSimulationInfo() {
 	if (getVersion() != null) {
 		return new SimulationInfo(
 			getMathDescription().getKey(),
@@ -805,7 +857,7 @@ public cbit.vcell.solver.SimulationInfo getSimulationInfo() {
  * Creation date: (10/24/00 1:34:10 PM)
  * @return cbit.sql.Version
  */
-public org.vcell.util.document.SimulationVersion getSimulationVersion() {
+public SimulationVersion getSimulationVersion() {
 	return fieldSimulationVersion;
 }
 
@@ -829,7 +881,7 @@ public SolverTaskDescription getSolverTaskDescription() {
 public Variable getVariable(String variableName) {
 	try {
 		return (Variable)getEntry(variableName);
-	}catch (cbit.vcell.parser.ExpressionBindingException e){
+	}catch (ExpressionBindingException e){
 		e.printStackTrace(System.out);
 		return null;
 	}
@@ -881,7 +933,7 @@ public Variable[] getVariables() {
 		}
 	}
 
-	Variable variables[] = (Variable[])org.vcell.util.BeanUtils.getArray(varList,Variable.class);
+	Variable variables[] = (Variable[])BeanUtils.getArray(varList,Variable.class);
 
 	return variables;
 }
@@ -897,12 +949,12 @@ public String getVCML() throws MathException {
 	StringBuffer buffer = new StringBuffer();
 	
 	String name = (getVersion()!=null)?(getVersion().getName()):"unnamedSimulation";
-	buffer.append(cbit.vcell.math.VCML.Simulation+" "+name+" {\n");
+	buffer.append(VCML.Simulation+" "+name+" {\n");
 
 	//
 	// write MathDescription
 	//
-	buffer.append(cbit.vcell.math.VCML.MathDescription+" "+getMathDescription().getVCML_database()+"\n");
+	buffer.append(VCML.MathDescription+" "+getMathDescription().getVCML_database()+"\n");
 
 	//
 	// write SolverTaskDescription
@@ -931,7 +983,7 @@ public String getVCML() throws MathException {
  * Creation date: (10/24/00 1:34:10 PM)
  * @return cbit.sql.Version
  */
-public org.vcell.util.document.Version getVersion() {
+public Version getVersion() {
 	return fieldSimulationVersion;
 }
 
@@ -1162,8 +1214,8 @@ private void setIsSpatial(boolean isSpatial) {
  * Creation date: (10/24/00 1:17:37 PM)
  * @param mathDesc cbit.vcell.math.MathDescription
  */
-public void setMathDescription(cbit.vcell.math.MathDescription mathDescription) throws java.beans.PropertyVetoException {
-	cbit.vcell.math.MathDescription oldValue = fieldMathDescription;
+public void setMathDescription(MathDescription mathDescription) throws java.beans.PropertyVetoException {
+	MathDescription oldValue = fieldMathDescription;
 	fireVetoableChange("mathDescription", oldValue, mathDescription);
 	fieldMathDescription = mathDescription;
 
@@ -1271,7 +1323,7 @@ public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(org.vcell.util.document.SimulationVersion simulationVersion) throws PropertyVetoException {
+private void setVersion(SimulationVersion simulationVersion) throws PropertyVetoException {
 	this.fieldSimulationVersion = simulationVersion;
 	if (simulationVersion != null){
 		setName(simulationVersion.getName());
@@ -1322,7 +1374,7 @@ public static boolean testEquivalency(Simulation memorySimulation, Simulation da
 		if (!memorySimulation.getSolverTaskDescription().compareEqual(databaseSimulation.getSolverTaskDescription())){
 			return false;
 		}
-		if (!org.vcell.util.Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())){
+		if (!Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())){
 			return false;
 		}
 		//
@@ -1373,4 +1425,25 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		this.dataProcessingInstructions = dataProcessingInstructions;
 		firePropertyChange("dataProcessingInstructions", oldValue, dataProcessingInstructions);
 }
+
+
+	public void getEntries(Map<String, SymbolTableEntry> entryMap) {		
+		getMathDescription().getEntries(entryMap);
+		entryMap.putAll(localVariableHash);
+	}
+
+
+	public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+		getEntries(entryMap);		
+	}
+
+
+	public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+		return getEntry(identifier);
+	}
+
+
+	public NameScope getNameScope() {
+		return nameScope;
+	}
 }

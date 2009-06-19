@@ -1,4 +1,9 @@
 package cbit.vcell.parser;
+
+import java.util.Map;
+
+import cbit.vcell.units.VCUnitDefinition;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/8/2003 10:11:18 AM)
@@ -25,23 +30,23 @@ package cbit.vcell.parser;
  *   NOTE: Expression's hold their symbolTable binding within it's internal state.  So consider
  *         side-effect when binding Expressions that are externally referenced.
  */
-public class SimpleSymbolTable implements cbit.vcell.parser.ScopedSymbolTable {
+public class SimpleSymbolTable implements ScopedSymbolTable {
 	
 	private SimpleSymbolTableEntry steArray[] = null;
 	private NameScope nameScope = null;
 	
-	private class SimpleSymbolTableEntry implements cbit.vcell.parser.SymbolTableEntry {
+	private class SimpleSymbolTableEntry implements SymbolTableEntry {
 		private String name = null;
 		private int index = -1;
 		private NameScope nameScope = null;
-		private cbit.vcell.units.VCUnitDefinition vcUnitDefinition = null;
+		private VCUnitDefinition vcUnitDefinition = null;
 		
 		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope){
 			this.name = argName;
 			this.index = argIndex;
 			this.nameScope = argNameScope;
 		}
-		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope, cbit.vcell.units.VCUnitDefinition unit){
+		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope, VCUnitDefinition unit){
 			this.name = argName;
 			this.index = argIndex;
 			this.nameScope = argNameScope;
@@ -59,14 +64,14 @@ public class SimpleSymbolTable implements cbit.vcell.parser.ScopedSymbolTable {
 		public NameScope getNameScope(){
 			return nameScope;
 		}
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return vcUnitDefinition;
 		}
 		public Expression getExpression(){
 			return null;
 		}
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
-			throw new cbit.vcell.parser.ExpressionException("can't evaluate to constant");
+		public double getConstantValue() throws ExpressionException {
+			throw new ExpressionException("can't evaluate to constant");
 		}
 	};
 	
@@ -84,7 +89,7 @@ public SimpleSymbolTable(String symbols[], NameScope argNameScope){
 }
 
 
-public SimpleSymbolTable(String symbols[], NameScope argNameScope, cbit.vcell.units.VCUnitDefinition units[]){
+public SimpleSymbolTable(String symbols[], NameScope argNameScope, VCUnitDefinition units[]){
 	this.nameScope = argNameScope;
 	steArray = new SimpleSymbolTableEntry[symbols.length];
 	for (int i=0;i<symbols.length;i++){
@@ -93,7 +98,7 @@ public SimpleSymbolTable(String symbols[], NameScope argNameScope, cbit.vcell.un
 }
 
 
-public cbit.vcell.parser.SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException {
 	//
 	// check if in the current scope with no scoping
 	//
@@ -108,7 +113,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(String identifier) throws Exp
 }
 
 
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
 	//
 	// check if in the current scope with no scoping
 	//
@@ -148,5 +153,17 @@ public int getSize() {
  */
 public String toString() {
 	return getClass().getName() + "@" + Integer.toHexString(hashCode()) + " ["+((getNameScope()!=null)?(getNameScope().getName()):("null"))+"]";
+}
+
+
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {	
+	for (SymbolTableEntry ste : steArray) {
+		entryMap.put(ste.getName(), ste);
+	}
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);		
 }
 }

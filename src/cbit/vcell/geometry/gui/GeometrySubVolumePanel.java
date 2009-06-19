@@ -4,27 +4,36 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.event.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 
-import java.beans.*;
-
-import cbit.image.ImagePlaneManager;
-import cbit.image.ImagePlaneManagerPanel;
-import cbit.vcell.geometry.*;
+import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.parser.ScopedExpression;
 /**
  * This type was created in VisualAge.
  */
@@ -554,33 +563,53 @@ private void geometrySubVolumePanel_Initialize() {
 	
 	getScrollPaneTable().setDefaultRenderer(SubVolume.class,new GeometrySubVolumeTableCellRenderer());
 	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable()));
+	getScrollPaneTable().setDefaultEditor(SubVolume.class,new DefaultCellEditor(new JTextField()) {
+			private int lastRow = -1;
+			private int lastCol = -1;
+		   public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+			   lastRow = row;
+			   lastCol = column;
+			   	delegate.setValue(((SubVolume)value).getName());
+			   	return editorComponent;
+		   }
+		   public final boolean stopCellEditing() {
+
+				//
+				//Three things can happen:
+				//1.  The current editor contains a value that is validated OK,
+				//		continue normally.
+				//2.  The current editor contains a value that is validated NOT OK,
+				//		user re-enters value until VALIDATE_OK -OR- user CANCELS and edit is lost.
+				//3.  The current editor contains a value that CANNOT be validated (Exceptions outside verify,verify not implemented,etc...),
+				//		validation is UNKNOWN, keep unvalidated value and continue.
+				//
+				try{
+					String name = (String)delegate.getCellEditorValue();
+					while(true){
+						if(name.equals(TokenMangler.fixTokenStrict(name))){
+							break;
+						}
+						name = DialogUtils.showInputDialog0(getComponent(), "SubVolume name "+name+" has illegal characters." +"\nProvide new value.", name);
+					}
+					delegate.setValue(name);//VALIDATE_OK, delegate gets New Good value
+				}catch(UtilCancelException e){					
+					delegate.setValue(((SubVolume)getScrollPaneTable().getValueAt(lastRow, lastCol)).getName());//delegate gets Last Good value
+				}catch(Throwable e){//Delegate keeps UNVALIDATED value
+				}			
+				return super.stopCellEditing();
+			}
+	});
 	
 	getgeometrySubVolumeTableModel().addTableModelListener(
 		new javax.swing.event.TableModelListener(){
 			public void tableChanged(javax.swing.event.TableModelEvent e){
-				cbit.vcell.model.gui.ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
 			}
 		}
 	);
 	
 	getScrollPaneTable().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-	getScrollPaneTable().setDefaultEditor(
-		Object.class,
-		new org.vcell.util.gui.ValidatingCellEditor(
-			new javax.swing.JTextField(),
-			new org.vcell.util.gui.EditorValueProvider () {
-				public Object getEditorValue(Object obj){
-					if(obj instanceof SubVolume){
-						return ((SubVolume)obj).getName();
-					}else if(obj instanceof cbit.vcell.parser.ScopedExpression){
-						return ((cbit.vcell.parser.ScopedExpression)obj).getExpression().infix();
-					}else{
-						return obj;
-					}
-				}
-			}
-			)
-	);
 	refreshButtons();
 }
 

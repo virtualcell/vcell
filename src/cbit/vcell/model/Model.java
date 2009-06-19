@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
@@ -20,26 +21,34 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
 
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitException;
 
-public class Model implements org.vcell.util.document.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
+public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, ScopedSymbolTable {
 	private Version version = null;
 	protected transient PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private java.lang.String fieldDescription = new String();
-	private cbit.vcell.model.Structure[] fieldStructures = new Structure[0];
-	private cbit.vcell.model.Species[] fieldSpecies = new Species[0];
-	private cbit.vcell.model.SpeciesContext[] fieldSpeciesContexts = new SpeciesContext[0];
-	private cbit.vcell.model.ReactionStep[] fieldReactionSteps = new ReactionStep[0];
-	private cbit.vcell.model.Diagram[] fieldDiagrams = new Diagram[0];
+	private Structure[] fieldStructures = new Structure[0];
+	private Species[] fieldSpecies = new Species[0];
+	private SpeciesContext[] fieldSpeciesContexts = new SpeciesContext[0];
+	private ReactionStep[] fieldReactionSteps = new ReactionStep[0];
+	private Diagram[] fieldDiagrams = new Diagram[0];
 	private ModelNameScope nameScope = new Model.ModelNameScope();
 	private Model.ModelParameter[] fieldModelParameters = new Model.ModelParameter[0];
 
@@ -48,11 +57,11 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 		public ModelNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public NameScope[] getChildren() {
 			//
 			// return list of reactionNameScopes
 			//
-			cbit.vcell.parser.NameScope nameScopes[] = new cbit.vcell.parser.NameScope[Model.this.fieldReactionSteps.length+Model.this.fieldStructures.length];
+			NameScope nameScopes[] = new NameScope[Model.this.fieldReactionSteps.length+Model.this.fieldStructures.length];
 			int j=0;
 			for (int i = 0; i < Model.this.fieldReactionSteps.length; i++){
 				nameScopes[j++] = Model.this.fieldReactionSteps[i].getNameScope();
@@ -65,18 +74,18 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 		public String getName() {
 			return TokenMangler.fixTokenStrict(Model.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public NameScope getParent() {
 			//System.out.println("ModelNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public ScopedSymbolTable getScopedSymbolTable() {
 			return Model.this;
 		}
-		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+		public boolean isPeer(NameScope nameScope){
 			if (super.isPeer(nameScope)) {
 				return true;
 			}
-			return ((nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+			return ((nameScope instanceof MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
 		}
 
 	}
@@ -90,14 +99,14 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 	public class ModelParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
-		private cbit.vcell.parser.Expression fieldParameterExpression = null;
+		private Expression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
-		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+		private VCUnitDefinition fieldUnitDefinition = null;
 		private String modelParameterAnnotation;
 		
 		private static final String MODEL_PARAMETER_DESCRIPTION = "Global Parameter";
 		
-		public ModelParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
+		public ModelParameter(String argName, Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -157,7 +166,7 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 		}      
 
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public Expression getExpression() {
 			return this.fieldParameterExpression;
 		}
 
@@ -172,7 +181,7 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 		}   
 
 
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public NameScope getNameScope() {
 			return Model.this.nameScope;
 		}
 
@@ -180,17 +189,17 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 			return this.fieldParameterRole;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) {
+			VCUnitDefinition oldValue = fieldUnitDefinition;
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
-			cbit.vcell.parser.Expression oldValue = fieldParameterExpression;
+		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
+			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
@@ -228,7 +237,7 @@ public Model(String argName) {
  * @param featureName java.lang.String
  * @param parent cbit.vcell.model.Feature
  */
-public void addFeature(String featureName, cbit.vcell.model.Feature parent, String membraneName) throws Exception {
+public void addFeature(String featureName, Feature parent, String membraneName) throws Exception {
 	
 	Structure structure = getStructure(featureName);
 	
@@ -288,7 +297,7 @@ public void addFeature(String featureName, cbit.vcell.model.Feature parent, Stri
 	setStructures(newStructures);
 }
 
-//public ModelParameter createModelParameter(String name, cbit.vcell.parser.Expression expr, int role, VCUnitDefinition units) {
+//public ModelParameter createModelParameter(String name, Expression expr, int role, VCUnitDefinition units) {
 //	ModelParameter modelParameter = new ModelParameter(name, expr, role, units);
 //	return modelParameter;
 //}   
@@ -609,14 +618,14 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (5/12/2004 10:38:12 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(Vector issueList) {
+public void gatherIssues(Vector<Issue> issueList) {
 	//
 	// check for unknown units (TBD) and unit consistency
 	//
 	try {
 		for (int i=0;i<fieldModelParameters.length;i++){
 			if (fieldModelParameters[i].getUnitDefinition()==null){
-			}else if (fieldModelParameters[i].getUnitDefinition().compareEqual(cbit.vcell.units.VCUnitDefinition.UNIT_TBD)){
+			}else if (fieldModelParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
 				issueList.add(new Issue(fieldModelParameters[i], "Units","unit is undefined (TBD) for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
 			}
 		}
@@ -625,8 +634,8 @@ public void gatherIssues(Vector issueList) {
 		//
 		for (int i = 0; i < fieldModelParameters.length; i++){
 			try {
-				cbit.vcell.units.VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
-				cbit.vcell.units.VCUnitDefinition expUnitDef = cbit.vcell.parser.VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
+				VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
+				VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
 					issueList.add(new Issue(fieldModelParameters[i], "Units","defined unit is null for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
@@ -634,9 +643,9 @@ public void gatherIssues(Vector issueList) {
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
 					issueList.add(new Issue(fieldModelParameters[i], "Units","unit mismatch for parameter '"+fieldModelParameters[i].getName()+"' computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
-			}catch (cbit.vcell.units.VCUnitException e){
+			}catch (VCUnitException e){
 				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (ExpressionException e){
 				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
@@ -678,7 +687,7 @@ public void gatherIssues(Vector issueList) {
  */
 public Structure[] getChildStructures(Structure structure) {
 
-	Vector childList = new Vector();
+	Vector<Structure> childList = new Vector<Structure>();
 
 	for (int i=0;i<fieldStructures.length;i++){
 		if (fieldStructures[i].getParentStructure()==structure){
@@ -724,7 +733,7 @@ public Diagram getDiagram(Structure structure) throws RuntimeException {
  * @return The diagrams property value.
  * @see #setDiagrams
  */
-public cbit.vcell.model.Diagram[] getDiagrams() {
+public Diagram[] getDiagrams() {
 	return fieldDiagrams;
 }
 
@@ -743,9 +752,9 @@ public Diagram getDiagrams(int index) {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -859,9 +868,9 @@ public Kinetics.KineticsParameter getKineticsParameter(String kineticsParameterN
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
 	if (ste != null){
 		ReservedSymbol rs = (ReservedSymbol)ste;
 		if (rs.isX() || rs.isY() || rs.isZ()){
@@ -934,7 +943,7 @@ public void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries) {
  * @return The modelParameters property value.
  * @see #setModelParameters
  */
-public cbit.vcell.model.Model.ModelParameter[] getModelParameters() {
+public Model.ModelParameter[] getModelParameters() {
 	return fieldModelParameters;
 }
 
@@ -965,7 +974,7 @@ public java.lang.String getName() {
  * Creation date: (8/27/2003 10:03:05 PM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -1031,7 +1040,7 @@ public ReactionStep getReactionStep(String reactionStepName) {
  * @return The reactionSteps property value.
  * @see #setReactionSteps
  */
-public cbit.vcell.model.ReactionStep[] getReactionSteps() {
+public ReactionStep[] getReactionSteps() {
 	return fieldReactionSteps;
 }
 
@@ -1052,7 +1061,7 @@ public ReactionStep getReactionSteps(int index) {
  * @return The species property value.
  * @see #setSpecies
  */
-public cbit.vcell.model.Species[] getSpecies() {
+public Species[] getSpecies() {
 	return fieldSpecies;
 }
 
@@ -1074,11 +1083,11 @@ public Species getSpecies(int index) {
  * @return cbit.vcell.model.Species
  * @param speciesReference cbit.vcell.dictionary.SpeciesReference
  */
-public Species[] getSpecies(cbit.vcell.dictionary.DBSpecies dbSpecies) {
+public Species[] getSpecies(DBSpecies dbSpecies) {
 	if (dbSpecies == null){
 		throw new IllegalArgumentException("DBSpecies was null");
 	}
-	Vector speciesList = new Vector();
+	Vector<Species> speciesList = new Vector<Species>();
 	for (int i = 0; i < fieldSpecies.length; i++){
 		if (fieldSpecies[i].getDBSpecies()!=null && fieldSpecies[i].getDBSpecies().compareEqual(dbSpecies)){
 			speciesList.add(fieldSpecies[i]);
@@ -1159,7 +1168,7 @@ public SpeciesContext getSpeciesContext(String speciesContextName) {
  * @return The speciesContexts property value.
  * @see #setSpeciesContexts
  */
-public cbit.vcell.model.SpeciesContext[] getSpeciesContexts() {
+public SpeciesContext[] getSpeciesContexts() {
 	return fieldSpeciesContexts;
 }
 
@@ -1180,7 +1189,7 @@ public SpeciesContext getSpeciesContexts(int index) {
  * @return java.util.Enumeration
  */
 public SpeciesContext[] getSpeciesContexts(Structure structure) {
-	Vector scList = new Vector();
+	Vector<SpeciesContext> scList = new Vector<SpeciesContext>();
 	
 	for (int i=0;i<fieldSpeciesContexts.length;i++){
 		if (fieldSpeciesContexts[i].getStructure().equals(structure)){
@@ -1206,7 +1215,7 @@ public SpeciesContext[] getSpeciesContextsNeededByMovingMembrane(Membrane moving
 	//Find any species that are needed by reactions in the membrane of movingFeature
 	Feature outsideFeature = (Feature)movingMembrane.getParentStructure();
 	SpeciesContext[] outSC = getSpeciesContexts(outsideFeature);
-	Vector neededSC = new Vector();
+	Vector<SpeciesContext> neededSC = new Vector<SpeciesContext>();
 	for(int i=0;i<fieldReactionSteps.length;i+= 1){
 		if(fieldReactionSteps[i].getStructure() == movingMembrane){
 			for(int j=0;j<outSC.length;j+= 1){
@@ -1230,7 +1239,7 @@ public SpeciesContext[] getSpeciesContextsNeededByMovingMembrane(Membrane moving
 
 
 public String[] getSpeciesNames(){
-	Vector nameList = new Vector();
+	Vector<String> nameList = new Vector<String>();
 	for (int i=0;i<fieldSpecies.length;i++){
 		nameList.add(fieldSpecies[i].getCommonName());
 	}
@@ -1263,7 +1272,7 @@ public Structure getStructure(String structureName) {
  * @return The structures property value.
  * @see #setStructures
  */
-public cbit.vcell.model.Structure[] getStructures() {
+public Structure[] getStructures() {
 	return fieldStructures;
 }
 
@@ -1283,7 +1292,7 @@ public Structure getStructures(int index) {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Feature
  */
-public cbit.vcell.model.Feature getTopFeature() {
+public Feature getTopFeature() {
 	Feature topFeature = null;
 	int topCount = 0;
 	for (int i=0;i<fieldStructures.length;i++){
@@ -1319,24 +1328,24 @@ public Feature[] getValidDestinationsForMovingFeature(Feature movingFeature) {
 
 	//Following code adapted from GraphModel.showShapeHierarchyTopDown
 	//Destinations can't be child of moving feature
-	Vector invalidDestinationFeatures = new Vector();
+	Vector<Feature> invalidDestinationFeatures = new Vector<Feature>();
 	invalidDestinationFeatures.add(movingFeature);
 	//Let's not put where we already are as a valid destination for moving
 	if(movingFeature.getMembrane() != null){
 		invalidDestinationFeatures.add((Feature)movingFeature.getMembrane().getParentStructure());
 	}
-	Vector features = new Vector();
+	Vector<Feature> features = new Vector<Feature>();
 	for(int i=0;i<getStructures().length;i+= 1){
 		if(fieldStructures[i] instanceof Feature){
-			features.add(fieldStructures[i]);
+			features.add((Feature)fieldStructures[i]);
 		}
 	}
-	Stack stack = new Stack();
+	Stack<Feature> stack = new Stack<Feature>();
 	stack.push(movingFeature);
 	features.remove(movingFeature);
 	while (stack.size()>0){
 		boolean bChildFound = false;
-		Feature currFeature = (Feature)stack.peek();
+		Feature currFeature = stack.peek();
 		for(int i=0;i<features.size();i+= 1){
 			Feature nextFeature = (Feature)features.elementAt(i);
 			if(nextFeature.getMembrane() != null && currFeature == nextFeature.getMembrane().getParentStructure()){
@@ -1352,10 +1361,10 @@ public Feature[] getValidDestinationsForMovingFeature(Feature movingFeature) {
 		}
 	}
 
-	Vector validDestinationFeaturesV = new Vector();
+	Vector<Feature> validDestinationFeaturesV = new Vector<Feature>();
 	for(int i=0;i<fieldStructures.length;i+= 1){
 		if(fieldStructures[i] instanceof Feature && !invalidDestinationFeatures.contains(fieldStructures[i])){
-			validDestinationFeaturesV.add(fieldStructures[i]);
+			validDestinationFeaturesV.add((Feature)fieldStructures[i]);
 		}
 	}
 
@@ -1450,7 +1459,6 @@ public void moveFeature(Feature movingFeature, Feature destinationFeature) throw
 	}
 
 	//Update ReactionParticipants with their new location and refresh Reactions
-	Feature movingFeatureOldParent = (Feature)movingFeature.getMembrane().getParentStructure();
 	movingFeature.getMembrane().setParentStructure(destinationFeature);
 	Structure[] structureArr = (Structure[])fieldStructures.clone();
 	setStructures(structureArr);
@@ -1907,8 +1915,8 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getDiagrams
  */
-public void setDiagrams(cbit.vcell.model.Diagram[] diagrams) throws java.beans.PropertyVetoException {
-	cbit.vcell.model.Diagram[] oldValue = fieldDiagrams;
+public void setDiagrams(Diagram[] diagrams) throws java.beans.PropertyVetoException {
+	Diagram[] oldValue = fieldDiagrams;
 	fireVetoableChange("diagrams", oldValue, diagrams);
 	fieldDiagrams = diagrams;
 	firePropertyChange("diagrams", oldValue, diagrams);
@@ -1979,8 +1987,8 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getReactionSteps
  */
-public void setReactionSteps(cbit.vcell.model.ReactionStep[] reactionSteps) throws java.beans.PropertyVetoException {
-	cbit.vcell.model.ReactionStep[] oldValue = fieldReactionSteps;
+public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.PropertyVetoException {
+	ReactionStep[] oldValue = fieldReactionSteps;
 	fireVetoableChange("reactionSteps", oldValue, reactionSteps);
 	fieldReactionSteps = reactionSteps;
 	firePropertyChange("reactionSteps", oldValue, reactionSteps);
@@ -2028,8 +2036,8 @@ public void setReactionSteps(int index, ReactionStep reactionSteps) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSpecies
  */
-public void setSpecies(cbit.vcell.model.Species[] species) throws java.beans.PropertyVetoException {
-	cbit.vcell.model.Species[] oldValue = fieldSpecies;
+public void setSpecies(Species[] species) throws java.beans.PropertyVetoException {
+	Species[] oldValue = fieldSpecies;
 	fireVetoableChange("species", oldValue, species);
 	fieldSpecies = species;
 	firePropertyChange("species", oldValue, species);
@@ -2067,8 +2075,8 @@ public void setSpecies(int index, Species species) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSpeciesContexts
  */
-public void setSpeciesContexts(cbit.vcell.model.SpeciesContext[] speciesContexts) throws java.beans.PropertyVetoException {
-	cbit.vcell.model.SpeciesContext[] oldValue = fieldSpeciesContexts;
+public void setSpeciesContexts(SpeciesContext[] speciesContexts) throws java.beans.PropertyVetoException {
+	SpeciesContext[] oldValue = fieldSpeciesContexts;
 	fireVetoableChange("speciesContexts", oldValue, speciesContexts);
 	fieldSpeciesContexts = speciesContexts;
 	firePropertyChange("speciesContexts", oldValue, speciesContexts);
@@ -2132,8 +2140,8 @@ public void setSpeciesContexts(int index, SpeciesContext speciesContexts) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getStructures
  */
-public void setStructures(cbit.vcell.model.Structure[] structures) throws java.beans.PropertyVetoException {
-	cbit.vcell.model.Structure[] oldValue = fieldStructures;
+public void setStructures(Structure[] structures) throws java.beans.PropertyVetoException {
+	Structure[] oldValue = fieldStructures;
 	fireVetoableChange("structures", oldValue, structures);
 	fieldStructures = structures;
 	refreshDiagrams();
@@ -2475,7 +2483,6 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (missingMP != null) {
 				Vector<String> referencingRxnsVector = new Vector<String>();
 				for (int i=0;i<fieldReactionSteps.length;i++){
-					boolean bUsed = false;
 					KineticsParameter[] kParams = fieldReactionSteps[i].getKinetics().getKineticsParameters();
 					for (int k = 0; k < kParams.length; k++) {
 						if (kParams[k].getExpression().hasSymbol(missingMP.getName()) && (fieldReactionSteps[i].getKinetics().getProxyParameter(missingMP.getName()) != null)) {
@@ -2623,7 +2630,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
  * if newSTE is null, then newName is the proposed name of a reaction
  * else newSTE is the symbol to be added.
  */
-private void validateNamingConflicts(String symbolDescription, Class newSymbolClass, String newSymbolName, PropertyChangeEvent e) throws PropertyVetoException {
+private void validateNamingConflicts(String symbolDescription, Class<?> newSymbolClass, String newSymbolName, PropertyChangeEvent e) throws PropertyVetoException {
 	//
 	// validate lexicon
 	//
@@ -2689,5 +2696,28 @@ private void validateNamingConflicts(String symbolDescription, Class newSymbolCl
 	
 }
 
+
+public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+	for (SymbolTableEntry ste : fieldSpeciesContexts) {
+		entryMap.put(ste.getName(), ste);
+	}
+	for (Structure s : fieldStructures) {
+		Structure.StructureSize structureSize = s.getStructureSize();
+		entryMap.put(structureSize.getName(), structureSize);
+		if (s instanceof Membrane){
+			Membrane.MembraneVoltage membraneVoltage = ((Membrane)s).getMembraneVoltage();
+			entryMap.put(membraneVoltage.getName(), membraneVoltage);
+		}
+	}
+	for (SymbolTableEntry ste : fieldModelParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+	ReservedSymbol.getAll(entryMap, true, false);
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+	getNameScope().getExternalEntries(entryMap);	
+}
 
 }
