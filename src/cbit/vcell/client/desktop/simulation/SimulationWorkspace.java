@@ -1,15 +1,22 @@
 package cbit.vcell.client.desktop.simulation;
-import cbit.gui.DialogUtils;
-import cbit.util.EventDispatchRunWithException;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.ode.gui.*;
 
 import java.awt.Dimension;
 import java.util.*;
+
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.client.*;
 import javax.swing.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.document.*;
 
 import cbit.vcell.desktop.controls.*;
@@ -142,10 +149,18 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	else if (simulation.getMathDescription().isStoch())
 	{
 		maxSizeBytes = Simulation.MAX_LIMIT_STOCH_MEGABYTES*1000000L;
-		warningSizeBytes = Simulation.WARNING_STOCH_TIMEPOINTS;
+		warningSizeBytes = Simulation.WARNING_STOCH_MEGABYTES*1000000L;
 	}
 	
-	long expectedNumTimePoints = getExpectedNumTimePoints(simulation);
+	long expectedNumTimePoints;
+	if(simulation.getMathDescription().isStoch())
+	{
+		expectedNumTimePoints = getEstimatedNumTimePointsForStoch(simulation); 
+	}
+	else
+	{
+		expectedNumTimePoints = getExpectedNumTimePoints(simulation);
+	}
 	long expectedSizeBytes = getExpectedSizeBytes(simulation);
 	//
 	// check for error conditions (hard limits on resources) ... Note: each user should have it's own limits (and quotas).
@@ -153,21 +168,25 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	if (expectedNumTimePoints>maxTimepoints){
 		errorMessage = "Too many timepoints to be saved ("+expectedNumTimePoints+")\n"+
 						"maximum allowed is:\n" + 
-						"     "+Simulation.MAX_LIMIT_ODE_TIMEPOINTS + " for compartmental simulations\n" + 
+						"     "+Simulation.MAX_LIMIT_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_PDE_TIMEPOINTS + " for spatial simulations\n"+
+						"     "+Simulation.MAX_LIMIT_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n"+
 						"recommended limits are:\n" + 
-						"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental simulations\n" + 
+						"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
 						"     "+Simulation.WARNING_PDE_TIMEPOINTS + " for spatial simulations\n"+
+						"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n"+
 						"Try saving fewer timepoints\n"+
 						"If you need to exceed the quota, please contact us";
 	} else if (expectedSizeBytes>maxSizeBytes){
 		errorMessage = "Resulting dataset ("+(expectedSizeBytes/1000000L)+"MB) is too large\n"+
 						"maximum size is:\n" + 
-						"     "+Simulation.MAX_LIMIT_0DE_MEGABYTES + " MB for compartmental simulations\n" + 
+						"     "+Simulation.MAX_LIMIT_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_PDE_MEGABYTES + " MB for spatial simulations\n"+
+						"     "+Simulation.MAX_LIMIT_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n"+
 						"suggested limits are:\n" + 
-						"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental simulations\n" + 
+						"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 						"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n"+
+						"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n"+
 						"Try saving fewer timepoints or using a smaller mesh (if spatial)\n"+
 						"If you need to exceed the quota, please contact us";
 	} else if (simulation.getScanCount() > Simulation.MAX_LIMIT_SCAN_JOBS) {
@@ -223,16 +242,16 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		//
 		if (expectedNumTimePoints>warningTimepoints){
 			warningMessage = "Warning: large number of timepoints ("+expectedNumTimePoints+"), suggested limits are:\n" + 
-							"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental simulations\n" + 
+							"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
 							"     "+Simulation.WARNING_PDE_TIMEPOINTS + " for spatial simulations\n" +
-							"Try saving fewer timepoints\n"+
-							"Continue anyway?";
+							"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n" +
+							"Try saving fewer timepoints";
 		} else if (expectedSizeBytes>warningSizeBytes){
 			warningMessage = "Warning: large simulation result set ("+(expectedSizeBytes/1000000L)+"MB) exceeds suggested limits of:\n" + 
-							"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental simulations\n" + 
+							"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 							"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n" +
-							"Try saving fewer timepoints or using a smaller mesh (if spatial)\n" +
-							"Do you want to continue anyway?";
+							"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n" +
+							"Try saving fewer timepoints or using a coarser mesh if spatial.";
 		} else if (simulation.getScanCount() > Simulation.WARNING_SCAN_JOBS) {
 			warningMessage = "Warning : large number of simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
@@ -398,6 +417,79 @@ private long getExpectedNumTimePoints(Simulation simulation) {
 	return simulation.getSolverTaskDescription().getExpectedNumTimePoints();
 }
 
+private long getEstimatedNumTimePointsForStoch(Simulation sim)
+{
+	SolverTaskDescription solverTaskDescription = sim.getSolverTaskDescription();
+	TimeBounds tb = solverTaskDescription.getTimeBounds();
+	double startTime = tb.getStartingTime();
+	double endTime = tb.getEndingTime();
+	OutputTimeSpec tSpec = solverTaskDescription.getOutputTimeSpec();
+	//hybrid G_E and G_M are fixed time step methods using uniform output time spec
+	if (tSpec.isUniform()) {
+		double outputTimeStep = ((UniformOutputTimeSpec)tSpec).getOutputTimeStep();
+		return (long)((endTime - startTime)/outputTimeStep);
+	}
+	
+	double maxProbability = 0;
+	SubDomain subDomain = sim.getMathDescription().getSubDomains().nextElement();
+	Vector<VarIniCondition> varInis = subDomain.getVarIniConditions();
+
+	//get all the probability expressions
+	ArrayList<Expression> probList = new ArrayList<Expression>();
+	Vector<JumpProcess> jumpProcesses = subDomain.getJumpProcesses();
+	for(int i=0; i<jumpProcesses.size(); i++)
+	{
+		probList.add(jumpProcesses.elementAt(i).getProbabilityRate());
+	}
+		
+	//loop through probability expressions
+	for(int i=0; i<probList.size(); i++)
+	{
+		try {
+			Expression pExp = new Expression(probList.get(i));
+			pExp.bindExpression(sim);
+			pExp = sim.substituteFunctions(pExp);
+			pExp = pExp.flatten();
+			String[] symbols = pExp.getSymbols();
+			//substitute stoch vars with it's initial condition expressions
+			for(int j=0; j<symbols.length; j++)
+			{
+				for(int k = 0; k < varInis.size(); k++)
+				{
+					if(symbols[j].equals(varInis.elementAt(k).getVar().getName()))
+					{
+						pExp.substituteInPlace(new Expression(symbols[j]), new Expression(varInis.elementAt(k).getIniVal()));
+						break;
+					}
+				}
+			}
+			pExp = sim.substituteFunctions(pExp);
+			pExp = pExp.flatten();
+			double val = pExp.evaluateConstant();
+			if(maxProbability < val)
+			{
+				maxProbability = val;
+			}
+		} catch (ExpressionBindingException e) {
+			System.out.println("Cannot estimate the total time points for stochastic simulation!! Due to the reason below...");
+			e.printStackTrace();
+		} catch (ExpressionException ex) {
+			System.out.println("Cannot estimate the total time points for stochastic simulation!! Due to the reason below...");
+			ex.printStackTrace();
+		} catch (MathException e) {
+			System.out.println("Cannot estimate the total time points for stochastic simulation!! Due to the reason below...");
+			e.printStackTrace();
+		}
+	}
+	int keepEvery = 1;
+	if (tSpec.isDefault()) {
+		keepEvery = ((DefaultOutputTimeSpec)tSpec).getKeepEvery();
+	}
+	//points = (endt-startt)/(t*keepEvery) = (endt - startt)/(keepEvery*1/prob)
+	long estimatedPoints = Math.round((tb.getEndingTime()-tb.getStartingTime())*maxProbability/keepEvery)+1;
+	return estimatedPoints;
+}
+	
 
 /**
  * Insert the method's description here.
@@ -406,7 +498,15 @@ private long getExpectedNumTimePoints(Simulation simulation) {
  * @param simulation cbit.vcell.solver.Simulation
  */
 private long getExpectedSizeBytes(Simulation simulation) {
-	long numTimepoints = getExpectedNumTimePoints(simulation);
+	long numTimepoints;
+	if(simulation.getMathDescription().isStoch())
+	{
+		numTimepoints = getEstimatedNumTimePointsForStoch(simulation); 
+	}
+	else
+	{
+		numTimepoints = getExpectedNumTimePoints(simulation); 
+	}
 	int x,y,z;
 	int numVariables = 0;
 	if (simulation.getIsSpatial()) {
