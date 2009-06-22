@@ -563,7 +563,7 @@ private void geometrySubVolumePanel_Initialize() {
 	
 	getScrollPaneTable().setDefaultRenderer(SubVolume.class,new GeometrySubVolumeTableCellRenderer());
 	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable()));
+	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), true));
 	getScrollPaneTable().setDefaultEditor(SubVolume.class,new DefaultCellEditor(new JTextField()) {
 			private int lastRow = -1;
 			private int lastCol = -1;

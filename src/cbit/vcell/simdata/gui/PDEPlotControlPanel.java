@@ -198,7 +198,9 @@ private void addFunction() {
 	AsynchClientTask task2 = new AsynchClientTask("show dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			fsp.initFunctionInfo(getJList1().getSelectedValue().toString(), getPdeDataContext().getDataIdentifiers(), functionsList.toArray(new AnnotatedFunction[0]));
+			fsp.initFunctionInfo(getJList1().getSelectedValue().toString(), 
+					getPdeDataContext().getDataIdentifiers(), functionsList.toArray(new AnnotatedFunction[0]), 
+					getPdeDataContext().getCartesianMesh().getGeometryDimension());
 			final JDialog jd = new JDialog();
 			jd.setTitle("View/Add/Delete/Edit Functions");
 			jd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

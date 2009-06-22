@@ -30,6 +30,7 @@ import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
@@ -321,7 +322,7 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 		return jTextFieldFuncExpression;
 	}
 
-	public void initFunctionInfo(String identifierInit,DataIdentifier[] argAllIdentifiers,AnnotatedFunction[] argAllFunctions){
+	public void initFunctionInfo(String identifierInit,DataIdentifier[] argAllIdentifiers,AnnotatedFunction[] argAllFunctions, int dimension){
 
 		allIdentifiers = Arrays.asList(argAllIdentifiers).toArray(new DataIdentifier[0]);
 		Arrays.sort(allIdentifiers,
@@ -342,6 +343,13 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 			getJComboBoxAllIdentifiers().addItem(varname);
 			if(varname.equals(identifierInit)){
 				selectIndex = i;
+			}
+		}
+		varNames.add(ReservedSymbol.X.getName());
+		if (dimension > 1) {
+			varNames.add(ReservedSymbol.Y.getName());
+			if (dimension > 2) {
+				varNames.add(ReservedSymbol.Z.getName());
 			}
 		}
 		getJComboBoxAllIdentifiers().addActionListener(this);

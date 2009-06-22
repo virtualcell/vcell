@@ -263,7 +263,7 @@ public static void main(java.lang.String[] args) {
 public void parameterPanel_Initialize() {
 
 	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable()));
+	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
 	
 	getParameterTableModel().addTableModelListener(
 		new javax.swing.event.TableModelListener(){

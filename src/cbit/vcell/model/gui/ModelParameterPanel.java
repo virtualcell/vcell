@@ -935,7 +935,7 @@ public static void main(java.lang.String[] args) {
 private void modelParameterPanel_Initialize() {
 	
 	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultEditor(cbit.vcell.parser.ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable()));
+	getScrollPaneTable().setDefaultEditor(cbit.vcell.parser.ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
 	
 	getmodelParameterTableModel().addPropertyChangeListener(
 		new java.beans.PropertyChangeListener(){

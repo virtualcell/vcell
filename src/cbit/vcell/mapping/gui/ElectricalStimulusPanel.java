@@ -648,7 +648,7 @@ private void connEtoM7() {
 		// user code end
 		getScrollPaneTable().setModel(getelectricalStimulusParameterTableModel());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		getScrollPaneTable().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getScrollPaneTable()));
+		getScrollPaneTable().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
