@@ -76,7 +76,7 @@ public class TextFieldAutoCompletion extends JTextField {
 				if (e.getClickCount() == 2) {
 					SwingUtilities.invokeLater(new CompletionTask());
 				}
-			} else if (e.getSource() == this) {
+			} else if (e.getSource() == TextFieldAutoCompletion.this) {
 				showPopupChoices(null);
 			}
 		}
@@ -101,7 +101,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		}
 
 		public void keyReleased(KeyEvent e) {
-			if (e.getSource() == this) {
+			if (e.getSource() == TextFieldAutoCompletion.this) {
 				if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {		
 					showPopupChoices(null);
 				} else if (e.getKeyCode() == KeyEvent.VK_TAB) {
