@@ -3,6 +3,7 @@ package cbit.gui;
 import java.awt.Color;
 import java.awt.Event;
 import java.awt.Rectangle;
+import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -30,6 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -133,6 +135,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		autoCompJPopupMenu = new JPopupMenu();
 		JScrollPane sp = new JScrollPane();
 		sp.setViewportView(autoCompJList);
+		//sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		autoCompJPopupMenu.add(sp);
 		
 		setupActions();
@@ -199,13 +202,22 @@ public class TextFieldAutoCompletion extends JTextField {
 			match = match.trim();
 			CurrentWord currentWord = findCurrentWord(null);			
 				
-			Document doc = getDocument();				
-			doc.remove(currentWord.startPos, currentWord.endPos - currentWord.startPos + 1);
+			Document doc = getDocument();
+			if (currentWord == null) {
+				doc.insertString(0, match, null);
+				setCaretPosition(match.length());				
+			} else {
+				doc.remove(currentWord.startPos, currentWord.endPos - currentWord.startPos + 1);
+				doc.insertString(currentWord.startPos, match, null);
+				setCaretPosition(currentWord.startPos + match.length());
+			}
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					requestFocus();
+					autoCompJPopupMenu.setVisible(false);
+				}
+			});	
 			
-			doc.insertString(currentWord.startPos, match, null);				
-			setCaretPosition(currentWord.startPos + match.length());	
-			autoCompJPopupMenu.setVisible(false);
-			requestFocus();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {			
@@ -293,6 +305,9 @@ public class TextFieldAutoCompletion extends JTextField {
 	
 	public void showPopupChoices(DocumentEvent docEvt, boolean bForce) {		
 		try {
+			if (!isShowing()) {
+				return;
+			}
 			if (bInCompleteTask) {
 				return;
 			}

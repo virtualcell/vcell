@@ -1,7 +1,6 @@
 package cbit.gui;
 
 import java.awt.Component;
-import java.util.Set;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -14,11 +13,13 @@ import cbit.vcell.parser.ScopedExpression;
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 	private TextFieldAutoCompletion textFieldAutoCompletion = null;
 	private JTable thisTable = null;
+	private boolean bValidateBinding = false;
 	
-	public TableCellEditorAutoCompletion(JTable table) {		
+	public TableCellEditorAutoCompletion(JTable table, boolean arg_bValidateBinding) {		
 		super(new TextFieldAutoCompletion());
 		textFieldAutoCompletion = (TextFieldAutoCompletion)getComponent();
 		thisTable = table;	
+		bValidateBinding = arg_bValidateBinding;
 		thisTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 	}
 	
@@ -29,6 +30,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		if (textFieldAutoCompletion.isPopupVisible()) {
 			return false;
 		}
+		
 		final int row = thisTable.getSelectedRow();
 		textFieldAutoCompletion.stopEditing();
 		boolean bOK = true;
@@ -37,11 +39,13 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 			if (text.trim().length() > 0) {
 				try {
 					Expression exp = new Expression(text);
-					exp.bindExpression(textFieldAutoCompletion.getSymbolTable());
+					if (bValidateBinding) {
+						exp.bindExpression(textFieldAutoCompletion.getSymbolTable());
+					}
 				} catch (ExpressionBindingException ex) {
 					ex.printStackTrace(System.out);
 					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse Ctrl-Space to see a list of available names in your model.");
-					bOK = false;		
+					bOK = false;
 				} catch (ExpressionException ex) {
 					ex.printStackTrace(System.out);
 					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage());

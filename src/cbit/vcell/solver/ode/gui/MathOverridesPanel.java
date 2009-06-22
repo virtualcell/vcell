@@ -319,7 +319,7 @@ private void connPtoP5SetTarget() {
 	try {
 		getJTableFixed().setModel(getMathOverridesTableModel());
 		getJTableFixed().createDefaultColumnsFromModel();
-		getJTableFixed().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getJTableFixed()));
+		getJTableFixed().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getJTableFixed(), true));
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

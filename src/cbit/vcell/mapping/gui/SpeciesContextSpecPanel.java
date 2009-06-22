@@ -51,7 +51,7 @@ private void connEtoM1() {
 		// user code end
 		getScrollPaneTable().setModel(getSpeciesContextSpecParameterTableModel1());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable()));
+		getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), true));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
