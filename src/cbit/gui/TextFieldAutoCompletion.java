@@ -324,7 +324,9 @@ public class TextFieldAutoCompletion extends JTextField {
 
 			} else {
 				for (String w : autoCompWordList) {
-					if (w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
+					if (currentWord == null 
+							|| currentWord.prefix.length() == 0 
+							|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
 						tempList.add(w);
 					}
 				}
