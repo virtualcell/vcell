@@ -46,11 +46,11 @@ public class RationalExpUtils {
 						base = base.inverse();
 						intExponent = -intExponent;
 					}
-					RationalExp totalExp = new RationalExp(base);
+					RationalExp baseUnit = new RationalExp(base);
 					for (int i = 1; i < intExponent; i++){
-						totalExp = totalExp.mult(base);
+						base = base.mult(baseUnit);
 					}
-					return totalExp;
+					return base;
 				}catch (ExpressionException e){
 					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression, exponent is not constant");
 				}
@@ -73,8 +73,9 @@ public class RationalExpUtils {
 					base = base.inverse();
 					intExponent = -intExponent;
 				}
+				RationalExp baseUnit = new RationalExp(base);
 				for (int i = 1; i < intExponent; i++){
-					base = base.mult(base);
+					base = base.mult(baseUnit);
 				}
 				return base;
 			}catch (ExpressionException e){
