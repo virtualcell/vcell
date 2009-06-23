@@ -1156,6 +1156,7 @@ private void trajectoryButton_ActionPerformed(java.awt.event.ActionEvent actionE
 	getJTextFieldNumOfTrials().setText("1");
 	getJTextFieldNumOfTrials().setEnabled(false);
 	updateStochOptions();
+	enableOutputOptionPanel();
 }
 
 private void histogramButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
@@ -1172,6 +1173,7 @@ private void histogramButton_ActionPerformed(java.awt.event.ActionEvent actionEv
 		}
 	}
 	updateStochOptions();
+	enableOutputOptionPanel();
 }
 /**
  * Comment
@@ -1196,6 +1198,29 @@ private void enableOutputOptionPanel() {
 	}
 	
 	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
+	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
+		stopSpatiallyUniformPanel.setVisible(true);
+		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
+		dataProcessorCheckBox.setVisible(true);
+		editDataProcessorButton.setVisible(true);
+		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
+		if (dpi != null) {
+			dataProcessorCheckBox.setSelected(true);
+			editDataProcessorButton.setEnabled(true);
+		} else {
+			editDataProcessorButton.setEnabled(false);
+		}
+	} else {
+		dataProcessorCheckBox.setVisible(false);
+		editDataProcessorButton.setVisible(false);
+		stopSpatiallyUniformPanel.setVisible(false);
+	}
+	
+	//Amended June 2009, no output option for stochastic multiple trials
+	if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1)
+	{
+		return;
+	}
 	OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
 	
 	DefaultOutputTimeSpec dots = new DefaultOutputTimeSpec();
@@ -1229,25 +1254,6 @@ private void enableOutputOptionPanel() {
 		){
 		getKeepAtMostTextField().setText("");
 		getKeepAtMostTextField().setEnabled(false);
-	}
-
-	
-	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
-		stopSpatiallyUniformPanel.setVisible(true);
-		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
-		dataProcessorCheckBox.setVisible(true);
-		editDataProcessorButton.setVisible(true);
-		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
-		if (dpi != null) {
-			dataProcessorCheckBox.setSelected(true);
-			editDataProcessorButton.setEnabled(true);
-		} else {
-			editDataProcessorButton.setEnabled(false);
-		}
-	} else {
-		dataProcessorCheckBox.setVisible(false);
-		editDataProcessorButton.setVisible(false);
-		stopSpatiallyUniformPanel.setVisible(false);
 	}
 }
 
@@ -2559,7 +2565,7 @@ private void initialize() {
 /**
  * Method to handle events for the ItemListener interface.
  * @param e java.awt.event.ItemEvent
- */
+ *
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void itemStateChanged(java.awt.event.ItemEvent e) {
 	// user code begin {1}

@@ -174,25 +174,25 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	if (expectedNumTimePoints>maxTimepoints){
 		errorMessage = "Too many timepoints to be saved ("+expectedNumTimePoints+")\n"+
 						"maximum allowed is:\n" + 
-						"     "+Simulation.MAX_LIMIT_ODE_TIMEPOINTS + " for compartmental simulations\n" + 
+						"     "+Simulation.MAX_LIMIT_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_PDE_TIMEPOINTS + " for spatial simulations\n"+
-						"     "+Simulation.MAX_LIMIT_STOCH_TIMEPOINTS + " for stochastic simulations\n"+
+						"     "+Simulation.MAX_LIMIT_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n"+
 						"recommended limits are:\n" + 
-						"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental simulations\n" + 
+						"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
 						"     "+Simulation.WARNING_PDE_TIMEPOINTS + " for spatial simulations\n"+
-						"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for stochastic simulations\n"+
+						"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n"+
 						"Try saving fewer timepoints\n"+
 						"If you need to exceed the quota, please contact us";
 	} else if (expectedSizeBytes>maxSizeBytes){
 		errorMessage = "Resulting dataset ("+(expectedSizeBytes/1000000L)+"MB) is too large\n"+
 						"maximum size is:\n" + 
-						"     "+Simulation.MAX_LIMIT_0DE_MEGABYTES + " MB for compartmental simulations\n" + 
+						"     "+Simulation.MAX_LIMIT_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_PDE_MEGABYTES + " MB for spatial simulations\n"+
-						"     "+Simulation.MAX_LIMIT_STOCH_MEGABYTES + " MB for stochastic simulations\n"+
+						"     "+Simulation.MAX_LIMIT_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n"+
 						"suggested limits are:\n" + 
-						"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental simulations\n" + 
+						"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 						"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n"+
-						"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for stochastic simulations\n"+
+						"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n"+
 						"Try saving fewer timepoints or using a smaller mesh (if spatial)\n"+
 						"If you need to exceed the quota, please contact us";
 	} else if (simulation.getScanCount() > Simulation.MAX_LIMIT_SCAN_JOBS) {
@@ -249,15 +249,15 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		//
 		if (expectedNumTimePoints>warningTimepoints){
 			warningMessage = "Warning: large number of timepoints ("+expectedNumTimePoints+"), suggested limits are:\n" + 
-							"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental simulations\n" + 
+							"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
 							"     "+Simulation.WARNING_PDE_TIMEPOINTS + " for spatial simulations\n" +
-							"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for stochastic simulations\n" +
+							"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n" +
 							"Try saving fewer timepoints";
 		} else if (expectedSizeBytes>warningSizeBytes){
 			warningMessage = "Warning: large simulation result set ("+(expectedSizeBytes/1000000L)+"MB) exceeds suggested limits of:\n" + 
-							"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental simulations\n" + 
+							"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 							"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n" +
-							"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for stochastic simulations\n" +
+							"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n" +
 							"Try saving fewer timepoints or using a coarser mesh if spatial.";
 		} else if (simulation.getScanCount() > Simulation.WARNING_SCAN_JOBS) {
 			warningMessage = "Warning : large number of simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
