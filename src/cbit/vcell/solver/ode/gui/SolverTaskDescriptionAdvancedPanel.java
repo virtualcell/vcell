@@ -1047,6 +1047,7 @@ private void trajectoryButton_ActionPerformed(java.awt.event.ActionEvent actionE
 	getJTextFieldNumOfTrials().setText("1");
 	getJTextFieldNumOfTrials().setEnabled(false);
 	updateStochOptions();
+	enableOutputOptionPanel();
 }
 
 private void histogramButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
@@ -1063,6 +1064,7 @@ private void histogramButton_ActionPerformed(java.awt.event.ActionEvent actionEv
 		}
 	}
 	updateStochOptions();
+	enableOutputOptionPanel();
 }
 /**
  * Comment
@@ -1085,7 +1087,12 @@ private void enableOutputOptionPanel() {
 		// Also, disable its radiobutton and fields.		
 		return;
 	}
-	
+			
+	//Amended June 2009, no output option for stochastic multiple trials
+	if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1)
+	{
+		return;
+	}
 	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
 	OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
 	

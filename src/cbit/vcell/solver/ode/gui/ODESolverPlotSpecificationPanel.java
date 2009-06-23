@@ -1934,10 +1934,6 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
 		int[] plottableColumnIndices =  getPlottableColumnIndices();
 		PlotData[] plotData = new PlotData[plottableColumnIndices.length];
 		String[] yNames = getPlottableNames();
-		
-		String title = "";
-		String xLabel = "";
-		String yLabel = "";
 
 		for (int i=0; i<plottableColumnIndices.length; i++)
 		{
@@ -1966,7 +1962,11 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
 			}
 			
 		}
-		Plot2D plot2D = new Plot2D(symbolTableEntries, yNames, plotData);
+		
+		String title = "Probability Distribution of Species";
+		String xLabel = "Number of Particles";
+		String yLabel = "";
+		Plot2D plot2D = new Plot2D(symbolTableEntries, yNames, plotData, new String[] {title, xLabel, yLabel});
 		refreshVisiblePlots(plot2D);
 		setPlot2D(plot2D);
 	}
