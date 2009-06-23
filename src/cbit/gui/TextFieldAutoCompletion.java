@@ -305,6 +305,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	
 	public void showPopupChoices(DocumentEvent docEvt, boolean bForce) {		
 		try {
+			autoCompJPopupMenu.setVisible(false);
 			if (!isShowing()) {
 				return;
 			}
@@ -368,13 +369,22 @@ public class TextFieldAutoCompletion extends JTextField {
 	       			autoCompJPopupMenu.show(this, loc.x, loc.y + getHeight() - getInsets().bottom);
 	       		} catch (BadLocationException ex) {	       			
 	       		}
-	       	} else {
-	       		autoCompJPopupMenu.setVisible(false);
-	       	}		   
+	       	}
 		} catch (Exception ex) {
 			ex.printStackTrace(System.out);
 		} finally {
 			 requestFocus();
+			// for mac, for some reason, when popup menu shows up
+			// the whole text was selected. So we need to de-select 
+			// everything.
+			SwingUtilities.invokeLater(new Runnable() {
+				
+				public void run() {
+					int cp = getCaretPosition();
+					setCaretPosition(cp);
+					moveCaretPosition(cp);				
+				}
+			});
 		}
 	}
 	
