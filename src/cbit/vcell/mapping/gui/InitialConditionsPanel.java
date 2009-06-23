@@ -759,6 +759,7 @@ private javax.swing.JTable getScrollPaneTable() {
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			ivjScrollPaneTable.setAutoCreateColumnsFromModel(true);
+			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

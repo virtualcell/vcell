@@ -265,6 +265,7 @@ private JSortTable getScrollPaneTable() {
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getjsortTable().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
+			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

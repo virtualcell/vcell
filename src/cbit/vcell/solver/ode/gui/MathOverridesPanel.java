@@ -643,6 +643,7 @@ private JTable getJTableFixed() {
 			ivjJTableFixed.setName("JTableFixed");
 			getScrollPane().setColumnHeaderView(ivjJTableFixed.getTableHeader());
 			ivjJTableFixed.setBounds(0, 0, 200, 200);
+			getJTableFixed().setRowHeight(getJTableFixed().getRowHeight() + 2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
