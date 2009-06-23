@@ -1915,7 +1915,12 @@ private void regeneratePlot2D() throws ExpressionException {
 			}
 			
 		}
-		Plot2D plot2D = new Plot2D(symbolTableEntries, yNames, plotData);
+		
+		String title = "Probability Distribution of Species";
+		String xLabel = "Number of Particles";
+		String yLabel = "";
+		
+		Plot2D plot2D = new Plot2D(symbolTableEntries, yNames, plotData, new String[] {title, xLabel, yLabel});
 		refreshVisiblePlots(plot2D);
 		setPlot2D(plot2D);
 	}

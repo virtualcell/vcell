@@ -334,7 +334,7 @@ private void displayTask() {
 		StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 		if(stochOpt != null && stochOpt.getNumOfTrials() > 1 )
 		{
-			getJLabelOutput().setText("Histogram (last time point only)");
+			getJLabelOutput().setText("Histogram with "+stochOpt.getNumOfTrials()+" Trials(@last time point)");
 		}
 		else
 		{
