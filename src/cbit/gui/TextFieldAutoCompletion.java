@@ -251,8 +251,8 @@ public class TextFieldAutoCompletion extends JTextField {
 		int startPos = 0;
 		String prefix = null;
 		int endPos = 0;
-	}
-	
+	} 
+
 	private CurrentWord findCurrentWord(DocumentEvent docEvt) {
 		CurrentWord currentWord = null;
 		String text = getText();		
@@ -280,6 +280,9 @@ public class TextFieldAutoCompletion extends JTextField {
 		int w;
 		for (w = pos-1; w >= 0; w--) {
 			char c = text.charAt(w);
+			if ((c == '.' || c == ')') && w == pos - 1) {
+				continue; // if . or ) is at the end of the word, include it
+			}
 			if (!Character.isJavaIdentifierPart(c)) {
 				break;
 			}
@@ -312,12 +315,20 @@ public class TextFieldAutoCompletion extends JTextField {
 			if (bInCompleteTask) {
 				return;
 			}
-			if (symbolTable == null && (autoCompWordList == null || autoCompWordList.size() == 0)) {
-				autoCompJPopupMenu.setVisible(false);
+			if (symbolTable == null && (autoCompWordList == null || autoCompWordList.size() == 0)) {				
 				return;
 			}
 			 
 	        CurrentWord currentWord = findCurrentWord(docEvt);
+			if (currentWord != null) {
+				int len = currentWord.prefix.length();
+				if (len > 1) {
+					char lastCh = currentWord.prefix.charAt(len - 1);
+					if (lastCh == ')' || lastCh == '.') {
+						return;
+					}
+				}
+	        }
 	        
 	        ArrayList<String> tempList = new ArrayList<String>();
 			if (symbolTable != null) {
@@ -366,7 +377,7 @@ public class TextFieldAutoCompletion extends JTextField {
 				
 	       		try {
 	       			Rectangle loc = modelToView(getCaretPosition());
-	       			autoCompJPopupMenu.show(this, loc.x, loc.y + getHeight() - getInsets().bottom);
+	       			autoCompJPopupMenu.show(this, loc.x, loc.y + loc.height);
 	       		} catch (BadLocationException ex) {	       			
 	       		}
 	       	}
