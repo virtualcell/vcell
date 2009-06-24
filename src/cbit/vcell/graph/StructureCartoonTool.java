@@ -649,16 +649,21 @@ protected boolean shapeHasMenuActionEnabled(Shape shape, java.lang.String menuAc
 	
 	//Paste if there is a species on the system clipboard and (it doesn't exist in structure || you are PASTE_NEW)
 	if (shape instanceof StructureShape){
-		if(menuAction.equals(PASTE_MENU_ACTION) || menuAction.equals(PASTE_NEW_MENU_ACTION)){
+		boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);
+		boolean bPaste = menuAction.equals(PASTE_MENU_ACTION);
+		if(bPaste || bPasteNew){
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 			if(species == null){
 				return false;
 			}
-			if(menuAction.equals(PASTE_NEW_MENU_ACTION)){
-				return true;
-			}
-			if(getStructureCartoon().getModel().getSpeciesContext(species,((StructureShape)shape).getStructure()) != null){
-				return false;
+			if(getStructureCartoon().getModel().contains(species)) {
+				if (getStructureCartoon().getModel().getSpeciesContext(species,((StructureShape)shape).getStructure()) != null) {
+					return bPasteNew ? true : false;
+				} else {
+					return bPasteNew ? false : true;
+				}
+			} else {
+				return bPasteNew ? false : true;
 			}
 		}
 	}
