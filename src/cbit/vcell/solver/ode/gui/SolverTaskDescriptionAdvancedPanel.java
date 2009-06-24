@@ -1216,8 +1216,9 @@ private void enableOutputOptionPanel() {
 		stopSpatiallyUniformPanel.setVisible(false);
 	}
 	
-	//Amended June 2009, no output option for stochastic multiple trials
-	if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1)
+	//Amended June 2009, no output option for stochastic gibson multiple trials
+	if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1
+	   && solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson))
 	{
 		return;
 	}
@@ -1272,13 +1273,20 @@ private void enableVariableTimeStepOptions() {
 	bHasVariableTS = solverDescription.hasVariableTimestep();
 	
 	BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance() || getSolverTaskDescription().isStopAtSpatiallyUniform());
-	//for gibson method, we even don't need default time step.
-	getTimeStepPanel().enableComponents(bHasVariableTS);
-	if (solverDescription.compareEqual(SolverDescription.StochGibson) ||
-			solverDescription.compareEqual(SolverDescription.HybridEuler)||
-			solverDescription.compareEqual(SolverDescription.HybridMilstein)||
-			solverDescription.compareEqual(SolverDescription.HybridMilAdaptive)) {
-		getTimeStepPanel().disableMinAndMaxTimeStep();
+	//Hybrid solvers should show default time step
+	if (solverDescription.compareEqual(SolverDescription.HybridEuler)||
+		solverDescription.compareEqual(SolverDescription.HybridMilstein)||
+		solverDescription.compareEqual(SolverDescription.HybridMilAdaptive))
+	{
+		getTimeStepPanel().enableComponents(false); //force using default time step only
+	}
+	else
+	{
+		getTimeStepPanel().enableComponents(bHasVariableTS);
+	}
+	if (solverDescription.compareEqual(SolverDescription.StochGibson))
+	{
+		getTimeStepPanel().disableMinAndMaxTimeStep();// gibson doesn't min and max time step
 	}
 	if (solverDescription.isSundialsSolver()) {
 		getTimeStepPanel().disableMinTimeStep();

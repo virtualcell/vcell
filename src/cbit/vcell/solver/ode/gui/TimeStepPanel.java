@@ -245,20 +245,7 @@ public void disableTimeStep()
 	getMaximumTimeStepTextField().setEnabled(false);
 
 }
-/*
- * Enable min,maximum and default time steps.
- * Creation date: (7/13/2007)
- */
-public void enableTimeStep() 
-{
-	getMinimumTimeStepLabel().setEnabled(true);
-	getMinimumTimeStepTextField().setEnabled(true);
-	getDefaultTimeStepLabel().setEnabled(true);
-	getDefaultTimeStepTextField().setEnabled(true);
-	getMaximumTimeStepLabel().setEnabled(true);
-	getMaximumTimeStepTextField().setEnabled(true);
 
-}
 /**
  * Disable minmum, maximum time steps,If only default time step is needed.
  * Creation date: (7/13/2007)
@@ -289,19 +276,22 @@ public void enableComponents(boolean variableTimeStep) {
 	if (variableTimeStep) {
 		getMinimumTimeStepLabel().setEnabled(true);
 		getMinimumTimeStepTextField().setEnabled(true);
+		getMinimumTimeStepTextField().setText(getTimeStep().getMinimumTimeStep()+"");
 		getDefaultTimeStepLabel().setEnabled(false);
 		getDefaultTimeStepTextField().setText("");
 		getDefaultTimeStepTextField().setEnabled(false);
 		getMaximumTimeStepLabel().setEnabled(true);
 		getMaximumTimeStepTextField().setEnabled(true);
+		getMaximumTimeStepTextField().setText(getTimeStep().getMaximumTimeStep()+"");
 	} else {
 		getMinimumTimeStepLabel().setEnabled(false);
-		//getMinimumTimeStepTextField().setText("");
+		getMinimumTimeStepTextField().setText("");
 		getMinimumTimeStepTextField().setEnabled(false);
 		getDefaultTimeStepLabel().setEnabled(true);
 		getDefaultTimeStepTextField().setEnabled(true);
+		getDefaultTimeStepTextField().setText(getTimeStep().getDefaultTimeStep()+"");
 		getMaximumTimeStepLabel().setEnabled(false);
-		//getMaximumTimeStepTextField().setText("");
+		getMaximumTimeStepTextField().setText("");
 		getMaximumTimeStepTextField().setEnabled(false);
 	}
 }
