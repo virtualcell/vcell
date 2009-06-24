@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -1747,6 +1748,12 @@ public void checkValidity() throws MappingException
 		// old-stle ODE models should still work
 		if (!isStoch() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedNull()){
 			return; // old style ODE models
+		}
+		// ODE- where sizes are set, but relative sizes are not: 
+		if (!isStoch() && !getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedPositive()){
+			// the sizes are specified, but not the volFractions and surface-to-vol ratios, so run the structureSizeSolver to get the relative sizes
+			StructureSizeSolver ssSolver = new StructureSizeSolver();
+			ssSolver.updateRelativeStructureSizes(this);
 		}
 		// otherwise, all sizes should be present and positive.
 		if (!getGeometryContext().isAllSizeSpecifiedPositive()){
