@@ -11,17 +11,13 @@ import java.awt.*;
 import java.util.IdentityHashMap;
 
 import cbit.vcell.model.*;
-import cbit.gui.*;
 import javax.swing.*;
 import cbit.vcell.model.gui.SimpleReactionPanelDialog;
 import cbit.vcell.model.gui.FluxReaction_Dialog;
-import javax.swing.event.InternalFrameEvent;
 
-import org.vcell.util.Compare;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.vcell.model.gui.EditSpeciesDialog;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellTransferable;
 /**
@@ -1393,17 +1389,20 @@ protected boolean shapeHasMenuActionEnabled(Shape shape, java.lang.String menuAc
 		}
 	}
 	if (shape instanceof ReactionContainerShape){
-		if(menuAction.equals(PASTE_MENU_ACTION) || menuAction.equals(PASTE_NEW_MENU_ACTION)){
+		boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);
+		boolean bPaste = menuAction.equals(PASTE_MENU_ACTION);
+		if(bPaste || bPasteNew){
 			//Paste if there is a species on the system clipboard and it doesn't exist in structure
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 			if(species != null){
-				if(menuAction.equals(PASTE_NEW_MENU_ACTION)){
-					return true;
-				}
-				if(getReactionCartoon().getModel().getSpeciesContext(species,((ReactionContainerShape)shape).getStructure()) != null){
-					return false;
-				}else{
-					return true;
+				if(getReactionCartoon().getModel().contains(species)) {
+					if (getReactionCartoon().getModel().getSpeciesContext(species,((ReactionContainerShape)shape).getStructure()) != null) {
+						return bPasteNew ? true : false;
+					} else {
+						return bPasteNew ? false : true;
+					}
+				} else {
+					return bPasteNew ? false : true;
 				}
 			}
 			//Paste if there is a ReactionStepArr on the system clipboard and structure types match
