@@ -8,6 +8,9 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+
+import org.vcell.util.NumberUtils;
+
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
@@ -642,6 +645,7 @@ Object getSimulationStatusDisplay(Simulation simulation) {
 		if (displayProgress){
 			double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
 			getStatusBars()[index].setValue((int)(progress * 100));
+			getStatusBars()[index].setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 			if (simStatus.isFailed()) {
 				getStatusBars()[index].setString("One or more jobs failed");
 			}
