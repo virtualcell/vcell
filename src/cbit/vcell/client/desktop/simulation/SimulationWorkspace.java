@@ -165,6 +165,7 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	//
 	// check for error conditions (hard limits on resources) ... Note: each user should have it's own limits (and quotas).
 	//
+	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 	if (expectedNumTimePoints>maxTimepoints){
 		errorMessage = "Too many timepoints to be saved ("+expectedNumTimePoints+")\n"+
 						"maximum allowed is:\n" + 
@@ -177,6 +178,11 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 						"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n"+
 						"Try saving fewer timepoints\n"+
 						"If you need to exceed the quota, please contact us";
+		//not used for multiple stochastic run
+		if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1)
+		{
+			errorMessage = null;
+		}
 	} else if (expectedSizeBytes>maxSizeBytes){
 		errorMessage = "Resulting dataset ("+(expectedSizeBytes/1000000L)+"MB) is too large\n"+
 						"maximum size is:\n" + 
@@ -189,11 +195,22 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 						"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n"+
 						"Try saving fewer timepoints or using a smaller mesh (if spatial)\n"+
 						"If you need to exceed the quota, please contact us";
+		//not used for multiple stochastic run
+		if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1)
+		{
+			errorMessage = null;
+		}
 	} else if (simulation.getScanCount() > Simulation.MAX_LIMIT_SCAN_JOBS) {
 		errorMessage = "Too many simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
 						"suggested limit for number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
 						"Try choosing fewer parameters or reducing the size of scan for each parameter.";
+		//not used for multiple stochastic run
+		if(simulation.getMathDescription().isStoch() && 
+		   solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1)
+		{
+			errorMessage = null;
+		}
 	}	
 	else if(getSimulationOwner() != null)
 	{ //to gurantee stochastic model uses stochastic methods and deterministic model uses ODE/PDE methods. 
@@ -237,6 +254,12 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		JOptionPane.showMessageDialog(parent, errorMessage, "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 		return false;
 	}else{
+		//don't check warning message for stochastic multiple trials, let it run.
+		if(simulation.getMathDescription().isStoch() && simulation.getSolverTaskDescription().getStochOpt()!=null &&
+				   simulation.getSolverTaskDescription().getStochOpt().getNumOfTrials()>1)
+		{
+			return true;
+		}
 		//
 		// no error conditions, check for warning conditions (suggested limits on resources)
 		//
@@ -424,7 +447,7 @@ private long getEstimatedNumTimePointsForStoch(Simulation sim)
 	double startTime = tb.getStartingTime();
 	double endTime = tb.getEndingTime();
 	OutputTimeSpec tSpec = solverTaskDescription.getOutputTimeSpec();
-	//hybrid G_E and G_M are fixed time step methods using uniform output time spec
+	//hybrid G_E, G_M are fixed time step methods using uniform output time spec
 	if (tSpec.isUniform()) {
 		double outputTimeStep = ((UniformOutputTimeSpec)tSpec).getOutputTimeStep();
 		return (long)((endTime - startTime)/outputTimeStep);
