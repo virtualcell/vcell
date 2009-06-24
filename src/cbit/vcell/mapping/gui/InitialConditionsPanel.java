@@ -9,21 +9,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
-
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.BevelBorderBean;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
-
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -34,10 +25,8 @@ import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Variable;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -79,8 +68,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				connEtoC8(e);
 		};
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
-				connEtoC1(e);
 		};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
@@ -117,27 +104,6 @@ public InitialConditionsPanel() {
 	super();
 	initialize();
 }
-
-
-/**
- * connEtoC1:  (ScrollPaneTable.mouse.mouseClicked(java.awt.event.MouseEvent) --> InitialConditionsPanel.showCustomEditor(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showCustomEditor(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC3:  (ScrollPaneTable.mouse.mouseClicked(java.awt.event.MouseEvent) --> InitialConditionsPanel.scrollPaneTable_MouseClicked(Ljava.awt.event.MouseEvent;)V)
@@ -879,6 +845,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
+	getScrollPaneTable().addMouseListener(ivjEventHandler);
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
@@ -1239,133 +1206,6 @@ private void setsimulationContext1(SimulationContext newValue) {
 	};
 	// user code begin {3}
 	// user code end
-}
-
-/**
- * Comment
- */
-private void showCustomEditor(java.awt.event.MouseEvent mouseEvent) {
-	if (mouseEvent.getClickCount() == 2) {
-		final int row = getScrollPaneTable().getSelectedRow();
-		int col = getScrollPaneTable().getSelectedColumn();
-		switch (getScrollPaneTable().convertColumnIndexToModel(col)) {
-			case SpeciesContextSpecsTableModel.COLUMN_INITIAL: {
-				BevelBorderBean ivjLocalBorder;
-				ivjLocalBorder = new BevelBorderBean();
-				ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
-				ivjLocalBorder.setBevelType(1);
-				final JTextArea  txtArea = new javax.swing.JTextArea();
-				txtArea.setName("JTextArea1");
-				txtArea.setBorder(ivjLocalBorder);
-				txtArea.setBounds(0, 0, 233, 103);
-				txtArea.setText(getScrollPaneTable().getValueAt(row, col).toString());
-
-				JScrollPane scrollPane2 = new javax.swing.JScrollPane();
-				scrollPane2.setName("JScrollPane2");
-				scrollPane2.setViewportView(txtArea);
-
-				JPanel dialogContentPane = new javax.swing.JPanel();
-				dialogContentPane.setName("JDialogContentPane");
-				dialogContentPane.setLayout(new java.awt.GridBagLayout());
-
-				java.awt.GridBagConstraints constraintsJScrollPane2 = new java.awt.GridBagConstraints();
-				constraintsJScrollPane2.gridx = 0; constraintsJScrollPane2.gridy = 0;
-				constraintsJScrollPane2.gridwidth = 2;
-				constraintsJScrollPane2.fill = java.awt.GridBagConstraints.BOTH;
-				constraintsJScrollPane2.weightx = 1.0;
-				constraintsJScrollPane2.weighty = 1.0;
-				constraintsJScrollPane2.insets = new java.awt.Insets(4, 4, 4, 4);
-				dialogContentPane.add(scrollPane2, constraintsJScrollPane2);
-
-				final JButton okButton = new javax.swing.JButton();
-				okButton.setName("JButtonOK");
-				okButton.setPreferredSize(new java.awt.Dimension(75, 25));
-				okButton.setText("OK");
-				okButton.setMaximumSize(new java.awt.Dimension(75, 25));
-				okButton.setMinimumSize(new java.awt.Dimension(75, 25));
-
-				java.awt.GridBagConstraints constraintsJButtonOK = new java.awt.GridBagConstraints();
-				constraintsJButtonOK.gridx = 0; constraintsJButtonOK.gridy = 1;
-				constraintsJButtonOK.anchor = java.awt.GridBagConstraints.EAST;
-				constraintsJButtonOK.weightx = 1.0;
-				constraintsJButtonOK.insets = new java.awt.Insets(4, 4, 4, 4);
-				dialogContentPane.add(okButton, constraintsJButtonOK);
-
-				final JButton cancelButton = new javax.swing.JButton();
-				cancelButton.setName("JButtonCancel");
-				cancelButton.setPreferredSize(new java.awt.Dimension(75, 25));
-				cancelButton.setText("Cancel");
-				cancelButton.setMaximumSize(new java.awt.Dimension(75, 25));
-				cancelButton.setMinimumSize(new java.awt.Dimension(75, 25));
-
-				java.awt.GridBagConstraints constraintsJButtonCancel = new java.awt.GridBagConstraints();
-				constraintsJButtonCancel.gridx = 1; constraintsJButtonCancel.gridy = 1;
-				constraintsJButtonCancel.anchor = java.awt.GridBagConstraints.WEST;
-				constraintsJButtonCancel.weightx = 1.0;
-				constraintsJButtonCancel.insets = new java.awt.Insets(4, 4, 4, 4);
-				dialogContentPane.add(cancelButton, constraintsJButtonCancel);
-
-				final JDialog dialog1 = new javax.swing.JDialog();
-				dialog1.setName("JDialog1");
-				dialog1.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-				dialog1.setBounds(484, 412, 485, 122);
-				dialog1.setModal(true);
-				dialog1.setTitle("Expression Editor");
-				dialog1.setContentPane(dialogContentPane);
-				
-				ActionListener al = new ActionListener() {
-				
-					public void actionPerformed(ActionEvent e) {
-						if (e.getSource() == cancelButton) {
-							dialog1.dispose();
-							return;
-						} 
-						if (e.getSource() == okButton) {
-							try {
-								Expression expr = new Expression(txtArea.getText());
-								SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row);
-								expr.bindExpression(scs);
-								Double val = null;
-								try{
-									val = new Double(expr.evaluateConstant());
-								}catch(ExpressionException ee) //if cannot evaluate as a constant, don't check the sign
-								{
-									// ee.printStackTrace(System.out);
-								}
-								if(val != null && val.doubleValue() < 0)
-								{
-									throw new ExpressionException("Initial condition should not be negative value.");
-								}
-								// For a non-spatial application, species init condn expr cannot be in terms of x, y, z.
-								if (getSimulationContext().getGeometry().getDimension() == 0) 
-								{
-									if (expr.hasSymbol(ReservedSymbol.X.getName()) || 
-										expr.hasSymbol(ReservedSymbol.Y.getName()) || 
-										expr.hasSymbol(ReservedSymbol.Z.getName())) {
-										throw new ExpressionException("Reserved spatial variable(s) (x,y,z), this is not allowed for species initial condition in a non-spatial model in VCell");
-									}
-									// double value = expr.evaluateConstant();
-									if(!getSimulationContext().isUsingConcentration() && val != null && Math.floor(val) != val)
-									{
-										throw new ExpressionException("Number of particles should be non-negative integer.");
-									}
-								}
-								getScrollPaneTable().setValueAt(txtArea.getText(), getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedColumn());
-								dialog1.dispose();
-							} catch (java.lang.Throwable ivjExc) {
-								PopupGenerator.showErrorDialog("Error in Initial Condition :\n" + ivjExc.getMessage());
-							}
-						}
-					}
-				};
-				okButton.addActionListener(al);
-				cancelButton.addActionListener(al);
-
-				ZEnforcer.showModalDialogOnTop(dialog1,InitialConditionsPanel.this);
-				return;
-			}
-		}
-	}
 }
 
 }
