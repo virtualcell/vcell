@@ -590,7 +590,7 @@ private void geometrySubVolumePanel_Initialize() {
 						if(name.equals(TokenMangler.fixTokenStrict(name))){
 							break;
 						}
-						name = DialogUtils.showInputDialog0(getComponent(), "SubVolume name "+name+" has illegal characters." +"\nProvide new value.", name);
+						name = DialogUtils.showInputDialog0(getComponent(), "Subdomain name "+name+" has illegal characters." +"\nProvide new value.", name);
 					}
 					delegate.setValue(name);//VALIDATE_OK, delegate gets New Good value
 				}catch(UtilCancelException e){					
@@ -743,7 +743,7 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsDeleteButton.gridx = 0; constraintsDeleteButton.gridy = 3;
 			constraintsDeleteButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
 
-			addShapeButton.setText("Add Structure...");
+			addShapeButton.setText("Define Shape...");
 			addShapeButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					if(addShapeJPanel == null){
@@ -759,7 +759,7 @@ private javax.swing.JPanel getJPanel1() {
 						try {
 							final boolean[] acceptFlag = new boolean[] {false};
 							final JDialog d = new JDialog();
-							d.setTitle("Define New Geometry Structure");
+							d.setTitle("Define New Geometry Shape");
 							
 							JPanel main = new JPanel();
 							BoxLayout mainBoxLayout = new BoxLayout(main,BoxLayout.Y_AXIS);
@@ -769,7 +769,7 @@ private javax.swing.JPanel getJPanel1() {
 							addCancelJPanel.setBorder(new EmptyBorder(10,10,10,10));
 							BoxLayout addCancelBoxLayout = new BoxLayout(addCancelJPanel,BoxLayout.X_AXIS);
 							addCancelJPanel.setLayout(addCancelBoxLayout);
-							final JButton addJButton = new JButton("Add New Structure");
+							final JButton addJButton = new JButton("Add New Subdomain");
 							addJButton.addActionListener(new ActionListener(){
 								public void actionPerformed(ActionEvent e) {
 									d.dispose();

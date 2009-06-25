@@ -29,7 +29,7 @@ public abstract class SubVolume implements Serializable, Matchable, Cacheable {
  */
 protected SubVolume(KeyValue key, String name, int handle) {
 	if(!name.equals(TokenMangler.fixTokenStrict(name))){
-		throw new IllegalArgumentException("SubVolume name "+name+" has illegal characters");
+		throw new IllegalArgumentException("subdomain name "+name+" has illegal characters");
 	}
 	this.name = name;
 	this.key = key;

@@ -1407,7 +1407,7 @@ private javax.swing.JPanel getJPanel2() {
 			ivjJPanel2 = new javax.swing.JPanel();
 			ivjJPanel2.setName("JPanel2");
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel2.setMinimumSize(new java.awt.Dimension(181, 300));
+			ivjJPanel2.setMinimumSize(new java.awt.Dimension(171, 300));
 
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
@@ -1443,7 +1443,7 @@ private javax.swing.JPanel getJPanel3() {
 			ivjJPanel3 = new javax.swing.JPanel();
 			ivjJPanel3.setName("JPanel3");
 			ivjJPanel3.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel3.setMinimumSize(new java.awt.Dimension(127, 450));
+			ivjJPanel3.setMinimumSize(new java.awt.Dimension(196, 450));
 
 			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 0;
@@ -1908,9 +1908,11 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		setName("BioModelTreePanel");
+		setName("MathModelTreePanel");
 		setLayout(new java.awt.GridBagLayout());
+		setPreferredSize(new java.awt.Dimension(200, 150));
 		setSize(240, 453);
+		setMinimumSize(new java.awt.Dimension(198, 148));
 
 		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
 		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;

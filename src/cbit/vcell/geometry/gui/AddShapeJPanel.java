@@ -146,7 +146,7 @@ public class AddShapeJPanel extends JPanel {
 		cardPanel.add(manualPanel, manualPanel.getName());
 
 		final JLabel enterAnalyticExpressionLabel = new JLabel();
-		enterAnalyticExpressionLabel.setText("Enter an analytic expression defining a structure shape");
+		enterAnalyticExpressionLabel.setText("Enter an analytic expression defining a shape");
 		final GridBagConstraints gridBagConstraints_28 = new GridBagConstraints();
 		gridBagConstraints_28.gridy = 0;
 		gridBagConstraints_28.gridx = 0;
@@ -382,15 +382,13 @@ public class AddShapeJPanel extends JPanel {
 				VCellTransferable.sendToClipboard(analyticExprLabel.getText());
 			}
 		});
-		copyExpressionTextButton.setText("Copy Anaytic Expression Text");
+		copyExpressionTextButton.setText("Copy Expression");
 		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
 		gridBagConstraints_14.gridy = 2;
 		gridBagConstraints_14.gridx = 0;
 		exprPanel.add(copyExpressionTextButton, gridBagConstraints_14);
 		
-		
 		init();
-
 	}
 	
 	public void setDimension(int dimension){
