@@ -28,7 +28,9 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -48,6 +50,7 @@ import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
+import org.vcell.util.gui.ZEnforcer;
 
 import loci.formats.AWTImageTools;
 import loci.formats.FormatTools;
@@ -59,6 +62,7 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.geometry.gui.ROIAssistPanel;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
@@ -250,7 +254,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagConstraints12.gridx = 1;
 		gridBagConstraints12.gridy = 1;
 		gridBagConstraints12.weightx = 1.0;
-		this.setSize(734, 471);
+		this.setSize(734, 534);
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.rowHeights = new int[] {0,7,0};
 		this.setLayout(gridBagLayout_1);
@@ -450,7 +454,40 @@ public class OverlayEditorPanelJAI extends JPanel {
 		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
 		roiAssistButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				firePropertyChange(FRAP_DATA_AUTOROI_PROPERTY, null,new Object());						
+				firePropertyChange(FRAP_DATA_AUTOROI_PROPERTY, null,new Object());
+				
+				ROISourceData roiSourceData = new ROISourceData(){
+					public void addReplaceRoi(ROI originalROI) {
+						OverlayEditorPanelJAI.this.setROI(originalROI);
+					}
+					public ROI getCurrentlyDisplayedROI() {
+						return OverlayEditorPanelJAI.this.getROI();
+					}
+					public ImageDataset getImageDataset() {
+						return OverlayEditorPanelJAI.this.imageDataset;
+					}
+					public ROI getRoi(String name) {
+						return OverlayEditorPanelJAI.this.getROI();
+					}
+				};
+				
+				JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(OverlayEditorPanelJAI.this, JFrame.class));
+				roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
+				roiDialog.setModal(true);
+				ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
+				ROI originalROI = null;
+				try{
+					originalROI = new ROI(roi);
+				}catch(Exception ex){
+					ex.printStackTrace();
+					//can't happen
+				}
+				roiAssistPanel.init(roiDialog,originalROI,
+						roiSourceData,OverlayEditorPanelJAI.this);
+				roiDialog.setContentPane(roiAssistPanel);
+				roiDialog.pack();
+				roiDialog.setSize(400,200);
+				ZEnforcer.showModalDialogOnTop(roiDialog, OverlayEditorPanelJAI.this);
 			}
 		});
 //		roiAssistButton.setText(ROI_ASSIST_TEXT);
@@ -629,6 +666,10 @@ public class OverlayEditorPanelJAI extends JPanel {
 		}
 	}
 
+	public ROI getROI(){
+		return roi;
+	}
+	
 	/**
 	 * Method setROI.
 	 * @param argROI ROI

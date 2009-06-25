@@ -1256,6 +1256,7 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 			AsynchClientTask[] taskArray = fieldDataWindowManager.newDocument(docCreateInfo);
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 			hash.put("requestManager", fieldDataWindowManager.getRequestManager());
+			hash.put("parent", this);
 			ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 		} catch (Exception e) {
 			e.printStackTrace();

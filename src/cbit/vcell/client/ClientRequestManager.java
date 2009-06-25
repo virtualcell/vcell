@@ -5,6 +5,8 @@ import cbit.xml.merge.*;
 import cbit.image.*;
 import cbit.vcell.export.server.*;
 import cbit.vcell.xml.XMLInfo;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.geometry.gui.ROISourceData;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.GeometricRegion;
@@ -25,17 +27,24 @@ import java.net.URLConnection;
 
 import cbit.rmi.event.ExportEvent;
 import java.awt.*;
+
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
+import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.undo.UndoableEditSupport;
 
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -750,7 +759,7 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), documentCreationInfo.getOption());
-						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume1",new cbit.vcell.parser.Expression(1.0)));					
+						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain1",new cbit.vcell.parser.Expression(1.0)));					
 						hashTable.put("doc", geometry);
 					}
 				};
@@ -836,35 +845,111 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 							PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
 							pdeDataContext.setVariableAndTime(docInfo.getVarName(), pdeDataContext.getTimePoints()[docInfo.getTimeIndex()]);
 							double[] data = pdeDataContext.getDataValues();
+							CartesianMesh mesh = pdeDataContext.getCartesianMesh();
 							byte[] segmentedData = new byte[data.length];
 							Vector<Double> distinctValues = new Vector<Double>();
 							int index = -1;
+							int MAX_NUMBER_OF_COLORS = 256;
+							boolean bTooManyColors = false;
 							for (int i = 0; i < data.length; i++) {
 								if((index = distinctValues.indexOf(data[i])) == -1){
 									index = distinctValues.size();
 									distinctValues.add(data[i]);
-									if(distinctValues.size() > 256){
-										throw new Exception("FieldData "+ docInfo.getExternalDataID().getName() + " has more than 256 distinct values.");
+									if(distinctValues.size() > MAX_NUMBER_OF_COLORS){
+										bTooManyColors = true;
+										break;
 									}
 								}
 								segmentedData[i] = (byte)index;
 							}
-//							new VCDocument.GeomFromFieldDataCreationInfo(
-//									VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FIELDDATA,
-//									segmentedData,
-//									new ISize(pdeDataContext.getCartesianMesh().getSizeX(),pdeDataContext.getCartesianMesh().getSizeY(),pdeDataContext.getCartesianMesh().getSizeZ()),
-//									pdeDataContext.getCartesianMesh().getExtent(),
-//									null,
-//									"Created from Field Data "+
-//									((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName()+":\n"+
-//									"Variable="+pdeDataContext.getVariableName()+" Time="+pdeDataContext.getTimePoint()
-//								)
-							CartesianMesh mesh = pdeDataContext.getCartesianMesh();
-							VCImage initImage = new VCImageUncompressed(null,segmentedData, mesh.getExtent(), mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
-							hashTable.put("vcImage", initImage);
+							
+							double minValue = Double.POSITIVE_INFINITY;
+							double maxValue = Double.NEGATIVE_INFINITY;
+							for (int i = 0; i < data.length; i++) {
+								minValue = Math.min(minValue,data[i]);
+								maxValue = Math.max(maxValue,data[i]);
+							}
+							short[] dataToSegment = new short[data.length];
+							for (int i = 0; i < data.length; i++) {
+								dataToSegment[i] = (short)((data[i]-minValue)/(maxValue-minValue)*30000);
+							}
+							hashTable.put("dataToSegment", dataToSegment);
+							hashTable.put("mesh", mesh);
+							if (!bTooManyColors) {
+								VCImage initImage = new VCImageUncompressed(null,segmentedData, mesh.getExtent(), mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
+								hashTable.put("vcImage", initImage);
+							}
 						}
 					};
-					taskArray = new AsynchClientTask[] {task1, new EditImageAttributes(), saveImage, createGeometry};
+					
+					AsynchClientTask segmentTask = new AsynchClientTask("segmenting data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							short[] dataToSegment = (short[])hashTable.get("dataToSegment");
+							CartesianMesh mesh = (CartesianMesh)hashTable.get("mesh");
+							if (dataToSegment==null){
+								return;
+							}
+							if (mesh==null){
+								throw new Exception("mesh not found");
+							}
+
+							Component parent = (Component)hashTable.get("parent");
+							if (hashTable.get("vcImage") != null) {	
+								String segment = "Proceed with Segmentation";
+								String nosegment = "Proceed without Segmentation";
+								String cancel = "Cancel";
+								String choice = PopupGenerator.showWarningDialog(parent, "The image contains multiple colors. Segmentation is recommended.", 
+										new String[] {segment, nosegment, cancel}, segment);							
+								if (choice.equals(cancel)) {
+									throw UserCancelException.CANCEL_GENERIC;
+								} else if (choice.equals(nosegment)) {
+									return;
+								}
+							} else {
+								PopupGenerator.showInfoDialog("The image contains multiple colors. Segmentation is required.");
+							}
+							OverlayEditorPanelJAI overlayEditorPanelJAI = new OverlayEditorPanelJAI();
+							overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
+							overlayEditorPanelJAI.setROITimePlotVisible(false);
+							overlayEditorPanelJAI.setAllowAddROI(false);
+							UShortImage usImage = new UShortImage(dataToSegment,mesh.getOrigin(),mesh.getExtent(),mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
+							ImageDataset imageDataset = new ImageDataset(new UShortImage[] { usImage }, new double[] { 0.0 }, mesh.getSizeZ());
+							overlayEditorPanelJAI.setImages(imageDataset, true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+							overlayEditorPanelJAI.setROITimePlotVisible(false);
+							UShortImage roiImage = new UShortImage(new short[dataToSegment.length],mesh.getOrigin(),mesh.getExtent(),mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
+							ROI roi = new ROI(roiImage,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
+							overlayEditorPanelJAI.addROIName(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name(),true,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
+							overlayEditorPanelJAI.setROI(roi);
+							
+							int retCode = DialogUtils.showComponentOKCancelDialog(parent, overlayEditorPanelJAI, "segment cell image for geometry");
+							if (retCode == JOptionPane.OK_OPTION){
+								overlayEditorPanelJAI.saveUserChangesToROI();
+								roi = overlayEditorPanelJAI.getROI();
+								short[] roiData = roi.getPixelsXYZ();
+								byte[] segmentedData = new byte[roiData.length];
+								Vector<Short> distinctValues = new Vector<Short>();
+								for (int i = 0; i < roiData.length; i++) {
+									int index = -1;
+									if((index = distinctValues.indexOf(roiData[i])) == -1){
+										index = distinctValues.size();
+										distinctValues.add(roiData[i]);
+										if(distinctValues.size() > 2){
+											throw new Exception("expecting 2 colors ... background and ROI");
+										}
+									}
+									segmentedData[i] = (byte)index;
+								}
+								VCImage initImage = new VCImageUncompressed(null,segmentedData, mesh.getExtent(), mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
+								hashTable.put("vcImage", initImage);
+							} else{
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+						}
+					};
+					
+					taskArray = new AsynchClientTask[] {task1, segmentTask, new EditImageAttributes(), saveImage, createGeometry};
 					break;
 				} else{
 					throw new RuntimeException("Unknown Geometry Document creation option value="+documentCreationInfo.getOption());
