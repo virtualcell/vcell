@@ -2124,6 +2124,90 @@ public final void writeTokens(java.io.PrintWriter pw) {
 	pw.println("\t\t"+VCMODL.EndBlock+" ");
 }
 
+/**
+ * writeTokensWithReplacingProxyParams : same functionality as writeTokens, but it replaces original proxyParameters with 
+ * corresponding new proxyparameters.
+ * 
+ * @param pw
+ */
+public final String writeTokensWithReplacingProxyParams(Hashtable<String, Expression> parmExprHash) {
+	//
+	//  old format (version 1) (still supported for reading)
+	//
+	//	Kinetics GeneralCurrentKinetics {
+	//      Parameter a 10;
+	//      Parameter b 3;
+	//      Parameter c d/2;
+	//      Parameter d 5;
+	//      CurrentDensity a+b/c;
+	//  }
+	//
+	//
+	//  new format (version 2) (deprecated, incompatable with Version 1, still supported for reading)
+	//
+	//	Kinetics GeneralCurrentKinetics {
+	//      CurrentDensity 'currentDensity'
+	//		Parameter currentDensity a+b/c;
+	//      Parameter a 10;
+	//      Parameter b 3;
+	//      Parameter c d/2;
+	//      Parameter d 5;
+	//  }
+	//
+	//  latest format (version 3), which is backward compatable with version 1
+	//  ParameterVCMLTokens (such as "CurrentDensity") have simple expressions 
+	//  that always consist of only the requiredIdentifier (e.g.  currentDensity; )
+	//
+	//	Kinetics GeneralCurrentKinetics {
+	//		Parameter currentDensity a+b/c;
+	//      Parameter a 10;
+	//      Parameter b 3;
+	//      Parameter c d/2;
+	//      Parameter d 5;
+	//      CurrentDensity currentDensity;
+	//  }
+	//
+	//
+
+	java.io.StringWriter stringWriter = new java.io.StringWriter();
+	java.io.PrintWriter pw = new java.io.PrintWriter(stringWriter);
+
+	pw.println("\t\t"+VCMODL.Kinetics+" "+getKineticsDescription().getVCMLKineticsName()+" "+VCMODL.BeginBlock+" ");
+
+	KineticsParameter parameters[] = getKineticsParameters();
+	if (parameters!=null){
+		for (int i=0;i<parameters.length;i++){
+			KineticsParameter parm = parameters[i];
+			Expression paramExpr = parmExprHash.get(parm.getName());
+			cbit.vcell.units.VCUnitDefinition unit = parm.getUnitDefinition();
+			if (unit == null) {
+				pw.println("\t\t\t"+VCMODL.Parameter+" "+parm.getName()+" "+paramExpr.infix() + ";" );
+			} else {
+				pw.println("\t\t\t"+VCMODL.Parameter+" "+parm.getName()+" "+paramExpr.infix() + ";" +
+				       " [" +  unit.getSymbol() + "]");
+			}
+		}
+	}
+
+	//
+	// write primary tokens as simple expressions (e.g. parmName; )
+	//
+	for (int i = 0; i < parameters.length; i++){
+		KineticsParameter parm = parameters[i];
+		if (parm.getRole() != ROLE_UserDefined){
+			pw.println("\t\t\t"+RoleTags[parm.getRole()]+" "+parm.getName()+";");
+		}
+	}
+	
+	
+	pw.println("\t\t"+VCMODL.EndBlock+" ");
+	
+	pw.flush();
+	pw.close();
+	return stringWriter.getBuffer().toString();
+
+}
+
 public abstract KineticsParameter getAuthoritativeParameter();
 
 }
