@@ -39,6 +39,9 @@ import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.vcell.util.BeanUtils;
+
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableEntryFilter;
@@ -58,6 +61,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	private boolean bInCompleteTask = false;
 	private SymbolTableEntryFilter symbolTableEntryFilter = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
+	private JScrollPane scrollPane = null;
 		
 	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener {
 		public void changedUpdate(DocumentEvent e) {
@@ -133,10 +137,9 @@ public class TextFieldAutoCompletion extends JTextField {
 		autoCompJList.addMouseListener(eventHandler);
 
 		autoCompJPopupMenu = new JPopupMenu();
-		JScrollPane sp = new JScrollPane();
-		sp.setViewportView(autoCompJList);
-		//sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		autoCompJPopupMenu.add(sp);
+		scrollPane = new JScrollPane();
+		scrollPane.setViewportView(autoCompJList);
+		autoCompJPopupMenu.add(scrollPane);
 		
 		setupActions();
 	}
@@ -159,6 +162,7 @@ public class TextFieldAutoCompletion extends JTextField {
 				}
 				int si = (autoCompJList.getSelectedIndex() + increment + totalLen) % totalLen; 
 				autoCompJList.setSelectedIndex(Math.max(0, si));
+				autoCompJList.ensureIndexIsVisible(si);
 			}
 		}
 	}
@@ -269,7 +273,7 @@ public class TextFieldAutoCompletion extends JTextField {
 				pos -= 1;
 			}
 		}
-		if (pos <= 0) {
+		if (pos < 0) {
 			return currentWord;
 		}
 		pos = Math.min(pos, text.length());
@@ -320,7 +324,11 @@ public class TextFieldAutoCompletion extends JTextField {
 			}
 			 
 	        CurrentWord currentWord = findCurrentWord(docEvt);
-			if (currentWord != null) {
+			if (currentWord == null) {
+				return;
+			} // if the cursor is the at the beginning, don't show list
+		
+//	        if (currentWord != null) {
 				int len = currentWord.prefix.length();
 				if (len > 1) {
 					char lastCh = currentWord.prefix.charAt(len - 1);
@@ -328,7 +336,7 @@ public class TextFieldAutoCompletion extends JTextField {
 						return;
 					}
 				}
-	        }
+//	        }
 	        
 	        ArrayList<String> tempList = new ArrayList<String>();
 			if (symbolTable != null) {
@@ -361,6 +369,21 @@ public class TextFieldAutoCompletion extends JTextField {
 			
 			Collections.sort(tempList, new Comparator<String>() {
 				public int compare(String o1, String o2) {
+					ReservedSymbol r1 = ReservedSymbol.fromString(o1);
+					ReservedSymbol r2 = ReservedSymbol.fromString(o2);
+					if (r1 == null && r2 != null) {
+						return -1;
+					} else if (r1 != null && r2 == null) {
+						return 1;
+					} else if (r1 != null && r2 != null) {
+						ReservedVariable v1 = ReservedVariable.fromString(o1);
+						ReservedVariable v2 = ReservedVariable.fromString(o2);
+						if (v1 == null && v2 != null) {
+							return 1;
+						} else if (v1 != null && v2 == null) {
+							return -1;
+						}
+					}
 					return o1.compareToIgnoreCase(o2);
 				}
 			});
