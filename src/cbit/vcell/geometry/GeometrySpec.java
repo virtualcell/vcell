@@ -188,7 +188,7 @@ public void addSubVolume(AnalyticSubVolume subVolume) throws PropertyVetoExcepti
 public void addSubVolume(AnalyticSubVolume subVolume,boolean bFront) throws PropertyVetoException {
 
 	if (getSubVolumeIndex(subVolume) != -1){
-		throw new IllegalArgumentException("subVolume "+subVolume+" cannot be added, already exists");
+		throw new IllegalArgumentException("subdomain "+subVolume+" cannot be added, already exists");
 	}
 
 	//
@@ -295,7 +295,7 @@ public void bringForward(AnalyticSubVolume subVolume) throws PropertyVetoExcepti
 	}
 
 	if (index == -1){
-		throw new IllegalArgumentException("subVolume "+subVolume+" not found");
+		throw new IllegalArgumentException("subdomain "+subVolume+" not found");
 	}
 
 	//
@@ -1398,7 +1398,7 @@ public void verifyCompleteSampling(VCImage argSampledImage) throws ImageExceptio
 		}else{
 			errorMessage = "Invalid Geometry - ";
 		}
-		errorMessage += "SubVolume(s)";
+		errorMessage += "Subdomain(s)";
 		bHasError = true;
 		for (int i = 0; i < missingSubVolumeList.size(); i++){
 			errorMessage += " '" + ((SubVolume)missingSubVolumeList.elementAt(i)).getName()+"'";
@@ -1444,17 +1444,17 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 			// verify that handles are non-negative
 			//
 			if (sv.getHandle()<0){
-				throw new PropertyVetoException("subVolume handle="+sv.getHandle()+" must be positive",event);
+				throw new PropertyVetoException("subdomain handle="+sv.getHandle()+" must be positive",event);
 			}
 			//
 			// verify that handles and names are unique
 			//
 			for (int j=i+1;j<subVolumes.length;j++){
 				if (subVolumes[j].getHandle() == subVolumes[i].getHandle()){
-					throw new PropertyVetoException("subVolume handle="+sv.getHandle()+" has already been used in geometry",event);
+					throw new PropertyVetoException("subdomain handle="+sv.getHandle()+" has already been used in geometry",event);
 				}
 				if (subVolumes[j].getName().equals(subVolumes[i].getName())){
-					throw new PropertyVetoException("subVolume name="+sv.getName()+" has already been used in geometry",event);
+					throw new PropertyVetoException("subdomain name="+sv.getName()+" has already been used in geometry",event);
 				}
 			}
 			//
@@ -1464,7 +1464,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 				bFoundImageSubVolume = true;
 			}else if (sv instanceof AnalyticSubVolume){
 				if (bFoundImageSubVolume){
-					throw new PropertyVetoException("subVolumes are out of order, all AnalyticSubVolumes must preceed all ImageSubVolumes",event);
+					throw new PropertyVetoException("subdomains are out of order, all analytic subdomains must preceed all image subdomains",event);
 				}
 			}
 		}
@@ -1480,7 +1480,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 		for (int i=0;i<subVolumes.length;i++){
 			if (subVolumes[i] instanceof ImageSubVolume){
 				if (vcImage == null){
-					throw new PropertyVetoException("adding ImageSubVolume, an image must be set first",event);
+					throw new PropertyVetoException("adding image subdomain, an image must be set first",event);
 				}
 			}
 		}
@@ -1499,14 +1499,14 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 	}else if (event.getSource() instanceof SubVolume && event.getPropertyName().equals("name")){
 		String newName = (String)event.getNewValue();
 		if (newName==null || newName.length()<1){
-			throw new PropertyVetoException("subVolume name must be at least one character",event);
+			throw new PropertyVetoException("subdomain name must be at least one character",event);
 		}
 		//
 		// check if name already used
 		//
 		SubVolume sv = getSubVolume(newName);
 		if (sv != null && sv != event.getSource()){
-			throw new PropertyVetoException("subVolume name '"+newName+"' is already used",event);
+			throw new PropertyVetoException("subdomain name '"+newName+"' is already used",event);
 		}
 	}
 }

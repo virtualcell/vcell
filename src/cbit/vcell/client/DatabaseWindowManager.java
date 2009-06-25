@@ -1324,6 +1324,7 @@ public String showSaveDialog(final int documentType, final Component requester, 
 	saveDialog.setMessage("");
 	saveDialog.setMessage(panel);
 	JDialog d = saveDialog.createDialog(requester, "Save document:");
+	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	final JOptionPane finalSaveDialog = saveDialog;
 	ActionListener al = new ActionListener() {
