@@ -1,12 +1,21 @@
 package cbit.vcell.client.desktop.simulation;
 
 import java.awt.Dimension;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Vector;
+
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 
 import cbit.util.EventDispatchRunWithException;
-import cbit.vcell.client.*;
-import javax.swing.*;
-import cbit.vcell.mapping.*;
+import cbit.util.NumberUtils;
+import cbit.vcell.client.ClientSimManager;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.SubDomain;
@@ -15,11 +24,13 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.*;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.document.*;
-
-import cbit.vcell.desktop.controls.*;
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;
 	private ClientSimManager clientSimManager = null;
@@ -655,6 +666,7 @@ Object getSimulationStatusDisplay(Simulation simulation) {
 		if (displayProgress){
 			double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
 			getStatusBars()[index].setValue((int)(progress * 100));
+			getStatusBars()[index].setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 			if (simStatus.isFailed()) {
 				getStatusBars()[index].setString("One or more jobs failed");
 			}
