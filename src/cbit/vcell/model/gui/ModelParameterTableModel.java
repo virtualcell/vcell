@@ -353,7 +353,12 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_VALUE:{
 			//return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),getBioModel().getModel().getNameScope());
-			return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			
+			if (parameter.getExpression() == null) {
+				return ""; 
+			} else {
+				return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			}
 		}
 		case COLUMN_ANNOTATION:{
 			if (parameter instanceof ModelParameter) {
