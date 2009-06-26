@@ -32,6 +32,7 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -491,6 +492,15 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			}
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(reactionSteps[i].getStructure());
 		}---don't think it's useful, isn't it?*/
+
+		
+		// deals with model parameters
+		ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
+		for (int j=0;j<modelParameters.length;j++){
+			Expression expr = getSubstitutedExpr(modelParameters[j].getExpression(), true, false);
+			expr = getIdentifierSubstitutions(expr,modelParameters[j].getUnitDefinition(), null);
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), expr));
+		}
 
 		//
 		// kinetic constants that evaluate to constants
