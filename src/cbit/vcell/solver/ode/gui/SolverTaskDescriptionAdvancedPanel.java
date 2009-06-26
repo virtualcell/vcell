@@ -102,10 +102,10 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private javax.swing.JLabel ivjSDEToleranceLabel = null;
 	private javax.swing.JTextField ivjSDEToleranceTextField = null;
 	
-	private JPanel stopSpatiallyUniformPanel = null;
-	private JCheckBox stopSpatiallyUniformCheckBox = null;
-	private JCheckBox dataProcessorCheckBox = null;
-	private JButton editDataProcessorButton = null;
+//	private JPanel stopSpatiallyUniformPanel = null;
+//	private JCheckBox stopSpatiallyUniformCheckBox = null;
+//	private JCheckBox dataProcessorCheckBox = null;
+//	private JButton editDataProcessorButton = null;
 	
 /**
  * ODEAdvancedPanel constructor comment.
@@ -174,99 +174,99 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	{
 		displayHelpInfo();
 	}
-	if (e.getSource() == stopSpatiallyUniformCheckBox) {
-		getSolverTaskDescription().setStopAtSpatiallyUniform(stopSpatiallyUniformCheckBox.isSelected());
-		if (stopSpatiallyUniformCheckBox.isSelected()) {
-			try {
-				BeanUtils.enableComponents(getErrorTolerancePanel(), true);
-				getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
-			} catch (PropertyVetoException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		} else {
-			BeanUtils.enableComponents(getErrorTolerancePanel(), false);
-		}
-	}
-	if (e.getSource() == dataProcessorCheckBox) {
-		if (dataProcessorCheckBox.isSelected()) {
-			editDataProcessor(false);
-			if (getSolverTaskDescription().getSimulation().getDataProcessingInstructions() == null) {
-				editDataProcessorButton.setEnabled(false);
-				dataProcessorCheckBox.setSelected(false);
-			} else {
-				editDataProcessorButton.setEnabled(true);
-			}
-		} else {
-			editDataProcessorButton.setEnabled(false);
-			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
-		}
-	}
-	if (e.getSource() == editDataProcessorButton) {
-		editDataProcessor(true);
-		editDataProcessorButton.setEnabled(true);
-	}
+//	if (e.getSource() == stopSpatiallyUniformCheckBox) {
+//		getSolverTaskDescription().setStopAtSpatiallyUniform(stopSpatiallyUniformCheckBox.isSelected());
+//		if (stopSpatiallyUniformCheckBox.isSelected()) {
+//			try {
+//				BeanUtils.enableComponents(getErrorTolerancePanel(), true);
+//				getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+//			} catch (PropertyVetoException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//		} else {
+//			BeanUtils.enableComponents(getErrorTolerancePanel(), false);
+//		}
+//	}
+//	if (e.getSource() == dataProcessorCheckBox) {
+//		if (dataProcessorCheckBox.isSelected()) {
+//			editDataProcessor(false);
+//			if (getSolverTaskDescription().getSimulation().getDataProcessingInstructions() == null) {
+//				editDataProcessorButton.setEnabled(false);
+//				dataProcessorCheckBox.setSelected(false);
+//			} else {
+//				editDataProcessorButton.setEnabled(true);
+//			}
+//		} else {
+//			editDataProcessorButton.setEnabled(false);
+//			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
+//		}
+//	}
+//	if (e.getSource() == editDataProcessorButton) {
+//		editDataProcessor(true);
+//		editDataProcessorButton.setEnabled(true);
+//	}
 }
 
-private void editDataProcessor(boolean bEdit) {
-	DataProcessingInstructions dpi = getSolverTaskDescription().getSimulation().getDataProcessingInstructions();
-	
-	JPanel mainPanel = new JPanel(new BorderLayout());
-	
-	JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-	JLabel nameLabel = new JLabel("Name");			
-	panel.add(nameLabel);
-	JTextField nameField = new JTextField();
-	if (dpi != null) {
-		nameField.setText(dpi.getScriptName());
-	} else {
-		nameField.setText("VFRAP");
-	}
-	nameField.setColumns(20);
-	panel.add(nameField);
-	mainPanel.add(panel, BorderLayout.NORTH);
-	
-	panel = new JPanel(new GridBagLayout());			
-	JLabel label = new JLabel("Text");
-	GridBagConstraints cbc = new GridBagConstraints();
-	cbc.gridx = 0;
-	cbc.gridy = 0;
-	cbc.insets = new Insets(4,4,4,8);
-	panel.add(label, cbc);
-	
-	JScrollPane sp = new JScrollPane();
-	sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-	sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-	JTextArea textArea = new JTextArea();
-	if (dpi != null) {
-		textArea.setText(dpi.getScriptInput());
-	}
-	textArea.setColumns(20);
-	textArea.setRows(10);
-	sp.setViewportView(textArea);			
-	
-	cbc = new GridBagConstraints();
-	cbc.gridx = 1;
-	cbc.gridy = 0;
-	cbc.weightx = 1;
-	cbc.weighty = 1;
-	cbc.fill = GridBagConstraints.BOTH;
-	panel.add(sp, cbc);			
-	mainPanel.add(panel, BorderLayout.CENTER);
-	
-	mainPanel.setMinimumSize(new Dimension(300,200));
-	mainPanel.setSize(new Dimension(300,200));
-	mainPanel.setPreferredSize(new Dimension(300,200));
-	
-	int ok = DialogUtils.showComponentOKCancelDialog(SolverTaskDescriptionAdvancedPanel.this, mainPanel, "Add Data Processor");
-	if (ok == JOptionPane.OK_OPTION && nameField.getText().length() > 0 && textArea.getText().length() > 0) {
-		getSolverTaskDescription().getSimulation().setDataProcessingInstructions(new DataProcessingInstructions(nameField.getText(), textArea.getText()));
-	} else {
-		if (!bEdit) {
-			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
-		}
-	}
-}
+//private void editDataProcessor(boolean bEdit) {
+//	DataProcessingInstructions dpi = getSolverTaskDescription().getSimulation().getDataProcessingInstructions();
+//	
+//	JPanel mainPanel = new JPanel(new BorderLayout());
+//	
+//	JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//	JLabel nameLabel = new JLabel("Name");			
+//	panel.add(nameLabel);
+//	JTextField nameField = new JTextField();
+//	if (dpi != null) {
+//		nameField.setText(dpi.getScriptName());
+//	} else {
+//		nameField.setText("VFRAP");
+//	}
+//	nameField.setColumns(20);
+//	panel.add(nameField);
+//	mainPanel.add(panel, BorderLayout.NORTH);
+//	
+//	panel = new JPanel(new GridBagLayout());			
+//	JLabel label = new JLabel("Text");
+//	GridBagConstraints cbc = new GridBagConstraints();
+//	cbc.gridx = 0;
+//	cbc.gridy = 0;
+//	cbc.insets = new Insets(4,4,4,8);
+//	panel.add(label, cbc);
+//	
+//	JScrollPane sp = new JScrollPane();
+//	sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+//	sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//	JTextArea textArea = new JTextArea();
+//	if (dpi != null) {
+//		textArea.setText(dpi.getScriptInput());
+//	}
+//	textArea.setColumns(20);
+//	textArea.setRows(10);
+//	sp.setViewportView(textArea);			
+//	
+//	cbc = new GridBagConstraints();
+//	cbc.gridx = 1;
+//	cbc.gridy = 0;
+//	cbc.weightx = 1;
+//	cbc.weighty = 1;
+//	cbc.fill = GridBagConstraints.BOTH;
+//	panel.add(sp, cbc);			
+//	mainPanel.add(panel, BorderLayout.CENTER);
+//	
+//	mainPanel.setMinimumSize(new Dimension(300,200));
+//	mainPanel.setSize(new Dimension(300,200));
+//	mainPanel.setPreferredSize(new Dimension(300,200));
+//	
+//	int ok = DialogUtils.showComponentOKCancelDialog(SolverTaskDescriptionAdvancedPanel.this, mainPanel, "Add Data Processor");
+//	if (ok == JOptionPane.OK_OPTION && nameField.getText().length() > 0 && textArea.getText().length() > 0) {
+//		getSolverTaskDescription().getSimulation().setDataProcessingInstructions(new DataProcessingInstructions(nameField.getText(), textArea.getText()));
+//	} else {
+//		if (!bEdit) {
+//			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
+//		}
+//	}
+//}
 
 
 /**
@@ -1198,23 +1198,23 @@ private void enableOutputOptionPanel() {
 	}
 	
 	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
-	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
-		stopSpatiallyUniformPanel.setVisible(true);
-		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
-		dataProcessorCheckBox.setVisible(true);
-		editDataProcessorButton.setVisible(true);
-		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
-		if (dpi != null) {
-			dataProcessorCheckBox.setSelected(true);
-			editDataProcessorButton.setEnabled(true);
-		} else {
-			editDataProcessorButton.setEnabled(false);
-		}
-	} else {
-		dataProcessorCheckBox.setVisible(false);
-		editDataProcessorButton.setVisible(false);
-		stopSpatiallyUniformPanel.setVisible(false);
-	}
+//	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
+//		stopSpatiallyUniformPanel.setVisible(true);
+//		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
+//		dataProcessorCheckBox.setVisible(true);
+//		editDataProcessorButton.setVisible(true);
+//		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
+//		if (dpi != null) {
+//			dataProcessorCheckBox.setSelected(true);
+//			editDataProcessorButton.setEnabled(true);
+//		} else {
+//			editDataProcessorButton.setEnabled(false);
+//		}
+//	} else {
+//		dataProcessorCheckBox.setVisible(false);
+//		editDataProcessorButton.setVisible(false);
+//		stopSpatiallyUniformPanel.setVisible(false);
+//	}
 	
 	//Amended June 2009, no output option for stochastic gibson multiple trials
 	if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1
@@ -1805,28 +1805,28 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsExplicitOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
 			
-			stopSpatiallyUniformPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));		
-			stopSpatiallyUniformCheckBox = new JCheckBox("Stop at Spatially Uniform");
-			stopSpatiallyUniformPanel.add(stopSpatiallyUniformCheckBox);
-			java.awt.GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; gridbag1.gridy = 3;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			getJPanel1().add(stopSpatiallyUniformPanel, gridbag1);
-
-			JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));		
-			dataProcessorCheckBox = new JCheckBox("Data Processing Script");
-			panel1.add(dataProcessorCheckBox);
-			editDataProcessorButton = new JButton("Edit...");
-			panel1.add(editDataProcessorButton);
-			
-			gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; gridbag1.gridy = 4;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			getJPanel1().add(panel1, gridbag1);
+//			stopSpatiallyUniformPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));		
+//			stopSpatiallyUniformCheckBox = new JCheckBox("Stop at Spatially Uniform");
+//			stopSpatiallyUniformPanel.add(stopSpatiallyUniformCheckBox);
+//			java.awt.GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
+//			gridbag1.gridx = 0; gridbag1.gridy = 3;
+//			gridbag1.fill = GridBagConstraints.HORIZONTAL;
+//			gridbag1.gridwidth = 4;
+//			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
+//			getJPanel1().add(stopSpatiallyUniformPanel, gridbag1);
+//
+//			JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));		
+//			dataProcessorCheckBox = new JCheckBox("Data Processing Script");
+//			panel1.add(dataProcessorCheckBox);
+//			editDataProcessorButton = new JButton("Edit...");
+//			panel1.add(editDataProcessorButton);
+//			
+//			gridbag1 = new java.awt.GridBagConstraints();
+//			gridbag1.gridx = 0; gridbag1.gridy = 4;
+//			gridbag1.fill = GridBagConstraints.HORIZONTAL;
+//			gridbag1.gridwidth = 4;
+//			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
+//			getJPanel1().add(panel1, gridbag1);
 			
 			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
      	    getJPanel1().setBorder(tb);
@@ -2480,9 +2480,9 @@ private void initConnections() throws java.lang.Exception {
 	getLambdaTextField().addFocusListener(this);
 	getMSRToleranceTextField().addFocusListener(this);
 	getSDEToleranceTextField().addFocusListener(this);
-	stopSpatiallyUniformCheckBox.addActionListener(this);
-	dataProcessorCheckBox.addActionListener(this);
-	editDataProcessorButton.addActionListener(this);
+//	stopSpatiallyUniformCheckBox.addActionListener(this);
+//	dataProcessorCheckBox.addActionListener(this);
+//	editDataProcessorButton.addActionListener(this);
 	connPtoP1SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
