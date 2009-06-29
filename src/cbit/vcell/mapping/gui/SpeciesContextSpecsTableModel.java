@@ -4,6 +4,12 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.vcell.util.gui.sorttable.ManageTableModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
@@ -14,20 +20,21 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class SpeciesContextSpecsTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	public static final int NUM_COLUMNS = 5;
+public class SpeciesContextSpecsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+	public static final int NUM_COLUMNS = 6;
 	public static final int COLUMN_SPECIESCONTEXT = 1;
 	public static final int COLUMN_SPECIES = 0;
 	public static final int COLUMN_STRUCTURE = 2;
 	public static final int COLUMN_FIXED = 3;
 	public static final int COLUMN_INITIAL = 4;
-	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Conditions" };
-	
+	public static final int COLUMN_DIFFUSION = 5;
+	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Conditions", "Diffusion Constant"};
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
@@ -50,28 +57,11 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 	getPropertyChange().firePropertyChange(evt);
 }
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
@@ -79,15 +69,6 @@ public void firePropertyChange(java.lang.String propertyName, int oldValue, int 
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 
 /**
  * Insert the method's description here.
@@ -109,7 +90,8 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_FIXED:{
 			return Boolean.class;
 		}
-		case COLUMN_INITIAL:{
+		case COLUMN_INITIAL:
+		case COLUMN_DIFFUSION:{
 			return ScopedExpression.class;
 		}
 		default:{
@@ -123,7 +105,11 @@ public Class<?> getColumnClass(int column) {
  * getColumnCount method comment.
  */
 public int getColumnCount() {
-	return NUM_COLUMNS;
+	if (getSimulationContext() != null && getSimulationContext().getGeometry().getDimension() > 0) {
+		return NUM_COLUMNS;
+	} else {
+		return NUM_COLUMNS - 1;
+	}
 }
 
 
@@ -166,10 +152,22 @@ public int getRowCount() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public SimulationContext getSimulationContext() {
+private SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
+
+private void refreshData() {
+
+	if (getSimulationContext()==null){
+		return;
+	}
+	int count = getRowCount();
+	rows.clear();
+	for (int i = 0; i < count; i++){
+		rows.add(getSimulationContext().getReactionContext().getSpeciesContextSpecs(i));
+	}
+}
 
 /**
  * getValueAt method comment.
@@ -181,6 +179,10 @@ public Object getValueAt(int row, int col) {
 	if (col<0 || col>=NUM_COLUMNS){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
+	
+	if (getData().size() <= row){
+		refreshData();
+	}	
 	SpeciesContextSpec scSpec = getSpeciesContextSpec(row);
 	switch (col){
 		case COLUMN_SPECIESCONTEXT:{
@@ -196,30 +198,27 @@ public Object getValueAt(int row, int col) {
 			return new Boolean(scSpec.isConstant());
 		}
 		case COLUMN_INITIAL:{
-			if(scSpec.getInitialConditionParameter() != null)
-			{
-				return new ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope(), 
-						true, symbolTableEntryFilter);
-			}
-			else 
-			{
+			SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
+			if(initialConditionParameter != null) {
+				return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, symbolTableEntryFilter);
+			} else	{
 				return null;
 			}
 			
+		}
+		case COLUMN_DIFFUSION:{
+			SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
+			if(diffusionParameter != null) 	{
+				return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, symbolTableEntryFilter);
+			} else {
+				return null;
+			}			
 		}
 		default:{
 			return null;
 		}
 	}
 }
-
-public SpeciesContextSpec getSpeciesContextSpec(int row) {
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	return getSimulationContext().getReactionContext().getSpeciesContextSpecs(row);
-}
-
 
 /**
  * The hasListeners method was generated to support the propertyChange field.
@@ -256,7 +255,8 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		case COLUMN_FIXED:{
 			return true;
 		}
-		case COLUMN_INITIAL:{
+		case COLUMN_INITIAL:
+		case COLUMN_DIFFUSION: {
 			// editing in place is impractical for expression
 			// this way, we can pop-up a custom dialog to enter a new value (GUI has to take care of this)
 			return true;
@@ -279,6 +279,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
 		updateListenersReactionContext((ReactionContext)evt.getSource(),true);
 		updateListenersReactionContext((ReactionContext)evt.getSource(),false);
+		refreshData();
 		fireTableDataChanged();
 		
 	}
@@ -301,15 +302,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
 /**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @param simulationContext The new value for the property.
@@ -327,8 +319,10 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		updateListenersReactionContext(simulationContext.getReactionContext(),false);
 		
 		symbolTableEntryFilter  = simulationContext.getSymbolTableEntryFilter();
+		refreshData();
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);
+	fireTableStructureChanged();
 	fireTableDataChanged();
 }
 
@@ -340,7 +334,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	SpeciesContextSpec scSpec = getSimulationContext().getReactionContext().getSpeciesContextSpecs(rowIndex);
+	SpeciesContextSpec scSpec = getSpeciesContextSpec(rowIndex);
 	switch (columnIndex){
 		case COLUMN_FIXED:{
 			boolean bFixed = ((Boolean)aValue).booleanValue();
@@ -354,17 +348,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		}
 		case COLUMN_INITIAL:{
 			try {
-				if (aValue instanceof ScopedExpression){
-					Expression exp = ((ScopedExpression)aValue).getExpression();
-					if(getSimulationContext().isUsingConcentration())
-					{
-						scSpec.getInitialConcentrationParameter().setExpression(exp);
-					}
-					else
-					{
-						scSpec.getInitialCountParameter().setExpression(exp);
-					}
-				}else if (aValue instanceof String) {
+				if (aValue instanceof String) {
 					String newExpressionString = (String)aValue;
 					if(getSimulationContext().isUsingConcentration())
 					{
@@ -374,6 +358,29 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					{
 						scSpec.getInitialCountParameter().setExpression(new Expression(newExpressionString));
 					}
+				}
+				fireTableRowsUpdated(rowIndex,rowIndex);
+			}catch (java.beans.PropertyVetoException e){
+				e.printStackTrace(System.out);
+				//
+				// don't handle exception here, InitialConditionsPanel needs it.
+				//
+				throw new RuntimeException(e.getMessage());
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				//
+				// don't handle exception here, InitialConditionsPanel needs it.
+				//
+				PopupGenerator.showErrorDialog("Wrong Expression:\n" + e.getMessage());
+				//throw new RuntimeException(e.getMessage());
+			}
+			break;
+		}
+		case COLUMN_DIFFUSION:{
+			try {
+				if (aValue instanceof String) {
+					String newExpressionString = (String)aValue;
+					scSpec.getDiffusionParameter().setExpression(new Expression(newExpressionString));
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (java.beans.PropertyVetoException e){
@@ -427,4 +434,88 @@ private void updateListenersReactionContext(ReactionContext reactionContext,bool
 	}
 
 }
+
+
+@Override
+public void sortColumn(final int col, final boolean ascending) {
+	Collections.sort(rows, new Comparator<SpeciesContextSpec>() {	
+		/**
+		 * Compares its two arguments for order.  Returns a negative integer,
+		 * zero, or a positive integer as the first argument is less than, equal
+		 * to, or greater than the second.<p>
+		 */
+		public int compare(SpeciesContextSpec speciesContextSpec1, SpeciesContextSpec speciesContextSpec2){			
+			
+			SpeciesContext speciesContext1 = speciesContextSpec1.getSpeciesContext();
+			SpeciesContext speciesContext2 = speciesContextSpec2.getSpeciesContext();			
+			switch (col){
+				case COLUMN_SPECIESCONTEXT:{
+					String name1 = speciesContext1.getName();
+					String name2 = speciesContext2.getName();
+					if (ascending){
+						return name1.compareToIgnoreCase(name2);
+					}else{
+						return name2.compareToIgnoreCase(name1);
+					}
+				}
+				case COLUMN_SPECIES:{
+					String commonName1 = speciesContext1.getSpecies().getCommonName();
+					String commonName2 = speciesContext2.getSpecies().getCommonName();
+					if (ascending){
+						return commonName1.compareToIgnoreCase(commonName2);
+					}else{
+						return commonName2.compareToIgnoreCase(commonName1);
+					}
+				}
+				case COLUMN_STRUCTURE:{
+					String name1 = speciesContext1.getStructure().getName();
+					String name2 = speciesContext2.getStructure().getName();
+					if (ascending){						
+						return name1.compareToIgnoreCase(name2);
+					}else{						
+						return name2.compareToIgnoreCase(name1);
+					}
+				}
+				case COLUMN_FIXED : {
+					Boolean bClamped1 = new Boolean(speciesContextSpec1.isConstant());
+					Boolean bClamped2 = new Boolean(speciesContextSpec2.isConstant());
+					if (ascending){
+						return bClamped1.compareTo(bClamped2);
+					}else{
+						return bClamped2.compareTo(bClamped1);
+					}
+				}
+				case COLUMN_INITIAL: {
+					Expression initExp1 = speciesContextSpec1.getInitialConditionParameter().getExpression();
+					String infix1 = (initExp1!=null)?(initExp1.infix()):("");
+					Expression initExp2 = speciesContextSpec2.getInitialConditionParameter().getExpression();
+					String infix2 = (initExp2!=null)?(initExp2.infix()):("");
+					if (ascending){
+						return infix1.compareToIgnoreCase(infix2);
+					}else{
+						return infix2.compareToIgnoreCase(infix1);
+					}
+				}
+				case COLUMN_DIFFUSION: {
+					Expression diffExp1 = speciesContextSpec1.getDiffusionParameter().getExpression();
+					String infix1 = (diffExp1!=null)?(diffExp1.infix()):("");
+					Expression diffExp2 = speciesContextSpec2.getDiffusionParameter().getExpression();
+					String infix2 = (diffExp2!=null)?(diffExp2.infix()):("");
+					if (ascending){
+						return infix1.compareToIgnoreCase(infix2);
+					}else{
+						return infix2.compareToIgnoreCase(infix1);
+					}
+				}	
+			}
+			return 1;
+		};
+	});	
+	fireTableDataChanged();
+}
+
+public SpeciesContextSpec getSpeciesContextSpec(int row) {
+return (SpeciesContextSpec)getData().get(row);
+}
+
 }
