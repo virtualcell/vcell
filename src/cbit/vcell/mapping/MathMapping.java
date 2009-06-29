@@ -1158,7 +1158,7 @@ private VolVariable getResolvedVolVariable(Species species) {
 			}
 		}
 	}
-	return new VolVariable(species.getCommonName());
+	return new VolVariable(TokenMangler.fixTokenStrict(species.getCommonName()));
 }
 
 

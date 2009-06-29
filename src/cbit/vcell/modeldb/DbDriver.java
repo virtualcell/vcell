@@ -2050,7 +2050,7 @@ protected static boolean isNameUsed(Connection con, VersionableType vType, User 
 	sql =   "SELECT " + vTable.id +
 			" FROM " + vTable.getTableName() +
 			" WHERE " + vTable.ownerRef + " = " + owner.getID() +
-			" AND " + vTable.name + " = " + "'"+vName+"'";
+			" AND " + vTable.name + " = " + "'"+TokenMangler.getSQLEscapedString(vName)+"'";
 
 	boolean bNameUsed = false;
 	
