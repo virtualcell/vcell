@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.sorttable.JSortTable;
+
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -44,7 +46,7 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JPanel radioButtonPanel = null; //added in July, 2008. Used to accomodate the two radio buttons
 	private ButtonGroup radioGroup = null; //added in July, 2008. Enable selection of initial concentration or amount
-	private javax.swing.JTable ivjScrollPaneTable = null;
+	private JSortTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecsTableModel ivjSpeciesContextSpecsTableModel = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
@@ -251,7 +253,12 @@ private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getSpeciesContextSpecPanel().setSpeciesContextSpec(this.getSelectedSpeciesContextSpec(getselectionModel1().getMinSelectionIndex()));
+		int row = getselectionModel1().getMinSelectionIndex();
+		if (row < 0) {
+			getSpeciesContextSpecPanel().setSpeciesContextSpec(null);
+		} else {
+			getSpeciesContextSpecPanel().setSpeciesContextSpec(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row));
+		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -717,10 +724,10 @@ private void updateTopScrollPanel()
  * @return javax.swing.JTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTable getScrollPaneTable() {
+private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new javax.swing.JTable();
+			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
@@ -736,17 +743,6 @@ private javax.swing.JTable getScrollPaneTable() {
 	}
 	return ivjScrollPaneTable;
 }
-
-/**
- * Comment
- */
-public SpeciesContextSpec getSelectedSpeciesContextSpec(int index) {
-	if (getSimulationContext()!=null && index >= 0){
-		return getSimulationContext().getReactionContext().getSpeciesContextSpecs(index);
-	}
-	return null;
-}
-
 
 /**
  * Return the selectionModel1 property value.
@@ -910,7 +906,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			java.util.Vector<SymbolTableEntry> alternateSymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
 			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
 			for(int i=0;i<rows.length;i+= 1){
-				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSimulationContext().getReactionContext().getSpeciesContextSpecs(rows[i]);
+				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(rows[i]);
 				if(scs.isConstant()){
 					primarySymbolTableEntriesV.add(scs.getInitialConditionParameter());//need to change
 					alternateSymbolTableEntriesV.add(msm.getVariable(scs.getSpeciesContext()));
@@ -982,7 +978,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			//
 			StringBuffer errors = null;
 			for(int i=0;i<rows.length;i+= 1){
-				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSimulationContext().getReactionContext().getSpeciesContextSpecs(rows[i]);
+				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(rows[i]);
 				try{
 					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 						VCellTransferable.ResolvedValuesSelection rvs =
