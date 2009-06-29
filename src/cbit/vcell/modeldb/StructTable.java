@@ -5,6 +5,7 @@ package cbit.vcell.modeldb;
 ©*/
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
@@ -53,7 +54,7 @@ public String getSQLValueList(KeyValue key, Structure structure, KeyValue parent
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
 	buffer.append(key+",");
-	buffer.append("'"+structure.getName()+"',");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(structure.getName())+"',");
 	buffer.append("'"+getStructType(structure)+"',");
 	buffer.append(parentKey+",");  // structRef
 	buffer.append(cellTypeKey+",");  // cellTypeRef
@@ -93,7 +94,7 @@ private String getStructType(Structure structure) throws DataAccessException {
 public Structure getStructure(java.sql.ResultSet rset, SessionLog log, KeyValue structKey) throws java.sql.SQLException, DataAccessException {
 	
 	//KeyValue key = new KeyValue(rset.getBigDecimal(StructTable.id.toString(),0));
-	String name = rset.getString(StructTable.table.strName.toString());
+	String name = TokenMangler.getSQLRestoredString(rset.getString(StructTable.table.strName.toString()));
 
 	String structType = rset.getString(StructTable.table.structType.toString());
 

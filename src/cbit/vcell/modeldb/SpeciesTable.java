@@ -6,6 +6,7 @@ package cbit.vcell.modeldb;
 ©*/
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
@@ -44,7 +45,7 @@ public Species getSpecies(java.sql.ResultSet rset, SessionLog log,DBSpecies dbSp
 	if (annotation!=null){
 		annotation = org.vcell.util.TokenMangler.getSQLRestoredString(annotation);
 	}
-	String cNameStr = rset.getString(SpeciesTable.table.commonName.toString());
+	String cNameStr = TokenMangler.getSQLRestoredString(rset.getString(SpeciesTable.table.commonName.toString()));
 	Species species = new Species(cNameStr,annotation,dbSpecies);
 	return species;
 }
@@ -61,7 +62,7 @@ public String getSQLValueList(KeyValue key, KeyValue ownerKey, Species species) 
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
 	buffer.append(key+",");
-	buffer.append("'"+species.getCommonName()+"'"+",");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(species.getCommonName())+"'"+",");
 	KeyValue dbSpeciesKey = (species.getDBSpecies() == null ? null :species.getDBSpecies().getDBSpeciesKey());
 	buffer.append((dbSpeciesKey != null?dbSpeciesKey.toString():"null")+",");
 	buffer.append((species.getAnnotation() != null ? "'"+org.vcell.util.TokenMangler.getSQLEscapedString(species.getAnnotation())+"'" : "null")+")");

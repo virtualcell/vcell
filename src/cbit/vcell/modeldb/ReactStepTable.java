@@ -79,7 +79,7 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 		nameString = null;
 	}
 	if (nameString!=null){
-		reactionStepName = nameString;
+		reactionStepName = TokenMangler.getSQLRestoredString(nameString);
 	}
 
 	ReactionStep rs = null;
@@ -506,7 +506,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 	if (reactionStep.getName()==null){
 		buffer.append("null"+",");
 	}else{
-		buffer.append("'"+reactionStep.getName()+"',");
+		buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
 	}
 	try {
 		buffer.append(((int)reactionStep.getChargeCarrierValence().getExpression().evaluateConstant())+",");

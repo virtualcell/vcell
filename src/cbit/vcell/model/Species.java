@@ -349,14 +349,14 @@ public void vetoableChange(java.beans.PropertyChangeEvent e) throws java.beans.P
 			if (newName.length()<1){
 				throw new PropertyVetoException("species name is zero length",e);
 			}
-			if (!Character.isJavaIdentifierStart(newName.charAt(0))){
-				throw new PropertyVetoException("species name '"+newName+"' can't start with a '"+newName.charAt(0)+"'",e);
-			}
-			for (int i=1;i<newName.length();i++){
-				if (!Character.isJavaIdentifierPart(newName.charAt(i))){
-					throw new PropertyVetoException("species name '"+newName+"' can't include a '"+newName.charAt(i)+"'",e);
-				}
-			}	
+//			if (!Character.isJavaIdentifierStart(newName.charAt(0))){
+//				throw new PropertyVetoException("species name '"+newName+"' can't start with a '"+newName.charAt(0)+"'",e);
+//			}
+//			for (int i=1;i<newName.length();i++){
+//				if (!Character.isJavaIdentifierPart(newName.charAt(i))){
+//					throw new PropertyVetoException("species name '"+newName+"' can't include a '"+newName.charAt(i)+"'",e);
+//				}
+//			}	
 		}
 	}
 }

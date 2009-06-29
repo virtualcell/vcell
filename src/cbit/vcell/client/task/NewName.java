@@ -44,8 +44,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	String newName = mdiManager.getDatabaseWindowManager().showSaveDialog(document.getDocumentType(), (JFrame)hashTable.get("currentDocumentWindow"), oldName);	
 	if (newName == null || newName.trim().length()==0){
 		throw new Exception("A name must be given to save");
-	} else if (newName.contains("'")){
-		throw new Exception("Apostrophe is not allowed in names");
+//	} else if (newName.contains("'")){
+//		throw new Exception("Apostrophe is not allowed in names");
 	} else if (owner.equals(myself) && oldVersionName.equals(newName)) {
 		throw new Exception("A model with name '" + newName + "' already exists. Please give a different name.");
 	}

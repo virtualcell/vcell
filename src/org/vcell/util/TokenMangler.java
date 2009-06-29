@@ -625,9 +625,10 @@ public static void checkNameProperty(Object source, String owner, PropertyChange
 	if (evt.getSource() == source && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
 		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
 			throw new PropertyVetoException("A name must be given to save " + owner + "s", evt);
-		} else if (((String)evt.getNewValue()).contains("'")){
-			throw new PropertyVetoException("Apostrophe is not allowed in " + owner + " names",evt);
-		}
+		} 
+//		else if (((String)evt.getNewValue()).contains("'")){
+//			throw new PropertyVetoException("Apostrophe is not allowed in " + owner + " names",evt);
+//		}
 	}
 }
 

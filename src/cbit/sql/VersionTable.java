@@ -10,8 +10,10 @@ import java.text.SimpleDateFormat;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.Versionable;
@@ -298,10 +300,10 @@ public static Version getVersion(ResultSet rset, org.vcell.util.document.GroupAc
 	}
 	//
 	KeyValue key = new KeyValue(rset.getBigDecimal(Table.id_ColumnName));
-	String name = rset.getString(VersionTable.name_ColumnName);
-	String ownerName = rset.getString(cbit.vcell.modeldb.UserTable.table.userid.toString());
+	String name = TokenMangler.getSQLRestoredString(rset.getString(VersionTable.name_ColumnName));
+	String ownerName = rset.getString(UserTable.table.userid.toString());
 	KeyValue ownerID = new KeyValue(rset.getBigDecimal(VersionTable.ownerRef_ColumnName));
-	org.vcell.util.document.User owner = new org.vcell.util.document.User(ownerName, ownerID);
+	User owner = new User(ownerName, ownerID);
 	//cbit.vcell.server.AccessInfo privacy = new cbit.vcell.server.AccessInfo(rset.getInt(VersionTable.privacy_ColumnName));
 	//
 	if (bFoundParentSimRefColumn){
@@ -321,7 +323,7 @@ protected static String getVersionGroupSQLValue(Version version) {
 	StringBuffer buffer = new StringBuffer();
 	//
 	buffer.append(version.getVersionKey().toString() + ",");
-	buffer.append("'" + version.getName() + "',");
+	buffer.append("'" + TokenMangler.getSQLEscapedString(version.getName()) + "',");
 	buffer.append(version.getOwner().getID() + ",");
 	buffer.append(version.getGroupAccess().getGroupid() + ",");
 	//
