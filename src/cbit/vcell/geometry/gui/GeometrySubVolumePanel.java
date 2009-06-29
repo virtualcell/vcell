@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -20,11 +22,14 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
+
+import com.icl.saxon.sort.LowercaseFirstComparer;
 
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.geometry.Geometry;
@@ -743,12 +748,12 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsDeleteButton.gridx = 0; constraintsDeleteButton.gridy = 3;
 			constraintsDeleteButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
 
-			addShapeButton.setText("Define Shape...");
+			addShapeButton.setText("Add Subdomain...");
 			addShapeButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					if(addShapeJPanel == null){
 						addShapeJPanel = new AddShapeJPanel();
-						addShapeJPanel.setBorder(new LineBorder(Color.black,1));
+						addShapeJPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
 						addShapeJPanel.setDefaultCenter(
 								getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
 								(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:null),
@@ -759,7 +764,7 @@ private javax.swing.JPanel getJPanel1() {
 						try {
 							final boolean[] acceptFlag = new boolean[] {false};
 							final JDialog d = new JDialog();
-							d.setTitle("Define New Geometry Shape");
+							d.setTitle("Define New Subdomain Shape");
 							
 							JPanel main = new JPanel();
 							BoxLayout mainBoxLayout = new BoxLayout(main,BoxLayout.Y_AXIS);
@@ -786,7 +791,9 @@ private javax.swing.JPanel getJPanel1() {
 							addCancelJPanel.add(cancelJButton);
 							
 							main.add(addShapeJPanel);
+							main.add(Box.createVerticalStrut(10));
 							main.add(addCancelJPanel);
+							main.add(Box.createVerticalStrut(10));
 							
 							addShapeJPanel.addPropertyChangeListener(new PropertyChangeListener(){
 								public void propertyChange(PropertyChangeEvent evt) {
@@ -797,7 +804,7 @@ private javax.swing.JPanel getJPanel1() {
 							});
 							d.setModal(true);
 							d.getContentPane().add(main);
-							d.setSize(300,275);
+							d.setSize(300,300);
 							d.setLocation(300,200);
 //							BeanUtils.centerOnComponent(GeometrySubVolumePanel.this,null);
 							org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d, GeometrySubVolumePanel.this);

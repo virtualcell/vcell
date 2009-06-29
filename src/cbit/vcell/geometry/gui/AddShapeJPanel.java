@@ -117,7 +117,7 @@ public class AddShapeJPanel extends JPanel {
 		gridBagConstraints_2.gridy = 0;
 
 		final JLabel selectShapeTypeLabel = new JLabel();
-		selectShapeTypeLabel.setText("Select Shape Type:");
+		selectShapeTypeLabel.setText("Select Subdomain Shape:");
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.insets = new Insets(0, 0, 0, 5);
 		gridBagConstraints_15.gridy = 0;
