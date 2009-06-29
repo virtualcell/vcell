@@ -488,6 +488,25 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 			ex.printStackTrace();
 		}
 	}
+	
+	private String filterCarriageReturn(String text) {
+		String newText = text;
+		if (newText.indexOf("\r") >= 0) {
+			// somehow "\r" causes weird problem, 
+			// which looks like "\r" doesn't take space.
+			// so get rid of "\r" from the text
+			StringBuffer sb = new StringBuffer();
+			StringTokenizer st = new StringTokenizer(newText, "\r\n", true);
+			while (st.hasMoreTokens()) {
+				String token = st.nextToken();
+				if (!token.equals("\r")) {
+					sb.append(token);
+				}
+			}
+			newText = sb.toString();			
+		}
+		return newText;
+	}
 
 	/**
 	 * Insert the method's description here. Creation date: (10/9/2006 1:53:03
@@ -499,9 +518,11 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	public void setText(String text) {
 		textPane.getDocument().removeDocumentListener(this);
 		textPane.getDocument().removeUndoableEditListener(undoListener);
-		textPane.setText(text);	
+		String newText = filterCarriageReturn(text);
+		
+		textPane.setText(newText);
 		try {
-			highlightKeywords(text, 0);
+			highlightKeywords(newText, 0);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
