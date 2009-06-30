@@ -50,6 +50,8 @@ import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.BioModelInfo;
@@ -914,8 +916,18 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 							overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
 							overlayEditorPanelJAI.setROITimePlotVisible(false);
 							overlayEditorPanelJAI.setAllowAddROI(false);
-							UShortImage usImage = new UShortImage(dataToSegment,mesh.getOrigin(),mesh.getExtent(),mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
-							ImageDataset imageDataset = new ImageDataset(new UShortImage[] { usImage }, new double[] { 0.0 }, mesh.getSizeZ());
+							UShortImage[] zImageSet = new UShortImage[mesh.getSizeZ()];
+							Extent newExtent = new Extent(mesh.getExtent().getX(),mesh.getExtent().getY(),mesh.getExtent().getZ()/mesh.getSizeZ());
+							for (int i = 0; i < zImageSet.length; i++) {
+								Origin newOrigin = new Origin(
+										mesh.getOrigin().getX(),mesh.getOrigin().getX(),
+										mesh.getOrigin().getX()+i*newExtent.getZ());
+								short[] shortData = new short[mesh.getSizeX()*mesh.getSizeY()];
+								System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
+								zImageSet[i] = new UShortImage(shortData,newOrigin,newExtent,mesh.getSizeX(),mesh.getSizeY(),1);
+							}
+//							UShortImage usImage = new UShortImage(dataToSegment,mesh.getOrigin(),mesh.getExtent(),mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
+							ImageDataset imageDataset = new ImageDataset(zImageSet, new double[] { 0.0 }, mesh.getSizeZ());
 							overlayEditorPanelJAI.setImages(imageDataset, true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
 							overlayEditorPanelJAI.setROITimePlotVisible(false);
 							UShortImage roiImage = new UShortImage(new short[dataToSegment.length],mesh.getOrigin(),mesh.getExtent(),mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
