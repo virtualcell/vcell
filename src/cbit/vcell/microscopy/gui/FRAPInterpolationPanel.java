@@ -405,8 +405,8 @@ public class FRAPInterpolationPanel extends JPanel {
 			public void actionPerformed(final ActionEvent e) {
 				if(checkParameters())
 				{
-					final AsynchProgressPopup pp =
-						new AsynchProgressPopup(
+					final AsynchProgressPopup_orig pp =
+						new AsynchProgressPopup_orig(
 							FRAPInterpolationPanel.this,
 							"Finding Best Fit Parameters...",
 							"Working...",true,false);

@@ -1057,8 +1057,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				?"file "+inFileArr[0].getAbsolutePath()
 				:"files from "+inFileArr[0].getParentFile().getAbsolutePath());
 
-		final AsynchProgressPopup pp =
-			new AsynchProgressPopup(
+		final AsynchProgressPopup_orig pp =
+			new AsynchProgressPopup_orig(
 				FRAPStudyPanel.this,
 				"Loading FRAP data...",
 				"Working...",true,true
@@ -1429,8 +1429,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 //		final boolean[] genericProgressStopSignal = new boolean[1];
 
-		final AsynchProgressPopup pp =
-			new AsynchProgressPopup(
+		final AsynchProgressPopup_orig pp =
+			new AsynchProgressPopup_orig(
 				FRAPStudyPanel.this,
 				"Running FRAP Model Simulation",
 				"Working...",true,true
@@ -1593,8 +1593,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			JMFPlayer.showMovieInFrame(movieURLString, movieFileString);
 			return;
 		}
-		final AsynchProgressPopup pp =
-			new AsynchProgressPopup(
+		final AsynchProgressPopup_orig pp =
+			new AsynchProgressPopup_orig(
 				FRAPStudyPanel.this,
 				"Buffering movie data...",
 				"Working...",true,false
@@ -2064,9 +2064,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public void spatialAnalysis(final DataSetControllerImpl.ProgressListener progressListener,final boolean bRefSimulation) throws Exception{
 		
-		final AsynchProgressPopup pp =
+		final AsynchProgressPopup_orig pp =
 			(progressListener != null?null:
-			new AsynchProgressPopup(
+			new AsynchProgressPopup_orig(
 				FRAPStudyPanel.this,
 				"Running FRAP Spatial Analysis",
 				"Working...",true,true)

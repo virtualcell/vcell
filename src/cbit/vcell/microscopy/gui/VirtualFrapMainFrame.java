@@ -182,8 +182,8 @@ public class VirtualFrapMainFrame extends JFrame
   public class MenuHandler implements ActionListener
   {
 	  private void saveAndSaveAs(final boolean bSaveAs){
-			final AsynchProgressPopup pp =
-				new AsynchProgressPopup(
+			final AsynchProgressPopup_orig pp =
+				new AsynchProgressPopup_orig(
 					VirtualFrapMainFrame.this,
 					"Saving "+(bSaveAs?"New":"Current")+" FRAP document",
 					"Working...",true,false
@@ -559,8 +559,8 @@ public class VirtualFrapMainFrame extends JFrame
 
   public boolean close()
   {
-      int v=JOptionPane.showConfirmDialog(this, "Do you want to Exit Virtual Frap? Files unsaved will be lost!","Exit?", JOptionPane.YES_NO_OPTION);
-      if (v == JOptionPane.YES_OPTION)
+	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!", new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
+	  if (result == UserMessage.OPTION_CLOSE)
       {
     	  return true;
       }
