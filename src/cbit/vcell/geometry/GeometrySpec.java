@@ -687,7 +687,7 @@ private int getFreeSubVolumeHandle() {
  * @return java.lang.String
  */
 public String getFreeSubVolumeName() {
-	String featureName = "subVolume";
+	String featureName = "subDomain";
 	int count=0;
 	while (getSubVolume(featureName+count)!=null){
 		count++;
@@ -1141,7 +1141,7 @@ public void removeAnalyticSubVolume(AnalyticSubVolume subVolume) throws Property
 	
 	int subVolumeIndex = getSubVolumeIndex(subVolume);
 	if (subVolumeIndex == -1){
-		throw new IllegalArgumentException("subVolume "+subVolume+" cannot be removed, it doesn't belong to this Geometry");
+		throw new IllegalArgumentException("subdomain "+subVolume+" cannot be removed, it doesn't belong to this Geometry");
 	}
 
 	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length-1];
@@ -1195,7 +1195,7 @@ public void sendBackward(AnalyticSubVolume subVolume) throws PropertyVetoExcepti
 	}
 
 	if (index == -1){
-		throw new IllegalArgumentException("subVolume "+subVolume+" not found");
+		throw new IllegalArgumentException("subdomain "+subVolume+" not found");
 	}
 
 	//
