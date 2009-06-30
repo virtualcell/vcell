@@ -1141,7 +1141,7 @@ private javax.swing.JLabel getSubVolumeTitleLabel() {
 		try {
 			ivjSubVolumeTitleLabel = new javax.swing.JLabel();
 			ivjSubVolumeTitleLabel.setName("SubVolumeTitleLabel");
-			ivjSubVolumeTitleLabel.setText("Geometry SubVolume: ");
+			ivjSubVolumeTitleLabel.setText("Geometry Subdomain: ");
 			ivjSubVolumeTitleLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			// user code begin {1}
 			// user code end
