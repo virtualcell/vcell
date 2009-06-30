@@ -91,6 +91,7 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -1101,7 +1102,8 @@ public class FRAPStudy implements Matchable{
 		double timeStepVal = timeStamps[startingIndexForRecovery+1] - timeStamps[startingIndexForRecovery];
 //		double defaultReacDiffTimeStep = 0.001;
 //		TimeStep timeStep = new TimeStep(defaultReacDiffTimeStep, defaultReacDiffTimeStep, defaultReacDiffTimeStep);//not used, too small that run very slowly
-//		DefaultOutputTimeSpec timeSpec = new DefaultOutputTimeSpec(keepEvery, 1000);//not used until we use smaller time step
+		int keepEvery =1;
+		DefaultOutputTimeSpec timeSpec = new DefaultOutputTimeSpec(keepEvery, 1000);//not used until we use smaller time step
 
 		TimeStep timeStep = null;
 		if(tStep != null)
@@ -1270,7 +1272,7 @@ public class FRAPStudy implements Matchable{
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
 		newSimulation.getMeshSpecification().setSamplingSize(cellROI_2D.getISize());
 		newSimulation.getSolverTaskDescription().setTimeStep(timeStep);
-//		newSimulation.getSolverTaskDescription().setOutputTimeSpec(timeSpec);//not used util we apply smaller time step
+		newSimulation.getSolverTaskDescription().setOutputTimeSpec(timeSpec);//not used util we apply smaller time step
 		
 		return bioModel;
 	}
