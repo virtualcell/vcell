@@ -4,7 +4,6 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -23,20 +22,18 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
-import com.icl.saxon.sort.LowercaseFirstComparer;
 
+import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ScopedExpression;
 /**
@@ -63,6 +60,7 @@ public class GeometrySubVolumePanel extends javax.swing.JPanel {
 	private final JButton addShapeButton = new JButton();
 
 	private AddShapeJPanel addShapeJPanel = null;
+	private PropertyChangeListenerProxyVCell listenerProxy = new PropertyChangeListenerProxyVCell(ivjEventHandler);
 
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
@@ -1158,13 +1156,13 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
 		try {
 			/* Stop listening for events from the current object */
 			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.removePropertyChangeListener(ivjEventHandler);
+				ivjGeometrySpec.removePropertyChangeListener(listenerProxy);
 			}
 			ivjGeometrySpec = newValue;
 
 			/* Listen for events from the new object */
 			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.addPropertyChangeListener(ivjEventHandler);
+				ivjGeometrySpec.addPropertyChangeListener(listenerProxy);
 			}
 			connEtoC11(ivjGeometrySpec);
 			// user code begin {1}
