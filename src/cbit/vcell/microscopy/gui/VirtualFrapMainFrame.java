@@ -182,8 +182,8 @@ public class VirtualFrapMainFrame extends JFrame
   public class MenuHandler implements ActionListener
   {
 	  private void saveAndSaveAs(final boolean bSaveAs){
-			final AsynchProgressPopup pp =
-				new AsynchProgressPopup(
+			final AsynchProgressPopup_orig pp =
+				new AsynchProgressPopup_orig(
 					VirtualFrapMainFrame.this,
 					"Saving "+(bSaveAs?"New":"Current")+" FRAP document",
 					"Working...",true,false
