@@ -1,5 +1,13 @@
 package cbit.vcell.model.gui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import cbit.vcell.model.SimpleReaction;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/25/2002 3:03:15 PM)
@@ -8,15 +16,23 @@ package cbit.vcell.model.gui;
 public class SimpleReactionPanelDialog extends javax.swing.JDialog {
 	private javax.swing.JPanel ivjJDialogContentPane = null;
 	private SimpleReactionPanel ivjSimpleReactionPanel = null;
-	private cbit.vcell.model.SimpleReaction fieldSimpleReaction = null;
+	private SimpleReaction fieldSimpleReaction = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.model.SimpleReaction ivjsimpleReaction1 = null;
+	private SimpleReaction ivjsimpleReaction1 = null;
+	private JButton closeButton = new JButton("Close");
 
-class IvjEventHandler implements java.beans.PropertyChangeListener {
+class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == SimpleReactionPanelDialog.this && (evt.getPropertyName().equals("simpleReaction"))) 
 				connPtoP1SetTarget();
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == closeButton) {
+				SimpleReactionPanelDialog.this.dispose();
+			}
+			
 		};
 	};
 /**
@@ -49,7 +65,7 @@ public void cleanupOnClose() {
  * @param value cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.model.SimpleReaction value) {
+private void connEtoM1(SimpleReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -124,6 +140,9 @@ private javax.swing.JPanel getJDialogContentPane() {
 			ivjJDialogContentPane.setName("JDialogContentPane");
 			ivjJDialogContentPane.setLayout(new java.awt.BorderLayout());
 			getJDialogContentPane().add(getSimpleReactionPanel(), "Center");
+			JPanel panel = new JPanel();
+			panel.add(closeButton);
+			getJDialogContentPane().add(panel, "South");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -139,7 +158,7 @@ private javax.swing.JPanel getJDialogContentPane() {
  * @return The simpleReaction property value.
  * @see #setSimpleReaction
  */
-public cbit.vcell.model.SimpleReaction getSimpleReaction() {
+public SimpleReaction getSimpleReaction() {
 	return fieldSimpleReaction;
 }
 /**
@@ -147,7 +166,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction() {
  * @return cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.model.SimpleReaction getsimpleReaction1() {
+private SimpleReaction getsimpleReaction1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimpleReaction1;
@@ -160,7 +179,7 @@ private cbit.vcell.model.SimpleReaction getsimpleReaction1() {
 private SimpleReactionPanel getSimpleReactionPanel() {
 	if (ivjSimpleReactionPanel == null) {
 		try {
-			ivjSimpleReactionPanel = new cbit.vcell.model.gui.SimpleReactionPanel();
+			ivjSimpleReactionPanel = new SimpleReactionPanel();
 			ivjSimpleReactionPanel.setName("SimpleReactionPanel");
 			// user code begin {1}
 			// user code end
@@ -191,6 +210,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
+	closeButton.addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 }
 /**
@@ -217,8 +237,8 @@ private void initialize() {
  * @param simpleReaction The new value for the property.
  * @see #getSimpleReaction
  */
-public void setSimpleReaction(cbit.vcell.model.SimpleReaction simpleReaction) {
-	cbit.vcell.model.SimpleReaction oldValue = fieldSimpleReaction;
+public void setSimpleReaction(SimpleReaction simpleReaction) {
+	SimpleReaction oldValue = fieldSimpleReaction;
 	fieldSimpleReaction = simpleReaction;
 	firePropertyChange("simpleReaction", oldValue, simpleReaction);
 }
@@ -227,10 +247,10 @@ public void setSimpleReaction(cbit.vcell.model.SimpleReaction simpleReaction) {
  * @param newValue cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimpleReaction1(cbit.vcell.model.SimpleReaction newValue) {
+private void setsimpleReaction1(SimpleReaction newValue) {
 	if (ivjsimpleReaction1 != newValue) {
 		try {
-			cbit.vcell.model.SimpleReaction oldValue = getsimpleReaction1();
+			SimpleReaction oldValue = getsimpleReaction1();
 			ivjsimpleReaction1 = newValue;
 			connPtoP1SetSource();
 			connEtoM1(ivjsimpleReaction1);

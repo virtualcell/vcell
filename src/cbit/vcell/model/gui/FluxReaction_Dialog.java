@@ -1,6 +1,4 @@
 package cbit.vcell.model.gui;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.units.VCUnitDefinition;
 
 import javax.swing.*;
 /*©
@@ -17,6 +15,7 @@ import java.util.*;
 import javax.swing.JButton;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.BevelBorderBean;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 /**
@@ -48,6 +47,7 @@ public class FluxReaction_Dialog extends JDialog {
 	private Kinetics ivjKinetics = null;
 	private JButton jToggleButton = null;  //  @jve:decl-index=0:visual-constraint="251,111"
 	private JButton ivjShowGlobalParamsButton = null;
+	private JButton closeButton = new JButton("Close");
 	
 	private KineticsDescription[] kineticTypes = {
 		KineticsDescription.General,
@@ -68,6 +68,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC2(e);
 			if (e.getSource() == FluxReaction_Dialog.this.getJComboBox1()) 
 				connEtoC3();
+			if (e.getSource() == closeButton) {
+				FluxReaction_Dialog.this.dispose();
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == FluxReaction_Dialog.this.getfluxCarrier1() && (evt.getPropertyName().equals("commonName"))) 
@@ -113,10 +116,10 @@ public FluxReaction_Dialog(java.awt.Frame owner, boolean modal) {
 private void changeFluxCarrier() {
 	String speciesNames[] = getModel1().getSpeciesNames();
 	if (speciesNames == null || speciesNames.length == 0) {
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "No defined species present !");
+		PopupGenerator.showErrorDialog(this, "No defined species present !");
 		return;
 	}
-	String selection = (String)cbit.vcell.client.PopupGenerator.showListDialog(this,speciesNames,"Select new flux carrier species:");
+	String selection = (String)PopupGenerator.showListDialog(this,speciesNames,"Select new flux carrier species:");
 	if (selection!=null){
 		try {
 			Species species = getModel1().getSpecies(selection);
@@ -140,7 +143,7 @@ private void changeFluxCarrier() {
 			//
 			getFluxReaction1().setFluxCarrier(species,getModel1());
 		}catch (Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Error changing flux carrier:\n"+e.getMessage());
+			PopupGenerator.showErrorDialog(this,"Error changing flux carrier:\n"+e.getMessage());
 		}
 	}
 }
@@ -229,7 +232,7 @@ private void connEtoC5() {
  * @param value cbit.vcell.model.FluxReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.model.FluxReaction value) {
+private void connEtoM1(FluxReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -272,7 +275,7 @@ private void connEtoM10(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.model.FluxReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.model.FluxReaction value) {
+private void connEtoM6(FluxReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -314,7 +317,7 @@ private void connEtoM7(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.model.FluxReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.model.FluxReaction value) {
+private void connEtoM8(FluxReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -466,7 +469,7 @@ private javax.swing.JButton getChangeButton() {
  * @return cbit.vcell.model.Species
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.model.Species getfluxCarrier1() {
+private Species getfluxCarrier1() {
 	// user code begin {1}
 	// user code end
 	return ivjfluxCarrier1;
@@ -478,7 +481,7 @@ private cbit.vcell.model.Species getfluxCarrier1() {
  * @return cbit.vcell.model.FluxReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.model.FluxReaction getFluxReaction1() {
+private FluxReaction getFluxReaction1() {
 	// user code begin {1}
 	// user code end
 	return ivjFluxReaction1;
@@ -645,6 +648,12 @@ private javax.swing.JPanel getJDialogContentPane() {
 			constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
 			constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
+			
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 7;
+			gbc.gridwidth = 3;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJDialogContentPane().add(closeButton, gbc);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -809,8 +818,8 @@ private javax.swing.JLabel getJLabel8() {
 private javax.swing.JScrollPane getJScrollPane1() {
 	if (ivjJScrollPane1 == null) {
 		try {
-			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
+			BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjJScrollPane1 = new javax.swing.JScrollPane();
 			ivjJScrollPane1.setName("JScrollPane1");
@@ -840,7 +849,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.vcell.model.Kinetics
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.model.Kinetics getKinetics() {
+private Kinetics getKinetics() {
 	// user code begin {1}
 	// user code end
 	return ivjKinetics;
@@ -854,7 +863,7 @@ private cbit.vcell.model.Kinetics getKinetics() {
 private KineticsTypeTemplatePanel getKineticsTypeTemplatePanel() {
 	if (ivjKineticsTypeTemplatePanel == null) {
 		try {
-			ivjKineticsTypeTemplatePanel = new cbit.vcell.model.gui.KineticsTypeTemplatePanel();
+			ivjKineticsTypeTemplatePanel = new KineticsTypeTemplatePanel();
 			ivjKineticsTypeTemplatePanel.setName("KineticsTypeTemplatePanel");
 			// user code begin {1}
 			// user code end
@@ -885,7 +894,7 @@ private KineticsDescription getKineticType(Kinetics kinetics) {
  * @return cbit.vcell.model.Model
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.model.Model getModel1() {
+private Model getModel1() {
 	// user code begin {1}
 	// user code end
 	return ivjModel1;
@@ -900,7 +909,7 @@ private cbit.vcell.model.Model getModel1() {
 private ReactionCanvas getReactionCanvas1() {
 	if (ivjReactionCanvas1 == null) {
 		try {
-			ivjReactionCanvas1 = new cbit.vcell.model.gui.ReactionCanvas();
+			ivjReactionCanvas1 = new ReactionCanvas();
 			ivjReactionCanvas1.setName("ReactionCanvas1");
 			// user code begin {1}
 			// user code end
@@ -922,7 +931,7 @@ private ReactionCanvas getReactionCanvas1() {
 private ReactionElectricalPropertiesPanel getReactionElectricalPropertiesPanel1() {
 	if (ivjReactionElectricalPropertiesPanel1 == null) {
 		try {
-			ivjReactionElectricalPropertiesPanel1 = new cbit.vcell.model.gui.ReactionElectricalPropertiesPanel();
+			ivjReactionElectricalPropertiesPanel1 = new ReactionElectricalPropertiesPanel();
 			ivjReactionElectricalPropertiesPanel1.setName("ReactionElectricalPropertiesPanel1");
 			// user code begin {1}
 			// user code end
@@ -1009,6 +1018,7 @@ private void initConnections() throws java.lang.Exception {
 	getJComboBox1().addActionListener(ivjEventHandler);
 	getJLabel5().addPropertyChangeListener(ivjEventHandler);
 	getJLabel4().addPropertyChangeListener(ivjEventHandler);
+	closeButton.addActionListener(ivjEventHandler);
 	connPtoP4SetTarget();
 	connPtoP1SetTarget();
 }
@@ -1024,7 +1034,7 @@ private void initialize() {
 		// user code end
 		setName("FluxReactionDialog");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setSize(531, 691);
+		setSize(560, 691);
 		setModal(true);
 		setResizable(true);
 		setContentPane(getJDialogContentPane());
@@ -1068,7 +1078,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		aFluxReaction_Dialog.show();
+		aFluxReaction_Dialog.setVisible(true);
 		java.awt.Insets insets = aFluxReaction_Dialog.getInsets();
 		aFluxReaction_Dialog.setSize(aFluxReaction_Dialog.getWidth() + insets.left + insets.right, aFluxReaction_Dialog.getHeight() + insets.top + insets.bottom);
 		aFluxReaction_Dialog.setVisible(true);
@@ -1086,15 +1096,15 @@ private void renameFluxReaction() {
 	try {
 		String newName = null;
 		try{
-			newName = cbit.vcell.client.PopupGenerator.showInputDialog(this,"reaction name:",getFluxReaction1().getName());
-		}catch(org.vcell.util.UserCancelException e){
+			newName = PopupGenerator.showInputDialog(this,"reaction name:",getFluxReaction1().getName());
+		}catch(UserCancelException e){
 			return;
 		}
 		if (newName != null) {
 			getFluxReaction1().setName(newName);
 		}
 	}catch (java.beans.PropertyVetoException e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Error changing name:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this,"Error changing name:\n"+e.getMessage());
 	}
 }
 
@@ -1129,7 +1139,7 @@ private void showGlobalParameters() {
  * @param newValue cbit.vcell.model.Species
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setfluxCarrier1(cbit.vcell.model.Species newValue) {
+private void setfluxCarrier1(Species newValue) {
 	if (ivjfluxCarrier1 != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -1161,7 +1171,7 @@ private void setfluxCarrier1(cbit.vcell.model.Species newValue) {
  * @param newValue cbit.vcell.model.FluxReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setFluxReaction1(cbit.vcell.model.FluxReaction newValue) {
+private void setFluxReaction1(FluxReaction newValue) {
 	if (ivjFluxReaction1 != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -1194,7 +1204,7 @@ private void setFluxReaction1(cbit.vcell.model.FluxReaction newValue) {
  * Set the kinetics1 to a new value.
  * @param newValue cbit.vcell.model.Kinetics
  */
-private void setKinetics(cbit.vcell.model.Kinetics newValue) {
+private void setKinetics(Kinetics newValue) {
 	if (ivjKinetics != newValue) {
 		try {
 			ivjKinetics = newValue;
@@ -1214,7 +1224,7 @@ private void setKinetics(cbit.vcell.model.Kinetics newValue) {
  * @param newValue cbit.vcell.model.Model
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setModel1(cbit.vcell.model.Model newValue) {
+private void setModel1(Model newValue) {
 	if (ivjModel1 != newValue) {
 		try {
 			ivjModel1 = newValue;
