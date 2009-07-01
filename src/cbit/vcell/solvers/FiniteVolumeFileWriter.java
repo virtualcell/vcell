@@ -761,6 +761,9 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		} else {
 			throw new RuntimeException("unexpected OutputTime specification type :"+outputTimeSpec.getClass().getName());
 		}
+		if (keepEvery <= 0) {
+			throw new RuntimeException(" Output KeepEvery must be a positive integer. Try to change the output option.");
+		}
 		printWriter.println("KEEP_EVERY " +  keepEvery);
     }
     if (solverTaskDesc.isStopAtSpatiallyUniform()) {
