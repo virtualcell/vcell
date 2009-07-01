@@ -687,7 +687,7 @@ private int getFreeSubVolumeHandle() {
  * @return java.lang.String
  */
 public String getFreeSubVolumeName() {
-	String featureName = "subDomain";
+	String featureName = "subdomain";
 	int count=0;
 	while (getSubVolume(featureName+count)!=null){
 		count++;

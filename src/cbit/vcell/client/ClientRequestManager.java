@@ -761,7 +761,7 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), documentCreationInfo.getOption());
-						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain1",new cbit.vcell.parser.Expression(1.0)));					
+						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new cbit.vcell.parser.Expression(1.0)));					
 						hashTable.put("doc", geometry);
 					}
 				};
