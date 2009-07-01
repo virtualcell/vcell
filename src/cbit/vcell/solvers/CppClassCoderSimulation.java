@@ -277,6 +277,9 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	} else {
 		throw new RuntimeException("unexpected OutputTime specification type :"+outputTimeSpec.getClass().getName());
 	}
+	if (keepEvery <= 0) {
+		throw new RuntimeException(" Output KeepEvery must be a positive integer. Try to change the output option.");
+	}
 	out.println("\tSimTool::getInstance()->setKeepEvery("+ keepEvery +");");
 	
 	if (simulation.getSolverTaskDescription().isStopAtSpatiallyUniform()) {

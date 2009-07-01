@@ -1239,6 +1239,9 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers() throws I
 
 	if (getIsODEData() && dataSetIdentifierList.size() == 0){
 		ODEDataBlock odeDataBlock = getODEDataBlock();
+		if (odeDataBlock == null) {
+			throw new DataAccessException("Results are not availabe yet. Please try again later.");
+		}
 		ODESimData odeSimData = odeDataBlock.getODESimData();
 		int colCount = odeSimData.getColumnDescriptionsCount();
 		// assume index=0 is time "t"
@@ -1247,7 +1250,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers() throws I
 		for (int i=0;i<(colCount-DATA_OFFSET);i++){
 			String varName = odeSimData.getColumnDescriptions(i+DATA_OFFSET).getDisplayName();
 			dataSetIdentifierList.addElement(new DataSetIdentifier(varName,VariableType.NONSPATIAL));
-		}
+		}		
 	}	
 	
 	DataIdentifier[] dis = new DataIdentifier[dataSetIdentifierList.size()];
