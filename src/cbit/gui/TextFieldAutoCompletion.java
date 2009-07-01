@@ -442,9 +442,9 @@ public class TextFieldAutoCompletion extends JTextField {
 	       	if (listModel.getSize() > 0) {
 	       		autoCompJList.setVisibleRowCount(Math.min(8, Math.max(3, listModel.getSize())));
 	       		if (currentWord.prefix.length() > 0) {
-	       			autoCompJList.setSelectedIndex(0);
-	       			autoCompJList.ensureIndexIsVisible(0);
+	       			autoCompJList.setSelectedIndex(0);	       			
 	       		}
+	       		autoCompJList.ensureIndexIsVisible(0);
 	       		autoCompJList.setSelectionBackground(Color.lightGray);				
 				
 	       		try {
