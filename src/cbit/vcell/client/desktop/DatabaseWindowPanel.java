@@ -1,4 +1,5 @@
 package cbit.vcell.client.desktop;
+import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.document.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
@@ -383,27 +384,28 @@ private void currentDocumentInfo() {
  * Comment
  */
 private void dbTreePanelActionPerformed(java.awt.event.ActionEvent e) {
-	if (e.getActionCommand().equals("Open")) {
+	String actionCommand = e.getActionCommand();
+	if (actionCommand.equals("Open") || actionCommand.equals(DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION)) {
 		getDatabaseWindowManager().openSelected();
-	} else if (e.getActionCommand().equals("Delete")) {
+	} else if (actionCommand.equals("Delete")) {
 		getDatabaseWindowManager().deleteSelected();
-	} else if (e.getActionCommand().equals("Permission")) {
+	} else if (actionCommand.equals("Permission")) {
 		getDatabaseWindowManager().accessPermissions();
-	} else if (e.getActionCommand().equals("Export")) {
+	} else if (actionCommand.equals("Export")) {
 		getDatabaseWindowManager().exportDocument();
-	} else if (e.getActionCommand().equals("Latest Edition")) {
+	} else if (actionCommand.equals("Latest Edition")) {
 		getDatabaseWindowManager().compareLatestEdition();
-	} else if (e.getActionCommand().equals("Previous Edition")) {
+	} else if (actionCommand.equals("Previous Edition")) {
 		getDatabaseWindowManager().comparePreviousEdition();
-	} else if (e.getActionCommand().equals("Another Edition...")) {
+	} else if (actionCommand.equals("Another Edition...")) {
 		getDatabaseWindowManager().compareAnotherEdition();
-	} else if (e.getActionCommand().equals("Another Model...")) {
+	} else if (actionCommand.equals("Another Model...")) {
 		getDatabaseWindowManager().compareAnotherModel();
-	} else if (e.getActionCommand().equals("Models Using Geometry")) {
+	} else if (actionCommand.equals("Models Using Geometry")) {
 		getDatabaseWindowManager().findModelsUsingSelectedGeometry();
-	} else if (e.getActionCommand().equals("Archive")) {
+	} else if (actionCommand.equals("Archive")) {
 		getDatabaseWindowManager().archive();
-	} else if (e.getActionCommand().equals("Publish")) {
+	} else if (actionCommand.equals("Publish")) {
 		getDatabaseWindowManager().publish();
 	}
 }

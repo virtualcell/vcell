@@ -169,8 +169,13 @@ private void actionsOnClick(MouseEvent mouseEvent) {
 	if (SwingUtilities.isRightMouseButton(mouseEvent) && this.getSelectedVersionable() instanceof Simulation) {
 		getSimPopupMenu().show(getJTree2(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 	}
-	if (SwingUtilities.isRightMouseButton(mouseEvent) && selectedObject instanceof Annotation) {
-		getEditAnnotationPopupMenu().show(getJTree2(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+	
+	if (selectedObject instanceof Annotation) {
+		if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+			getEditAnnotationPopupMenu().show(getJTree2(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+		} else if (mouseEvent.getClickCount() == 2) {
+			editAnnotation();
+		}
 	}
 }
 
@@ -248,7 +253,7 @@ private void connEtoC12(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.editAnnotation(arg1);
+		this.editAnnotation();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -288,7 +293,7 @@ private void connEtoC14(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.editAnnotation(arg1);
+		this.editAnnotation();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -426,7 +431,7 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.editAnnotation(arg1);
+		this.editAnnotation();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -446,7 +451,7 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.editAnnotation(arg1);
+		this.editAnnotation();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -588,7 +593,7 @@ private void connPtoP3SetTarget() {
 /**
  * Comment
  */
-private void editAnnotation(java.awt.event.ActionEvent actionEvent) {
+private void editAnnotation() {
 	
 	try {
 		DefaultMutableTreeNode currentTreeSelection = (DefaultMutableTreeNode)getJTree2().getLastSelectedPathComponent();
