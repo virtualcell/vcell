@@ -23,6 +23,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -44,13 +45,13 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -1842,8 +1843,8 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);		
 }
 
-public SymbolTableEntryFilter getSymbolTableEntryFilter() {
-	SymbolTableEntryFilter stef = new SymbolTableEntryFilter() {		
+public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
+	AutoCompleteSymbolFilter stef = new AutoCompleteSymbolFilter() {		
 		public boolean accept(SymbolTableEntry ste) {
 			if (ste instanceof SpeciesContextSpecParameter) {
 				return false;
@@ -1864,6 +1865,13 @@ public SymbolTableEntryFilter getSymbolTableEntryFilter() {
 						}
 					}
 				}
+			}
+			return true;
+		}
+
+		public boolean acceptFunction(String funcName) {
+			if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
+				return false;
 			}
 			return true;
 		}

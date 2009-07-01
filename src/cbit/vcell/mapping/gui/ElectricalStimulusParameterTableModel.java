@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.*;
 import java.util.*;
 
@@ -12,7 +13,6 @@ import cbit.vcell.model.Model;
 ©*/
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -99,7 +99,7 @@ public class ElectricalStimulusParameterTableModel extends org.vcell.util.gui.so
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private final int indexes[] = new int[0];
 	private cbit.vcell.mapping.ElectricalStimulus fieldElectricalStimulus = null;
-	private SymbolTableEntryFilter symbolTableEntryFilter = null;
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
@@ -287,7 +287,7 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression()==null){
 					return null;
 				}else{
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), symbolTableEntryFilter);
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 				}
 			}
 		}
@@ -393,7 +393,7 @@ public void setElectricalStimulus(ElectricalStimulus electricalStimulus) {
 	ElectricalStimulus oldValue = fieldElectricalStimulus;
 	fieldElectricalStimulus = electricalStimulus;
 	if (electricalStimulus != null) {
-		symbolTableEntryFilter = electricalStimulus.getSymbolTableEntryFilter();
+		autoCompleteSymbolFilter = electricalStimulus.getAutoCompleteSymbolFilter();
 	}
 	firePropertyChange("electricalStimulus", oldValue, electricalStimulus);
 }

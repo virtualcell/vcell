@@ -5,15 +5,18 @@ package cbit.vcell.geometry.gui;
 ©*/
 import org.vcell.util.TokenMangler;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -26,7 +29,7 @@ public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTable
 	private String LABELS[] = { "Name", "Value" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
-//	private int[] colormap = cbit.image.DisplayAdapterService.createContrastColorModel();
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -153,8 +156,8 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_VALUE:{
 			if (subVolume instanceof AnalyticSubVolume){
-				return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedSymbol.X.getNameScope(),
-						true, new ReservedSymbol.SpatialSymbolTableEntryFilter(getGeometry().getDimension()));
+				return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedSymbol.X.getNameScope(), true, 
+						autoCompleteSymbolFilter);
 			}else{
 				return null;
 			}
@@ -232,10 +235,25 @@ public void setGeometry(Geometry geometry) {
 		oldValue.getGeometrySpec().removePropertyChangeListener(this);
 	}
 	fieldGeometry = geometry;
-	if (geometry != null){
-		geometry.getGeometrySpec().addPropertyChangeListener(this);
+	if (fieldGeometry != null){
+		fieldGeometry.getGeometrySpec().addPropertyChangeListener(this);
+		autoCompleteSymbolFilter = new AutoCompleteSymbolFilter() {
+			public boolean accept(SymbolTableEntry ste) {
+				int dimension = fieldGeometry.getDimension();
+				if (ste.equals(ReservedSymbol.X) || dimension > 1 && ste.equals(ReservedSymbol.Y) || dimension > 2 && ste.equals(ReservedSymbol.Z)) {
+					return true;
+				}
+				return false;
+			}
+			public boolean acceptFunction(String funcName) {
+				if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
+					return false;
+				}
+				return true;
+			}	   
+		};
 	}
-	firePropertyChange("geometry", oldValue, geometry);
+	firePropertyChange("geometry", oldValue, fieldGeometry);
 
 	fireTableDataChanged();
 }

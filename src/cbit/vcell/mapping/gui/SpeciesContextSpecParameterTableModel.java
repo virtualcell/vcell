@@ -1,4 +1,5 @@
 package cbit.vcell.mapping.gui;
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
@@ -13,7 +14,6 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.mapping.SpeciesContextSpec;
 /**
  * Insert the type's description here.
@@ -97,7 +97,7 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 	private SpeciesContextSpec fieldSpeciesContextSpec = null;
 	private SimulationContext fieldSimulationContext = null;
 	
-	private SymbolTableEntryFilter symbolTableEntryFilter = null;
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -318,7 +318,7 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression()==null){
 					return null;
 				}else{
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), symbolTableEntryFilter);
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 				}
 			}
 		}
@@ -508,7 +508,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	if (simulationContext != null) {
-		symbolTableEntryFilter = simulationContext.getSymbolTableEntryFilter();
+		autoCompleteSymbolFilter = simulationContext.getAutoCompleteSymbolFilter();
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }
