@@ -51,6 +51,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
@@ -836,7 +837,33 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 							hashTable.put("imageFile", imageFile);
 						}
 					};
-					taskArray = new AsynchClientTask[] {task1, new SelectImageFromFile(), new EditImageAttributes(), saveImage, createGeometry};
+					AsynchClientTask taskSegment = new AsynchClientTask("Segemtn image", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							Component guiParent =(Component)hashTable.get("guiParent");
+							VCImage vcImage = (VCImage)hashTable.get("vcImage");
+							String segment = "Proceed with Segmentation";
+							String nosegment = "Skip Segmentation";
+							String cancel = "Cancel";
+							String choice = PopupGenerator.showWarningDialog(guiParent, "The image contains "+vcImage.getPixelClasses().length+" colors.  Without segmentation each color will be a different subdomain in the geometry.  Currently segmentation only allows creation of 2 subdomains.", 
+									new String[] {segment, nosegment, cancel}, segment);							
+							if (choice.equals(cancel)) {
+								throw UserCancelException.CANCEL_GENERIC;
+							} else if (choice.equals(nosegment)) {
+								return;
+							}
+							short[] dataToSegment = new short[vcImage.getNumXYZ()];
+							for (int i = 0; i < dataToSegment.length; i++) {
+								dataToSegment[i] = (short)(vcImage.getPixels()[i]&0x00FF);
+							}
+							VCImage manualSegmentVCImage =
+								ClientRequestManager.segmentRawImage(guiParent,
+									new Origin(0,0,0),new Extent(1,1,1), new ISize(vcImage.getNumX(),vcImage.getNumY(),vcImage.getNumZ()),dataToSegment);
+							hashTable.put("vcImage", manualSegmentVCImage);
+						}
+					};
+
+					taskArray = new AsynchClientTask[] {task1, new SelectImageFromFile(), taskSegment,new EditImageAttributes(), saveImage, createGeometry};
 					break;
 				} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -898,11 +925,12 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 							}
 
 							Component parent = (Component)hashTable.get("parent");
-							if (hashTable.get("vcImage") != null) {	
+							VCImage vcImage = (VCImage)hashTable.get("vcImage");
+							if (vcImage != null) {	
 								String segment = "Proceed with Segmentation";
-								String nosegment = "Proceed without Segmentation";
+								String nosegment = "Skip Segmentation";
 								String cancel = "Cancel";
-								String choice = PopupGenerator.showWarningDialog(parent, "The image contains multiple colors. Segmentation is recommended.", 
+								String choice = PopupGenerator.showWarningDialog(parent, "The image contains "+vcImage.getPixelClasses().length+" colors.  Without segmentation each color will be a different subdomain in the geometry.  Currently segmentation only allows creation of 2 subdomains.", 
 										new String[] {segment, nosegment, cancel}, segment);							
 								if (choice.equals(cancel)) {
 									throw UserCancelException.CANCEL_GENERIC;
@@ -912,52 +940,8 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 							} else {
 								PopupGenerator.showInfoDialog("The image contains multiple colors. Segmentation is required.");
 							}
-							OverlayEditorPanelJAI overlayEditorPanelJAI = new OverlayEditorPanelJAI();
-							overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
-							overlayEditorPanelJAI.setROITimePlotVisible(false);
-							overlayEditorPanelJAI.setAllowAddROI(false);
-							UShortImage[] zImageSet = new UShortImage[mesh.getSizeZ()];
-							Extent newExtent = new Extent(mesh.getExtent().getX(),mesh.getExtent().getY(),mesh.getExtent().getZ()/mesh.getSizeZ());
-							for (int i = 0; i < zImageSet.length; i++) {
-								Origin newOrigin = new Origin(
-										mesh.getOrigin().getX(),mesh.getOrigin().getX(),
-										mesh.getOrigin().getX()+i*newExtent.getZ());
-								short[] shortData = new short[mesh.getSizeX()*mesh.getSizeY()];
-								System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
-								zImageSet[i] = new UShortImage(shortData,newOrigin,newExtent,mesh.getSizeX(),mesh.getSizeY(),1);
-							}
-//							UShortImage usImage = new UShortImage(dataToSegment,mesh.getOrigin(),mesh.getExtent(),mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
-							ImageDataset imageDataset = new ImageDataset(zImageSet, new double[] { 0.0 }, mesh.getSizeZ());
-							overlayEditorPanelJAI.setImages(imageDataset, true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
-							overlayEditorPanelJAI.setROITimePlotVisible(false);
-							UShortImage roiImage = new UShortImage(new short[dataToSegment.length],mesh.getOrigin(),mesh.getExtent(),mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
-							ROI roi = new ROI(roiImage,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
-							overlayEditorPanelJAI.addROIName(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name(),true,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
-							overlayEditorPanelJAI.setROI(roi);
-							
-							int retCode = DialogUtils.showComponentOKCancelDialog(parent, overlayEditorPanelJAI, "segment cell image for geometry");
-							if (retCode == JOptionPane.OK_OPTION){
-								overlayEditorPanelJAI.saveUserChangesToROI();
-								roi = overlayEditorPanelJAI.getROI();
-								short[] roiData = roi.getPixelsXYZ();
-								byte[] segmentedData = new byte[roiData.length];
-								Vector<Short> distinctValues = new Vector<Short>();
-								for (int i = 0; i < roiData.length; i++) {
-									int index = -1;
-									if((index = distinctValues.indexOf(roiData[i])) == -1){
-										index = distinctValues.size();
-										distinctValues.add(roiData[i]);
-										if(distinctValues.size() > 2){
-											throw new Exception("expecting 2 colors ... background and ROI");
-										}
-									}
-									segmentedData[i] = (byte)index;
-								}
-								VCImage initImage = new VCImageUncompressed(null,segmentedData, mesh.getExtent(), mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
-								hashTable.put("vcImage", initImage);
-							} else{
-								throw UserCancelException.CANCEL_GENERIC;
-							}
+							hashTable.put("vcImage", ClientRequestManager.segmentRawImage(parent,mesh.getOrigin(),mesh.getExtent(),
+									new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ()),dataToSegment));
 						}
 					};
 					
@@ -975,6 +959,53 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 	return taskArray;
 }
 
+public static VCImage segmentRawImage(Component guiParent,
+		Origin origin,Extent extent,ISize isize,short[] dataToSegment) throws Exception{
+	OverlayEditorPanelJAI overlayEditorPanelJAI = new OverlayEditorPanelJAI();
+	overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
+	overlayEditorPanelJAI.setROITimePlotVisible(false);
+	overlayEditorPanelJAI.setAllowAddROI(false);
+	UShortImage[] zImageSet = new UShortImage[isize.getZ()];
+	Extent newExtent = new Extent(extent.getX(),extent.getY(),extent.getZ()/isize.getZ());
+	for (int i = 0; i < zImageSet.length; i++) {
+		Origin newOrigin = new Origin(origin.getX(),origin.getY(),origin.getZ()+i*newExtent.getZ());
+		short[] shortData = new short[isize.getX()*isize.getY()];
+		System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
+		zImageSet[i] = new UShortImage(shortData,newOrigin,newExtent,isize.getX(),isize.getY(),1);
+	}
+	ImageDataset imageDataset = new ImageDataset(zImageSet, new double[] { 0.0 }, isize.getZ());
+	overlayEditorPanelJAI.setImages(imageDataset, true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+	overlayEditorPanelJAI.setROITimePlotVisible(false);
+	UShortImage roiImage = new UShortImage(new short[dataToSegment.length],origin,extent,isize.getX(),isize.getY(),isize.getZ());
+	ROI roi = new ROI(roiImage,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
+	overlayEditorPanelJAI.addROIName(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name(),true,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
+	overlayEditorPanelJAI.setROI(roi);
+	
+	int retCode = DialogUtils.showComponentOKCancelDialog(guiParent, overlayEditorPanelJAI, "segment cell image for geometry");
+	if (retCode == JOptionPane.OK_OPTION){
+		overlayEditorPanelJAI.saveUserChangesToROI();
+		roi = overlayEditorPanelJAI.getROI();
+		short[] roiData = roi.getPixelsXYZ();
+		byte[] segmentedData = new byte[roiData.length];
+		Vector<Short> distinctValues = new Vector<Short>();
+		for (int i = 0; i < roiData.length; i++) {
+			int index = -1;
+			if((index = distinctValues.indexOf(roiData[i])) == -1){
+				index = distinctValues.size();
+				distinctValues.add(roiData[i]);
+				if(distinctValues.size() > 2){
+					throw new Exception("expecting 2 colors ... background and ROI");
+				}
+			}
+			segmentedData[i] = (byte)index;
+		}
+		VCImage initImage = new VCImageUncompressed(null,segmentedData, extent,isize.getX(),isize.getY(),isize.getZ());
+		return initImage;
+	} else{
+		throw UserCancelException.CANCEL_GENERIC;
+	}
+
+}
 
 /**
  * Insert the method's description here.

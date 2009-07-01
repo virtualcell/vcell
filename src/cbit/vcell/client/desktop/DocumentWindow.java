@@ -3120,6 +3120,7 @@ private void newDocument(java.awt.event.ActionEvent actionEvent) {
 		return;
 	}
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	hash.put("guiParent", (Component)this);
 	hash.put("requestManager", getWindowManager().getRequestManager());
 	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 }

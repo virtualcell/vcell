@@ -9,13 +9,10 @@ import org.vcell.util.Extent;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.client.DatabaseWindowManager;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.DatabaseWindowManager.ImageHelper;
 import cbit.vcell.geometry.GeometrySpec;
 
 public class SelectImageFromFile extends AsynchClientTask {
-
-	private final int PIXEL_CLASS_WARNING_LIMIT = 10;
 	
 	public SelectImageFromFile() {
 		super("read image from file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
@@ -64,12 +61,6 @@ public class SelectImageFromFile extends AsynchClientTask {
 			throw new cbit.image.ImageException("Error loading image "+imageFile.getAbsolutePath()+"\n"+(e.getMessage() == null?e.getClass().getName():e.getMessage()));
 		}
 	
-		if(vcImage.getPixelClasses().length > PIXEL_CLASS_WARNING_LIMIT){
-			PopupGenerator.showInfoDialog(
-						"Warning: IMAGE "+imageFile.getName()+" has "+vcImage.getPixelClasses().length+
-						" distinct values, all will be assigned regions.\n"+
-						"If this is unexpected, process the IMAGE to remove noise or unwanted values and re-load");
-		}
 		hashTable.put("vcImage", vcImage);
 	}
 
