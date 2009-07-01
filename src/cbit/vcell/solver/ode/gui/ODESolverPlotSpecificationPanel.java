@@ -6,6 +6,7 @@ import java.util.*;
  * All rights reserved.
 ©*/
 import cbit.vcell.util.*;
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.plot.*;
 import cbit.vcell.simdata.SimDataConstants;
@@ -17,6 +18,7 @@ import org.vcell.util.BeanUtils;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -161,6 +163,20 @@ private void addFunction(ODESolverResultSet odeRS) throws ExpressionException {
         autoCompList.add(column.getName());
     }
 	getFunctionExpressionTextField().setAutoCompletionWords(autoCompList);
+	getFunctionExpressionTextField().setAutoCompleteSymbolFilter(new AutoCompleteSymbolFilter() {
+
+		public boolean accept(SymbolTableEntry ste) {
+			return true;
+		}
+
+		public boolean acceptFunction(String funcName) {
+			if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
+				return false;
+			}
+			return true;
+		}
+		
+	});
 
 	//
 	// Show the editor with a default name and default expression for the function
@@ -1537,172 +1553,6 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-
-
-/**
- * This method was created by a SmartGuide.
- */
-private void oldRefreshRegularPlot() {
-/*	try {
-		ODESolverResultSet resultSet = getSimulationManager().getODESolverResultSet();
-		SolverTaskDescription taskDescription = getSimulation().getSolverTaskDescription();
-		MathDescription mathDescription = getMathDescription();
-		//
-		double currTime = getODESolver().getCurrentTime();
-		double endTime = taskDescription.getTimeBounds().getEndingTime();
-		//
-		double[] yAxisData = null;
-		double[] xAxisData = null;
-		String xAxisLabel = getODESolverPlotSpecificationPanel().getXAxis();
-		String yAxisLabel = getODESolverPlotSpecificationPanel().getYAxis();
-		String selectedXAxis = getODESolverPlotSpecificationPanel().getXAxis();
-		if (selectedXAxis != null) {
-			int c = resultSet.findColumn(selectedXAxis);
-			//Assertion.assert(c >= 0);
-			if (c >= 0) {
-				xAxisData = resultSet.extractColumn(c);
-				xAxisLabel = resultSet.getDisplayName(c);
-			}
-		}
-		String selectedYAxis = getODESolverPlotSpecificationPanel().getYAxis();
-		if (selectedYAxis != null) {
-			int c = resultSet.findColumn(selectedYAxis);
-			//Assertion.assert(c >= 0);
-			if (c >= 0) {
-				yAxisData = resultSet.extractColumn(c);
-				yAxisLabel = resultSet.getDisplayName(c);
-			}
-		}
-		if (yAxisData == null || xAxisData == null) {
-			getPlot2DCanvas().setPlotData(null);
-			//  This is what I would RATHER do...but things don't work correctly
-			//  if I do, because Jim uses null to indicate no data...
-			//getPlot2DCanvas().plot2D(new cbit.plot.PlotData(new double[0], new double[0]));
-			return;
-		}
-		//
-		//
-		//getPlot2DCanvas().setTitle(getYAxisChoice().getSelectedItem() + " vs. " + getXAxisChoice().getSelectedItem());
-		//getPlot2DCanvas().setXLabel("time (seconds)");
-		//getPlot2DCanvas().setYLabel("Conc");
-		getPlot2DCanvas().setTitle(yAxisLabel + " vs. " + xAxisLabel);
-		getPlot2DCanvas().setXLabel(xAxisLabel);
-		getPlot2DCanvas().setYLabel(yAxisLabel);
-		try {
-			getPlot2DCanvas().setPlotData(new cbit.plot.PlotData(xAxisData, yAxisData));
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-		}
-	} catch (Throwable throwable) {
-		handleException(throwable);
-	}
-*/}
-
-
-/**
- * This method was created by a SmartGuide.
- */
-private void oldRefreshSensitivityPlot() {
-/*	try {
-		ODESolverResultSet resultSet = getSimulationManager().getODESolverResultSet();
-		SolverTaskDescription taskDescription = getSimulation().getSolverTaskDescription();
-		MathDescription mathDescription = getMathDescription();
-		//
-		double currTime = getODESolver().getCurrentTime();
-		double endTime = taskDescription.getTimeBounds().getEndingTime();
-		//
-		double[] yAxisData = null;
-		double[] xAxisData = null;
-		double sens[] = null;
-		String xAxisLabel = null;
-		String yAxisLabel = null;
-		synchronized (resultSet) {
-			int c = resultSet.findColumn("t");
-			Assertion.assert(c >= 0);
-			if (c >= 0) {
-				xAxisData = resultSet.extractColumn(c);
-				xAxisLabel = resultSet.getDisplayName(c);
-			}
-			c = resultSet.findColumn(getODESolverPlotSpecificationPanel().getSensitivityVariable());
-			Assertion.assert(c >= 0);
-			if (c >= 0) {
-				Assertion.assert(c >= 0);
-				yAxisData = resultSet.extractColumn(c);
-				yAxisLabel = resultSet.getDisplayName(c);
-			}
-			//
-			Variable var = getMathDescription().getVariable(getODESolverPlotSpecificationPanel().getSensitivityVariable());
-			if (var instanceof VolVariable || var instanceof Function) {
-				try {
-					if (var instanceof VolVariable && getSensitivityParameter() != null) {
-						c = resultSet.findColumn(SensVariable.getSensName((VolVariable) var, getSensitivityParameter()));
-						if (c >= 0)
-							sens = resultSet.extractColumn(c);
-					} else
-						if (var instanceof Function && getSensitivityParameter() != null) {
-							sens = getODESolver().getFunctionSensitivity((Function) var, getSensitivityParameter());
-						}
-				} catch (cbit.vcell.parser.ExpressionException e) {
-					System.out.println("refreshSensitivityPlot() : THE FOLLOWING EXCEPTION SHOULD PROBABLY NOT HAPPEN!");
-					handleException(e);
-				}
-			}
-		}
-		if (yAxisData == null || xAxisData == null) {
-			getPlot2DCanvas().setPlotData(null);
-			//  This is what I would RATHER do...but things don't work correctly
-			//  if I do, because Jim uses null to indicate no data...
-			//getPlot2DCanvas().plot2D(new cbit.plot.PlotData(new double[0], new double[0]));
-			return;
-		}
-		//
-		//  JMW : should we Assertion.assert(sens != null)???
-		Assertion.assertNotNull(sens);
-		try {
-			if (getODESolverPlotSpecificationPanel().getLogSensitivity()) {
-				getPlot2DCanvas().setXLabel("time (seconds)");
-				getPlot2DCanvas().setYLabel("sens");
-				getPlot2DCanvas().setTitle("log sensitivity of " + getSensitivityParameter().getName() + " to " + getODESolverPlotSpecificationPanel().getSensitivityVariable() + " vs. time");
-				double paramValue = getSensitivityParameter().getOldValue();
-				for (int i = 0; i < yAxisData.length; i++) {
-					//  dataArray[i] = data[i] + sens[i]*deltaParameter;
-					if (Math.abs(yAxisData[i]) > 10e-8) {
-						yAxisData[i] = sens[i] * paramValue / yAxisData[i];
-					} else {
-						yAxisData[i] = 0.0;
-					}
-				}
-			} else {
-				getPlot2DCanvas().setXLabel("time (seconds)");
-				getPlot2DCanvas().setYLabel("Conc");
-				getPlot2DCanvas().setTitle(getODESolverPlotSpecificationPanel().getSensitivityVariable() + " vs. time  (at " + getSensitivityParameter().getName() + " = " + getSensitivityParameter().getCurrValue() + ")");
-				//
-				double deltaParameter = getSensitivityParameter().getCurrValue() - getSensitivityParameter().getOldValue();
-				for (int i = 0; i < yAxisData.length; i++) {
-					if (Math.abs(yAxisData[i]) > 10e-8) {
-						// away from zero, exponential extrapolation
-						yAxisData[i] = yAxisData[i] * Math.exp(deltaParameter / yAxisData[i] * sens[i]);
-					} else {
-						// around zero - linear extrapolation
-						yAxisData[i] = yAxisData[i] + sens[i] * deltaParameter;
-					}
-				}
-			}
-		} catch (Exception e) {
-			handleException(e);
-			return;
-		}
-		//
-		try {
-			getPlot2DCanvas().setPlotData(new cbit.plot.PlotData(xAxisData, yAxisData));
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-		}
-	} catch (Throwable throwable) {
-		handleException(throwable);
-	}
-*/}
-
 
 /**
  * Comment

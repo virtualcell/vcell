@@ -71,7 +71,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		if (value instanceof ScopedExpression) {
 			ScopedExpression scopedExpression = (ScopedExpression)value;
 			textFieldAutoCompletion.setSymbolTable(scopedExpression.getNameScope().getScopedSymbolTable());
-			textFieldAutoCompletion.setSymbolTableEntryFilter(scopedExpression.getSymbolTableEntryFilter());
+			textFieldAutoCompletion.setAutoCompleteSymbolFilter(scopedExpression.getAutoCompleteSymbolFilter());
 		}
 		return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 	}

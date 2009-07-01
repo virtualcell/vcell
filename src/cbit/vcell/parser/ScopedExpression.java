@@ -1,5 +1,7 @@
 package cbit.vcell.parser;
 
+import cbit.gui.AutoCompleteSymbolFilter;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/2/2003 3:26:19 PM)
@@ -9,7 +11,7 @@ public class ScopedExpression {
 	private Expression fieldExpression = null;
 	private NameScope fieldNameScope = null;
 	private boolean fieldIsUserEditable = true;
-	private SymbolTableEntryFilter symbolTableEntryFilter = null;
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	
 	static {
 		System.out.println("ScopedExpression.toString() ignores the scope ... TEMPORARY ...");
@@ -26,7 +28,7 @@ public ScopedExpression(Expression argExpression, NameScope argNameScope, boolea
 /**
  * ContextualExpression constructor comment.
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable, SymbolTableEntryFilter stef) {
+public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable, AutoCompleteSymbolFilter stef) {
 	super();
 	if (argExpression == null) {
 		throw new RuntimeException("Expression cannot be null");
@@ -34,7 +36,7 @@ public ScopedExpression(Expression argExpression, NameScope argNameScope, boolea
 	this.fieldExpression = argExpression;
 	this.fieldNameScope = argNameScope;
 	this.fieldIsUserEditable = argIsUserEditable;
-	symbolTableEntryFilter = stef;
+	autoCompleteSymbolFilter = stef;
 }
 /**
  * Insert the method's description here.
@@ -86,7 +88,7 @@ public boolean isUserEditable() {
 public String toString() {
 	return infix();
 }
-public final SymbolTableEntryFilter getSymbolTableEntryFilter() {
-	return symbolTableEntryFilter;
+public final AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
+	return autoCompleteSymbolFilter;
 }
 }

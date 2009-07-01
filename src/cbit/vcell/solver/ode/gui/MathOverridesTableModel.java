@@ -5,14 +5,14 @@ package cbit.vcell.solver.ode.gui;
 ©*/
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
 import cbit.vcell.math.Constant;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MathOverridesListener;
@@ -243,13 +243,20 @@ public Object getValueAt(int row, int column) {
 					}
 					Simulation sim = getMathOverrides().getSimulation();
 					
-					SymbolTableEntryFilter symbolTableEntryFilter = new SymbolTableEntryFilter() {
+					AutoCompleteSymbolFilter symbolTableEntryFilter = new AutoCompleteSymbolFilter() {
 
 						public boolean accept(SymbolTableEntry ste) {
 							if (ste instanceof Constant) {
 								return (getMathOverrides().getConstant(ste.getName()) != null);
 							}
 							return false;
+						}
+
+						public boolean acceptFunction(String funcName) {
+							if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
+								return false;
+							}
+							return true;
 						}
 						
 					};

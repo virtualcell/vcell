@@ -1,4 +1,5 @@
 package cbit.vcell.mapping;
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.model.ReservedSymbol;
 
@@ -20,7 +21,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -1349,10 +1349,10 @@ private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters)
 public void vetoableChange(java.beans.PropertyChangeEvent e) throws PropertyVetoException {
 }
 
-public SymbolTableEntryFilter getSymbolTableEntryFilter() {
+public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 	if (simulationContext == null) {
 		return null;
 	}
-	return simulationContext.getSymbolTableEntryFilter();
+	return simulationContext.getAutoCompleteSymbolFilter();
 }
 }

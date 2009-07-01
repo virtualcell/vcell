@@ -4,16 +4,13 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-
 import org.vcell.util.gui.sorttable.ManageTableModel;
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
@@ -38,7 +35,7 @@ public class SpeciesContextSpecsTableModel extends ManageTableModel implements j
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
-	private SymbolTableEntryFilter symbolTableEntryFilter = null;
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -200,7 +197,7 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_INITIAL:{
 			SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
 			if(initialConditionParameter != null) {
-				return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, symbolTableEntryFilter);
+				return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, autoCompleteSymbolFilter);
 			} else	{
 				return null;
 			}
@@ -209,7 +206,7 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_DIFFUSION:{
 			SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
 			if(diffusionParameter != null) 	{
-				return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, symbolTableEntryFilter);
+				return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, autoCompleteSymbolFilter);
 			} else {
 				return null;
 			}			
@@ -318,7 +315,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		simulationContext.addPropertyChangeListener(this);
 		updateListenersReactionContext(simulationContext.getReactionContext(),false);
 		
-		symbolTableEntryFilter  = simulationContext.getSymbolTableEntryFilter();
+		autoCompleteSymbolFilter  = simulationContext.getAutoCompleteSymbolFilter();
 		refreshData();
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);

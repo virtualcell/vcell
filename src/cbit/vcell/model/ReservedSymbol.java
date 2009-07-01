@@ -3,6 +3,7 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.*;
 
 import java.beans.PropertyVetoException;
@@ -42,20 +43,7 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 	   K_GHK,
    };
    
-   private static NameScope nameScope = new ReservedSymbol.ReservedSymbolNameScope();
-   
-   public static class SpatialSymbolTableEntryFilter implements SymbolTableEntryFilter {
-	   int dimension = 1;
-	   public SpatialSymbolTableEntryFilter(int dim) {
-		   dimension = dim;
-	   }
-		public boolean accept(SymbolTableEntry ste) {
-			if (ste.equals(X) || dimension > 1 && ste.equals(Y) || dimension > 2 && ste.equals(Z)) {
-				return true;
-			}
-			return false;
-		}	   
-   }
+   private static NameScope nameScope = new ReservedSymbol.ReservedSymbolNameScope(); 
 
    public static class ReservedSymbolTable implements ScopedSymbolTable {
 		private boolean bIncludeTime = false;

@@ -6,6 +6,7 @@ package cbit.vcell.model;
 ©*/
 import java.beans.*;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -16,7 +17,6 @@ import cbit.vcell.parser.Expression;
 
 import java.io.*;
 import java.util.*;
-import java.util.Map.Entry;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
@@ -890,8 +890,8 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);
 }
 
-public SymbolTableEntryFilter getSymbolTableEntryFilter() {
-	SymbolTableEntryFilter stef = new SymbolTableEntryFilter() {		
+public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
+	AutoCompleteSymbolFilter stef = new AutoCompleteSymbolFilter() {		
 		public boolean accept(SymbolTableEntry ste) {		
 			if (ste instanceof StructureSize) {
 				if (((StructureSize)ste).getStructure() != structure) {
@@ -920,6 +920,13 @@ public SymbolTableEntryFilter getSymbolTableEntryFilter() {
 						return false;
 					}
 				}
+			}
+			return true;
+		}
+
+		public boolean acceptFunction(String funcName) {
+			if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
+				return false;
 			}
 			return true;
 		}

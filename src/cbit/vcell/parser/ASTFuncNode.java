@@ -2884,4 +2884,8 @@ void setName(String name) {
 	}
 	throw new RuntimeException("unknown function "+name);
 }
+
+public static String[] getFunctionNames() {
+	return functionNamesVCML;
+}
 }

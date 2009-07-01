@@ -4,6 +4,7 @@ import java.beans.PropertyVetoException;
 
 import javax.swing.JTable;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ModelQuantity;
@@ -17,7 +18,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 import cbit.vcell.units.VCUnitException;
 /**
  * Insert the type's description here.
@@ -35,7 +35,7 @@ public class ParameterTableModel extends javax.swing.table.AbstractTableModel im
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Kinetics fieldKinetics = null;
 	private JTable fieldParentComponentTable = null;		// needed for DialogUtils.showWarningDialog() 
-	private SymbolTableEntryFilter symbolTableEntryFilter = null;
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -209,17 +209,17 @@ public Object getValueAt(int row, int col) {
 					if (rs.isKMOLE()) {
 						// KMOLE is the only ReservedSymbol that has is expressed as a rational number (1/602). Try printing this expression instead of its double value  
 						try {
-							return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable(), symbolTableEntryFilter);
+							return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 						} catch (ExpressionException e) {
 							e.printStackTrace();
 							throw new RuntimeException("Error writing expression for KMOLE reserved symbol" + e.getMessage());
 						}
 					} else {
 						// if reserved symbol is not KMOLE, print it out like other parameters
-						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), symbolTableEntryFilter);
+						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 					}
 				} else {
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), symbolTableEntryFilter);
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 				}
 			}else{
 				return "Variable"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
@@ -340,7 +340,7 @@ public void setKinetics(cbit.vcell.model.Kinetics kinetics) {
 	cbit.vcell.model.Kinetics oldValue = fieldKinetics;
 	fieldKinetics = kinetics;
 	if (kinetics != null) {
-		symbolTableEntryFilter = kinetics.getReactionStep().getSymbolTableEntryFilter();
+		autoCompleteSymbolFilter = kinetics.getReactionStep().getAutoCompleteSymbolFilter();
 	}
 	firePropertyChange("kinetics", oldValue, kinetics);
 }

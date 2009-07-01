@@ -2,13 +2,14 @@ package cbit.gui;
 
 import java.awt.Color;
 import java.awt.Event;
+import java.awt.Font;
 import java.awt.Rectangle;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,9 +22,11 @@ import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.InputMap;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -31,7 +34,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -42,9 +44,9 @@ import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableEntryFilter;
 
 public class TextFieldAutoCompletion extends JTextField {
 	private JPopupMenu autoCompJPopupMenu = null;
@@ -54,14 +56,18 @@ public class TextFieldAutoCompletion extends JTextField {
 	private static final String COMMIT_ACTION = "commit";
 	private static final String GOUPLIST_ACTION = "gouplist";
 	private static final String GODOWNLIST_ACTION = "godownlist";
+	private static final String GOPAGEUPLIST_ACTION = "gopageuplist";
+	private static final String GOPAGEDOWNLIST_ACTION = "gopagedownlist";
+	private static final String GOHOMELIST_ACTION = "gohomelist";
+	private static final String GOENDLIST_ACTION = "goendlist";
 	private static final String SHOWLIST_ACTION = "showlist";
 	private static final String DISMISSLIST_ACTION = "dimisslist";
 	private SymbolTable symbolTable = null;
 	
 	private boolean bInCompleteTask = false;
-	private SymbolTableEntryFilter symbolTableEntryFilter = null;
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	private JScrollPane scrollPane = null;
+	private ArrayList<String> functList = new ArrayList<String>();
 		
 	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener {
 		public void changedUpdate(DocumentEvent e) {
@@ -126,6 +132,10 @@ public class TextFieldAutoCompletion extends JTextField {
 	}
 	public TextFieldAutoCompletion() {
 		super();
+		initialize();
+	}
+		
+	private void initialize() {
 		getDocument().addDocumentListener(eventHandler);
 		addKeyListener(eventHandler);
 		addMouseListener(eventHandler);
@@ -137,13 +147,29 @@ public class TextFieldAutoCompletion extends JTextField {
 		autoCompJList.addMouseListener(eventHandler);
 
 		autoCompJPopupMenu = new JPopupMenu();
-		scrollPane = new JScrollPane();
+		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(autoCompJList);
 		autoCompJPopupMenu.add(scrollPane);
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		
+		JPanel panel1 = new JPanel();
+		JLabel infoLabel1 = new JLabel("\u2191\u2193 to move; 'Esc' to cancel; 'Enter' to accept;");
+		Font font = getFont();
+		infoLabel1.setFont(font.deriveFont(AffineTransform.getScaleInstance(0.9, 0.9)));
+		panel1.add(infoLabel1);
+		panel.add(panel1);
+		autoCompJPopupMenu.add(panel);
 		
 		setupActions();
-	}
 		
+		// functions
+		for (String s : ASTFuncNode.getFunctionNames()) {
+			functList.add(s);
+		}
+		Collections.sort(functList);
+	}
+	
 	public void setAutoCompletionWords(Set<String> words) {
 		autoCompWordList.clear();
 		autoCompWordList.addAll(words);
@@ -160,8 +186,8 @@ public class TextFieldAutoCompletion extends JTextField {
 				if (totalLen == 0) {
 					return;
 				}
-				int si = (autoCompJList.getSelectedIndex() + increment + totalLen) % totalLen; 
-				autoCompJList.setSelectedIndex(Math.max(0, si));
+				int si = Math.min(totalLen - 1, Math.max(0, autoCompJList.getSelectedIndex() + increment));
+				autoCompJList.setSelectedIndex(si);
 				autoCompJList.ensureIndexIsVisible(si);
 			}
 		}
@@ -203,17 +229,17 @@ public class TextFieldAutoCompletion extends JTextField {
 			if (match == null) {
 				return;
 			}
-			match = match.trim();
-			CurrentWord currentWord = findCurrentWord(null);			
-				
+			boolean bFunction = match.endsWith(")");
+			
+			CurrentWord currentWord = findCurrentWord(null);
 			Document doc = getDocument();
 			if (currentWord == null) {
 				doc.insertString(0, match, null);
-				setCaretPosition(match.length());				
+				setCaretPosition(match.length() + (bFunction ? -1 : 0));				
 			} else {
 				doc.remove(currentWord.startPos, currentWord.endPos - currentWord.startPos + 1);
 				doc.insertString(currentWord.startPos, match, null);
-				setCaretPosition(currentWord.startPos + match.length());
+				setCaretPosition(currentWord.startPos + match.length() + (bFunction ? -1 : 0));
 			}
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -241,28 +267,39 @@ public class TextFieldAutoCompletion extends JTextField {
 		im = getInputMap();
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), GOUPLIST_ACTION);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), GODOWNLIST_ACTION);
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), GOPAGEUPLIST_ACTION);
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), GOPAGEDOWNLIST_ACTION);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, Event.CTRL_MASK), SHOWLIST_ACTION);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), DISMISSLIST_ACTION);	
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), GOHOMELIST_ACTION);
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), GOENDLIST_ACTION);
 		
 		am = getActionMap();
 		am.put(GOUPLIST_ACTION, new GoToList(-1));
 		am.put(GODOWNLIST_ACTION, new GoToList(1));
+		am.put(GOPAGEUPLIST_ACTION, new GoToList(-5));
+		am.put(GOPAGEDOWNLIST_ACTION, new GoToList(5));
+		am.put(GOHOMELIST_ACTION, new GoToList(-1000000));
+		am.put(GOENDLIST_ACTION, new GoToList(1000000));
 		am.put(SHOWLIST_ACTION, new ShowList());
 		am.put(DISMISSLIST_ACTION, new DismissList());
 	}
 	
 	private static class CurrentWord {
 		int startPos = 0;
-		String prefix = null;
+		String prefix = "";
 		int endPos = 0;
 	} 
 
 	private CurrentWord findCurrentWord(DocumentEvent docEvt) {
-		CurrentWord currentWord = null;
+		if (docEvt != null && docEvt.getLength() != 1) {
+			return null;
+		}
+		
 		String text = getText();		
 		int txtLen = text.length();
 		if (txtLen == 0) {
-			return currentWord;
+			return null;
 		}
 		
 		int pos = getCaretPosition();
@@ -274,11 +311,11 @@ public class TextFieldAutoCompletion extends JTextField {
 			}
 		}
 		if (pos < 0) {
-			return currentWord;
+			return null;
 		}
 		pos = Math.min(pos, text.length());
 		
-		currentWord = new CurrentWord();
+		CurrentWord currentWord = new CurrentWord();
 
 		// Find where the word starts
 		int w;
@@ -312,32 +349,30 @@ public class TextFieldAutoCompletion extends JTextField {
 	
 	public void showPopupChoices(DocumentEvent docEvt, boolean bForce) {		
 		try {
-			autoCompJPopupMenu.setVisible(false);
-			if (!isShowing()) {
+			if (bInCompleteTask) {
 				return;
 			}
-			if (bInCompleteTask) {
+			autoCompJPopupMenu.setVisible(false);
+			if (!isShowing()) {
 				return;
 			}
 			if (symbolTable == null && (autoCompWordList == null || autoCompWordList.size() == 0)) {				
 				return;
 			}
-			 
+			
 	        CurrentWord currentWord = findCurrentWord(docEvt);
 			if (currentWord == null) {
 				return;
 			} // if the cursor is the at the beginning, don't show list
 		
-//	        if (currentWord != null) {
-				int len = currentWord.prefix.length();
-				if (len > 1) {
-					char lastCh = currentWord.prefix.charAt(len - 1);
-					if (lastCh == ')' || lastCh == '.') {
-						return;
-					}
+			int len = currentWord.prefix.length();
+			if (len > 1) {
+				char lastCh = currentWord.prefix.charAt(len - 1);
+				if (lastCh == ')' || lastCh == '.') {
+					return;
 				}
-//	        }
-	        
+			}
+        
 	        ArrayList<String> tempList = new ArrayList<String>();
 			if (symbolTable != null) {
 				tempList.clear();
@@ -348,9 +383,8 @@ public class TextFieldAutoCompletion extends JTextField {
 				Iterator<Entry<String, SymbolTableEntry>> iter = entrySet.iterator();
 				while (iter.hasNext()) {
 					Entry<String, SymbolTableEntry> entry = iter.next();
-					if (symbolTableEntryFilter == null || symbolTableEntryFilter.accept(entry.getValue())) {
-						if (currentWord == null 
-								|| currentWord.prefix.length() == 0 
+					if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.accept(entry.getValue())) {
+						if (currentWord.prefix.length() == 0 
 								|| entry.getKey().toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
 							tempList.add(entry.getKey());
 						}
@@ -359,14 +393,12 @@ public class TextFieldAutoCompletion extends JTextField {
 
 			} else {
 				for (String w : autoCompWordList) {
-					if (currentWord == null 
-							|| currentWord.prefix.length() == 0 
+					if (currentWord.prefix.length() == 0 
 							|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
 						tempList.add(w);
 					}
 				}
 			}
-			
 			Collections.sort(tempList, new Comparator<String>() {
 				public int compare(String o1, String o2) {
 					ReservedSymbol r1 = ReservedSymbol.fromString(o1);
@@ -386,16 +418,31 @@ public class TextFieldAutoCompletion extends JTextField {
 					}
 					return o1.compareToIgnoreCase(o2);
 				}
-			});
+			});	
+			
+			// add functions
+			ArrayList<String> tempFuncList = new ArrayList<String>();
+			for (String w : functList) {
+				if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.acceptFunction(w)) {
+					if (currentWord.prefix.length() == 0 
+							|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
+						tempFuncList.add(w + "()");
+					}
+				}
+			}		
+			tempList.addAll(tempFuncList);
 			
 			listModel.removeAllElements();
 			for (String w : tempList) {
-				listModel.addElement(w + "          ");
+				listModel.addElement(w);
 			}
 	       	   
 	       	if (listModel.getSize() > 0) {
 	       		autoCompJList.setVisibleRowCount(Math.min(8, Math.max(3, listModel.getSize())));
-	       		autoCompJList.setSelectedIndex(0);
+//	       		if (currentWord.prefix.length() > 0) {
+//	       			autoCompJList.setSelectedIndex(0);
+//	       		}
+	       		autoCompJList.ensureIndexIsVisible(0);
 	       		autoCompJList.setSelectionBackground(Color.lightGray);				
 				
 	       		try {
@@ -460,8 +507,8 @@ public class TextFieldAutoCompletion extends JTextField {
 		return symbolTable;
 	}
 
-	public final void setSymbolTableEntryFilter(SymbolTableEntryFilter symbolTableEntryFilter) {
-		this.symbolTableEntryFilter = symbolTableEntryFilter;
+	public final void setAutoCompleteSymbolFilter(AutoCompleteSymbolFilter filter) {
+		this.autoCompleteSymbolFilter = filter;
 	}
 	
 	public boolean isPopupVisible() {
