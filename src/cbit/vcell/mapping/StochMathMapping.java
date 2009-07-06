@@ -706,31 +706,21 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 					forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmFwd).getExpression();
 					reverseRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmRev).getExpression();
 				}*/
-			    boolean isForwardRateNonZero = false;
-			    boolean isReverseRateNonZero = false;
+			    boolean isForwardRatePresent = false;
+			    boolean isReverseRatePresent = false;
 		       	if(forwardRate != null)
 		    	{
-		       		isForwardRateNonZero = true;
-		       		try {
-		    			if (forwardRate.evaluateConstant()==0)
-		    				isForwardRateNonZero = false;
-		    		} catch (ExpressionException e) {
-		    		}	    		
+		       		isForwardRatePresent = true;
 		    	}
 		    	
 		    	if(reverseRate != null)
 		    	{
-		    		isReverseRateNonZero = true;
-		    		try {
-		    			if(reverseRate.evaluateConstant()==0)
-		    				isReverseRateNonZero = false;
-				    }catch(ExpressionException e){			    
-				    }
+		    		isReverseRatePresent = true;
 		    	}
 			    
 				// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
 				// we process it as forward reaction
-				if ((isForwardRateNonZero) /*|| ((forwardRate == null) && (reverseRate == null))*/)
+				if ((isForwardRatePresent) /*|| ((forwardRate == null) && (reverseRate == null))*/)
 				{
 					// get jump process name
 					String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName());
@@ -784,7 +774,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 					// add jump process to compartment subDomain
 					subDomain.addJumpProcess(jp);
 				}
-				if (isReverseRateNonZero) // one more jump process for a reversible reaction
+				if (isReverseRatePresent) // one more jump process for a reversible reaction
 				{
 					// get jump process name
 					String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
