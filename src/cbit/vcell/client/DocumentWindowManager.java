@@ -1,5 +1,6 @@
 package cbit.vcell.client;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.Hashtable;
@@ -13,11 +14,16 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.PerformanceMonitorListener;
+import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportSpecs;
@@ -31,7 +37,7 @@ import cbit.xml.merge.XmlTreeDiff;
  * Creation date: (5/5/2004 1:01:37 PM)
  * @author: Ion Moraru
  */
-public abstract class DocumentWindowManager extends cbit.vcell.client.TopLevelWindowManager implements PerformanceMonitorListener, java.awt.event.ActionListener, DataViewerManager {
+public abstract class DocumentWindowManager extends TopLevelWindowManager implements PerformanceMonitorListener, java.awt.event.ActionListener, DataViewerManager {
 	private JPanel jPanel = null;
 	private String documentID = null;
 	
@@ -53,7 +59,7 @@ public DocumentWindowManager(JPanel panel, RequestManager requestManager, VCDocu
  * Creation date: (5/28/2004 3:32:43 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public abstract void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindow simWindow);
+public abstract void addResultsFrame(SimulationWindow simWindow);
 
 
 /**
@@ -156,13 +162,13 @@ public void connectAs(String user, String password) {
 public static JInternalFrameEnhanced createDefaultFrame(JPanel frameContent) {
 
 	JInternalFrameEnhanced jif = null;
-	if(frameContent instanceof cbit.vcell.client.desktop.geometry.SurfaceViewerPanel){
+	if(frameContent instanceof SurfaceViewerPanel){
 		jif = new JInternalFrameEnhanced("Surface Viewer", true, true, true, true);
 		jif.setContentPane(frameContent);
 		jif.setSize(500,500);
 		jif.setMinimumSize(new Dimension(400,400));
 		jif.setLocation(550, 350);
-	}else if(frameContent instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer){
+	}else if(frameContent instanceof GeometrySummaryViewer){
 		jif = new JInternalFrameEnhanced("Geometry Summary", true, true, true, true);
 		jif.setContentPane(frameContent);
 		jif.setSize(700,400);
@@ -228,7 +234,7 @@ protected Component getComponent() {
  * Creation date: (6/21/2005 1:05:03 PM)
  * @return javax.swing.JDesktopPane
  */
-protected abstract JDesktopPane getJDesktopPane();
+protected abstract JDesktopPaneEnhanced getJDesktopPane();
 
 
 /**
@@ -279,7 +285,7 @@ public abstract VCDocument getVCDocument();
  * Creation date: (5/14/2004 3:40:15 PM)
  * @return cbit.vcell.document.VCDocument
  */
-abstract cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier);
+abstract SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier);
 
 
 /**
@@ -335,7 +341,7 @@ public void openGeometryDocumentWindow(final Geometry geom) {
  * Creation date: (9/17/2004 3:13:55 PM)
  * @param pme cbit.rmi.event.PerformanceMonitorEvent
  */
-public void performanceMonitorEvent(cbit.rmi.event.PerformanceMonitorEvent pme) {
+public void performanceMonitorEvent(PerformanceMonitorEvent pme) {
 	// just pass it to the the message manager
 	getRequestManager().getAsynchMessageManager().performanceMonitorEvent(pme);
 }
@@ -402,11 +408,12 @@ public void saveDocumentAsNew() {
 public static void setDefaultTitle(JInternalFrame jif) {
 	
 
-	if(jif.getContentPane() instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer){
-		Geometry geom = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer)jif.getContentPane()).getGeometry();
+	Container contentPane = jif.getContentPane();
+	if(contentPane instanceof GeometrySummaryViewer){
+		Geometry geom = ((GeometrySummaryViewer)contentPane).getGeometry();
 		jif.setTitle("Info for Geometry "+(geom != null?geom.getName():""));
-	}else if(jif.getContentPane() instanceof cbit.vcell.client.desktop.geometry.SurfaceViewerPanel){
-		Geometry geom = ((cbit.vcell.client.desktop.geometry.SurfaceViewerPanel)jif.getContentPane()).getGeometry();
+	}else if(contentPane instanceof SurfaceViewerPanel){
+		Geometry geom = ((SurfaceViewerPanel)contentPane).getGeometry();
 		jif.setTitle("Surface for Geometry "+(geom != null?geom.getName():""));
 	}
 	
@@ -873,7 +880,7 @@ public abstract void showFrame(JInternalFrame frame);
  * Insert the method's description here.
  * Creation date: (6/4/2004 4:42:35 AM)
  */
-public static void showFrame(JInternalFrame frame, JDesktopPane pane) {
+public static void showFrame(JInternalFrame frame, JDesktopPaneEnhanced pane) {
 	if (!BeanUtils.arrayContains(pane.getAllFrames(),frame)){
 		pane.add(frame);
 	}
@@ -917,7 +924,7 @@ public void startExport(ExportSpecs exportSpecs) {
  */
 public void tileWindows(boolean horizontal) {
 	JInternalFrame[] iframes = getOpenWindows();
-	Rectangle[] bounds = org.vcell.util.BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
+	Rectangle[] bounds = BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
 	for (int i=0;i<iframes.length;i++) {
 		iframes[i].setBounds(bounds[i]);
 		iframes[i].show();

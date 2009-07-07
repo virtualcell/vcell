@@ -29,7 +29,7 @@ public static void main(java.lang.String[] args) {
 		cbit.vcell.model.Model model = cbit.vcell.model.ModelTest.getExample();
 		cbit.vcell.model.Membrane membrane = (Membrane)model.getStructure("ER_Membrane");
 
-		MembraneDialog aMembraneDialog = new MembraneDialog();
+		MembraneDialog aMembraneDialog = new MembraneDialog(frame);
 		aMembraneDialog.setVisible(true);
 
 		desktop.add(aMembraneDialog, aMembraneDialog.getName());

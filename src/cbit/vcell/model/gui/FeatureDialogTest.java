@@ -24,7 +24,7 @@ public static void main(java.lang.String[] args) {
 		cbit.vcell.model.Model model = cbit.vcell.model.ModelTest.getExample();
 		cbit.vcell.model.Feature feature = (Feature)model.getStructure("Cytosol");
 
-		FeatureDialog aFeatureDialog = new FeatureDialog();
+		FeatureDialog aFeatureDialog = new FeatureDialog(frame);
 		aFeatureDialog.setModel(model);
 		aFeatureDialog.setChildFeature(feature);
 		aFeatureDialog.setVisible(true);

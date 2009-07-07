@@ -19,6 +19,7 @@ import javax.swing.tree.TreePath;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.task.TFUpdateRunningStatus;
@@ -49,7 +50,7 @@ public class TestingFrameworkWindowPanel extends javax.swing.JPanel {
 	private boolean ivjConnPtoP1Aligning = false;
 	private boolean ivjConnPtoP2Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.JDesktopPane ivjJDesktopPane1 = null;
+	private JDesktopPaneEnhanced ivjJDesktopPane1 = null;
 	private javax.swing.JSplitPane ivjJSplitPane1 = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
@@ -214,10 +215,10 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return javax.swing.JDesktopPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public javax.swing.JDesktopPane getJDesktopPane1() {
+public JDesktopPaneEnhanced getJDesktopPane1() {
 	if (ivjJDesktopPane1 == null) {
 		try {
-			ivjJDesktopPane1 = new javax.swing.JDesktopPane();
+			ivjJDesktopPane1 = new JDesktopPaneEnhanced();
 			ivjJDesktopPane1.setName("JDesktopPane1");
 			// user code begin {1}
 			// user code end

@@ -1,17 +1,20 @@
 package cbit.vcell.graph;
 import java.awt.Component;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.Vector;
 
 import javax.swing.JDesktopPane;
-import javax.swing.event.InternalFrameEvent;
+import javax.swing.JFrame;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Issue;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.gui.ZEnforcer;
 
 import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.Shape;
@@ -39,6 +42,9 @@ import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.model.gui.AddModelParamDialog;
+import cbit.vcell.model.gui.EditSpeciesDialog;
+import cbit.vcell.model.gui.FeatureDialog;
+import cbit.vcell.model.gui.MembraneDialog;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -484,60 +490,39 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager argDocumentMa
 /**
  * This method was created by a SmartGuide.
  */
-protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model model,Structure structure, java.awt.Point location, final java.awt.Point locationForSpeciesContextShape) {
+protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model model,Structure structure, java.awt.Point locationForSpeciesContextShape) {
 	if(getDialogOwner(myGraphPane) == null){
 		return;
 	}
 	//
-	final cbit.vcell.model.gui.EditSpeciesDialog createSpeciesContextDialog = new cbit.vcell.model.gui.EditSpeciesDialog();
-	createSpeciesContextDialog.addInternalFrameListener(
-			new javax.swing.event.InternalFrameListener() {
-				public void internalFrameActivated(InternalFrameEvent e) {}
-				public void internalFrameClosed(InternalFrameEvent e) {
-					if (locationForSpeciesContextShape != null && createSpeciesContextDialog.getSpeciesContext()!=null){
-						SpeciesContext speciesContext = model.getSpeciesContext(createSpeciesContextDialog.getSpeciesContext().getName());
-						if (speciesContext!=null){
-							Shape scShape = getGraphModel().getShapeFromModelObject(speciesContext);
-							scShape.setLocation(locationForSpeciesContextShape);
-						}
-					}
-					//setMode(SELECT_MODE);
-				}
-				public void internalFrameClosing(InternalFrameEvent e) {}
-				public void internalFrameDeactivated(InternalFrameEvent e) {}
-				public void internalFrameDeiconified(InternalFrameEvent e) {}
-				public void internalFrameIconified(InternalFrameEvent e) {}
-				public void internalFrameOpened(InternalFrameEvent e) {}
-			}
-		);
-	//
+	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
+	EditSpeciesDialog createSpeciesContextDialog = new EditSpeciesDialog(parent);	
 	createSpeciesContextDialog.initAddSpecies(model,structure,getDocumentManager());
-	if(location != null){createSpeciesContextDialog.setLocation(location);}
-	//
-	getDialogOwner(myGraphPane).remove(createSpeciesContextDialog);
-	getDialogOwner(myGraphPane).add(createSpeciesContextDialog, JDesktopPane.MODAL_LAYER);
-	org.vcell.util.BeanUtils.centerOnComponent(createSpeciesContextDialog, getDialogOwner(myGraphPane));
-	createSpeciesContextDialog.setVisible(true);
+	ZEnforcer.showModalDialogOnTop(createSpeciesContextDialog, myGraphPane);
+	if (locationForSpeciesContextShape != null && createSpeciesContextDialog.getSpeciesContext()!=null){
+		SpeciesContext speciesContext = model.getSpeciesContext(createSpeciesContextDialog.getSpeciesContext().getName());
+		if (speciesContext!=null){
+			Shape scShape = getGraphModel().getShapeFromModelObject(speciesContext);
+			scShape.setLocation(locationForSpeciesContextShape);
+		}
+	}
 }
 
 
 /**
  * This method was created by a SmartGuide.
  */
-protected void showEditSpeciesDialog(GraphPane myGraphPane,SpeciesContext speciesContext, java.awt.Point location) {
+protected void showEditSpeciesDialog(GraphPane myGraphPane,SpeciesContext speciesContext) {
 	//
 	if(getDialogOwner(myGraphPane) == null){
 		return;
 	}
 	//
-	cbit.vcell.model.gui.EditSpeciesDialog editSpeciesDialog = new cbit.vcell.model.gui.EditSpeciesDialog();
+	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
+	EditSpeciesDialog editSpeciesDialog = new EditSpeciesDialog(parent);
 	editSpeciesDialog.initEditSpecies(speciesContext,getDocumentManager());
-	editSpeciesDialog.setLocation(location);
 	//
-	getDialogOwner(myGraphPane).remove(editSpeciesDialog);
-	getDialogOwner(myGraphPane).add(editSpeciesDialog, JDesktopPane.MODAL_LAYER);
-	org.vcell.util.BeanUtils.centerOnComponent(editSpeciesDialog, getDialogOwner(myGraphPane));
-	editSpeciesDialog.setVisible(true);
+	ZEnforcer.showModalDialogOnTop(editSpeciesDialog, myGraphPane);
 }
 
 
@@ -565,7 +550,7 @@ protected void showCreateGlobalParamDialog(GraphPane myGraphPane, final Model mo
 /**
  * This method was created by a SmartGuide.
  */
-public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model model,Feature parentFeature,Feature childFeature, java.awt.Point location) {
+public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model model,Feature parentFeature,Feature childFeature) {
 	//
 	// showFeaturePropertyDialog is invoked in two modes:
 	//
@@ -578,37 +563,33 @@ public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model
 	if((parentFeature == null && childFeature == null) || (parentFeature != null && childFeature != null)){
 		throw new IllegalArgumentException("Can't set FeatureProperties with current feature arguments");
 	}
-	cbit.vcell.model.gui.FeatureDialog featureDialog = new cbit.vcell.model.gui.FeatureDialog();
+	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, JFrame.class);
+	FeatureDialog featureDialog = new FeatureDialog(parent);
 	//
 	featureDialog.setModel(model);
 	featureDialog.setChildFeature(childFeature);
 	featureDialog.setParentFeature(parentFeature);
 	if(parentFeature != null){
-		featureDialog.setTitle("Add New Feature to "+parentFeature.getName());
+		featureDialog.setTitle("Add New Feature to " + parentFeature.getName());
 	}else{
-		featureDialog.setTitle("Edit Feature "+childFeature.getName());
+		featureDialog.setTitle("Properties for " + childFeature.getName());
 	}
-	featureDialog.setLocation(location);
 	//
-	getDialogOwner(myGraphPane).add(featureDialog, JDesktopPane.MODAL_LAYER);
-	org.vcell.util.BeanUtils.centerOnComponent(featureDialog, getDialogOwner(myGraphPane));
-	featureDialog.show();
+	ZEnforcer.showModalDialogOnTop(featureDialog, myGraphPane);
 }
 
 
 /**
  * This method was created by a SmartGuide.
  */
-public static final void showMembranePropertiesDialog(GraphPane myGraphPane,Membrane membrane, java.awt.Point location) {
+public static final void showMembranePropertiesDialog(GraphPane myGraphPane,Membrane membrane) {
 	if(getDialogOwner(myGraphPane) == null){
 		return;
 	}
-	cbit.vcell.model.gui.MembraneDialog membraneDialog = new cbit.vcell.model.gui.MembraneDialog();
+	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, JFrame.class);
+	MembraneDialog membraneDialog = new MembraneDialog(parent);
 	membraneDialog.init(membrane);
-	membraneDialog.setTitle("Membrane Dialog for "+membrane.getName());
-	membraneDialog.setLocation(location);
-	getDialogOwner(myGraphPane).add(membraneDialog, JDesktopPane.MODAL_LAYER);
-	org.vcell.util.BeanUtils.centerOnComponent(membraneDialog, getDialogOwner(myGraphPane));
-	membraneDialog.show();
+	membraneDialog.setTitle("Properties for " + membrane.getName());
+	ZEnforcer.showModalDialogOnTop(membraneDialog, myGraphPane);
 }
 }

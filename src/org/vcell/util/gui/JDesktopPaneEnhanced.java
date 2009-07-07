@@ -1,27 +1,76 @@
 package org.vcell.util.gui;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.HierarchyBoundsListener;
+import java.awt.event.HierarchyEvent;
+import java.util.ArrayList;
+
+import javax.swing.DefaultDesktopManager;
+import javax.swing.DesktopManager;
+import javax.swing.JInternalFrame;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import javax.swing.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/19/01 4:04:38 PM)
  * @author: Jim Schaff
  */
 public class JDesktopPaneEnhanced extends javax.swing.JDesktopPane {
-/**
- * JDesktopPaneEnhanced constructor comment.
- */
-public JDesktopPaneEnhanced() {
-	super();
-	//
-	// this gets around (hopefully) the single focus problem with JDesktopPanes in Java 1.2.2
-	//
-	String version = System.getProperty("java.version");
-	if (version.compareTo("1.2.2")<=0){
-		setDesktopManager(new WindowsDesktopManagerFixed());
+	
+	private class InternalEventHandler implements HierarchyBoundsListener {
+
+		public void ancestorMoved(HierarchyEvent e) {
+			// ignore moved			
+		}
+
+		public void ancestorResized(HierarchyEvent e) {	
+			try {
+				internalDesktopManager.relayoutFrames();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}				
+		}
+		
 	}
-}
+	private class InternalDesktopManager extends DefaultDesktopManager {
+		public void relayoutFrames() {
+			JInternalFrame[] allFrames = getAllFrames();
+			for (JInternalFrame frame : allFrames) {
+				if (frame.isIcon()) {
+					Rectangle r = getBoundsForIconOf(frame);
+					frame.getDesktopIcon().setBounds(r.x, r.y, r.width, r.height);
+				} else if (frame.isVisible()) {
+					relayoutFrame(frame);
+				}
+			}			
+		}
+	}
+	
+	private InternalDesktopManager internalDesktopManager = new InternalDesktopManager();
+	
+	/**
+	 * JDesktopPaneEnhanced constructor comment.
+	 */
+	public JDesktopPaneEnhanced() {
+		super();
+		addHierarchyBoundsListener(new InternalEventHandler());
+		setDesktopManager(internalDesktopManager);
+	}
+	
+	private void relayoutFrame(JInternalFrame frame) {				
+		Dimension paneSize = getSize();
+		Point componentLocation = frame.getLocation();				
+		Dimension componentSize = frame.getSize();
+		int newX = Math.max(0, Math.min(componentLocation.x, paneSize.width - componentSize.width));	
+		int newY = Math.max(0, Math.min(componentLocation.y, paneSize.height - componentSize.height));
+		if (newX != componentLocation.x || newY != componentLocation.y) {
+			frame.setLocation(newX, newY);
+		}
+	}
 }

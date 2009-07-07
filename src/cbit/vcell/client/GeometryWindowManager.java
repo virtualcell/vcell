@@ -4,10 +4,15 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import java.awt.*;
 import javax.swing.*;
 
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.client.desktop.geometry.*;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
 
 /**
  * Insert the type's description here.
@@ -16,7 +21,7 @@ import cbit.vcell.client.desktop.geometry.*;
  */
 public class GeometryWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener {
 	private Geometry geometry = null;
-	private JDesktopPane jDesktopPane = null;
+	private JDesktopPaneEnhanced jDesktopPane = null;
 	private GeometryEditor geometryEditor = null;
 
 	private SurfaceViewerPanel surfaceViewer;
@@ -32,20 +37,18 @@ public class GeometryWindowManager extends DocumentWindowManager implements java
  * @param vcDocument cbit.vcell.document.VCDocument
  * @param newlyCreatedDesktops int
  */
-public GeometryWindowManager(JPanel panel, cbit.vcell.client.RequestManager requestManager, final Geometry aGeometry, int newlyCreatedDesktops) {
+public GeometryWindowManager(JPanel panel, RequestManager requestManager, final Geometry aGeometry, int newlyCreatedDesktops) {
 	super(panel, requestManager, aGeometry, newlyCreatedDesktops);
 	surfaceViewer = new SurfaceViewerPanel();
 	geoViewer = new GeometryDisplayPanel();
 	setGeometry(aGeometry);
-	setJDesktopPane(new JDesktopPane());
+	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
 	createGeometryEditor();
 	initializeInternalFrames();
 	getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);
-	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-		showGeometryViewer(true);
-	}
+	showGeometryViewer(true);
 }
 
 
@@ -60,7 +63,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {}
  * Creation date: (6/11/2004 7:26:51 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindow simWindow) {
+public void addResultsFrame(SimulationWindow simWindow) {
 	// ignore
 	return;
 }
@@ -92,7 +95,7 @@ public void geometryEditorButtonPressed(boolean bGeoEditorButtonSelected) {
  * Creation date: (6/3/2004 10:19:49 AM)
  * @return cbit.vcell.geometry.Geometry
  */
-private cbit.vcell.geometry.Geometry getGeometry() {
+private Geometry getGeometry() {
 	return geometry;
 }
 
@@ -102,7 +105,7 @@ private cbit.vcell.geometry.Geometry getGeometry() {
  * Creation date: (6/3/2004 10:19:49 AM)
  * @return cbit.vcell.client.desktop.geometry.GeometryEditor
  */
-private cbit.vcell.client.desktop.geometry.GeometryEditor getGeometryEditor() {
+private GeometryEditor getGeometryEditor() {
 	return geometryEditor;
 }
 
@@ -112,7 +115,7 @@ private cbit.vcell.client.desktop.geometry.GeometryEditor getGeometryEditor() {
  * Creation date: (6/3/2004 10:19:49 AM)
  * @return javax.swing.JDesktopPane
  */
-protected javax.swing.JDesktopPane getJDesktopPane() {
+protected JDesktopPaneEnhanced getJDesktopPane() {
 	return jDesktopPane;
 }
 
@@ -132,7 +135,7 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (5/25/2004 2:46:07 AM)
  * @return cbit.vcell.document.VCDocument
  */
-public org.vcell.util.document.VCDocument getVCDocument() {
+public VCDocument getVCDocument() {
 	return getGeometry();
 }
 
@@ -142,7 +145,7 @@ public org.vcell.util.document.VCDocument getVCDocument() {
  * Creation date: (6/11/2004 7:57:23 AM)
  * @return cbit.vcell.document.VCDocument
  */
-cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
+SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
 	return null;
 }
 
@@ -202,7 +205,7 @@ public boolean isRecyclable() {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
-	if(evt.getSource() instanceof cbit.vcell.geometry.GeometrySpec){
+	if(evt.getSource() instanceof GeometrySpec){
 		getGeometryEditor().setToggleButtonSelected("Surface Viewer",false);
 		//do this because button.setSelected does not fire action event
 		if(surfaceViewerEditorFrame != null){
@@ -218,7 +221,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Creation date: (6/2/2004 2:00:39 PM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
+public void resetDocument(VCDocument newDocument) {
 	setGeometry((Geometry)newDocument);
 	setDocumentID(getGeometry());
 	geoViewer.setGeometry(getGeometry());
@@ -249,7 +252,7 @@ public void saveDocumentAsNew() {
  * Creation date: (6/3/2004 10:19:49 AM)
  * @param newGeometry cbit.vcell.geometry.Geometry
  */
-private void setGeometry(cbit.vcell.geometry.Geometry newGeometry) {
+private void setGeometry(Geometry newGeometry) {
 	if(geometry != null && geometry.getGeometrySpec() != null){
 		geometry.getGeometrySpec().removePropertyChangeListener(this);
 	}
@@ -261,23 +264,12 @@ private void setGeometry(cbit.vcell.geometry.Geometry newGeometry) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/3/2004 10:19:49 AM)
- * @param newGeometryEditor cbit.vcell.client.desktop.geometry.GeometryEditor
- */
-private void setGeometryEditor(cbit.vcell.client.desktop.geometry.GeometryEditor newGeometryEditor) {
-	geometryEditor = newGeometryEditor;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (6/3/2004 10:19:49 AM)
  * @param newJDesktopPane javax.swing.JDesktopPane
  */
-private void setJDesktopPane(javax.swing.JDesktopPane newJDesktopPane) {
+private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
 	jDesktopPane = newJDesktopPane;
 }
 
@@ -335,7 +327,7 @@ private void showSurfaceViewer(boolean bSurfaceViewerButtonSelected) {
 			try{
 				surfaceViewer.updateSurfaces();
 			}catch(Exception e){
-				org.vcell.util.gui.DialogUtils.showErrorDialog("Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
+				DialogUtils.showErrorDialog("Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
 			}
 		}
 	} else {

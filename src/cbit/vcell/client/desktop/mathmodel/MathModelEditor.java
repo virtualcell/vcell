@@ -119,7 +119,7 @@ private void connEtoM1() {
 	try {
 		// user code begin {1}
 		// user code end
-		getvcmlToggleButton().setSelected(this.setVCMLButtonOnStartup());
+		getvcmlToggleButton().setSelected(true);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -400,31 +400,18 @@ public void setToggleButtonSelected(String whichButton, boolean bSelected) {
 		getSimulationsToggleButton().setSelected(bSelected);
 	} 
 }
+
 /**
  * Comment
  */
-public boolean setVCMLButtonOnStartup() {
-	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-		return true;
-	} else {
-		return false;
-	}
-}
-/**
- * Comment
- */
-public void setVCMLEditorButtonSelected() {
-	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-		getvcmlToggleButton().setSelected(true);
-	}	
+public void setVCMLEditorButtonSelected() {	
+	getvcmlToggleButton().setSelected(true);
 }
 /**
  * Comment
  */
 public void setVCMLEditorButtonSelectedOnStartup() {
-	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-		getvcmlToggleButton().setSelected(true);
-	}	
+	getvcmlToggleButton().setSelected(true);
 }
 /**
  * Comment

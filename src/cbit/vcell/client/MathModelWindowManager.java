@@ -10,8 +10,10 @@ import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.RequestManager;
@@ -30,7 +32,7 @@ import java.util.*;
  */
 public class MathModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener{
 	private MathModel mathModel = null;
-	private JDesktopPane jDesktopPane = null;
+	private JDesktopPaneEnhanced jDesktopPane = null;
 	private MathModelEditor mathModelEditor = null;
 
 	private EquationViewerPanel equnsViewer;
@@ -67,7 +69,7 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 	simsPanel = new SimulationListPanel();
 	vcmlEditor = new VCMLEditorPanel();
 	surfaceViewer = new SurfaceViewerPanel();
-	setJDesktopPane(new JDesktopPane());
+	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
 	setMathModel(aMathModel);
@@ -77,9 +79,7 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 
 	geoViewer.addActionListener(MathModelWindowManager.this);
 	getJPanel().add(getMathModelEditor(), BorderLayout.NORTH);
-	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-		showVCMLEditor(true);
-	}	
+	showVCMLEditor(true);
 }
 
 
@@ -226,7 +226,7 @@ public void geometryViewerButtonPressed(boolean bGeoButtonSelected) {
  * Creation date: (5/27/2004 1:58:14 PM)
  * @return javax.swing.JDesktopPane
  */
-protected javax.swing.JDesktopPane getJDesktopPane() {
+protected JDesktopPaneEnhanced getJDesktopPane() {
 	return jDesktopPane;
 }
 
@@ -246,7 +246,7 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (5/14/2004 11:08:35 AM)
  * @return cbit.vcell.mathmodel.MathModel
  */
-public cbit.vcell.mathmodel.MathModel getMathModel() {
+public MathModel getMathModel() {
 	return mathModel;
 }
 
@@ -272,7 +272,7 @@ public void setCopyFromBioModelAppVersionableTypeVersion(VersionableTypeVersion 
  * Creation date: (5/17/2004 4:56:56 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public org.vcell.util.document.VCDocument getVCDocument() {
+public VCDocument getVCDocument() {
 	return getMathModel();
 }
 
@@ -289,7 +289,7 @@ public boolean hasUnappliedChanges() {
  * @return boolean
  * @param vcSimulationIdentifier cbit.vcell.server.VCSimulationIdentifier
  */
-cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
+SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
 	if (simulationWindowsHash.containsKey(vcSimulationIdentifier)) {
 		return (SimulationWindow)simulationWindowsHash.get(vcSimulationIdentifier);
 	} else {
@@ -442,7 +442,7 @@ public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
  * Creation date: (5/27/2004 1:58:14 PM)
  * @param newJDesktopPane javax.swing.JDesktopPane
  */
-private void setJDesktopPane(javax.swing.JDesktopPane newJDesktopPane) {
+private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
 	jDesktopPane = newJDesktopPane;
 }
 

@@ -31,6 +31,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
@@ -46,6 +47,8 @@ import cbit.vcell.simdata.gui.*;
 import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.MembraneElement;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -169,12 +172,12 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 
 	//
 	private JInternalFrame dataValueSurfaceViewerJIF = null;
-	private cbit.vcell.geometry.gui.DataValueSurfaceViewer fieldDataValueSurfaceViewer = null;
+	private DataValueSurfaceViewer fieldDataValueSurfaceViewer = null;
 	private MeshDisplayAdapter.MeshRegionSurfaces meshRegionSurfaces = null;
 	private static final String   SHOW_MEMB_SURFACE_BUTTON_STRING = "Show Membrane Surfaces";
 	private static final String UPDATE_MEMB_SURFACE_BUTTON_STRING = "Update Membrane Surfaces";
 	//
-	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
+	private PDEDataContext fieldPdeDataContext = null;
 	private JButton ivjJButtonSpatial = null;
 	private JButton ivjJButtonTime = null;
 	private PDEDataContextPanel ivjPDEDataContextPanel1 = null;
@@ -192,7 +195,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	private boolean ivjConnPtoP6Aligning = false;
 	private boolean ivjConnPtoP7Aligning = false;
 	private NewPDEExportPanel ivjPDEExportPanel1 = null;
-	private cbit.vcell.export.ExportMonitorPanel ivjExportMonitorPanel1 = null;
+	private ExportMonitorPanel ivjExportMonitorPanel1 = null;
 	private JButton ivjKymographJButton = null;
 	private boolean ivjConnPtoP9Aligning = false;
 	private JButton ivjJButtonSurfaces = null;
@@ -265,7 +268,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 		};
 	};
 	private JButton ivjJButtonStatistics = null;
-	private cbit.vcell.solver.Simulation fieldSimulation = null;
+	private Simulation fieldSimulation = null;
 
 public PDEDataViewer() {
 	super();
@@ -918,7 +921,7 @@ private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoC8(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -1377,7 +1380,7 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 		//SurfaceNames
 		final String[] surfaceNames = new String[meshRegionSurfaces.getSurfaceCollection().getSurfaceCount()];
 		for (int i = 0; i < meshRegionSurfaces.getSurfaceCollection().getSurfaceCount(); i++){
-			cbit.vcell.solvers.MembraneElement me = //Get the first element, any will do, all have same inside/outside volumeIndex
+			MembraneElement me = //Get the first element, any will do, all have same inside/outside volumeIndex
 				cartesianMesh.getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(i,0)];
 			if(getSimulationModelInfo() != null){
 				surfaceNames[i] = getSimulationModelInfo().getMembraneName(
@@ -1749,7 +1752,7 @@ private javax.swing.JButton getKymographJButton() {
  * @return The pdeDataContext property value.
  * @see #setPdeDataContext
  */
-public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
+public PDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 
@@ -1759,7 +1762,7 @@ public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
  * @return cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.simdata.PDEDataContext getpdeDataContext1() {
+private PDEDataContext getpdeDataContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjpdeDataContext1;
@@ -1771,10 +1774,10 @@ private cbit.vcell.simdata.PDEDataContext getpdeDataContext1() {
  * @return cbit.vcell.simdata.gui.PDEDataContextPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.simdata.gui.PDEDataContextPanel getPDEDataContextPanel1() {
+private PDEDataContextPanel getPDEDataContextPanel1() {
 	if (ivjPDEDataContextPanel1 == null) {
 		try {
-			ivjPDEDataContextPanel1 = new cbit.vcell.simdata.gui.PDEDataContextPanel();
+			ivjPDEDataContextPanel1 = new PDEDataContextPanel();
 			ivjPDEDataContextPanel1.setName("PDEDataContextPanel1");
 			// user code begin {1}
 			// user code end
@@ -2083,7 +2086,7 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  * Creation date: (2/26/2006 2:24:21 PM)
  */
 protected void showComponentInFrame(final Component comp,final String title) {
-	final JDesktopPane jDesktopPane = (JDesktopPane)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPane.class);
+	final JDesktopPaneEnhanced jDesktopPane = (JDesktopPaneEnhanced)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, JDesktopPaneEnhanced.class);
 	if(jDesktopPane != null){
 		final JInternalFrame frame = new JInternalFrame(title, true, true, true, true);
 		frame.getContentPane().add(comp);

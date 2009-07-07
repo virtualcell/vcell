@@ -98,31 +98,17 @@ public java.awt.Dimension getPreferredScrollableViewportSize() {
  * @return java.awt.Dimension
  */
 public Dimension getPreferredSize() {
-	String javaVersion = System.getProperty("java.version");
-	boolean javaLaterThan12 = (javaVersion.compareTo("1.3") >= 0) ? true : false;
-	if (javaLaterThan12) {
-		if (graphModel!=null){
-			Dimension prefSize = graphModel.getPreferedSize((java.awt.Graphics2D)getGraphics());
-			if (getJScrollPaneParent()!=null){
-				java.awt.Rectangle viewBorderBounds = getJScrollPaneParent().getViewportBorderBounds();
-				prefSize = new Dimension(Math.max(viewBorderBounds.width,prefSize.width),Math.max(viewBorderBounds.height,prefSize.height));
-			}
-			return prefSize;
-		}else{
-			return super.getPreferredSize();
+	if (graphModel!=null){
+		Dimension prefSize = graphModel.getPreferedSize((java.awt.Graphics2D)getGraphics());
+		if (getJScrollPaneParent()!=null){
+			java.awt.Rectangle viewBorderBounds = getJScrollPaneParent().getViewportBorderBounds();
+			prefSize = new Dimension(Math.max(viewBorderBounds.width,prefSize.width),Math.max(viewBorderBounds.height,prefSize.height));
 		}
-	} else {
-		if (graphModel!=null && isShowing()){
-			Dimension prefSize = graphModel.getPreferedSize((java.awt.Graphics2D)getGraphics());
-			if (getJScrollPaneParent()!=null){
-				java.awt.Rectangle viewBorderBounds = getJScrollPaneParent().getViewportBorderBounds();
-				prefSize = new Dimension(Math.max(viewBorderBounds.width,prefSize.width),Math.max(viewBorderBounds.height,prefSize.height));
-			}
-			return prefSize;
-		}else{
-			return super.getPreferredSize();
-		}
+		return prefSize;
+	}else{
+		return super.getPreferredSize();
 	}
+	
 }
 
 
