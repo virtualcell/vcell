@@ -1808,7 +1808,7 @@ public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
 
 public static String createCanonicalFieldFunctionSyntax(String externalDataIdentifierName,String varName,double beginTime,String extDataIdVariableTypeName){	
 	VariableType vt = VariableType.getVariableTypeFromVariableTypeName(extDataIdVariableTypeName);
-	return MathMLTags.FIELD+"("+
+	return ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD] + "("+
 		externalDataIdentifierName+","+varName+","+beginTime+
 		(vt.equals(VariableType.UNKNOWN)?"": ","+vt.getTypeName())+")";
 }

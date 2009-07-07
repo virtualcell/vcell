@@ -13,9 +13,9 @@ import org.vcell.util.document.User;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.MathMLTags;
 import cbit.vcell.xml.XMLTags;
 
 public final class DataProcessingInstructions implements Matchable, Serializable {
@@ -51,7 +51,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 			}
 			sb.append("\n");
 		}
-		sb.append("SampleImage " + numRegions + " " + zSlice + " " + fieldDataKey + " " + MathMLTags.FIELD + "(" + fd.toCSVString() + ")\n");
+		sb.append("SampleImage " + numRegions + " " + zSlice + " " + fieldDataKey + " " + ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD] + "(" + fd.toCSVString() + ")\n");
 		sb.append("StoreEnabled " + bStoreEnabled + "\n");
 
 		return new DataProcessingInstructions("VFRAP", sb.toString());
@@ -101,7 +101,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 			st.nextToken();
 			String key = st.nextToken();
 			
-			index = scriptInput.indexOf(MathMLTags.FIELD);
+			index = scriptInput.indexOf(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]);
 			if (index >= 0) {
 				st = new StringTokenizer(scriptInput.substring(index), "\n");
 				if (st.hasMoreTokens()) {

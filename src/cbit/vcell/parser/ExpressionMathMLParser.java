@@ -235,7 +235,7 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			//    ...baseExp...
 			//  </apply>
 			//
-			String powFunctionName = ASTFuncNode.getVCellFunctionName(MathMLTags.POWER);
+			String powFunctionName = ASTFuncNode.getVCellFunctionNameFromMathMLFuncName(MathMLTags.POWER);
 			vcellOperationNode = new ASTFuncNode();
 			((ASTFuncNode)vcellOperationNode).setName(powFunctionName);
 			if (children.size()==2){
@@ -294,11 +294,14 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			}
 			Expression finalExpr = theLambdaFn.substitute(argExprs);
 			return finalExpr.getRootNode();
-		} else if (ASTFuncNode.getVCellFunctionName(operation.getName()) != null){
-			vcellOperationNode = new ASTFuncNode();
-			((ASTFuncNode)vcellOperationNode).setName(ASTFuncNode.getVCellFunctionName(operation.getName()));
-		} else{
-			throw new ExpressionException("cannot translate "+operation.getName()+" from MathML");
+		} else {
+			String cellFunctionNameFromMathMLFuncName = ASTFuncNode.getVCellFunctionNameFromMathMLFuncName(operation.getName());
+			if (cellFunctionNameFromMathMLFuncName != null){
+				vcellOperationNode = new ASTFuncNode();
+				((ASTFuncNode)vcellOperationNode).setName(cellFunctionNameFromMathMLFuncName);
+			} else{
+				throw new ExpressionException("cannot translate "+operation.getName()+" from MathML");
+			}
 		}
 		//
 		// MathML "APPLY" places the operator and arguments as siblings
@@ -343,9 +346,9 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 		ASTAddNode addNode = new ASTAddNode();
 		Element piecewise = nodeMathML;
 		Vector<SimpleNode> conditionExpList = new Vector<SimpleNode>();
-		java.util.List children = piecewise.getChildren();
+		java.util.List<Element> children = piecewise.getChildren();
 		for (int i = 0; i < children.size(); i++){
-			Element child = (Element)children.get(i);
+			Element child = children.get(i);
 			if (child.getName().equals(MathMLTags.PIECE)){
 				int numChildren = child.getChildren().size();
 				Element pieceExp = (Element)child.getChildren().get(0);

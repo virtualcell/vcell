@@ -109,11 +109,4 @@ public interface MathMLTags {
 	public final static String ANNOTATION_XML		= "annotation-xml";
 	// the root element
 	public final static String MATH                 = "math";
-
-
-	// field data
-	public final static String FIELD				= "field";
-	
-	// gradients
-	public final static String GRAD					= "grad";
 }

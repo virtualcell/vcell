@@ -144,8 +144,8 @@ public class ASTFuncNode extends SimpleNode {
 		MathMLTags.FACTORIAL,			// 34
 		MathMLTags.LOG_10,				// 35
 		MathMLTags.LOGBASE,		 		// 36
-		MathMLTags.FIELD,                // 37
-		MathMLTags.GRAD                // 38
+		null,                // 37, not supported by MathML
+		null                // 38, not supported by MathML
 	};
 	
   ASTFuncNode() {
@@ -2530,7 +2530,7 @@ public String[] getSymbols(int language, NameScope nameScope) {
  * Creation date: (2/8/2002 4:29:47 PM)
  * @return java.lang.String
  */
-static String getVCellFunctionName(String mathMLFunctName) {
+static String getVCellFunctionNameFromMathMLFuncName(String mathMLFunctName) {
 	//
 	// find the MathML function name in it's array, and return the corresponding VCell function name
 	//
