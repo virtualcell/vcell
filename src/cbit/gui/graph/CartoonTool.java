@@ -6,10 +6,11 @@ package cbit.gui.graph;
 ©*/
 import javax.swing.*;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.ButtonGroupCivilized;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 
 import java.util.*;
-import cbit.gui.*;
 import java.awt.event.*;
 import java.awt.*;
 /**
@@ -102,7 +103,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	//Menu Stuff
 	//
 		private JPopupMenu lastJPopupMenu = null;
-		private Vector lastMenuList = null;
+		private Vector<JMenuItem> lastMenuList = null;
 		//
 		JMenuItem addFeatureJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem addSpeciesJMenuItem = new javax.swing.JMenuItem();
@@ -329,7 +330,7 @@ public final static String getActionCommand(int mode) {
  * Creation date: (7/14/00 11:40:05 AM)
  * @return cbit.gui.ButtonGroupCivilized
  */
-public org.vcell.util.gui.ButtonGroupCivilized getButtonGroup() {
+public ButtonGroupCivilized getButtonGroup() {
 	return buttonGroup;
 }
 
@@ -344,12 +345,12 @@ protected static final java.awt.Container getDialogOwner(GraphPane graphPaneSeek
 		return null;
 	}
 	
-	Container dialogOwner = (JDesktopPane)org.vcell.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JDesktopPane.class);
+	Container dialogOwner = (JDesktopPane)BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JDesktopPane.class);
 	if (dialogOwner!=null){
 		return dialogOwner;
 	}
 	
-	dialogOwner = (JFrame)org.vcell.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JFrame.class);
+	dialogOwner = (JFrame)BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JFrame.class);
 	if (dialogOwner!=null){
 		return ((JFrame)dialogOwner).getContentPane();
 	}
@@ -380,11 +381,11 @@ public GraphPane getGraphPane() {
  * Creation date: (5/13/2003 7:23:09 PM)
  * @return java.awt.Container
  */
-protected JDesktopPane getJDesktopPane() {
+protected JDesktopPaneEnhanced getJDesktopPane() {
 	if(getGraphPane() == null){
 		return null;
 	}
-	return (JDesktopPane)org.vcell.util.BeanUtils.findTypeParentOfComponent(getGraphPane(),javax.swing.JDesktopPane.class);
+	return (JDesktopPaneEnhanced)BeanUtils.findTypeParentOfComponent(getGraphPane(),JDesktopPaneEnhanced.class);
 }
 
 
@@ -533,7 +534,7 @@ protected final void popupMenu(Shape shape,int x, int y) throws Exception {
 	//
 	if(shape != null){
 
-		Vector currentMenuList = new Vector();
+		Vector<JMenuItem> currentMenuList = new Vector<JMenuItem>();
 		//
 		//Add stuff to menu based on state of cartoons
 		//
@@ -577,7 +578,7 @@ protected final void popupMenu(Shape shape,int x, int y) throws Exception {
 			}
 		}
 		if(!bSame){//Make new JPopupMenu if its different than the last
-			Vector editV = new Vector();
+			Vector<JMenuItem> editV = new Vector<JMenuItem>();
 			popupMenu = new javax.swing.JPopupMenu();
 			popupMenu.setName("CartoonToolJPopupMenu");
 			//
@@ -672,7 +673,7 @@ protected Point screenToWorld(Point screenPoint) {
  * Creation date: (7/14/00 11:40:05 AM)
  * @param newButtonGroup cbit.gui.ButtonGroupCivilized
  */
-public void setButtonGroup(org.vcell.util.gui.ButtonGroupCivilized newButtonGroup) {
+public void setButtonGroup(ButtonGroupCivilized newButtonGroup) {
 	buttonGroup = newButtonGroup;
 	setMode(SELECT_MODE);
 }
@@ -759,9 +760,9 @@ public final void updateButtonGroup(ButtonGroupCivilized buttonGroup, String act
 			return;
 		}
 	}
-	Enumeration buttons = buttonGroup.getElements();
+	Enumeration<AbstractButton> buttons = buttonGroup.getElements();
 	while (buttons.hasMoreElements()) {
-		ButtonModel button = ((JToggleButton)buttons.nextElement()).getModel();
+		ButtonModel button = buttons.nextElement().getModel();
 		if (button.getActionCommand().equals(actionCommand)) {
 			buttonGroup.setSelection(button);
 			return;

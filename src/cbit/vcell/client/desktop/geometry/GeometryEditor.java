@@ -70,7 +70,7 @@ private void connEtoM1() {
 	try {
 		// user code begin {1}
 		// user code end
-		getgeoEditorToggleButton().setSelected(this.setGeometryEditorButtonOn());
+		getgeoEditorToggleButton().setSelected(true);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -255,15 +255,7 @@ public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
 	fieldGeometry = geometry;
 	firePropertyChange("geometry", oldValue, geometry);
 }
-/**
- * Comment
- */
-public boolean setGeometryEditorButtonOn() {
-	if (System.getProperty("java.version").compareTo("1.3") >= 0) {
-		return true;
-	}	
-	return false;
-}
+
 /**
  * Sets the geometryWindowManager property (cbit.vcell.client.GeometryWindowManager) value.
  * @param geometryWindowManager The new value for the property.

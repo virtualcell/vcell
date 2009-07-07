@@ -10,7 +10,6 @@ import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.ListSelectionModel;
 
@@ -28,6 +27,7 @@ import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 
@@ -44,7 +44,6 @@ import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
-import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.SimulationInfo;
@@ -255,7 +254,7 @@ public void viewData(final ExternalDataIdentifier eDI){
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {				
 				try{
-					final JDesktopPane jdp = new JDesktopPane();				
+					final JDesktopPaneEnhanced jdp = new JDesktopPaneEnhanced();
 					currentlyViewedPDEDV = new PDEDataViewer();
 					PDEDataContext newPDEDataContext = (PDEDataContext)hashTable.get("newPDEDataContext");
 					currentlyViewedPDEDV.setPdeDataContext(newPDEDataContext);

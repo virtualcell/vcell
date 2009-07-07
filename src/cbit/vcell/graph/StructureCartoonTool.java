@@ -14,8 +14,13 @@ import java.util.Vector;
 
 import javax.swing.JFileChooser;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
@@ -143,11 +148,11 @@ protected void menuAction(Shape shape, String menuAction) {
 			// 2) parent==null and child!=null
 			//      upon ok, edits the feature name
 			//
-			showFeaturePropertiesDialog(getGraphPane(),(getStructureCartoon().getModel() == null?null:getStructureCartoon().getModel()),null,((FeatureShape)shape).getFeature(),shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()));
+			showFeaturePropertiesDialog(getGraphPane(),(getStructureCartoon().getModel() == null?null:getStructureCartoon().getModel()),null,((FeatureShape)shape).getFeature());
 		}else if (shape instanceof MembraneShape){
-			showMembranePropertiesDialog(getGraphPane(),((MembraneShape)shape).getMembrane(),shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()));
+			showMembranePropertiesDialog(getGraphPane(),((MembraneShape)shape).getMembrane());
 		}else if (shape instanceof SpeciesContextShape){
-			showEditSpeciesDialog(getGraphPane(),((SpeciesContextShape)shape).getSpeciesContext(),shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()));
+			showEditSpeciesDialog(getGraphPane(),((SpeciesContextShape)shape).getSpeciesContext());
 		}
 			
 	}else if (menuAction.equals(SHOW_PARAMETERS_MENU_ACTION)){
@@ -162,13 +167,13 @@ protected void menuAction(Shape shape, String menuAction) {
 			
 	}else if(menuAction.equals(ADD_SPECIES_MENU_ACTION)){
 		if(shape instanceof StructureShape){
-			showCreateSpeciesContextDialog(getGraphPane(),getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()),null);
+			showCreateSpeciesContextDialog(getGraphPane(),getStructureCartoon().getModel(),((StructureShape)shape).getStructure(), null);
 		}
 		
 	}else if(menuAction.equals(ADD_FEATURE_MENU_ACTION)){
 		try{
 			if (shape instanceof FeatureShape){
-				showFeaturePropertiesDialog(getGraphPane(),(getStructureCartoon().getModel() == null?null:getStructureCartoon().getModel()),((FeatureShape)shape).getFeature(),null,shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()));
+				showFeaturePropertiesDialog(getGraphPane(),(getStructureCartoon().getModel() == null?null:getStructureCartoon().getModel()),((FeatureShape)shape).getFeature(),null);
 			}
 		}catch(Exception e){
 			generateErrorDialog(e,0,0);
@@ -764,13 +769,12 @@ private void showMoveDialog(FeatureShape featureShape) {
 				}
 				if(message.length() > 0){
 					String result =
-						cbit.vcell.client.PopupGenerator.showWarningDialog(getJDesktopPane(),
+						PopupGenerator.showWarningDialog(getJDesktopPane(),
 							"The following Species from Feature '"+parentOfMoving.getName()+"' that were used by\n"+
 							"moved membrane '"+featureShape.getFeature().getMembrane().getName()+"' no longer have references\n"+
 							"Should the Species be deleted?\n"+
 							message,
-							new String[] {cbit.vcell.client.UserMessage.OPTION_YES,cbit.vcell.client.UserMessage.OPTION_NO},
-							cbit.vcell.client.UserMessage.OPTION_NO);
+							new String[] {UserMessage.OPTION_YES,UserMessage.OPTION_NO},UserMessage.OPTION_NO);
 					if(result.equals(cbit.vcell.client.UserMessage.OPTION_YES)){
 						for(int i=0;i<cleanupWantedV.size();i+= 1){
 							try{
@@ -784,7 +788,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 			}
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog(e.getClass().getName()+"\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(e.getClass().getName()+"\n"+e.getMessage());
 	}
 }
 
@@ -802,10 +806,10 @@ public void showParametersDialog() {
 		modelParametersDialog.setIconifiable(true);
 		modelParametersDialog.init(((StructureCartoon)getGraphModel()).getModel());
 		
-		org.vcell.util.BeanUtils.centerOnComponent(modelParametersDialog, getJDesktopPane());
+		BeanUtils.centerOnComponent(modelParametersDialog, getJDesktopPane());
 	}
 
-	cbit.vcell.client.DocumentWindowManager.showFrame(modelParametersDialog,getJDesktopPane());
+	DocumentWindowManager.showFrame(modelParametersDialog,getJDesktopPane());
 }
 
 /**
@@ -826,11 +830,10 @@ public void showReactionCartoonEditorPanel(final StructureShape structureShape) 
 		
 		reactionEditorHash.put(structureShape.getStructure(),reactionCartoonEditorDialog);
 		rced = reactionCartoonEditorDialog;
-		org.vcell.util.BeanUtils.centerOnComponent(rced, getJDesktopPane());
 		rced.setLocation(rced.getLocation().x + reactionEditorHash.size() * 15, rced.getLocation().y + reactionEditorHash.size() * 15);
 	}
-
-	cbit.vcell.client.DocumentWindowManager.showFrame(rced,getJDesktopPane());
+	BeanUtils.centerOnComponent(rced, getJDesktopPane());
+	DocumentWindowManager.showFrame(rced,getJDesktopPane());
 }
 
 

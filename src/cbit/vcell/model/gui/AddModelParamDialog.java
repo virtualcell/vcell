@@ -1,5 +1,4 @@
 package cbit.vcell.model.gui;
-import java.beans.PropertyVetoException;
 import java.util.Iterator;
 
 import javax.swing.DefaultComboBoxModel;
@@ -11,7 +10,6 @@ import javax.swing.JTextField;
 import javax.swing.text.Document;
 
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
@@ -149,21 +147,6 @@ public AddModelParamDialog(String title, boolean resizable, boolean closable, bo
 public AddModelParamDialog(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable) {
 	super(title, resizable, closable, maximizable, iconifiable);
 }
-
-
-/**
- * EditSpeciesDialog constructor comment.
- * @param title java.lang.String
- * @param resizable boolean
- * @param closable boolean
- * @param maximizable boolean
- * @param iconifiable boolean
- * @param stripped boolean
- */
-public AddModelParamDialog(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, boolean stripped) {
-	super(title, resizable, closable, maximizable, iconifiable, stripped);
-}
-
 
 /**
  * Comment

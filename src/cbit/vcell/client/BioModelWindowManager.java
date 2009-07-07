@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
@@ -45,7 +46,7 @@ import cbit.vcell.xml.MIRIAMHelper;
 public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {
 	private BioModel bioModel = null;
 	private Hashtable<SimulationContext, ApplicationComponents> applicationsHash = new Hashtable<SimulationContext, ApplicationComponents>();
-	private JDesktopPane jDesktopPane = null;
+	private JDesktopPaneEnhanced jDesktopPane = null;
 	private BioModelEditor bioModelEditor = null;
 	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 
@@ -72,7 +73,7 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
  */
 public BioModelWindowManager(JPanel panel, RequestManager requestManager, final BioModel bioModel, int newlyCreatedDesktops) {
 	super(panel, requestManager, bioModel, newlyCreatedDesktops);
-	setJDesktopPane(new JDesktopPane());
+	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
 	setBioModel(bioModel);
@@ -86,9 +87,8 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 	 */
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	
-	if(e.getSource() instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer && e.getActionCommand().equals("Open Geometry")){
-		//KeyValue geometryKey = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry().getVersion().getVersionKey();
-		openGeometryDocumentWindow(((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry());
+	if(e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Open Geometry")){
+		openGeometryDocumentWindow(((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry());
 	}
 	
 	if (e.getSource() instanceof ApplicationEditor && e.getActionCommand().equals("Create Math Model")) {
@@ -99,8 +99,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		SimulationContext sc = (SimulationContext)((ApplicationEditor)e.getSource()).getSimulationWorkspace().getSimulationOwner();
 		showGeometryViewerFrame(sc);
 	}
-	if (e.getSource() instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer && e.getActionCommand().equals("Change Geometry...")) {
-		Geometry geom = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
+	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Change Geometry...")) {
+		Geometry geom = ((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
 		// Lookup application components based on instance of GeometrySummaryViewer
  		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 		while (appComponentsEnum.hasMoreElements()) {
@@ -116,8 +116,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		}
 		DialogUtils.showErrorDialog("Geometry "+geom.getName()+" key="+geom.getVersion().getVersionKey()+" not found in application hash");
 	}
-	if (e.getSource() instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer && e.getActionCommand().equals("View Surfaces")) {
-		Geometry geom = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
+	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("View Surfaces")) {
+		Geometry geom = ((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
 		// Lookup application components based on instance of GeometrySummaryViewer
  		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 		while (appComponentsEnum.hasMoreElements()) {
@@ -300,7 +300,7 @@ private cbit.vcell.client.desktop.biomodel.BioModelEditor getBioModelEditor() {
  * Creation date: (5/27/2004 1:49:01 PM)
  * @return javax.swing.JDesktopPane
  */
-protected javax.swing.JDesktopPane getJDesktopPane() {
+protected JDesktopPaneEnhanced getJDesktopPane() {
 	return jDesktopPane;
 }
 
@@ -492,7 +492,7 @@ private void setBioModelEditor(cbit.vcell.client.desktop.biomodel.BioModelEditor
  * Creation date: (5/27/2004 1:49:01 PM)
  * @param newJDesktopPane javax.swing.JDesktopPane
  */
-private void setJDesktopPane(javax.swing.JDesktopPane newJDesktopPane) {
+private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
 	jDesktopPane = newJDesktopPane;
 }
 

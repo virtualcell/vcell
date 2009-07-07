@@ -19,7 +19,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		EditSpeciesDialog aEditSpeciesDialog;
-		aEditSpeciesDialog = new EditSpeciesDialog();
+		aEditSpeciesDialog = new EditSpeciesDialog(frame);
 		frame.setContentPane(aEditSpeciesDialog);
 		frame.setSize(aEditSpeciesDialog.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
