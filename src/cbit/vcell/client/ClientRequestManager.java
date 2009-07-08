@@ -4,6 +4,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.xml.merge.*;
 import cbit.image.*;
 import cbit.vcell.export.server.*;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.xml.XMLInfo;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.geometry.gui.ROISourceData;
@@ -31,17 +32,18 @@ import java.awt.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import java.util.*;
 import java.util.List;
+import java.util.zip.DataFormatException;
 
 import javax.swing.*;
 import javax.swing.undo.UndoableEditSupport;
@@ -81,6 +83,7 @@ public class ClientRequestManager implements RequestManager, PropertyChangeListe
 	private boolean bOpening = false;
 	private boolean bExiting = false;
 
+	public static final int MAX_PIXEL_VAL_IMAGEATTRPANEL = 254;
 /**
  * Insert the method's description here.
  * Creation date: (5/21/2004 4:22:13 AM)
@@ -830,40 +833,94 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 					break;
 				} else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE) {
 					// Get image from file --- INCOMPLETE
-					AsynchClientTask task1 = new AsynchClientTask("creating geometry from file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, getUserPreferences());
 							hashTable.put("imageFile", imageFile);
 						}
 					};
-					AsynchClientTask taskSegment = new AsynchClientTask("Segemtn image", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					AsynchClientTask parseImageFileTask = new AsynchClientTask("read and parse image file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							File imageFile = (File)hashTable.get("imageFile");
+							try {
+								FieldDataFileOperationSpec fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,true);
+								hashTable.put("fdfos", fdfos);
+							} catch (DataFormatException ex) {
+								throw new Exception("Cannot read image file '" + imageFile.getAbsolutePath()+"'\n"+ex.getMessage());
+							}
+						}
+					};
+
+					AsynchClientTask taskSegment = new AsynchClientTask("Segment image", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							Component guiParent =(Component)hashTable.get("guiParent");
-							VCImage vcImage = (VCImage)hashTable.get("vcImage");
+							FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get("fdfos");
+							short[] dataToSegment = fdfos.shortSpecData[0][0];//[time 0][channel 0]
+							//find unique pixel values
+							BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
+							for (int i = 0; i < dataToSegment.length; i++) {
+								uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
+							}
+							//ask user if want to manual segment
 							String segment = "Proceed with Segmentation";
 							String nosegment = "Skip Segmentation";
 							String cancel = "Cancel";
-							String choice = PopupGenerator.showWarningDialog(guiParent, "The image contains "+vcImage.getPixelClasses().length+" colors.  Without segmentation each color will be a different subdomain in the geometry.  Currently segmentation only allows creation of 2 subdomains.", 
+							String choice = PopupGenerator.showWarningDialog(guiParent, "The image contains "+uniquePixelBS.cardinality()+" colors.  Without segmentation each color will be a different subdomain in the geometry.  Currently manual segmentation only allows creation of 2 subdomains.", 
 									new String[] {segment, nosegment, cancel}, segment);							
 							if (choice.equals(cancel)) {
 								throw UserCancelException.CANCEL_GENERIC;
 							} else if (choice.equals(nosegment)) {
+								//auto segment
+								int minVal = dataToSegment[0]&0x0000FFFF;
+								int maxVal = minVal;
+								int usIntVal = 0;
+								for (int i = 0; i < dataToSegment.length; i++) {
+									usIntVal = (int)(dataToSegment[i]&0x0000FFFF);
+									minVal = Math.min(usIntVal, minVal);
+									maxVal = Math.max(usIntVal, maxVal);
+								}
+								byte[] byteData = new byte[dataToSegment.length];
+								if(maxVal > MAX_PIXEL_VAL_IMAGEATTRPANEL){
+									if(uniquePixelBS.cardinality() <= MAX_PIXEL_VAL_IMAGEATTRPANEL){
+										int index = 0;
+										int[] indexRef = new int[(int)Math.pow(2, Short.SIZE)];
+										Arrays.fill(indexRef, -1);
+										for (int i = 0; i < indexRef.length; i++) {
+											if(uniquePixelBS.get(i)){
+												indexRef[i] = index;
+												index++;
+											}
+										}
+										for (int i = 0; i < dataToSegment.length; i++) {
+											byteData[i] = (byte)indexRef[(int)(dataToSegment[i]&0x0000FFFF)];
+										}
+									}else{
+										for (int i = 0; i < dataToSegment.length; i++) {
+											byteData[i] =
+												(byte)(0xFF & (int)((double)(dataToSegment[i]-minVal)/(double)(maxVal-minVal)*MAX_PIXEL_VAL_IMAGEATTRPANEL));
+										}
+									}
+								}else{
+									for (int i = 0; i < byteData.length; i++) {
+										byteData[i] = (byte)(dataToSegment[i]&0xFF);
+									}
+								}
+								VCImage autoSegmentVCImage =
+									new VCImageUncompressed(null,byteData,fdfos.extent,fdfos.isize.getX(),fdfos.isize.getY(),fdfos.isize.getZ());
+								hashTable.put("vcImage", autoSegmentVCImage);
 								return;
 							}
-							short[] dataToSegment = new short[vcImage.getNumXYZ()];
-							for (int i = 0; i < dataToSegment.length; i++) {
-								dataToSegment[i] = (short)(vcImage.getPixels()[i]&0x00FF);
-							}
+							//manual segment
 							VCImage manualSegmentVCImage =
-								ClientRequestManager.segmentRawImage(guiParent,
-									new Origin(0,0,0),new Extent(1,1,1), new ISize(vcImage.getNumX(),vcImage.getNumY(),vcImage.getNumZ()),dataToSegment);
+								ClientRequestManager.segmentRawImage(guiParent,fdfos.origin,fdfos.extent, fdfos.isize,dataToSegment);
 							hashTable.put("vcImage", manualSegmentVCImage);
 						}
 					};
 
-					taskArray = new AsynchClientTask[] {task1, new SelectImageFromFile(), taskSegment,new EditImageAttributes(), saveImage, createGeometry};
+					taskArray = new AsynchClientTask[] {selectImageFileTask,parseImageFileTask, taskSegment,new EditImageAttributes(), saveImage, createGeometry};
 					break;
 				} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -930,7 +987,7 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 								String segment = "Proceed with Segmentation";
 								String nosegment = "Skip Segmentation";
 								String cancel = "Cancel";
-								String choice = PopupGenerator.showWarningDialog(parent, "The image contains "+vcImage.getPixelClasses().length+" colors.  Without segmentation each color will be a different subdomain in the geometry.  Currently segmentation only allows creation of 2 subdomains.", 
+								String choice = PopupGenerator.showWarningDialog(parent, "The image contains "+vcImage.getPixelClasses().length+" colors.  Without segmentation each color will be a different subdomain in the geometry.  Currently manual segmentation only allows creation of 2 subdomains.", 
 										new String[] {segment, nosegment, cancel}, segment);							
 								if (choice.equals(cancel)) {
 									throw UserCancelException.CANCEL_GENERIC;
@@ -2426,5 +2483,59 @@ public void prepareDocumentToLoad(VCDocument doc) throws Exception {
 		}
 		getDocumentManager().preloadSimulationStatus(simIDs);
 	}
+}
+
+
+public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,boolean bCropOutBlack) throws DataFormatException,ImageException{
+	ImageDataset imagedataSet = null;
+	final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+	try{
+		imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
+		if (imagedataSet!=null && bCropOutBlack){
+//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): BEFORE CROPPING, size="+imagedataSet.getISize().toString());
+			Rectangle nonZeroRect = imagedataSet.getNonzeroBoundingRectangle();
+			if(nonZeroRect != null){
+				imagedataSet = imagedataSet.crop(nonZeroRect);
+			}
+//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): AFTER CROPPING, size="+imagedataSet.getISize().toString());
+		}
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		throw new DataFormatException(e.getMessage());
+	}
+	//[time][var][data]
+	int numXY = imagedataSet.getISize().getX()*imagedataSet.getISize().getY();
+	int numXYZ = imagedataSet.getSizeZ()*numXY;
+	fdos.variableTypes = new VariableType[imagedataSet.getSizeC()];
+	fdos.varNames = new String[imagedataSet.getSizeC()];
+	short[][][] shortData =
+		new short[imagedataSet.getSizeT()][imagedataSet.getSizeC()][numXYZ];
+	for(int c=0;c<imagedataSet.getSizeC();c+= 1){
+		fdos.variableTypes[c] = VariableType.VOLUME;
+		fdos.varNames[c] = "Channel"+c;
+		for(int t=0;t<imagedataSet.getSizeT();t+=1){
+			int zOffset = 0;
+			for(int z=0;z<imagedataSet.getSizeZ();z+=1){
+				UShortImage ushortImage = imagedataSet.getImage(z,c,t);
+				System.arraycopy(ushortImage.getPixels(), 0, shortData[t][c], zOffset, numXY);
+//				shortData[t][c] = ushortImage.getPixels();
+				zOffset+= numXY;
+			}
+		}
+	}
+	fdos.shortSpecData = shortData;
+	fdos.times = imagedataSet.getImageTimeStamps();
+	if(fdos.times == null){
+		fdos.times = new double[imagedataSet.getSizeT()];
+		for(int i=0;i<fdos.times.length;i+= 1){
+			fdos.times[i] = i;
+		}
+	}
+
+	fdos.origin = (imagedataSet.getAllImages()[0].getOrigin() != null?imagedataSet.getAllImages()[0].getOrigin():new Origin(0,0,0));
+	fdos.extent = (imagedataSet.getExtent()!=null)?(imagedataSet.getExtent()):(new Extent(1,1,1));
+	fdos.isize = imagedataSet.getISize();
+	
+	return fdos;
 }
 }

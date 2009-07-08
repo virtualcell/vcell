@@ -2,7 +2,6 @@ package cbit.vcell.client;
 import cbit.xml.merge.*;
 import java.util.*;
 import java.io.*;
-import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.desktop.*;
@@ -10,7 +9,6 @@ import cbit.vcell.geometry.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.clientdb.*;
 import java.awt.*;
@@ -66,14 +64,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager{
 			return bWasDoubleClicked;
 		}
 	}	
-	
-	public static class ImageHelper{
-		public int[] imageData;
-		public int xsize;
-		public int ysize;
-		public int zsize;
-	};
-	
+		
 	private BioModelDbTreePanel bioModelDbTreePanel = new BioModelDbTreePanel();
 	private ACLEditor aclEditor = new ACLEditor();
 	private ImageBrowser imageBrowser = new ImageBrowser();
@@ -515,143 +506,6 @@ public void comparePreviousEdition()  {
 		};
 		ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/2004 12:10:45 PM)
- * @return cbit.image.VCImage
- * @param gifData byte[]
- */
-public static ImageHelper convertGIF(byte[] gifData) throws Exception, cbit.image.ImageException{
-
-	ImageHelper ih = new ImageHelper();
-	Image tempImage = Toolkit.getDefaultToolkit().createImage(gifData);
-	tempImage = new ImageIcon(tempImage).getImage();
-	ih.xsize = tempImage.getWidth(null);
-	ih.ysize = tempImage.getHeight(null);
-
-	java.awt.image.BufferedImage nativeImage = new java.awt.image.BufferedImage(ih.xsize,ih.ysize,java.awt.image.BufferedImage.TYPE_INT_RGB);
-	Graphics2D g = nativeImage.createGraphics();
-	g.drawImage(tempImage,0,0,null);
-	g.dispose();
-	
-	ih.imageData = new int[ih.xsize*ih.ysize];
-	nativeImage.getRGB(0,0,ih.xsize,ih.ysize,ih.imageData,0,ih.xsize);
-	ih.zsize = 1;
-
-	return ih;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/2004 12:10:45 PM)
- * @return cbit.image.VCImage
- * @param gifData byte[]
- */
-public static ImageHelper convertTIF(byte[] tifData) throws cbit.image.TiffException,IOException,cbit.image.ImageException{
-	
-	cbit.image.TiffImage tiffImage = new cbit.image.TiffImage();
-	cbit.image.ByteArrayTiffInputSource batis = new cbit.image.ByteArrayTiffInputSource(tifData);
-	tiffImage.read(batis);
-	//TiffImage doesn't work properly, only trust the following format from TiffImage
-	if(!tiffImage.getDataType().isByte() || tiffImage.getSizeZ() > 1){
-		throw new cbit.image.ImageException("for TIFF, only single,8 bit(grayscale) tiff images supported");
-	}
-	ImageHelper ih = new ImageHelper();
-	ih.imageData = tiffImage.getRGB();
-	ih.xsize = tiffImage.getSizeX();
-	ih.ysize = tiffImage.getSizeY();
-	ih.zsize = 1;//TiffImage doesn't handle Z correctly
-	if((ih.xsize*ih.ysize) != ih.imageData.length){
-		throw new cbit.image.ImageException("Tif size="+ih.imageData.length+" does not match dimension "+ih.xsize+" x "+ih.ysize);
-	}
-	return ih;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/2004 12:21:47 PM)
- * @return cbit.image.VCImage
- */
-public static ImageHelper convertZIP(byte[] zipData, ClientTaskStatusSupport pp) {
-
-	//
-	// Read individual entries from zip as z-sections
-	//
-	java.util.zip.ZipInputStream zis = null;
-	try {
-		int finalxsize = 0;
-		int finalysize = 0;
-		int totalsize = 0;
-		
-		TreeMap<String, ImageHelper> sortedHash = new TreeMap<String, ImageHelper>();
-		zis = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(zipData));
-		java.util.zip.ZipEntry ze = null;
-		while ((ze = zis.getNextEntry()) != null) {
-			if(pp != null){
-				pp.setMessage("Reading("+(sortedHash.size()+1)+") name=" + ze.getName() + (totalsize !=0?"   dim=("+finalxsize+" X "+finalysize+")":""));
-			}
-			if (ze.isDirectory() == false) {
-				java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-				int count;
-				byte b[] = new byte[65536];
-				while ((count = zis.read(b, 0, b.length)) != -1) {
-					bos.write(b, 0, count);
-				}
-				ImageHelper ih = null;
-				if(	ze.getName().toLowerCase().endsWith(".gif")){
-					ih = convertGIF(bos.toByteArray());
-				}else if(ze.getName().toLowerCase().endsWith(".tif") || ze.getName().toLowerCase().endsWith(".tiff")){
-					ih = convertTIF(bos.toByteArray());
-				}else{
-					throw new Exception("Zip file entry "+ze.getName()+" not recognized, must end with .gif,.tif,.tiff");
-				}
-				
-				if(totalsize == 0){
-					finalxsize = ih.xsize;
-					finalysize = ih.ysize;
-				}
-				if(finalxsize != ih.xsize || finalysize != ih.ysize){
-					throw new cbit.image.ImageException("Zip file entries must all have same X and Y dimension");
-				}
-				totalsize+= ih.imageData.length;
-				if(totalsize > GeometrySpec.IMAGE_SIZE_LIMIT){
-					throw new Exception("Zip Uncompressed total size exceeds limit of "+GeometrySpec.IMAGE_SIZE_LIMIT);
-				}
-				sortedHash.put(ze.getName(), ih);
-				bos.close();
-			}else{
-				throw new RuntimeException("Zip files with directory entries not supported");
-			}
-			zis.closeEntry();
-		}
-		if (sortedHash.size() > 0) {
-			ImageHelper[] entries = new ImageHelper[sortedHash.size()];
-			sortedHash.values().toArray(entries);
-			ImageHelper finalIH = new ImageHelper();
-			finalIH.xsize = finalxsize;
-			finalIH.ysize = finalysize;
-			finalIH.zsize = entries.length;
-			finalIH.imageData = new int[totalsize];
-			int offset = 0;
-			for(int i=0;i<entries.length;i+= 1){
-				System.arraycopy(entries[i].imageData, 0, finalIH.imageData, offset, entries[i].imageData.length);
-				offset+= entries[i].imageData.length;
-			}
-			return finalIH;
-		}else{
-			return null;
-		}
-	} catch (java.util.zip.ZipException zex) {
-		throw new RuntimeException("Zip Data corrupt " + (zex.getMessage() != null?zex.getMessage():zex.getClass().getName()) );
-	} catch (Exception e) {
-		throw new RuntimeException("Error Reading Zip Data " + (e.getMessage() != null?e.getMessage():e.getClass().getName()));
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -1100,53 +954,6 @@ public VCImage selectImageFromDatabase() throws DataAccessException {
 		return getRequestManager().getDocumentManager().getImage((VCImageInfo)getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo());
 	}
 	return null;
-}
-
-public static ImageHelper readFromImageFile(ClientTaskStatusSupport pp,File imageFile)
-	throws FileNotFoundException,IOException,ImageException{
-	
-	ImageHelper ih = null;
-	long fileSize = imageFile.length();
-	pp.setMessage("Reading file "+imageFile.getName()+" size="+fileSize);
-	// Get file bytes
-	byte[] fileBytes = new byte[(int)fileSize];
-	FileInputStream fis = null;
-	DataInputStream dis = null;
-	try{
-		fis = new FileInputStream(imageFile);
-		InputStream is = new BufferedInputStream(fis);
-		dis = new DataInputStream(is);
-		dis.readFully(fileBytes);
-	}finally{
-		try{
-			if(dis != null){dis.close();}
-		}finally{
-			if(fis != null){fis.close();}
-		}
-	}
-	// Parse bytes
-	try{
-		if(imageFile.getName().toLowerCase().endsWith(".gif")){
-			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as gif");
-			ih = convertGIF(fileBytes);
-			
-		}else if(imageFile.getName().toLowerCase().endsWith(".tif") || imageFile.getName().toLowerCase().endsWith(".tiff")){
-			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as tif");
-			ih = convertTIF(fileBytes);
-				
-		}else if(	imageFile.getName().toLowerCase().endsWith(".zip")){
-			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as zip");
-			ih = convertZIP(fileBytes,pp);
-		}else{
-			throw new Exception("File name "+imageFile.getName()+" not recognized, must end with .gif,.tif,.tiff -or- zip containing gif,tif for each Z-slice");
-		}
-		
-		pp.setMessage("Finished loading "+imageFile.getName()+" ("+ih.xsize+","+ih.ysize+","+ih.zsize+")");
-	}catch(Throwable e){
-		throw new cbit.image.ImageException("Error loading image "+imageFile.getAbsolutePath()+"\n"+(e.getMessage() == null?e.getClass().getName():e.getMessage()));
-	}
-	
-	return ih;
 }
 	
 /**

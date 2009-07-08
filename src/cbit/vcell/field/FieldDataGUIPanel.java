@@ -22,11 +22,8 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.PopupGenerator;
@@ -1021,57 +1018,6 @@ private void jButtonFDView_ActionPerformed(java.awt.event.ActionEvent actionEven
 }
 
 
-public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,boolean bCropOutBlack) throws DataFormatException,ImageException{
-	ImageDataset imagedataSet = null;
-	final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-	try{
-		imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
-		if (imagedataSet!=null && bCropOutBlack){
-//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): BEFORE CROPPING, size="+imagedataSet.getISize().toString());
-			imagedataSet = imagedataSet.crop(imagedataSet.getNonzeroBoundingRectangle());
-//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): AFTER CROPPING, size="+imagedataSet.getISize().toString());
-		}
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new DataFormatException(e.getMessage());
-	}
-	//[time][var][data]
-	int numXY = imagedataSet.getISize().getX()*imagedataSet.getISize().getY();
-	int numXYZ = imagedataSet.getSizeZ()*numXY;
-	fdos.variableTypes = new VariableType[imagedataSet.getSizeC()];
-	fdos.varNames = new String[imagedataSet.getSizeC()];
-	short[][][] shortData =
-		new short[imagedataSet.getSizeT()][imagedataSet.getSizeC()][numXYZ];
-	for(int c=0;c<imagedataSet.getSizeC();c+= 1){
-		fdos.variableTypes[c] = VariableType.VOLUME;
-		fdos.varNames[c] = "Channel"+c;
-		for(int t=0;t<imagedataSet.getSizeT();t+=1){
-			int zOffset = 0;
-			for(int z=0;z<imagedataSet.getSizeZ();z+=1){
-				UShortImage ushortImage = imagedataSet.getImage(z,c,t);
-				System.arraycopy(ushortImage.getPixels(), 0, shortData[t][c], zOffset, numXY);
-//				shortData[t][c] = ushortImage.getPixels();
-				zOffset+= numXY;
-			}
-		}
-	}
-	fdos.shortSpecData = shortData;
-	fdos.times = imagedataSet.getImageTimeStamps();
-	if(fdos.times == null){
-		fdos.times = new double[imagedataSet.getSizeT()];
-		for(int i=0;i<fdos.times.length;i+= 1){
-			fdos.times[i] = i;
-		}
-	}
-
-	fdos.origin = new Origin(0,0,0);
-	fdos.extent = (imagedataSet.getExtent()!=null)?(imagedataSet.getExtent()):(new Extent(1,1,1));
-	fdos.isize = imagedataSet.getISize();
-	
-	return fdos;
-}
-
-
 private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	
@@ -1108,32 +1054,10 @@ private AsynchClientTask[] fdFromFile() {
 					return;
 				}
 				initFDName = imageFile.getName();
-				//read VCell Special
-				DatabaseWindowManager.ImageHelper imageHelper = null;
 				try {
-					fdos = new FieldDataFileOperationSpec();
-					imageHelper = DatabaseWindowManager.readFromImageFile(
-							getClientTaskStatusSupport(), imageFile);
-					fdos.times = new double[] { 0 };
-					fdos.varNames = new String[] { "variableName" };
-					fdos.origin = new Origin(0, 0, 0);
-					fdos.extent = new Extent(1, 1, 1);
-					fdos.isize = new ISize(imageHelper.xsize,
-							imageHelper.ysize, imageHelper.zsize);
-					short[] shortPixels = new short[imageHelper.imageData.length];
-					for (int i = 0; i < shortPixels.length; i += 1) {
-						shortPixels[i] = (short) (0x000000FF & imageHelper.imageData[i]);
-					}
-					fdos.shortSpecData = new short[][][] { { shortPixels } };
-					fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
-				} catch (Exception e) {
-					System.out.println("VCell simple image import couldn't read " + e.getMessage());						
-					//read BioFormat
-					try {
-						fdos = createFDOSFromImageFile(imageFile,true);
-					} catch (DataFormatException ex) {
-						throw new Exception("Neither BioFormats nor VCell can read image " + imageFile.getAbsolutePath());
-					}
+					fdos = ClientRequestManager.createFDOSFromImageFile(imageFile,true);
+				} catch (DataFormatException ex) {
+					throw new Exception("Cannot read image " + imageFile.getAbsolutePath()+"\n"+ex.getMessage());
 				}
 			}else{
 				fdos = argfdos;

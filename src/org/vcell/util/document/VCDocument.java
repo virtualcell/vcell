@@ -1,11 +1,5 @@
 package org.vcell.util.document;
 
-
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-
-import cbit.image.VCImage;
-import cbit.sql.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/6/2004 12:53:51 PM)
@@ -66,37 +60,6 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		}
 		
 	}
-//	public static class GeomFromFieldDataCreationInfo extends DocumentCreationInfo{
-//		private byte[] imageData;
-//		private ISize imageSize;
-//		private Version imageVersion;
-//		private Extent imageExtent;
-//		private String imageDescription;
-//		public GeomFromFieldDataCreationInfo(int documentType,int option,
-//				byte[] imageData,ISize imageSize,Extent imageExtent,Version imageVersion,String imageDescription){
-//			super(documentType,option);
-//			this.imageData = imageData;
-//			this.imageSize = imageSize;
-//			this.imageVersion = imageVersion;
-//			this.imageExtent = imageExtent;
-//			this.imageDescription = imageDescription;
-//		}
-//		public byte[] getImageData() {
-//			return imageData;
-//		}
-//		public ISize getImageSize() {
-//			return imageSize;
-//		}
-//		public Version getImageVersion() {
-//			return imageVersion;
-//		}
-//		public Extent getImageExtent() {
-//			return imageExtent;
-//		}
-//		public String getImageDescription(){
-//			return imageDescription;
-//		}
-//	};
 /**
  * Insert the method's description here.
  * Creation date: (5/17/2004 1:03:55 PM)
