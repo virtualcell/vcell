@@ -200,7 +200,7 @@ public static void attemptResizeWeight(JSplitPane pane, double weight) {
 public static void centerOnComponent(Component c, Component reference) {
 	if (c != null && reference != null) {
 		// if reference is orphan, center on screen
-		if (reference.getParent() == null) {
+		if (reference == null && reference.getParent() == null) {
 			centerOnScreen(c);
 			return;
 		}

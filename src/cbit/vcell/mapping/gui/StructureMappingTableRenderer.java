@@ -3,7 +3,7 @@ package cbit.vcell.mapping.gui;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;;
+import javax.swing.table.DefaultTableCellRenderer;
 
 public class StructureMappingTableRenderer extends DefaultTableCellRenderer
 {
@@ -20,6 +20,15 @@ public class StructureMappingTableRenderer extends DefaultTableCellRenderer
 		{
 			setBackground(table.getBackground());
 			setForeground(table.getForeground());
+		}
+		
+		if (column == StructureMappingTableModel.COLUMN_SUBDOMAIN) {
+			if (value == null) {
+				setText("Unmapped");
+				setForeground(Color.red);
+			} else {
+				setForeground(table.getForeground());
+			}
 		}
 		
 		setToolTipText(StructureMappingTableModel.COLUMN_TOOLTIPS[column]);

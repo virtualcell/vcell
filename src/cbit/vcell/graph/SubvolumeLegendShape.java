@@ -4,8 +4,11 @@ package cbit.vcell.graph;
  * All rights reserved.
 ©*/
 import cbit.gui.graph.*;
+import cbit.gui.graph.Shape;
+
 import java.beans.*;
-import cbit.vcell.model.*;
+
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.Geometry;
 import java.awt.*;
@@ -18,6 +21,7 @@ public class SubvolumeLegendShape extends ElipseShape implements PropertyChangeL
 	SubVolume subvolume = null;
 	Geometry geometry = null;
 	int radius = 1;
+	private boolean bMapped = false;
 
 /**
  * SpeciesShape constructor comment.
@@ -96,7 +100,7 @@ public Point getSeparatorDeepCount() {
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
 private java.awt.Color getSubvolumeColor() {
-	java.awt.image.ColorModel colorModel = geometry.getGeometrySpec().getHandleColorMap();
+	java.awt.image.ColorModel colorModel = GeometrySpec.getHandleColorMap();
 	int handle = subvolume.getHandle();
 	return new java.awt.Color(colorModel.getRGB(handle));
 }
@@ -140,11 +144,22 @@ public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY 
 	//
 	java.awt.FontMetrics fm = g.getFontMetrics();
 	int textX = labelPos.x + absPosX;
-	int textY = labelPos.y + absPosY;
-	g.setColor(forgroundColor);
-	if (getLabel()!=null && getLabel().length()>0){
-		g.drawString(getLabel(),textX,textY);
+	int textY = labelPos.y + absPosY;	
+	if (bMapped) {
+		g.setColor(forgroundColor);
+		String label = getLabel();
+		if (label!=null && label.length()>0){
+			g.drawString(label,textX,textY);
+		}
+	} else {
+		g.setColor(forgroundColor);
+		g.drawString(subvolume.getName(), textX,textY);
+		int offset = fm.stringWidth(subvolume.getName());
+		
+		g.setColor(Color.red);		
+		g.drawString(" (Unmapped)",textX+offset,textY);
 	}
+	
 	return;
 }
 
@@ -166,7 +181,18 @@ public void propertyChange(PropertyChangeEvent event) {
  * This method was created in VisualAge.
  */
 public void refreshLabel() {
-	setLabel(subvolume.getName());
+	Enumeration<Shape> shapeEnum = graphModel.getShapes();
+	bMapped = false;
+	while (shapeEnum.hasMoreElements()) {
+		Shape s = shapeEnum.nextElement();
+		if (s instanceof FeatureMappingShape) {
+			if (((FeatureMappingShape)s).getSubvolumeLegendShape() == this) {
+				bMapped = true;
+				break;
+			}
+		}
+	}
+	setLabel(subvolume.getName() + (bMapped ? "" : " (Unmapped)"));
 }
 
 

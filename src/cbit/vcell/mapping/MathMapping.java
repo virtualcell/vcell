@@ -1499,7 +1499,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	for (int i = 0; i < structures.length; i++){
 		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(structures[i]);
 		if (sm==null || (sm instanceof FeatureMapping && ((FeatureMapping)sm).getSubVolume() == null)){
-			throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subVolume");
+			throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subdomain");
 		}
 		if (sm!=null && (sm instanceof MembraneMapping) && ((MembraneMapping)sm).getVolumeFractionParameter()!=null){
 			Expression volFractExp = ((MembraneMapping)sm).getVolumeFractionParameter().getExpression();
@@ -1518,7 +1518,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	SubVolume subVolumes[] = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
 	for (int i = 0; i < subVolumes.length; i++){
 		if (simContext.getGeometryContext().getStructures(subVolumes[i])==null || simContext.getGeometryContext().getStructures(subVolumes[i]).length==0){
-			throw new MappingException("geometry subVolume '"+subVolumes[i].getName()+"' not mapped from a model structure");
+			throw new MappingException("geometry subdomain '"+subVolumes[i].getName()+"' not mapped from a model structure");
 		}
 	}
 
