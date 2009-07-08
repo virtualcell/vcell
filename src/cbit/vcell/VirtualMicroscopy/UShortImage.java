@@ -429,6 +429,9 @@ public Rectangle getNonzeroBoundingBox() {
 			}
 		}
 	}
+	if(minX == Integer.MAX_VALUE){
+		return null;
+	}
 	return new Rectangle(minX,minY,maxX-minX+1,maxY-minY+1);
 }
 

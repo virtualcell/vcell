@@ -204,11 +204,18 @@ public ImageDataset crop(Rectangle rect) throws ImageException {
 }
 
 public Rectangle getNonzeroBoundingRectangle() throws ImageException {
-	Rectangle boundingRect = images[0].getNonzeroBoundingBox();
+	Rectangle wholeBoundingRect = null;
 	for (int i = 0; i < images.length; i++) {
-		boundingRect.union(images[i].getNonzeroBoundingBox());
+		Rectangle boundingRect = images[i].getNonzeroBoundingBox();
+		if(boundingRect != null){
+			if(wholeBoundingRect == null){
+				wholeBoundingRect = boundingRect;
+			}else{
+				wholeBoundingRect.union(boundingRect);
+			}
+		}
 	}
-	return boundingRect;
+	return wholeBoundingRect;
 }
 
 public void showAll(){
