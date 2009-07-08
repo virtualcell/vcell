@@ -84,7 +84,8 @@ public class ApplicationEditor extends JPanel {
 	private AnalysisTaskComboBoxModel ivjAnalysisTaskComboBoxModel = null;
 	private boolean ivjConnPtoP8Aligning = false;
 	private ComboBoxModel ivjmodel1 = null;
-	private JButton ivjCopyButton = null; 
+	private JButton ivjCopyButton = null;
+	private JLabel mappingInfoLabel = null; 
          
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -113,6 +114,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (evt.getSource() == ApplicationEditor.this && (evt.getPropertyName().equals("simulationWorkspace"))) {
 				connPtoP1SetTarget();
 				refreshAnalysisTab();
+				refreshMappingInfoLabel();
 			}
 			if (evt.getSource() == ApplicationEditor.this.getSimulationListPanel() && (evt.getPropertyName().equals("simulationWorkspace"))) 
 				connPtoP2SetSource();
@@ -146,6 +148,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoM7(evt);
 			if (evt.getSource() == ApplicationEditor.this.getsimulationContext() && (evt.getPropertyName().equals("geometry"))) { 
 				refreshAnalysisTab();
+				refreshMappingInfoLabel();
 			}
 			if (evt.getSource() == ApplicationEditor.this.getAnalysisTaskComboBox() && (evt.getPropertyName().equals("model"))) 
 				connPtoP8SetTarget();
@@ -1336,8 +1339,14 @@ private javax.swing.JPanel getJPanel3() {
 		try {
 			ivjJPanel3 = new javax.swing.JPanel();
 			ivjJPanel3.setName("JPanel3");
-			ivjJPanel3.setLayout(new java.awt.FlowLayout());
+			ivjJPanel3.setLayout(new BoxLayout(ivjJPanel3, BoxLayout.Y_AXIS));		
+			
+			getViewModifyGeometryButton().setAlignmentX(CENTER_ALIGNMENT);
 			getJPanel3().add(getViewModifyGeometryButton(), getViewModifyGeometryButton().getName());
+			
+			mappingInfoLabel = new JLabel("All structures and subdomains must be mapped to run a simulation. Use line tool to create mappings.");
+			mappingInfoLabel.setAlignmentX(CENTER_ALIGNMENT);
+			getJPanel3().add(mappingInfoLabel);			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2347,6 +2356,14 @@ private void viewMath_ItemStateChanged(ItemEvent itemEvent) {
 			getcardLayout().show(getMathViewerPanel(), source.getActionCommand());
 			return;			
 		}
+	}
+}
+
+private void refreshMappingInfoLabel() {
+	if (getSimulationContext().getGeometry().getDimension() == 0) {
+		mappingInfoLabel.setVisible(false);
+	} else {
+		mappingInfoLabel.setVisible(true);
 	}
 }
 

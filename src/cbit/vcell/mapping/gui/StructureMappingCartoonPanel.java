@@ -482,7 +482,7 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsStructureMappingPanel.gridx = 0; constraintsStructureMappingPanel.gridy = 1;
 			constraintsStructureMappingPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsStructureMappingPanel.weightx = 1.0;
-			constraintsStructureMappingPanel.weighty = 0.5;
+			constraintsStructureMappingPanel.weighty = 1.5;
 			getJPanel2().add(getStructureMappingPanel(), constraintsStructureMappingPanel);
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
@@ -812,7 +812,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

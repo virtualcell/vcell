@@ -4,7 +4,6 @@ package cbit.vcell.graph;
  * All rights reserved.
 ©*/
 import cbit.gui.graph.*;
-import cbit.gui.graph.Shape;
 import cbit.vcell.mapping.*;
 /**
  * This type was created in VisualAge.
@@ -46,8 +45,8 @@ public Object getModelObject() {
  * This method was created in VisualAge.
  * @return cbit.vcell.graph.ReactionStepShape
  */
-public SubvolumeShape getSubvolumeShape() {
-	return (SubvolumeShape)endShape;
+public SubvolumeLegendShape getSubvolumeLegendShape() {
+	return (SubvolumeLegendShape)endShape;
 }
 
 
