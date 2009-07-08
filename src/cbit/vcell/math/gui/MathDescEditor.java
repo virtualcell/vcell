@@ -345,7 +345,7 @@ public List<String> getAutoCompletionWords() {
 	 autoCompletionWords.add(VCML.VolumeRate);
 	 autoCompletionWords.add(VCML.VolumeRegionVariable);
 	 autoCompletionWords.add(VCML.VolumeVariable);
-	 
+	 autoCompletionWords.add(VCML.Steady);
 	 
 	 String functions[] = {
 	 		"abs()",
@@ -484,6 +484,7 @@ public static List<String> getkeywords() {
 	 keywords.add(VCML.VolumeRegionEquation);
 	 keywords.add(VCML.VolumeRegionVariable);
 	 keywords.add(VCML.VolumeVariable);
+	 keywords.add(VCML.Steady);
 
 	 return keywords;
 }
