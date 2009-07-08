@@ -853,6 +853,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 
 	public void setAutoCompletionWords(List<String> acw) {
 		this.autoCompletionWords = acw;
+		Collections.sort(autoCompletionWords);
 	}
 	
 	public void setKeywords(List<String> kw) {
