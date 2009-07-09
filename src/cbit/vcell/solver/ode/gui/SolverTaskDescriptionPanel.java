@@ -9,6 +9,7 @@ import cbit.vcell.math.Constant;
 import java.awt.Color;
 import java.util.*;
 
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
@@ -26,8 +27,8 @@ public class SolverTaskDescriptionPanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjEndTimeTextField = null;
 	private javax.swing.JLabel ivjTimeStepLabel = null;
 	private javax.swing.JTextField ivjTimeStepTextField = null;
-	private java.awt.Panel ivjPanel2 = null;
-	private java.awt.Panel ivjPlotSpecificationPanel = null;
+	private JPanel ivjPanel2 = null;
+	private JPanel ivjPlotSpecificationPanel = null;
 	private javax.swing.JCheckBox ivjPerformSensitivityAnalysisCheckbox = null;
 	private javax.swing.JLabel ivjStartTimeLabel = null;
 	private javax.swing.JTextField ivjStartTimeTextField = null;
@@ -855,10 +856,10 @@ private javax.swing.JTextField getJTextFieldKeepEvery() {
  * @return java.awt.Panel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.awt.Panel getPanel2() {
+private JPanel getPanel2() {
 	if (ivjPanel2 == null) {
 		try {
-			ivjPanel2 = new java.awt.Panel();
+			ivjPanel2 = new JPanel();
 			ivjPanel2.setName("Panel2");
 			ivjPanel2.setLayout(new java.awt.GridBagLayout());
 			ivjPanel2.setBackground(java.awt.Color.gray);
@@ -901,10 +902,10 @@ private javax.swing.JCheckBox getPerformSensitivityAnalysisCheckbox() {
  * @return java.awt.Panel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.awt.Panel getPlotSpecificationPanel() {
+private JPanel getPlotSpecificationPanel() {
 	if (ivjPlotSpecificationPanel == null) {
 		try {
-			ivjPlotSpecificationPanel = new java.awt.Panel();
+			ivjPlotSpecificationPanel = new JPanel();
 			ivjPlotSpecificationPanel.setName("PlotSpecificationPanel");
 			ivjPlotSpecificationPanel.setLayout(new java.awt.GridBagLayout());
 			// user code begin {1}
