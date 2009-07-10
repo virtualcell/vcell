@@ -1,5 +1,6 @@
 package cbit.vcell.client;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XmlHelper;
 import cbit.xml.merge.*;
 import cbit.image.*;
@@ -27,10 +28,15 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.VCellMessageEvent;
+import cbit.rmi.event.VCellMessageEventListener;
+
 import java.awt.*;
 
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.geometry.*;
@@ -41,6 +47,8 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
+import cbit.vcell.clientdb.DocumentManager;
+
 import java.util.*;
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -73,12 +81,13 @@ import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 2:42:55 AM)
  * @author: Ion Moraru
  */
-public class ClientRequestManager implements RequestManager, PropertyChangeListener, cbit.rmi.event.ExportListener, cbit.rmi.event.VCellMessageEventListener {
+public class ClientRequestManager implements RequestManager, PropertyChangeListener, ExportListener, VCellMessageEventListener {
 	private VCellClient vcellClient = null;
 	private boolean bOpening = false;
 	private boolean bExiting = false;
@@ -587,10 +596,10 @@ public void createMathModelFromApplication(final String name, final SimulationCo
 					mathDesc.getGeometry().getGeometrySurfaceDescription().updateAll();
 				}
 
-			}catch (cbit.image.ImageException e){
+			}catch (ImageException e){
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
-			}catch (cbit.vcell.geometry.GeometryException e){
+			}catch (GeometryException e){
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Geometric surface generation error:\n"+e.getMessage());
 			}
@@ -765,7 +774,7 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), documentCreationInfo.getOption());
-						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new cbit.vcell.parser.Expression(1.0)));					
+						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new Expression(1.0)));					
 						hashTable.put("doc", geometry);
 					}
 				};
@@ -1351,8 +1360,8 @@ public void exportDocument(TopLevelWindowManager manager) {
  * Creation date: (1/18/2005 3:14:12 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void exportMessage(cbit.rmi.event.ExportEvent event) {
-	if (event.getEventTypeID() == cbit.rmi.event.ExportEvent.EXPORT_COMPLETE) {
+public void exportMessage(ExportEvent event) {
+	if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
 		// update document manager
 		//try {
 			//((ClientDocumentManager)getRequestManager().getDocumentManager()).reloadExportLog(exportEvent.getVCDataIdentifier());
@@ -1370,7 +1379,7 @@ public void exportMessage(cbit.rmi.event.ExportEvent event) {
  * Creation date: (6/9/2004 4:45:51 PM)
  * @return cbit.vcell.client.AsynchMessageManager
  */
-public cbit.vcell.client.server.AsynchMessageManager getAsynchMessageManager() {
+public AsynchMessageManager getAsynchMessageManager() {
 	return getClientServerManager().getAsynchMessageManager();
 }
 
@@ -1398,7 +1407,7 @@ public DataManager getDataManager(VCDataIdentifier vcDataId, boolean isSpatial) 
 	// Create ODE or PDE or Merged Datamanager depending on ODE or PDE or Merged data.
 	//
 	DataManager dataManager = null;
-	if (vcDataId instanceof cbit.vcell.simdata.MergedDataInfo) {
+	if (vcDataId instanceof MergedDataInfo) {
 		dataManager = new MergedDataManager(getClientServerManager().getVCDataManager(), vcDataId);
 	} else if (!isSpatial) {
 		dataManager = new ODEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
@@ -1415,7 +1424,7 @@ public DataManager getDataManager(VCDataIdentifier vcDataId, boolean isSpatial) 
  * Creation date: (5/21/2004 9:57:39 AM)
  * @return cbit.vcell.clientdb.DocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	// this should not be exposed here, but needs many changes outside project in order to live without it...
 	// will eliminate when finishing up new client
 	return getVcellClient().getClientServerManager().getDocumentManager();
@@ -1429,7 +1438,7 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
 public DynamicDataManager getDynamicDataManager(VCDataIdentifier vcdId) throws DataAccessException {
-	if (vcdId instanceof cbit.vcell.simdata.MergedDataInfo) {
+	if (vcdId instanceof MergedDataInfo) {
 		return new MergedDynamicDataManager(getClientServerManager().getVCDataManager(), vcdId);
 	} else {
 		return null;
@@ -1579,8 +1588,8 @@ public AsynchClientTask[] newDocument(final VCDocument.DocumentCreationInfo docu
 /**
  * onVCellMessageEvent method comment.
  */
-public void onVCellMessageEvent(final cbit.rmi.event.VCellMessageEvent event) {
-	if (event.getEventTypeID() == cbit.rmi.event.VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
+public void onVCellMessageEvent(final VCellMessageEvent event) {
+	if (event.getEventTypeID() == VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
 	    PopupGenerator.showErrorDialog(event.getMessageData().getData().toString());
 	}
 }
@@ -1620,7 +1629,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 				doc = getDocumentManager().getGeometry(gmi);
 			} else if (documentInfo instanceof XMLInfo) {
 				String xmlStr = ((XMLInfo)documentInfo).getXmlString();
-				org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);         //some overhead.
+				org.jdom.Element rootElement = XmlUtil.stringToXML(xmlStr, null);         //some overhead.
 				String xmlType = rootElement.getName();
 				String modelXmlType = null;
 				if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
@@ -1668,14 +1677,14 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						windowManager = createDocumentWindowManager(doc);
 						// request was to create a new top-level window with this doc
 						getMdiManager().createNewDocumentWindow(windowManager);						
+						if (windowManager instanceof BioModelWindowManager) {
+							((BioModelWindowManager)windowManager).preloadApps();
+						}
 					} else {
 						// request was to replace the document in an existing window
 						windowManager = (DocumentWindowManager)requester;
 						windowManager.resetDocument(doc);
 						getMdiManager().setCanonicalTitle(requester.getManagerID());
-					}
-					if (windowManager instanceof BioModelWindowManager) {
-						((BioModelWindowManager)windowManager).preloadApps();
 					}
 				}
 			} finally {
