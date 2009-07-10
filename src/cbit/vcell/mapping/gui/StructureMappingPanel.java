@@ -12,22 +12,28 @@ import javax.swing.JComboBox;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.vcell.util.gui.JTableFixed;
+
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.*;
+import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */
 public class StructureMappingPanel extends javax.swing.JPanel implements PropertyChangeListener {
-	private cbit.vcell.geometry.Geometry ivjGeometry = null;
+	private Geometry ivjGeometry = null;
 	private GeometryContext ivjgeometryContext1 = null;  
-	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;  
+	private GeometryContext fieldGeometryContext = null;  
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private Component ivjComponent1 = null;
 	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;  //  @jve:decl-index=0:
-	private org.vcell.util.gui.JTableFixed ivjScrollPaneTable1 = null;
+	private JTableFixed ivjScrollPaneTable1 = null;
 	private StructureMappingTableModel ivjStructureMappingTableModel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP3Aligning = false;
+	private JComboBox subdomainComboBoxCellEditor = null;
 
 class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {		
 		public void focusGained(java.awt.event.FocusEvent e) {};
@@ -130,7 +136,7 @@ private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM2(GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -174,7 +180,7 @@ private void connEtoM3(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM4(GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -326,7 +332,7 @@ private javax.swing.DefaultCellEditor getDefaultCellEditor1() {
  * @return The geometryContext property value.
  * @see #setGeometryContext
  */
-public cbit.vcell.mapping.GeometryContext getGeometryContext() {
+public GeometryContext getGeometryContext() {
 	return fieldGeometryContext;
 }
 
@@ -336,7 +342,7 @@ public cbit.vcell.mapping.GeometryContext getGeometryContext() {
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getgeometryContext1() {
+private GeometryContext getgeometryContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjgeometryContext1;
@@ -371,13 +377,14 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JTableFixed getScrollPaneTable1() {
+private JTableFixed getScrollPaneTable1() {
 	if (ivjScrollPaneTable1 == null) {
 		try {
-			ivjScrollPaneTable1 = new org.vcell.util.gui.JTableFixed();
+			ivjScrollPaneTable1 = new JTableFixed();
 			ivjScrollPaneTable1.setName("ScrollPaneTable1");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable1.getTableHeader());
 			ivjScrollPaneTable1.setBounds(0, 0, 450, 400);
+			ivjScrollPaneTable1.setRowHeight(ivjScrollPaneTable1.getRowHeight() + 2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -397,7 +404,7 @@ private org.vcell.util.gui.JTableFixed getScrollPaneTable1() {
 private StructureMappingTableModel getStructureMappingTableModel1() {
 	if (ivjStructureMappingTableModel1 == null) {
 		try {
-			ivjStructureMappingTableModel1 = new cbit.vcell.mapping.gui.StructureMappingTableModel();
+			ivjStructureMappingTableModel1 = new StructureMappingTableModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -547,7 +554,7 @@ private void setDefaultCellEditor1(javax.swing.DefaultCellEditor newValue) {
  * @param newValue java.lang.Object
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
+private void setGeometry(Geometry newValue) {
 	if (ivjGeometry != newValue) {
 		try {
 			ivjGeometry = newValue;			
@@ -568,7 +575,7 @@ private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
  * @param geometryContext The new value for the property.
  * @see #getGeometryContext
  */
-public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContext) {
+public void setGeometryContext(GeometryContext geometryContext) {
 	GeometryContext oldValue = fieldGeometryContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
@@ -594,10 +601,10 @@ public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContex
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext1(GeometryContext newValue) {
 	if (ivjgeometryContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.GeometryContext oldValue = getgeometryContext1();
+			GeometryContext oldValue = getgeometryContext1();
 			/* Stop listening for events from the current object */
 			if (ivjgeometryContext1 != null) {
 				ivjgeometryContext1.removePropertyChangeListener(ivjEventHandler);
@@ -627,11 +634,19 @@ private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
 /**
  * Comment
  */
-public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryContext arg1) {
+private void structureMappingPanel_GeometryContext(GeometryContext arg1) {
 	if(arg1 != null)
 	{
 		//refresh table
 		getScrollPaneTable1().createDefaultColumnsFromModel();
+		subdomainComboBoxCellEditor = new JComboBox(); 
+		SubVolume[] subvolumes = getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
+		subdomainComboBoxCellEditor.removeAll();
+		for (SubVolume sv : subvolumes) {
+			subdomainComboBoxCellEditor.addItem(sv.getName());
+		}
+		getScrollPaneTable1().getColumnModel().getColumn(StructureMappingTableModel.COLUMN_SUBDOMAIN).setCellEditor(new DefaultCellEditor(subdomainComboBoxCellEditor));
+		
 		//set column editor
 		JComboBox combo=new JComboBox(new String[]{"Flux","Value"});
 		for(int i=StructureMappingTableModel.COLUMN_X_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
@@ -756,14 +771,14 @@ private void structureMappingPanel_Initialize() {
 	getScrollPaneTable1().addPropertyChangeListener(//This listener is to ensure table is formated properly when first initialized
 		new java.beans.PropertyChangeListener(){
 			public void propertyChange(java.beans.PropertyChangeEvent evt){
-				cbit.vcell.model.gui.ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
 			}
 		}
 	);
 	getStructureMappingTableModel1().addTableModelListener(//This listener formats formats table cells after an edit
 		new javax.swing.event.TableModelListener(){
 			public void tableChanged(javax.swing.event.TableModelEvent e){
-				cbit.vcell.model.gui.ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
 			}
 		}
 	);

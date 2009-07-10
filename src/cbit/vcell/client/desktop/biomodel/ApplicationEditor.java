@@ -1344,7 +1344,7 @@ private javax.swing.JPanel getJPanel3() {
 			getViewModifyGeometryButton().setAlignmentX(CENTER_ALIGNMENT);
 			getJPanel3().add(getViewModifyGeometryButton(), getViewModifyGeometryButton().getName());
 			
-			mappingInfoLabel = new JLabel("All structures and subdomains must be mapped to run a simulation. Use line tool to create mappings.");
+			mappingInfoLabel = new JLabel("All structures and subdomains must be mapped to run a simulation. Use line tool or drop-down menu in the 'Subdomain' column.");
 			mappingInfoLabel.setAlignmentX(CENTER_ALIGNMENT);
 			getJPanel3().add(mappingInfoLabel);			
 			// user code begin {1}
