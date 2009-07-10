@@ -3,10 +3,13 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.beans.PropertyVetoException;
+
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.BoundaryConditionType;
@@ -64,7 +67,7 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	private final String LABELS[] = { LABEL_STRUCTURE, LABEL_SUBDOMAIN, LABEL_RESOLVED, LABEL_SURFVOL, LABEL_VOLFRACT, LABEL_VOLUME, LABEL_SURFACE, LABEL_X_MINUS, LABEL_X_PLUS, LABEL_Y_MINUS, LABEL_Y_PLUS, LABEL_Z_MINUS, LABEL_Z_PLUS };
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;
+	private GeometryContext fieldGeometryContext = null;
 
 /**
  * StructureMappingTableModel constructor comment.
@@ -128,7 +131,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_STRUCTURE:{
 			return String.class;
@@ -221,7 +224,7 @@ public FeatureMapping getFeatureMapping(int row) {
  * @return The geometryContext property value.
  * @see #setGeometryContext
  */
-public cbit.vcell.mapping.GeometryContext getGeometryContext() {
+public GeometryContext getGeometryContext() {
 	return fieldGeometryContext;
 }
 
@@ -433,6 +436,9 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	//
 	// see if feature is distributed and has a membrane (not top)
 	//
+	if (columnIndex == COLUMN_SUBDOMAIN) {
+		return true;
+	}
 	if (columnIndex == COLUMN_VOLUME) // feature size are editable  
 		return true;
 	if ((columnIndex == COLUMN_SURFACE) && (fm.getFeature().getMembrane() != null)) //membrane size are editable
@@ -495,7 +501,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param geometryContext The new value for the property.
  * @see #getGeometryContext
  */
-public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContext) {
+public void setGeometryContext(GeometryContext geometryContext) {
 	GeometryContext oldValue = fieldGeometryContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
@@ -526,6 +532,17 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 	}
 	FeatureMapping featureMapping = getFeatureMapping(rowIndex);
 	switch (columnIndex){
+		case COLUMN_SUBDOMAIN: {
+			String svname = (String)aValue;			
+			try {
+				getGeometryContext().assignFeature(featureMapping.getFeature(), getGeometryContext().getGeometry().getGeometrySpec().getSubVolume(svname));
+			} catch (IllegalMappingException e) {
+				PopupGenerator.showErrorDialog(e.getMessage());
+			} catch (PropertyVetoException e) {				
+				PopupGenerator.showErrorDialog(e.getMessage());
+			}
+			break;
+		}
 		case COLUMN_SURFVOL:{
 			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
 				Membrane membrane = featureMapping.getFeature().getMembrane();
@@ -541,10 +558,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}
 			}
 			break;
@@ -564,10 +581,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}
 			}
 			break;
@@ -595,7 +612,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 							fireTableRowsUpdated(0,getRowCount());
 						}catch(ExpressionException ex){
 							ex.printStackTrace(System.out);
-							cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
+							PopupGenerator.showErrorDialog("Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
 						}
 					}
 					else 
@@ -615,10 +632,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 			}
 			break;
 		}
@@ -649,7 +666,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 								fireTableRowsUpdated(0,getRowCount());
 							}catch(ExpressionException ex){
 								ex.printStackTrace(System.out);
-								cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
+								PopupGenerator.showErrorDialog("Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
 							}
 						}
 						else
@@ -669,10 +686,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}
 			}
 			break;
