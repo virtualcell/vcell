@@ -1567,15 +1567,15 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					if (inNewWindow) {
 						windowManager = createDocumentWindowManager(doc);
 						// request was to create a new top-level window with this doc
-						getMdiManager().createNewDocumentWindow(windowManager);						
+						getMdiManager().createNewDocumentWindow(windowManager);
+						if (windowManager instanceof BioModelWindowManager) {
+							((BioModelWindowManager)windowManager).preloadApps();
+						}
 					} else {
 						// request was to replace the document in an existing window
 						windowManager = (DocumentWindowManager)requester;
 						windowManager.resetDocument(doc);
 						getMdiManager().setCanonicalTitle(requester.getManagerID());
-					}
-					if (windowManager instanceof BioModelWindowManager) {
-						((BioModelWindowManager)windowManager).preloadApps();
 					}
 				}
 			} finally {
