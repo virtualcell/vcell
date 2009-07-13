@@ -73,7 +73,7 @@ protected void check(double values[]) throws SolverException {
 			buffer.append(((Variable)fieldIdentifiers.elementAt(i)).getName()+" = "+values[i]+"\n");
 		}
 	}
-	throw new SolverException("simulation failed at time="+getCurrentTime()+": consider using smaller time step.\nvalues are:\n"+buffer);
+	throw new SolverException("simulation failed at time="+getCurrentTime()+": consider using smaller default or max time step.\nvalues are:\n"+buffer);
 }
 
 
