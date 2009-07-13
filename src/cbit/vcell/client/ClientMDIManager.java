@@ -112,7 +112,6 @@ public int closeWindow(String windowID) {
 				}
 				window.removeWindowListener(windowListener);
 				window.dispose();
-				org.vcell.util.gui.SwingHacks.cleanup();				
 			}
 		}
 	}
