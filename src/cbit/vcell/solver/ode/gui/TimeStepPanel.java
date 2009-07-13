@@ -129,7 +129,7 @@ private void connEtoM4(TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getTornOffTimeStep() != null)) {
+		if ((getTornOffTimeStep() != null) && getMinimumTimeStepTextField().isEnabled()) {
 			getMinimumTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getMinimumTimeStep()));
 		}
 		// user code begin {2}
@@ -149,7 +149,7 @@ private void connEtoM5(TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getTornOffTimeStep() != null)) {
+		if ((getTornOffTimeStep() != null) && getDefaultTimeStepTextField().isEnabled()) {
 			getDefaultTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getDefaultTimeStep()));
 		}
 		// user code begin {2}
@@ -169,7 +169,7 @@ private void connEtoM6(TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getTornOffTimeStep() != null)) {
+		if ((getTornOffTimeStep() != null) && getMaximumTimeStepTextField().isEnabled()) {
 			getMaximumTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getMaximumTimeStep()));
 		}
 		// user code begin {2}
