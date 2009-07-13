@@ -1,5 +1,7 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.solver.TimeStep;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -60,7 +62,7 @@ private void connEtoM1(java.awt.event.FocusEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffTimeStep(localValue = new cbit.vcell.solver.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
+		setTornOffTimeStep(localValue = readTimeStep());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -80,10 +82,7 @@ private void connEtoM2(java.awt.event.FocusEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		double defaultTimeStep = new Double(getDefaultTimeStepTextField().getText()).doubleValue();
-		double minTimeStep = getMinimumTimeStepTextField().getText().length() == 0 ? defaultTimeStep : new Double(getMinimumTimeStepTextField().getText()).doubleValue();
-		double maxTimeStep = getMaximumTimeStepTextField().getText().length() == 0 ? defaultTimeStep : new Double(getMaximumTimeStepTextField().getText()).doubleValue();
-		setTornOffTimeStep(localValue = new cbit.vcell.solver.TimeStep(minTimeStep, defaultTimeStep, maxTimeStep));
+		setTornOffTimeStep(localValue = readTimeStep());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -93,6 +92,14 @@ private void connEtoM2(java.awt.event.FocusEvent arg1) {
 	}
 	setTimeStepFactory(localValue);
 }
+
+private TimeStep readTimeStep() {
+	double defaultTimeStep = !getDefaultTimeStepTextField().isEnabled() ? 0 : new Double(getDefaultTimeStepTextField().getText()).doubleValue();
+	double minTimeStep = !getMinimumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMinimumTimeStepTextField().getText()).doubleValue();
+	double maxTimeStep = !getMaximumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMaximumTimeStepTextField().getText()).doubleValue();
+	return new TimeStep(minTimeStep, defaultTimeStep, maxTimeStep);
+}
+
 /**
  * connEtoM3:  (MaximumTimeStepTextField.focus.focusLost(java.awt.event.FocusEvent) --> TornOffTimeStep.this)
  * @param arg1 java.awt.event.FocusEvent
@@ -103,7 +110,7 @@ private void connEtoM3(java.awt.event.FocusEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffTimeStep(localValue = new cbit.vcell.solver.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
+		setTornOffTimeStep(localValue = readTimeStep());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -122,7 +129,7 @@ private void connEtoM4(cbit.vcell.solver.TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getTornOffTimeStep() != null)) {
+		if ((getTornOffTimeStep() != null) && getMinimumTimeStepTextField().isEnabled()) {
 			getMinimumTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getMinimumTimeStep()));
 		}
 		// user code begin {2}
@@ -142,7 +149,7 @@ private void connEtoM5(cbit.vcell.solver.TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getTornOffTimeStep() != null)) {
+		if ((getTornOffTimeStep() != null) && getDefaultTimeStepTextField().isEnabled()) {
 			getDefaultTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getDefaultTimeStep()));
 		}
 		// user code begin {2}
@@ -162,7 +169,7 @@ private void connEtoM6(cbit.vcell.solver.TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getTornOffTimeStep() != null)) {
+		if ((getTornOffTimeStep() != null) && getMaximumTimeStepTextField().isEnabled()) {
 			getMaximumTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getMaximumTimeStep()));
 		}
 		// user code begin {2}
