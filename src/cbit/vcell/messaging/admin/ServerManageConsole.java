@@ -3059,6 +3059,13 @@ public void tabbedPane_ChangeEvents() {
         case 3 :
             getRefreshButton().setEnabled(false);
             break;
+        case 4:
+        	ivjBroadcastMessageTextArea.setText("Dear User,\n\n" 
+					+ "VCell is shutting down for maintenance in 5 minutes. Please save your work and logout.\n\n"
+					+ "We are sorry for the inconvenience. Please come back in 15 minutes.\n\n\n"
+					+ "VCell team\n" 
+					+ new Date());	
+        	break;
     }
 
     return;
