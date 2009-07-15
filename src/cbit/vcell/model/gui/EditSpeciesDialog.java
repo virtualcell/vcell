@@ -1,7 +1,12 @@
 package cbit.vcell.model.gui;
 
+import java.awt.GridBagConstraints;
+
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -48,7 +53,6 @@ public class EditSpeciesDialog extends JDialog {
 	private boolean ivjConnPtoP3Aligning = false;
 	private javax.swing.text.Document ivjdocument1 = null;
 	private DBFormalSpecies ivjDBFormalSpecies = null;
-	private javax.swing.JButton ivjAnnotateJButton = null;
 	private String ivjAnnotationString = null;
 	private javax.swing.JLabel ivjLinkJLabel = null;
 	private javax.swing.JLabel ivjLinkValueJLabel = null;
@@ -60,6 +64,7 @@ public class EditSpeciesDialog extends JDialog {
 	private boolean ivjConnPtoP2Aligning = false;
 	private javax.swing.text.Document ivjdocument2 = null;
 	private Model fieldModel = null;
+	private JTextArea annotationTextField = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -71,22 +76,22 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC4(e);
 			if (e.getSource() == EditSpeciesDialog.this.getDBLinkJButton()) 
 				connEtoM4(e);
-			if (e.getSource() == EditSpeciesDialog.this.getAnnotateJButton()) 
-				connEtoC9(e);
 			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
 				connEtoC10(e);
 		};
-		public void changedUpdate(javax.swing.event.DocumentEvent e) {
+		private void onDocumentChanged(DocumentEvent e) {
 			if (e.getDocument() == EditSpeciesDialog.this.getdocument1()) 
 				connEtoC6(e);
 			if (e.getDocument() == EditSpeciesDialog.this.getdocument2()) 
 				connEtoC11(e);
+			if (e.getDocument() == EditSpeciesDialog.this.annotationTextField.getDocument()) 
+				updateInterface();
+		}
+		public void changedUpdate(javax.swing.event.DocumentEvent e) {
+			onDocumentChanged(e);
 		};
 		public void insertUpdate(javax.swing.event.DocumentEvent e) {
-			if (e.getDocument() == EditSpeciesDialog.this.getdocument1()) 
-				connEtoC6(e);
-			if (e.getDocument() == EditSpeciesDialog.this.getdocument2()) 
-				connEtoC11(e);
+			onDocumentChanged(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == EditSpeciesDialog.this.getNameValueJTextField() && (evt.getPropertyName().equals("document"))) 
@@ -99,10 +104,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP2SetTarget();
 		};
 		public void removeUpdate(javax.swing.event.DocumentEvent e) {
-			if (e.getDocument() == EditSpeciesDialog.this.getdocument1()) 
-				connEtoC6(e);
-			if (e.getDocument() == EditSpeciesDialog.this.getdocument2()) 
-				connEtoC11(e);
+			onDocumentChanged(e);
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
@@ -118,22 +120,6 @@ public EditSpeciesDialog(JFrame parent) {
 	setModal(true);
 	initialize();
 }
-
-/**
- * Comment
- */
-private void annotateJButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	
-	javax.swing.JTextArea jta = new javax.swing.JTextArea(getAnnotationString(),10,40);
-	javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(jta);
-	javax.swing.JOptionPane.showMessageDialog(this,jsp,"Edit Species Annotation",javax.swing.JOptionPane.PLAIN_MESSAGE);
-	String result = jta.getText();
-	if((result != null) && (result.length() == 0)){
-		result = null;
-	}
-	setAnnotationString(result);
-}
-
 
 /**
  * Comment
@@ -324,26 +310,6 @@ private void connEtoC8(java.beans.PropertyChangeEvent arg1) {
 
 
 /**
- * connEtoC9:  (AnnotateJButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditSpeciesDialog.annotateJButton_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.annotateJButton_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoM1:  (speciesContext1.this --> ContextNameValueTextField.text)
  * @param value cbit.vcell.model.SpeciesContext
  */
@@ -500,7 +466,7 @@ private void connEtoM9(javax.swing.event.ChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getContextNameValueTextField().setEnabled(getJCheckBoxHasOverride().isSelected());
+		getContextNameValueTextField().setEditable(getJCheckBoxHasOverride().isSelected());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -665,30 +631,6 @@ private void connPtoP3SetTarget() {
 	}
 }
 
-
-/**
- * Return the AnnotateJButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getAnnotateJButton() {
-	if (ivjAnnotateJButton == null) {
-		try {
-			ivjAnnotateJButton = new javax.swing.JButton();
-			ivjAnnotateJButton.setName("AnnotateJButton");
-			ivjAnnotateJButton.setText("Annotate...");
-			ivjAnnotateJButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjAnnotateJButton;
-}
-
 /**
  * Return the AnnotationString property value.
  * @return java.lang.String
@@ -758,7 +700,7 @@ private javax.swing.JTextField getContextNameValueTextField() {
 			ivjContextNameValueTextField = new javax.swing.JTextField();
 			ivjContextNameValueTextField.setName("ContextNameValueTextField");
 			ivjContextNameValueTextField.setText("ContextName");
-			ivjContextNameValueTextField.setEnabled(false);
+			ivjContextNameValueTextField.setEditable(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -902,7 +844,7 @@ private javax.swing.JCheckBox getJCheckBoxHasOverride() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJInternalFrameEnhancedContentPane() {
+private javax.swing.JPanel getJDialogContentPane() {
 	if (ivjJInternalFrameEnhancedContentPane == null) {
 		try {
 			ivjJInternalFrameEnhancedContentPane = new javax.swing.JPanel();
@@ -910,70 +852,81 @@ private javax.swing.JPanel getJInternalFrameEnhancedContentPane() {
 			ivjJInternalFrameEnhancedContentPane.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;
+			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 5;
 			constraintsJPanel1.gridwidth = 4;
 			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsJPanel1.weightx = 1.0;
 			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getJPanel1(), constraintsJPanel1);
+			getJDialogContentPane().add(getJPanel1(), constraintsJPanel1);
 
 			java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 2;
+			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 3;
 			constraintsJPanel2.gridwidth = 3;
 			constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getJPanel2(), constraintsJPanel2);
+			getJDialogContentPane().add(getJPanel2(), constraintsJPanel2);
 
 			java.awt.GridBagConstraints constraintsNameJLabel = new java.awt.GridBagConstraints();
 			constraintsNameJLabel.gridx = 0; constraintsNameJLabel.gridy = 0;
 			constraintsNameJLabel.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsNameJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getNameJLabel(), constraintsNameJLabel);
+			getJDialogContentPane().add(getNameJLabel(), constraintsNameJLabel);
 
 			java.awt.GridBagConstraints constraintsContextNameJLabel = new java.awt.GridBagConstraints();
 			constraintsContextNameJLabel.gridx = 0; constraintsContextNameJLabel.gridy = 1;
 			constraintsContextNameJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getContextNameJLabel(), constraintsContextNameJLabel);
+			getJDialogContentPane().add(getContextNameJLabel(), constraintsContextNameJLabel);
 
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 2;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.NORTHWEST;
+			getJDialogContentPane().add(new JLabel("Annotatation:"), gbc);
+			
 			java.awt.GridBagConstraints constraintsContextNameValueTextField = new java.awt.GridBagConstraints();
 			constraintsContextNameValueTextField.gridx = 1; constraintsContextNameValueTextField.gridy = 1;
 			constraintsContextNameValueTextField.gridwidth = 2;
 			constraintsContextNameValueTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsContextNameValueTextField.weightx = 1.0;
 			constraintsContextNameValueTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getContextNameValueTextField(), constraintsContextNameValueTextField);
+			getJDialogContentPane().add(getContextNameValueTextField(), constraintsContextNameValueTextField);
 
+			annotationTextField = new javax.swing.JTextArea("",4,40);
+			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextField);
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; gbc.gridy = 2;
+			gbc.gridwidth = 2;
+			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJDialogContentPane().add(jsp, gbc);
+			
 			java.awt.GridBagConstraints constraintsNameValueJTextField = new java.awt.GridBagConstraints();
 			constraintsNameValueJTextField.gridx = 1; constraintsNameValueJTextField.gridy = 0;
-			constraintsNameValueJTextField.gridwidth = 3;
+			constraintsNameValueJTextField.gridwidth = 2;
 			constraintsNameValueJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsNameValueJTextField.weightx = 1.0;
 			constraintsNameValueJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getNameValueJTextField(), constraintsNameValueJTextField);
-
-			java.awt.GridBagConstraints constraintsAnnotateJButton = new java.awt.GridBagConstraints();
-			constraintsAnnotateJButton.gridx = 3; constraintsAnnotateJButton.gridy = 2;
-			constraintsAnnotateJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getAnnotateJButton(), constraintsAnnotateJButton);
+			getJDialogContentPane().add(getNameValueJTextField(), constraintsNameValueJTextField);
 
 			java.awt.GridBagConstraints constraintsLinkJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 3;
+			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 4;
 			constraintsLinkJLabel.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsLinkJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getLinkJLabel(), constraintsLinkJLabel);
+			getJDialogContentPane().add(getLinkJLabel(), constraintsLinkJLabel);
 
 			java.awt.GridBagConstraints constraintsLinkValueJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkValueJLabel.gridx = 1; constraintsLinkValueJLabel.gridy = 3;
+			constraintsLinkValueJLabel.gridx = 1; constraintsLinkValueJLabel.gridy = 4;
 			constraintsLinkValueJLabel.gridwidth = 2;
 			constraintsLinkValueJLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsLinkValueJLabel.anchor = java.awt.GridBagConstraints.WEST;
 			constraintsLinkValueJLabel.weightx = 1.0;
 			constraintsLinkValueJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getLinkValueJLabel(), constraintsLinkValueJLabel);
+			getJDialogContentPane().add(getLinkValueJLabel(), constraintsLinkValueJLabel);
 
 			java.awt.GridBagConstraints constraintsJCheckBoxHasOverride = new java.awt.GridBagConstraints();
 			constraintsJCheckBoxHasOverride.gridx = 3; constraintsJCheckBoxHasOverride.gridy = 1;
 			constraintsJCheckBoxHasOverride.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getJCheckBoxHasOverride(), constraintsJCheckBoxHasOverride);
+			getJDialogContentPane().add(getJCheckBoxHasOverride(), constraintsJCheckBoxHasOverride);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1263,11 +1216,11 @@ private void initConnections() throws java.lang.Exception {
 	getOKJButton().addActionListener(ivjEventHandler);
 	getDBUnlinkJButton().addActionListener(ivjEventHandler);
 	getDBLinkJButton().addActionListener(ivjEventHandler);
-	getAnnotateJButton().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJCheckBoxHasOverride().addChangeListener(ivjEventHandler);
 	getJCheckBoxHasOverride().addActionListener(ivjEventHandler);
 	getContextNameValueTextField().addPropertyChangeListener(ivjEventHandler);
+	annotationTextField.getDocument().addDocumentListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
@@ -1301,7 +1254,7 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("EditSpeciesDialog");
-		setContentPane(getJInternalFrameEnhancedContentPane());
+		setContentPane(getJDialogContentPane());
 		initConnections();
 		pack();
 	} catch (java.lang.Throwable ivjExc) {
@@ -1346,6 +1299,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 		getSpeciesContext().getSpecies().setDBSpecies(
 				(getDBFormalSpecies() != null?getDocumentManager().getBoundSpecies(getDBFormalSpecies()):null)
 			);
+		setAnnotationString(annotationTextField.getText());
 		getSpeciesContext().getSpecies().setAnnotation(getAnnotationString());
 		getSpeciesContext().setHasOverride(getJCheckBoxHasOverride().isSelected());
 		if (getJCheckBoxHasOverride().isSelected()){
@@ -1588,6 +1542,7 @@ private void setspeciesContext1(SpeciesContext newValue) {
 			connEtoM7(ivjspeciesContext1);
 			connEtoM6(ivjspeciesContext1);
 			connEtoM1(ivjspeciesContext1);
+			annotationTextField.setText(getAnnotationString());
 			firePropertyChange("speciesContext", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -1611,7 +1566,6 @@ private DBFormalSpecies showDatabaseBindingDialog() {
 	aSpeciesQueryDialog.setSize(500,500);
 	BeanUtils.centerOnScreen(aSpeciesQueryDialog);
 	ZEnforcer.showModalDialogOnTop(aSpeciesQueryDialog,this);
-	//aSpeciesQueryDialog.setVisible(true);
 
 	DBFormalSpecies dbfs = null;
 	DictionaryQueryResults dqr = aSpeciesQueryDialog.getDictionaryQueryResults();
@@ -1666,10 +1620,10 @@ private void updateInterface() {
 			);
 		}
 
-		getContextNameValueTextField().setEnabled(true);
+		getContextNameValueTextField().setEditable(true);
 		getContextNameValueTextField().setText(contextName);
 	}
-	getContextNameValueTextField().setEnabled(
+	getContextNameValueTextField().setEditable(
 		(getSpeciesContext() != null) &&
 		(getSpeciesContext().getStructure() != null) &&
 		getJCheckBoxHasOverride().isSelected()
@@ -1687,7 +1641,6 @@ private void updateInterface() {
 	getDBLinkJButton().setEnabled(getDocumentManager() != null);
 	
 	getDBUnlinkJButton().setEnabled(getDBFormalSpecies() != null);
-	getAnnotateJButton().setEnabled(getSpeciesContext() != null);
 	getOKJButton().setEnabled(
 			(getSpeciesContext() != null) && (mode == EDIT_SPECIES_MODE || (mode == ADD_SPECIES_MODE && getModel() != null)) &&
 			(getNameValueJTextField().getText() != null) && (getNameValueJTextField().getText().length() > 0) && 
@@ -1698,7 +1651,8 @@ private void updateInterface() {
 					!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getDBSpecies(),getDBFormalSpecies()) ||
 					!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getAnnotation(),getAnnotationString()) ||
 					getSpeciesContext().getHasOverride() != getJCheckBoxHasOverride().isSelected() ||
-					!Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText())
+					!Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText()) ||
+					!Compare.isEqualOrNull(getAnnotationString(),annotationTextField.getText())
 				)
 			);
 }
