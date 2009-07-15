@@ -8,6 +8,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.util.Hashtable;
 import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
@@ -19,6 +20,8 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MappingException;
@@ -948,139 +951,145 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 /**
  * Comment
  */
-private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent actionEvent) {
 	
-	Vector<String> pasteDescriptionsV = new Vector<String>();
-	Vector<Expression> newExpressionsV = new Vector<Expression>();
-	Vector<SpeciesContextSpec.SpeciesContextSpecParameter> changedParametersV = new Vector<SpeciesContextSpec.SpeciesContextSpecParameter>();
-	try{
-		if(actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()){
-			Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
-			
-			MathMapping mm = null;
-			MathSymbolMapping msm = null;
-			mm = new MathMapping(getSimulationContext());
-			msm = mm.getMathSymbolMapping();
-			
-			int[] rows = null;
-			if(actionEvent.getSource() == getJMenuItemPasteAll()){
-				rows = new int[getScrollPaneTable().getRowCount()];
-				for(int i=0;i<rows.length;i+= 1){
-					rows[i] = i;
-				}
-			}else{
-				rows = getScrollPaneTable().getSelectedRows();
-			}
+	final Vector<String> pasteDescriptionsV = new Vector<String>();
+	final Vector<Expression> newExpressionsV = new Vector<Expression>();
+	final Vector<SpeciesContextSpec.SpeciesContextSpecParameter> changedParametersV = new Vector<SpeciesContextSpec.SpeciesContextSpecParameter>();
+	AsynchClientTask task1 = new AsynchClientTask("validating", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
-		
-			//
-			//Check paste
-			//
-			StringBuffer errors = null;
-			for(int i=0;i<rows.length;i+= 1){
-				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(rows[i]);
-				try{
-					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
-						VCellTransferable.ResolvedValuesSelection rvs =
-							(VCellTransferable.ResolvedValuesSelection)pasteThis;
-						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
-							SpeciesContextSpec.SpeciesContextSpecParameter pasteDestination = null;
-							SpeciesContextSpec.SpeciesContextSpecParameter clipboardBiologicalParameter = null;
-							if(rvs.getPrimarySymbolTableEntries()[j] instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-								clipboardBiologicalParameter = (SpeciesContextSpec.SpeciesContextSpecParameter)rvs.getPrimarySymbolTableEntries()[j];
-							}else if(rvs.getAlternateSymbolTableEntries() != null &&
-									rvs.getAlternateSymbolTableEntries()[j] instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-								clipboardBiologicalParameter = (SpeciesContextSpec.SpeciesContextSpecParameter)rvs.getAlternateSymbolTableEntries()[j];
-							}
-							if(clipboardBiologicalParameter == null){
-								Variable pastedMathVariable = null;
-								if(rvs.getPrimarySymbolTableEntries()[j] instanceof Variable){
-									pastedMathVariable = (Variable)rvs.getPrimarySymbolTableEntries()[j];
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			
+			if(actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()){
+				Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
+				
+				MathMapping mm = null;
+				MathSymbolMapping msm = null;
+				mm = new MathMapping(getSimulationContext());
+				msm = mm.getMathSymbolMapping();
+				
+				int[] rows = null;
+				if(actionEvent.getSource() == getJMenuItemPasteAll()){
+					rows = new int[getScrollPaneTable().getRowCount()];
+					for(int i=0;i<rows.length;i+= 1){
+						rows[i] = i;
+					}
+				}else{
+					rows = getScrollPaneTable().getSelectedRows();
+				}
+	
+			
+				//
+				//Check paste
+				//
+				StringBuffer errors = null;
+				for(int i=0;i<rows.length;i+= 1){
+					SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(rows[i]);
+					try{
+						if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
+							VCellTransferable.ResolvedValuesSelection rvs = (VCellTransferable.ResolvedValuesSelection)pasteThis;
+							for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
+								SpeciesContextSpec.SpeciesContextSpecParameter pasteDestination = null;
+								SpeciesContextSpec.SpeciesContextSpecParameter clipboardBiologicalParameter = null;
+								if(rvs.getPrimarySymbolTableEntries()[j] instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+									clipboardBiologicalParameter = (SpeciesContextSpec.SpeciesContextSpecParameter)rvs.getPrimarySymbolTableEntries()[j];
 								}else if(rvs.getAlternateSymbolTableEntries() != null &&
-										rvs.getAlternateSymbolTableEntries()[j] instanceof Variable){
-									pastedMathVariable = (Variable)rvs.getAlternateSymbolTableEntries()[j];
+										rvs.getAlternateSymbolTableEntries()[j] instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+									clipboardBiologicalParameter = (SpeciesContextSpec.SpeciesContextSpecParameter)rvs.getAlternateSymbolTableEntries()[j];
 								}
-								if(pastedMathVariable != null){
-									Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
-									if(localMathVariable == null){
-										localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+"_init");
+								if(clipboardBiologicalParameter == null){
+									Variable pastedMathVariable = null;
+									if(rvs.getPrimarySymbolTableEntries()[j] instanceof Variable){
+										pastedMathVariable = (Variable)rvs.getPrimarySymbolTableEntries()[j];
+									}else if(rvs.getAlternateSymbolTableEntries() != null &&
+											rvs.getAlternateSymbolTableEntries()[j] instanceof Variable){
+										pastedMathVariable = (Variable)rvs.getAlternateSymbolTableEntries()[j];
 									}
-									if(localMathVariable != null){
-										SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);
-										for(int k =0;k<localBiologicalSymbolArr.length;k+= 1){
-											if(localBiologicalSymbolArr[k] instanceof SpeciesContext && scs.getSpeciesContext() == localBiologicalSymbolArr[k]){
-												pasteDestination = scs.getInitialConditionParameter();//need to change
-											}else if(localBiologicalSymbolArr[k] instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-												for(int l=0;l<scs.getParameters().length;l+= 1){
-													if(scs.getParameters()[l] == localBiologicalSymbolArr[k]){
-														pasteDestination = (SpeciesContextSpec.SpeciesContextSpecParameter)localBiologicalSymbolArr[k];
-														break;
+									if(pastedMathVariable != null){
+										Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
+										if(localMathVariable == null){
+											localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+"_init");
+										}
+										if(localMathVariable != null){
+											SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);
+											for(int k =0;k<localBiologicalSymbolArr.length;k+= 1){
+												if(localBiologicalSymbolArr[k] instanceof SpeciesContext && scs.getSpeciesContext() == localBiologicalSymbolArr[k]){
+													pasteDestination = scs.getInitialConditionParameter();//need to change
+												}else if(localBiologicalSymbolArr[k] instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+													for(int l=0;l<scs.getParameters().length;l+= 1){
+														if(scs.getParameters()[l] == localBiologicalSymbolArr[k]){
+															pasteDestination = (SpeciesContextSpec.SpeciesContextSpecParameter)localBiologicalSymbolArr[k];
+															break;
+														}
 													}
 												}
-											}
-											if(pasteDestination != null){
-												break;
+												if(pasteDestination != null){
+													break;
+												}
 											}
 										}
 									}
-								}
-							}else{
-								for(int k=0;k<scs.getParameters().length;k+= 1){
-									SpeciesContextSpec.SpeciesContextSpecParameter scsp =
-										(SpeciesContextSpec.SpeciesContextSpecParameter)scs.getParameters()[k];
-									if(scsp.getRole() == clipboardBiologicalParameter.getRole() &&
-										scs.getSpeciesContext().compareEqual(
-										((SpeciesContextSpec)clipboardBiologicalParameter.getNameScope().getScopedSymbolTable()).getSpeciesContext())){
-										pasteDestination = (SpeciesContextSpec.SpeciesContextSpecParameter)scsp;
+								}else{
+									for(int k=0;k<scs.getParameters().length;k+= 1){
+										SpeciesContextSpec.SpeciesContextSpecParameter scsp =
+											(SpeciesContextSpec.SpeciesContextSpecParameter)scs.getParameters()[k];
+										if(scsp.getRole() == clipboardBiologicalParameter.getRole() &&
+											scs.getSpeciesContext().compareEqual(
+											((SpeciesContextSpec)clipboardBiologicalParameter.getNameScope().getScopedSymbolTable()).getSpeciesContext())){
+											pasteDestination = (SpeciesContextSpec.SpeciesContextSpecParameter)scsp;
+										}
 									}
 								}
-							}
-
-							if(pasteDestination != null){
-								changedParametersV.add(pasteDestination);
-								newExpressionsV.add(rvs.getExpressionValues()[j]);
-								pasteDescriptionsV.add(
-									VCellCopyPasteHelper.formatPasteList(
-										scs.getSpeciesContext().getName(),
-										pasteDestination.getName(),
-										pasteDestination.getExpression().infix(),
-										rvs.getExpressionValues()[j].infix())
-								);
+	
+								if(pasteDestination != null){
+									changedParametersV.add(pasteDestination);
+									newExpressionsV.add(rvs.getExpressionValues()[j]);
+									pasteDescriptionsV.add(
+										VCellCopyPasteHelper.formatPasteList(
+											scs.getSpeciesContext().getName(),
+											pasteDestination.getName(),
+											pasteDestination.getExpression().infix(),
+											rvs.getExpressionValues()[j].infix())
+									);
+								}
 							}
 						}
+					}catch(Throwable e){
+						if(errors == null){errors = new StringBuffer();}
+						errors.append(scs.getSpeciesContext().getName()+" ("+e.getClass().getName()+") "+e.getMessage()+"\n");
 					}
-				}catch(Throwable e){
-					if(errors == null){errors = new StringBuffer();}
-					errors.append(scs.getSpeciesContext().getName()+" ("+e.getClass().getName()+") "+e.getMessage()+"\n");
 				}
+				if(errors != null){
+					throw new Exception(errors.toString());
+				}
+	
 			}
-			if(errors != null){
-				throw new Exception(errors.toString());
+		}
+	};
+	
+	AsynchClientTask task2 = new AsynchClientTask("pasting", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+
+			//Do paste
+			if(pasteDescriptionsV.size() > 0){
+				String[] pasteDescriptionArr = new String[pasteDescriptionsV.size()];
+				pasteDescriptionsV.copyInto(pasteDescriptionArr);
+				SpeciesContextSpec.SpeciesContextSpecParameter[] changedParametersArr = 
+					new SpeciesContextSpec.SpeciesContextSpecParameter[changedParametersV.size()];
+				changedParametersV.copyInto(changedParametersArr);
+				Expression[] newExpressionsArr = new Expression[newExpressionsV.size()];
+				newExpressionsV.copyInto(newExpressionsArr);
+				VCellCopyPasteHelper.chooseApplyPaste(pasteDescriptionArr,changedParametersArr,newExpressionsArr);
+			}else{
+				PopupGenerator.showInfoDialog("No paste items match the destination (no changes made).");
 			}
-
 		}
-	}catch(Throwable e){
-		PopupGenerator.showErrorDialog("Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
-		return;
-	}
-
-	//Do paste
-	try{
-		if(pasteDescriptionsV.size() > 0){
-			String[] pasteDescriptionArr = new String[pasteDescriptionsV.size()];
-			pasteDescriptionsV.copyInto(pasteDescriptionArr);
-			SpeciesContextSpec.SpeciesContextSpecParameter[] changedParametersArr = 
-				new SpeciesContextSpec.SpeciesContextSpecParameter[changedParametersV.size()];
-			changedParametersV.copyInto(changedParametersArr);
-			Expression[] newExpressionsArr = new Expression[newExpressionsV.size()];
-			newExpressionsV.copyInto(newExpressionsArr);
-			VCellCopyPasteHelper.chooseApplyPaste(pasteDescriptionArr,changedParametersArr,newExpressionsArr);
-		}else{
-			PopupGenerator.showInfoDialog("No paste items match the destination (no changes made).");
-		}
-	}catch(Throwable e){
-		PopupGenerator.showErrorDialog("Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
-	}
+	};
+	
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 
 }
 
