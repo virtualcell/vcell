@@ -6,7 +6,6 @@ package cbit.rmi.event;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.*;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
@@ -104,16 +103,19 @@ public VCDataIdentifier getVCDataIdentifier() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/28/2002 2:39:37 PM)
- * @return boolean
- */
-public boolean isConsumable() {
-	if (eventType == EXPORT_PROGRESS) {
-		return true;
-	}
 
+public boolean isSupercededBy(MessageEvent messageEvent) {
+	if (messageEvent instanceof ExportEvent){
+		ExportEvent exportEvent = (ExportEvent)messageEvent;
+		
+		if (eventType == EXPORT_PROGRESS && exportEvent.eventType == EXPORT_PROGRESS){
+			if (getProgress() < exportEvent.getProgress()){
+				return true;
+			}
+		}
+			
+	}
+		
 	return false;
 }
 

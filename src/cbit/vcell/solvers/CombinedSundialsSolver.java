@@ -33,7 +33,7 @@ public CombinedSundialsSolver(SimulationJob simJob, File directory, SessionLog s
 	}
 	realSolver.addSolverListener(new SolverListener() {
 		public final void solverAborted(SolverEvent event) {		
-			fireSolverAborted(event.getMessage());
+			fireSolverAborted(event.getSimulationMessage());
 		}
 
 
@@ -53,7 +53,7 @@ public CombinedSundialsSolver(SimulationJob simJob, File directory, SessionLog s
 
 
 		public final void solverStarting(SolverEvent event) {
-			fireSolverStarting(event.getMessage());
+			fireSolverStarting(event.getSimulationMessage());
 		}
 
 

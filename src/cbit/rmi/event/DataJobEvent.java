@@ -3,14 +3,12 @@ package cbit.rmi.event;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.rmi.dgc.VMID;
 
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
-import cbit.vcell.server.*;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
@@ -72,10 +70,18 @@ public TimeSeriesJobResults getTimeSeriesJobResults(){
 	return timeSeriesJobResults;
 }
 
-public boolean isConsumable() {
-	if (eventType == DATA_PROGRESS) {
-		return true;
+public boolean isSupercededBy(MessageEvent messageEvent) {
+	if (messageEvent instanceof DataJobEvent){
+		DataJobEvent dataJobEvent = (DataJobEvent)messageEvent;
+		
+		if (eventType == DATA_PROGRESS && dataJobEvent.eventType == DATA_PROGRESS){
+			if (getProgress() < dataJobEvent.getProgress()){
+				return true;
+			}
+		}
+			
 	}
+		
 	return false;
 }
 

@@ -1,6 +1,6 @@
 package cbit.vcell.server;
 import cbit.vcell.solvers.SolverController;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solvers.SolverControllerInfo;
 import cbit.vcell.solver.SimulationJob;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -94,7 +94,7 @@ VCellServer getSlaveVCellServer(String host) throws DataAccessException, Authent
  * Creation date: (7/18/01 12:20:01 PM)
  * @return cbit.vcell.solvers.SolverControllerInfo
  */
-cbit.vcell.solvers.SolverControllerInfo[] getSolverControllerInfos() throws RemoteException;
+SolverControllerInfo[] getSolverControllerInfos() throws RemoteException;
 
 
 /**
@@ -117,5 +117,4 @@ boolean isPrimaryServer() throws RemoteException;
  * This method was created in VisualAge.
  * @exception java.rmi.RemoteException The exception description.
  */
-void shutdown() throws RemoteException;
 }

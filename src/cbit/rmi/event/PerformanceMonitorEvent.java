@@ -1,7 +1,6 @@
 package cbit.rmi.event;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
  * Creation date: (9/17/2004 12:51:09 PM)
@@ -69,17 +68,13 @@ public PerformanceData getPerfData() {
  * Creation date: (9/17/2004 12:51:09 PM)
  * @return cbit.vcell.server.User
  */
-public org.vcell.util.document.User getUser() {
+public User getUser() {
 	return user;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/17/2004 12:51:09 PM)
- * @return boolean
- */
-public boolean isConsumable() {
+public boolean isSupercededBy(MessageEvent messageEvent) {
 	return false;
 }
+
 }

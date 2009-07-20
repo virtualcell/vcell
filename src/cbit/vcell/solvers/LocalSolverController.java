@@ -1,7 +1,7 @@
 package cbit.vcell.solvers;
+import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.simdata.*;
 import java.io.*;
-import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import java.util.*;
 /*©
@@ -18,7 +18,7 @@ import org.vcell.util.SessionLog;
 /**
  * This type was created in VisualAge.
  */
-public class LocalSolverController extends java.rmi.server.UnicastRemoteObject implements SolverController, cbit.vcell.solver.SolverListener, WorkerEventSender {
+public class LocalSolverController extends java.rmi.server.UnicastRemoteObject implements SolverController, SolverListener, WorkerEventSender {
 	private SolverControllerImpl solverControllerImpl = null;
 	private EventListenerList listenerList = new EventListenerList();
 	private org.vcell.util.SessionLog log = null;
@@ -67,13 +67,13 @@ public void addWorkerEventListener(cbit.rmi.event.WorkerEventListener listener) 
 }
 
 
-public void dataMoved(double timepoint, Double progress) {
+public void dataMoved(double timepoint, Double progress, SimulationMessage simulationMessage) {
 	// called by data mover thread after successful move operations
 	try {
 		VCSimulationDataIdentifier vcSimDataID = getSimulationJob().getVCDataIdentifier();
 		if (!resultSetSavedSet.contains(vcSimDataID)){
 			try {
-				cbit.vcell.modeldb.ResultSetCrawler rsCrawler = vcConn.getResultSetCrawler();
+				ResultSetCrawler rsCrawler = vcConn.getResultSetCrawler();
 				rsCrawler.updateSimResults(vcConn.getUser(),vcSimDataID);
 				resultSetSavedSet.add(vcSimDataID);
 			} catch (Throwable exc) {
@@ -82,7 +82,7 @@ public void dataMoved(double timepoint, Double progress) {
 		}
 		// don't log progress and data events; data events at larger interval, since more expensive on client side
 		if (System.currentTimeMillis() - timeOfLastDataMessage > 4000 * getMessagingInterval()) {
-			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_DATA, this, getSimulationJob(), vcConn.getHost(), progress, new Double(timepoint)));
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_DATA, this, getSimulationJob(), vcConn.getHost(), progress, new Double(timepoint), simulationMessage));
 			//fireJobDataEvent(new JobDataEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),timepoint));
 		}
 	}catch (Throwable e){
@@ -134,12 +134,12 @@ public int getMessagingInterval() {
  * Creation date: (6/28/01 2:34:17 PM)
  * @return double
  */
-public double getProgress() throws org.vcell.util.DataAccessException {
+public double getProgress() throws DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getProgress();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new org.vcell.util.DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}	
 }
 
@@ -149,7 +149,7 @@ public double getProgress() throws org.vcell.util.DataAccessException {
  * Creation date: (10/10/2002 10:38:55 AM)
  * @return cbit.vcell.server.SessionLog
  */
-public org.vcell.util.SessionLog getSessionLog() {
+public SessionLog getSessionLog() {
 	return log;
 }
 
@@ -157,12 +157,12 @@ public org.vcell.util.SessionLog getSessionLog() {
 /**
  * getMathDescriptionVCML method comment.
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() throws org.vcell.util.DataAccessException {
+public SimulationJob getSimulationJob() throws DataAccessException {
 	try {
 		return solverControllerImpl.getSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new org.vcell.util.DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}	
 }
 
@@ -172,19 +172,19 @@ public cbit.vcell.solver.SimulationJob getSimulationJob() throws org.vcell.util.
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solver.SolverStatus getSolverStatus() throws org.vcell.util.DataAccessException {
+public SolverStatus getSolverStatus() throws DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getSolverStatus();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new org.vcell.util.DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}	
 }
 
 /**
  * removeWorkerEventListener method comment.
  */
-public void removeWorkerEventListener(cbit.rmi.event.WorkerEventListener listener) {
+public void removeWorkerEventListener(WorkerEventListener listener) {
 	listenerList.remove(WorkerEventListener.class, listener);
 }
 
@@ -202,13 +202,13 @@ public void setMessagingInterval(int newMessagingInterval) {
  * Invoked when the solver aborts a calculation (abnormal termination).
  * @param event indicates the solver and the event type
  */
-public void solverAborted(cbit.vcell.solver.SolverEvent event) {
+public void solverAborted(SolverEvent event) {
 	try {
-		log.print("LocalMathController Caught solverAborted("+event.getSource().toString()+",error='"+event.getMessage()+"')");
+		log.print("LocalMathController Caught solverAborted("+event.getSource().toString()+",error='"+event.getSimulationMessage()+"')");
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, getSimulationJob(), vcConn.getHost(), event.getMessage()));
+		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, getSimulationJob(), vcConn.getHost(), event.getSimulationMessage()));
 	}catch (Throwable e){
 		log.exception(e);
 	}
@@ -219,13 +219,13 @@ public void solverAborted(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver finishes a calculation (normal termination).
  * @param event indicates the solver and the event type
  */
-public void solverFinished(cbit.vcell.solver.SolverEvent event) {
+public void solverFinished(SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverFinished("+event.getSource().toString()+")");
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint())));
+		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
 		//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),event.getProgress(),event.getTimePoint()));
 		//fireJobCompletedEvent(new JobCompletedEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),false,event.getProgress(),event.getTimePoint()));
 	}catch (Throwable e){
@@ -238,10 +238,10 @@ public void solverFinished(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver stores values in the result set.
  * @param event indicates the solver and the event type
  */
-public void solverPrinted(cbit.vcell.solver.SolverEvent event) {
+public void solverPrinted(SolverEvent event) {
 	// only if local storage, otherwise defer to DataMover
 	if (dataMover == null) {
-		dataMoved(event.getTimePoint(), new Double(event.getProgress()));
+		dataMoved(event.getTimePoint(), new Double(event.getProgress()), event.getSimulationMessage());
 	}
 }
 
@@ -250,11 +250,11 @@ public void solverPrinted(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver stores values in the result set.
  * @param event indicates the solver and the event type
  */
-public void solverProgress(cbit.vcell.solver.SolverEvent event) {
+public void solverProgress(SolverEvent event) {
 	try {
 		// don't log progress and data events
 		if (System.currentTimeMillis() - timeOfLastProgressMessage > 1000 * getMessagingInterval()) {
-			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_PROGRESS, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint())));
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_PROGRESS, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
 			//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),event.getProgress(),event.getTimePoint()));
 		}
 	}catch (Throwable e){
@@ -267,10 +267,10 @@ public void solverProgress(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver begins a calculation.
  * @param event indicates the solver and the event type
  */
-public void solverStarting(cbit.vcell.solver.SolverEvent event) {
+public void solverStarting(SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverStarting("+event.getSource().toString()+")");
-		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, getSimulationJob(), vcConn.getHost(), event.getMessage()));
+		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, getSimulationJob(), vcConn.getHost(), event.getSimulationMessage()));
 		//fireJobStartingEvent(new JobStartingEvent(this, new MessageSource(this, getSimulationIdentifier()), getSimulation().getSimulationInfo(), event.getMessage()));
 	}catch (Throwable e){
 		log.exception(e);
@@ -283,7 +283,7 @@ public void solverStarting(cbit.vcell.solver.SolverEvent event) {
  * of a user-initiated stop call.
  * @param event indicates the solver and the event type
  */
-public void solverStopped(cbit.vcell.solver.SolverEvent event) {
+public void solverStopped(SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverStopped("+event.getSource().toString()+")");
 		if (dataMover != null) {
@@ -299,7 +299,7 @@ public void solverStopped(cbit.vcell.solver.SolverEvent event) {
 /**
  * startSimulation method comment.
  */
-public void startSimulationJob() throws SimExecutionException, org.vcell.util.DataAccessException {
+public void startSimulationJob() throws SimExecutionException, DataAccessException {
 	try {
 		resultSetSavedSet.remove(getSimulationJob().getVCDataIdentifier());
 		if (dataMover != null) {
@@ -313,7 +313,7 @@ public void startSimulationJob() throws SimExecutionException, org.vcell.util.Da
 		solverControllerImpl.startSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new org.vcell.util.DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}	
 }
 
@@ -321,12 +321,12 @@ public void startSimulationJob() throws SimExecutionException, org.vcell.util.Da
 /**
  * stopSimulation method comment.
  */
-public void stopSimulationJob() throws org.vcell.util.DataAccessException {
+public void stopSimulationJob() throws DataAccessException {
 	try {
 		solverControllerImpl.stopSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new org.vcell.util.DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}
 }
 }

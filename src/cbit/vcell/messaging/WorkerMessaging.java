@@ -9,6 +9,7 @@ import org.vcell.util.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.server.Worker;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.solver.SimulationMessage;
 
 /**
  * Insert the type's description here.
@@ -135,7 +136,7 @@ protected void reconnect() throws JMSException {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendCompleted(double progress, double timeSec) {
+public void sendCompleted(double progress, double timeSec, SimulationMessage simulationMessage) {
 	if (currentTask == null) {
 		return;
 	}
@@ -143,7 +144,7 @@ public void sendCompleted(double progress, double timeSec) {
 	// have to keep sending the messages because it's important
 	try {
 		log.print("sendComplete(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendCompleted(workerEventSession, this, currentTask, ManageUtils.getHostName(),  progress, timeSec);
+		WorkerEventMessage.sendCompleted(workerEventSession, this, currentTask, ManageUtils.getHostName(),  progress, timeSec, simulationMessage);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
 	} catch (JMSException jmse) {
@@ -156,7 +157,7 @@ public void sendCompleted(double progress, double timeSec) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendFailed(String failureMessage) {
+public void sendFailed(SimulationMessage failureMessage) {
 	if (currentTask == null) {
 		return;
 	}
@@ -176,7 +177,7 @@ public void sendFailed(String failureMessage) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendNewData(double progress, double timeSec) {
+public void sendNewData(double progress, double timeSec, SimulationMessage simulationMessage) {
 	if (currentTask == null) {
 		return;
 	}
@@ -185,7 +186,7 @@ public void sendNewData(double progress, double timeSec) {
 		long t = System.currentTimeMillis();
 		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
 			log.print("sendNewData(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");		
-			WorkerEventMessage.sendNewData(workerEventSession, this, currentTask, ManageUtils.getHostName(), progress, timeSec);
+			WorkerEventMessage.sendNewData(workerEventSession, this, currentTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 		
 			lastMsgTimeStamp = System.currentTimeMillis();
 			bProgress = false;
@@ -200,7 +201,7 @@ public void sendNewData(double progress, double timeSec) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendProgress(double progress, double timeSec) {
+public void sendProgress(double progress, double timeSec, SimulationMessage simulationMessage) {
 	if (currentTask == null) {
 		return;
 	}
@@ -210,7 +211,7 @@ public void sendProgress(double progress, double timeSec) {
 	if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
 		|| ((int)(progress * 100)) % 25 == 0) { // don't send progress message too frequently
 			log.print("sendProgress(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");
-			WorkerEventMessage.sendProgress(workerEventSession, this, currentTask, ManageUtils.getHostName(), progress, timeSec);
+			WorkerEventMessage.sendProgress(workerEventSession, this, currentTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 			
 			lastMsgTimeStamp = System.currentTimeMillis();
 			bProgress = true;
@@ -225,7 +226,7 @@ public void sendProgress(double progress, double timeSec) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendStarting(String startingMessage) {
+public void sendStarting(SimulationMessage startingMessage) {
 	if (currentTask == null) {
 		return;
 	}
@@ -253,7 +254,7 @@ void sendWorkerAlive() {
 	// have to keep sending the messages because it's important
 	try {
 		log.print("sendWorkerAlive(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, currentTask, ManageUtils.getHostName());
+		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, currentTask, ManageUtils.getHostName(), SimulationMessage.MESSAGE_WORKEREVENT_WORKERALIVE);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
 	} catch (JMSException jmse) {

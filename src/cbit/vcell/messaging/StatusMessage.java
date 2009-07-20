@@ -48,7 +48,7 @@ public StatusMessage(Message message) throws JMSException {
  * Creation date: (2/5/2004 2:17:03 PM)
  * @return cbit.vcell.messaging.db.SimulationJobStatus
  */
-public cbit.vcell.messaging.db.SimulationJobStatus getJobStatus() {
+public SimulationJobStatus getJobStatus() {
 	return jobStatus;
 }
 
@@ -179,6 +179,6 @@ private Message toMessage(JmsSession session) throws JMSException {
  * @return java.lang.String
  */
 public String toString() {
-	return "StatusMessage [" + jobStatus.getStatusMessage() + "," + progress + "," + timePoint + "]";
+	return "StatusMessage [" + jobStatus.getSimulationMessage().getDisplayMessage() + "," + progress + "," + timePoint + "]";
 }
 }

@@ -85,6 +85,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	//statusMsg
 	String parsedStatusMsg = rset.getString(statusMsg.toString());
 	
+	SimulationMessage simulationMessage = SimulationMessage.fromSerialized(parsedSchedulerStatus,parsedStatusMsg);
 	//
 	// read queue stuff
 	//
@@ -121,7 +122,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	VCSimulationIdentifier parsedVCSimID = new VCSimulationIdentifier(parsedSimKey,owner);
 	//jobIndex
 	int parsedJobIndex = rset.getInt(jobIndex.toString());
-	SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getServerID(serID), parsedVCSimID, parsedJobIndex, parsedSubmitDate,parsedSchedulerStatus,parsedTaskID, parsedStatusMsg, simQueueEntryStatus, simExeStatus);
+	SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getServerID(serID), parsedVCSimID, parsedJobIndex, parsedSubmitDate,parsedSchedulerStatus,parsedTaskID, simulationMessage, simQueueEntryStatus, simExeStatus);
 	//sysDate
 	java.util.Date parsedSysDate = rset.getTimestamp(DatabaseConstants.SYSDATE_COLUMN_NAME);
 	if (!rset.wasNull()) {
@@ -154,7 +155,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//schedulerStatus
 	buffer.append(schedulerStatus + "=" + simulationJobStatus.getSchedulerStatus() + ",");
 	//statusMsg
-	buffer.append(statusMsg + "='" + simulationJobStatus.getStatusMessage() + "',");
+	buffer.append(statusMsg + "='" + simulationJobStatus.getSimulationMessage().toSerialization() + "',");
 
 	//
 	// queue info
@@ -272,7 +273,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	//schedulerStatus
 	buffer.append(simulationJobStatus.getSchedulerStatus() + ",");
 	//statusMsg
-	buffer.append("'" + simulationJobStatus.getStatusMessage() + "',");
+	buffer.append("'" + simulationJobStatus.getSimulationMessage().toSerialization() + "',");
 	
 	// queue stuff
 	SimulationQueueEntryStatus simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();

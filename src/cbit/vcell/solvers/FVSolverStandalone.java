@@ -1,5 +1,4 @@
 package cbit.vcell.solvers;
-import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import java.io.*;
 
@@ -49,10 +48,10 @@ protected void initialize() throws SolverException {
 		}
 		initStep1();	
 	
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "PDESolver initializing"));
-		fireSolverStarting("PDESolver initializing...");
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
+		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
 			
 		File fvinputFile = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".fvinput");
 		PrintWriter pw = null;

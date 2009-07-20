@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 
 import org.vcell.util.PropertyLoader;
 
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverException;
 /**
@@ -26,14 +27,14 @@ public CVodeSolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java
  *  This method takes the place of the old runUnsteady()...
  */
 protected void initialize() throws cbit.vcell.solver.SolverException {	
-	fireSolverStarting("CVODE solver initializing...");
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	super.initialize();
 
 	String inputFilename = getBaseName() + CVODEINPUT_DATA_EXTENSION;
 	String outputFilename = getBaseName() + IDA_DATA_EXTENSION;
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "CVODE solver generating input file..."));
-	fireSolverStarting("CVODE solver generating input file...");
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 
 	PrintWriter pw = null;
 	try {
@@ -41,7 +42,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, getSimulation(), getJobIndex(), true);
 		cvodeFileWriter.write();
 	} catch (Exception e) {
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "CVODE solver could not generate input file: " + e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("CVODE solver could not generate input file: " + e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException("CVODE solver could not generate input file: " + e.getMessage());
 	} finally {
@@ -50,7 +51,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 		}
 	}
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"CVODE solver starting"));	
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
 	setMathExecutable(new cbit.vcell.solvers.MathExecutable(new String[] {executableName, inputFilename, outputFilename}));

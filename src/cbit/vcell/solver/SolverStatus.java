@@ -18,25 +18,17 @@ public class SolverStatus implements java.io.Serializable {
 	public static final int SOLVER_ABORTED = 3;
 	public static final int SOLVER_STOPPED = 4;
 	public static final int SOLVER_STARTING = 5;
-	private static final String SOLVER_STATUS[] = 
-		{"Ready", "Running", "Finished", "Aborted", "Stopped", "Starting"}; 
+	private static final String SOLVER_STATUS[] = {"Ready", "Running", "Finished", "Aborted", "Stopped", "Starting"}; 
 	public int fieldStatus = 0;
-	private java.lang.String fieldMessage = null;
+	private SimulationMessage fieldSimulationMessage = null;
 
 	/**
 	 * SolverStatus constructor comment.
 	 */
-	public SolverStatus(int status) {
+	public SolverStatus(int status, SimulationMessage simulationMessage) {
 		super();
 		fieldStatus = status;
-	}
-	/**
-	 * SolverStatus constructor comment.
-	 */
-	public SolverStatus(int status, String message) {
-		super();
-		fieldStatus = status;
-		fieldMessage = message;
+		fieldSimulationMessage = simulationMessage;
 	}
 	/**
 	 * This method was created in VisualAge.
@@ -44,16 +36,14 @@ public class SolverStatus implements java.io.Serializable {
 	 * @param executableStatus cbit.vcell.solvers.ExecutableStatus
 	 */
 	public boolean equals(SolverStatus solverStatus) {
-		return (getStatus() == solverStatus.getStatus());
+		return (getStatus() == solverStatus.getStatus() && getSimulationMessage().equals(solverStatus.getSimulationMessage()));
 	}
 	/**
 	 * Gets the message property (java.lang.String) value.
 	 * @return The message property value.
 	 */
-	public java.lang.String getMessage() {
-		if (fieldMessage == null)
-			return (new String());
-		return fieldMessage;
+	public SimulationMessage getSimulationMessage() {
+		return fieldSimulationMessage;
 	}
 	/**
 	 * Gets the status property (int) value.
@@ -75,10 +65,6 @@ public boolean isRunning() {
 	 * @return The string representation of the status.
 	 */
 	public java.lang.String toString() {
-		String string = SOLVER_STATUS[getStatus()];
-		if (fieldMessage != null) {
-			string = string + ": " + fieldMessage;
-		}
-		return string;
+		return SOLVER_STATUS[getStatus()] + ": " + fieldSimulationMessage;
 	}
 }

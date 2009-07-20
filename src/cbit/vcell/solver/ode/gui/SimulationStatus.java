@@ -1,6 +1,7 @@
 package cbit.vcell.solver.ode.gui;
 import java.util.HashMap;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.MessageConstants;
 
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -35,7 +36,7 @@ public class SimulationStatus implements java.io.Serializable {
 	};
 	// actual info
 	private int status = UNKNOWN;
-	private HashMap<String, Double> progressHash = new HashMap<String, Double>();
+	private HashMap<Integer, Double> progressHash = new HashMap<Integer, Double>();
 	private String details = null;
 	private boolean hasData = false;
 	private SimulationJobStatus[] jobStatuses = null;
@@ -108,8 +109,8 @@ public boolean getHasData() {
  * Creation date: (6/25/2001 1:22:22 PM)
  * @return java.lang.String
  */
-public String getJob0StatusMessage() {
-	return getJobStatuses()[0].getStatusMessage();
+public SimulationMessage getJob0SimulationMessage() {
+	return getJobStatuses()[0].getSimulationMessage();
 }
 
 
@@ -152,7 +153,7 @@ public Double getProgress() {
 				progress += 1;
 				bAllNullProgress = false;
 			} else {
-				Double jobProgress = progressHash.get(Integer.toString(jobStatuses[i].getJobIndex()));
+				Double jobProgress = progressHash.get(jobStatuses[i].getJobIndex());
 				if (jobProgress != null) {
 					bAllNullProgress = false;
 					progress += jobProgress.doubleValue();
@@ -174,7 +175,7 @@ public Double getProgress() {
  * @param index int
  */
 public Double getProgressAt(int index) {
-	return progressHash.get(Integer.toString(index));
+	return progressHash.get(index);
 }
 
 
@@ -250,7 +251,7 @@ private void initStatus() {
 			if (status > currentStatus) highStatusIndex = i;
 		}
 
-		details = jobStatuses[highStatusIndex].getStatusMessage();
+		details = jobStatuses[highStatusIndex].getSimulationMessage().getDisplayMessage();
 
 		if ((status == COMPLETED || status == STOPPED || status == FAILED) && bRunning) status = RUNNING;
 		
@@ -310,18 +311,6 @@ public boolean isNeverRan() {
  * @return boolean
  */
 public boolean isRunnable() {
-	//public static final int UNKNOWN = 0;
-	//public static final int NEVER_RAN = 1;
-	//public static final int START_REQUESTED = 2;
-	//public static final int RUNNING = 3;
-	//public static final int STOP_REQUESTED = 4;
-	//public static final int STOPPED_BY_USER = 5;
-	//public static final int COMPLETED = 6;
-	//public static final int FAILED = 7;
-	//public static final int DISPATCHED = 8;
-	//public static final int QUEUED = 9;  
-	//public static final int WAITING = 10;
-	
 	return status == NEVER_RAN || status == COMPLETED || status == FAILED
 		|| status == STOPPED || status == UNKNOWN;
 }
@@ -353,18 +342,6 @@ public boolean isStartRequested() {
  * @return boolean
  */
 public boolean isStoppable() {
-	//public static final int UNKNOWN = 0;
-	//public static final int NEVER_RAN = 1;
-	//public static final int START_REQUESTED = 2;
-	//public static final int RUNNING = 3;
-	//public static final int STOP_REQUESTED = 4;
-	//public static final int STOPPED_BY_USER = 5;
-	//public static final int COMPLETED = 6;
-	//public static final int FAILED = 7;
-	//public static final int DISPATCHED = 8;
-	//public static final int QUEUED = 9;  
-	//public static final int WAITING = 10;
-	
 	return status == DISPATCHED || status == RUNNING || status == WAITING || status == QUEUED;
 }
 
@@ -378,7 +355,9 @@ public boolean isStopRequested() {
 	return status == STOP_REQUESTED;
 }
 
-
+public boolean isStopped() {
+	return status == STOPPED;
+}
 /**
  * Insert the method's description here.
  * Creation date: (7/3/2003 10:28:24 AM)
@@ -439,6 +418,7 @@ public static SimulationStatus newStartRequestFailure(String failMsg, int jobCou
 public static SimulationStatus newStopRequest(SimulationStatus currentStatus) {
 	SimulationStatus newStatus = new SimulationStatus(currentStatus);
 	newStatus.status = STOP_REQUESTED;
+	newStatus.details = null;
 	return newStatus;
 }
 
@@ -478,10 +458,15 @@ public int numberOfJobsDone() {
  * @return java.lang.String
  */
 public String toString() {
-	return "SimulationStatus=\""+getStatusString()+"\", hasData="+getHasData()+", progress="+getProgress()+", details="+((getDetails()!=null)?(getDetails()):("null"));
+	return "SimulationStatus["+getStatusString()+", hasData="+getHasData()+", progress="+getProgress()+", details="+getDetails() + "]";
 }
 
 
+public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, SimulationJobStatusEvent simJobStatusEvent) {
+	SimulationStatus newstatus = updateFromJobEvent0(oldStatus, simJobStatusEvent);
+	System.out.println("###########oldstatus=" + oldStatus + "\n###########newstatus=" + newstatus + "\n###########jobstatusevent=" + simJobStatusEvent.getJobStatus());
+	return newstatus;	
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/6/2005 8:10:46 PM)
@@ -489,8 +474,7 @@ public String toString() {
  * @param oldStatus cbit.vcell.solver.ode.gui.SimulationStatus
  * @param simJobStatusEvent cbit.rmi.event.SimulationJobStatusEvent
  */
-public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, SimulationJobStatusEvent simJobStatusEvent) {
-
+private static SimulationStatus updateFromJobEvent0(SimulationStatus oldStatus, SimulationJobStatusEvent simJobStatusEvent) {
 	// ignore empty messages
 	if (simJobStatusEvent.getJobStatus() == null) {
 		return oldStatus;
@@ -504,7 +488,7 @@ public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, Si
 	
 	if (oldStatus == null || oldStatus.getJobStatuses().length == 0) {
 		newSimStatus = new SimulationStatus(new SimulationJobStatus[] {newJobStatus});
-		newSimStatus.progressHash.put(Integer.toString(newJobStatus.getJobIndex()), newProgress);
+		newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
 		return newSimStatus;
 	}
 	
@@ -516,7 +500,7 @@ public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, Si
 	if (newID - newID % MessageConstants.TASKID_USERINCREMENT > someOldID) {
 		// upper block; event comes from a new submission; discard all old stuff
 		newSimStatus = new SimulationStatus(new SimulationJobStatus[] {newJobStatus});
-		newSimStatus.progressHash.put(Integer.toString(newJobStatus.getJobIndex()), newProgress);
+		newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
 		return newSimStatus;
 	} else if (someOldID - someOldID % MessageConstants.TASKID_USERINCREMENT > newID) {
 		// lower block; event comes from an old submission; ignore
@@ -537,10 +521,10 @@ public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, Si
 	}
 	if (oldJobStatus == null) {
 		// we have nothing for this job, update
-		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[])org.vcell.util.BeanUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
+		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[])BeanUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
 		newSimStatus = new SimulationStatus(newJobStatuses);
-		newSimStatus.progressHash = oldStatus.progressHash;
-		newSimStatus.progressHash.put(Integer.toString(newJobStatus.getJobIndex()), newProgress);
+		newSimStatus.progressHash.putAll(oldStatus.progressHash);
+		newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
 		return newSimStatus;
 	}
 	
@@ -551,33 +535,27 @@ public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, Si
 		return oldStatus;
 	} else if (newID > oldJobStatus.getTaskID()) {
 		// update with new instance status
-		oldStatus.getJobStatuses()[oldJobStatusIndex] = newJobStatus;
-		newSimStatus = new SimulationStatus(oldStatus.getJobStatuses());
-		newSimStatus.progressHash = oldStatus.progressHash;
-		newSimStatus.progressHash.put(Integer.toString(newJobStatus.getJobIndex()), newProgress);
+		SimulationJobStatus[] newJobStatuses = oldStatus.getJobStatuses().clone();
+		newJobStatuses[oldJobStatusIndex] = newJobStatus;
+		newSimStatus = new SimulationStatus(newJobStatuses);
+		newSimStatus.progressHash.putAll(oldStatus.progressHash);
+		newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
 		return newSimStatus;
 	}
 
 	/* same instance, so compare event details */
 
 	// ignore out of order events
-	if (oldJobStatus.isDone()) {
+	if (!oldJobStatus.isSupercededBy(newJobStatus, oldStatus.progressHash.get(newJobStatus.getJobIndex()), newProgress)) {
 		return oldStatus;
-	} else {
-		// figure out old progress
-		Double jobProgress = oldStatus.progressHash.get(Integer.toString(oldJobStatus.getJobIndex()));
-		// now check
-		if (oldJobStatus.isRunning() &&	newJobStatus.isRunning() &&	jobProgress != null &&
-			newProgress != null &&	jobProgress.doubleValue() > newProgress.doubleValue()) {
-			return oldStatus;
-		}
 	}
 				
 	// update with new status
-	oldStatus.getJobStatuses()[oldJobStatusIndex] = newJobStatus;
-	newSimStatus = new SimulationStatus(oldStatus.getJobStatuses());
-	newSimStatus.progressHash = oldStatus.progressHash;
-	newSimStatus.progressHash.put(Integer.toString(newJobStatus.getJobIndex()), newProgress);
+	SimulationJobStatus[] newJobStatuses = oldStatus.getJobStatuses().clone();
+	newJobStatuses[oldJobStatusIndex] = newJobStatus;
+	newSimStatus = new SimulationStatus(newJobStatuses);
+	newSimStatus.progressHash.putAll(oldStatus.progressHash);
+	newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
 	return newSimStatus;
 }
 }

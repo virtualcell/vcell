@@ -141,31 +141,34 @@ protected final void printToFile(double progress) throws IOException {
 public void runSolver() {
 	try {
 		fieldRunning = true;
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, "initializing"));
-		fireSolverStarting("initializing");
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));
+		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 		initialize();
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "starting"));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 		fireSolverProgress(getProgress());
 		integrate();
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, "finished"));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
 		fireSolverFinished();
 	} catch (SolverException integratorException) {
 		getSessionLog().exception(integratorException);
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, integratorException.getMessage()));
-		fireSolverAborted(integratorException.getMessage());
+		SimulationMessage simulationMessage = SimulationMessage.solverAborted(integratorException.getMessage());
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
+		fireSolverAborted(simulationMessage);
 	} catch (IOException ioException) {
 		getSessionLog().exception(ioException);
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, ioException.getMessage()));
-		fireSolverAborted(ioException.getMessage());
+		SimulationMessage simulationMessage = SimulationMessage.solverAborted(ioException.getMessage());
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
+		fireSolverAborted(simulationMessage);
 	} catch (UserStopException userStopException) {
 		getSessionLog().exception(userStopException);
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_STOPPED, userStopException.getMessage()));
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_STOPPED, SimulationMessage.solverStopped(userStopException.getMessage())));
 		fireSolverStopped();
 	} catch (Throwable throwable) {
 		getSessionLog().alert("AbstractJavaSolver.runSolver() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
 		getSessionLog().exception(throwable);
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, throwable.getMessage()));
-		fireSolverAborted(throwable.getMessage());
+		SimulationMessage simulationMessage = SimulationMessage.solverAborted(throwable.getMessage());
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
+		fireSolverAborted(simulationMessage);
 	} finally {
 		fieldRunning = false;
 	}

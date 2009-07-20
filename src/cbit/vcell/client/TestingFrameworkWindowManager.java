@@ -2719,12 +2719,12 @@ public String updateSimRunningStatus(ClientTaskStatusSupport pp,TestSuiteInfoNew
 						SimulationStatus simStatus = getRequestManager().getServerSimulationStatus(simInfo);
 						if(simStatus != null){
 							if (simStatus.isFailed()){
-								updateTCritStatus(tcn,TestCriteriaNew.TCRIT_STATUS_SIMFAILED,"Sim msg="+simStatus.getJob0StatusMessage());
+								updateTCritStatus(tcn,TestCriteriaNew.TCRIT_STATUS_SIMFAILED,"Sim msg="+simStatus.getJob0SimulationMessage().getDisplayMessage());
 							}else if(simStatus.isJob0Completed()){
 								updateTCritStatus(tcn,TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null);
 							}else if(!simStatus.isRunning()){
 								updateTCritStatus(tcn,TestCriteriaNew.TCRIT_STATUS_SIMNOTRUNFAILDONE,
-									"Sim jobstatus "+simStatus.toString()+" "+simStatus.getJob0StatusMessage());
+									"Sim jobstatus "+simStatus.toString()+" "+simStatus.getJob0SimulationMessage().getDisplayMessage());
 							}
 						}else{
 							updateTCritStatus(tcn,TestCriteriaNew.TCRIT_STATUS_SIMNOTRUNFAILDONE,

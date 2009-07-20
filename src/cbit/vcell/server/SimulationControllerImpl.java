@@ -1,36 +1,43 @@
 package cbit.vcell.server;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.io.File;
-import cbit.vcell.server.*;
-import java.rmi.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.solvers.*;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationExecutionStatus;
-import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
-import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.rmi.event.*;
+import java.rmi.RemoteException;
+
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.MessageConstants;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.rmi.event.RemoteMessageHandler;
+import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.rmi.event.SimulationJobStatusListener;
+import cbit.rmi.event.SimulationJobStatusSender;
+import cbit.rmi.event.WorkerEventListener;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.DispatcherDbManager;
 import cbit.vcell.messaging.server.LocalDispatcherDbManager;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.LocalSolverController;
+import cbit.vcell.solvers.SimExecutionException;
+import cbit.vcell.solvers.SolverController;
+import cbit.vcell.solvers.SolverControllerInfo;
+import cbit.vcell.solvers.SolverProxy;
 
 /**
  * Insert the type's description here.
@@ -38,7 +45,7 @@ import cbit.vcell.messaging.server.LocalDispatcherDbManager;
  * @author: Jim Schaff
  */
 public class SimulationControllerImpl implements SimulationJobStatusSender, WorkerEventListener {
-	private java.util.Hashtable solverProxyHash = new java.util.Hashtable();
+	private java.util.Hashtable<String, SolverProxy> solverProxyHash = new java.util.Hashtable<String, SolverProxy>();
 	private SessionLog adminSessionLog = null;
 	private cbit.vcell.server.LocalVCellServer fieldLocalVCellServer = null;
 	private AdminDatabaseServer adminDbServer = null;
@@ -77,7 +84,7 @@ private SolverController createNewSolverController(User user, SimulationJob simu
 		// now limit to only those appopriate to the simulation type
 		ComputeHost[] activeHosts = null;
 		if (allActiveHosts != null) {
-			java.util.Vector v = new java.util.Vector();
+			java.util.Vector<ComputeHost> v = new java.util.Vector<ComputeHost>();
 			int simType;
 			if (simulation.getIsSpatial()) {
 				simType = ComputeHost.PDEComputeHost;
@@ -104,14 +111,13 @@ private SolverController createNewSolverController(User user, SimulationJob simu
 				//
 				// try to connection MessageHandlers to VCellConnection on this host
 				//
-				VCellConnection vcConn = null;
 				LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
 				String password = localVCellConnection.getPassword();
 				VCellConnectionFactory vcConnFactory = new RMIVCellConnectionFactory(activeHosts[i].getHostName(),user.getName(),password);
 				VCellConnection remoteVCellConnection = vcConnFactory.createVCellConnection();
 				if (remoteVCellConnection!=null && !localVCellConnection.getRemoteMessageHandler().isConnected(remoteVCellConnection.getRemoteMessageHandler())){
-					cbit.rmi.event.RemoteMessageHandler localMessageHandler = localVCellConnection.getRemoteMessageHandler();
-					cbit.rmi.event.RemoteMessageHandler remoteMessageHandler = remoteVCellConnection.getRemoteMessageHandler();
+					RemoteMessageHandler localMessageHandler = localVCellConnection.getRemoteMessageHandler();
+					RemoteMessageHandler remoteMessageHandler = remoteVCellConnection.getRemoteMessageHandler();
 					localMessageHandler.addRemoteMessageListener(remoteMessageHandler, remoteMessageHandler.getRemoteMesssageListenerID());
 					remoteMessageHandler.addRemoteMessageListener(localMessageHandler, localMessageHandler.getRemoteMesssageListenerID());
 				}
@@ -237,7 +243,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
  * Creation date: (6/28/01 4:33:49 PM)
  * @return cbit.vcell.server.LocalVCellServer
  */
-public cbit.vcell.server.LocalVCellServer getLocalVCellServer() {
+public LocalVCellServer getLocalVCellServer() {
 	return fieldLocalVCellServer;
 }
 
@@ -249,13 +255,13 @@ public cbit.vcell.server.LocalVCellServer getLocalVCellServer() {
  */
 public SolverControllerInfo[] getSolverControllerInfos() {
 	System.out.println("SimulationControllerImpl.getSolverControllerInfos()");
-	java.util.Vector scList = new java.util.Vector();
-	java.util.Enumeration solverProxyEnum = solverProxyHash.elements();
+	java.util.Vector<SolverControllerInfo> scList = new java.util.Vector<SolverControllerInfo>();
+	java.util.Enumeration<SolverProxy> solverProxyEnum = solverProxyHash.elements();
 	while (solverProxyEnum.hasMoreElements()){
-		SolverProxy solverProxy = (SolverProxy)solverProxyEnum.nextElement();
+		SolverProxy solverProxy = solverProxyEnum.nextElement();
 		scList.add(new SolverControllerInfo(solverProxy));
 	}
-	return (SolverControllerInfo[])org.vcell.util.BeanUtils.getArray(scList,SolverControllerInfo.class);
+	return (SolverControllerInfo[])BeanUtils.getArray(scList,SolverControllerInfo.class);
 }
 
 
@@ -288,7 +294,7 @@ SolverProxy getSolverProxy(User user, SimulationJob simulationJob, SessionLog us
 public SolverStatus getSolverStatus(User user, SimulationInfo simulationInfo, int jobIndex) throws RemoteException, PermissionException, DataAccessException {
 	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulationInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey()),jobIndex));
 	if (solverProxy==null){
-		return new SolverStatus(SolverStatus.SOLVER_READY);
+		return new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	}
 	return solverProxy.getSolverStatus();
 }
@@ -319,19 +325,19 @@ private void handleException(VCSimulationIdentifier vcSimulationIdentifier, int 
 		if (oldJobStatus != null) {
 			serverID = oldJobStatus.getServerID();
 		}
-		SimulationJobStatus newJobStatus = updateFailedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, ex.getMessage());
+		SimulationJobStatus newJobStatus = updateFailedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, SimulationMessage.solverAborted(ex.getMessage()));
 		if (newJobStatus == null) {
-			newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, ex.getMessage(), null, null);
+			newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(ex.getMessage()), null, null);
 		}
 		
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
 		fireSimulationJobStatusEvent(event);
 	} catch (DataAccessException e) {
-		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, e.getMessage(), null, null);
+		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
 		fireSimulationJobStatusEvent(event);
 	} catch (RemoteException e) {
-		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, e.getMessage(), null, null);
+		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
 		fireSimulationJobStatusEvent(event);
 	}	
@@ -357,24 +363,23 @@ public void onWorkerEvent(cbit.rmi.event.WorkerEvent workerEvent) {
 		}
 		
 		if (workerEvent.isCompletedEvent()) {
-			newJobStatus = updateCompletedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex);			
+			newJobStatus = updateCompletedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, workerEvent.getSimulationMessage());			
 			
 		} else if (workerEvent.isFailedEvent()) {
-			newJobStatus = updateFailedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, workerEvent.getEventMessage());			
+			newJobStatus = updateFailedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, workerEvent.getSimulationMessage());			
 			
 		} else if (workerEvent.isNewDataEvent()) {
-			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, true, null);
+			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, true, workerEvent.getSimulationMessage());
 			
 		} else if (workerEvent.isProgressEvent()) {
-			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, null);
+			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, workerEvent.getSimulationMessage());
 			
 		} else if (workerEvent.isStartingEvent()) {
-			String startMsg = workerEvent.getEventMessage();
 			if (oldJobStatus.isQueued() || oldJobStatus.isDispatched()) {
-				newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, startMsg);
+				newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, workerEvent.getSimulationMessage());
 			} else if (oldJobStatus.isRunning()) {
 				newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), oldJobStatus.getVCSimulationIdentifier(), oldJobStatus.getJobIndex(), oldJobStatus.getSubmitDate(), 
-					oldJobStatus.getSchedulerStatus(), oldJobStatus.getTaskID(), startMsg, oldJobStatus.getSimulationQueueEntryStatus(), oldJobStatus.getSimulationExecutionStatus());
+					oldJobStatus.getSchedulerStatus(), oldJobStatus.getTaskID(), workerEvent.getSimulationMessage(), oldJobStatus.getSimulationQueueEntryStatus(), oldJobStatus.getSimulationExecutionStatus());
 			}				
 		}
 		if (workerEvent.isStartingEvent() && newJobStatus != null) {
@@ -493,7 +498,7 @@ public void stopSimulation(User user, Simulation simulation) {
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(User user, VCSimulationIdentifier vcSimID, int jobIndex) {	
+public void stopSimulation(User user, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) {	
 	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
 	removeSimulationJobStatusListener(localVCellConnection.getMessageService().getMessageCollector());
 	addSimulationJobStatusListener(localVCellConnection.getMessageService().getMessageCollector());
@@ -524,7 +529,7 @@ public void stopSimulation(User user, VCSimulationIdentifier vcSimID, int jobInd
  * @param sim cbit.vcell.solver.Simulation
  * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
  */
-private SimulationJobStatus updateCompletedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex) throws DataAccessException, RemoteException {
+private SimulationJobStatus updateCompletedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, RemoteException {
 	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
 	if (solverProxy == null) {
 		return null;
@@ -533,7 +538,7 @@ private SimulationJobStatus updateCompletedJobStatus(SimulationJobStatus oldJobS
 	synchronized (solverProxy) {
 		String host = (solverProxy != null) ? solverProxy.getHost() : null;
 		
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SimulationJobStatus.SCHEDULERSTATUS_COMPLETED, null);		
+		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SimulationJobStatus.SCHEDULERSTATUS_COMPLETED, simulationMessage);		
 	}
 }
 
@@ -552,7 +557,7 @@ private SimulationJobStatus updateDispatchedJobStatus(SimulationJobStatus oldJob
 	synchronized (solverProxy) {	
 		String host = (solverProxy != null) ? solverProxy.getHost() : null;
 		
-		return dispatcherDbManager.updateDispatchedStatus(oldJobStatus, adminDbServer, host, vcSimulationIdentifier, jobIndex, null);
+		return dispatcherDbManager.updateDispatchedStatus(oldJobStatus, adminDbServer, host, vcSimulationIdentifier, jobIndex, SimulationMessage.MESSAGE_JOB_DISPATCHED);
 	}
 }
 
@@ -563,7 +568,7 @@ private SimulationJobStatus updateDispatchedJobStatus(SimulationJobStatus oldJob
  * @param sim cbit.vcell.solver.Simulation
  * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
  */
-private SimulationJobStatus updateFailedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, String solverMsg) throws DataAccessException, RemoteException {
+private SimulationJobStatus updateFailedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, SimulationMessage solverMsg) throws DataAccessException, RemoteException {
 	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
 	if (solverProxy == null) {
 		return null;
@@ -583,7 +588,7 @@ private SimulationJobStatus updateFailedJobStatus(SimulationJobStatus oldJobStat
  * @param sim cbit.vcell.solver.Simulation
  * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
  */
-private SimulationJobStatus updateRunningJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, boolean hasData, String solverMsg) throws DataAccessException, RemoteException {
+private SimulationJobStatus updateRunningJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, boolean hasData, SimulationMessage solverMsg) throws DataAccessException, RemoteException {
 	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
 	if (solverProxy == null) {
 		return null;
@@ -607,10 +612,10 @@ private SimulationJobStatus updateStoppedJobStatus(SimulationJobStatus oldJobSta
 	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
 	if (solverProxy != null) {
 		synchronized (solverProxy) {
-			return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, null);			
+			return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
 		}
 	} else {
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, null);
+		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
 	}	
 }
 }

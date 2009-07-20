@@ -5,7 +5,10 @@ import java.io.File;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.MessageConstants;
+import org.vcell.util.SessionLog;
 
+import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 
@@ -23,7 +26,7 @@ public class PBSSolver extends HTCSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public PBSSolver(cbit.vcell.messaging.server.SimulationTask simTask, java.io.File directory, org.vcell.util.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public PBSSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simTask, directory, sessionLog);
 }
 
@@ -34,17 +37,17 @@ public PBSSolver(cbit.vcell.messaging.server.SimulationTask simTask, java.io.Fil
  * @throws ExecutableException 
  */
 private void submit2PBS() throws SolverException, ExecutableException {
-	fireSolverStarting("submitting to job scheduler...");
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_SUBMITTING);
 	String cmd = getExecutableCommand();
 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
 	String jobname = "S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
 	
 	String jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB(), PBSConstants.PBS_ARCH_LINUX);
 	if (jobid == null) {
-		fireSolverAborted("Failed. (error message: submitting to job scheduler failed).");
+		fireSolverAborted(SimulationMessage.jobFailed("Failed. (error message: submitting to job scheduler failed)."));
 		return;
 	}
-	fireSolverStarting("submitted to job scheduler, job id is " + jobid);
+	fireSolverStarting(SimulationMessage.solverEvent_Starting_Submit("submitted to job scheduler, job id is " + jobid));
 
 	// if PBS has problem with dispatching jobs, jobs that have been submitted
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
@@ -100,7 +103,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 			throw new SolverException("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
 		}
 	}
-	System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status" + PBSUtils.getJobStatusDescription(status));
+	System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + PBSUtils.getJobStatusDescription(status));
 }
 
 @Override
@@ -119,8 +122,8 @@ public void startSolver() {
 		submit2PBS();
 	} catch (Throwable throwable) {
 		getSessionLog().exception(throwable);
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, throwable.getMessage()));
-		fireSolverAborted(throwable.getMessage());		
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(throwable.getMessage())));
+		fireSolverAborted(SimulationMessage.solverAborted(throwable.getMessage()));		
 	}
 }
 

@@ -17,10 +17,12 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -103,7 +105,7 @@ private String applyChanges(Simulation clonedSimulation, Simulation simulation) 
  */
 public String checkCompatibility(Simulation simulation) {
 	SimulationOwner simOwner = getSimulationOwner();
-	if (simOwner instanceof cbit.vcell.mathmodel.MathModel){
+	if (simOwner instanceof MathModel){
 		return null;
 	}
 	if (simOwner instanceof SimulationContext){
@@ -557,7 +559,7 @@ private long getExpectedSizeBytes(Simulation simulation) {
 		numVariables = 0;
 		cbit.vcell.math.Variable variables[] = simulation.getVariables();
 		for (int i = 0; i < variables.length; i++){
-			if (variables[i] instanceof cbit.vcell.math.VolVariable){
+			if (variables[i] instanceof VolVariable){
 				numVariables++;
 			}
 		}
@@ -568,8 +570,8 @@ private long getExpectedSizeBytes(Simulation simulation) {
 		numVariables = 0;
 		cbit.vcell.math.Variable variables[] = simulation.getVariables();
 		for (int i = 0; i < variables.length; i++){
-			if ((variables[i] instanceof cbit.vcell.math.VolVariable) ||
-				(variables[i] instanceof cbit.vcell.math.Function)) {
+			if ((variables[i] instanceof VolVariable) ||
+				(variables[i] instanceof Function)) {
 				numVariables++;
 			}
 		}
@@ -670,9 +672,10 @@ Object getSimulationStatusDisplay(Simulation simulation) {
 		if (displayProgress){
 			double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
 			getStatusBars()[index].setValue((int)(progress * 100));
-			getStatusBars()[index].setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 			if (simStatus.isFailed()) {
 				getStatusBars()[index].setString("One or more jobs failed");
+			} else {
+				getStatusBars()[index].setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 			}
 			return getStatusBars()[index];
 		} else {
@@ -766,8 +769,8 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
  * @param simulations The new value for the property.
  * @see #getSimulations
  */
-public void setSimulations(final cbit.vcell.solver.Simulation[] simulations) {
-	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
+public void setSimulations(final Simulation[] simulations) {
+	Simulation[] oldValue = fieldSimulations;
 	fieldSimulations = simulations;
 	if (simulations == null) {
 		setStatusBars(null);

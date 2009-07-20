@@ -362,7 +362,7 @@ public void insertSimulationJobStatus(Connection con, SimulationJobStatus simula
 	if (simulationJobStatus == null){
 		throw new IllegalArgumentException("simulationJobStatus cannot be null");
 	}
-	log.print("SimulationDbDriver.insertSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
+	log.print("SimulationJobDbDriver.insertSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
 	String sql = "INSERT INTO " + jobTable.getTableName() + " " + jobTable.getSQLColumnList() + " VALUES " 
 		+ jobTable.getSQLValueList(key, simulationJobStatus);
 
@@ -382,7 +382,7 @@ public void updateSimulationJobStatus(Connection con, SimulationJobStatus simula
 		throw new IllegalArgumentException("Improper parameters for updateSimulationJobStatus()");
 	}
 
-	log.print("SchedulerDbDriver.updateSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
+	log.print("SimulationJobDbDriver.updateSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
 	
 	String sql = "UPDATE " + jobTable.getTableName() +	" SET "  + jobTable.getSQLUpdateList(simulationJobStatus) + 
 			" WHERE " + jobTable.simRef + "=" + simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() +

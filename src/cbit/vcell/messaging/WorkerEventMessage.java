@@ -3,12 +3,14 @@ import cbit.vcell.messaging.server.SimulationDispatcher;
 import cbit.vcell.messaging.server.SimulationTask;
 import javax.jms.*;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.rmi.event.WorkerEvent;
 
 /**
@@ -40,7 +42,7 @@ public WorkerEventMessage(WorkerEvent event) {
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, org.vcell.util.DataAccessException {
+public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, DataAccessException {
 	parseMessage(dispatcher, message0);
 }
 
@@ -103,7 +105,7 @@ private void parseMessage(SimulationDispatcher dispatcher, Message message) thro
 				if (sim == null) {
 					throw new RuntimeException("Null Simulation"); //wrong message	
 				}
-			} catch (org.vcell.util.DataAccessException ex) {
+			} catch (DataAccessException ex) {
 				throw new RuntimeException("Null Simulation"); // wrong message
 			}
 			
@@ -123,10 +125,50 @@ private void parseMessage(SimulationDispatcher dispatcher, Message message) thro
 			} catch (MessagePropertyNotFoundException ex) {
 				// it's OK not to have progress or timepoint
 			}
+			
+			SimulationMessage simulationMessage = SimulationMessage.fromSerializedMessage(statusMessage);
+			if (simulationMessage == null) {			
+				switch (status) {
+				case WorkerEvent.JOB_ACCEPTED:
+					throw new RuntimeException("unexpected job_accepted status");
+				case WorkerEvent.JOB_STARTING:
+					if (statusMessage == null) {
+						simulationMessage = SimulationMessage.MESSAGE_WORKEREVENT_STARTING;
+					} else {
+						simulationMessage = SimulationMessage.workerStarting(statusMessage);
+					}
+					break;
+				case WorkerEvent.JOB_DATA:
+					simulationMessage = SimulationMessage.workerData(timepoint);
+					break;
+				case WorkerEvent.JOB_PROGRESS:
+					simulationMessage = SimulationMessage.workerProgress(progress);
+					break;
+				case WorkerEvent.JOB_FAILURE:
+					if (statusMessage == null) {
+						simulationMessage = SimulationMessage.MESSAGE_WORKEREVENT_FAILURE;
+					} else {
+						simulationMessage = SimulationMessage.workerFailure(statusMessage);
+					}
+					break;
+				case WorkerEvent.JOB_COMPLETED:
+					if (statusMessage == null) {
+						simulationMessage = SimulationMessage.MESSAGE_WORKEREVENT_COMPLETED;
+					} else {
+						simulationMessage = SimulationMessage.workerCompleted(statusMessage);
+					}
+					break;
+				case WorkerEvent.JOB_WORKER_ALIVE:
+					simulationMessage = SimulationMessage.MESSAGE_WORKEREVENT_WORKERALIVE;
+					break;
+				default:
+					throw new RuntimeException("unexpected worker event status : " + status);
+				}
+			}
 
-			workerEvent = new WorkerEvent(status, dispatcher, sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex, hostname, taskID, progress, timepoint, statusMessage);
+			workerEvent = new WorkerEvent(status, dispatcher, sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex, hostname, taskID, progress, timepoint, simulationMessage);
 					
-		} catch (cbit.vcell.messaging.MessagePropertyNotFoundException ex) {
+		} catch (MessagePropertyNotFoundException ex) {
 			throw new RuntimeException("Wrong message"); //wrong message
 		} 
 	} else {
@@ -143,7 +185,7 @@ private void parseMessage(SimulationDispatcher dispatcher, Message message) thro
  * @param param javax.jms.Message
  */
 public static WorkerEventMessage sendAccepted(JmsSession session, Object source, SimulationTask simTask, String hostName) throws JMSException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_ACCEPTED, source, simTask, hostName, null);
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_ACCEPTED, source, simTask, hostName, SimulationMessage.MESSAGE_JOB_ACCEPTED);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -156,8 +198,8 @@ public static WorkerEventMessage sendAccepted(JmsSession session, Object source,
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendCompleted(JmsSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint) throws JMSException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, source, simTask, hostName, new Double(progress), new Double(timePoint));		
+public static WorkerEventMessage sendCompleted(JmsSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint, SimulationMessage simulationMessage) throws JMSException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, source, simTask, hostName, new Double(progress), new Double(timePoint), simulationMessage);		
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -170,20 +212,8 @@ public static WorkerEventMessage sendCompleted(JmsSession session, Object source
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendFailed(JmsSession session, Object source, SimulationTask simTask, String hostName, String failMessage) throws JMSException {
-	String revisedFailMsg = failMessage;
-	if (revisedFailMsg != null) {
-		revisedFailMsg = revisedFailMsg.trim();
-		if (revisedFailMsg.length() > 2048) {
-			revisedFailMsg = revisedFailMsg.substring(0, 2048); //status message is only 2048 chars long in database
-		}
-
-//		revisedFailMsg = revisedFailMsg.replace('\r', ' ');
-//		revisedFailMsg = revisedFailMsg.replace('\n', ' ');
-		revisedFailMsg = revisedFailMsg.replace('\'', ' '); // these characters are not valid both in database and in messages as a property
-	}
-	
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_FAILURE, source, simTask,	hostName, revisedFailMsg);
+public static WorkerEventMessage sendFailed(JmsSession session, Object source, SimulationTask simTask, String hostName, SimulationMessage failMessage) throws JMSException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_FAILURE, source, simTask,	hostName, failMessage);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -196,8 +226,8 @@ public static WorkerEventMessage sendFailed(JmsSession session, Object source, S
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendNewData(JmsSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint) throws JMSException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_DATA, source, simTask, hostName, new Double(progress), new Double(timePoint));		
+public static WorkerEventMessage sendNewData(JmsSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint, SimulationMessage simulationMessage) throws JMSException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_DATA, source, simTask, hostName, new Double(progress), new Double(timePoint), simulationMessage);		
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -210,8 +240,8 @@ public static WorkerEventMessage sendNewData(JmsSession session, Object source, 
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendProgress(JmsSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint) throws JMSException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_PROGRESS, source, simTask, hostName, new Double(progress), new Double(timePoint));		
+public static WorkerEventMessage sendProgress(JmsSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint, SimulationMessage simulationMessage) throws JMSException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_PROGRESS, source, simTask, hostName, new Double(progress), new Double(timePoint), simulationMessage);		
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -224,20 +254,8 @@ public static WorkerEventMessage sendProgress(JmsSession session, Object source,
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendStarting(JmsSession session, Object source, SimulationTask simTask, String hostName, String startMessage) throws JMSException {
-	String revisedStartMsg = startMessage;
-	if (revisedStartMsg != null) {
-		revisedStartMsg = revisedStartMsg.trim();
-		if (revisedStartMsg.length() > 2048) {
-			revisedStartMsg = revisedStartMsg.substring(0, 2048); // status message is only 2048 chars long in database
-		}
-
-//		revisedStartMsg = revisedStartMsg.replace('\r', ' ');
-//		revisedStartMsg = revisedStartMsg.replace('\n', ' ');
-		revisedStartMsg = revisedStartMsg.replace('\'', ' '); // these characters are not valid both in database and in messages as a property
-	}
-		
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_STARTING, source, simTask, hostName, revisedStartMsg);
+public static WorkerEventMessage sendStarting(JmsSession session, Object source, SimulationTask simTask, String hostName, SimulationMessage startMessage) throws JMSException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_STARTING, source, simTask, hostName, startMessage);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -250,8 +268,8 @@ public static WorkerEventMessage sendStarting(JmsSession session, Object source,
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendWorkerAlive(JmsSession session, Object source, SimulationTask simTask, String hostName) throws JMSException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_ALIVE, source, simTask, hostName, null);
+public static WorkerEventMessage sendWorkerAlive(JmsSession session, Object source, SimulationTask simTask, String hostName, SimulationMessage simulationMessage) throws JMSException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_ALIVE, source, simTask, hostName, simulationMessage);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 

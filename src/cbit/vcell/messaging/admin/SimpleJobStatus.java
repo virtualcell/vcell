@@ -105,24 +105,13 @@ public java.util.Date getStartDate() {
 	return jobStatus.getStartDate();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2004 2:09:31 PM)
- * @return int
- */
-private int getStatus() {
-	return jobStatus.getSchedulerStatus();
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (12/17/2003 2:47:11 PM)
  * @return java.lang.String
  */
 public String getStatusMessage() {
-	return jobStatus.getStatusMessage();
+	return jobStatus.getSimulationMessage().getDisplayMessage();
 }
 
 
@@ -197,6 +186,6 @@ public boolean isRunning() {
 public Object[] toObjects() {	
 	return new Object[] {userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
 		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getDisplayLabel(), 		
-		SimulationJobStatus.getSchedulerStatusMessage(getStatus()), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate()};
+		getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate()};
 }
 }

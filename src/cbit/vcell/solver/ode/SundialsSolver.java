@@ -42,7 +42,7 @@ public void cleanup() {
 		printODEFile();
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
-		fireSolverAborted(e.getMessage());
+		fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 	}
 }
 
