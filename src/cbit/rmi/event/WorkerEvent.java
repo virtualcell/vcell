@@ -1,6 +1,11 @@
 package cbit.rmi.event;
+import org.vcell.util.document.User;
+
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
@@ -18,10 +23,13 @@ public class WorkerEvent extends MessageEvent {
 	private int eventType = -1;
 	private Double progress = null;
 	private Double timePoint = null;
-	private java.lang.String eventMessage = null;
+	private SimulationMessage eventMessage = null;
 
-public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, String arg_eventMessage) {
-	super(source, new MessageSource(source, cbit.vcell.solver.Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));	
+public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, SimulationMessage arg_eventMessage) {
+	super(source, new MessageSource(source, Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));
+	if (arg_eventMessage == null) {
+		throw new RuntimeException("WorkerEvent : SimulationMessage should not be null");
+	}	
 	eventType = eventType0;
 	vcSimulationIdentifier = simId0;
 	jobIndex = jobIndex0;
@@ -32,19 +40,19 @@ public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0,
 	eventMessage = arg_eventMessage;
 }
 
-public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, String message) {
+public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, SimulationMessage message) {
 	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, null, null, message);
 }
 
-public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, Double progress0, Double timePoint0) {
-	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, progress0, timePoint0, null);
+public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, Double progress0, Double timePoint0, SimulationMessage message) {
+	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, progress0, timePoint0, message);
 }
 
-public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, Double progress0, Double timePoint0) {
-	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), progress0, timePoint0, null);
+public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, Double progress0, Double timePoint0, SimulationMessage message) {
+	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), progress0, timePoint0, message);
 }
 
-public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, String message) {
+public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, SimulationMessage message) {
 	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), null, null, message);
 }
 
@@ -53,7 +61,8 @@ public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String
  * Creation date: (2/9/2004 8:37:47 AM)
  * @return java.lang.String
  */
-public java.lang.String getEventMessage() {
+
+public SimulationMessage getSimulationMessage() {
 	return eventMessage;
 }
 
@@ -123,7 +132,7 @@ public Double getTimePoint() {
  * Creation date: (3/11/2004 9:33:30 AM)
  * @return cbit.vcell.server.User
  */
-public org.vcell.util.document.User getUser() {
+public User getUser() {
 	return vcSimulationIdentifier.getOwner();
 }
 
@@ -134,7 +143,7 @@ public org.vcell.util.document.User getUser() {
  * @return java.lang.String
  */
 public String getUserName() {
-	return vcSimulationIdentifier.getOwner().getName();
+	return getUser().getName();
 }
 
 
@@ -143,8 +152,8 @@ public String getUserName() {
  * Creation date: (12/31/2003 12:56:45 PM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public cbit.vcell.solver.VCSimulationDataIdentifier getVCSimulationDataIdentifier() {
-	return new cbit.vcell.solver.VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
+public VCSimulationDataIdentifier getVCSimulationDataIdentifier() {
+	return new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
 }
 
 
@@ -173,11 +182,23 @@ public boolean isCompletedEvent() {
  * Creation date: (3/11/2004 9:33:30 AM)
  * @return boolean
  */
-public boolean isConsumable() {
-	if (isProgressEvent() || isNewDataEvent()) {
-		return true;
+public boolean isSupercededBy(MessageEvent messageEvent) {
+	if (messageEvent instanceof WorkerEvent){
+		WorkerEvent workerEvent = (WorkerEvent)messageEvent;
+		
+		if (isProgressEvent() && workerEvent.isProgressEvent()){
+			if (getProgress()<workerEvent.getProgress()){
+				return true;
+			}
+		}
+		if (isNewDataEvent() && workerEvent.isNewDataEvent()) {
+			if (getTimePoint() < workerEvent.getTimePoint()){
+				return true;
+			}
+		}
+			
 	}
-	
+		
 	return false;
 }
 

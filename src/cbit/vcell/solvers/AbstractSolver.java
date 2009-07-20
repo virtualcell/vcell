@@ -26,7 +26,7 @@ import cbit.vcell.math.*;
 public abstract class AbstractSolver implements Solver, SimDataConstants {
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 	private org.vcell.util.SessionLog fieldSessionLog = null;
-	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY);
+	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	private File saveDirectory = null;
 	private boolean saveEnabled = true;
 	private SimulationJob simulationJob = null;
@@ -65,7 +65,7 @@ public synchronized void addSolverListener(cbit.vcell.solver.SolverListener list
 /**
  * Method to support listener events.
  */
-protected void fireSolverAborted(String message) {
+protected void fireSolverAborted(SimulationMessage message) {
 	// Create event
 	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime());
 	// Guaranteed to return a non-null array
@@ -85,7 +85,7 @@ protected void fireSolverAborted(String message) {
  */
 protected void fireSolverFinished() {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_FINISHED, "completed", getProgress(), getCurrentTime());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVEREVENT_FINISHED, getProgress(), getCurrentTime());
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -103,7 +103,7 @@ protected void fireSolverFinished() {
  */
 protected void fireSolverPrinted(double timepoint) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PRINTED, String.valueOf(timepoint), getProgress(), timepoint);
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PRINTED, SimulationMessage.solverPrinted(timepoint), getProgress(), timepoint);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -121,7 +121,7 @@ protected void fireSolverPrinted(double timepoint) {
  */
 protected void fireSolverProgress(double progress) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PROGRESS, String.valueOf(progress), progress, getCurrentTime());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PROGRESS, SimulationMessage.solverProgress(progress), progress, getCurrentTime());
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -137,7 +137,7 @@ protected void fireSolverProgress(double progress) {
 /**
  * Method to support listener events.
  */
-protected void fireSolverStarting(String message) {
+protected void fireSolverStarting(SimulationMessage message) {
 	// Create event
 	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0);
 	// Guaranteed to return a non-null array
@@ -157,7 +157,7 @@ protected void fireSolverStarting(String message) {
  */
 protected void fireSolverStopped() {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STOPPED, "stopped by user", getProgress(), getCurrentTime());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STOPPED, SimulationMessage.solverStopped("stopped by user"), getProgress(), getCurrentTime());
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying

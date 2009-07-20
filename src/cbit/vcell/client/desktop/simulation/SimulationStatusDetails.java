@@ -1,4 +1,5 @@
 package cbit.vcell.client.desktop.simulation;
+import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import javax.swing.JProgressBar;
@@ -56,14 +57,14 @@ public SimulationStatus getSimulationStatus() {
 Object getSimulationStatusDisplay(int index) {
 	SimulationStatus simStatus = simWorkspace.getSimulationStatus(sim);
 	if (simStatus != null) {
-		cbit.vcell.messaging.db.SimulationJobStatus jobStatus = simStatus.getJobStatus(index);
+		SimulationJobStatus jobStatus = simStatus.getJobStatus(index);
 		Double progress = simStatus.getProgressAt(index);
 		if (jobStatus != null) {
 			if (progress != null && jobStatus.isRunning() && progress.doubleValue() > 0 ) {
 				statusBars[index].setValue((int)(progress.doubleValue() * 100));
 				return statusBars[index];
 			} else {
-				return jobStatus.getStatusMessage();
+				return jobStatus.getSimulationMessage().getDisplayMessage();
 			}
 		}
 	}

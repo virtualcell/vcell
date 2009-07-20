@@ -24,6 +24,7 @@ import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverException;
@@ -124,7 +125,7 @@ private void start() {
 		}
 	} catch (Throwable ex) {
 		ex.printStackTrace();
-		sendFailed(ex.getMessage());
+		sendFailed(SimulationMessage.solverAborted(ex.getMessage()));
 	}
 }
 
@@ -186,7 +187,7 @@ public static void main(String[] args) {
  */
 public void onControlTopicMessage(Message message) throws JMSException {
 	
-	log.print("SimulationWorker::onControlTopicMessage(): " + JmsUtils.toString(message));
+	log.print("JavaSimulationExecutable::onControlTopicMessage(): " + JmsUtils.toString(message));
 	try {
 		String msgType = (String)JmsUtils.parseProperty(message, MessageConstants.MESSAGE_TYPE_PROPERTY, String.class);
 
@@ -209,7 +210,7 @@ private void sendAlive() {
 	// have to keep sending the messages because it's important
 	try {
 		log.print("sendWorkerAlive(" + simulationTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, simulationTask, ManageUtils.getHostName());
+		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, simulationTask, ManageUtils.getHostName(), SimulationMessage.MESSAGE_WORKEREVENT_WORKERALIVE);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
 	} catch (JMSException jmse) {
@@ -217,7 +218,7 @@ private void sendAlive() {
 	}
 }
 
-private void sendFailed(String failureMessage) {		
+private void sendFailed(SimulationMessage failureMessage) {		
 	try {
 		log.print("sendFailure(" + simulationTask.getSimulationJobIdentifier() + "," + failureMessage +")");
 		WorkerEventMessage.sendFailed(workerEventSession, this, simulationTask, ManageUtils.getHostName(), failureMessage);
@@ -226,12 +227,12 @@ private void sendFailed(String failureMessage) {
 	}
 }
 
-private void sendNewData(double progress, double timeSec) {	
+private void sendNewData(double progress, double timeSec, SimulationMessage simulationMessage) {	
 	try {
 		long t = System.currentTimeMillis();
 		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
 			log.print("sendNewData(" + simulationTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");		
-			WorkerEventMessage.sendNewData(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec);
+			WorkerEventMessage.sendNewData(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 		
 			lastMsgTimeStamp = System.currentTimeMillis();
 			bProgress = false;
@@ -246,13 +247,13 @@ private void sendNewData(double progress, double timeSec) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-private void sendProgress(double progress, double timeSec) {
+private void sendProgress(double progress, double timeSec, SimulationMessage simulationMessage) {
 	try {
 		long t = System.currentTimeMillis();
 		if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
 				|| ((int)(progress * 100)) % 25 == 0) { // don't send progress message too frequently
 			log.print("sendProgress(" + simulationTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");
-			WorkerEventMessage.sendProgress(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec);
+			WorkerEventMessage.sendProgress(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 			
 			lastMsgTimeStamp = System.currentTimeMillis();
 			bProgress = true;
@@ -262,17 +263,17 @@ private void sendProgress(double progress, double timeSec) {
 	}
 }
 
-private void sendCompleted(double progress, double timeSec) {
+private void sendCompleted(double progress, double timeSec, SimulationMessage simulationMessage) {
 	// have to keep sending the messages because it's important
 	try {
 		log.print("sendComplete(" + simulationTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendCompleted(workerEventSession, this, simulationTask, ManageUtils.getHostName(),  progress, timeSec);
+		WorkerEventMessage.sendCompleted(workerEventSession, this, simulationTask, ManageUtils.getHostName(),  progress, timeSec, simulationMessage);
 	} catch (JMSException jmse) {
         log.exception(jmse);
 	}
 }
 
-private void sendStarting(String startingMessage) {
+private void sendStarting(SimulationMessage startingMessage) {
 	try {
 		log.print("sendStarting(" + simulationTask.getSimulationJobIdentifier() + ")");
 		WorkerEventMessage.sendStarting(workerEventSession, this, simulationTask, ManageUtils.getHostName(), startingMessage);
@@ -286,12 +287,7 @@ private void sendStarting(String startingMessage) {
  * @param event indicates the solver and the event type
  */
 public final void solverAborted(SolverEvent event) {
-	String failMsg = event.getMessage();
-	if (failMsg == null) {
-		failMsg = "Solver aborted";
-	}
-		
-	sendFailed(failMsg);
+	sendFailed(event.getSimulationMessage());
 }
 
 /**
@@ -299,7 +295,7 @@ public final void solverAborted(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverFinished(SolverEvent event) {
-	sendCompleted(event.getProgress(), event.getTimePoint());
+	sendCompleted(event.getProgress(), event.getTimePoint(), event.getSimulationMessage());
 }
 
 
@@ -309,7 +305,7 @@ public final void solverFinished(SolverEvent event) {
  */
 public final void solverPrinted(SolverEvent event) {
 	// can never get data messages here
-	sendNewData(event.getProgress(), event.getTimePoint());
+	sendNewData(event.getProgress(), event.getTimePoint(), event.getSimulationMessage());
 }
 
 
@@ -319,7 +315,7 @@ public final void solverPrinted(SolverEvent event) {
  */
 public final void solverProgress(SolverEvent event) {
 	// can never get progress message here
-	sendProgress(event.getProgress(), event.getTimePoint());
+	sendProgress(event.getProgress(), event.getTimePoint(), event.getSimulationMessage());
 }
 
 
@@ -328,12 +324,7 @@ public final void solverProgress(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverStarting(SolverEvent event) {
-	String startMsg = event.getMessage();
-	if (startMsg == null) {
-		startMsg = "Solver starting";
-	}
-	
-	sendStarting(startMsg);
+	sendStarting(event.getSimulationMessage());
 }
 
 

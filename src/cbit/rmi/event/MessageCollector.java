@@ -8,5 +8,5 @@ package cbit.rmi.event;
  * Creation date: (11/12/2000 9:31:08 PM)
  * @author: IIM
  */
-public interface MessageCollector extends PerformanceMonitorListener, ExportListener, WorkerEventListener, SimulationJobStatusListener, MessageSender ,DataJobListener, VCellMessageEventListener {
+public interface MessageCollector extends PerformanceMonitorListener, ExportListener, WorkerEventListener, SimulationJobStatusListener, DataJobListener, VCellMessageEventListener {
 }

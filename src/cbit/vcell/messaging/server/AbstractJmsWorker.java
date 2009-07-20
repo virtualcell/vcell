@@ -3,11 +3,14 @@ import javax.jms.*;
 
 import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
 
 import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.StringTokenizer;
+
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XmlParseException;
@@ -37,7 +40,7 @@ public AbstractJmsWorker(ServiceType wt, int workerOrdinal, int workerMem, Strin
 	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), serviceType, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
-	log = new org.vcell.util.StdoutSessionLog(serviceInstanceStatus.getID());
+	log = new StdoutSessionLog(serviceInstanceStatus.getID());
 	workerMessaging = new WorkerMessaging(this, log);
 }
 
@@ -66,12 +69,7 @@ public final String getJobSelector() {
  * @param event indicates the solver and the event type
  */
 public final void solverAborted(SolverEvent event) {
-	String failMsg = event.getMessage();
-	if (failMsg == null) {
-		failMsg = "Solver aborted";
-	}
-		
-	workerMessaging.sendFailed(failMsg);
+	workerMessaging.sendFailed(event.getSimulationMessage());
 }
 
 
@@ -80,7 +78,7 @@ public final void solverAborted(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverFinished(SolverEvent event) {
-	workerMessaging.sendCompleted(event.getProgress(), event.getTimePoint());
+	workerMessaging.sendCompleted(event.getProgress(), event.getTimePoint(), event.getSimulationMessage());
 }
 
 
@@ -92,7 +90,7 @@ public final void solverPrinted(SolverEvent event) {
 	if (!isRunning()) {
 		return;
 	}
-	workerMessaging.sendNewData(event.getProgress(), event.getTimePoint());
+	workerMessaging.sendNewData(event.getProgress(), event.getTimePoint(), event.getSimulationMessage());
 }
 
 
@@ -104,7 +102,7 @@ public final void solverProgress(SolverEvent event) {
 	if (!isRunning()) {
 		return;
 	}
-	workerMessaging.sendProgress(event.getProgress(), event.getTimePoint());
+	workerMessaging.sendProgress(event.getProgress(), event.getTimePoint(), event.getSimulationMessage());
 }
 
 
@@ -113,12 +111,7 @@ public final void solverProgress(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverStarting(SolverEvent event) {
-	String startMsg = event.getMessage();
-	if (startMsg == null) {
-		startMsg = "Solver starting";
-	}
-	
-	workerMessaging.sendStarting(startMsg);
+	workerMessaging.sendStarting(event.getSimulationMessage());
 }
 
 
@@ -155,7 +148,7 @@ public final void start() {
 			}
 			doJob();			
 		} catch (Exception ex) {			
-			workerMessaging.sendFailed(ex.getMessage());
+			workerMessaging.sendFailed(SimulationMessage.jobFailed(ex.getMessage()));
 		}			
 	}	
 	

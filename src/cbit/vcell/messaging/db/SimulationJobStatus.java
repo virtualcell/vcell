@@ -1,9 +1,11 @@
 package cbit.vcell.messaging.db;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import java.util.Date;
 import java.io.Serializable;
 
+import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
@@ -21,7 +23,7 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 	private Date fieldSubmitDate = null;
 	private int fieldSchedulerStatus; // define here
 	private int fieldTaskID = 0;
-	private String fieldStatusMessage = null;
+	private SimulationMessage fieldSimulationMessage = null;
 	private VCellServerID fieldServerID = null;
 	private int fieldJobIndex;
 
@@ -36,24 +38,40 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 	private SimulationQueueEntryStatus fieldSimulationQueueEntryStatus = null;	// may be null
 	private SimulationExecutionStatus fieldSimulationExecutionStatus = null;	// may be null
 	
-	private final static String StatusString[] = {"waiting to be dispatched", "queued...", "dispatched...", 
-		"running...", "completed", "stopped", "failed"};
 
 /**
  * SimulationJobStatus constructor comment.
  */
-public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimID, int jobIndex, Date submitDate, int schedulerStatus, int taskID, String statusMessage, SimulationQueueEntryStatus simQueueStatus, SimulationExecutionStatus simExeStatus){
+public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimID, int jobIndex, Date submitDate, int schedulerStatus, int taskID, SimulationMessage simMessage, SimulationQueueEntryStatus simQueueStatus, SimulationExecutionStatus simExeStatus){
+	if (simMessage == null) {
+		throw new RuntimeException("SimulationJobStatus : SimulationMessage should not be null");
+	}
 	fieldServerID = serverID;
 	fieldVCSimID = vcSimID;
 	fieldSubmitDate = submitDate;
 	fieldSchedulerStatus = schedulerStatus;
 	fieldTaskID = taskID;
-	setStatusMessage(statusMessage);
+	fieldSimulationMessage = simMessage;
 	fieldSimulationExecutionStatus = simExeStatus;
 	fieldSimulationQueueEntryStatus = simQueueStatus;
 	fieldJobIndex = jobIndex;
 }
 
+public SimulationJobStatus(SimulationJobStatus origSimulationJobStatus, SimulationMessage simMessage){
+	if (simMessage == null) {
+		throw new RuntimeException("SimulationJobStatus : SimulationMessage should not be null");
+	}
+	fieldTimeDateStamp = origSimulationJobStatus.fieldTimeDateStamp;
+	fieldServerID = origSimulationJobStatus.fieldServerID;
+	fieldVCSimID = origSimulationJobStatus.fieldVCSimID;
+	fieldSubmitDate = origSimulationJobStatus.fieldSubmitDate;
+	fieldSchedulerStatus = origSimulationJobStatus.fieldSchedulerStatus;
+	fieldTaskID = origSimulationJobStatus.fieldTaskID;
+	fieldSimulationMessage = simMessage;
+	fieldSimulationExecutionStatus = origSimulationJobStatus.fieldSimulationExecutionStatus;
+	fieldSimulationQueueEntryStatus = origSimulationJobStatus.fieldSimulationQueueEntryStatus;
+	fieldJobIndex = origSimulationJobStatus.fieldJobIndex;
+}
 
 /**
  * Checks for internal representation of objects, not keys from database
@@ -71,17 +89,15 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 			//System.out.println("fieldSimKey not =");
 			return false;
 		}
-		if (jobStatus.getSimulationExecutionStatus() != null && fieldSimulationExecutionStatus != null && 
-				!jobStatus.getSimulationExecutionStatus().compareEqual(getSimulationExecutionStatus())){
+		if (!Compare.isEqualOrNull(jobStatus.getSimulationExecutionStatus(), fieldSimulationExecutionStatus)) {
 			//System.out.println("getSimulationExecutionStatus() not =");
 			return false;
 		}
-		if (jobStatus.fieldSimulationQueueEntryStatus != null && fieldSimulationQueueEntryStatus != null && 
-				!jobStatus.getSimulationQueueEntryStatus().compareEqual(getSimulationQueueEntryStatus())){
+		if (!Compare.isEqualOrNull(jobStatus.fieldSimulationQueueEntryStatus, fieldSimulationQueueEntryStatus)) {
 			//System.out.println("getSimulationQueueEntryStatus() not =");
 			return false;
 		}
-		if (fieldStatusMessage != null && jobStatus.fieldStatusMessage != null && !jobStatus.fieldStatusMessage.equals(fieldStatusMessage)){
+		if (fieldSimulationMessage != null && jobStatus.fieldSimulationMessage != null && !jobStatus.fieldSimulationMessage.equals(fieldSimulationMessage)){
 			//System.out.println("fieldStatusMessage not =");
 			return false;
 		}
@@ -110,6 +126,43 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return false;
 }
 
+public boolean isSupercededBy(SimulationJobStatus simJobStatus, Double oldProgress, Double newProgress){
+	
+	if (!simJobStatus.fieldVCSimID.equals(fieldVCSimID)){
+		throw new RuntimeException("comparing SimulationJobStatus from different simulations");
+	}
+
+	if (fieldTaskID < simJobStatus.fieldTaskID){
+		return true;
+	}
+	
+	if (simJobStatus.fieldSchedulerStatus > fieldSchedulerStatus){
+		return true;
+	}else if (simJobStatus.fieldSchedulerStatus < fieldSchedulerStatus){
+		return false;
+	}
+	
+	//
+	// simJobStatus.schedulerStatus == fieldSchedulerStatus 
+	//
+	if (simJobStatus.fieldSchedulerStatus == SCHEDULERSTATUS_RUNNING && fieldSchedulerStatus == SCHEDULERSTATUS_RUNNING){
+		if (oldProgress!=null && newProgress!=null){
+			if (oldProgress < newProgress){
+				return true;
+			}
+		}else if (oldProgress!=null && newProgress==null){
+			return false;
+		}else if (oldProgress==null && newProgress!=null){
+			return true;
+		}else{ // both old and new progress are null
+			if (getSimulationMessage().getDetailedState().ordinal() < simJobStatus.getSimulationMessage().getDetailedState().ordinal()){
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
 
 /**
  * Insert the method's description here.
@@ -154,16 +207,6 @@ public int getJobIndex() {
  */
 public int getSchedulerStatus() {
 	return fieldSchedulerStatus;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/2004 7:59:05 AM)
- * @return java.lang.String
- */
-public static java.lang.String getSchedulerStatusMessage(int status) {
-	return StatusString[status];
 }
 
 
@@ -215,8 +258,8 @@ public java.util.Date getStartDate() {
  * Creation date: (2/5/2004 7:59:05 AM)
  * @return java.lang.String
  */
-public java.lang.String getStatusMessage() {
-	return fieldStatusMessage;
+public SimulationMessage getSimulationMessage() {
+	return fieldSimulationMessage;
 }
 
 
@@ -383,24 +426,6 @@ public boolean isWaiting() {
  * Creation date: (2/2/2004 12:00:50 PM)
  * @param newFieldTimeDateStamp java.util.Date
  */
-private void setStatusMessage(String statusMsg) {
-	fieldStatusMessage = (statusMsg != null) ? statusMsg : StatusString[fieldSchedulerStatus];
-	if (fieldStatusMessage.length() > 2048) {
-		fieldStatusMessage = fieldStatusMessage.substring(0, 2048);
-	}
-	if (fieldStatusMessage != null) {
-//		fieldStatusMessage = fieldStatusMessage.replace('\r', ' ');
-//		fieldStatusMessage = fieldStatusMessage.replace('\n', ' ');
-		fieldStatusMessage = fieldStatusMessage.replace('\'', ' ');
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/2/2004 12:00:50 PM)
- * @param newFieldTimeDateStamp java.util.Date
- */
 public void setTimeDateStamp(java.util.Date newFieldTimeDateStamp) {
 	fieldTimeDateStamp = newFieldTimeDateStamp;
 }
@@ -412,6 +437,7 @@ public void setTimeDateStamp(java.util.Date newFieldTimeDateStamp) {
  * @return java.lang.String
  */
 public String toString() {
-	return "SimulationJobStatus[" + fieldVCSimID + "," + fieldJobIndex + "," + fieldStatusMessage + "," + fieldTaskID + "]";
+	return "SimulationJobStatus[" + fieldVCSimID + ",job=" + fieldJobIndex + ",task=" + fieldTaskID + "," + fieldSimulationMessage 
+	+ ",execStatus=" + fieldSimulationExecutionStatus + "]";
 }
 }

@@ -1,7 +1,6 @@
 package cbit.rmi.event;
 
-import org.vcell.util.document.KeyValue;
-
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 
@@ -39,7 +38,7 @@ public int getEventTypeID() {
  * Creation date: (2/10/2004 1:34:47 PM)
  * @return cbit.vcell.messaging.db.SimulationJobStatus
  */
-public cbit.vcell.messaging.db.SimulationJobStatus getJobStatus() {
+public SimulationJobStatus getJobStatus() {
 	return jobStatus;
 }
 /**
@@ -55,12 +54,12 @@ public Double getProgress() {
  * Creation date: (2/10/2004 2:50:01 PM)
  * @return java.lang.String
  */
-public String getStatusMessage() {
+public SimulationMessage getSimulationMessage() {
 	if (jobStatus == null) {
 		return null;
 	}
 	
-	return jobStatus.getStatusMessage();
+	return jobStatus.getSimulationMessage();
 }
 /**
  * Insert the method's description here.
@@ -90,16 +89,19 @@ public VCSimulationIdentifier getVCSimulationIdentifier() {
 
 	return jobStatus.getVCSimulationIdentifier();
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 1:30:21 PM)
- * @return boolean
- */
-public boolean isConsumable() {
-	if (jobStatus.isRunning() && getProgress() != null && getProgress().doubleValue() > 0) {
-		return true;
+public boolean isSupercededBy(MessageEvent messageEvent) {
+	if (messageEvent instanceof SimulationJobStatusEvent){
+		SimulationJobStatusEvent simulationJobStatusEvent = (SimulationJobStatusEvent)messageEvent;
+		
+		if (jobStatus.isRunning() && getProgress() != null && simulationJobStatusEvent.jobStatus.isRunning() && simulationJobStatusEvent.getProgress() !=null){
+			if (getProgress()<simulationJobStatusEvent.getProgress()){
+				return true;
+			}
+		}
+			
 	}
-	
+		
 	return false;
 }
+
 }

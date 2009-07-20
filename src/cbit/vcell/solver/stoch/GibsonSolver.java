@@ -1,36 +1,43 @@
 package cbit.vcell.solver.stoch;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.Variable;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solver.ode.StateVariable;
-import cbit.vcell.solvers.ApplicationMessage;
-import cbit.vcell.solvers.FunctionFileGenerator;
-
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Vector;
 
-import cbit.vcell.solver.*;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathException;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.ApplicationMessage;
+import cbit.vcell.solvers.MathExecutable;
 
 /**
  * Gibson solver 
  * Creation date: (7/13/2006 9:00:41 AM)
  * @author: Tracy LI
  */
-public class GibsonSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
+public class GibsonSolver extends AbstractCompiledSolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
-public GibsonSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, org.vcell.util.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public GibsonSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
 }
 
@@ -46,7 +53,7 @@ public void cleanup()
 		printStochFile();
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
-		fireSolverAborted(e.getMessage());
+		fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 	}
 }
 
@@ -57,7 +64,7 @@ public void cleanup()
  * @return cbit.vcell.solvers.ApplicationMessage
  * @param message java.lang.String
  */
-protected cbit.vcell.solvers.ApplicationMessage getApplicationMessage(String message) {
+protected ApplicationMessage getApplicationMessage(String message) {
 	String SEPARATOR = ":";
 	String DATA_PREFIX = "data:";
 	String PROGRESS_PREFIX = "progress:";
@@ -71,7 +78,7 @@ protected cbit.vcell.solvers.ApplicationMessage getApplicationMessage(String mes
 		//double startTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
 		//double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
 		//setCurrentTime(startTime + (endTime-startTime)*progress);
-		return new ApplicationMessage(cbit.vcell.solvers.ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
+		return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
 	}else{
 		throw new RuntimeException("unrecognized message");
 	}
@@ -93,10 +100,10 @@ public int getSaveToFileInterval() {
  * Creation date: (8/15/2006 11:36:43 AM)
  * @return cbit.vcell.solver.stoch.StochSolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
+public ODESolverResultSet getStochSolverResultSet()
 {
 	//read .stoch file, this funciton here equals to getODESolverRestultSet()+getStateVariableResultSet()  in ODE.
-	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+	ODESolverResultSet stSolverResultSet = new ODESolverResultSet();
 
 	FileInputStream inputStream = null;
 	try {
@@ -156,24 +163,24 @@ public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
 	*/
 	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 	{
-		cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+		Function functions[] = getSimulation().getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (isFunctionSaved(functions[i])) 
 			{
-				cbit.vcell.parser.Expression exp1 = new cbit.vcell.parser.Expression(functions[i].getExpression());
+				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = getSimulation().substituteFunctions(exp1);
-				} catch (cbit.vcell.math.MathException e) {
+				} catch (MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 				}
 				try {
-					cbit.vcell.solver.ode.FunctionColumnDescription cd = new cbit.vcell.solver.ode.FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
+					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					stSolverResultSet.addFunctionColumn(cd);
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 				}
 			}
@@ -187,11 +194,11 @@ public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-protected void initialize() throws cbit.vcell.solver.SolverException 
+protected void initialize() throws SolverException 
 {
-	org.vcell.util.SessionLog sessionLog = getSessionLog();
+	SessionLog sessionLog = getSessionLog();
 	sessionLog.print("StochSolver.initialize()");
-	fireSolverStarting("StochSolver initializing...");
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	writeLogFile();
 
@@ -199,8 +206,8 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	String outputFileName = getBaseName() + IDA_DATA_EXTENSION;
 	sessionLog.print("StochSolver.initialize() baseName = " + getBaseName());
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
-	fireSolverStarting("generating input file...");
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 
 	PrintWriter pw = null;
 	try {
@@ -208,7 +215,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 		StochFileWriter stFileWriter = new StochFileWriter(pw, getSimulation(), getJobIndex(), true);
 		stFileWriter.write();
 	} catch (Exception e) {
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not generate input file: " + e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException("solver input file exception: " + e.getMessage());
 	} finally {
@@ -217,10 +224,10 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 		}
 	}
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"StochSolver starting"));	
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.
-	String executableName = org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.stochExecutableProperty);
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(new String[] {executableName, "gibson", inputFilename, outputFileName}));	
+	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.stochExecutableProperty);
+	setMathExecutable(new MathExecutable(new String[] {executableName, "gibson", inputFilename, outputFileName}));	
 	//setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
 }
 
@@ -233,7 +240,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 private final void printStochFile() throws IOException
 {
 	// executable writes .stoch file, now we write things in .stochbi format
-	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = ((GibsonSolver)this).getStochSolverResultSet();
+	ODESolverResultSet stSolverResultSet = ((GibsonSolver)this).getStochSolverResultSet();
 	if (stSolverResultSet == null) {
 		return;
 	}
@@ -336,16 +343,16 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
-	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	Function functions[] = getSimulation().getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = getSimulation().substituteFunctions(exp1).flatten();
-			} catch (cbit.vcell.math.MathException e) {
+			} catch (MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
+			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}

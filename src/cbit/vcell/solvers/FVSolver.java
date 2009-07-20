@@ -23,7 +23,6 @@ import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.Function;
-import cbit.vcell.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -77,8 +76,8 @@ public FVSolver (SimulationJob argSimulationJob, File dir, SessionLog sessionLog
  */
 private void autoCode(boolean bNoCompile) throws SolverException {
 	getSessionLog().print("LocalMathController.autoCode()");
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "initializing coder"));
-	fireSolverStarting("generating code...");
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_CODEGEN));
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_CODEGEN);
 	
 	String baseName = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()).getPath();
 
@@ -98,18 +97,18 @@ private void autoCode(boolean bNoCompile) throws SolverException {
 	try {
 		cppCoderVCell.initialize();
 	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "autocode init exception: "+e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("autocode init exception: "+e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException("autocode init exception: "+e.getMessage());
 	}		
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "generating code"));
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_CODEGEN));
 	
 	java.io.FileOutputStream osCode = null;
 	java.io.FileOutputStream osHeader = null;
 	try {
 		osCode = new java.io.FileOutputStream(CodeFilename);
 	}catch (java.io.IOException e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "error opening code file '"+CodeFilename+": "+e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error opening code file '"+CodeFilename+": "+e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException("error opening code file '"+CodeFilename+": "+e.getMessage());
 	}		
@@ -117,7 +116,7 @@ private void autoCode(boolean bNoCompile) throws SolverException {
 	try {
 		osHeader = new java.io.FileOutputStream(HeaderFilename);
 	}catch (java.io.IOException e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "error opening header file '"+HeaderFilename+": "+e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error opening header file '"+HeaderFilename+": "+e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException("error opening header file '"+HeaderFilename+": "+e.getMessage());
 	}		
@@ -127,7 +126,7 @@ private void autoCode(boolean bNoCompile) throws SolverException {
 		osCode.close();
 		osHeader.close();
 	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException(e.getMessage());
 	}	
@@ -136,12 +135,12 @@ private void autoCode(boolean bNoCompile) throws SolverException {
 		return;
 	}	
 	
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "compiling code"));
-	fireSolverStarting("compiling and linking code...");
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_COMPILING));
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_COMPILELINK);
 	try {		
 		String compileCommand = Compile+" "+CodeFilename+" "+compileFlags+" "+objOutputSpecifier+ObjFilename;
 System.out.println(compileCommand);
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "% "+compileCommand));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.solverRunning_CompileCommand("% "+compileCommand)));
 		
 		Runtime runtime = Runtime.getRuntime();
 		Process process = runtime.exec(compileCommand);
@@ -185,7 +184,7 @@ System.out.println(compileCommand);
 		int retcode = 0;
 		retcode = process.exitValue();
 		if (retcode == 0){
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "compilation successful, return code = "+retcode));	
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_COMPILE_OK));	
 		}else{
 			getSessionLog().print("stderr:\n"+stderrString);
 			getSessionLog().print("stdout:\n"+stdoutString);
@@ -194,17 +193,17 @@ System.out.println(compileCommand);
 		process = null;
 		
 	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "error compiling: "+e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error compiling: "+e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException("Failed to compile your simulation, please contact the Virtual Cell for further assistance");		
 	}
 
 	
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "linking code"));
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_LINKING));
 	try {		
 		String linkCommand = Link+" "+exeOutputSpecifier+ExeFilename+" "+ObjFilename+" "+libs;
 System.out.println(linkCommand);
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "% "+linkCommand));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.solverRunning_LinkCommand("% "+linkCommand)));
 		
 		Runtime runtime = Runtime.getRuntime();
 		Process process = runtime.exec(linkCommand);
@@ -248,17 +247,17 @@ System.out.println(linkCommand);
 		int retcode = 0;
 		retcode = process.exitValue();
 		if (retcode == 0){
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "link successful, return code = "+retcode));	
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_LINK_OK));	
 		}else{
 			getSessionLog().print("stderr:\n"+stderrString);
 			getSessionLog().print("stdout:\n"+stdoutString);
 			throw new SolverException("link failed, return code = "+retcode);
 		}		
 		process = null;
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "compile/link complete"));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_COMPILELINK_OK));
 		
 	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "error linking: "+e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error linking: "+e.getMessage())));
 		e.printStackTrace(System.out);
 		throw new SolverException("Failed to link your simulation, please contact the Virtual Cell for further assistance");	
 	}	
@@ -516,8 +515,8 @@ public static VariableType getFunctionVariableType(Function function, String[] v
 protected void initialize() throws SolverException {
 	initStep1();
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "PDESolver initializing"));
-	fireSolverStarting("PDESolver initializing...");
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	
 	autoCode(false);
 	
@@ -526,7 +525,7 @@ protected void initialize() throws SolverException {
 	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
 	boolean bCORBA = false;
 
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"PDESolver starting"));
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 	
 	try{
 		bCORBA = Boolean.getBoolean(org.vcell.util.PropertyLoader.corbaEnabled);
@@ -561,7 +560,7 @@ public Geometry getResampledGeometry() throws SolverException {
 protected void initStep1() throws SolverException {
 	writeFunctionsFile();
 		
-	fireSolverStarting("processing geometry...");
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_PROC_GEOM);
 	
 	try {
 		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".vcg")));
@@ -571,7 +570,7 @@ protected void initStep1() throws SolverException {
 		
 		FieldDataIdentifierSpec[] argFieldDataIDSpecs = getFieldDataIdentifierSpecs();
 		if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
-			fireSolverStarting("resampling field data...");
+			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_RESAMPLE_FD);
 			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
 				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(getSimulation());
 			}

@@ -24,16 +24,16 @@ public class SolverEvent extends java.util.EventObject implements java.io.Serial
 	public final static int SOLVER_STARTING  = 4;
 	public final static int SOLVER_STOPPED  = 5;
 	private int fieldType;
-	private String fieldMessage = null;
+	private SimulationMessage fieldSimulationMessage = null;
 	private double fieldTimePoint = -1;
 	private double fieldProgress = -1;
 /**
  * IntegratorEvent constructor comment.
  * @param source java.lang.Object
  */
-public SolverEvent(java.lang.Object source, int type, String argMessage, double progress, double timePoint) {
+public SolverEvent(java.lang.Object source, int type, SimulationMessage simulationMessage, double progress, double timePoint) {
 	super(source);
-	this.fieldMessage = argMessage;
+	this.fieldSimulationMessage = simulationMessage;
 	this.fieldType = type;
 	this.fieldProgress = progress;
 	this.fieldTimePoint = timePoint;
@@ -43,8 +43,8 @@ public SolverEvent(java.lang.Object source, int type, String argMessage, double 
  * Creation date: (4/23/2001 9:50:17 PM)
  * @return java.lang.String
  */
-public String getMessage() {
-	return fieldMessage;
+public SimulationMessage getSimulationMessage() {
+	return fieldSimulationMessage;
 }
 /**
  * Insert the method's description here.
@@ -75,6 +75,6 @@ public int getType() {
  * @return java.lang.String
  */
 public String toString() {
-	return "SolverEvent: type="+getType()+", msg="+getMessage()+", progress="+getProgress()+", timepoint="+getTimePoint();
+	return "SolverEvent: type="+getType()+", msg="+getSimulationMessage()+", progress="+getProgress()+", timepoint="+getTimePoint();
 }
 }

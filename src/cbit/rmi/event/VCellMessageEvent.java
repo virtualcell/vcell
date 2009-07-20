@@ -1,4 +1,7 @@
 package cbit.rmi.event;
+
+import org.vcell.util.document.User;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/16/2006 3:55:11 PM)
@@ -35,17 +38,15 @@ public int getEventTypeID() {
  * Creation date: (6/16/2006 3:55:11 PM)
  * @return cbit.vcell.server.User
  */
-public org.vcell.util.document.User getUser() {
+public User getUser() {
 	return null;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/16/2006 3:55:11 PM)
- * @return boolean
- */
-public boolean isConsumable() {
+@Override
+public boolean isSupercededBy(MessageEvent messageEvent) {
 	return false;
 }
+
+
 }

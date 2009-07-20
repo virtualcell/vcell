@@ -2,7 +2,7 @@ package cbit.vcell.messaging.server;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import java.util.Date;
@@ -10,6 +10,7 @@ import java.util.Date;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -30,7 +31,8 @@ public AbstractDispatcherDbManager() {
 /**
  * updateDispatchedStatus method comment.
  */
-SimulationJobStatus getNewStatus_updateDispatchedStatus(SimulationJobStatus oldJobStatus, java.lang.String computeHost, cbit.vcell.solver.VCSimulationIdentifier vcSimID, int jobIndex, java.lang.String startMsg) throws org.vcell.util.DataAccessException, cbit.vcell.messaging.db.UpdateSynchronizationException {
+SimulationJobStatus getNewStatus_updateDispatchedStatus(SimulationJobStatus oldJobStatus, String computeHost, VCSimulationIdentifier vcSimID, 
+		int jobIndex, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException {
 
 	// new queue status
 	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus.getSimulationQueueEntryStatus();
@@ -53,7 +55,8 @@ SimulationJobStatus getNewStatus_updateDispatchedStatus(SimulationJobStatus oldJ
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, int jobIndex, String hostName, int status, String solverMsg) throws DataAccessException, UpdateSynchronizationException {
+SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, int jobIndex, 
+		String hostName, int status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
 
 	// new queue status
 	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus == null ? null : oldJobStatus.getSimulationQueueEntryStatus();
@@ -82,7 +85,7 @@ SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatu
 	}
 
 	// new job status
-	SimulationJobStatus newJobStatus = new SimulationJobStatus(org.vcell.util.document.VCellServerID.getSystemServerID(), vcSimID, jobIndex, 
+	SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, 
 		oldJobStatus == null ? null : oldJobStatus.getSubmitDate(), status, oldJobStatus == null ? 0 : oldJobStatus.getTaskID(), solverMsg,
 		newQueueStatus, newExeStatus);
 	
@@ -95,7 +98,8 @@ SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatu
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-SimulationJobStatus getNewStatus_updateLatestUpdateDate(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, int jobIndex) throws DataAccessException, UpdateSynchronizationException {
+SimulationJobStatus getNewStatus_updateLatestUpdateDate(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, 
+		int jobIndex) throws DataAccessException, UpdateSynchronizationException {
 
 	SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
 	if (oldExeStatus == null) {
@@ -113,7 +117,7 @@ SimulationJobStatus getNewStatus_updateLatestUpdateDate(SimulationJobStatus oldJ
 			oldExeStatus.getEndDate(), oldExeStatus.hasData());
 	
 	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), 
-		oldJobStatus.getSchedulerStatus(),	oldJobStatus.getTaskID(), oldJobStatus.getStatusMessage(), oldJobStatus.getSimulationQueueEntryStatus(), newExeStatus);
+		oldJobStatus.getSchedulerStatus(),	oldJobStatus.getTaskID(), oldJobStatus.getSimulationMessage(), oldJobStatus.getSimulationQueueEntryStatus(), newExeStatus);
 
 	return newJobStatus;
 }
@@ -124,7 +128,8 @@ SimulationJobStatus getNewStatus_updateLatestUpdateDate(SimulationJobStatus oldJ
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobStatus, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, String solverMsg)	throws DataAccessException, UpdateSynchronizationException {
+SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobStatus, String hostName, VCSimulationIdentifier vcSimID, 
+		int jobIndex, boolean hasData, SimulationMessage solverMsg)	throws DataAccessException, UpdateSynchronizationException {
 
 	// new queue status		
 	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus.getSimulationQueueEntryStatus();
@@ -138,12 +143,10 @@ SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobS
 	SimulationExecutionStatus newExeStatus = null;
 	if (oldExeStatus == null) {
 		newExeStatus = new SimulationExecutionStatus(null, hostName, null, null, hasData);
-		
-	} else if (!oldJobStatus.isRunning() || oldExeStatus != null && !oldExeStatus.hasData() && hasData) {
-		newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), (hostName != null) ? hostName : oldExeStatus.getComputeHost(), null, null, hasData);
-		
+	} else if (!oldJobStatus.isRunning() || !oldExeStatus.hasData() && hasData) {
+		newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), (hostName != null) ? hostName : oldExeStatus.getComputeHost(), null, null, hasData);		
 	} else {
-		return oldJobStatus;
+		return new SimulationJobStatus(oldJobStatus, solverMsg);
 	}
 	
 	// new job status
@@ -173,7 +176,8 @@ public SimulationJobStatus getSimulationJobStatus(AdminDatabaseServer adminDb, K
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public cbit.vcell.messaging.db.SimulationJobStatus updateDispatchedStatus(cbit.vcell.messaging.db.SimulationJobStatus oldJobStatus, cbit.vcell.server.AdminDatabaseServer adminDb, java.lang.String computeHost, cbit.vcell.solver.VCSimulationIdentifier vcSimID, int jobIndex, java.lang.String startMsg) throws org.vcell.util.DataAccessException, cbit.vcell.messaging.db.UpdateSynchronizationException {
+public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStatus,	AdminDatabaseServer adminDb, String computeHost, 
+		VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException {
 	try {
 
 		if (oldJobStatus != null && !oldJobStatus.isDone()) {
@@ -198,7 +202,8 @@ public cbit.vcell.messaging.db.SimulationJobStatus updateDispatchedStatus(cbit.v
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, int jobIndex, String hostName, int status, String solverMsg) throws DataAccessException, UpdateSynchronizationException {
+public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, 
+		int jobIndex, String hostName, int status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
 	try {
 		if (oldJobStatus != null && !oldJobStatus.isDone()) {		
 
@@ -221,7 +226,8 @@ public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, Adm
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, int jobIndex) throws DataAccessException, UpdateSynchronizationException {
+public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, 
+		int jobIndex) throws DataAccessException, UpdateSynchronizationException {
 	try {
 		if (oldJobStatus != null && !oldJobStatus.isDone()) {
 
@@ -242,15 +248,17 @@ public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDataba
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, String solverMsg)	throws DataAccessException, UpdateSynchronizationException {
+public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, String hostName, 
+		VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, SimulationMessage solverMsg)	throws DataAccessException, UpdateSynchronizationException {
 	try {
 		if (oldJobStatus != null && !oldJobStatus.isDone()) {
 
 			SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
 
-			if (newJobStatus == oldJobStatus) {
-				updateLatestUpdateDate(oldJobStatus, adminDb, vcSimID, jobIndex);
-				return oldJobStatus;
+			SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
+			if (oldJobStatus.isRunning() && oldExeStatus != null && oldExeStatus.hasData()) { // progress messages, don't always store into the database				
+				updateLatestUpdateDate(newJobStatus, adminDb, vcSimID, jobIndex);
+				return newJobStatus;
 			} else {
 				newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
 				return newJobStatus;

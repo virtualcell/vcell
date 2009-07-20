@@ -2,10 +2,12 @@ package cbit.vcell.messaging;
 import cbit.vcell.solver.*;
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.BigString;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
+import cbit.vcell.messaging.admin.ManageConstants;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.rmi.event.*;
 
@@ -42,7 +44,7 @@ public JmsMessageCollector(JmsConnection aTopicConn, User user0, SessionLog log0
  * Creation date: (3/5/2004 9:28:52 AM)
  * @param listener cbit.rmi.event.MessageListener
  */
-public void addMessageListener(cbit.rmi.event.MessageListener listener) {
+public void addMessageListener(MessageListener listener) {
 	listenerList.add(MessageListener.class, listener);
 }
 
@@ -119,15 +121,11 @@ public void onControlTopicMessage(javax.jms.Message message0) throws javax.jms.J
 		if(msgType == null){
 			throw new javax.jms.JMSException(this.getClass().getName()+".onControlTopicMessage: message type NULL for message "+message);
 		}
-		if (msgType.equals(MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE)
-			//&& 
-			//message.getObject() instanceof SimulationJobStatus
-			) {
+		if (msgType.equals(MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE)) {
 					
 			StatusMessage statusMessage = new StatusMessage(message);
 			
 			SimulationJobStatus newJobStatus = statusMessage.getJobStatus();
-			log.print("---onTopicMessage[" + newJobStatus + "]");
 			if (newJobStatus == null) {
 				return;
 			}
@@ -135,7 +133,8 @@ public void onControlTopicMessage(javax.jms.Message message0) throws javax.jms.J
 			VCSimulationIdentifier vcSimID = newJobStatus.getVCSimulationIdentifier();
 			Double progress = statusMessage.getProgress();
 			Double timePoint = statusMessage.getTimePoint();
-
+			log.print("---onTopicMessage[" + newJobStatus + ", progress=" + progress + ", timepoint=" + timePoint + "]");
+			
 			fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, timePoint));		
 
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE)) {			
@@ -146,8 +145,8 @@ public void onControlTopicMessage(javax.jms.Message message0) throws javax.jms.J
 			DataJobEvent event = (DataJobEvent)message.getObject();
 			log.print("---onTopicMessage[DataEvent[vcdid=" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
 			fireMessageEvent(event);
-		} else if (msgType.equals(cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
-			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((org.vcell.util.BigString)message.getObject()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
+		} else if (msgType.equals(ManageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
+			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((BigString)message.getObject()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
 		} else{
 			throw new javax.jms.JMSException(this.getClass().getName()+".onControlTopicMessage: Unimplemented message "+message);
 		}
@@ -177,7 +176,7 @@ private void reconnect() throws javax.jms.JMSException {
  * Creation date: (3/5/2004 9:28:52 AM)
  * @param listener cbit.rmi.event.MessageListener
  */
-public void removeMessageListener(cbit.rmi.event.MessageListener listener) {}
+public void removeMessageListener(MessageListener listener) {}
 
 
 /**

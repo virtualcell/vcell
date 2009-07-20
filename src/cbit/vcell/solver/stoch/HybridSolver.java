@@ -9,18 +9,27 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 
 import ucar.ma2.ArrayDouble;
 
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathException;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
+import cbit.vcell.solvers.MathExecutable;
 /**
  * The HybridSolver is used to solve stochastic stiff problem.
  * Two types of solvers are provided in this class, which are fixed time step methods (Gibson_Euler
@@ -33,7 +42,7 @@ import cbit.vcell.solvers.ApplicationMessage;
  * Created in June 2007.
  * @version 1.0
  */
-public class HybridSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
+public class HybridSolver extends AbstractCompiledSolver {
 	public static final int EMIntegrator = 1;
 	public static final int MilsteinIntegrator = 2;
 	public static final int AdaptiveMilsteinIntegrator = 3;
@@ -42,7 +51,7 @@ public class HybridSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
 	private int integratorType = EMIntegrator;
 
 
-public HybridSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, org.vcell.util.SessionLog sessionLog, int type) throws cbit.vcell.solver.SolverException {
+public HybridSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, int type) throws cbit.vcell.solver.SolverException {
 	super(simulationJob, directory, sessionLog);
 	integratorType = type;
 }
@@ -62,7 +71,7 @@ public void cleanup()
 		printStochFile();
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
-		fireSolverAborted(e.getMessage());
+		fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
 	}
 }
 
@@ -73,7 +82,7 @@ public void cleanup()
  * @return cbit.vcell.solvers.ApplicationMessage
  * @param message java.lang.String
  */
-protected cbit.vcell.solvers.ApplicationMessage getApplicationMessage(String message) {
+protected ApplicationMessage getApplicationMessage(String message) {
 	String SEPARATOR = ":";
 	String DATA_PREFIX = "data:";
 	String PROGRESS_PREFIX = "progress:";
@@ -87,7 +96,7 @@ protected cbit.vcell.solvers.ApplicationMessage getApplicationMessage(String mes
 		//double startTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
 		//double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
 		//setCurrentTime(startTime + (endTime-startTime)*progress);
-		return new ApplicationMessage(cbit.vcell.solvers.ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
+		return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
 	}else{
 		throw new RuntimeException("unrecognized message");
 	}
@@ -109,10 +118,10 @@ public int getSaveToFileInterval() {
  * Creation date: (8/15/2006 11:36:43 AM)
  * @return cbit.vcell.solver.stoch.StochSolverResultSet
  */
-private cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
+private ODESolverResultSet getHybridSolverResultSet()
 {
 	//read .stoch file, this funciton here equals to getODESolverRestultSet()+getStateVariableResultSet()  in ODE.
-	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+	ODESolverResultSet stSolverResultSet = new ODESolverResultSet();
 
 	try{
 		String filename = getBaseName() + NETCDF_DATA_EXTENSION;
@@ -247,24 +256,24 @@ private cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
 	 */
 	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 	{
-		cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+		Function functions[] = getSimulation().getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (isFunctionSaved(functions[i])) 
 			{
-				cbit.vcell.parser.Expression exp1 = new cbit.vcell.parser.Expression(functions[i].getExpression());
+				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = getSimulation().substituteFunctions(exp1);
-				} catch (cbit.vcell.math.MathException e) {
+				} catch (MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 				}
 				try {
-					cbit.vcell.solver.ode.FunctionColumnDescription cd = new cbit.vcell.solver.ode.FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
+					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					stSolverResultSet.addFunctionColumn(cd);
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 				}
 			}
@@ -298,11 +307,11 @@ private void writeLogFile() throws SolverException {
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-protected void initialize() throws cbit.vcell.solver.SolverException 
+protected void initialize() throws SolverException 
 {
-	org.vcell.util.SessionLog sessionLog = getSessionLog();
+	SessionLog sessionLog = getSessionLog();
 	sessionLog.print("HybridSolver.initialize()");
-	fireSolverStarting("HybridSolver initializing...");
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	writeLogFile();
 	
@@ -316,23 +325,23 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	try {
 		ncWriter.initialize();
 	} catch (Exception e) {
-		setSolverStatus(new cbit.vcell.solver.SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not initialize StochFileWriter..."));
+		setSolverStatus(new cbit.vcell.solver.SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not initialize StochFileWriter...")));
 		e.printStackTrace(System.out);
 		throw new SolverException("autocode init exception: " + e.getMessage());
 	}
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
-	fireSolverStarting("generating input file...");
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
+	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 	//
 	try{
 		ncWriter.writeHybridInputFile();
 	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not generate input file: " + e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 		e.printStackTrace(System.err);
 		throw new SolverException("solver input file exception: " + e.getMessage());
 	}
 	//
 	//
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"HybridSolver starting"));	
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.
 	//Hybrid solver's usage: ProgramName <NetCDF Filename> <epsilon> <lambda> <MSR_Tolerance> <SDE_Tolerance> <SDE_dt> [-R <Random Seed>] [-OV]
 	String executableName = "";
@@ -380,7 +389,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	while (st.hasMoreTokens()) {
 		commandList.add(st.nextToken());
 	}	
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(commandList.toArray(new String[0])));
+	setMathExecutable(new MathExecutable(commandList.toArray(new String[0])));
 }
 
 

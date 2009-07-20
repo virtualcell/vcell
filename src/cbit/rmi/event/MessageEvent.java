@@ -1,7 +1,6 @@
 package cbit.rmi.event;
 import org.vcell.util.document.User;
 
-import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
  * Creation date: (11/12/2000 12:38:59 PM)
@@ -92,7 +91,7 @@ public abstract User getUser();
  * Creation date: (8/28/2002 2:38:25 PM)
  * @return boolean
  */
-public abstract boolean isConsumable();
+public abstract boolean isSupercededBy(MessageEvent messageEvent);
 
 /**
  * Insert the method's description here.

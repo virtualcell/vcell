@@ -112,35 +112,35 @@ private void runSolver() {
 	try {
 		fieldRunning = true;
 		setCurrentTime(getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, "initializing"));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));
 		// fireSolverStarting("initializing");
 		// depends on solver; the initialize() method in actual solver will fire detailed messages
 		initialize();
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "starting"));
-		fireSolverStarting("Solver starting...");
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
+		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING);
 		getMathExecutable().start();
 		cleanup();
 		//  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
 		if (getMathExecutable().getStatus().equals(org.vcell.util.ExecutableStatus.COMPLETE)) {
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, "finished"));
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
 			fireSolverFinished();
 		}
 	} catch (SolverException integratorException) {
 		getSessionLog().exception(integratorException);
 		cleanup();
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, integratorException.getMessage()));
-		fireSolverAborted(integratorException.getMessage());
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(integratorException.getMessage())));
+		fireSolverAborted(SimulationMessage.solverAborted(integratorException.getMessage()));
 	} catch (org.vcell.util.ExecutableException executableException) {
 		getSessionLog().exception(executableException);
 		cleanup();
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not execute code: " + executableException.getMessage()));
-		fireSolverAborted(executableException.getMessage());
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage())));
+		fireSolverAborted(SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage()));
 	} catch (Throwable throwable) {
 		getSessionLog().alert("AbstractODESolver.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
 		getSessionLog().exception(throwable);
 		cleanup();
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, throwable.getMessage()));
-		fireSolverAborted(throwable.getMessage());
+		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(throwable.getMessage())));
+		fireSolverAborted(SimulationMessage.solverAborted(throwable.getMessage()));
 	} finally {
 		fieldRunning = false;
 	}
@@ -184,7 +184,7 @@ public final void startSolver() {
 public final void stopSolver() {
 	if (getMathExecutable()!=null){
 		getMathExecutable().stop();
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STOPPED,"User aborted simulation"));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STOPPED,SimulationMessage.MESSAGE_SOLVER_STOPPED_BY_USER));
 		fireSolverStopped();
 	}
 }

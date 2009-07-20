@@ -37,7 +37,7 @@ public HTCSolver(SimulationTask simTask, java.io.File directory, org.vcell.util.
 		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob());
 		realSolver.addSolverListener(new SolverListener() {
 			public final void solverAborted(SolverEvent event) {		
-				fireSolverAborted(event.getMessage());
+				fireSolverAborted(event.getSimulationMessage());
 			}
 	
 	
@@ -57,7 +57,7 @@ public HTCSolver(SimulationTask simTask, java.io.File directory, org.vcell.util.
 	
 	
 			public final void solverStarting(SolverEvent event) {
-				fireSolverStarting(event.getMessage());
+				fireSolverStarting(event.getSimulationMessage());
 			}
 	
 	

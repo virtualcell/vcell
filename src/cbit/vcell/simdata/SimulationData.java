@@ -7,6 +7,7 @@ package cbit.vcell.simdata;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
@@ -147,7 +148,7 @@ public class SimulationData extends VCData {
 			try {
 				FileUtils.copyFile(getLogFile(), new File(getServerDirectory(), getLogFile().getName()), true, true, 4 * 1024);
 				double times[] = getDataTimes();
-				getLocalSolverController().dataMoved(times[times.length - 1],null);
+				getLocalSolverController().dataMoved(times[times.length - 1],null, SimulationMessage.MESSAGE_DATAMOVEREVENT_MOVED);
 			} catch (FileNotFoundException exc) {
 				getLocalSolverController().getSessionLog().alert("DataMoverThread:copyLogFile() " + exc.getMessage());
 			}

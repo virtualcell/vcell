@@ -8,7 +8,7 @@ import java.util.*;
  * @author: Jim Schaff
  */
 public class MessageQueue {
-	private LinkedList q = new LinkedList();
+	private LinkedList<RemoteMessageEvent> q = new LinkedList<RemoteMessageEvent>();
 	private Date dateWhenLastPopAll = new Date();   // is receiver polling?
 	private int failedToSendCount = 0;
 /**
@@ -83,13 +83,16 @@ public synchronized RemoteMessageEvent[] popAll() {
 }
 public synchronized void push(RemoteMessageEvent remoteMessageEvent){
 	// first clear any consumable events of the same type that may be in the queue coming from the same originator
-	ListIterator itr = q.listIterator();
+	ListIterator<RemoteMessageEvent> itr = q.listIterator();
 	while (itr.hasNext()) {
-		RemoteMessageEvent rme = (RemoteMessageEvent)itr.next();
-		if (rme.getMessageEvent().isConsumable() &&
-			remoteMessageEvent.getMessageEvent().getEventTypeID() == rme.getMessageEvent().getEventTypeID() &&
-			remoteMessageEvent.getMessageEvent().getMessageSource().equals(rme.getMessageEvent().getMessageSource())) {
-			itr.remove();
+		RemoteMessageEvent rme = itr.next();
+		if (remoteMessageEvent.getMessageEvent().getMessageSource().equals(rme.getMessageEvent().getMessageSource())) {
+			if (rme.getMessageEvent().isSupercededBy(remoteMessageEvent.getMessageEvent())) {
+				itr.remove();
+			} 
+			if (remoteMessageEvent.getMessageEvent().isSupercededBy(rme.getMessageEvent())) {
+				return;
+			}
 		}
 	}
 	// now go ahead...
