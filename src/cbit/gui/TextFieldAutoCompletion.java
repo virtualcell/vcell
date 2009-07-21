@@ -498,9 +498,11 @@ public class TextFieldAutoCompletion extends JTextField {
 	}
 
 	public void stopEditing() {
-		if (autoCompJPopupMenu.isVisible()) {
+		if (getSelectedIndex() >= 0) {
 			onComplete();
-		}		
+		} else {
+			autoCompJPopupMenu.setVisible(false);
+		}
 	}
 
 	public SymbolTable getSymbolTable() {
@@ -511,7 +513,10 @@ public class TextFieldAutoCompletion extends JTextField {
 		this.autoCompleteSymbolFilter = filter;
 	}
 	
-	public boolean isPopupVisible() {
-		return autoCompJPopupMenu.isVisible();
+	public int getSelectedIndex() {
+		if (autoCompJPopupMenu.isVisible()) {
+			return autoCompJList.getSelectedIndex();
+		}
+		return -1;
 	}
 }

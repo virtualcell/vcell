@@ -1,9 +1,13 @@
 package cbit.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
+
 import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -27,7 +31,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		if (thisTable.getCellEditor() == null) {
 			return true;
 		}
-		if (textFieldAutoCompletion.isPopupVisible()) {
+		if (textFieldAutoCompletion.getSelectedIndex() >= 0) {
 			return false;
 		}
 		
@@ -57,7 +61,8 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					thisTable.requestFocus();
-					thisTable.setRowSelectionInterval(row, row);					
+					thisTable.setRowSelectionInterval(row, row);
+					((JComponent)getComponent()).setBorder(new LineBorder(Color.red));
 					textFieldAutoCompletion.requestFocus();										
 				}				
 			});
@@ -73,11 +78,12 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 			textFieldAutoCompletion.setSymbolTable(scopedExpression.getNameScope().getScopedSymbolTable());
 			textFieldAutoCompletion.setAutoCompleteSymbolFilter(scopedExpression.getAutoCompleteSymbolFilter());
 		}
+		((JComponent)getComponent()).setBorder(null);
 		return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 	}
 
 	 public void cancelCellEditing() {
-		if (textFieldAutoCompletion.isPopupVisible()) {			
+		if (textFieldAutoCompletion.getSelectedIndex() >= 0) {
 			return;
 		} 
 		super.cancelCellEditing();
