@@ -2,10 +2,8 @@ package cbit.gui;
 
 import java.awt.Color;
 import java.awt.Event;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Rectangle;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -442,7 +440,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	       	if (listModel.getSize() > 0) {
 	       		autoCompJList.setVisibleRowCount(Math.min(8, Math.max(3, listModel.getSize())));
 //	       		if (currentWord.prefix.length() > 0) {
-//	       			autoCompJList.setSelectedIndex(0);	       			
+//	       			autoCompJList.setSelectedIndex(0);
 //	       		}
 	       		autoCompJList.ensureIndexIsVisible(0);
 	       		autoCompJList.setSelectionBackground(Color.lightGray);				
@@ -500,9 +498,11 @@ public class TextFieldAutoCompletion extends JTextField {
 	}
 
 	public void stopEditing() {
-		if (autoCompJPopupMenu.isVisible()) {
+		if (getSelectedIndex() >= 0) {
 			onComplete();
-		}		
+		} else {
+			autoCompJPopupMenu.setVisible(false);
+		}
 	}
 
 	public SymbolTable getSymbolTable() {
@@ -513,7 +513,10 @@ public class TextFieldAutoCompletion extends JTextField {
 		this.autoCompleteSymbolFilter = filter;
 	}
 	
-	public boolean isPopupVisible() {
-		return autoCompJPopupMenu.isVisible();
+	public int getSelectedIndex() {
+		if (autoCompJPopupMenu.isVisible()) {
+			return autoCompJList.getSelectedIndex();
+		}
+		return -1;
 	}
 }
