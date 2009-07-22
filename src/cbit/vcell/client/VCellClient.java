@@ -98,7 +98,7 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc, boolean fr
 			/* Set Look and Feel */
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		}
-		/* Create the first document desktop */		
+		/* Create the first document desktop */
 		switch (startupDoc.getDocumentType()) {
 			case VCDocument.BIOMODEL_DOC: {
 				windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
@@ -116,7 +116,7 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc, boolean fr
 		}	
 		getMdiManager().createNewDocumentWindow(windowManager);
 		/* Create database window, testing framework window, etc. */
-		((ClientMDIManager)getMdiManager()).createRecyclableWindows();		
+		((ClientMDIManager)getMdiManager()).createRecyclableWindows();
 	} catch (Throwable exc) {
 		handleException (exc);
 	}

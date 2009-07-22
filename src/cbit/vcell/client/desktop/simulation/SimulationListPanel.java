@@ -867,7 +867,7 @@ private javax.swing.ListSelectionModel getselectionModel1() {
 private SimulationListTableModel getSimulationListTableModel1() {
 	if (ivjSimulationListTableModel1 == null) {
 		try {
-			ivjSimulationListTableModel1 = new cbit.vcell.client.desktop.simulation.SimulationListTableModel(ivjScrollPaneTable);
+			ivjSimulationListTableModel1 = new SimulationListTableModel(ivjScrollPaneTable);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

@@ -199,7 +199,7 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
         }catch(WizardPanelNotFoundException e)
         {
         	e.printStackTrace(System.out);
-        	DialogUtils.showErrorDialog("Wizard panel "+ id +" not found. \n" + e.getMessage());
+        	DialogUtils.showErrorDialog(wizardDialog, "Wizard panel "+ id +" not found. \n" + e.getMessage());
         }
 		
 		//show panel

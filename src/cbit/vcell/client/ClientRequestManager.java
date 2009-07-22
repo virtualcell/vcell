@@ -1135,7 +1135,7 @@ public void updateUserRegistration(final DocumentWindowManager currWindowManager
 		return;
 	} catch (Exception e) {
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog(currWindowManager, bNewUser?"Create new":"Update"+" user Registration error:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(currWindowManager, (bNewUser?"Create new":"Update")+" user Registration error:\n"+e.getMessage());
 		return;
 	}
 }
@@ -1591,7 +1591,7 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester, final VCD
  */
 public void onVCellMessageEvent(final VCellMessageEvent event) {
 	if (event.getEventTypeID() == VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
-	    PopupGenerator.showErrorDialog(getMdiManager().getFocusedWindowManager().getComponent(), event.getMessageData().getData().toString());
+	    PopupGenerator.showErrorDialog(getMdiManager().getFocusedWindowManager(), event.getMessageData().getData().toString());
 	}
 }
 

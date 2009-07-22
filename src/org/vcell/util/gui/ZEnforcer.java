@@ -93,7 +93,12 @@ public static void removeFromStack(Window window) {
 
 public static void showModalDialogOnTop(Dialog dialog, Component toBeCenteredOn) {
 	if (toBeCenteredOn == null) {
-		System.out.println("ZEnforcer.showModalDialogOnTop(), toBeCenteredOn is null, dialog has no parent, please try best to fix it!!!");
+		System.out.println("ZEnforcer.showModalDialogOnTop(), toBeCenteredOn is null, please try best to fix it!!!");
+		Thread.dumpStack();
+	}
+	
+	if (dialog.getParent() == null) {
+		System.out.println("ZEnforcer.showModalDialogOnTop(), dialog has no parent, please try best to fix it!!!");
 		Thread.dumpStack();
 	}
 

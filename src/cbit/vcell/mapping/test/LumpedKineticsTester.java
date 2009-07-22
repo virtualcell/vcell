@@ -81,8 +81,8 @@ public class LumpedKineticsTester implements VCDatabaseVisitor {
 				StructureSizeSolver structureSizeSolver = new StructureSizeSolver();
 				try {
 					structureSizeSolver.updateAbsoluteStructureSizes(nonspatialSimContext, nonspatialSimContext.getModel().getTopFeature(), 1.0, VCUnitDefinition.UNIT_um3);
-				} catch (Exception e) {					
-					e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace(System.out);
 				}
 			}
 			try {

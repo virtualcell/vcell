@@ -681,7 +681,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 								PopupGenerator.showErrorDialog(ownerTable, "Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
 							}catch (Exception ex) {
 								ex.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());							
+								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
 							}
 						}
 						else

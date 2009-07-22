@@ -530,27 +530,6 @@ public static void showErrorDialog(final Component requester,final  String messa
 	}.dispatchConsumeException();
 }
 
-
-///**
-// * Insert the method's description here.
-// * Creation date: (5/21/2004 3:17:45 AM)
-// * @param owner java.awt.Component
-// * @param message java.lang.Object
-// */
-//public static void showErrorDialog(final String message) {
-//	new SwingDispatcherSync (){
-//		public Object runSwing() throws Exception{
-//			final JDialog dialog = prepareErrorDialog(null, message);
-//			try{
-//				ZEnforcer.showModalDialogOnTop(dialog);
-//			}finally{
-//				dialog.dispose();
-//			}
-//			return null;
-//		}
-//	}.dispatchConsumeException();
-//}
-
 public static void showWarningDialog(final Component requester, final String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
