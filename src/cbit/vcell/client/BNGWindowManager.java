@@ -1,4 +1,5 @@
 package cbit.vcell.client;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.DisplayBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import java.util.Hashtable;
@@ -10,6 +11,7 @@ import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import javax.swing.JFileChooser;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.client.server.UserPreferences;
@@ -49,7 +51,7 @@ public cbit.vcell.client.bionetgen.BNGOutputPanel getBngOutputPanel() {
  * Creation date: (7/18/2006 2:18:31 PM)
  * @return java.lang.String
  */
-java.awt.Component getComponent() {
+public java.awt.Component getComponent() {
 	return getBngOutputPanel();
 }
 
@@ -93,7 +95,7 @@ public boolean isRecyclable() {
 public void runBioNetGen(BNGInput bngInput) {
 
 	// Create a hash and put in the details required to run the ClientTaskDispatcher
-	Hashtable hash = new java.util.Hashtable();
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("bngInput", bngInput);
 	hash.put("bngOutputPanel", getBngOutputPanel());
 
@@ -103,7 +105,7 @@ public void runBioNetGen(BNGInput bngInput) {
 	tasksArray[1] = new DisplayBNGOutput();
 
 	// Dispatch the tasks using the ClientTaskDispatcher.
-	cbit.vcell.client.task.ClientTaskDispatcher.dispatch(getBngOutputPanel(), hash, tasksArray, false, true, null);
+	ClientTaskDispatcher.dispatch(getBngOutputPanel(), hash, tasksArray, false, true, null);
 }
 
 
@@ -127,7 +129,6 @@ public void saveOutput(String bngOutputStr) {
 		throw UserCancelException.CANCEL_FILE_SELECTION;
 	} else {
 		File selectedFile = fileChooser.getSelectedFile();
-		javax.swing.filechooser.FileFilter fileFilter = fileChooser.getFileFilter();
 		if (selectedFile == null) {
 			// no file selected (no name given)
 			throw UserCancelException.CANCEL_FILE_SELECTION;
@@ -206,7 +207,6 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 		throw UserCancelException.CANCEL_FILE_SELECTION;
 	} else {
 		File selectedFile = fileChooser.getSelectedFile();
-		javax.swing.filechooser.FileFilter fileFilter = fileChooser.getFileFilter();
 		if (selectedFile == null) {
 			// no file selected (no name given)
 			throw UserCancelException.CANCEL_FILE_SELECTION;
@@ -218,7 +218,7 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 			}
 			// Check if file has .bngl extension
 			if (!selectedFile.getPath().endsWith(".bngl")) {
-				org.vcell.util.gui.DialogUtils.showErrorDialog("File " + selectedFile.getPath() + " is not a .bngl file");
+				DialogUtils.showErrorDialog(getComponent(), "File " + selectedFile.getPath() + " is not a .bngl file");
 				throw new RuntimeException("File " + selectedFile.getPath() + " is not a .bngl file");
 			}
 			// Read characters from file into character array and transfer into string buffer.

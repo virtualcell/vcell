@@ -2,6 +2,9 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
+import cbit.vcell.client.bionetgen.BNGOutputPanel;
+import cbit.vcell.server.bionetgen.BNGOutput;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2006 2:19:07 PM)
@@ -19,8 +22,8 @@ public class DisplayBNGOutput extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws Exception {
-	cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = (cbit.vcell.client.bionetgen.BNGOutputPanel)hashTable.get("bngOutputPanel");
-	cbit.vcell.server.bionetgen.BNGOutput bngOutput = (cbit.vcell.server.bionetgen.BNGOutput)hashTable.get("bngOutput");
+	BNGOutputPanel bngOutputPanel = (BNGOutputPanel)hashTable.get("bngOutputPanel");
+	BNGOutput bngOutput = (BNGOutput)hashTable.get("bngOutput");
 	if (bngOutput != null) {
 		bngOutputPanel.changeBNGPanelTab();
 		bngOutputPanel.setBngOutput(bngOutput);		

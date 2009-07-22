@@ -207,7 +207,6 @@ private void addFunction() {
 			jd.setModal(true);
 			jd.getContentPane().add(fsp);
 			jd.setSize(450,250);
-			BeanUtils.centerOnComponent(jd, PDEPlotControlPanel.this);
 			
 			fsp.addActionListener(new ActionListener(){
 					public void actionPerformed(ActionEvent e) {
@@ -215,7 +214,7 @@ private void addFunction() {
 					}
 				}
 			);
-			ZEnforcer.showModalDialogOnTop(jd);
+			ZEnforcer.showModalDialogOnTop(jd, PDEPlotControlPanel.this);
 		}
 	};
 	

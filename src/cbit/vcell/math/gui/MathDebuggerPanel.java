@@ -1,18 +1,22 @@
 package cbit.vcell.math.gui;
 
-import javax.swing.JPanel;
 import java.awt.Dimension;
-import javax.swing.JSplitPane;
-import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.GridBagLayout;
+import java.awt.datatransfer.DataFlavor;
 import java.beans.PropertyVetoException;
-import java.util.HashSet;
 
-import cbit.util.xml.XmlUtil;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
@@ -22,20 +26,6 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.TMLPanel;
 import cbit.xml.merge.XmlTreeDiff;
-
-import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.TransferHandler;
-
-import org.vcell.util.gui.DialogUtils;
-
-import sun.misc.Regexp;
-
-import java.awt.FlowLayout;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.event.KeyEvent;
 
 public class MathDebuggerPanel extends JPanel {
 
@@ -304,7 +294,7 @@ public class MathDebuggerPanel extends JPanel {
 			XmlTreeDiff diffTree = cbit.vcell.xml.XmlHelper.compareMerge(math1XML, math2XML, TMLPanel.COMPARE_DOCS_OTHER, ignoreVersion);
 			getTMLPanel().setXmlTreeDiff(diffTree);
 		}else{
-			DialogUtils.showErrorDialog("failed");
+			DialogUtils.showErrorDialog(MathDebuggerPanel.this, "failed");
 		}
 	}
 
@@ -339,7 +329,7 @@ public class MathDebuggerPanel extends JPanel {
 			String equivalence = MathDescription.testEquivalency(mathModel1.getMathDescription(), mathModel2.getMathDescription(), reason);
 			getStatusEditorPane().setText("equiv = "+equivalence+"\n"+"reason = "+reason.toString());
 		}else{
-			DialogUtils.showErrorDialog("failed : at least one math description is null.");
+			DialogUtils.showErrorDialog(MathDebuggerPanel.this, "failed : at least one math description is null.");
 		}
 	}
 
@@ -455,7 +445,7 @@ public class MathDebuggerPanel extends JPanel {
 						paste();
 					}catch (Exception e1){
 						e1.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(e1.getMessage());
+						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage());
 					}
 				}
 			});
@@ -518,7 +508,7 @@ public class MathDebuggerPanel extends JPanel {
 						flatten();
 					}catch (Exception e1){
 						e1.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(e1.getMessage());
+						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage());
 					}
 				}
 			});

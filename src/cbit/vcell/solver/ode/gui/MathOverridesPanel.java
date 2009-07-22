@@ -1,14 +1,28 @@
 package cbit.vcell.solver.ode.gui;
 
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.EmptyBorderBean;
 
 import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.MathOverrides;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -24,8 +38,7 @@ public class MathOverridesPanel extends JPanel {
 	private MathOverridesTableModel ivjMathOverridesTableModel = null;
 	private boolean fieldEditable = true;
 	private JTable ivjJTableFixed = null;
-	private Component ivjComponent1 = null;
-	private cbit.vcell.solver.MathOverrides fieldMathOverrides = null;
+	private MathOverrides fieldMathOverrides = null;
 	private boolean ivjConnPtoP6Aligning = false;
 	private MathOverridesTableCellRenderer ivjMathOverridesTableCellRenderer1 = null;
 	private JMenuItem ivjJMenuItemCopy = null;
@@ -452,8 +465,8 @@ private synchronized void copyCells(String actionCommand) {
 
 		//Copy SimulationParameterSelection to clipboard along with "original style" formatted string
 		if(r > 0){
-			java.util.Vector primarySymbolTableEntriesV = new java.util.Vector();
-			java.util.Vector resolvedValuesV = new java.util.Vector();
+			java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
+			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
 			//java.util.Vector selectedNamesV = new java.util.Vector();
 			for(int i=0;i<rows.length;i+= 1){
 				String rowName = (String)getJTableFixed().getValueAt(rows[i],MathOverridesTableModel.COLUMN_PARAMETER);
@@ -463,9 +476,9 @@ private synchronized void copyCells(String actionCommand) {
 			}
 			VCellTransferable.ResolvedValuesSelection rvs =
 				new VCellTransferable.ResolvedValuesSelection(
-					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
+					(SymbolTableEntry[])BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
 					null,
-					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
+					(Expression[])BeanUtils.getArray(resolvedValuesV,Expression.class),
 					buffer.toString());
 
 			VCellTransferable.sendToClipboard(rvs);
@@ -473,7 +486,7 @@ private synchronized void copyCells(String actionCommand) {
 			VCellTransferable.sendToClipboard(buffer.toString());
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("MathOverridesPanel copy failed.  "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "MathOverridesPanel copy failed.  "+e.getMessage());
 	}
 }
 
@@ -697,7 +710,7 @@ private MathOverridesTableCellRenderer getMathOverridesTableCellRenderer1() {
 private MathOverridesTableModel getMathOverridesTableModel() {
 	if (ivjMathOverridesTableModel == null) {
 		try {
-			ivjMathOverridesTableModel = new cbit.vcell.solver.ode.gui.MathOverridesTableModel();
+			ivjMathOverridesTableModel = new MathOverridesTableModel(getJTableFixed());
 			ivjMathOverridesTableModel.setEditable(true);
 			// user code begin {1}
 			// user code end
@@ -797,9 +810,9 @@ private void initialize() {
 private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 
 
-	java.util.Vector pasteDescriptionsV = new java.util.Vector();
-	java.util.Vector newConstantsV = new java.util.Vector();
-	java.util.Vector changedParameterNamesV = new java.util.Vector();
+	java.util.Vector<String> pasteDescriptionsV = new java.util.Vector<String>();
+	java.util.Vector<Expression> newConstantsV = new java.util.Vector<Expression>();
+	java.util.Vector<String> changedParameterNamesV = new java.util.Vector<String>();
 	try{
 	//
 	//
@@ -819,7 +832,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 		}
 
 
-		Object pasteThis = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
+		Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 		for(int i=0;i<rows.length;i+= 1){
 			if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 				VCellTransferable.ResolvedValuesSelection rvs =
@@ -851,7 +864,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 							throw new Exception("MathOverridesPanel can't find value for '"+rowName+"'");
 						}
 						pasteDescriptionsV.add(
-							cbit.vcell.desktop.VCellCopyPasteHelper.formatPasteList(
+							VCellCopyPasteHelper.formatPasteList(
 								rowName,
 								pastedConstant.getName(),
 								originalValueDescription,
@@ -1014,7 +1027,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 		//}
 	}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
 		return;
 	}
 
@@ -1027,12 +1040,12 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			changedParameterNamesV.copyInto(changedParameterNamesArr);
 			//cbit.vcell.math.Constant[] newConstantsArr = new cbit.vcell.math.Constant[newConstantsV.size()];
 			//newConstantsV.copyInto(newConstantsArr);
-			cbit.vcell.desktop.VCellCopyPasteHelper.chooseApplyPaste(pasteDescriptionArr,getMathOverrides(),changedParameterNamesArr,newConstantsV);
+			VCellCopyPasteHelper.chooseApplyPaste(this, pasteDescriptionArr,getMathOverrides(),changedParameterNamesArr,newConstantsV);
 		}else{
-			cbit.vcell.client.PopupGenerator.showInfoDialog("No paste items match the destination (no changes made).");
+			PopupGenerator.showInfoDialog(this, "No paste items match the destination (no changes made).");
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
 	}
 }
 
@@ -1046,8 +1059,8 @@ private void jTableFixed_MouseReleased(java.awt.event.MouseEvent mouseEvent) {
 	}
 	int c = getJTableFixed().getSelectedColumn();
 	int r = getJTableFixed().getSelectedRow();
-	if (c == getMathOverridesTableModel().COLUMN_ACTUAL &&
-		getMathOverrides().isScan(getMathOverridesTableModel().getValueAt(r, getMathOverridesTableModel().COLUMN_PARAMETER).toString())) {
+	if (c == MathOverridesTableModel.COLUMN_ACTUAL &&
+		getMathOverrides().isScan(getMathOverridesTableModel().getValueAt(r, MathOverridesTableModel.COLUMN_PARAMETER).toString())) {
 			getMathOverridesTableModel().setValueAt(getMathOverridesTableModel().getValueAt(r, c), r, c);
 	}
 }

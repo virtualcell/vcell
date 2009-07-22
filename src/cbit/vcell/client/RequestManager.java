@@ -1,4 +1,6 @@
 package cbit.vcell.client;
+import java.awt.Component;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.BioModelInfo;
@@ -73,7 +75,7 @@ void connectAs(String user, String password, TopLevelWindowManager requester);
  * Creation date: (5/27/2004 2:12:25 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-void connectToServer(ClientServerInfo clientServerInfo);
+void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception;
 
 
 /**
@@ -81,7 +83,7 @@ void connectToServer(ClientServerInfo clientServerInfo);
  * Creation date: (5/21/2004 2:37:55 AM)
  * @param documentType int
  */
-void createMathModelFromApplication(String name, SimulationContext simContext);
+void createMathModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext);
 
 
 /**
@@ -90,8 +92,8 @@ void createMathModelFromApplication(String name, SimulationContext simContext);
  */
 void curateDocument(VCDocumentInfo vcDocInfo, int curateType, final TopLevelWindowManager requester);
 
-void updateUserRegistration(boolean bNewUser);
-void sendLostPassword(String userid);
+void updateUserRegistration(DocumentWindowManager docWindowManager, boolean bNewUser);
+void sendLostPassword(DocumentWindowManager docWindowManager, String userid);
 
 /**
  * Insert the method's description here.
@@ -192,7 +194,7 @@ void managerIDchanged(String oldID, String newID);
  * Creation date: (5/21/2004 2:37:55 AM)
  * @param documentType int
  */
-AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCreationInfo);
+AsynchClientTask[] newDocument(TopLevelWindowManager requester, VCDocument.DocumentCreationInfo documentCreationInfo);
 
 
 /**
@@ -219,7 +221,7 @@ void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester, 
  * Creation date: (5/27/2004 2:12:25 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-void reconnect();
+void reconnect(TopLevelWindowManager requester);
 
 
 /**
@@ -323,7 +325,6 @@ void stopSimulations(ClientSimManager clientSimManager, Simulation[] simulations
  */
 void updateStatusNow();
 
-void checkClientServerSoftwareVersion();
 
 void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff comparePanel, String baselineDesc, String modifiedDesc);
 

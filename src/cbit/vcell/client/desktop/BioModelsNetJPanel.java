@@ -23,8 +23,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.BioModelWindowManager;
-import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 
 public class BioModelsNetJPanel extends JPanel {
@@ -73,7 +71,7 @@ public class BioModelsNetJPanel extends JPanel {
 		final JButton httpbiomodelsnetLabel = new JButton();
 		httpbiomodelsnetLabel.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				DialogUtils.browserLauncher(BIOMODELS_DATABASE_URL,BIOMODELS_DATABASE_URL, false);
+				DialogUtils.browserLauncher(BioModelsNetJPanel.this, BIOMODELS_DATABASE_URL,BIOMODELS_DATABASE_URL, false);
 			}
 		});
 		httpbiomodelsnetLabel.setFont(new Font("", Font.BOLD, 14));
@@ -101,7 +99,7 @@ public class BioModelsNetJPanel extends JPanel {
 							BioModelInfo[] versionArr = new BioModelInfo[bioModelsNetBMInfoV.size()];
 							bioModelsNetBMInfoV.copyInto(versionArr);
 							final DefaultListCellRenderer dlcr = new DefaultListCellRenderer();
-							BioModelInfo selectedBMInfo = (BioModelInfo)DialogUtils.showListDialog(null,
+							BioModelInfo selectedBMInfo = (BioModelInfo)DialogUtils.showListDialog(BioModelsNetJPanel.this,
 									versionArr,
 									"Select BioModels Database curated BioModel to Open",
 									new ListCellRenderer(){
@@ -125,10 +123,10 @@ public class BioModelsNetJPanel extends JPanel {
 						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
-						PopupGenerator.showErrorDialog("Error opening BioModel.\n"+e1.getMessage());
+						PopupGenerator.showErrorDialog(BioModelsNetJPanel.this, "Error opening BioModel.\n"+e1.getMessage());
 					}
 				}else{
-					PopupGenerator.showErrorDialog("Error: needs DocumentWindow.");
+					PopupGenerator.showErrorDialog(BioModelsNetJPanel.this, "Error: needs DocumentWindow.");
 				}
 			}
 		});

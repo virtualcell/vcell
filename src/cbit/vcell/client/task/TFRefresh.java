@@ -44,7 +44,7 @@ public void run(Hashtable<String, Object> hashTable){
 	
 	String errors = (String)hashTable.get(TF_ERRORS);
 	if(errors != null){
-		PopupGenerator.showErrorDialog(errors);
+		PopupGenerator.showErrorDialog(tfwm, errors);
 	}
 	String report = (String)hashTable.get(TF_REPORT);
 	if(report != null){

@@ -40,7 +40,7 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		throw new Exception("cannot connect");
 	}
 	ClientServerManager clientServerManager = new ClientServerManager();
-	clientServerManager.connect(csInfo);
+	clientServerManager.connect(null, csInfo);
 	
 	return clientServerManager;
 }
@@ -64,7 +64,7 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		throw new Exception("cannot connect");
 	}
 	ClientServerManager clientServerManager = new ClientServerManager();
-	clientServerManager.connect(csInfo);
+	clientServerManager.connect(null, csInfo);
 	
 	return clientServerManager;
 }

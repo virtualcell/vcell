@@ -3,6 +3,8 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import javax.swing.JTable;
+
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
@@ -10,11 +12,14 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
 import cbit.vcell.math.Constant;
 import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MathOverridesEvent;
 import cbit.vcell.solver.MathOverridesListener;
 import cbit.vcell.solver.Simulation;
 /**
@@ -33,12 +38,14 @@ public class MathOverridesTableModel extends javax.swing.table.AbstractTableMode
 	public final static int COLUMN_ACTUAL = 2;
 	public final static int COLUMN_SCAN = 3;
 	private String[] columnNames = new String[] {"Parameter Name", "Default", "New Value/Expression", "Scan"};
+	private JTable ownerTable = null;
 
 /**
  * MathOverridesTableModel constructor comment.
  */
-public MathOverridesTableModel() {
+public MathOverridesTableModel(JTable table) {
 	super();
+	ownerTable = table;
 	fieldMathOverrides = null;
 }
 
@@ -54,7 +61,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * 
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
-public void constantAdded(cbit.vcell.solver.MathOverridesEvent event) {
+public void constantAdded(MathOverridesEvent event) {
 	fireTableDataChanged();
 }
 
@@ -63,7 +70,7 @@ public void constantAdded(cbit.vcell.solver.MathOverridesEvent event) {
  * 
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
-public void constantChanged(cbit.vcell.solver.MathOverridesEvent event) {
+public void constantChanged(MathOverridesEvent event) {
 	fireTableDataChanged();
 }
 
@@ -72,7 +79,7 @@ public void constantChanged(cbit.vcell.solver.MathOverridesEvent event) {
  * 
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
-public void constantRemoved(cbit.vcell.solver.MathOverridesEvent event) {
+public void constantRemoved(MathOverridesEvent event) {
 	fireTableDataChanged();
 }
 
@@ -81,7 +88,7 @@ public void constantRemoved(cbit.vcell.solver.MathOverridesEvent event) {
  * Insert the method's description here.
  * Creation date: (9/23/2005 5:06:23 PM)
  */
-private void editScanValues(String name, int r) throws cbit.vcell.parser.DivideByZeroException, cbit.vcell.parser.ExpressionException {
+private void editScanValues(String name, int r) throws DivideByZeroException, ExpressionException {
 	ParameterScanPanel panel = new ParameterScanPanel();
 	ConstantArraySpec spec = null;
 	if (getMathOverrides().isScan(name)) {
@@ -196,7 +203,7 @@ public boolean getEditable() {
  * @return The mathOverrides property value.
  * @see #setMathOverrides
  */
-public cbit.vcell.solver.MathOverrides getMathOverrides() {
+public MathOverrides getMathOverrides() {
 	return fieldMathOverrides;
 }
 
@@ -453,7 +460,7 @@ public void setValueAt(Object object, int r, int c) {
 			}
 		}
 	} catch (Throwable exc) {
-		PopupGenerator.showErrorDialog(exc.getMessage() + "\nOld value was restored.");		
+		PopupGenerator.showErrorDialog(ownerTable, exc.getMessage() + "\nOld value was restored.");		
 	}
 }
 

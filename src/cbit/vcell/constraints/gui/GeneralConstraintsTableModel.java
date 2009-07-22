@@ -1,4 +1,8 @@
 package cbit.vcell.constraints.gui;
+import javax.swing.JTable;
+
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.GeneralConstraint;
 /*©
@@ -21,12 +25,14 @@ public class GeneralConstraintsTableModel extends javax.swing.table.AbstractTabl
 	private String LABELS[] = { "expression", "type", "description", "included" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ConstraintContainerImpl fieldConstraintContainerImpl = null;
+	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public GeneralConstraintsTableModel() {
+public GeneralConstraintsTableModel(JTable table) {
 	super();
+	ownerTable = table;
 	addPropertyChangeListener(this);
 }
 
@@ -85,7 +91,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_EXPRESSION:{
 			return cbit.vcell.parser.ScopedExpression.class;
@@ -303,7 +309,7 @@ System.out.println("GeneralConstraintsTableModel().setValueAt("+aValue+","+rowIn
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					org.vcell.util.gui.DialogUtils.showErrorDialog("Expression error:\n"+e.getMessage());
+					DialogUtils.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
 				}
 				break;
 			}

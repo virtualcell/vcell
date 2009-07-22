@@ -41,6 +41,9 @@ public static void showErrorDialog(TopLevelWindowManager requester, String messa
 	showErrorDialog(requester.getComponent(), message);
 }
 
+public static void showInfoDialog(TopLevelWindowManager requester, String message) {
+	showInfoDialog(requester.getComponent(), message);
+}
 
 /**
  * Insert the method's description here.

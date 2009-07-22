@@ -1,5 +1,8 @@
 package cbit.vcell.modelopt.gui;
+
 import javax.swing.SwingUtilities;
+
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
@@ -172,11 +175,11 @@ public void saveSolutionAsNewSimulation() {
 			cbit.vcell.mapping.SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
 			cbit.vcell.solver.Simulation newSim = simContext.addNewSimulation();
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
-			org.vcell.util.gui.DialogUtils.showInfoDialog("created simulation \""+newSim.getName()+"\"");
+			DialogUtils.showInfoDialog(optTestPanel, "created simulation \""+newSim.getName()+"\"");
 		}
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		org.vcell.util.gui.DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage());
+		DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage());
 	}
 }
 

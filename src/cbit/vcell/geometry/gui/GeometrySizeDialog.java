@@ -4,12 +4,14 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import java.awt.event.*;
-import java.beans.*;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 /**
  * This type was created in VisualAge.
  */
@@ -87,7 +89,7 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 			connEtoM6();
 		} catch (Exception e) {
 			e.printStackTrace();
-			PopupGenerator.showErrorDialog("Error\n"+e.getMessage());
+			PopupGenerator.showErrorDialog(this, "Error\n"+e.getMessage());
 		}
 		// user code begin {2}
 		// user code end

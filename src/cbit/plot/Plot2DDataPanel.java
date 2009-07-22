@@ -6,6 +6,8 @@ package cbit.plot;
 import java.awt.event.*;
 import javax.swing.*;
 
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.ReservedSymbol;
 
@@ -371,7 +373,7 @@ private synchronized void copyCells(String actionCommand) {
 			new VCellTransferable.ResolvedValuesSelection(symbolTableEntries,null,resolvedValues,buffer.toString());
 		VCellTransferable.sendToClipboard(rvs);
 	}catch(Throwable e){
-		org.vcell.util.gui.DialogUtils.showErrorDialog("Plot2DDataPanel copy failed.  "+e.getMessage());
+		DialogUtils.showErrorDialog(Plot2DDataPanel.this, "Plot2DDataPanel copy failed.  "+e.getMessage());
 	}
 }
 
@@ -522,7 +524,6 @@ private javax.swing.JTable getScrollPaneTable() {
 			ivjScrollPaneTable = new javax.swing.JTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
 			ivjScrollPaneTable.setCellSelectionEnabled(true);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}

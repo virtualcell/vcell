@@ -67,6 +67,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
@@ -587,7 +588,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 		}
 
 	} catch (Throwable e) {
-		PopupGenerator.showErrorDialog(e.getMessage());
+		PopupGenerator.showErrorDialog(this, e.getMessage());
 	}
 	
 }
@@ -809,7 +810,7 @@ private void updateReports(final Hashtable<TestSuiteInfoNew, Vector<TestCriteria
 					AsynchClientTask[] tasksArr = new AsynchClientTask[tasksVLocal
 							.size()];
 					tasksVLocal.copyInto(tasksArr);
-					java.util.Hashtable hashLocal = new java.util.Hashtable();
+					java.util.Hashtable<String, Object> hashLocal = new java.util.Hashtable<String, Object>();
 					ClientTaskDispatcher.dispatch(
 							getTestingFrameworkWindowPanel(), hashLocal,
 							tasksArr, true);
@@ -818,7 +819,7 @@ private void updateReports(final Hashtable<TestSuiteInfoNew, Vector<TestCriteria
 						Thread.sleep(100);
 					}
 				} catch (Exception e) {
-					PopupGenerator.showErrorDialog("Error updating reports\n"
+					PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Error updating reports\n"
 							+ e.getMessage());
 					return;
 				}
@@ -1425,7 +1426,7 @@ private AddTestSuitePanel getAddTestSuitePanel() {
  * Creation date: (7/15/2004 11:44:12 AM)
  * @return java.lang.String
  */
-java.awt.Component getComponent() {
+public java.awt.Component getComponent() {
 	return getTestingFrameworkWindowPanel();
 }
 
@@ -1494,7 +1495,7 @@ public TestCaseNew[] getNewTestCaseArr() throws UserCancelException{
 			try{
 				return getTestCaseAddPanel().getNewTestCaseArr();
 			}catch(Exception e){
-				PopupGenerator.showErrorDialog("Error getting New TestCase:\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Error getting New TestCase:\n"+e.getMessage());
 				continue;
 			}
 		}
@@ -1526,7 +1527,7 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
 				if((tcritNewMM.getRegressionMathModelInfo() == null && tcritNewMM.getRegressionSimInfo() != null)
 						||
 					(tcritNewMM.getRegressionMathModelInfo() != null && tcritNewMM.getRegressionSimInfo() == null)){
-					PopupGenerator.showErrorDialog("Must specify both Reference MathModel and Simulation");
+					PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Must specify both Reference MathModel and Simulation");
 					continue;
 				}
 			}else if(tcritNew instanceof TestCriteriaNewBioModel){
@@ -1534,7 +1535,7 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
 				if((tcritNewBM.getRegressionBioModelInfo() == null && tcritNewBM.getRegressionSimInfo() != null)
 						||
 					(tcritNewBM.getRegressionBioModelInfo() != null && tcritNewBM.getRegressionSimInfo() == null)){
-					PopupGenerator.showErrorDialog("Must specify both Reference BioModel App and Simulation");
+					PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Must specify both Reference BioModel App and Simulation");
 					continue;
 				}
 			}else{
@@ -1947,7 +1948,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 				public void actionPerformed(ActionEvent actionEvent) {
 					int[] selectedRows = table.getSelectedRows();
 					if(selectedRows == null || selectedRows.length != 1){
-						PopupGenerator.showErrorDialog("Action "+actionEvent.getActionCommand()+" accepts only single selection!");
+						PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Action "+actionEvent.getActionCommand()+" accepts only single selection!");
 						return;
 					}
 					TestCriteriaCrossRefOPResults.CrossRefData xrefData =
@@ -1995,7 +1996,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 					}
 				}
 				if(failureS.length() > 0 || openCount == 0){
-					PopupGenerator.showErrorDialog("Failed to open some models\n"+failureS+(openCount == 0?"Selection(s) had no model(s)":""));
+					PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Failed to open some models\n"+failureS+(openCount == 0?"Selection(s) had no model(s)":""));
 				}
 				d.setVisible(true);
 			}
@@ -2056,7 +2057,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 								d.setVisible(true);
 								return;
 							}catch(Exception e){
-								PopupGenerator.showErrorDialog("Error parsing Error Limits\n"+e.getMessage());
+								PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Error parsing Error Limits\n"+e.getMessage());
 							}
 						}
 						double[] relErrorLimitArr = new double[changeTCritV.size()];
@@ -2102,7 +2103,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 									}
 								}
 								if(!bFound){
-									PopupGenerator.showErrorDialog("Couldn't find testsuiteinfo for testcriteria");
+									PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Couldn't find testsuiteinfo for testcriteria");
 									return;
 								}
 							}
@@ -2120,7 +2121,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						try{
 							getTestingFrameworkWindowPanel().getDocumentManager().doTestSuiteOP(changeTestCriteriaErrorLimitOP);
 						}catch(Exception e){
-							PopupGenerator.showErrorDialog("Failed Changing Error limits for selected "+xrefDataSourceFinal.simName+"\n"+e.getMessage());
+							PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Failed Changing Error limits for selected "+xrefDataSourceFinal.simName+"\n"+e.getMessage());
 							return;
 						}
 						d.dispose();
@@ -2135,7 +2136,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							}).start();
 						}
 					}else{
-						PopupGenerator.showErrorDialog("No selected rows contain Test Criteria.");
+						PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "No selected rows contain Test Criteria.");
 					}
 				}
 			}
@@ -2216,7 +2217,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 
 	} catch (DataAccessException e) {
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog("Error Query TestCriteria Cross Ref:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Error Query TestCriteria Cross Ref:\n"+e.getMessage());
 	}
 	
 }
@@ -2301,7 +2302,7 @@ public MathModelInfo selectMathModelInfo() {
  */
 public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws DataAccessException {
 	if (bmInfo == null || appName == null || appName.length() == 0) {
-		PopupGenerator.showErrorDialog("Selected Reference BioModel is null, choose a reference BioModel before choosing simulation!");
+		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Selected Reference BioModel is null, choose a reference BioModel before choosing simulation!");
 		return null;
 	}
 
@@ -2321,7 +2322,7 @@ public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws Data
 			cbit.vcell.solver.SimulationInfo simInfo = selectSimInfoPrivate(bioModel.getSimulations(simContext));
 			return new Object[] {simContext.getName(),simInfo};
 		}else{
-			PopupGenerator.showErrorDialog("No simcontext found for biomodel "+bmInfo+" app="+appName);
+			PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "No simcontext found for biomodel "+bmInfo+" app="+appName);
 			return null;
 		}
 	//} catch (cbit.vcell.server.DataAccessException e) {
@@ -2338,7 +2339,7 @@ public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws Data
  */
 public SimulationInfo selectRefSimInfo(MathModelInfo mmInfo) {
 	if (mmInfo == null) {
-		PopupGenerator.showErrorDialog("Selected Reference MathModel is null, choose a reference MathModel before choosing simulation!");
+		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Selected Reference MathModel is null, choose a reference MathModel before choosing simulation!");
 		return null;
 	}
 
@@ -2402,7 +2403,7 @@ private SimulationInfo selectSimInfoPrivate(Simulation[] sims) {
 		}
 	}
 	if (simIndex == -1){
-		PopupGenerator.showErrorDialog("No such SimInfo Exists : "+selectedRefSimInfoName);
+		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "No such SimInfo Exists : "+selectedRefSimInfoName);
 		return null;
 	}
 
@@ -2434,7 +2435,7 @@ private Object showAddTestCaseDialog(JComponent addTCPanel, Component requester)
 	JDialog d = getAddTestCaseDialog().createDialog(requester, "Add New TestCase:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
+	ZEnforcer.showModalDialogOnTop(d, requester);
 	return getAddTestCaseDialog().getValue();
 	
 }
@@ -2453,7 +2454,7 @@ private Object showAddTestSuiteDialog(JComponent addTSPanel, Component requester
 	JDialog d = getAddTestSuiteDialog().createDialog(requester, (duplicateTestSuiteName != null?"Duplicate TestSuite '"+duplicateTestSuiteName+"'":"Add New TestSuite"));
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
+	ZEnforcer.showModalDialogOnTop(d, requester);
 	return getAddTestSuiteDialog().getValue();
 	
 }
@@ -2498,7 +2499,7 @@ private Object showEditTestCriteriaDialog(JComponent editTCrPanel, Component req
 	JDialog d = getEditTestCriteriaDialog().createDialog(requester, "Edit Test Criteria:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d, requester);
 	return getEditTestCriteriaDialog().getValue();
 }
 
@@ -2849,7 +2850,7 @@ public void viewResults(TestCriteriaNew testCriteria) {
 			//});
 		}
 	} catch (Throwable e) {
-		PopupGenerator.showErrorDialog(e.getMessage());
+		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, e.getMessage());
 	}
 }
 

@@ -1,36 +1,34 @@
 package cbit.vcell.mapping.gui;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.swing.JTable;
+
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.vcell.model.*;
-import java.util.*;
-
-import org.vcell.util.BeanUtils;
-
-import cbit.vcell.model.Model;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameter;
+import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ElectricalStimulusParameterTableModel extends org.vcell.util.gui.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
+public class ElectricalStimulusParameterTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
 
 	static {
 		System.out.println("ElectricalStimulusParameterTableModel: artifically filtering out voltage or current parameters that are not applicable");
 	}
 
 	
-	private class ParameterColumnComparator implements Comparator {
+	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
 		protected boolean ascending;
 
@@ -44,10 +42,7 @@ public class ElectricalStimulusParameterTableModel extends org.vcell.util.gui.so
 		 * zero, or a positive integer as the first argument is less than, equal
 		 * to, or greater than the second.<p>
 		 */
-		public int compare(Object o1, Object o2){
-			
-			cbit.vcell.model.Parameter parm1 = (cbit.vcell.model.Parameter)o1;
-			cbit.vcell.model.Parameter parm2 = (cbit.vcell.model.Parameter)o2;
+		public int compare(Parameter parm1, Parameter parm2){
 			
 			switch (index){
 				case COLUMN_NAME:{
@@ -97,14 +92,15 @@ public class ElectricalStimulusParameterTableModel extends org.vcell.util.gui.so
 	private final int COLUMN_UNIT = 3;
 	private String LABELS[] = { "description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private final int indexes[] = new int[0];
-	private cbit.vcell.mapping.ElectricalStimulus fieldElectricalStimulus = null;
+	private ElectricalStimulus fieldElectricalStimulus = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
+	private JTable ownerTable = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ElectricalStimulusParameterTableModel() {
+public ElectricalStimulusParameterTableModel(JTable table) {
 	super();
+	ownerTable = table;
 	addPropertyChangeListener(this);
 }
 /**
@@ -149,7 +145,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_NAME:{
 			return String.class;
@@ -161,7 +157,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -191,7 +187,7 @@ public String getColumnName(int column) {
  * @return The electricalStimulus property value.
  * @see #setElectricalStimulus
  */
-public cbit.vcell.mapping.ElectricalStimulus getElectricalStimulus() {
+public ElectricalStimulus getElectricalStimulus() {
 	return fieldElectricalStimulus;
 }
 /**
@@ -200,7 +196,7 @@ public cbit.vcell.mapping.ElectricalStimulus getElectricalStimulus() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private cbit.vcell.model.Parameter getParameter(int row) {
+private Parameter getParameter(int row) {
 
 	if (getElectricalStimulus()==null){
 		return null;
@@ -210,7 +206,7 @@ private cbit.vcell.model.Parameter getParameter(int row) {
 		throw new RuntimeException("ElectricalStimulusParameterTableModel.getParameter("+row+") out of range ["+0+","+(count-1)+"]");
 	}
 	if (row==0){
-		if (getElectricalStimulus() instanceof cbit.vcell.mapping.VoltageClampStimulus){
+		if (getElectricalStimulus() instanceof VoltageClampStimulus){
 			return getElectricalStimulus().getElectricalStimulusParameterFromRole(ElectricalStimulus.ROLE_Voltage);
 		}else{
 			return getElectricalStimulus().getElectricalStimulusParameterFromRole(ElectricalStimulus.ROLE_Current);
@@ -244,13 +240,13 @@ public int getRowCount() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private List getUnsortedParameters() {
+private List<Parameter> getUnsortedParameters() {
 
 	if (getElectricalStimulus()==null){
 		return null;
 	}
 	int count = getRowCount();
-	java.util.ArrayList list = new java.util.ArrayList();
+	java.util.ArrayList<Parameter> list = new java.util.ArrayList<Parameter>();
 	for (int i = 0; i < count; i++){
 		list.add(getParameter(i));
 	}
@@ -266,7 +262,7 @@ public Object getValueAt(int row, int col) {
 	if (row<0 || row>=getRowCount()){
 		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)getData().get(row);
+	Parameter parameter = (Parameter)getData().get(row);
 	switch (col){
 		case COLUMN_NAME:{
 			return parameter.getName();
@@ -283,7 +279,6 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_VALUE:{
 			if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
-				ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
 				if (parameter.getExpression()==null){
 					return null;
 				}else{
@@ -402,7 +397,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
 		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	cbit.vcell.model.Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getParameter(rowIndex);
 //	try {
 		switch (columnIndex){
 			case COLUMN_VALUE:{
@@ -424,10 +419,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 				break;
 			}

@@ -224,7 +224,7 @@ public void exportMessage(ExportEvent exportEvent) {
  * Creation date: (5/27/2004 1:46:17 PM)
  * @return javax.swing.JPanel
  */
-protected Component getComponent() {
+public Component getComponent() {
 	return jPanel;
 }
 
@@ -353,7 +353,7 @@ public void performanceMonitorEvent(PerformanceMonitorEvent pme) {
  * @return java.lang.String
  */
 public void reconnect() {
-	getRequestManager().reconnect();
+	getRequestManager().reconnect(this);
 }
 
 

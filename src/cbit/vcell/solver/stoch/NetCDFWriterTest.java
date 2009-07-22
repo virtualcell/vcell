@@ -1,7 +1,5 @@
 package cbit.vcell.solver.stoch;
 
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -244,8 +242,7 @@ public class NetCDFWriterTest {
 				try{
 					ncWriter.writeHybridInputFile();
 				}catch (Exception e){
-					e.printStackTrace();
-					DialogUtils.showErrorDialog(e.getMessage());
+					e.printStackTrace();				
 				}
 				
 				System.out.println("The end of main function.");

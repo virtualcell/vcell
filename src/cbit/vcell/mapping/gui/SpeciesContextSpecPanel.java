@@ -319,7 +319,7 @@ public SpeciesContextSpec getSpeciesContextSpec() {
 private SpeciesContextSpecParameterTableModel getSpeciesContextSpecParameterTableModel1() {
 	if (ivjSpeciesContextSpecParameterTableModel1 == null) {
 		try {
-			ivjSpeciesContextSpecParameterTableModel1 = new SpeciesContextSpecParameterTableModel();
+			ivjSpeciesContextSpecParameterTableModel1 = new SpeciesContextSpecParameterTableModel(getScrollPaneTable());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

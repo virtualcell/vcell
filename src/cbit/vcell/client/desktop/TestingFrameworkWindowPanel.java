@@ -640,7 +640,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				TestCriteriaNew tCriteria = (TestCriteriaNew)selectedObj;
 				getTestingFrameworkWindowManager().viewResults(tCriteria);			
 			} else {
-				PopupGenerator.showErrorDialog("Selected Object is not a TestCriteria!");
+				PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Selected Object is not a TestCriteria!");
 			}
 		} else if (e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_INTERNALREF_TESTCRITERIA) ||
 				e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_USERDEFREF_TESTCRITERIA)) {
@@ -648,7 +648,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				TestCriteriaNew tCriteria = (TestCriteriaNew)selectedObj;
 				SimulationStatus simStatus = getTestingFrameworkWindowManager().getRequestManager().getServerSimulationStatus(tCriteria.getSimInfo());					
 				if (simStatus.isRunning()) {
-					PopupGenerator.showErrorDialog("Selected simulation is still running!");
+					PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Selected simulation is still running!");
 					return;
 				}
 				SimulationInfo userDefinedRegrRef = null;
@@ -660,12 +660,12 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 					}
 				}
 				if (tCriteria.getRegressionSimInfo() == null) {
-					PopupGenerator.showErrorDialog("Either the selected simulation does not belong to a REGRESSION test or the regression simInfo is not set!");
+					PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Either the selected simulation does not belong to a REGRESSION test or the regression simInfo is not set!");
 					return;
 				}
 				getTestingFrameworkWindowManager().compare(tCriteria,userDefinedRegrRef);			
 			} else {
-				PopupGenerator.showErrorDialog("Selected Object is not a TestCriteria!");
+				PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Selected Object is not a TestCriteria!");
 			}
 		}
 		
@@ -773,7 +773,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 							}
 						}catch(Exception e){
 							e.printStackTrace();
-							PopupGenerator.showErrorDialog("Error GenerateTestSuiteReport\n"+e.getMessage());
+							PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Error GenerateTestSuiteReport\n"+e.getMessage());
 							return;
 						}
 					}
@@ -857,7 +857,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		
 	}catch(Throwable exc){
 		if(!(exc instanceof UserCancelException) && !(exc instanceof UtilCancelException)){
-			PopupGenerator.showErrorDialog(exc.getClass().getName()+"\n"+exc.getMessage());
+			PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, exc.getClass().getName()+"\n"+exc.getMessage());
 		}
 	}
 

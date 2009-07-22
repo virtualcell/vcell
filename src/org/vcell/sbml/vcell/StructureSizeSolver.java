@@ -6,9 +6,15 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Structure;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.constraints.ConstraintSolver;
 import cbit.vcell.constraints.GeneralConstraint;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.AbstractConstraint;
@@ -35,8 +41,8 @@ public StructureSizeSolver() {
  * @param structName java.lang.String
  * @param structSize double
  */
-public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext simContext, cbit.vcell.model.Structure struct, double structSize, cbit.vcell.units.VCUnitDefinition structSizeUnit) {
-	cbit.vcell.mapping.StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
+public void updateAbsoluteStructureSizes(SimulationContext simContext, Structure struct, double structSize, VCUnitDefinition structSizeUnit) throws Exception {
+	StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		ConstraintContainerImpl ccImpl = new ConstraintContainerImpl();
 
@@ -98,7 +104,7 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
 		}
 		
 		ccImpl.addSimpleBound(new SimpleBounds(struct.getName()+"_size",new RealInterval(structSize,structSize),AbstractConstraint.OBSERVED_CONSTRAINT,"user input"));
-		cbit.vcell.constraints.ConstraintSolver constraintSolver = new cbit.vcell.constraints.ConstraintSolver(ccImpl);
+		ConstraintSolver constraintSolver = new ConstraintSolver(ccImpl);
 		
 //try {
 	//javax.swing.JFrame frame = new javax.swing.JFrame();
@@ -159,15 +165,15 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
 				}
 			}
 		}else{
-			DialogUtils.showErrorDialog("cannot solve for size");
-			throw new RuntimeException("cannot solve for size");
+			//DialogUtils.showErrorDialog("cannot solve for size");
+			throw new Exception("cannot solve for size");
 		}
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new Exception(e.getMessage());
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new Exception(e.getMessage());
 	}
 
 	//try {
@@ -191,13 +197,13 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
  * @param structName java.lang.String
  * @param structSize double
  */
-public void updateRelativeStructureSizes(cbit.vcell.mapping.SimulationContext simContext) {
+public void updateRelativeStructureSizes(SimulationContext simContext) throws Exception {
 
 	if (simContext.getGeometry().getDimension() > 0){
 		throw new RuntimeException("not yet supported for spatial applications");
 	}
 	
-	cbit.vcell.mapping.StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
+	StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		/*
 		     for (int i = 0; i < structureMappings.length; i++){
@@ -262,14 +268,14 @@ public void updateRelativeStructureSizes(cbit.vcell.mapping.SimulationContext si
 		
 	}catch (NullPointerException e){
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog("structure sizes must all be specified");
-		throw new RuntimeException("structure sizes must all be specified");
+		//DialogUtils.showErrorDialog("structure sizes must all be specified");
+		throw new Exception("structure sizes must all be specified");
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (cbit.vcell.parser.ExpressionException e){
+		throw new Exception(e.getMessage());
+	}catch (ExpressionException e){
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new Exception(e.getMessage());
 	}
 }
 }

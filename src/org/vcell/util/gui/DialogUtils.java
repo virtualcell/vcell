@@ -182,7 +182,7 @@ public class DialogUtils {
  * Insert the method's description here.
  * Creation date: (8/26/2005 3:26:35 PM)
  */
-public static void browserLauncher(final String targetURL,final String messageToUserIfFail,final boolean isApplet) {
+public static void browserLauncher(final Component requester, final String targetURL,final String messageToUserIfFail,final boolean isApplet) {
 	//(isApplet==true)
 	//  Do not use BrowserLauncher as it will sometimes destroy VCell Applets
 	//  depending on which browser is running the applet and which OS the
@@ -202,13 +202,13 @@ public static void browserLauncher(final String targetURL,final String messageTo
 				targetURL,
 				new BrowserLauncherErrorHandler() {
 					public void handleException(Exception e){
-						browserLauncherError(e,messageToUserIfFail);
+						browserLauncherError(requester, e,messageToUserIfFail);
 					}
 				}
 			)
 			).start();
 	}catch(Throwable e){
-		browserLauncherError(e,messageToUserIfFail);
+		browserLauncherError(requester, e,messageToUserIfFail);
 	}
 }
 
@@ -219,8 +219,8 @@ public static void browserLauncher(final String targetURL,final String messageTo
  * @param e java.lang.Throwable
  * @param userMessage java.lang.String
  */
-private static void browserLauncherError(final Throwable e, final String userMessage) {
-	showErrorDialog(userMessage + "\n\n" +
+private static void browserLauncherError(Component requester, Throwable e, String userMessage) {
+	showErrorDialog(requester, userMessage + "\n\n" +
 			"Sorry, your local WWW Browser could not be automatically launched.\n" + 
 			"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'");
 }
@@ -531,32 +531,32 @@ public static void showErrorDialog(final Component requester,final  String messa
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:17:45 AM)
- * @param owner java.awt.Component
- * @param message java.lang.Object
- */
-public static void showErrorDialog(final String message) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareErrorDialog(null, message);
-			try{
-				ZEnforcer.showModalDialogOnTop(dialog);
-			}finally{
-				dialog.dispose();
-			}
-			return null;
-		}
-	}.dispatchConsumeException();
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (5/21/2004 3:17:45 AM)
+// * @param owner java.awt.Component
+// * @param message java.lang.Object
+// */
+//public static void showErrorDialog(final String message) {
+//	new SwingDispatcherSync (){
+//		public Object runSwing() throws Exception{
+//			final JDialog dialog = prepareErrorDialog(null, message);
+//			try{
+//				ZEnforcer.showModalDialogOnTop(dialog);
+//			}finally{
+//				dialog.dispose();
+//			}
+//			return null;
+//		}
+//	}.dispatchConsumeException();
+//}
 
-public static void showWarningDialog(final String message) {
+public static void showWarningDialog(final Component requester, final String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareWarningDialog(null, message);
 			try{
-				ZEnforcer.showModalDialogOnTop(dialog);
+				ZEnforcer.showModalDialogOnTop(dialog, requester);
 			}finally{
 				dialog.dispose();
 			}
@@ -571,12 +571,12 @@ public static void showWarningDialog(final String message) {
  * @param owner java.awt.Component
  * @param message java.lang.Object
  */
-public static void showInfoDialog(final String message) {
+public static void showInfoDialog(final Component requester, final String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareInfoDialog(null, message);
 			try{
-				ZEnforcer.showModalDialogOnTop(dialog);
+				ZEnforcer.showModalDialogOnTop(dialog, requester);
 			}finally{
 				dialog.dispose();
 			}
@@ -750,7 +750,7 @@ protected static void showReportDialog(final Component requester, final String r
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION); 
 			final JDialog dialog = pane.createDialog(requester, "Complete Report");
 			try {
-				ZEnforcer.showModalDialogOnTop(dialog);
+				ZEnforcer.showModalDialogOnTop(dialog, requester);
 				return null;
 			}finally {
 				dialog.dispose();

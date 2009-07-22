@@ -54,12 +54,17 @@ public static void dispatch(Component requester, Hashtable<String, Object> hash,
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
-public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, 
+private static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, 
 		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
 	// check tasks - swing non-blocking can be only at the end
 //	if (bInProgress) {
 //		Thread.dumpStack();
 //	}
+	if (bShowProgressPopup && requester == null) {
+		System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
+		Thread.dumpStack();
+	}
+		
 	final ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	
 	for (int i = 0; i < tasks.length; i++){
@@ -73,7 +78,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		private AsynchProgressPopup pp = null;
 		public Object construct() {
 			bInProgress = true;
-			if (bShowProgressPopup) {
+			if (bShowProgressPopup) {				
 				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
 				if (bInputBlocking) {
 					pp.startKeepOnTop();
@@ -166,6 +171,10 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				}
 				if(e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().length()>0){
 					msg+="\n"+e.getCause().getMessage();
+				}
+				if (requester == null) {
+					System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
+					Thread.dumpStack();
 				}
 				PopupGenerator.showErrorDialog(requester, msg);
 			} else if (hash.containsKey(TASK_ABORTED_BY_USER)) {

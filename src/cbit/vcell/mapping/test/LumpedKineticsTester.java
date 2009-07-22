@@ -1,7 +1,6 @@
 package cbit.vcell.mapping.test;
 
 import java.io.PrintStream;
-import java.io.StringWriter;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.document.BioModelInfo;
@@ -10,31 +9,20 @@ import org.vcell.util.document.MathModelInfo;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathDescriptionTest;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.modeldb.StochasticBioModelScanner;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class LumpedKineticsTester implements VCDatabaseVisitor {
@@ -91,7 +79,11 @@ public class LumpedKineticsTester implements VCDatabaseVisitor {
 			//
 			if (nonspatialSimContext.getGeometryContext().isAllSizeSpecifiedNull()){
 				StructureSizeSolver structureSizeSolver = new StructureSizeSolver();
-				structureSizeSolver.updateAbsoluteStructureSizes(nonspatialSimContext, nonspatialSimContext.getModel().getTopFeature(), 1.0, VCUnitDefinition.UNIT_um3);
+				try {
+					structureSizeSolver.updateAbsoluteStructureSizes(nonspatialSimContext, nonspatialSimContext.getModel().getTopFeature(), 1.0, VCUnitDefinition.UNIT_um3);
+				} catch (Exception e) {					
+					e.printStackTrace();
+				}
 			}
 			try {
 				ReactionStep[] reactionSteps = nonspatialSimContext.getModel().getReactionSteps();

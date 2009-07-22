@@ -288,7 +288,7 @@ public void checkTimeBounds(cbit.vcell.solver.TimeBounds arg1) {
 		double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
 			
 		if (times[0] < arg1.getStartingTime() || times[times.length - 1] > arg1.getEndingTime()) {
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Output time should be within (" + arg1.getStartingTime() + "," + arg1.getEndingTime() + ")");
+			PopupGenerator.showErrorDialog(this, "Output time should be within (" + arg1.getStartingTime() + "," + arg1.getEndingTime() + ")");
 		}
 	}
 }
@@ -2731,7 +2731,7 @@ private void updateStochOptions(){
 			getSolverTaskDescription().setStochOpt(sho);
 		}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog("Error setting stochastic options\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error setting stochastic options\n"+e.getMessage());
 	}
 }
 
@@ -2823,7 +2823,7 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 			throw new RuntimeException("Problems while setting the output options " + e.getMessage());
 		}
 	} catch (Exception e) {
-		DialogUtils.showErrorDialog("Error in Value : " + e.getMessage());
+		DialogUtils.showErrorDialog(this, "Error in Value : " + e.getMessage());
 	}
 }
 
@@ -2987,7 +2987,7 @@ public void tornOffSolverTaskDescription_TimeBounds() {
 		double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
 			
 		if (times[0] < startingTime || times[times.length - 1] > endingTime) {
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Output times should be within [" + startingTime + "," + endingTime + "]");
+			PopupGenerator.showErrorDialog(this, "Output times should be within [" + startingTime + "," + endingTime + "]");
 			javax.swing.SwingUtilities.invokeLater(new Runnable() { 
 			    public void run() { 
 			          getOutputTimesTextField().requestFocus();
@@ -3162,7 +3162,7 @@ private javax.swing.JButton getQuestionButton() {
 
 private void displayHelpInfo()
 {
-	DialogUtils.showInfoDialog(SolverDescription.getFullDescription(getTornOffSolverTaskDescription().getSolverDescription()));
+	DialogUtils.showInfoDialog(this, SolverDescription.getFullDescription(getTornOffSolverTaskDescription().getSolverDescription()));
 }
 
 private void setHybridOptions(boolean b)

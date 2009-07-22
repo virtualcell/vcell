@@ -327,7 +327,7 @@ private void showSurfaceViewer(boolean bSurfaceViewerButtonSelected) {
 			try{
 				surfaceViewer.updateSurfaces();
 			}catch(Exception e){
-				DialogUtils.showErrorDialog("Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(this, "Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
 			}
 		}
 	} else {

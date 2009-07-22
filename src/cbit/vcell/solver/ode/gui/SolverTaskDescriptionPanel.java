@@ -1529,7 +1529,7 @@ public void updateKeepEvery() {
 				std.setOutputTimeSpec(new DefaultOutputTimeSpec(Integer.parseInt(getJTextFieldKeepEvery().getText())));
 			} catch (java.beans.PropertyVetoException ex) {
 				ex.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ex.getMessage());
+				PopupGenerator.showErrorDialog(this, ex.getMessage());
 			}
 		} else if (std.getOutputTimeSpec().isUniform()) {
 			try {
@@ -1568,7 +1568,7 @@ public void updateKeepEvery() {
 				std.setOutputTimeSpec(ots);
 			} catch (java.beans.PropertyVetoException ex) {
 				ex.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ex.getMessage());
+				PopupGenerator.showErrorDialog(this, ex.getMessage());
 			}
 		}
 	}
@@ -1578,7 +1578,7 @@ public void updateKeepEvery() {
 /**
  * Comment
  */
-private void updateSensitivityParameterDisplay(cbit.vcell.math.Constant sensParam) {
+private void updateSensitivityParameterDisplay(Constant sensParam) {
 	if(getTornOffSolverTaskDescription().getSimulation().getIsSpatial() || getTornOffSolverTaskDescription().getSimulation().getMathDescription().isStoch())
 		getPerformSensitivityAnalysisCheckbox().setEnabled(false);
 	else getPerformSensitivityAnalysisCheckbox().setEnabled(true);

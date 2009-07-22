@@ -24,6 +24,7 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.UserMessage;
@@ -88,7 +89,7 @@ public class UserRegistrationOP implements Serializable{
 		return userRegistrationOP;		
 	}
 
-	public static void registrationOperationGUI(final RequestManager requestManager, final ClientServerInfo currentClientServerInfo, final String userAction, final ClientServerManager clientServerManager) throws Exception{
+	public static void registrationOperationGUI(final RequestManager requestManager, final DocumentWindowManager currWindowManager, final ClientServerInfo currentClientServerInfo, final String userAction, final ClientServerManager clientServerManager) throws Exception{
 		if(!(userAction.equals(LoginDialog.USERACTION_REGISTER) ||
 				userAction.equals(LoginDialog.USERACTION_EDITINFO) ||
 				userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD))){
@@ -242,11 +243,11 @@ public class UserRegistrationOP implements Serializable{
 			
 					try {
 						if(!checkUserInfo(originalUserInfoHolder,newUserInfo)){
-							PopupGenerator.showInfoDialog("No registration information has changed.");
+							PopupGenerator.showInfoDialog(currWindowManager, "No registration information has changed.");
 							continue;
 						}
 					} catch (Exception ex) {
-						PopupGenerator.showErrorDialog(registrationPanel, ex.getMessage());
+						PopupGenerator.showErrorDialog(currWindowManager, ex.getMessage());
 						continue;
 					}
 					hashTable.put("newUserInfo", newUserInfo);
@@ -281,7 +282,7 @@ public class UserRegistrationOP implements Serializable{
 					if (userAction.equals(LoginDialog.USERACTION_REGISTER)) {
 						try{
 							ClientServerInfo newClientServerInfo = VCellClient.createClientServerInfo(currentClientServerInfo, registeredUserInfo.userid, registeredUserInfo.password);
-							requestManager.connectToServer(newClientServerInfo);
+							requestManager.connectToServer(currWindowManager, newClientServerInfo);
 						}finally{
 							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
 							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){

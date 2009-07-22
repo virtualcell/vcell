@@ -437,7 +437,7 @@ public void setTimeDateStamp(java.util.Date newFieldTimeDateStamp) {
  * @return java.lang.String
  */
 public String toString() {
-	return "SimulationJobStatus[" + fieldVCSimID + ",job=" + fieldJobIndex + ",task=" + fieldTaskID + "," + fieldSimulationMessage 
+	return "SimulationJobStatus[" + fieldVCSimID + ",status=" + fieldSchedulerStatus + ",job=" + fieldJobIndex + ",task=" + fieldTaskID + "," + fieldSimulationMessage 
 	+ ",execStatus=" + fieldSimulationExecutionStatus + "]";
 }
 }

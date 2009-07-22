@@ -2,8 +2,11 @@ package cbit.vcell.client.data;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
@@ -53,7 +56,7 @@ private DataViewer createDataViewer() {
 			return pdeDataViewer;
 		}
 	} catch (org.vcell.util.DataAccessException exc) {
-		org.vcell.util.gui.DialogUtils.showErrorDialog("Could not fetch requested data.\nJCompare may have failed.\n" + exc.getMessage());
+		DialogUtils.showErrorDialog(this, "Could not fetch requested data.\nJCompare may have failed.\n" + exc.getMessage());
 		exc.printStackTrace();
 	}
 	return null;
@@ -64,7 +67,7 @@ private DataViewer createDataViewer() {
  * Method generated to support the promotion of the exportMonitorPanel attribute.
  * @return cbit.vcell.export.ExportMonitorPanel
  */
-public cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel() {
+public ExportMonitorPanel getExportMonitorPanel() {
 	return getMainViewer().getExportMonitorPanel();
 }
 

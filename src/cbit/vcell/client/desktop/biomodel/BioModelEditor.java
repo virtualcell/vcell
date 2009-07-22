@@ -1048,7 +1048,7 @@ private void newApplication(java.awt.event.ActionEvent event) {
 		String message = getBioModel().isValidForStochApp();
 		if(!message.equals(""))
 		{
-			PopupGenerator.showErrorDialog("Error creating stochastic application:\n" + message);
+			PopupGenerator.showErrorDialog(this, "Error creating stochastic application:\n" + message);
 			return;
 		}
 	}

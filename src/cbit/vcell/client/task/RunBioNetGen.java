@@ -24,16 +24,11 @@ public class RunBioNetGen extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws Exception {
-	try {
-		BNGInput bngInput = (BNGInput)hashTable.get("bngInput");
-		BNGOutput bngOutput = BNGUtils.executeBNG(bngInput);
-		if (bngOutput != null) {
-			hashTable.put("bngOutput", bngOutput);
-		}
-	} finally {
-		BNGOutputPanel bngOutputPanel = (BNGOutputPanel)hashTable.get("bngOutputPanel");
-		bngOutputPanel.refreshButton(false);
-	}
+	BNGInput bngInput = (BNGInput)hashTable.get("bngInput");
+	BNGOutput bngOutput = BNGUtils.executeBNG(bngInput);
+	if (bngOutput != null) {
+		hashTable.put("bngOutput", bngOutput);
+	}	
 }
 
 }

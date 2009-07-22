@@ -1,30 +1,27 @@
 package cbit.vcell.model.gui;
-import cbit.vcell.parser.Expression;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.util.Vector;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 
-import java.util.*;
-
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.FieldDataWindowManager.FDSimBioModelInfo;
-import cbit.vcell.client.FieldDataWindowManager.FDSimMathModelInfo;
-import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
-import cbit.vcell.model.*;
-import cbit.vcell.model.Model.ModelParameter;
-
-import javax.swing.JButton;
-
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Model.ModelParameter;
 /**
  * Insert the type's description here.
  * Creation date: (7/24/2002 2:30:19 PM)
@@ -982,7 +979,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1000,8 +996,8 @@ private void renameSimpleReaction() {
 	try {
 		String newName = null;
 		try{
-			newName = cbit.vcell.client.PopupGenerator.showInputDialog(this,"reaction name:",getSimpleReaction().getName());
-		}catch(org.vcell.util.UserCancelException e){
+			newName = PopupGenerator.showInputDialog(this,"reaction name:",getSimpleReaction().getName());
+		}catch(UserCancelException e){
 			return;
 		}
 
@@ -1009,7 +1005,7 @@ private void renameSimpleReaction() {
 			getSimpleReaction().setName(newName);
 		}
 	}catch (java.beans.PropertyVetoException e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing name:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error changing name:\n"+e.getMessage());
 	}
 }
 

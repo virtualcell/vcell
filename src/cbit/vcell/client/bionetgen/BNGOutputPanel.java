@@ -150,7 +150,7 @@ public BNGOutputPanel(boolean isDoubleBuffered) {
  * Comment
  */
 private void bngHelpAbout() {
-	PopupGenerator.browserLauncher("http://vcell.org/bionetgen/index.html", 
+	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/index.html", 
 								   "For Help using BioNetGen, please visit : http://vcell.org/bionetgen/index.html", 
 								   false);
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
@@ -161,7 +161,7 @@ private void bngHelpAbout() {
  * Comment
  */
 private void bngHelpFAQ() {
-	PopupGenerator.browserLauncher("http://vcell.org/bionetgen/faq.html", 
+	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/faq.html", 
 								   "please visit : http://vcell.org/bionetgen/faq.html", 
 								   false);
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
@@ -172,7 +172,7 @@ private void bngHelpFAQ() {
  * Comment
  */
 private void bngHelpManual() {
-	PopupGenerator.browserLauncher("http://vcell.org/bionetgen/tutorial.html", 
+	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/tutorial.html", 
 								   "please visit : http://vcell.org/bionetgen/tutorial.html", 
 								   false);
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
@@ -183,7 +183,7 @@ private void bngHelpManual() {
  * Comment
  */
 private void bngHelpSamples() {
-	PopupGenerator.browserLauncher("http://vcell.org/bionetgen/samples.html", 
+	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/samples.html", 
 								   "please visit : http://vcell.org/bionetgen/samples.html", 
 								   false);
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
@@ -2070,7 +2070,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2110,13 +2109,13 @@ private void runBNGButton_ActionPerformed(java.awt.event.ActionEvent actionEvent
 	
 	// Do all the text checks here; and pop up warnings if needed, before going in to the BNGWindowManager to execute BNG.
 	if (getBNGLInputPanel().getText() == null || getBNGLInputPanel().getText().equals("")) {
-		cbit.vcell.client.PopupGenerator.showErrorDialog("No input; Cannot run BioNetGen");
+		PopupGenerator.showErrorDialog(this, "No input; Cannot run BioNetGen");
 		return;
 	}
 	setbngInput(new BNGInput(getBNGLInputPanel().getText()));
 	
 	if (getbngInput() == null) {
-		cbit.vcell.client.PopupGenerator.showErrorDialog("No input; Cannot run BioNetGen");
+		PopupGenerator.showErrorDialog(this, "No input; Cannot run BioNetGen");
 		return;
 	}
 
@@ -2153,11 +2152,11 @@ private void sbmlImportButton_ActionPerformed() {
 	sbml = BnglSbmlTransformer.transformSBML(getBngOutput());
 	} catch(SbmlTransformException e) {
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(e.getMessage());
+		DialogUtils.showErrorDialog(this, e.getMessage());
 		return;
 	} catch(Exception e) {
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(SbmlTransformException.DefaultMessage);
+		DialogUtils.showErrorDialog(this, SbmlTransformException.DefaultMessage);
 		return;
 	}
 	getBngWindowManager().importSbml(sbml);

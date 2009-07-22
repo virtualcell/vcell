@@ -42,7 +42,7 @@ private void addTestSuite() {
 	} catch(UserCancelException e){
 		//ignore
 	}catch (Exception e) {
-		PopupGenerator.showErrorDialog(e.getMessage());
+		PopupGenerator.showErrorDialog(this, e.getMessage());
 	}
 }
 /**
@@ -285,7 +285,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		aTestingFrameworkWindow.show();
 		java.awt.Insets insets = aTestingFrameworkWindow.getInsets();
 		aTestingFrameworkWindow.setSize(aTestingFrameworkWindow.getWidth() + insets.left + insets.right, aTestingFrameworkWindow.getHeight() + insets.top + insets.bottom);
 		aTestingFrameworkWindow.setVisible(true);

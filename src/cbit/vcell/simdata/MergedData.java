@@ -10,7 +10,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
 
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ReservedVariable;
@@ -1141,7 +1140,7 @@ public void removeFunction(AnnotatedFunction function) throws DataAccessExceptio
 			functionFileLength = funcFile.length();
 			functionFileLastModified = funcFile.lastModified();			
 		} catch (Exception e) {
-			PopupGenerator.showErrorDialog(e.getMessage());
+			throw new DataAccessException(e.getMessage());
 		}
 		return;
 	}

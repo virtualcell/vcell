@@ -1,4 +1,5 @@
 package cbit.vcell.client.server;
+import java.awt.Component;
 import java.lang.reflect.*;
 
 import org.vcell.util.DataAccessException;
@@ -11,9 +12,10 @@ import cbit.rmi.event.RemoteMessageHandler;
 import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.server.*;
-import cbit.vcell.client.*;
 import cbit.vcell.desktop.controls.*;
 /**
  * Insert the type's description here.
@@ -194,7 +196,7 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private void changeConnection(VCellConnection newVCellConnection, boolean reconnect) {
+private void changeConnection(TopLevelWindowManager requester, VCellConnection newVCellConnection, boolean reconnect) {
 	VCellThreadChecker.checkRemoteInvocation();
 	
 	VCellConnection lastVCellConnection = getVcellConnection();
@@ -222,7 +224,7 @@ private void changeConnection(VCellConnection newVCellConnection, boolean reconn
 			setVcellConnection(null);
 			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 			exc.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());
+			PopupGenerator.showErrorDialog(requester, "Server connection failed:\n\n" + exc.getMessage());
 		}
 	} else if(lastVCellConnection != null) {
 		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
@@ -242,18 +244,14 @@ public void cleanup() {
 	setVcellConnection(null);	
 }
 
-public void checkClientServerSoftwareVersion() {
-	checkClientServerSoftwareVersion(clientServerInfo);
-}
-
-public static void checkClientServerSoftwareVersion(ClientServerInfo clientServerInfo) {
+public static void checkClientServerSoftwareVersion(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) {
 	if (clientServerInfo.getServerType() == ClientServerInfo.SERVER_REMOTE) {
 		String[] hosts = clientServerInfo.getHosts();
 		for (int i = 0; i < hosts.length; i ++) {
 			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
 			String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
-				PopupGenerator.showWarningDialog("A new VCell client is available:\n" 
+				PopupGenerator.showWarningDialog(requester.getComponent(), "A new VCell client is available:\n" 
 						+ "current version : " + clientSoftwareVersion + "\n"
 						+ "new version : " + serverSoftwareVersion + "\n"
 						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
@@ -268,17 +266,17 @@ public static void checkClientServerSoftwareVersion(ClientServerInfo clientServe
  * Creation date: (5/17/2004 6:26:14 PM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connect(ClientServerInfo clientServerInfo) {
+public void connect(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) {
 	// just reconnecting ?
 	boolean reconnecting = clientServerInfo.equals(getClientServerInfo());
-	checkClientServerSoftwareVersion(clientServerInfo);
+	checkClientServerSoftwareVersion(requester,clientServerInfo);
 	
 	// store credentials
 	setClientServerInfo(clientServerInfo);
 	// get new server connection
-	VCellConnection newVCellConnection = connectToServer();
+	VCellConnection newVCellConnection = connectToServer(requester);
 	// update managers, status, etc.
-	changeConnection(newVCellConnection, reconnecting);
+	changeConnection(requester, newVCellConnection, reconnecting);
 }
 
 
@@ -287,7 +285,7 @@ public void connect(ClientServerInfo clientServerInfo) {
  * Creation date: (5/17/2004 6:26:14 PM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connectAs(String user, String password) {
+public void connectAs(TopLevelWindowManager requester, String user, String password) {
 	ClientServerInfo clientServerInfo = null;
 	switch (getClientServerInfo().getServerType()) {
 		case ClientServerInfo.SERVER_LOCAL: {
@@ -299,7 +297,7 @@ public void connectAs(String user, String password) {
 			break;
 		}
 	}
-	connect(clientServerInfo);
+	connect(requester, clientServerInfo);
 }
 
 
@@ -307,7 +305,7 @@ public void connectAs(String user, String password) {
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private VCellConnection connectToServer() {
+private VCellConnection connectToServer(TopLevelWindowManager requester) {
 	VCellThreadChecker.checkRemoteInvocation();
 	
 	VCellConnection newVCellConnection = null;
@@ -351,13 +349,13 @@ private VCellConnection connectToServer() {
 		}		
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(aexc.getMessage());
+		PopupGenerator.showErrorDialog(requester, aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		cexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(badConnStr + "\n\n" + cexc.getMessage());
+		PopupGenerator.showErrorDialog(requester, badConnStr + "\n\n" + cexc.getMessage());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(badConnStr + "\n\n" + exc.getMessage());		
+		PopupGenerator.showErrorDialog(requester, badConnStr + "\n\n" + exc.getMessage());		
 	}
 	
 	return newVCellConnection;	
@@ -670,8 +668,8 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Insert the method's description here.
  * Creation date: (5/17/2004 6:26:14 PM)
  */
-public void reconnect() {
-	connect(getClientServerInfo());	
+public void reconnect(TopLevelWindowManager requester) {
+	connect(requester, getClientServerInfo());	
 }
 
 

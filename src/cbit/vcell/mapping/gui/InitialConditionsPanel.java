@@ -622,7 +622,7 @@ private JRadioButton getConcentrationRadioButton()
 							if (!getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
 								getConcentrationRadioButton().setSelected(false);
 								getAmountRadioButton().setSelected(true);
-								DialogUtils.showErrorDialog("\nStructure sizes are required to convert number of particles to concentration.\nPlease go to StructureMapping tab to set valid sizes.");
+								DialogUtils.showErrorDialog(InitialConditionsPanel.this, "\nStructure sizes are required to convert number of particles to concentration.\nPlease go to StructureMapping tab to set valid sizes.");
 								return;
 							}
 							//set to use concentration
@@ -633,11 +633,11 @@ private JRadioButton getConcentrationRadioButton()
 								firePropertyChange("simulationContext", null, getSimulationContext());
 							} catch (MappingException e1) {
 								e1.printStackTrace();
-								DialogUtils.showErrorDialog(e1.getMessage());
+								DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
 								return;
 							} catch (PropertyVetoException e1) {
 								e1.printStackTrace();
-								DialogUtils.showErrorDialog(e1.getMessage());
+								DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
 								return;
 							}
 							
@@ -663,7 +663,7 @@ private JRadioButton getAmountRadioButton()
 						if (!getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
 							getConcentrationRadioButton().setSelected(true);
 							getAmountRadioButton().setSelected(false);
-							DialogUtils.showErrorDialog("\nStructure sizes are required to convert concentration to number of paticles.\nPlease go to StructureMapping tab to set valid sizes.");
+							DialogUtils.showErrorDialog(InitialConditionsPanel.this, "\nStructure sizes are required to convert concentration to number of paticles.\nPlease go to StructureMapping tab to set valid sizes.");
 							return;
 						}
 						//set to use number of particles
@@ -674,11 +674,11 @@ private JRadioButton getAmountRadioButton()
 							firePropertyChange("simulationContext", null, getSimulationContext());
 						} catch (MappingException e1) {
 							e1.printStackTrace();
-							DialogUtils.showErrorDialog(e1.getMessage());
+							DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
 							return;
 						} catch (PropertyVetoException e1) {
 							e1.printStackTrace();
-							DialogUtils.showErrorDialog(e1.getMessage());
+							DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
 							return;
 						}
 						
@@ -810,7 +810,7 @@ private SpeciesContextSpecPanel getSpeciesContextSpecPanel() {
 private SpeciesContextSpecsTableModel getSpeciesContextSpecsTableModel() {
 	if (ivjSpeciesContextSpecsTableModel == null) {
 		try {
-			ivjSpeciesContextSpecsTableModel = new SpeciesContextSpecsTableModel();
+			ivjSpeciesContextSpecsTableModel = new SpeciesContextSpecsTableModel(getScrollPaneTable());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -942,7 +942,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 
 			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
-			PopupGenerator.showErrorDialog("InitialConditionsPanel Copy failed.  "+e.getMessage());
+			PopupGenerator.showErrorDialog(InitialConditionsPanel.this, "InitialConditionsPanel Copy failed.  "+e.getMessage());
 		}
 	}
 }
@@ -1082,9 +1082,9 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 				changedParametersV.copyInto(changedParametersArr);
 				Expression[] newExpressionsArr = new Expression[newExpressionsV.size()];
 				newExpressionsV.copyInto(newExpressionsArr);
-				VCellCopyPasteHelper.chooseApplyPaste(pasteDescriptionArr,changedParametersArr,newExpressionsArr);
+				VCellCopyPasteHelper.chooseApplyPaste(InitialConditionsPanel.this, pasteDescriptionArr,changedParametersArr,newExpressionsArr);
 			}else{
-				PopupGenerator.showInfoDialog("No paste items match the destination (no changes made).");
+				PopupGenerator.showInfoDialog(InitialConditionsPanel.this, "No paste items match the destination (no changes made).");
 			}
 		}
 	};

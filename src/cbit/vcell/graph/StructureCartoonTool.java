@@ -90,7 +90,7 @@ private void generateErrorDialog(Exception e,int x,int y) {
 	Point canvasLoc = getGraphPane().getLocationOnScreen();
 	canvasLoc.x += x;
 	canvasLoc.y += y;
-	cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+	PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 }
 
 
@@ -134,7 +134,7 @@ protected void menuAction(Shape shape, String menuAction) {
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 			IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 			if(species != null){
-				pasteSpecies(species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
+				pasteSpecies(getGraphPane(), species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
 			}
 		}
 	}else if (menuAction.equals(PROPERTIES_MENU_ACTION)){
@@ -192,7 +192,7 @@ protected void menuAction(Shape shape, String menuAction) {
 				}
 			}
 		}catch (Throwable e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 		}
 		
 	}else if (menuAction.equals(REACTIONS_MENU_ACTION)){
@@ -215,7 +215,7 @@ protected void menuAction(Shape shape, String menuAction) {
 				showSaveStructureImageDialog(((StructureShape)shape).getModel(), resType);
 			}
 		} catch(Exception e) {
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 		}
 	}else if (menuAction.equals(MOVE_MENU_ACTION)){
 		if (shape instanceof FeatureShape){
@@ -696,13 +696,13 @@ private void showMoveDialog(FeatureShape featureShape) {
 	try{
 		Feature[] validDestinations = featureShape.getModel().getValidDestinationsForMovingFeature(featureShape.getFeature());
 		if(validDestinations == null || validDestinations.length == 0){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("No valid Destinations for Feature '"+featureShape.getFeature().getName()+"'");
+			PopupGenerator.showErrorDialog(getGraphPane(), "No valid Destinations for Feature '"+featureShape.getFeature().getName()+"'");
 		}else{
 			String[] destinations = new String[validDestinations.length];
 			for(int i=0;i<validDestinations.length;i+= 1){
 				destinations[i] = validDestinations[i].getName();
 			}
-			String featureSelection = (String)cbit.vcell.client.PopupGenerator.showListDialog(
+			String featureSelection = (String)PopupGenerator.showListDialog(
 				getJDesktopPane(),
 				destinations,
 				"Select destination for Moving Feature '"+featureShape.getFeature().getName()+"'");
@@ -713,7 +713,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 
 			Feature finalDestination = (Feature)featureShape.getModel().getStructure(featureSelection);
 			if(finalDestination == null){
-				cbit.vcell.client.PopupGenerator.showErrorDialog("Feature with name "+featureSelection+" not found in model");
+				cbit.vcell.client.PopupGenerator.showErrorDialog(getGraphPane(), "Feature with name "+featureSelection+" not found in model");
 				return;
 			}
 			SpeciesContext[] neededSCArr = featureShape.getModel().getSpeciesContextsNeededByMovingMembrane(featureShape.getFeature().getMembrane());
@@ -788,7 +788,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 			}
 		}
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog(e.getClass().getName()+"\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(getGraphPane(), e.getClass().getName()+"\n"+e.getMessage());
 	}
 }
 

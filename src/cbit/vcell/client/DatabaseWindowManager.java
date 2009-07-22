@@ -25,6 +25,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.ReferenceQuerySpec;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
@@ -36,7 +37,9 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 /**
  * Insert the type's description here.
@@ -212,7 +215,7 @@ public void accessPermissions()  {
 							}
 						}
 						if (errorNames.length() > 0) {
-							PopupGenerator.showErrorDialog(errorNames);
+							PopupGenerator.showErrorDialog(DatabaseWindowManager.this, errorNames);
 							accessPermissions();
 						}
 					}
@@ -244,7 +247,7 @@ public void compareAnotherEdition() {
 	// get selected DocumentInfo info from original Tree.
 	//
 	if (getPanelSelection()==null){
-		PopupGenerator.showErrorDialog("Error Comparing documents : No first document selected");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : No first document selected");
 		return;
 	}
 	VCDocumentInfo thisDocumentInfo = getPanelSelection();
@@ -255,11 +258,11 @@ public void compareAnotherEdition() {
 	try {
 		documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
 	} catch (DataAccessException e) {
-		PopupGenerator.showErrorDialog("Error accessing second document!");
+		PopupGenerator.showErrorDialog(this, "Error accessing second document!");
 	}
 	
 	if (documentVersionsList == null || documentVersionsList.length == 0) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : Not Enough Versions to Compare!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : Not Enough Versions to Compare!");
 		return;
 	}
 
@@ -279,7 +282,7 @@ public void compareAnotherEdition() {
 	String newVersionChoice = (String)PopupGenerator.showListDialog(this, versionDatesList, "Please select edition");
 
 	if (newVersionChoice == null) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : Second document not selected!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : Second document not selected!");
 		return;
 	}
 
@@ -290,7 +293,7 @@ public void compareAnotherEdition() {
 		}
 	}
 	if (versionIndex == -1){
-		PopupGenerator.showErrorDialog("Error Comparing documents : No such Version Exists "+newVersionChoice);
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : No such Version Exists "+newVersionChoice);
 		return;
 	}
 
@@ -299,7 +302,7 @@ public void compareAnotherEdition() {
 	if (((thisDocumentInfo instanceof BioModelInfo) && !(anotherDocumentInfo instanceof BioModelInfo)) ||
 		((thisDocumentInfo instanceof MathModelInfo) && !(anotherDocumentInfo instanceof MathModelInfo)) ||
 		((thisDocumentInfo instanceof GeometryInfo) && !(anotherDocumentInfo instanceof GeometryInfo))) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : The two documents are not of the same type!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : The two documents are not of the same type!");
 		return;
 	}
 	// Now that we have both the document versions to be compared, do the comparison and display the result
@@ -314,7 +317,7 @@ public void compareAnotherModel() {
 	// get selected DocumentInfo info from original Tree.
 	//
 	if (getPanelSelection()==null){
-		PopupGenerator.showErrorDialog("Error Comparing documents : First document not selected");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : First document not selected");
 		return;
 	}
 	VCDocumentInfo thisDocumentInfo = getPanelSelection();
@@ -339,14 +342,14 @@ public void compareAnotherModel() {
 	} 
 
 	if (otherDocumentInfo == null){
-		PopupGenerator.showErrorDialog("Error Comparing documents : Second document is null ");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : Second document is null ");
 		return;
 	}
 	// Check if both document types are of the same kind. If not, throw an error. 
 	if (((thisDocumentInfo instanceof BioModelInfo) && !(otherDocumentInfo instanceof BioModelInfo)) ||
 		((thisDocumentInfo instanceof MathModelInfo) && !(otherDocumentInfo instanceof MathModelInfo)) ||
 		((thisDocumentInfo instanceof GeometryInfo) && !(otherDocumentInfo instanceof GeometryInfo))) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : The two documents are not of the same type!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : The two documents are not of the same type!");
 		return;
 	}
 	// Now that we have both the document versions to be compared, do the comparison and display the result
@@ -362,7 +365,7 @@ public void compareLatestEdition()  {
 	// get selected DocumentInfo info from original Tree.
 	//
 	if (getPanelSelection()==null){
-		PopupGenerator.showErrorDialog("Error Comparing documents : No first document selected");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : No first document selected");
 		return;
 	}
 	VCDocumentInfo thisDocumentInfo = getPanelSelection();
@@ -374,11 +377,11 @@ public void compareLatestEdition()  {
 	try {
 		documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
 	} catch (DataAccessException e) {
-		PopupGenerator.showErrorDialog("Error accessing second document!");
+		PopupGenerator.showErrorDialog(this, "Error accessing second document!");
 	}
 	
 	if (documentVersionsList == null || documentVersionsList.length == 0) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : Not Enough Versions to Compare!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : Not Enough Versions to Compare!");
 		return;
 	}
 	//
@@ -393,7 +396,7 @@ public void compareLatestEdition()  {
 	}
 
 	if (thisDocumentInfo.getVersion().getDate().after(latestDocumentInfo.getVersion().getDate())) {
-		PopupGenerator.showErrorDialog("Current Version is the latest! Choose another Version or Model to compare!");
+		PopupGenerator.showErrorDialog(this, "Current Version is the latest! Choose another Version or Model to compare!");
 		return;
 	}
 
@@ -401,7 +404,7 @@ public void compareLatestEdition()  {
 	if (((thisDocumentInfo instanceof BioModelInfo) && !(latestDocumentInfo instanceof BioModelInfo)) ||
 		((thisDocumentInfo instanceof MathModelInfo) && !(latestDocumentInfo instanceof MathModelInfo)) ||
 		((thisDocumentInfo instanceof GeometryInfo) && !(latestDocumentInfo instanceof GeometryInfo))) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : The two documents are not of the same type!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : The two documents are not of the same type!");
 		return;
 	}
 	//
@@ -419,7 +422,7 @@ public void comparePreviousEdition()  {
 	// get selected DocumentInfo info from original Tree.
 	//
 	if (getPanelSelection()==null){
-		PopupGenerator.showErrorDialog("Error Comparing documents : No first document selected");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : No first document selected");
 		return;
 	}
 	VCDocumentInfo thisDocumentInfo = getPanelSelection();
@@ -430,11 +433,11 @@ public void comparePreviousEdition()  {
 	try {
 		documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
 	} catch (DataAccessException e) {
-		PopupGenerator.showErrorDialog("Error accessing second document!");
+		PopupGenerator.showErrorDialog(this, "Error accessing second document!");
 	}
 	
 	if (documentVersionsList == null || documentVersionsList.length == 0) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : Not Enough Versions to Compare!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : Not Enough Versions to Compare!");
 		return;
 	}
 	//
@@ -457,7 +460,7 @@ public void comparePreviousEdition()  {
 	}
 
 	if (previousDocumentInfo.equals(documentVersionsList[0]) && !bPrevious) {
-		PopupGenerator.showErrorDialog("Current Version is the oldest! Choose another Version or Model to compare!");
+		PopupGenerator.showErrorDialog(this, "Current Version is the oldest! Choose another Version or Model to compare!");
 		return;
 	}
 
@@ -465,7 +468,7 @@ public void comparePreviousEdition()  {
 	if (((thisDocumentInfo instanceof BioModelInfo) && !(previousDocumentInfo instanceof BioModelInfo)) ||
 		((thisDocumentInfo instanceof MathModelInfo) && !(previousDocumentInfo instanceof MathModelInfo)) ||
 		((thisDocumentInfo instanceof GeometryInfo) && !(previousDocumentInfo instanceof GeometryInfo))) {
-		PopupGenerator.showErrorDialog("Error Comparing documents : The two documents are not of the same type!");
+		PopupGenerator.showErrorDialog(this, "Error Comparing documents : The two documents are not of the same type!");
 		return;
 	}
 
@@ -528,11 +531,11 @@ public void findModelsUsingSelectedGeometry() {
 	VCDocumentInfo selectedDocument = getPanelSelection();
 	
 	if(!(selectedDocument instanceof GeometryInfo)){
-		org.vcell.util.gui.DialogUtils.showErrorDialog("DatabaseWindowManager.findModelsUsingSelectedGeometry expected a GeometryInfo\nbut got type="+selectedDocument.getClass().getName()+" instead");
+		PopupGenerator.showErrorDialog(this, "DatabaseWindowManager.findModelsUsingSelectedGeometry expected a GeometryInfo\nbut got type="+selectedDocument.getClass().getName()+" instead");
 		return;
 	}
 
-	org.vcell.util.ReferenceQuerySpec rqs = new org.vcell.util.ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
+	ReferenceQuerySpec rqs = new ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
 	try{
 		org.vcell.util.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
 		//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
@@ -595,7 +598,7 @@ public void findModelsUsingSelectedGeometry() {
 
 		if(choices.size() > 0){
 			Object[] listObj = choices.keySet().toArray();
-			Object o = org.vcell.util.gui.DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
+			Object o = DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
 			if(o != null){
 				org.vcell.util.document.VersionableTypeVersion v = (org.vcell.util.document.VersionableTypeVersion)choices.get(o);
 				//System.out.println(v);
@@ -609,11 +612,11 @@ public void findModelsUsingSelectedGeometry() {
 			}
 		}else{
 			if(dependants == null){
-				org.vcell.util.gui.DialogUtils.showInfoDialog(
+				DialogUtils.showInfoDialog(getComponent(),
 					"No Model references found.\n"+
 					(rqr.getVersionableFamily().getTarget().getVersion().getFlag().isArchived()?"Info: Not Deletable (key="+rqr.getVersionableFamily().getTarget().getVersion().getVersionKey()+") because legacy ARCHIVE set":""));
 			}else{
-				org.vcell.util.gui.DialogUtils.showInfoDialog(
+				DialogUtils.showInfoDialog(getComponent(),
 					"No current Model references found.\n"+
 					"Geometry has internal database references from\n"+
 					"previously linked Model(s).\n"+
@@ -624,7 +627,7 @@ public void findModelsUsingSelectedGeometry() {
 
 		
 		}catch(DataAccessException e){
-		org.vcell.util.gui.DialogUtils.showErrorDialog("Error find Geometry Model references\n"+e.getClass().getName()+"\n"+e.getMessage());
+			DialogUtils.showErrorDialog(getComponent(), "Error find Geometry Model references\n"+e.getClass().getName()+"\n"+e.getMessage());
 	}
 	
 }
@@ -655,7 +658,7 @@ public cbit.vcell.desktop.BioModelDbTreePanel getBioModelDbTreePanel() {
  * Creation date: (6/8/2004 1:08:29 AM)
  * @return java.lang.String
  */
-java.awt.Component getComponent() {
+public java.awt.Component getComponent() {
 	return getDatabaseWindowPanel();
 }
 
@@ -704,7 +707,7 @@ private VCDocumentInfo[] getDocumentVersionDates(VCDocumentInfo thisDocumentInfo
  	}
 
  	if (documentBranchList == null) {
-	 	PopupGenerator.showErrorDialog("Error comparing BioModels : No Versions of document ");
+	 	PopupGenerator.showErrorDialog(this, "Error comparing BioModels : No Versions of document ");
 	 	return new VCDocumentInfo[0];
  	}
 
@@ -854,7 +857,7 @@ public void openLatest() {
 		try {
 			documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
 		} catch (DataAccessException e) {
-			PopupGenerator.showErrorDialog("Error accessing document!");
+			PopupGenerator.showErrorDialog(this, "Error accessing document!");
 		}
 		
 		//
@@ -876,7 +879,7 @@ public void openLatest() {
 			latestDocumentInfo = thisDocumentInfo;
 		}
 	} else {
-		PopupGenerator.showErrorDialog("Error Opening Latest Document : no document currently selected.");
+		PopupGenerator.showErrorDialog(this, "Error Opening Latest Document : no document currently selected.");
 		return;
 	}	
 	getRequestManager().openDocument(latestDocumentInfo, this, true);
@@ -935,7 +938,7 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 		}
 		case VCDocument.XML_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
-			File xmlFile = showFileChooserDialog(FileFilters.FILE_FILTER_XML);
+			File xmlFile = showFileChooserDialog(requester, FileFilters.FILE_FILTER_XML);
 			return new cbit.vcell.xml.XMLInfo(XmlUtil.getXMLString(xmlFile.getAbsolutePath()));
 		}		
 		default: {
@@ -1011,9 +1014,9 @@ private Object showAccessPermissionDialog(final JComponent aclEditor,final Compo
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private File showFileChooserDialog(FileFilter fileFilter) throws Exception {
+private File showFileChooserDialog(TopLevelWindowManager requester, FileFilter fileFilter) throws Exception {
 
-	return showFileChooserDialog(fileFilter,getUserPreferences());
+	return showFileChooserDialog(requester, fileFilter,getUserPreferences());
 }
 
 
@@ -1021,19 +1024,19 @@ private File showFileChooserDialog(FileFilter fileFilter) throws Exception {
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-public static File showFileChooserDialog(final FileFilter fileFilter, final UserPreferences currentUserPreferences) throws Exception{
+public static File showFileChooserDialog(TopLevelWindowManager requester, final FileFilter fileFilter, final UserPreferences currentUserPreferences) throws Exception{
 	// the boolean isXMLNotImage is true if we are trying to choose an XML file
 	// It is false if we are trying to choose an image file
 	// This is used to set the appropriate File filters.
 
 	String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
-	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
+	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
 	// setting fileFilter for xml files
 	fileChooser.setFileFilter(fileFilter);
 	
-    int returnval = fileChooser.showOpenDialog(null);
+    int returnval = fileChooser.showOpenDialog(requester.getComponent());
     if (returnval == JFileChooser.APPROVE_OPTION) {
         File selectedFile = fileChooser.getSelectedFile();
         //reset the user preference for the default path, if needed.
@@ -1152,6 +1155,6 @@ public String showSaveDialog(final int documentType, final Component requester, 
 }
 
 public void reconnect() {
-	getRequestManager().reconnect();
+	getRequestManager().reconnect(this);
 }
 }

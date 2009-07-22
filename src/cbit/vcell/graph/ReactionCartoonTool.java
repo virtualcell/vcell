@@ -18,8 +18,10 @@ import cbit.vcell.model.*;
 import javax.swing.*;
 import cbit.vcell.model.gui.SimpleReactionPanelDialog;
 import cbit.vcell.model.gui.FluxReaction_Dialog;
+import cbit.vcell.publish.ITextWriter;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.ZEnforcer;
 
@@ -597,16 +599,16 @@ protected void menuAction(Shape shape, String menuAction) {
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 			if(species != null){
 				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
-				pasteSpecies(species,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
+				pasteSpecies(getGraphPane(), species,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
 			}
 			//See if ReactionStep[]
 			ReactionStep[] reactionStepArr = (ReactionStep[])VCellTransferable.getFromClipboard(VCellTransferable.REACTIONSTEP_ARRAY_FLAVOR);
 			if(reactionStepArr != null){
 				try {
-					pasteReactionSteps(reactionStepArr,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), getGraphPane());
+					pasteReactionSteps(getGraphPane(), reactionStepArr,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), getGraphPane());
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error while pasting reaction:\n" + e.getMessage());
+					PopupGenerator.showErrorDialog(getGraphPane(), "Error while pasting reaction:\n" + e.getMessage());
 				}
 			}
 		}
@@ -635,9 +637,9 @@ protected void menuAction(Shape shape, String menuAction) {
 				}
 			}
 		}catch (java.beans.PropertyVetoException e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 		}catch (Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 		}
 				
 	}else if (menuAction.equals(ADD_ENZYME_REACTION_MENU_ACTION)){
@@ -646,24 +648,24 @@ protected void menuAction(Shape shape, String menuAction) {
 				showReactionBrowserDialog(getReactionCartoon(),((ReactionContainerShape)shape).getStructure(),null);
 			}
 		}catch(Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 		}
 	} else if (menuAction.equals(HIGH_RES_MENU_ACTION) || menuAction.equals(MED_RES_MENU_ACTION) ||
 			   menuAction.equals(LOW_RES_MENU_ACTION)) { 
 		try {
 			String resType = null;
 			if (menuAction.equals(HIGH_RES_MENU_ACTION)) {
-				resType = cbit.vcell.publish.ITextWriter.HIGH_RESOLUTION;
+				resType = ITextWriter.HIGH_RESOLUTION;
 			} else if (menuAction.equals(MED_RES_MENU_ACTION)) {
-				resType = cbit.vcell.publish.ITextWriter.MEDIUM_RESOLUTION;
+				resType = ITextWriter.MEDIUM_RESOLUTION;
 			} else if (menuAction.equals(LOW_RES_MENU_ACTION)) {
-				resType = cbit.vcell.publish.ITextWriter.LOW_RESOLUTION;
+				resType = ITextWriter.LOW_RESOLUTION;
 			}
 			if(shape instanceof ReactionContainerShape){
 				showSaveReactionImageDialog(((ReactionContainerShape)shape).getStructure(), resType);
 			}
 		} catch(Exception e) {
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 		}
 	}else if(menuAction.equals(ANNOTATE_MENU_ACTION)){
 		if(shape instanceof ReactionStepShape){
@@ -671,7 +673,7 @@ protected void menuAction(Shape shape, String menuAction) {
 			//System.out.println("Menu action annotate activated...");
 			ReactionStep rs = ((ReactionStepShape)shape).getReactionStep();
 			try{
-				String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(getGraphPane(), rs.getAnnotation());
+				String newAnnotation = DialogUtils.showAnnotationDialog(getGraphPane(), rs.getAnnotation());
 				rs.setAnnotation(newAnnotation);
 			}catch(org.vcell.util.gui.UtilCancelException e){
 				//Do Nothing
@@ -817,7 +819,7 @@ public void mouseClicked(java.awt.event.MouseEvent event) {
 		Point canvasLoc = getGraphPane().getLocationOnScreen();
 		canvasLoc.x += screenPoint.x;
 		canvasLoc.y += screenPoint.y;
-		cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+		PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 	}				
 }
 

@@ -13,7 +13,6 @@ import java.util.Hashtable;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
@@ -93,7 +92,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	
 	if (e.getSource() instanceof ApplicationEditor && e.getActionCommand().equals("Create Math Model")) {
 		SimulationContext sc = (SimulationContext)((ApplicationEditor)e.getSource()).getSimulationWorkspace().getSimulationOwner();
-		getRequestManager().createMathModelFromApplication("Untitled", sc);
+		getRequestManager().createMathModelFromApplication(this, "Untitled", sc);
 	}
 	if (e.getSource() instanceof ApplicationEditor && e.getActionCommand().equals("View / Change Geometry")) {
 		SimulationContext sc = (SimulationContext)((ApplicationEditor)e.getSource()).getSimulationWorkspace().getSimulationOwner();
@@ -114,7 +113,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				} 
 			}
 		}
-		DialogUtils.showErrorDialog("Geometry "+geom.getName()+" key="+geom.getVersion().getVersionKey()+" not found in application hash");
+		DialogUtils.showErrorDialog(getComponent(), "Geometry "+geom.getName()+" key="+geom.getVersion().getVersionKey()+" not found in application hash");
 	}
 	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("View Surfaces")) {
 		Geometry geom = ((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
@@ -133,7 +132,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				} 
 			}
 		}
-		DialogUtils.showErrorDialog("Geometry "+geom.getName()+" ley="+geom.getVersion().getVersionKey()+" not found in application hash");
+		DialogUtils.showErrorDialog(getComponent(), "Geometry "+geom.getName()+" ley="+geom.getVersion().getVersionKey()+" not found in application hash");
 	}	
 }
 
@@ -591,7 +590,7 @@ private void showSurfaceViewerFrame(SimulationContext simContext) {
 			}
 			
 		}catch(Exception e){
-			DialogUtils.showErrorDialog("Error Generating Surfaces\n"+e.getMessage());
+			DialogUtils.showErrorDialog(getComponent(), "Error Generating Surfaces\n"+e.getMessage());
 		}
 	}
 }
@@ -806,7 +805,7 @@ public void showMIRIAMWindow() {
 								}
 							}
 						}catch(Exception e2){
-							DialogUtils.showErrorDialog("Error during Edit action\n"+e2.getMessage());
+							DialogUtils.showErrorDialog(getComponent(), "Error during Edit action\n"+e2.getMessage());
 						}
 					}
 				}

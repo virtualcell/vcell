@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.simulation;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -319,14 +320,14 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 /**
  * Comment
  */
-int copySimulations(Simulation[] sims) throws java.beans.PropertyVetoException {
+int copySimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
 	if (sims == null || sims.length == 0) {
 		return -1;
 	}
 	for (int i = 0; i < sims.length; i++){
 		String errorMessage = checkCompatibility(sims[i]);
 		if(errorMessage != null){
-			PopupGenerator.showErrorDialog(errorMessage+"\nUpdate Math before copying simulations");
+			PopupGenerator.showErrorDialog(requester, errorMessage+"\nUpdate Math before copying simulations");
 			return -1;
 		}
 	}
@@ -366,7 +367,7 @@ void editSimulation(JComponent parent, Simulation simulation) {
 	
 	String errorMessage = checkCompatibility(simulation);
 	if(errorMessage != null){
-		PopupGenerator.showErrorDialog(errorMessage+"\nUpdate Math before editing");
+		PopupGenerator.showErrorDialog(parent, errorMessage+"\nUpdate Math before editing");
 		return;
 	}
 	
