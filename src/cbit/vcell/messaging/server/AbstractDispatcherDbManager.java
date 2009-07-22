@@ -146,7 +146,7 @@ SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobS
 	} else if (!oldJobStatus.isRunning() || !oldExeStatus.hasData() && hasData) {
 		newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), (hostName != null) ? hostName : oldExeStatus.getComputeHost(), null, null, hasData);		
 	} else {
-		return new SimulationJobStatus(oldJobStatus, solverMsg);
+		return oldJobStatus;
 	}
 	
 	// new job status
@@ -254,11 +254,9 @@ public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus,
 		if (oldJobStatus != null && !oldJobStatus.isDone()) {
 
 			SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
-
-			SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
-			if (oldJobStatus.isRunning() && oldExeStatus != null && oldExeStatus.hasData() == hasData) { // running statuses, don't always store into the database				
-				updateLatestUpdateDate(newJobStatus, adminDb, vcSimID, jobIndex);
-				return newJobStatus;
+			if (oldJobStatus == newJobStatus) { // running statuses, don't always store into the database				
+				updateLatestUpdateDate(oldJobStatus, adminDb, vcSimID, jobIndex);
+				return oldJobStatus;
 			} else {
 				newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
 				return newJobStatus;
