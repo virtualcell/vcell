@@ -57,22 +57,6 @@ public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimI
 	fieldJobIndex = jobIndex;
 }
 
-public SimulationJobStatus(SimulationJobStatus origSimulationJobStatus, SimulationMessage simMessage){
-	if (simMessage == null) {
-		throw new RuntimeException("SimulationJobStatus : SimulationMessage should not be null");
-	}
-	fieldTimeDateStamp = origSimulationJobStatus.fieldTimeDateStamp;
-	fieldServerID = origSimulationJobStatus.fieldServerID;
-	fieldVCSimID = origSimulationJobStatus.fieldVCSimID;
-	fieldSubmitDate = origSimulationJobStatus.fieldSubmitDate;
-	fieldSchedulerStatus = origSimulationJobStatus.fieldSchedulerStatus;
-	fieldTaskID = origSimulationJobStatus.fieldTaskID;
-	fieldSimulationMessage = simMessage;
-	fieldSimulationExecutionStatus = origSimulationJobStatus.fieldSimulationExecutionStatus;
-	fieldSimulationQueueEntryStatus = origSimulationJobStatus.fieldSimulationQueueEntryStatus;
-	fieldJobIndex = origSimulationJobStatus.fieldJobIndex;
-}
-
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
