@@ -242,7 +242,7 @@ public class NetCDFWriterTest {
 				try{
 					ncWriter.writeHybridInputFile();
 				}catch (Exception e){
-					e.printStackTrace();				
+					e.printStackTrace();
 				}
 				
 				System.out.println("The end of main function.");

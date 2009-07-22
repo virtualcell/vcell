@@ -54,7 +54,7 @@ public static void dispatch(Component requester, Hashtable<String, Object> hash,
  * Creation date: (5/31/2004 5:37:06 PM)
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
-private static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, 
+public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, 
 		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
 	// check tasks - swing non-blocking can be only at the end
 //	if (bInProgress) {
@@ -78,7 +78,7 @@ private static void dispatch(final Component requester, final Hashtable<String, 
 		private AsynchProgressPopup pp = null;
 		public Object construct() {
 			bInProgress = true;
-			if (bShowProgressPopup) {				
+			if (bShowProgressPopup) {
 				pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
 				if (bInputBlocking) {
 					pp.startKeepOnTop();

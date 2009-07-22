@@ -117,9 +117,9 @@ protected void menuAction(Shape shape, String menuAction) {
 				getStructureMappingCartoon().getGeometryContext().assignFeature(fm.getFeature(),null);
 				getStructureMappingCartoon().refreshAll();
 			}catch (IllegalMappingException e){
-				PopupGenerator.showErrorDialog(getJDesktopPane(), e.getMessage());
+				PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 			}catch (java.beans.PropertyVetoException e){
-				PopupGenerator.showErrorDialog(getJDesktopPane(), e.getMessage());
+				PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 			}
 		}
 						
