@@ -1038,7 +1038,7 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 				);
 			getImagePlaneManagerPanel1().setSourceDataInfo(sdi);
 		}catch(Exception e){
-			PopupGenerator.showErrorDialog(e.getMessage());
+			PopupGenerator.showErrorDialog(GeometrySummaryPanel.this, e.getMessage());
 		}
 	}else{
 		getImagePlaneManagerPanel1().setSourceDataInfo(null);
@@ -1106,7 +1106,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.JTable;
+
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
@@ -24,9 +28,9 @@ import cbit.vcell.units.VCUnitException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ModelParameterTableModel extends org.vcell.util.gui.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
+public class ModelParameterTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
 
-	private class ParameterColumnComparator implements Comparator {
+	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
 		protected boolean ascending;
 
@@ -40,10 +44,7 @@ public class ModelParameterTableModel extends org.vcell.util.gui.sorttable.Manag
 		 * zero, or a positive integer as the first argument is less than, equal
 		 * to, or greater than the second.<p>
 		 */
-		public int compare(Object o1, Object o2){
-			
-			cbit.vcell.model.Parameter parm1 = (cbit.vcell.model.Parameter)o1;
-			cbit.vcell.model.Parameter parm2 = (cbit.vcell.model.Parameter)o2;
+		public int compare(Parameter parm1, Parameter parm2){
 			
 			switch (index){
 				case COLUMN_NAME:{
@@ -101,13 +102,15 @@ public class ModelParameterTableModel extends org.vcell.util.gui.sorttable.Manag
 	public static final int COLUMN_ANNOTATION = 5;
 	private String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.model.Model fieldModel = null;
+	private Model fieldModel = null;
+	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ModelParameterTableModel() {
+public ModelParameterTableModel(JTable table) {
 	super();
+	ownerTable = table;
 	addPropertyChangeListener(this);
 }
 
@@ -166,7 +169,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_NAME:{
 			return String.class;
@@ -645,10 +648,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter name:\n"+e.getMessage());
+					cbit.vcell.client.PopupGenerator.showErrorDialog(ownerTable, "Error changing parameter name:\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter name:\n"+e.getMessage());
+					cbit.vcell.client.PopupGenerator.showErrorDialog(ownerTable, "Error changing parameter name:\n"+e.getMessage());
 				}
 				break;
 			}
@@ -683,10 +686,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("Error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Error:\n"+e.getMessage());
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("Expression error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
 				}
 				break;
 			}
@@ -709,7 +712,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (VCUnitException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("Error changing parameter units:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "Error changing parameter units:\n"+e.getMessage());
 				}
 				break;
 			}

@@ -215,7 +215,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
 				connEtoC38(e);
 			if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
-				getWindowManager().getRequestManager().updateUserRegistration(false);
+				getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), false);
 			}
 			//added 'Application Menu' to main menu bar. May 2009
 			if (e.getSource() == DocumentWindow.this.getJMenuItemNonStochApp() ||
@@ -2156,9 +2156,9 @@ private JDialog getLoginDialog() {
 					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
 				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
 					loginDialog.dispose();
-					getWindowManager().getRequestManager().updateUserRegistration(true);
+					getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), true);
 				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
-					getWindowManager().getRequestManager().sendLostPassword(loginDialog.getUser());
+					getWindowManager().getRequestManager().sendLostPassword(getWindowManager(), loginDialog.getUser());
 				}
 			}
 		};
@@ -2999,8 +2999,7 @@ private void initialize() {
  */
 private void invokeOnlineHelp() {
 	
-	PopupGenerator.browserLauncher(
-		ClientServerManager.ONLINEHELP_URL_STRING,
+	PopupGenerator.browserLauncher(this, ClientServerManager.ONLINEHELP_URL_STRING,
 		"Please visit "+ClientServerManager.ONLINEHELP_URL_STRING+" for Online Help",
 		getTopLevelWindowManager().isApplet());
 }
@@ -3430,7 +3429,7 @@ private JMenuItem getJMenuItemMIRIAM() {
 				if(getTopLevelWindowManager() instanceof BioModelWindowManager){
 					((BioModelWindowManager)getTopLevelWindowManager()).showMIRIAMWindow();
 				}else{
-					PopupGenerator.showInfoDialog("Sorry, Currently only BioModels have a MIRIAM editor.");
+					PopupGenerator.showInfoDialog(DocumentWindow.this, "Sorry, Currently only BioModels have a MIRIAM editor.");
 				}
 			}
 		});

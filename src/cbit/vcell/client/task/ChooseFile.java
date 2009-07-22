@@ -1,6 +1,5 @@
 package cbit.vcell.client.task;
 import cbit.vcell.client.server.*;
-import cbit.util.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
@@ -12,15 +11,16 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.document.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -199,7 +199,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) || 
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) ) {
 				// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
-				cbit.vcell.model.Structure[] structures = bioModel.getModel().getStructures();
+				Structure[] structures = bioModel.getModel().getStructures();
 				// get the nonspatial simulationContexts corresponding to names in applicableAppNameList 
 				// This is needed in ApplnSelectionAndStructureSizeInputPanel
 				SimulationContext[] nonSpatialSimContexts = new SimulationContext[applicableAppNameList.size()];
@@ -216,7 +216,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				double structSize = 1.0;
 				int structSelection = -1;
 				int option = JOptionPane.CANCEL_OPTION;
-				cbit.vcell.solver.Simulation chosenSimulation = null;
+				Simulation chosenSimulation = null;
 
 				ApplnSelectionAndStructureSizeInputPanel applnStructInputPanel = null;
 				while (structSelection < 0) {
@@ -225,12 +225,12 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					applnStructInputPanel.setStructures(structures);
 					applnStructInputPanel.setPreferredSize(new java.awt.Dimension(350, 400));
 					applnStructInputPanel.setMaximumSize(new java.awt.Dimension(350, 400));
-					option = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null, applnStructInputPanel, "Select Application and Specify Structure Size to Export:");
+					option = DialogUtils.showComponentOKCancelDialog(null, applnStructInputPanel, "Select Application and Specify Structure Size to Export:");
 					structSelection = applnStructInputPanel.getStructSelectionIndex();
 					if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
 						break;
 					} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
-						org.vcell.util.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
+						DialogUtils.showErrorDialog(currentWindow, "Please select a structure and set its size");
 					}
 				}
 				if (option == JOptionPane.OK_OPTION) {
@@ -248,7 +248,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 						 (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
 						 (!geoContext.isAllSizeSpecifiedPositive() && !geoContext.isAllVolFracAndSurfVolSpecified()) ||
 						 (geoContext.isAllSizeSpecifiedNull() && !geoContext.isAllVolFracAndSurfVolSpecified()) ) {
-						org.vcell.util.gui.DialogUtils.showErrorDialog("Cannot export to SBML without compartment sizes being set. This can be automatically " +
+						org.vcell.util.gui.DialogUtils.showErrorDialog(currentWindow, "Cannot export to SBML without compartment sizes being set. This can be automatically " +
 								" computed if the absolute size of at least one compartment and the relative sizes (Surface-to-volume-ratio/Volume-fraction) " +
 								" of all compartments are known. Sufficient information is not available to perform this computation." +
 								"\n\nThis can be fixed by going back to the application '" + chosenSimContextName + "' and setting structure sizes in the 'StructureMapping' tab.");

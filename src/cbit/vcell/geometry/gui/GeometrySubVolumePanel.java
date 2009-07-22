@@ -707,7 +707,7 @@ private cbit.vcell.geometry.GeometrySpec getGeometrySpec() {
 private GeometrySubVolumeTableModel getgeometrySubVolumeTableModel() {
 	if (ivjgeometrySubVolumeTableModel == null) {
 		try {
-			ivjgeometrySubVolumeTableModel = new cbit.vcell.geometry.gui.GeometrySubVolumeTableModel();
+			ivjgeometrySubVolumeTableModel = new GeometrySubVolumeTableModel(getScrollPaneTable());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -814,7 +814,7 @@ private javax.swing.JPanel getJPanel1() {
 							break;
 						} catch (Exception e1) {
 							e1.printStackTrace();
-							DialogUtils.showErrorDialog("Error adding shape:\n"+e1.getMessage());
+							DialogUtils.showErrorDialog(GeometrySubVolumePanel.this, "Error adding shape:\n"+e1.getMessage());
 						}
 					}
 				}

@@ -3,7 +3,8 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import org.vcell.util.TokenMangler;
+import javax.swing.JTable;
+
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.PopupGenerator;
@@ -28,14 +29,16 @@ public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTable
 	private final int COLUMN_VALUE = 1;
 	private String LABELS[] = { "Name", "Value" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.geometry.Geometry fieldGeometry = null;
+	private Geometry fieldGeometry = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
+	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public GeometrySubVolumeTableModel() {
+public GeometrySubVolumeTableModel(JTable table) {
 	super();
+	ownerTable = table;
 }
 
 
@@ -290,7 +293,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 				break;
 			}

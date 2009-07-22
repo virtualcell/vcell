@@ -11,13 +11,10 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.Hashtable;
@@ -53,10 +50,8 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 
 import loci.formats.AWTImageTools;
-import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
-import loci.formats.ImageTools;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -331,11 +326,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 						imagePane.setCrop(null, null);
 						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
 					}else{
-						DialogUtils.showInfoDialog("AutoCrop: No zero values around outer edges.");
+						DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this, "AutoCrop: No zero values around outer edges.");
 					}
 				} catch (Exception e1) {
 					e1.printStackTrace();
-					DialogUtils.showErrorDialog("Error AutoCrop:\n"+e1.getMessage());
+					DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "Error AutoCrop:\n"+e1.getMessage());
 				}finally{
 					waitCursor(false);				
 				}
@@ -388,7 +383,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 					//Do Nothing
 				} catch (Exception e1) {
 					e1.printStackTrace();
-					DialogUtils.showErrorDialog("Error importing ROI"+e1.getMessage());
+					DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "Error importing ROI"+e1.getMessage());
 				}finally{
 					if(iFormatReader != null){try{iFormatReader.close();}catch(Exception e2){e2.printStackTrace();}}
 				}
@@ -436,7 +431,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				if(bHasROI){
 					firePropertyChange(FRAP_DATA_TIMEPLOTROI_PROPERTY, null,new Boolean(true));
 				}else{
-					DialogUtils.showInfoDialog(
+					DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this, 
 						"ROI for "+roi.getROIName()+" is empty.\n"+
 						"Paint, Fill or Import ROI using ROI tools.");
 				}
@@ -593,7 +588,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				try{
 					String newROIName = PopupGenerator.showInputDialog0(OverlayEditorPanelJAI.this, "New ROI Name", "");
 					if(newROIName == null || newROIName.length() == 0){
-						PopupGenerator.showErrorDialog("No ROI Name entered, try again.");
+						PopupGenerator.showErrorDialog(OverlayEditorPanelJAI.this, "No ROI Name entered, try again.");
 					}else{
 						boolean bNameOK = true;
 						for (int i = 0; i < roiComboBox.getItemCount(); i++) {
@@ -605,7 +600,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 						if(bNameOK){
 							addROIName(newROIName, true, newROIName);
 						}else{
-							PopupGenerator.showErrorDialog("ROI Name "+newROIName+" already used, try again.");
+							PopupGenerator.showErrorDialog(OverlayEditorPanelJAI.this, "ROI Name "+newROIName+" already used, try again.");
 						}
 					}
 				}catch(UtilCancelException cancelExc){

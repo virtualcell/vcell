@@ -83,29 +83,6 @@ public static void removeFromStack(Window window) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/26/2004 11:38:45 PM)
- * @param dialog java.awt.Dialog
- */
-
-/*** SO FAR WE ONLY ACCEPT MODAL DIALOGS ***/
-
-public static void showModalDialogOnTop(Dialog dialog) {
-	if (dialog.isModal()) {
-		showOnTop(dialog, null);
-	} else {
-		try {
-			throw new RuntimeException("ERROR - dialog is not modal: " + dialog);
-		} catch (Exception exc) {
-			exc.printStackTrace(System.out);
-		}
-		dialog.setVisible(true); // just show it
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/26/2004 11:38:45 PM)
@@ -115,6 +92,11 @@ public static void showModalDialogOnTop(Dialog dialog) {
 /*** SO FAR WE ONLY ACCEPT MODAL DIALOGS ***/
 
 public static void showModalDialogOnTop(Dialog dialog, Component toBeCenteredOn) {
+	if (toBeCenteredOn == null) {
+		System.out.println("ZEnforcer.showModalDialogOnTop(), toBeCenteredOn is null, dialog has no parent, please try best to fix it!!!");
+		Thread.dumpStack();
+	}
+
 	if (dialog.isModal()) {
 		showOnTop(dialog, toBeCenteredOn);
 	} else {

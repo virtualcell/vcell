@@ -13,6 +13,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GlassPane;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.awt.event.*;
 /**
  * Insert the type's description here.
@@ -398,6 +399,33 @@ private Hashtable<String, TopLevelWindow> getWindowsHash() {
 	return windowsHash;
 }
 
+public TopLevelWindowManager getFocusedWindowManager() {
+	Set<Entry<String, TopLevelWindow>> entrySet = getWindowsHash().entrySet();
+	Iterator<Entry<String, TopLevelWindow>> iter = entrySet.iterator();
+	TopLevelWindowManager showingTopLevelWindowManager = null;
+	TopLevelWindowManager firstTopLevelWindowManager = null;
+	while (iter.hasNext()) {
+		Entry<String, TopLevelWindow> entry = iter.next();		
+		JFrame window = (JFrame)entry.getValue();
+		TopLevelWindowManager topLevelWindowManager = getManagersHash().get(entry.getKey());
+		if (window == KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow()) {
+			return topLevelWindowManager;
+		}
+		if (firstTopLevelWindowManager == null) {
+			firstTopLevelWindowManager = topLevelWindowManager;
+		}
+		if (window.isShowing() && showingTopLevelWindowManager == null) {
+			showingTopLevelWindowManager = topLevelWindowManager;
+		}
+	}
+	// if none has focus, pick one that are showing
+	if (showingTopLevelWindowManager != null) {
+		return showingTopLevelWindowManager;
+	}
+
+	// pick anything
+	return firstTopLevelWindowManager;
+}
 
 /**
  * Insert the method's description here.

@@ -14,6 +14,8 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.DataAccessException;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.data.DataSelectRetrieve;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 /**
  * Insert the type's description here.
@@ -1851,10 +1853,10 @@ private void jButtonStats_ActionPerformed(java.awt.event.ActionEvent actionEvent
 				try{
 					getSurfaceCollectionDataInfoProvider().plotTimeSeriesData(indices,true,false,true);	
 				}catch(Exception e2){
-					cbit.vcell.client.PopupGenerator.showErrorDialog(e2.getMessage());
+					PopupGenerator.showErrorDialog(this, e2.getMessage());
 				}
 			}else{
-				cbit.vcell.client.PopupGenerator.showErrorDialog("Region of Interest must be defined to calculate Statistics");
+				PopupGenerator.showErrorDialog(this, "Region of Interest must be defined to calculate Statistics");
 			}
 }
 
@@ -1904,10 +1906,10 @@ public void pickByAnalytic() {
 
 	try{
 		String[] surfNames = getSurfaceCollectionDataInfo().getSurfaceNames();
-		String surfSelect = (String)cbit.vcell.client.PopupGenerator.showListDialog(this,surfNames,"Apply Analytic Area to Surface");
+		String surfSelect = (String)PopupGenerator.showListDialog(this,surfNames,"Apply Analytic Area to Surface");
 
-		cbit.vcell.client.data.DataSelectRetrieve.DSRState dsrState = dsr.getDSRState();
-		boolean pickOP = (dsrState.selectionType == cbit.vcell.client.data.DataSelectRetrieve.SELECT_TYPE_ADD?true:false);
+		DataSelectRetrieve.DSRState dsrState = dsr.getDSRState();
+		boolean pickOP = (dsrState.selectionType == DataSelectRetrieve.SELECT_TYPE_ADD?true:false);
 		cbit.vcell.parser.Expression xyzExp = dsrState.selectAreaAnalytic;
 		
 		if(xyzExp != null){
@@ -1929,7 +1931,7 @@ public void pickByAnalytic() {
 			updateAreaOfInterest();
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Error while picking Analytic AreaOfInterest\n"+e.getClass().getName()+"\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error while picking Analytic AreaOfInterest\n"+e.getClass().getName()+"\n"+e.getMessage());
 	}
 
 }

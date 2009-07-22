@@ -945,7 +945,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 
 		final FieldDataWindowManager.SimInfoHolder simInfoHolder = fieldDataWindowManager.selectSimulationFromDesktop(this);
 		if(simInfoHolder == null){
-			PopupGenerator.showErrorDialog("Please open a Bio or Math model containing the spatial (non-compartmental) simulation you wish to use to create a new Field Data");
+			PopupGenerator.showErrorDialog(this, "Please open a Bio or Math model containing the spatial (non-compartmental) simulation you wish to use to create a new Field Data");
 			return;
 		}
 		//Check that the sim is in a state that can be copied
@@ -998,7 +998,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 	}catch(UserCancelException e){
 		return;
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog("Error creating Field Data from simulation\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error creating Field Data from simulation\n"+e.getMessage());
 	}
 }
 
@@ -1036,7 +1036,7 @@ private AsynchClientTask[] fdFromFile() {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec)hashTable.get("argfdos");
 			if (argfdos == null) {
-				File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
+				File imageFile = DatabaseWindowManager.showFileChooserDialog(fieldDataWindowManager, FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
 				hashTable.put("imageFile", imageFile);
 			}
 		}
@@ -1085,7 +1085,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	
 	if(!fieldDataMainList.externalDataIdentifier.getOwner().equals(
 		clientRequestManager.getDocumentManager().getUser())){
-		DialogUtils.showErrorDialog("Delete failed: User "+clientRequestManager.getDocumentManager().getUser().getName()+
+		DialogUtils.showErrorDialog(this, "Delete failed: User "+clientRequestManager.getDocumentManager().getUser().getName()+
 				"does not own FieldData '"+fieldDataMainList.externalDataIdentifier.getName()+"'");
 	}
 	if(PopupGenerator.showComponentOKCancelDialog(
@@ -1184,7 +1184,7 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 			ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 		} catch (Exception e) {
 			e.printStackTrace();
-			PopupGenerator.showErrorDialog("Error creating Geometry\n"+e.getMessage());
+			PopupGenerator.showErrorDialog(this, "Error creating Geometry\n"+e.getMessage());
 		}
 	}
 	
@@ -1217,7 +1217,7 @@ private void jTree1_TreeExpanded(final javax.swing.event.TreeExpansionEvent tree
 			return;
 		}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog("Error getting Field Data Info\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error getting Field Data Info\n"+e.getMessage());
 		return;
 	}
 	
@@ -1386,19 +1386,19 @@ private AsynchClientTask[] addNewExternalData(final boolean isFromSimulation) {
 					try{
 						userDefinedFDOS.extent = fdip.getExtent();
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog("Problem with Extent values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Extent values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
 						continue;
 						}
 					try{
 						userDefinedFDOS.origin = fdip.getOrigin();
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog("Problem with Origin values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Origin values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
 						continue;
 					}
 					try{
 						userDefinedFDOS.varNames = fdip.getVariableNames();
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog("Problem with Variable names. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Variable names. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
 						continue;
 					}
 					userDefinedFDOS.annotation = fdip.getAnnotation();
@@ -1418,7 +1418,7 @@ private AsynchClientTask[] addNewExternalData(final boolean isFromSimulation) {
 							}
 						}
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog("Error saving Field Data Name to Database. Try again.\n"+e.getMessage());
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Error saving Field Data Name to Database. Try again.\n"+e.getMessage());
 						continue;
 					}
 					hashTable.put("userDefinedFDOS", userDefinedFDOS);
@@ -1682,7 +1682,7 @@ private JButton getJButtonViewAnnot() {
 					javax.swing.tree.DefaultMutableTreeNode lastPathComponent =
 						(javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
 					if(lastPathComponent.getUserObject() instanceof FieldDataMainList){
-						PopupGenerator.showInfoDialog(
+						PopupGenerator.showInfoDialog(FieldDataGUIPanel.this, 
 								((FieldDataMainList)(lastPathComponent.getUserObject())).extDataAnnot);
 					}
 				}

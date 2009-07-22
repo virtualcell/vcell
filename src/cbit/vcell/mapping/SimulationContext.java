@@ -1754,7 +1754,11 @@ public void checkValidity() throws MappingException
 		if (!isStoch() && !getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedPositive()){
 			// the sizes are specified, but not the volFractions and surface-to-vol ratios, so run the structureSizeSolver to get the relative sizes
 			StructureSizeSolver ssSolver = new StructureSizeSolver();
-			ssSolver.updateRelativeStructureSizes(this);
+			try {
+				ssSolver.updateRelativeStructureSizes(this);
+			} catch (Exception e) {
+				throw new MappingException(e.getMessage());
+			}
 		}
 		// otherwise, all sizes should be present and positive.
 		if (!getGeometryContext().isAllSizeSpecifiedPositive()){

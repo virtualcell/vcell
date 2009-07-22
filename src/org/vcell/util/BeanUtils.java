@@ -198,26 +198,28 @@ public static void attemptResizeWeight(JSplitPane pane, double weight) {
  * Creation date: (1/18/00 5:50:51 PM)
  */
 public static void centerOnComponent(Component c, Component reference) {
-	if (c != null && reference != null) {
-		// if reference is orphan, center on screen
-		if (reference == null && reference.getParent() == null) {
-			centerOnScreen(c);
-			return;
-		}
-		try{
-			Point pR = reference.getLocationOnScreen();
-			if (!(c instanceof Window)) { // not top level window, has to use relative coordinates.
-				if (reference instanceof JDesktopPane || (findTypeParentOfComponent(reference, JDesktopPane.class) != null)) {
-					Component rootComponent = SwingUtilities.getRoot(reference);
-					SwingUtilities.convertPointFromScreen(pR,rootComponent);
-				}
+	if (c == null) {
+		return;
+	}
+	if (reference == null) {
+		System.out.println("BeanUtils.centerOnComponent, reference=null");
+		Thread.dumpStack();
+		c.setLocation(0, 0);
+		return;
+	}
+	try{
+		Point pR = reference.getLocationOnScreen();
+		if (!(c instanceof Window)) { // not top level window, has to use relative coordinates.
+			if (reference instanceof JDesktopPane || (findTypeParentOfComponent(reference, JDesktopPane.class) != null)) {
+				Component rootComponent = SwingUtilities.getRoot(reference);
+				SwingUtilities.convertPointFromScreen(pR,rootComponent);
 			}
-			pR.x += Math.max((reference.getWidth() - c.getWidth()) / 2, 0);
-			pR.y += Math.max((reference.getHeight() - c.getHeight()) / 2, 0);
-			c.setLocation(pR);
-		}catch(Exception e){
-			centerOnScreen(c);
 		}
+		pR.x += Math.max((reference.getWidth() - c.getWidth()) / 2, 0);
+		pR.y += Math.max((reference.getHeight() - c.getHeight()) / 2, 0);
+		c.setLocation(pR);
+	}catch(Exception e){
+		centerOnScreen(c);
 	}
 }
 

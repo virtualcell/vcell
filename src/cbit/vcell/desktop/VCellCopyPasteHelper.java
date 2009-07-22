@@ -1,4 +1,23 @@
 package cbit.vcell.desktop;
+
+import java.awt.Component;
+
+import javax.swing.JCheckBox;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.math.Constant;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.modelopt.ParameterMappingSpec;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.ConstantArraySpec;
+import cbit.vcell.solver.MathOverrides;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/17/2006 1:56:19 PM)
@@ -17,10 +36,10 @@ public VCellCopyPasteHelper() {
  * Insert the method's description here.
  * Creation date: (7/10/2006 11:05:19 AM)
  */
-public static void chooseApplyPaste(
+public static void chooseApplyPaste(Component requester, 
 		String[] pasteDetails,
-		cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter[] changingParamters,
-		cbit.vcell.parser.Expression[] newParameterExpression) {
+		SpeciesContextSpec.SpeciesContextSpecParameter[] changingParamters,
+		Expression[] newParameterExpression) {
 			
 
 	if(pasteDetails.length != changingParamters.length || changingParamters.length != newParameterExpression.length){
@@ -31,16 +50,16 @@ public static void chooseApplyPaste(
 	boolean[] bEnableDisplay = new boolean[changingParamters.length];
 	for(int i=0;i<changingParamters.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
+		bEnableDisplay[i] = !Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
 	if(!bAtLeatOneDifferent){
-		cbit.vcell.client.PopupGenerator.showInfoDialog("All valid paste values are equal to the destination values.\nNo paste needed.");
+		PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
 		return;
 	}
 	
-	boolean[] bChoices = showChoices(pasteDetails,bEnableDisplay);
+	boolean[] bChoices = showChoices(requester, pasteDetails,bEnableDisplay);
 	if(bChoices != null){
 		StringBuffer statusMessages = new StringBuffer();
 		boolean bFailure = false;
@@ -56,7 +75,7 @@ public static void chooseApplyPaste(
 			}
 		}
 		if(bFailure){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Results:\n"+statusMessages.toString());
+			PopupGenerator.showErrorDialog(requester, "Paste Results:\n"+statusMessages.toString());
 		}
 	}
 			
@@ -67,10 +86,10 @@ public static void chooseApplyPaste(
  * Insert the method's description here.
  * Creation date: (7/10/2006 11:05:19 AM)
  */
-public static void chooseApplyPaste(
+public static void chooseApplyPaste(Component requester, 
 		String[] pasteDetails,
-		cbit.vcell.model.Parameter[] changingParamters,
-		cbit.vcell.parser.Expression[] newParameterExpression) {
+		Parameter[] changingParamters,
+		Expression[] newParameterExpression) {
 			
 
 	if(pasteDetails.length != changingParamters.length || changingParamters.length != newParameterExpression.length){
@@ -81,25 +100,25 @@ public static void chooseApplyPaste(
 	boolean[] bEnableDisplay = new boolean[changingParamters.length];
 	for(int i=0;i<changingParamters.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
+		bEnableDisplay[i] = !Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
 	if(!bAtLeatOneDifferent){
-		cbit.vcell.client.PopupGenerator.showInfoDialog("All valid paste values are equal to the destination values.\nNo paste needed.");
+		PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
 		return;
 	}
 	
-	boolean[] bChoices = showChoices(pasteDetails,bEnableDisplay);
+	boolean[] bChoices = showChoices(requester, pasteDetails,bEnableDisplay);
 	if(bChoices != null){
 		StringBuffer statusMessages = new StringBuffer();
 		boolean bFailure = false;
 		for(int i=0;i<changingParamters.length;i+= 1){
 			try{
 				if(bChoices[i]){
-					if (changingParamters[i] instanceof cbit.vcell.model.Kinetics.KineticsParameter){
-						cbit.vcell.model.Kinetics kinetics = ((cbit.vcell.model.ReactionStep) changingParamters[i].getNameScope().getScopedSymbolTable()).getKinetics();
-						kinetics.setParameterValue((cbit.vcell.model.Kinetics.KineticsParameter)changingParamters[i],newParameterExpression[i]);
+					if (changingParamters[i] instanceof Kinetics.KineticsParameter){
+						Kinetics kinetics = ((ReactionStep) changingParamters[i].getNameScope().getScopedSymbolTable()).getKinetics();
+						kinetics.setParameterValue((Kinetics.KineticsParameter)changingParamters[i],newParameterExpression[i]);
 					}else{
 						throw new Exception("Changing "+changingParamters[i].getNameScope().getName()+" "+changingParamters[i].getName()+" not yet implemented");
 					}
@@ -111,7 +130,7 @@ public static void chooseApplyPaste(
 			}
 		}
 		if(bFailure){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Results:\n"+statusMessages.toString());
+			PopupGenerator.showErrorDialog(requester, "Paste Results:\n"+statusMessages.toString());
 		}
 	}
 			
@@ -122,10 +141,10 @@ public static void chooseApplyPaste(
  * Insert the method's description here.
  * Creation date: (7/10/2006 11:05:19 AM)
  */
-public static void chooseApplyPaste(
+public static void chooseApplyPaste(Component requester, 
 		String[] pasteDetails,
-		cbit.vcell.modelopt.ParameterMappingSpec[] changingParamters,
-		cbit.vcell.parser.Expression[] newParameterExpression) {
+		ParameterMappingSpec[] changingParamters,
+		Expression[] newParameterExpression) {
 			
 
 	if(pasteDetails.length != changingParamters.length || changingParamters.length != newParameterExpression.length){
@@ -136,16 +155,16 @@ public static void chooseApplyPaste(
 	boolean[] bEnableDisplay = new boolean[changingParamters.length];
 	for(int i=0;i<changingParamters.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(new cbit.vcell.parser.Expression(changingParamters[i].getCurrent()),newParameterExpression[i]);
+		bEnableDisplay[i] = !Compare.isEqualOrNull(new Expression(changingParamters[i].getCurrent()),newParameterExpression[i]);
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
 	if(!bAtLeatOneDifferent){
-		cbit.vcell.client.PopupGenerator.showInfoDialog("All valid paste values are equal to the destination values.\nNo paste needed.");
+		PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
 		return;
 	}
 	
-	boolean[] bChoices = showChoices(pasteDetails,bEnableDisplay);
+	boolean[] bChoices = showChoices(requester, pasteDetails,bEnableDisplay);
 	if(bChoices != null){
 		StringBuffer statusMessages = new StringBuffer();
 		boolean bFailure = false;
@@ -161,7 +180,7 @@ public static void chooseApplyPaste(
 			}
 		}
 		if(bFailure){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Results:\n"+statusMessages.toString());
+			PopupGenerator.showErrorDialog(requester, "Paste Results:\n"+statusMessages.toString());
 		}
 	}
 			
@@ -172,11 +191,11 @@ public static void chooseApplyPaste(
  * Insert the method's description here.
  * Creation date: (7/10/2006 11:05:19 AM)
  */
-public static void chooseApplyPaste(
+public static void chooseApplyPaste(Component requester, 
 		String[] pasteDetails,
-		cbit.vcell.solver.MathOverrides mathOverrides,
+		MathOverrides mathOverrides,
 		String[] changingMathOverridesNames,
-		java.util.Vector newMathOverridesValuesV) {
+		java.util.Vector<?> newMathOverridesValuesV) {
 			
 
 	if(pasteDetails.length != changingMathOverridesNames.length || changingMathOverridesNames.length != newMathOverridesValuesV.size()){
@@ -186,40 +205,38 @@ public static void chooseApplyPaste(
 	boolean bAtLeatOneDifferent = false;
 	boolean[] bEnableDisplay = new boolean[changingMathOverridesNames.length];
 	for(int i=0;i<changingMathOverridesNames.length;i+= 1){
-		if(newMathOverridesValuesV.elementAt(i) instanceof cbit.vcell.parser.Expression){
-			bEnableDisplay[i] =
-				!org.vcell.util.Compare.isEqualOrNull(
+		Object newValue = newMathOverridesValuesV.elementAt(i);
+		if(newValue instanceof Expression){
+			bEnableDisplay[i] = !Compare.isEqualOrNull(
 					mathOverrides.getActualExpression(changingMathOverridesNames[i],0),
-					//((cbit.vcell.math.Constant)newMathOverridesValuesV.elementAt(i)).getExpression());
-					((cbit.vcell.parser.Expression)newMathOverridesValuesV.elementAt(i)));
-		}else if(newMathOverridesValuesV.elementAt(i) instanceof cbit.vcell.solver.ConstantArraySpec){
-			bEnableDisplay[i] =
-				!org.vcell.util.Compare.isEqualOrNull(
+					((Expression)newValue));
+		}else if(newValue instanceof ConstantArraySpec){
+			bEnableDisplay[i] =	!Compare.isEqualOrNull(
 					mathOverrides.getConstantArraySpec(changingMathOverridesNames[i]),
-					(cbit.vcell.solver.ConstantArraySpec)newMathOverridesValuesV.elementAt(i));
+					(ConstantArraySpec)newValue);
 		}else{
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Unexpected MathOverride type="+newMathOverridesValuesV.elementAt(i).getClass().getName()+"\nPaste Failed, nothing changed.");
+			PopupGenerator.showErrorDialog(requester, "Unexpected MathOverride type="+newValue.getClass().getName()+"\nPaste Failed, nothing changed.");
 			return;
 		}
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
 	if(!bAtLeatOneDifferent){
-		cbit.vcell.client.PopupGenerator.showInfoDialog("All valid paste values are equal to the destination values.\nNo paste needed.");
+		PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
 		return;
 	}
 	
-	boolean[] bChoices = showChoices(pasteDetails,bEnableDisplay);
+	boolean[] bChoices = showChoices(requester, pasteDetails,bEnableDisplay);
 	if(bChoices != null){
 		StringBuffer statusMessages = new StringBuffer();
 		boolean bFailure = false;
 		for(int i=0;i<changingMathOverridesNames.length;i+= 1){
 			try{
 				if(bChoices[i]){
-					if(newMathOverridesValuesV.elementAt(i) instanceof cbit.vcell.parser.Expression){
-						mathOverrides.putConstant(new cbit.vcell.math.Constant(changingMathOverridesNames[i],(cbit.vcell.parser.Expression)newMathOverridesValuesV.elementAt(i)));
-					}else if(newMathOverridesValuesV.elementAt(i) instanceof cbit.vcell.solver.ConstantArraySpec){
-						mathOverrides.putConstantArraySpec((cbit.vcell.solver.ConstantArraySpec)newMathOverridesValuesV.elementAt(i));
+					if(newMathOverridesValuesV.elementAt(i) instanceof Expression){
+						mathOverrides.putConstant(new Constant(changingMathOverridesNames[i],(Expression)newMathOverridesValuesV.elementAt(i)));
+					}else if(newMathOverridesValuesV.elementAt(i) instanceof ConstantArraySpec){
+						mathOverrides.putConstantArraySpec((ConstantArraySpec)newMathOverridesValuesV.elementAt(i));
 					}
 				}
 				statusMessages.append("(OK) "+pasteDetails+"\n");
@@ -229,7 +246,7 @@ public static void chooseApplyPaste(
 			}
 		}
 		if(bFailure){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Results:\n"+statusMessages.toString());
+			PopupGenerator.showErrorDialog(requester, "Paste Results:\n"+statusMessages.toString());
 		}
 	}
 			
@@ -240,11 +257,11 @@ public static void chooseApplyPaste(
  * Insert the method's description here.
  * Creation date: (7/10/2006 11:05:19 AM)
  */
-public static void chooseApplyPaste_NOT_USED(
+public static void chooseApplyPaste_NOT_USED(Component requester, 
 		String[] pasteDetails,
-		cbit.vcell.solver.MathOverrides mathOverrides,
+		MathOverrides mathOverrides,
 		String[] changingMathOverridesNames,
-		cbit.vcell.math.Constant[] newMathOverridesValues) {
+		Constant[] newMathOverridesValues) {
 			
 
 	if(pasteDetails.length != changingMathOverridesNames.length || changingMathOverridesNames.length != newMathOverridesValues.length){
@@ -255,16 +272,16 @@ public static void chooseApplyPaste_NOT_USED(
 	boolean[] bEnableDisplay = new boolean[changingMathOverridesNames.length];
 	for(int i=0;i<changingMathOverridesNames.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(mathOverrides.getActualExpression(changingMathOverridesNames[i],0),newMathOverridesValues[i].getExpression());
+		bEnableDisplay[i] = !Compare.isEqualOrNull(mathOverrides.getActualExpression(changingMathOverridesNames[i],0),newMathOverridesValues[i].getExpression());
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
 	if(!bAtLeatOneDifferent){
-		cbit.vcell.client.PopupGenerator.showInfoDialog("All valid paste values are equal to the destination values.\nNo paste needed.");
+		PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
 		return;
 	}
 	
-	boolean[] bChoices = showChoices(pasteDetails,bEnableDisplay);
+	boolean[] bChoices = showChoices(requester, pasteDetails,bEnableDisplay);
 	if(bChoices != null){
 		StringBuffer statusMessages = new StringBuffer();
 		boolean bFailure = false;
@@ -280,7 +297,7 @@ public static void chooseApplyPaste_NOT_USED(
 			}
 		}
 		if(bFailure){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Results:\n"+statusMessages.toString());
+			PopupGenerator.showErrorDialog(requester, "Paste Results:\n"+statusMessages.toString());
 		}
 	}
 			
@@ -297,9 +314,9 @@ public static void chooseApplyPaste_NOT_USED(
  */
 public static String formatPasteList(String s1, String s2, String s3,String s4) {
 	return 
-		org.vcell.util.BeanUtils.forceStringSize(s1,25," ",false)+" "+
-		org.vcell.util.BeanUtils.forceStringSize(s2,25," ",false)+" "+
-		org.vcell.util.BeanUtils.forceStringSize("'"+s3+"'",25," ",true)+
+		BeanUtils.forceStringSize(s1,25," ",false)+" "+
+		BeanUtils.forceStringSize(s2,25," ",false)+" "+
+		BeanUtils.forceStringSize("'"+s3+"'",25," ",true)+
 		" -> "+
 		"'"+s4+"'";
 }
@@ -311,19 +328,19 @@ public static String formatPasteList(String s1, String s2, String s3,String s4) 
  */
 public static boolean isSCSRoleForDimension(int scsRole,int dimension){
 	
-	if(scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_InitialConcentration){
+	if(scsRole == SpeciesContextSpec.ROLE_InitialConcentration){
 		return true;
 	}
-	if(scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_DiffusionRate && dimension > 0){
+	if(scsRole == SpeciesContextSpec.ROLE_DiffusionRate && dimension > 0){
 		return true;
 	}
-	if((scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_BoundaryValueXm || scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_BoundaryValueXp) && dimension > 0){
+	if((scsRole == SpeciesContextSpec.ROLE_BoundaryValueXm || scsRole == SpeciesContextSpec.ROLE_BoundaryValueXp) && dimension > 0){
 		return true;
 	}
-	if((scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_BoundaryValueYm || scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_BoundaryValueYp) && dimension > 1){
+	if((scsRole == SpeciesContextSpec.ROLE_BoundaryValueYm || scsRole == SpeciesContextSpec.ROLE_BoundaryValueYp) && dimension > 1){
 		return true;
 	}
-	if((scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_BoundaryValueZm || scsRole == cbit.vcell.mapping.SpeciesContextSpec.ROLE_BoundaryValueZp) && dimension > 2){
+	if((scsRole == SpeciesContextSpec.ROLE_BoundaryValueZm || scsRole == SpeciesContextSpec.ROLE_BoundaryValueZp) && dimension > 2){
 		return true;
 	}
 
@@ -335,20 +352,20 @@ public static boolean isSCSRoleForDimension(int scsRole,int dimension){
  * Creation date: (5/12/2006 9:18:01 AM)
  * @return boolean[]
  */
-public static boolean[] showChoices(String[] choiceDescriptions,boolean[] bEnableDisplay) {
+private static boolean[] showChoices(Component requester, String[] choiceDescriptions,boolean[] bEnableDisplay) {
 	javax.swing.JCheckBox[] jCheckBoxArr = new javax.swing.JCheckBox[choiceDescriptions.length];
 	javax.swing.JPanel jp = new javax.swing.JPanel();
 	java.awt.Font f = new java.awt.Font ("Monospaced",java.awt.Font.PLAIN,12);
 	jp.setLayout(new javax.swing.BoxLayout(jp,javax.swing.BoxLayout.Y_AXIS));
 	
-	final java.util.Vector jcbHolder = new java.util.Vector();
+	final java.util.Vector<JCheckBox> jcbHolder = new java.util.Vector<JCheckBox>();
 	if(choiceDescriptions.length > 1){
 		javax.swing.JButton selectAllJButton = new javax.swing.JButton("Select All");
 		selectAllJButton.addActionListener(
 			new java.awt.event.ActionListener(){
 				public void actionPerformed(java.awt.event.ActionEvent e){
 					for(int i=0;i<jcbHolder.size();i+= 1){
-						javax.swing.JCheckBox jcb = (javax.swing.JCheckBox)jcbHolder.elementAt(i);
+						javax.swing.JCheckBox jcb = jcbHolder.elementAt(i);
 						jcb.setSelected(true);
 					}
 				}
@@ -367,7 +384,7 @@ public static boolean[] showChoices(String[] choiceDescriptions,boolean[] bEnabl
 
 	javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(jp);
 	jsp.setPreferredSize(new java.awt.Dimension(700,400));
-	int result = cbit.vcell.client.PopupGenerator.showComponentOKCancelDialog(null,jsp,"Choose Parameters to Paste");
+	int result = PopupGenerator.showComponentOKCancelDialog(requester,jsp,"Choose Parameters to Paste");
 	if(result == javax.swing.JOptionPane.OK_OPTION){
 		boolean[] bChoices = new boolean[choiceDescriptions.length];
 		for(int i=0;i<jCheckBoxArr.length;i+= 1){

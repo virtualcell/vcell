@@ -382,7 +382,7 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 			tempFuncOp = FUNC_OP_ADDNEW;
 			String editFuncNameString = getJTextFieldFuncName().getText();
 			if(!editFuncNameString.equals(TokenMangler.fixTokenStrict(editFuncNameString))){
-				PopupGenerator.showInfoDialog(
+				PopupGenerator.showInfoDialog(this, 
 						"Function name '"+editFuncNameString+"' has illegal characters.\nOnly letters,numbers and underscore allowed.");
 				return;
 			}

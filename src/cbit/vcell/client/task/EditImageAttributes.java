@@ -4,11 +4,15 @@ import java.awt.Component;
 import java.util.Hashtable;
 
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.Version;
+import org.vcell.util.gui.ZEnforcer;
 
+import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.PopupGenerator;
@@ -20,28 +24,17 @@ public class EditImageAttributes extends AsynchClientTask {
 	public EditImageAttributes() {
 		super("Editting image attributes", AsynchClientTask.TASKTYPE_SWING_BLOCKING);
 	}
-	private static Object showImagePropertiesDialog(final ImageAttributePanel imageAttributePanel) {
-			// Cannot use JOptionPane because it will not allow some children to resize
-			JDialog d = new JDialog();
-			d.setModal(true);
-			d.getContentPane().add(imageAttributePanel);
-			imageAttributePanel.setDialogParent(d);
-			d.setSize(400,600);
-			d.setLocation(300,200);
-			BeanUtils.centerOnComponent(d,null);
-			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,null);
-			return imageAttributePanel.getStatus();
-	}
 	
 	@Override
 	public void run(Hashtable<String, Object> hashTable) throws Exception {
 		ClientTaskStatusSupport pp = getClientTaskStatusSupport();
 		
+		Component guiParent = (Component)hashTable.get("guiParent");
 		VCImage image = (VCImage)hashTable.get("vcImage");
 		RequestManager theRequestManager = (RequestManager)hashTable.get("requestManager");
 		
 		if (image == null) {
-			PopupGenerator.showErrorDialog("No image!");				
+			throw new RuntimeException("EditImageAttributes, no image!");				
 		}
 
 		//Set image on panel and see if there are any error before proceeding
@@ -50,10 +43,18 @@ public class EditImageAttributes extends AsynchClientTask {
 		try{
 			imageAttributePanel.setImage(image);
 		}catch(Throwable e){
-			throw new cbit.image.ImageException("Failed to setup ImageAttributes\n"+(e.getMessage() != null?e.getMessage():null));
+			throw new ImageException("Failed to setup ImageAttributes\n"+(e.getMessage() != null?e.getMessage():null));
 		}
+		
+		JDialog d = new JDialog(JOptionPane.getFrameForComponent(guiParent));
+		d.setModal(true);
+		d.getContentPane().add(imageAttributePanel);
+		imageAttributePanel.setDialogParent(d);
+		d.setSize(400,600);
+		d.setLocation(300,200);
+		ZEnforcer.showModalDialogOnTop(d, guiParent);
 
-		Object choice = showImagePropertiesDialog(imageAttributePanel);
+		Object choice = imageAttributePanel.getStatus();
 		
 		if (choice != null && choice.equals("Import")) {
 			VCImageInfo imageInfos[] = null;
@@ -83,7 +84,7 @@ public class EditImageAttributes extends AsynchClientTask {
 						}
 					}
 					if (bNameExists){
-						PopupGenerator.showErrorDialog("IMAGE name '"+newName+"' already exists, please enter new name");
+						PopupGenerator.showErrorDialog(guiParent, "IMAGE name '"+newName+"' already exists, please enter new name");
 					}else{
 						bNameIsGood = true;
 					}
@@ -92,7 +93,7 @@ public class EditImageAttributes extends AsynchClientTask {
 			hashTable.put("newName", newName);			
 			
 		}else{
-			throw org.vcell.util.UserCancelException.CANCEL_EDIT_IMG_ATTR;
+			throw UserCancelException.CANCEL_EDIT_IMG_ATTR;
 		}			
 		if (image == null){
 			throw new RuntimeException("failed to create new Geometry, no image");

@@ -442,7 +442,7 @@ public XmlTreeDiff compareWithSaved(VCDocument document) {
  * Creation date: (6/16/2004 11:07:33 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connectAs(final String user,  final String password, TopLevelWindowManager requester) {
+public void connectAs(final String user,  final String password, final TopLevelWindowManager requester) {
 	String confirm = PopupGenerator.showWarningDialog(requester, getUserPreferences(), UserMessage.warn_changeUser,null);
 	if (confirm.equals(UserMessage.OPTION_CANCEL)){
 		return;
@@ -456,11 +456,11 @@ public void connectAs(final String user,  final String password, TopLevelWindowM
 			// ok, connect as a different user
 			// asynch & nothing to do on Swing queue (updates handled by events)
 			String taskName = "Connecting as " + user;
-			AsynchClientTask[] newTasks = newDocument(new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, 0));
+			AsynchClientTask[] newTasks = newDocument(requester, new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, 0));
 			AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					getClientServerManager().connectAs(user, password);
+					getClientServerManager().connectAs(requester, user, password);
 				}
 			};
 			AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -475,6 +475,7 @@ public void connectAs(final String user,  final String password, TopLevelWindowM
 			taskArray[newTasks.length + 1] = task2;
 			
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
+			hash.put("guiParent", requester.getComponent());
 			hash.put("requestManager", this);
 			ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), taskArray, false, false, null);
 		}
@@ -487,8 +488,8 @@ public void connectAs(final String user,  final String password, TopLevelWindowM
  * Creation date: (5/27/2004 2:18:16 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connectToServer(final ClientServerInfo clientServerInfo) {
-	getClientServerManager().connect(clientServerInfo);
+public void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception {
+	getClientServerManager().connect(requester, clientServerInfo);
 }
 
 
@@ -578,9 +579,9 @@ private MathModel createMathModel(String name, Geometry geometry) {
  * Creation date: (5/24/2004 12:22:11 PM)
  * @param windowID java.lang.String
  */
-public void createMathModelFromApplication(final String name, final SimulationContext simContext) {
+public void createMathModelFromApplication(final BioModelWindowManager requester, final String name, final SimulationContext simContext) {
 	if (simContext == null) {
-		PopupGenerator.showErrorDialog("Selected Application is null, cannot generate corresponding math model");
+		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding math model");
 		return;
 	}
 	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -625,7 +626,7 @@ public void createMathModelFromApplication(final String name, final SimulationCo
 			getMdiManager().createNewDocumentWindow(windowManager);
 		}
 	};
-	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
+	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
 }
 
 private BioModel createDefaultBioModelDocument() throws Exception {
@@ -646,7 +647,7 @@ private MathModel createDefaultMathModelDocument() throws Exception {
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
  */
-private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationInfo documentCreationInfo) {//throws UserCancelException, Exception {
+private AsynchClientTask[] createNewDocument(final TopLevelWindowManager requester, final VCDocument.DocumentCreationInfo documentCreationInfo) {//throws UserCancelException, Exception {
 	/* asynchronous and not blocking any window */
 	AsynchClientTask[] taskArray =  null;
 
@@ -845,7 +846,7 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 					AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							File imageFile = DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, getUserPreferences());
+							File imageFile = DatabaseWindowManager.showFileChooserDialog(requester, FileFilters.FILE_FILTER_FIELDIMAGES, getUserPreferences());
 							hashTable.put("imageFile", imageFile);
 						}
 					};
@@ -1004,7 +1005,7 @@ private AsynchClientTask[] createNewDocument(final VCDocument.DocumentCreationIn
 									return;
 								}
 							} else {
-								PopupGenerator.showInfoDialog("The image contains multiple colors. Segmentation is required.");
+								PopupGenerator.showInfoDialog(parent, "The image contains multiple colors. Segmentation is required.");
 							}
 							hashTable.put("vcImage", ClientRequestManager.segmentRawImage(parent,mesh.getOrigin(),mesh.getExtent(),
 									new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ()),dataToSegment));
@@ -1124,9 +1125,9 @@ public void curateDocument(final VCDocumentInfo documentInfo, final int curateTy
 }
 
 
-public void updateUserRegistration(final boolean bNewUser){
+public void updateUserRegistration(final DocumentWindowManager currWindowManager, final boolean bNewUser){
 	try {
-		UserRegistrationOP.registrationOperationGUI(this, 
+		UserRegistrationOP.registrationOperationGUI(this, currWindowManager, 
 				getClientServerManager().getClientServerInfo(),
 				(bNewUser?LoginDialog.USERACTION_REGISTER:LoginDialog.USERACTION_EDITINFO),
 				(bNewUser?null:getClientServerManager()));
@@ -1134,21 +1135,21 @@ public void updateUserRegistration(final boolean bNewUser){
 		return;
 	} catch (Exception e) {
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog((bNewUser?"Create new":"Update")+" user Registration error:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(currWindowManager, bNewUser?"Create new":"Update"+" user Registration error:\n"+e.getMessage());
 		return;
 	}
 }
 
-public void sendLostPassword(final String userid){
+public void sendLostPassword(final DocumentWindowManager currWindowManager, final String userid){
 	try {
-		UserRegistrationOP.registrationOperationGUI(this, 
+		UserRegistrationOP.registrationOperationGUI(this, currWindowManager,
 				VCellClient.createClientServerInfo(
 					getClientServerManager().getClientServerInfo(), userid, null),
 				LoginDialog.USERACTION_LOSTPASSWORD,
 				null);
 	} catch (Exception e) {
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog("Update user Registration error:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(currWindowManager, "Update user Registration error:\n"+e.getMessage());
 	}
 }
 /**
@@ -1199,13 +1200,13 @@ public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWind
 /**
  * Comment
  */
-protected void downloadExportedData(final ExportEvent evt) {
+protected void downloadExportedData(final TopLevelWindowManager requester, final ExportEvent evt) {
 	URL location = null;
 	try {
 		location = new URL(evt.getLocation());
 	} catch (java.net.MalformedURLException exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog((Component)null, "Reported file location does not seem to be a valid URL\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(requester.getComponent(), "Reported file location does not seem to be a valid URL\n"+exc.getMessage());
 		return;
 	}
 	final URL url = location;
@@ -1250,7 +1251,7 @@ protected void downloadExportedData(final ExportEvent evt) {
 
 		    fileChooser.setSelectedFile(file);
 			fileChooser.setDialogTitle("Save exported dataset...");
-			int approve = fileChooser.showSaveDialog((Component)null);
+			int approve = fileChooser.showSaveDialog(requester.getComponent());
 			if (approve == JFileChooser.APPROVE_OPTION) {
 				hashTable.put("selectedFile", fileChooser.getSelectedFile());
 			} else {
@@ -1274,7 +1275,7 @@ protected void downloadExportedData(final ExportEvent evt) {
 //	        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
 			//
 			if (selectedFile.exists()) {
-				String question = PopupGenerator.showWarningDialog((Component)null, getUserPreferences(), UserMessage.warn_OverwriteFile,selectedFile.getAbsolutePath());
+				String question = PopupGenerator.showWarningDialog(requester.getComponent(), getUserPreferences(), UserMessage.warn_OverwriteFile,selectedFile.getAbsolutePath());
 				if (question.equals(UserMessage.OPTION_CANCEL)){
 					return;
 				}
@@ -1285,7 +1286,7 @@ protected void downloadExportedData(final ExportEvent evt) {
             fo.close();
 		}
 	};
-	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
+	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
 }
 
 
@@ -1369,7 +1370,7 @@ public void exportMessage(ExportEvent event) {
 			//e.printStackTrace(System.out);
 		//}
 		// try to download the thing
-		downloadExportedData(event);
+		downloadExportedData(getMdiManager().getFocusedWindowManager(), event);
 	}	
 }
 
@@ -1558,9 +1559,9 @@ public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
  * Creation date: (5/21/2004 4:20:47 AM)
  * @param documentType int
  */
-public AsynchClientTask[] newDocument(final VCDocument.DocumentCreationInfo documentCreationInfo) {
+public AsynchClientTask[] newDocument(TopLevelWindowManager requester, final VCDocument.DocumentCreationInfo documentCreationInfo) {
 	/* asynchronous and not blocking any window */
-	AsynchClientTask[] taskArray1 =  createNewDocument(documentCreationInfo);
+	AsynchClientTask[] taskArray1 =  createNewDocument(requester, documentCreationInfo);
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskArray1.length + 2];
 	System.arraycopy(taskArray1, 0, taskArray, 0, taskArray1.length);
 	
@@ -1590,7 +1591,7 @@ public AsynchClientTask[] newDocument(final VCDocument.DocumentCreationInfo docu
  */
 public void onVCellMessageEvent(final VCellMessageEvent event) {
 	if (event.getEventTypeID() == VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
-	    PopupGenerator.showErrorDialog(event.getMessageData().getData().toString());
+	    PopupGenerator.showErrorDialog(getMdiManager().getFocusedWindowManager().getComponent(), event.getMessageData().getData().toString());
 	}
 }
 
@@ -1871,13 +1872,13 @@ public void propertyChange(final PropertyChangeEvent evt) {
  * Insert the method's description here.
  * Creation date: (5/27/2004 2:18:16 AM)
  */
-public void reconnect() {
+public void reconnect(final TopLevelWindowManager requester) {
 	// asynch & nothing to do on Swing queue (updates handled by events)
 	AsynchClientTask task1 = new AsynchClientTask("reconnect", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getClientServerManager().reconnect();
+				getClientServerManager().reconnect(requester);
 				
 			}
 	};
@@ -1973,7 +1974,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 				{
 					if(!(stochChkMsg.equals("")))
 					{
-						DialogUtils.showErrorDialog("Problem in simulation: "+simulations[i].getName()+".\n"+stochChkMsg);
+						DialogUtils.showErrorDialog(documentWindowManager.getComponent(), "Problem in simulation: "+simulations[i].getName()+".\n"+stochChkMsg);
 						throw new RuntimeException("Problem in simulation: "+simulations[i].getName()+"\n"+stochChkMsg);
 					}
 				}
@@ -2431,11 +2432,6 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 	SimInfoHolder[] simInfoHolderArr = new SimInfoHolder[simInfoHolderV.size()];
 	simInfoHolderV.copyInto(simInfoHolderArr);
 	return simInfoHolderArr;
-}
-
-
-public void checkClientServerSoftwareVersion() {
-	getClientServerManager().checkClientServerSoftwareVersion();	
 }
 
 public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff diffTree, String baselineDesc, String modifiedDesc) {

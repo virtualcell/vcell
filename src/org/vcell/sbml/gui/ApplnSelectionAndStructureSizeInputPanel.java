@@ -1,8 +1,8 @@
 package org.vcell.sbml.gui;
 
-import javax.swing.JLabel;
-
-import org.vcell.util.gui.TitledBorderBean;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Structure;
 
 
 /**
@@ -26,11 +26,11 @@ public class ApplnSelectionAndStructureSizeInputPanel extends javax.swing.JPanel
 	private javax.swing.DefaultListModel ivjStructuresListModel = null;
 	private javax.swing.ListSelectionModel ivjstructuresListSelectionModel = null;
 	private javax.swing.JLabel ivjUnitsLabel = null;
-	private cbit.vcell.model.Structure[] fieldStructures = null;
+	private Structure[] fieldStructures = null;
 	private java.lang.String fieldSelectedStructureName = null;
 	private double fieldStructureSize = 0;
-	private cbit.vcell.mapping.SimulationContext[] fieldSimContexts = null;
-	private cbit.vcell.mapping.SimulationContext fieldSelectedSimContext = null;
+	private SimulationContext[] fieldSimContexts = null;
+	private SimulationContext fieldSelectedSimContext = null;
 	private String sizeInfoLabelText = "<html>Compartments in the Virtual Cell are specified in terms of relative " +
 			"measurements (i.e., surface_to_volume ratio and volumeFraction). SBML requires absolute sizes for " +
 			"compartments. Using the relative sizes of the compartments and the size of one compartment, all " +
@@ -263,7 +263,7 @@ private void fillApplicationNamesList(cbit.vcell.mapping.SimulationContext[] app
  */
 private void fillListOfStructures() {
 	if (getStructures() == null || getStructures().length == 0) {
-		cbit.vcell.client.PopupGenerator.showErrorDialog("No structures in selected BioModel");
+		PopupGenerator.showErrorDialog(this, "No structures in selected BioModel");
 	}
 
 	// Fill the Jlist with the structure names
@@ -733,7 +733,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

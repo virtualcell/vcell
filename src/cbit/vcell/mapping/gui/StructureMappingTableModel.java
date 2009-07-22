@@ -5,6 +5,8 @@ package cbit.vcell.mapping.gui;
 ©*/
 import java.beans.PropertyVetoException;
 
+import javax.swing.JTable;
+
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
 import cbit.vcell.parser.*;
@@ -68,12 +70,14 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private GeometryContext fieldGeometryContext = null;
+	private JTable ownerTable = null;
 
 /**
  * StructureMappingTableModel constructor comment.
  */
-public StructureMappingTableModel() {
+public StructureMappingTableModel(JTable table) {
 	super();
+	ownerTable = table;
 }
 
 
@@ -537,9 +541,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 			try {
 				getGeometryContext().assignFeature(featureMapping.getFeature(), getGeometryContext().getGeometry().getGeometrySpec().getSubVolume(svname));
 			} catch (IllegalMappingException e) {
-				PopupGenerator.showErrorDialog(e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 			} catch (PropertyVetoException e) {				
-				PopupGenerator.showErrorDialog(e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 			}
 			break;
 		}
@@ -558,10 +562,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 			}
 			break;
@@ -581,10 +585,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 			}
 			break;
@@ -612,7 +616,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 							fireTableRowsUpdated(0,getRowCount());
 						}catch(ExpressionException ex){
 							ex.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog("Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
+							PopupGenerator.showErrorDialog(ownerTable, "Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
+						} catch (Exception ex) {
+							ex.printStackTrace(System.out);
+							PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
 						}
 					}
 					else 
@@ -624,7 +631,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 						if(getGeometryContext().isAllSizeSpecifiedPositive()/*&& !getGeometryContext().getSimulationContext().isStoch()*/) 
 						{
 							StructureSizeSolver sizeSolver = new StructureSizeSolver();
-							sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+							try {
+								sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+							} catch (Exception ex) {
+								ex.printStackTrace(System.out);
+								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
+							}
 						}
 						fireTableRowsUpdated(0, getRowCount());
 					}
@@ -632,10 +644,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 			}
 			break;
 		}
@@ -666,7 +678,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 								fireTableRowsUpdated(0,getRowCount());
 							}catch(ExpressionException ex){
 								ex.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog("Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
+								PopupGenerator.showErrorDialog(ownerTable, "Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
+							}catch (Exception ex) {
+								ex.printStackTrace(System.out);
+								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());							
 							}
 						}
 						else
@@ -678,7 +693,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 							if(getGeometryContext().isAllSizeSpecifiedPositive() /*&& !getGeometryContext().getSimulationContext().isStoch()*/)
 							{
 								StructureSizeSolver sizeSolver = new StructureSizeSolver();
-								sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+								try {
+									sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+								} catch (Exception ex) {
+									ex.printStackTrace(System.out);
+									PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
+								}
 							}
 							fireTableRowsUpdated(0,getRowCount());
 						}
@@ -686,10 +706,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 			}
 			break;

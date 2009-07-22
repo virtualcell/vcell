@@ -1,4 +1,8 @@
 package cbit.vcell.constraints.gui;
+import javax.swing.JTable;
+
+import org.vcell.util.gui.DialogUtils;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.SimpleBounds;
@@ -22,12 +26,14 @@ public class SimpleBoundsTableModel extends javax.swing.table.AbstractTableModel
 	private String LABELS[] = { "name", "type", "description", "lower bound", "upper bound", "included" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ConstraintContainerImpl fieldConstraintContainerImpl = null;
+	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public SimpleBoundsTableModel() {
+public SimpleBoundsTableModel(JTable table) {
 	super();
+	ownerTable = table;
 	addPropertyChangeListener(this);
 }
 
@@ -86,7 +92,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_VARNAME:{
 			return String.class;
@@ -320,7 +326,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							simpleBound.setBounds(new RealInterval(Double.POSITIVE_INFINITY,simpleBound.getBounds().hi()));
 						}else{
 							e.printStackTrace(System.out);
-							org.vcell.util.gui.DialogUtils.showErrorDialog("Number format error:\n"+e.getMessage());
+							DialogUtils.showErrorDialog(ownerTable, "Number format error:\n"+e.getMessage());
 						}
 					}
 					fireTableRowsUpdated(rowIndex,rowIndex);
@@ -342,7 +348,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							simpleBound.setBounds(new RealInterval(simpleBound.getBounds().hi(),Double.POSITIVE_INFINITY));
 						}else{
 							e.printStackTrace(System.out);
-							org.vcell.util.gui.DialogUtils.showErrorDialog("Number format error:\n"+e.getMessage());
+							DialogUtils.showErrorDialog(ownerTable, "Number format error:\n"+e.getMessage());
 						}
 					}
 					fireTableRowsUpdated(rowIndex,rowIndex);

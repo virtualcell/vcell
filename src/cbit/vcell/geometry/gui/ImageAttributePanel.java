@@ -5,6 +5,7 @@ import org.vcell.util.Extent;
 import cbit.image.VCPixelClass;
 import cbit.image.VCImage;
 import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.PopupGenerator;
 /**
  * Insert the type's description here.
  * Creation date: (6/10/2002 3:26:22 PM)
@@ -372,7 +373,7 @@ private void done(java.awt.event.ActionEvent actionEvent) {
 			setStatus("Import");
 			getDialogParent().dispose();
 		}catch(Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(
+			PopupGenerator.showErrorDialog(this, 
 				"Error setting IMAGE values:\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName()));
 		}
 	}else if(actionEvent.getSource() == getCancelJButton()){
@@ -1174,7 +1175,7 @@ private void handleException(java.lang.Throwable exception) {
 
 	getImportJButton().setEnabled(false);
 	
-	cbit.vcell.client.PopupGenerator.showErrorDialog(
+	PopupGenerator.showErrorDialog(this, 
 		(exception.getMessage() != null?exception.getMessage():exception.getClass().getName())+"\n"+
 		this.getClass().getName()+" internal error\n"+"Please Cancel and try again"
 		);
@@ -1347,7 +1348,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

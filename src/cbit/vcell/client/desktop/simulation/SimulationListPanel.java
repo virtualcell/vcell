@@ -15,6 +15,9 @@ import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 
+import org.vcell.util.gui.JTableFixed;
+
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -504,10 +507,10 @@ private void copySimulations() {
 	Simulation[] toCopy = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
 	try {
-		index = getSimulationWorkspace().copySimulations(toCopy);
+		index = getSimulationWorkspace().copySimulations(toCopy, this);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "Could not copy all simulations\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Could not copy all simulations\n"+exc.getMessage());
 	}
 	// set selection to the last copied one
 	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
@@ -812,14 +815,13 @@ private javax.swing.JButton getRunButton() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JTableFixed getScrollPaneTable() {
+private JTableFixed getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new org.vcell.util.gui.JTableFixed();
+			ivjScrollPaneTable = new JTableFixed();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
-			ivjScrollPaneTable.setModel(new cbit.vcell.client.desktop.simulation.SimulationListTableModel());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			ivjScrollPaneTable.setPreferredScrollableViewportSize(new java.awt.Dimension(450, 100));
 			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
@@ -865,7 +867,7 @@ private javax.swing.ListSelectionModel getselectionModel1() {
 private SimulationListTableModel getSimulationListTableModel1() {
 	if (ivjSimulationListTableModel1 == null) {
 		try {
-			ivjSimulationListTableModel1 = new cbit.vcell.client.desktop.simulation.SimulationListTableModel();
+			ivjSimulationListTableModel1 = new cbit.vcell.client.desktop.simulation.SimulationListTableModel(ivjScrollPaneTable);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

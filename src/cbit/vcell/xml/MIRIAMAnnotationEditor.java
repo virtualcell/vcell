@@ -501,7 +501,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 						}
 						if (urlArr != null && urlArr.length > 0) {
 							getClientTaskStatusSupport().setMessage("Displaying Details in Local Web Browser...");
-							PopupGenerator.browserLauncher(urlArr[0],urlArr[0],false);
+							PopupGenerator.browserLauncher(MIRIAMAnnotationEditor.this, urlArr[0],urlArr[0],false);
 						}else{
 							throw new Exception("MiriamLink network query returned null");
 						}

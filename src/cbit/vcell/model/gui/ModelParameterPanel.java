@@ -15,6 +15,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
@@ -407,7 +408,7 @@ private cbit.vcell.model.Model getmodel1() {
 private ModelParameterTableModel getmodelParameterTableModel() {
 	if (ivjmodelParameterTableModel == null) {
 		try {
-			ivjmodelParameterTableModel = new cbit.vcell.model.gui.ModelParameterTableModel();
+			ivjmodelParameterTableModel = new ModelParameterTableModel(getScrollPaneTable());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -420,10 +421,10 @@ private ModelParameterTableModel getmodelParameterTableModel() {
  * Return the ScrollPaneTable property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
+private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
+			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
@@ -440,7 +441,7 @@ private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
  
-private org.vcell.util.gui.sorttable.JSortTable getthis12() {
+private JSortTable getthis12() {
 	return ivjthis12;
 }
 
@@ -516,10 +517,10 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) {
 	if(actionEvent.getSource() == getJMenuItemDelete()){
 		int[] rows = getScrollPaneTable().getSelectedRows();
 		if (rows.length < 1) {
-			PopupGenerator.showErrorDialog("No Global parameter selected for deletion.");
+			PopupGenerator.showErrorDialog(this, "No Global parameter selected for deletion.");
 			return;
 		} else if (rows.length > 1) {
-			PopupGenerator.showErrorDialog("Cannot delete more than one global parameter at a time!");
+			PopupGenerator.showErrorDialog(this, "Cannot delete more than one global parameter at a time!");
 			return;
 		}
 		// delete the parameter and update the tablemodel.
@@ -529,7 +530,7 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) {
 				getModel().removeModelParameter((ModelParameter)param);
 			} catch (PropertyVetoException e) {
 				//e.printStackTrace();
-				PopupGenerator.showErrorDialog(e.getMessage());
+				PopupGenerator.showErrorDialog(this, e.getMessage());
 			}
 		}
 	}
@@ -539,7 +540,7 @@ private void jMenuItemPromoteToGlobal_ActionPerformed(ActionEvent actionEvent) t
 	if(actionEvent.getSource() == getJMenuItemPromoteToGlobal()){
 		int[] rows = getScrollPaneTable().getSelectedRows();
 		if (rows.length < 1) {
-			PopupGenerator.showErrorDialog("No parameter selected for conversion to global.");
+			PopupGenerator.showErrorDialog(this, "No parameter selected for conversion to global.");
 			return;
 		}
 		// At this point, all selected rows should be local, user-defined kinetic parameters, so proceed with promoting them.
@@ -608,7 +609,7 @@ private void jMenuItemPromoteToGlobal_ActionPerformed(ActionEvent actionEvent) t
 				newExpr.bindExpression(getModel());
 			} catch (ExpressionBindingException ebe) {
 				// ebe.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ebe.getMessage() + ". '" + ebe.getIdentifier() + "' is probably a local parameter. Unable to convert '" + param.getName() + "' to global parameter.");
+				PopupGenerator.showErrorDialog(this, ebe.getMessage() + ". '" + ebe.getIdentifier() + "' is probably a local parameter. Unable to convert '" + param.getName() + "' to global parameter.");
 				return;
 			}
 			getModel().addModelParameter(getModel().new ModelParameter(param.getName(), newExpr, Model.ROLE_UserDefined, param.getUnitDefinition()));
@@ -672,7 +673,7 @@ private void jMenuItemConvertToLocal_ActionPerformed(ActionEvent actionEvent) {
 	if(actionEvent.getSource() == getJMenuItemConvertToLocal()){
 		int[] rows = getScrollPaneTable().getSelectedRows();
 		if (rows.length < 1) {
-			PopupGenerator.showErrorDialog("No parameter selected for conversion to local.");
+			PopupGenerator.showErrorDialog(this, "No parameter selected for conversion to local.");
 			return;
 		}
 		// At this point, all selected rows should be model parameters, so proceed with converting them to locals
@@ -709,11 +710,11 @@ private void jMenuItemConvertToLocal_ActionPerformed(ActionEvent actionEvent) {
 								rsArr[j].getKinetics().convertParameterType(kpp, false);
 								bSuccessfullyConverted = true;
 							} else {
-								PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter." );
+								PopupGenerator.showErrorDialog(this, "Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter." );
 							}
 						} catch (Exception e) {
 							e.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter : " + e.getMessage());
+							PopupGenerator.showErrorDialog(this, "Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter : " + e.getMessage());
 						}
 					} 
 				}
@@ -723,7 +724,7 @@ private void jMenuItemConvertToLocal_ActionPerformed(ActionEvent actionEvent) {
 						getModel().removeModelParameter((ModelParameter)selectedParams[i]);
 					} catch (PropertyVetoException e) {
 						//e.printStackTrace();
-						PopupGenerator.showErrorDialog(e.getMessage());
+						PopupGenerator.showErrorDialog(this, e.getMessage());
 					}
 				} 
 				// if there were some reactions that had locals of same name as globals, those were not converted, so list them
@@ -737,12 +738,12 @@ private void jMenuItemConvertToLocal_ActionPerformed(ActionEvent actionEvent) {
 					}
 					msg = msg + " in the model have a local parameter that has the same name as the selected global parameter '" + selectedParams[i].getName() +
 						"'. The existing local value overrides the global value of the parameter.";
-					PopupGenerator.showInfoDialog(msg);
+					PopupGenerator.showInfoDialog(this, msg);
 					return;
 				}
 				// if there were no reactions with local param of same name and 'bSuccessfullyConverted' is <false>, show info
 				if (rsNamesVector.size() == 0 && !bSuccessfullyConverted) {
-					PopupGenerator.showInfoDialog("Did not convert model parameter \'" + selectedParams[i].getName() + "\' to local kinetic parameter : no reaction kinetics references the parameter.");
+					PopupGenerator.showInfoDialog(this, "Did not convert model parameter \'" + selectedParams[i].getName() + "\' to local kinetic parameter : no reaction kinetics references the parameter.");
 				}
 			}
 		}
@@ -796,7 +797,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 
 			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("ModelParametersPanel Copy failed.  "+e.getMessage());
+			cbit.vcell.client.PopupGenerator.showErrorDialog(this, "ModelParametersPanel Copy failed.  "+e.getMessage());
 		}
 	}
 }
@@ -876,7 +877,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
+		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
 		return;
 	}
 
@@ -885,18 +886,17 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 		if(pasteDescriptionsV.size() > 0){
 			String[] pasteDescriptionArr = new String[pasteDescriptionsV.size()];
 			pasteDescriptionsV.copyInto(pasteDescriptionArr);
-			cbit.vcell.model.Parameter[] changedParametersArr =
-				new cbit.vcell.model.Parameter[changedParametersV.size()];
+			Parameter[] changedParametersArr = new Parameter[changedParametersV.size()];
 			changedParametersV.copyInto(changedParametersArr);
-			cbit.vcell.parser.Expression[] newExpressionsArr = new cbit.vcell.parser.Expression[newExpressionsV.size()];
+			Expression[] newExpressionsArr = new cbit.vcell.parser.Expression[newExpressionsV.size()];
 			newExpressionsV.copyInto(newExpressionsArr);
-			cbit.vcell.desktop.VCellCopyPasteHelper.chooseApplyPaste(pasteDescriptionArr,changedParametersArr,newExpressionsArr);
+			VCellCopyPasteHelper.chooseApplyPaste(this, pasteDescriptionArr,changedParametersArr,newExpressionsArr);
 		}else{
-			cbit.vcell.client.PopupGenerator.showInfoDialog("No paste items match the destination (no changes made).");
+			PopupGenerator.showInfoDialog(this, "No paste items match the destination (no changes made).");
 		}
 	}catch(Throwable e){
 		e.printStackTrace();
-		cbit.vcell.client.PopupGenerator.showErrorDialog("Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
 	}
 
 }
@@ -918,7 +918,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

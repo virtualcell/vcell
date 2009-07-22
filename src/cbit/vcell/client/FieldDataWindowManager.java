@@ -26,7 +26,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
@@ -122,7 +121,7 @@ public class FieldDataWindowManager
 		return fieldDataGUIPanel;
 	}
 	@Override
-	Component getComponent() {
+	public Component getComponent() {
 		return fieldDataGUIPanel;
 	}
 
@@ -452,7 +451,7 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 						throw new IllegalArgumentException("Not expecting varType "+varTypeV.elementAt(selectionArr[0]));
 					}
 				}else{
-					DialogUtils.showInfoDialog("use FiledDataManager to view FieldData '" + choicesV.elementAt(selectionArr[0])[0]+"'");
+					PopupGenerator.showInfoDialog(this, "use FiledDataManager to view FieldData '" + choicesV.elementAt(selectionArr[0])[0]+"'");
 				}
 			}
 		}
@@ -460,12 +459,12 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 		if(!bDanglingReferences){
 			bHasReferences = false;
 			if(bShowReferencingModelsList){
-				DialogUtils.showInfoDialog("No Model references found for Field Data "+targetExtDataID.getName());
+				PopupGenerator.showInfoDialog(this, "No Model references found for Field Data "+targetExtDataID.getName());
 			}
 		}else{
 			bHasReferences = true;
 			if(bShowReferencingModelsList){
-				DialogUtils.showInfoDialog("No current Model references found.\n"+
+				PopupGenerator.showInfoDialog(this, "No current Model references found.\n"+
 					"Field Data has internal database references from\n"+
 					"previously linked Model(s) that have been deleted.\n"+
 					"Note: Field Data '"+targetExtDataID.getName()+"' is not deletable\n"+

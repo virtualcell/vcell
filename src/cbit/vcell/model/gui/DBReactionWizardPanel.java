@@ -15,6 +15,7 @@ import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.SpeciesDescription;
 import cbit.vcell.model.*;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -247,7 +248,7 @@ private void afterSearchConfigure() {
 
 	if(getReactionsJList().getModel().getSize() == 0){
 		lastSearchChangeInfo = null;
-		cbit.vcell.client.PopupGenerator.showInfoDialog("No Reactions found matching search criteria");
+		cbit.vcell.client.PopupGenerator.showInfoDialog(this, "No Reactions found matching search criteria");
 	}else{
 		lastSearchSaveInfo();
     	((java.awt.CardLayout) getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
@@ -963,29 +964,6 @@ private void connPtoP6SetTarget() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/24/2003 12:24:22 PM)
- * @return java.lang.String
- * @param sc cbit.vcell.model.SpeciesContext
- */
-private String createMappingDisplayName(SpeciesContext sc) {
-	return "Existing "+sc.getSpecies().getCommonName()+" in "+sc.getStructure().getName();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/24/2003 12:24:22 PM)
- * @return java.lang.String
- * @param sc cbit.vcell.model.SpeciesContext
- */
-private String createMappingDisplayNameNew(Structure structure) {
-	return "New in "+structure.getName();
-}
-
-
 /**
  * Comment
  */
@@ -1074,7 +1052,7 @@ private void done() {
 								reDBSpecies.getFormalSpeciesInfo().getFormalID()+" : "+
 								reDBSpecies.getFormalSpeciesInfo().getPreferredName()+"'";
 
-								cbit.vcell.client.PopupGenerator.showInfoDialog(message);
+								PopupGenerator.showInfoDialog(this, message);
 								//bClose = false;
 								return;
 							}
@@ -2614,7 +2592,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2784,7 +2761,7 @@ private void resolve2() {
 		try{
 			resolvedReaction.resolve(i,speciesContext);
 		}catch(IllegalArgumentException e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Error Resolving RX Elements --\n"+e.getMessage());
+			PopupGenerator.showErrorDialog(this, "Error Resolving RX Elements --\n"+e.getMessage());
 			return;
 		}
 		

@@ -134,7 +134,7 @@ public SimulationJobStatus updateRunningStatus(cbit.vcell.messaging.db.Simulatio
 		SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
 
 		SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
-		if (oldJobStatus.isRunning() && oldExeStatus != null && oldExeStatus.hasData()) { // progress messages, don't always store into the database		
+		if (oldJobStatus.isRunning() && oldExeStatus != null && hasData == oldExeStatus.hasData()) { // running statuses, don't always store into the database		
 			updateLatestUpdateDate(newJobStatus, adminDbXA, con, vcSimID, jobIndex);
 			return oldJobStatus;
 		} else {

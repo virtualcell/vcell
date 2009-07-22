@@ -150,7 +150,7 @@ protected void fireNewData(DataEvent event) {
  * Creation date: (5/24/2004 1:03:08 AM)
  * @return java.lang.String
  */
-abstract Component getComponent();
+public abstract Component getComponent();
 
 /**
  * Insert the method's description here.
@@ -231,6 +231,6 @@ public void removeExportListener(ExportListener newListener) {
  * Comment
  */
 public AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCreationInfo) {
-	return getRequestManager().newDocument(documentCreationInfo);
+	return getRequestManager().newDocument(this, documentCreationInfo);
 }
 }

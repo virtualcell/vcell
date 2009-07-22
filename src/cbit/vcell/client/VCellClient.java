@@ -1,5 +1,6 @@
 package cbit.vcell.client;
 
+import java.awt.Component;
 import java.awt.event.*;
 import java.util.Hashtable;
 import cbit.vcell.desktop.*;
@@ -15,6 +16,8 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.ZEnforcer;
+
 import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
@@ -88,14 +91,14 @@ private VCellClient() {
  * Insert the method's description here.
  * Creation date: (5/5/2004 3:40:19 PM)
  */
-private void createAndShowGUI(VCDocument startupDoc, boolean fromApplet) {
+private DocumentWindowManager createAndShowGUI(VCDocument startupDoc, boolean fromApplet) {
+	DocumentWindowManager windowManager = null;
 	try {
 		if (!fromApplet) {
 			/* Set Look and Feel */
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		}
-		/* Create the first document desktop */
-		DocumentWindowManager windowManager = null;
+		/* Create the first document desktop */		
 		switch (startupDoc.getDocumentType()) {
 			case VCDocument.BIOMODEL_DOC: {
 				windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
@@ -113,10 +116,11 @@ private void createAndShowGUI(VCDocument startupDoc, boolean fromApplet) {
 		}	
 		getMdiManager().createNewDocumentWindow(windowManager);
 		/* Create database window, testing framework window, etc. */
-		((ClientMDIManager)getMdiManager()).createRecyclableWindows();
+		((ClientMDIManager)getMdiManager()).createRecyclableWindows();		
 	} catch (Throwable exc) {
 		handleException (exc);
 	}
+	return windowManager;
 }
 
 /**
@@ -253,8 +257,11 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// fire up the GUI
 			VCDocument startupDoc = (VCDocument)hashTable.get("startupDoc");
-		    vcellClient.createAndShowGUI(startupDoc, false);
-		    RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());		    
+		    DocumentWindowManager currWindowManager = vcellClient.createAndShowGUI(startupDoc, false);
+		    RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
+		    if (currWindowManager != null) {
+		    	hashTable.put("currWindowManager", currWindowManager);
+		    }
 		}
 	};
 	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", clientServerInfo.getUsername() == null ? AsynchClientTask.TASKTYPE_SWING_BLOCKING : AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -263,12 +270,13 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 			if (build != null){
 				DocumentWindowAboutBox.BUILD_NO = build;
 			}
+			DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
 		    // try server connection
 		    if (clientServerInfo.getUsername() == null) {
 			    // we were not supplied login credentials; pop-up dialog
-		    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo);
+		    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo, currWindowManager);
 		    } else {
-				vcellClient.getRequestManager().connectToServer(clientServerInfo);
+				vcellClient.getRequestManager().connectToServer(currWindowManager, clientServerInfo);
 		    }
 		}
 	}; 	
@@ -278,8 +286,8 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 	return vcellClient;
 }
 
-public static void login(final RequestManager requestManager,final ClientServerInfo clientServerInfo){	
-	final LoginDialog loginDialog = new LoginDialog(null);
+public static void login(final RequestManager requestManager, final ClientServerInfo clientServerInfo, final DocumentWindowManager currWindowManager){	
+	final LoginDialog loginDialog = new LoginDialog(JOptionPane.getFrameForComponent(currWindowManager.getComponent()));
 	loginDialog.setLoggedInUser(null);
 	loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	loginDialog.pack();
@@ -294,7 +302,7 @@ public static void login(final RequestManager requestManager,final ClientServerI
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, loginDialog.getUser(),
 								loginDialog.getPassword());
-						requestManager.connectToServer(newClientServerInfo);
+						requestManager.connectToServer(currWindowManager, newClientServerInfo);
 					}					
 				};
 				AsynchClientTask task2 = new AsynchClientTask("logging in", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -303,7 +311,7 @@ public static void login(final RequestManager requestManager,final ClientServerI
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
 						if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-							login(requestManager,clientServerInfo);
+							login(requestManager,clientServerInfo, currWindowManager);
 						}
 					}
 				};
@@ -312,31 +320,31 @@ public static void login(final RequestManager requestManager,final ClientServerI
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
 				loginDialog.dispose();
 				try {
-					UserRegistrationOP.registrationOperationGUI(requestManager,	clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
+					UserRegistrationOP.registrationOperationGUI(requestManager,	currWindowManager, clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
 				} catch (UserCancelException e) {
 					//do nothing
 				} catch (Exception e) {
 					e.printStackTrace();
-					PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(currWindowManager, "New user Registration error:\n"+e.getMessage());
 				}
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
 				try {
 					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
-					UserRegistrationOP.registrationOperationGUI(requestManager, newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
+					UserRegistrationOP.registrationOperationGUI(requestManager, currWindowManager, newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
 				} catch (UserCancelException e) {
 					//do nothing
 				} catch (Exception e) {
 					e.printStackTrace();
-					PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(currWindowManager, "New user Registration error:\n"+e.getMessage());
 				}
 			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_CANCEL)){
-				PopupGenerator.showInfoDialog(
+				PopupGenerator.showInfoDialog(currWindowManager, 
 					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
 			}
 		}
 	};
 	loginDialog.addActionListener(listener);
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(loginDialog);
+	ZEnforcer.showModalDialogOnTop(loginDialog, currWindowManager.getComponent());
 }
 
 

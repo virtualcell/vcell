@@ -1235,7 +1235,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1430,7 +1429,7 @@ private JButton getJButtonEditTimes() {
 											tableMode.getValueAt(i, 1).toString());
 							}
 						}catch(Exception e2){
-							PopupGenerator.showErrorDialog(
+							PopupGenerator.showErrorDialog(FieldDataInfoPanel.this, 
 									"Error parsing new times. Try again.\n"+e2.getMessage());
 							continue;
 						}
@@ -1495,7 +1494,7 @@ private JButton getJButtonSeqTimes() {
 				}catch(UserCancelException e2){
 					//ignore
 				}catch(Exception e2){
-					PopupGenerator.showErrorDialog("Error generating sequence\n"+e2.getMessage());
+					PopupGenerator.showErrorDialog(FieldDataInfoPanel.this, "Error generating sequence\n"+e2.getMessage());
 				}
 			}
 		});

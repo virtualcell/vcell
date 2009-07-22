@@ -1,7 +1,5 @@
 package cbit.vcell.graph;
 import java.awt.Component;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
@@ -110,16 +108,16 @@ public static boolean printIssues(Vector<Issue> issueVector, Component guiReques
  * @param guiRequestComponent : the parent component for the warning dialog that pops up the issues, if any, encountered in the pasting process
  * @throws Exception
  */
-protected static final void pasteReactionSteps(ReactionStep[] reactionStepsArrOrig,Model pasteModel, Structure struct, boolean bNew, Component guiRequestComponent) throws Exception {
+protected static final void pasteReactionSteps(GraphPane graphPane, ReactionStep[] reactionStepsArrOrig,Model pasteModel, Structure struct, boolean bNew, Component guiRequestComponent) throws Exception {
 	Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
-	Vector<Issue> issueList = pasteReactionSteps0(reactionStepsArrOrig, clonedModel, clonedModel.getStructure(struct.getName()), bNew);
+	Vector<Issue> issueList = pasteReactionSteps0(graphPane, reactionStepsArrOrig, clonedModel, clonedModel.getStructure(struct.getName()), bNew);
 	if (issueList.size() != 0) {
 		if (!printIssues(issueList, guiRequestComponent)) {
 			return;
 		}
 	}
 	issueList.clear();
-	issueList = pasteReactionSteps0(reactionStepsArrOrig, pasteModel, struct, bNew);
+	issueList = pasteReactionSteps0(graphPane, reactionStepsArrOrig, pasteModel, struct, bNew);
 }
 
 
@@ -133,7 +131,7 @@ protected static final void pasteReactionSteps(ReactionStep[] reactionStepsArrOr
  * @param struct cbit.vcell.model.Structure
  * @param bNew boolean
  */
-private static final Vector<Issue> pasteReactionSteps0(ReactionStep[] reactionStepsArr,Model model, Structure struct, boolean bNew) throws Exception {
+private static final Vector<Issue> pasteReactionSteps0(GraphPane graphPane, ReactionStep[] reactionStepsArr,Model model, Structure struct, boolean bNew) throws Exception {
 
 	if(reactionStepsArr == null || reactionStepsArr.length == 0 || model == null || struct == null){
 		throw new IllegalArgumentException("CartoonTool.pasteReactionSteps Error "+
@@ -191,7 +189,7 @@ private static final Vector<Issue> pasteReactionSteps0(ReactionStep[] reactionSt
 				}
 			}
 			// this adds the speciesContexts and species (if any) to the model)
-			SpeciesContext newSc = pasteSpecies(rpArr[i].getSpecies(),model,pasteStruct,bNew, speciesHash);
+			SpeciesContext newSc = pasteSpecies(graphPane, rpArr[i].getSpecies(),model,pasteStruct,bNew, speciesHash);
 			// record the old-new speciesContexts (reactionparticipants) in the IdHashMap, this is useful, esp for 'Paste new', while replacing proxyparams. 
 			SpeciesContext oldSc = rpArr[i].getSpeciesContext();
 			if (speciesContextHash.get(oldSc) == null) {
@@ -242,11 +240,11 @@ private static final Vector<Issue> pasteReactionSteps0(ReactionStep[] reactionSt
 									// if paste-model has oldSc struct, paste it there, 
 									Structure newSCStruct = model.getStructure(oldSC.getStructure().getName()); 
 									if (newSCStruct != null) {
-										newSC = pasteSpecies(oldSC.getSpecies(), model, newSCStruct, bNew, speciesHash);
+										newSC = pasteSpecies(graphPane, oldSC.getSpecies(), model, newSCStruct, bNew, speciesHash);
 										speciesContextHash.put(oldSC, newSC);
 									} else {
 										// oldStruct wasn't found in paste-model, paste it in newRxnStruct and add warning to issues list
-										newSC = pasteSpecies(oldSC.getSpecies(), model, newRxnStruct, bNew, speciesHash);
+										newSC = pasteSpecies(graphPane, oldSC.getSpecies(), model, newRxnStruct, bNew, speciesHash);
 										speciesContextHash.put(oldSC, newSC);
 										Issue issue = new Issue(oldSC, "Species Context",
 												"SpeciesContext '" + oldSC.getSpecies().getCommonName() + "' was not found in compartment '" +
@@ -453,7 +451,7 @@ private static Species getNewSpecies(IdentityHashMap<Species, Species> speciesHa
  * @param newStruct cbit.vcell.model.Structure
  * @param bNew boolean
  */
-protected static final SpeciesContext pasteSpecies(Species oldSpecies,Model newModel, Structure newStruct, boolean bNew, 
+protected static final SpeciesContext pasteSpecies(GraphPane graphPane, Species oldSpecies,Model newModel, Structure newStruct, boolean bNew, 
 		IdentityHashMap<Species, Species> speciesHash) {
 
 	if(!newModel.contains(newStruct)){
@@ -470,7 +468,7 @@ protected static final SpeciesContext pasteSpecies(Species oldSpecies,Model newM
 				newModel.addSpeciesContext(newSpecies,newStruct);
 			}
 		}catch(Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			cbit.vcell.client.PopupGenerator.showErrorDialog(graphPane, e.getMessage());
 		}
 	}
 	return newModel.getSpeciesContext(newSpecies,newStruct);

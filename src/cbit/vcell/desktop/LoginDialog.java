@@ -86,16 +86,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.W
 	};
 
 /**
- * Constructor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public LoginDialog() {
-	super();
-	initialize();
-}
-
-
-/**
  * LoginDialog constructor comment.
  */
 public LoginDialog(java.awt.Frame owner) {

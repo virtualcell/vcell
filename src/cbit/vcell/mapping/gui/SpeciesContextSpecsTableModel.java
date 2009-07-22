@@ -6,6 +6,9 @@ package cbit.vcell.mapping.gui;
 
 import java.util.Collections;
 import java.util.Comparator;
+
+import javax.swing.JTable;
+
 import org.vcell.util.gui.sorttable.ManageTableModel;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
@@ -36,12 +39,14 @@ public class SpeciesContextSpecsTableModel extends ManageTableModel implements j
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
+	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public SpeciesContextSpecsTableModel() {
+public SpeciesContextSpecsTableModel(JTable table) {
 	super();
+	ownerTable = table;
 }
 
 
@@ -368,7 +373,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				//
 				// don't handle exception here, InitialConditionsPanel needs it.
 				//
-				PopupGenerator.showErrorDialog("Wrong Expression:\n" + e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "Wrong Expression:\n" + e.getMessage());
 				//throw new RuntimeException(e.getMessage());
 			}
 			break;
@@ -391,7 +396,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				//
 				// don't handle exception here, InitialConditionsPanel needs it.
 				//
-				PopupGenerator.showErrorDialog("Wrong Expression:\n" + e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "Wrong Expression:\n" + e.getMessage());
 				//throw new RuntimeException(e.getMessage());
 			}
 			break;

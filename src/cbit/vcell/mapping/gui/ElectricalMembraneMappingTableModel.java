@@ -4,11 +4,15 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import org.vcell.util.BeanUtils;
+import javax.swing.JTable;
 
-import cbit.vcell.parser.*;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.mapping.*;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -26,12 +30,14 @@ public class ElectricalMembraneMappingTableModel extends javax.swing.table.Abstr
 	public final static String LABEL_SPECIFIC_CAPACITANCE = "specific capacitance (pF/um2)";
 	private static String LABELS[] = { LABEL_MEMBRANE, LABEL_CALCULATE_POTENTIAL, LABEL_INITIAL_POTENTIAL, LABEL_SPECIFIC_CAPACITANCE };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;
+	private GeometryContext fieldGeometryContext = null;
+	private JTable ownerTable = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ElectricalMembraneMappingTableModel() {
+public ElectricalMembraneMappingTableModel(JTable table) {
 	super();
+	ownerTable = table;
 }
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -75,7 +81,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_MEMBRANE:{
 			return String.class;
@@ -111,7 +117,7 @@ public String getColumnName(int column) {
  * @return The geometryContext property value.
  * @see #setGeometryContext
  */
-public cbit.vcell.mapping.GeometryContext getGeometryContext() {
+public GeometryContext getGeometryContext() {
 	return fieldGeometryContext;
 }
 /**
@@ -266,7 +272,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param geometryContext The new value for the property.
  * @see #getGeometryContext
  */
-public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContext) {
+public void setGeometryContext(GeometryContext geometryContext) {
 	GeometryContext oldValue = fieldGeometryContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
@@ -318,10 +324,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog("error setting initial potential\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "error setting initial potential\n"+e.getMessage());
 			}
 			break;
 		}
@@ -338,10 +344,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog("error setting capacitance\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "error setting capacitance\n"+e.getMessage());
 			}
 			break;
 		}

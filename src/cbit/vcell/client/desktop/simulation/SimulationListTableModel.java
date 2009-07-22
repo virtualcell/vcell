@@ -1,8 +1,11 @@
 package cbit.vcell.client.desktop.simulation;
-import java.beans.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.mapping.*;
-import javax.swing.table.*;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
+
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -18,12 +21,14 @@ public class SimulationListTableModel extends AbstractTableModel implements Prop
 	
 	private String[] columnNames = new String[] {"Name", "Last saved", "Running status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
+	private JTable ownerTable = null;
 
 /**
  * SimulationListTableModel constructor comment.
  */
-public SimulationListTableModel() {
+public SimulationListTableModel(JTable table) {
 	super();
+	ownerTable = table;
 }
 
 
@@ -180,7 +185,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				}
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 			}
 			break;
 		}

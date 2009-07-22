@@ -404,7 +404,7 @@ private JTableFixed getScrollPaneTable1() {
 private StructureMappingTableModel getStructureMappingTableModel1() {
 	if (ivjStructureMappingTableModel1 == null) {
 		try {
-			ivjStructureMappingTableModel1 = new StructureMappingTableModel();
+			ivjStructureMappingTableModel1 = new StructureMappingTableModel(getScrollPaneTable1());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

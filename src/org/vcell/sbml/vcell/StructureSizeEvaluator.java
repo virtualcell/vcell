@@ -15,7 +15,7 @@ public interface StructureSizeEvaluator {
  * @param structName java.lang.String
  * @param structSize double
  */
-void updateAbsoluteStructureSizes(SimulationContext simContext, cbit.vcell.model.Structure struct, double structSize, VCUnitDefinition structSizeUnit);
+void updateAbsoluteStructureSizes(SimulationContext simContext, cbit.vcell.model.Structure struct, double structSize, VCUnitDefinition structSizeUnit) throws Exception;
 
 
 /**
@@ -25,5 +25,5 @@ void updateAbsoluteStructureSizes(SimulationContext simContext, cbit.vcell.model
  * @param structName java.lang.String
  * @param structSize double
  */
-void updateRelativeStructureSizes(SimulationContext simContext);
+void updateRelativeStructureSizes(SimulationContext simContext) throws Exception;
 }

@@ -41,7 +41,6 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjpatchElectrodeLabel = null;
 	private ElectrodePanel ivjpatchElectrodePanel = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
-	private long lastTimeRequestCellEditorFocus = 0l;
 
 class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -830,7 +829,7 @@ public ElectricalStimulus getElectricalStimulus(SimulationContext simContext) {
 private ElectricalStimulusParameterTableModel getelectricalStimulusParameterTableModel() {
 	if (ivjelectricalStimulusParameterTableModel == null) {
 		try {
-			ivjelectricalStimulusParameterTableModel = new ElectricalStimulusParameterTableModel();
+			ivjelectricalStimulusParameterTableModel = new ElectricalStimulusParameterTableModel(getScrollPaneTable());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

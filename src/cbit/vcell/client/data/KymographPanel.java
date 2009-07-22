@@ -8,6 +8,7 @@ import cbit.image.ZoomEvent;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
@@ -1911,7 +1912,7 @@ public void initDataManager(
 		}
 	};
 	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
-	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
+	ClientTaskDispatcher.dispatch(pdeDataViewer, hash, taskArray, false);
 }
 
 
@@ -2023,7 +2024,7 @@ private void initDataManagerVariable(final String finalVarName) {
 			}
 		}
 	};
-	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
+	ClientTaskDispatcher.dispatch(pdeDataViewer, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
 }
 
 
@@ -2281,7 +2282,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2306,13 +2306,12 @@ private void scaleImageModeFromMenu(java.awt.event.ActionEvent actionEvent) {
 		scaleImageMode = SCALE_IMAGE_TIMESERIES;
 	}else if(actionEvent.getSource() == getScaleImageUDJMenuItem()){
 		try{
-			String userMinMaxS =
-				cbit.vcell.client.PopupGenerator.showInputDialog(this,
+			String userMinMaxS = PopupGenerator.showInputDialog(this,
 				"Enter min and max scaling value separated by comma (e.g. 0,100)",
 				(allDataMMMH != null?allDataMMMH.getRange().getMin()+","+allDataMMMH.getRange().getMax():"?,?"));
 			int commaIndex = userMinMaxS.indexOf(",");
 			if(commaIndex == -1){
-				cbit.vcell.client.PopupGenerator.showErrorDialog("Min and Max values must be separted by a comma");
+				PopupGenerator.showErrorDialog(this, "Min and Max values must be separted by a comma");
 				return;
 			}
 			try{
@@ -2320,7 +2319,7 @@ private void scaleImageModeFromMenu(java.awt.event.ActionEvent actionEvent) {
 				double max = Double.parseDouble(userMinMaxS.substring(commaIndex+1,userMinMaxS.length()));
 				userDefinedMMMH = new MinMaxMeanHolder(min,max,(min+max)/2);
 			}catch(NumberFormatException e){
-				cbit.vcell.client.PopupGenerator.showErrorDialog("Min or Max value cannot be parsed to a number");
+				PopupGenerator.showErrorDialog(this, "Min or Max value cannot be parsed to a number");
 				return;
 			}
 			scaleImageMode = SCALE_IMAGE_USERDEFINED;

@@ -6,6 +6,8 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.*;
 import java.util.*;
 
+import javax.swing.JTable;
+
 import org.vcell.util.gui.sorttable.ManageTableModel;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -27,7 +29,7 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 	}
 
 	
-	private class ParameterColumnComparator implements Comparator<Object> {
+	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
 		protected boolean ascending;
 
@@ -41,10 +43,7 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 		 * zero, or a positive integer as the first argument is less than, equal
 		 * to, or greater than the second.<p>
 		 */
-		public int compare(Object o1, Object o2){
-			
-			Parameter parm1 = (Parameter)o1;
-			Parameter parm2 = (Parameter)o2;
+		public int compare(Parameter parm1, Parameter parm2){	
 			
 			switch (index){
 				case COLUMN_NAME:{
@@ -98,12 +97,14 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 	private SimulationContext fieldSimulationContext = null;
 	
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
+	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public SpeciesContextSpecParameterTableModel() {
+public SpeciesContextSpecParameterTableModel(JTable table) {
 	super();
+	ownerTable = table;
 	addPropertyChangeListener(this);
 }
 
@@ -547,7 +548,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("error changing parameter name\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "error changing parameter name\n"+e.getMessage());
 				}
 				break;
 			}
@@ -588,10 +589,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 				break;
 			}

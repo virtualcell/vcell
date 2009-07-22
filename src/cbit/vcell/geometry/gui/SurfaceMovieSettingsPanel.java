@@ -262,7 +262,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 			}
 		}
 		if(!bSkipOK){
-			PopupGenerator.showErrorDialog(
+			PopupGenerator.showErrorDialog(this, 
 				"Current combination of begin and skip does not include end time.\n"+
 				"Closest compatible end time(s) "+nearLow+(nearHi != null?" and "+nearHi:"")+".\nResetting skip to 0");
 			skipComboBox.setSelectedIndex(0);

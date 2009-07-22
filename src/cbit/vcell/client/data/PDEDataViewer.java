@@ -286,7 +286,7 @@ private void calcStatistics(final ActionEvent actionEvent) {
 	try {
 		roiAction();
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog("Error calculating statistics\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error calculating statistics\n"+e.getMessage());
 	}
 }
 
@@ -701,7 +701,7 @@ private void roiAction(){
 		okButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				if(((Double)jcb_time_begin.getSelectedItem()).compareTo((Double)jcb_time_end.getSelectedItem()) > 0){
-					PopupGenerator.showErrorDialog("Selected 'Begin Time' must be less than or equal to 'End Time'");
+					PopupGenerator.showErrorDialog(PDEDataViewer.this, "Selected 'Begin Time' must be less than or equal to 'End Time'");
 					return;
 				}
 				int[] selectedRows = roiTable.getSelectedRows();
@@ -759,7 +759,7 @@ private void roiAction(){
 						ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
 					} catch (Exception e1) {
 						e1.printStackTrace();
-						PopupGenerator.showErrorDialog("ROI Error.\n"+e1.getMessage());
+						PopupGenerator.showErrorDialog(PDEDataViewer.this, "ROI Error.\n"+e1.getMessage());
 					}
 				}
 				BeanUtils.dispose(mainJPanel);
@@ -1425,7 +1425,7 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 		fieldDataValueSurfaceViewer = fieldDataValueSurfaceViewer0;
 	}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(e.getClass().getName()+"\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(PDEDataViewer.this, e.getClass().getName()+"\n"+e.getMessage());
 	}
 
 	return fieldDataValueSurfaceViewer;
@@ -1558,11 +1558,11 @@ private javax.swing.JButton getJButtonSnapshotROI() {
 					String variableName = getPdeDataContext().getVariableName();
 					double timePoint = getPdeDataContext().getTimePoint();
 					if(snapshotROI.cardinality() == 0){
-						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
+						PopupGenerator.showInfoDialog(PDEDataViewer.this, (isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
 								"No data values for variable '"+variableName+"'\n"+
 								"at time '"+timePoint+"' have values equal to 1.0");
 					}else{
-						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI updated.\n"+
+						PopupGenerator.showInfoDialog(PDEDataViewer.this, (isVolumeType?"Volume":"Membrane")+" snapshot ROI updated.\n"+
 								"Variable '"+variableName+"' "+
 								"Time '"+timePoint+"'\n"+
 								"Current Snapshot ROI:\n"+
@@ -2168,7 +2168,7 @@ private void showKymograph() {
 				symbolTable);
 		}
 	} catch (Exception e) {
-		PopupGenerator.showErrorDialog(this.getClass().getName()+".showKymograph: "+e.getMessage());
+		PopupGenerator.showErrorDialog(PDEDataViewer.this, this.getClass().getName()+".showKymograph: "+e.getMessage());
 		e.printStackTrace(System.out);
 	}
 

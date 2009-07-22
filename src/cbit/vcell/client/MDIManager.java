@@ -151,4 +151,6 @@ void updateMemoryStatus(long freeBytes, long totalBytes);
 void updateWhileInitializing(int progress);
 
 FieldDataWindowManager getFieldDataWindowManager();
+
+TopLevelWindowManager getFocusedWindowManager();
 }

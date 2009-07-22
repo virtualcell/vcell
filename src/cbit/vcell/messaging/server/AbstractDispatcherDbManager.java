@@ -256,7 +256,7 @@ public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus,
 			SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
 
 			SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
-			if (oldJobStatus.isRunning() && oldExeStatus != null && oldExeStatus.hasData()) { // progress messages, don't always store into the database				
+			if (oldJobStatus.isRunning() && oldExeStatus != null && oldExeStatus.hasData() == hasData) { // running statuses, don't always store into the database				
 				updateLatestUpdateDate(newJobStatus, adminDb, vcSimID, jobIndex);
 				return newJobStatus;
 			} else {

@@ -12,7 +12,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
@@ -109,7 +108,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 					setDefaultTitle(surfaceViewerFrame);
 					surfaceViewer.updateSurfaces();
 				} catch(Exception e2){
-					DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
+					PopupGenerator.showErrorDialog(this, "Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
 				}
 		}
 	}	
