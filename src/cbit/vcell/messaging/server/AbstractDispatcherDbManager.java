@@ -99,7 +99,7 @@ SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatu
  * @param simKey cbit.sql.KeyValue
  */
 SimulationJobStatus getNewStatus_updateLatestUpdateDate(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, 
-		int jobIndex) throws DataAccessException, UpdateSynchronizationException {
+		int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
 
 	SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
 	if (oldExeStatus == null) {
@@ -117,7 +117,7 @@ SimulationJobStatus getNewStatus_updateLatestUpdateDate(SimulationJobStatus oldJ
 			oldExeStatus.getEndDate(), oldExeStatus.hasData());
 	
 	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), 
-		oldJobStatus.getSchedulerStatus(),	oldJobStatus.getTaskID(), oldJobStatus.getSimulationMessage(), oldJobStatus.getSimulationQueueEntryStatus(), newExeStatus);
+		oldJobStatus.getSchedulerStatus(),	oldJobStatus.getTaskID(), simulationMessage, oldJobStatus.getSimulationQueueEntryStatus(), newExeStatus);
 
 	return newJobStatus;
 }
@@ -227,11 +227,11 @@ public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, Adm
  * @param simKey cbit.sql.KeyValue
  */
 public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, 
-		int jobIndex) throws DataAccessException, UpdateSynchronizationException {
+		int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
 	try {
 		if (oldJobStatus != null && !oldJobStatus.isDone()) {
 
-			SimulationJobStatus	newJobStatus = getNewStatus_updateLatestUpdateDate(oldJobStatus, vcSimID, jobIndex);
+			SimulationJobStatus	newJobStatus = getNewStatus_updateLatestUpdateDate(oldJobStatus, vcSimID, jobIndex, simulationMessage);
 			
 			if (newJobStatus != null) {
 				adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
@@ -255,7 +255,7 @@ public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus,
 
 			SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
 			if (oldJobStatus == newJobStatus) { // running statuses, don't always store into the database				
-				updateLatestUpdateDate(oldJobStatus, adminDb, vcSimID, jobIndex);
+				updateLatestUpdateDate(oldJobStatus, adminDb, vcSimID, jobIndex, solverMsg);
 				return oldJobStatus;
 			} else {
 				newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
