@@ -1,12 +1,10 @@
 package cbit.vcell.messaging.db;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import java.util.Date;
 import java.io.Serializable;
 
 import org.vcell.util.Compare;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 /**
