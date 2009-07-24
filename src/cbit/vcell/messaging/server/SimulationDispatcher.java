@@ -204,7 +204,7 @@ public Simulation getSimulation(User user, KeyValue simKey) throws JMSException,
 	}
 
 	log.print("Get simulation [" + simKey + ","  + user + "]");	
-	Simulation sim = (Simulation)simulationMap.get(simKey);
+	Simulation sim = (Simulation)simulationMap.getCloned(simKey);
 
 	if (sim != null) {
 		return sim;
