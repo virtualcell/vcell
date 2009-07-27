@@ -31,11 +31,12 @@ public RasterExporter(ExportServiceImpl exportServiceImpl) {
 /**
  * This method was created in VisualAge.
  */
-private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, String tempDir) 
+private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, String tempDir) 
 						throws RemoteException, DataAccessException, IOException {
 
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 	String simID = vcdID.getID();
+	int NUM_TIMES = timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1;
 	switch (rasterSpecs.getFormat()) {
 		case NRRD_SINGLE: {
 			// single info, specifying 5D
@@ -44,7 +45,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 					// create the info object
 					NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
 						5,
-						new int[] {mesh.getSizeX(),	mesh.getSizeY(), mesh.getSizeZ(), timeSpecs.getAllTimes().length, variableSpecs.getVariableNames().length},
+						new int[] {mesh.getSizeX(),	mesh.getSizeY(), mesh.getSizeZ(),NUM_TIMES, variableSpecs.getVariableNames().length},
 						"double",
 						"raw"
 					);
@@ -59,14 +60,14 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 					});
 					nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 					// make datafile and update info
-					String fileID = simID + "_Full_" + timeSpecs.getAllTimes().length + "times_" + variableSpecs.getVariableNames().length + "vars";
+					String fileID = simID + "_Full_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames().length + "vars";
 					File datafile = new File(tempDir, fileID + "_data.nrrd");
 					nrrdInfo.setDatafile(datafile.getName());
 					DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(datafile)));
 					try {
 						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-							for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
-								double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs.getAllTimes()[j]).getData();
+							for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+								double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 								for (int k = 0; k < data.length; k++){
 									out.writeDouble(data[k]);
 								}
@@ -94,7 +95,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
 					Vector nrrdinfoV = new Vector();
-					for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
+					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
 						// create the info object
 						NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
 							4,
@@ -113,7 +114,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 						});
 						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 						//format time String
-						StringBuffer timeSB = new StringBuffer(timeSpecs.getAllTimes()[j]+"");
+						StringBuffer timeSB = new StringBuffer(timeSpecs2.getAllTimes()[j]+"");
 						int dotIndex = timeSB.toString().indexOf(".");
 						if(dotIndex != -1){
 							timeSB.replace(dotIndex,dotIndex+1,"_");
@@ -134,7 +135,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 						try {
 							for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 								//for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
-									double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs.getAllTimes()[j]).getData();
+									double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 									for (int k = 0; k < data.length; k++){
 										out.writeDouble(data[k]);
 									}
@@ -172,7 +173,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 						// create the info object
 						NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
 							4,
-							new int[] {mesh.getSizeX(),	mesh.getSizeY(), mesh.getSizeZ(), timeSpecs.getAllTimes().length},
+							new int[] {mesh.getSizeX(),	mesh.getSizeY(), mesh.getSizeZ(), NUM_TIMES},
 							"double",
 							"raw"
 						);
@@ -187,14 +188,14 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 						});
 						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 						// make datafile and update info
-						String fileID = simID + "_Full_" + timeSpecs.getAllTimes().length + "times_" + variableSpecs.getVariableNames()[i] + "vars";
+						String fileID = simID + "_Full_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames()[i] + "vars";
 						File datafile = new File(tempDir, fileID + "_data.nrrd");
 						nrrdInfo.setDatafile(datafile.getName());
 						DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(datafile)));
 						try {
 							//for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-								for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
-									double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs.getAllTimes()[j]).getData();
+								for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+									double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 									for (int k = 0; k < data.length; k++){
 										out.writeDouble(data[k]);
 									}
