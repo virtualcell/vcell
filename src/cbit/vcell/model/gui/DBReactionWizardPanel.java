@@ -1,9 +1,14 @@
 package cbit.vcell.model.gui;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 import javax.swing.JList;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
@@ -14,6 +19,7 @@ import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.SpeciesDescription;
+import cbit.vcell.graph.BioCartoonTool;
 import cbit.vcell.model.*;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -988,8 +994,8 @@ private void dBReactionWizardPanel_Initialize() {
 /**
  * Comment
  */
-private void done() {
-
+private void done(Model tempModel,Structure tempStructure) {
+	
 	Vector<SpeciesContext> newlyAddedSpeciesContexts = new Vector<SpeciesContext>();
 	Vector<Species> newlyAddedSpecies = new Vector<Species>();
 	Vector<Object[]> speciesWithChangedBindings = new Vector<Object[]>();
@@ -1005,7 +1011,7 @@ private void done() {
 			String uniqueName = (dbfr.isFluxReaction()?"Flux":"Reaction");
 			while(true){
 				boolean bUnique = true;
-				ReactionStep[] rsArr = getModel().getReactionSteps();
+				ReactionStep[] rsArr = tempModel.getReactionSteps();
 				for(int i=0;i<rsArr.length;i+= 1){
 					if(rsArr[i].getName().equals(uniqueName)){
 						bUnique = false;
@@ -1027,11 +1033,11 @@ private void done() {
 				Structure currentStructure = dbfr.getResolved(i).getStructure();
 				if(dbfr.isFlux(i) && newFluxSpecies != null){
 					currentSpecies = newFluxSpecies;
-				}else if(!getModel().contains(currentSpecies)){
+				}else if(!tempModel.contains(currentSpecies)){
 					//No mapping from user so we must add new Species
 					newlyAddedSpecies.add(currentSpecies);
 					//Make sure species name doesn't conflict
-					while(getModel().getSpecies(currentSpecies.getCommonName()) != null){
+					while(tempModel.getSpecies(currentSpecies.getCommonName()) != null){
 						currentSpecies.setCommonName(TokenMangler.getNextEnumeratedToken(currentSpecies.getCommonName()));
 					}
 					if(dbfr.isFlux(i)){
@@ -1065,7 +1071,10 @@ private void done() {
 						}
 					}
 				}
-				SpeciesContext currentSpeciesContext = getModel().getSpeciesContext(currentSpecies,currentStructure);
+				SpeciesContext currentSpeciesContext = null;
+				if(tempModel.contains(currentStructure) && tempModel.contains(currentSpecies)){
+					currentSpeciesContext = tempModel.getSpeciesContext(currentSpecies,currentStructure);
+				}
 				if(currentSpeciesContext == null){
 					currentSpeciesContext = dbfr.getResolved(i);//new SpeciesContext(currentSpecies,currentStructure);
 					newlyAddedSpeciesContexts.add(currentSpeciesContext);
@@ -1076,11 +1085,11 @@ private void done() {
 			}
 			////Add new species to Model
 			//for(int i=0;i<newlyAddedSpecies.size();i+= 1){
-				//getModel().addSpecies((Species)newlyAddedSpecies.get(i));
+				//tempModel.addSpecies((Species)newlyAddedSpecies.get(i));
 			//}
 			////Add new SpeciesContexts to Model
 			//for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
-				//getModel().addSpeciesContext((SpeciesContext)newlyAddedSpeciesContexts.get(i));
+				//tempModel.addSpeciesContext((SpeciesContext)newlyAddedSpeciesContexts.get(i));
 			//}
 			////Add RX Species Bindings to Model Species if necessary
 			//for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
@@ -1094,7 +1103,24 @@ private void done() {
 			ReactionStep reaction = null;
 			if(getReactionStep() == null){//Must have been from the EnzymeReaction dictionary, has no Kinetics
 				//Create Default Kinetics for Dictionary Reaction
-				reaction = new SimpleReaction(getStructure(),uniqueName);
+				reaction = new SimpleReaction(tempStructure,uniqueName);
+				
+				tempModel.addReactionStep(reaction);
+				for(int i=0;i<newlyAddedSpecies.size();i+= 1){
+					tempModel.addSpecies(newlyAddedSpecies.get(i));
+				}
+				//Add new SpeciesContexts to Model
+				for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
+					tempModel.addSpeciesContext(newlyAddedSpeciesContexts.get(i));
+				}
+				//Add RX Species Bindings to Model Species if necessary
+				for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
+					Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
+					Species changedSpecies = (Species)sbc[SPECIES_INDEX];
+					DBSpecies changedDBSpecies = (DBSpecies)sbc[CHANGED_DBS_INDEX];
+					changedSpecies.setDBSpecies(changedDBSpecies);
+				}
+
 				//Add Components to Reaction
 				for(int i=0;i<speciesContextV.size();i+= 1){
 					SpeciesContext sc = speciesContextV.get(i);
@@ -1104,7 +1130,7 @@ private void done() {
 					if(rxType == cbit.vcell.dictionary.ReactionDescription.RX_ELEMENT_CATALYST){
 						reaction.addCatalyst(sc);
 					}else if(rxType == cbit.vcell.dictionary.ReactionDescription.RX_ELEMENT_FLUX){
-						((FluxReaction)reaction).setFluxCarrier(sc.getSpecies(),getModel());
+						((FluxReaction)reaction).setFluxCarrier(sc.getSpecies(),tempModel);
 					}else if(rxType == cbit.vcell.dictionary.ReactionDescription.RX_ELEMENT_PRODUCT){
 						((SimpleReaction)reaction).addProduct(sc,rxStoich);
 					}else if(rxType == cbit.vcell.dictionary.ReactionDescription.RX_ELEMENT_REACTANT){
@@ -1119,26 +1145,48 @@ private void done() {
 				cbit.vcell.parser.Expression vmaxExpression = new cbit.vcell.parser.Expression("1.0");
 				kinetics.setParameterValue(((HMM_IRRKinetics)kinetics).getKmParameter(),kmExpression);
 				kinetics.setParameterValue(((HMM_IRRKinetics)kinetics).getVmaxParameter(),vmaxExpression);
-				//reaction = new SimpleReaction(getStructure(),uniqueName);
+				//reaction = new SimpleReaction(tempStructure,uniqueName);
 				reaction.setKinetics(kinetics);
+				
+				reaction.refreshDependencies();
+				BioCartoonTool.pasteReactionSteps(
+						new ReactionStep[] {reaction},getModel(), getStructure(), false,false,this);
+
 			}else{//Must be user reaction with kinetics
 				reaction = getReactionStep();
-				reaction.refreshDependencies();
-				//
-				reaction.setName(uniqueName);
-				reaction.setStructure(getStructure());
-				//Make sure Kinetics parameters don't conflict
-				Kinetics kinetics = reaction.getKinetics();
-				Kinetics.KineticsParameter[] kpArr = kinetics.getKineticsParameters();
-				for(int i=0;i < kpArr.length;i+= 1){
-					String kpName = kpArr[i].getName();
-//					Kinetics.KineticsParameter kp = null;
-					while(getModel().getKineticsParameter(kpName) != null){
-						String newKPName = org.vcell.util.TokenMangler.getNextEnumeratedToken(kpName);
-						kinetics.renameParameter(kpName,newKPName);
-						kpName = newKPName;
-					}
+				
+				for(int i=0;i<newlyAddedSpecies.size();i+= 1){
+					tempModel.addSpecies(newlyAddedSpecies.get(i));
 				}
+				//Add new SpeciesContexts to Model
+				for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
+					tempModel.addSpeciesContext(newlyAddedSpeciesContexts.get(i));
+				}
+				//Add RX Species Bindings to Model Species if necessary
+				for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
+					Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
+					Species changedSpecies = (Species)sbc[SPECIES_INDEX];
+					DBSpecies changedDBSpecies = (DBSpecies)sbc[CHANGED_DBS_INDEX];
+					changedSpecies.setDBSpecies(changedDBSpecies);
+				}
+
+				reaction.refreshDependencies();
+				reaction.setName(uniqueName);
+				reaction.setStructure(tempStructure);
+				reaction.refreshDependencies();
+//				//
+//				//Make sure Kinetics parameters don't conflict
+				Kinetics kinetics = reaction.getKinetics();
+//				Kinetics.KineticsParameter[] kpArr = kinetics.getKineticsParameters();
+//				for(int i=0;i < kpArr.length;i+= 1){
+//					String kpName = kpArr[i].getName();
+////					Kinetics.KineticsParameter kp = null;
+//					while(tempModel.getKineticsParameter(kpName) != null){
+//						String newKPName = org.vcell.util.TokenMangler.getNextEnumeratedToken(kpName);
+//						kinetics.renameParameter(kpName,newKPName);
+//						kpName = newKPName;
+//					}
+//				}
 				//change old rxParticpant contextNames to new contextNames
 				ReactionParticipant[] rpArr = reaction.getReactionParticipants();
 				for(int i=0;i< rpArr.length;i+= 1){
@@ -1152,67 +1200,45 @@ private void done() {
 				////Remove current if not in membrane -or- Add current if in membrane
 				////
 				//if(kinetics instanceof HMM_IRRKinetics){
-					//((HMM_IRRKinetics)kinetics).resolveCurrentWithStructure(getStructure());
+					//((HMM_IRRKinetics)kinetics).resolveCurrentWithStructure(tempStructure);
 				//}
-				kinetics.resolveCurrentWithStructure(getStructure());
+				kinetics.resolveCurrentWithStructure(tempStructure);
+				
+				reaction.refreshDependencies();
+
 			}
-			reaction.refreshDependencies();
-			//
-			//Now Add everything to the Model
-			//
-			//Add new species to Model
-			for(int i=0;i<newlyAddedSpecies.size();i+= 1){
-				getModel().addSpecies(newlyAddedSpecies.get(i));
-			}
-			//Add new SpeciesContexts to Model
-			for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
-				getModel().addSpeciesContext(newlyAddedSpeciesContexts.get(i));
-			}
-			//Add RX Species Bindings to Model Species if necessary
-			for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
-				Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
-				Species changedSpecies = (Species)sbc[SPECIES_INDEX];
-				DBSpecies changedDBSpecies = (DBSpecies)sbc[CHANGED_DBS_INDEX];
-				changedSpecies.setDBSpecies(changedDBSpecies);
-			}
-			//Add Reaction
-			getModel().addReactionStep(reaction);
+//			reaction.refreshDependencies();
+//			//
+//			//Now Add everything to the Model
+//			//
+//			//Add new species to Model
+//			for(int i=0;i<newlyAddedSpecies.size();i+= 1){
+//				tempModel.addSpecies(newlyAddedSpecies.get(i));
+//			}
+//			//Add new SpeciesContexts to Model
+//			for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
+//				tempModel.addSpeciesContext(newlyAddedSpeciesContexts.get(i));
+//			}
+//			//Add RX Species Bindings to Model Species if necessary
+//			for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
+//				Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
+//				Species changedSpecies = (Species)sbc[SPECIES_INDEX];
+//				DBSpecies changedDBSpecies = (DBSpecies)sbc[CHANGED_DBS_INDEX];
+//				changedSpecies.setDBSpecies(changedDBSpecies);
+//			}
+//			//Add Reaction
+//			tempModel.addReactionStep(reaction);
+			BioCartoonTool.pasteReactionSteps(
+					new ReactionStep[] {reaction},getModel(), getStructure(), false,false,this);
 		}
 		
+
 		bClose = true;
 		
 	}catch(Exception e){
-		//Undo anything we added to this model
-		String fixFailedS = "";
-		for(int i = 0;i < newlyAddedSpeciesContexts.size();i+= 1){
-			try{
-				getModel().removeSpeciesContext(newlyAddedSpeciesContexts.get(i));
-			}catch(Exception ee){
-				fixFailedS = e.getMessage()+"\n";
-			}
-		}
-		for(int i = 0;i < newlyAddedSpecies.size();i+= 1){
-			try{
-				getModel().removeSpecies((Species)newlyAddedSpecies.get(i));
-			}catch(Exception ee){
-				fixFailedS = e.getMessage()+"\n";
-			}
-		}
-		for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
-			try{
-				Object[] sbc = speciesWithChangedBindings.get(i);
-				Species changedSpecies = (Species)sbc[SPECIES_INDEX];
-				DBSpecies originalDBSpecies = (DBSpecies)sbc[ORIG_DBS_INDEX];
-				if(!Compare.isEqualOrNull(originalDBSpecies,changedSpecies.getDBSpecies())){
-					changedSpecies.setDBSpecies(originalDBSpecies);
-				}
-			}catch(Exception ee){
-				fixFailedS = e.getMessage()+"\n";
-			}
-		}
+		e.printStackTrace();
 		cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Error adding reaction: \n"+
-				e.getClass().getName()+"\n"+e.getMessage()+"\n"+
-				(fixFailedS.length() != 0?"\nYour Model may have been Corrupted.\n"+fixFailedS:""));
+				e.getClass().getName()+"\n"+e.getMessage());
 	}finally{
 		if(bClose){closeParent();}
 	}
@@ -1250,37 +1276,6 @@ private void findCriteriaDetailsChanged() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/8/2003 7:19:52 PM)
- * @return cbit.vcell.model.Species[]
- */
-private SpeciesContext[] findLegalFluxSpeciesContexts(Membrane membrane) {
-	Vector<SpeciesContext> legalSpeciesContexts = new Vector<SpeciesContext>();
-	if(getModel() != null){
-		SpeciesContext[] outSC = getModel().getSpeciesContexts(membrane.getOutsideFeature());
-		SpeciesContext[]  inSC = getModel().getSpeciesContexts(membrane.getInsideFeature());
-		if(outSC != null && inSC != null){
-			for(int i=0;i < outSC.length;i+= 1){
-				for(int j=0;j<inSC.length;j+= 1){
-					if(	outSC[i].getSpecies().equals(inSC[j].getSpecies()) && 
-						!legalSpeciesContexts.contains(outSC[i]) &&
-						!legalSpeciesContexts.contains(inSC[i])
-					){
-						legalSpeciesContexts.add(outSC[i]);
-						legalSpeciesContexts.add(inSC[i]);
-					}
-				}
-			}
-		}
-	}
-	if(legalSpeciesContexts.size() > 0){
-		SpeciesContext[] spArr = new SpeciesContext[legalSpeciesContexts.size()];
-		legalSpeciesContexts.copyInto(spArr);
-		return spArr;
-	}
-	return null;
-}
 
 
 /**
@@ -2701,78 +2696,135 @@ private void reactionListSelectionChanged() {
 /**
  * Comment
  */
-private void resolve2() {
+private void resolve2(){
 
-	setReactionDescription(null);
-	
-	for(int i=0;i<resolvedReaction.elementCount();i+= 1){
-		Species species = speciesOrder[speciesAssignmentJCB[i].getSelectedIndex()];
-		Structure structure = null;
-		SpeciesContext speciesContext = null;
-		
-		if(getStructure() instanceof Feature){
-			structure = getStructure();
-		}else if(resolvedReaction.isFluxReaction() && i == 0){
-			structure = ((Membrane)getStructure()).getOutsideFeature();
-		}else if(resolvedReaction.isFluxReaction() && i == 1){
-			structure = ((Membrane)getStructure()).getInsideFeature();
-		}else if(structureAssignmentJCB[i].getSelectedIndex() == 0){
-			structure = getStructure();
-		}else if(structureAssignmentJCB[i].getSelectedIndex() == 1){
-			structure = ((Membrane)getStructure()).getOutsideFeature();
-		}else if(structureAssignmentJCB[i].getSelectedIndex() == 2){
-			structure = ((Membrane)getStructure()).getInsideFeature();
-		}
+	try {
+		Model tempModel = null;
+		Structure tempStructure = null;
+		if(getReactionStep() == null){
+			tempModel = (Model)BeanUtils.cloneSerializable(getModel());
+			tempStructure = tempModel.getStructure(getStructure().getName());
 
-		if(species != null){
-			speciesContext = getModel().getSpeciesContext(species,structure);
-		}else if(resolvedReaction.isFluxReaction() && i == resolvedReaction.getFluxIndexInside()){
-			//get the same species(flux carrier) for "Inside" as we generated for "Outside"
-			//Note: ReactionDescription always has Outside flux at index 0 and Inside flux at index 1
-			species = resolvedReaction.getResolved(resolvedReaction.getFluxIndexOutside()).getSpecies();
 		}else{
-			cbit.vcell.dictionary.DBSpecies dbSpecies = null;
-			cbit.vcell.dictionary.SpeciesDescription dbsd = resolvedReaction.getReactionElement(i);
-			if(dbsd instanceof cbit.vcell.dictionary.DBFormalSpecies){//get DBSpecies (Dictionary Reactions)
-				try{
-					dbSpecies = getDocumentManager().getBoundSpecies((cbit.vcell.dictionary.DBFormalSpecies)dbsd);
-				}catch(org.vcell.util.DataAccessException e){
-					//Do Nothing, this SC won't be bound in database, user can do it later
+			tempModel = new Model("temp");
+			ReactionStep reactStep = getReactionStep();
+			tempStructure = reactStep.getStructure();
+			Structure structure = reactStep.getStructure();
+			if((!tempStructure.getClass().equals(getStructure().getClass()))){
+				throw new Exception("Structure types must match when pasting reactions");
+			}
+			ArrayList<Structure> structHash = new ArrayList<Structure>();
+			if(structure instanceof Membrane){
+				structHash.add(((Membrane)structure).getInsideFeature());
+			}
+			while(structure != null){
+				structHash.add(structure);
+				structure = structure.getParentStructure();
+			}
+			Structure[] structArr = structHash.toArray(new Structure[0]);
+			tempModel.setStructures(structArr);
+			ReactionParticipant[] reactionParticipantArr = reactStep.getReactionParticipants();
+			for (int i = 0; i < reactionParticipantArr.length; i++) {
+				if(!tempModel.contains(reactionParticipantArr[i].getSpeciesContext().getSpecies())){
+					tempModel.addSpecies(reactionParticipantArr[i].getSpeciesContext().getSpecies());
 				}
-			}else{//get DBSpecies (user Reactions)
-				String origSCName = resolvedReaction.getOrigSpeciesContextName(resolvedReaction.getDBSDIndex(dbsd));
-				ReactionParticipant[] rPart = getReactionStep().getReactionParticipants();
-				for(int j=0;j<rPart.length;j+= 1){
-					if(rPart[j].getSpeciesContext().getName().equals(origSCName)){
-						dbSpecies = rPart[j].getSpecies().getDBSpecies();
-					}
+				if(!tempModel.contains(reactionParticipantArr[i].getSpeciesContext())){
+					tempModel.addSpeciesContext(reactionParticipantArr[i].getSpeciesContext());
 				}
 			}
-			species =
-				new cbit.vcell.model.Species(org.vcell.util.TokenMangler.fixTokenStrict(dbsd.getPreferredName()),
-					null,
-					dbSpecies);
-		}
-
-		if(speciesContext == null){
-			speciesContext = new SpeciesContext(species,structure);
-		}
-
-		try{
-			resolvedReaction.resolve(i,speciesContext);
-		}catch(IllegalArgumentException e){
-			PopupGenerator.showErrorDialog(this, "Error Resolving RX Elements --\n"+e.getMessage());
-			return;
+			tempModel.addReactionStep(reactStep);
+			reactStep.rebindAllToModel(tempModel);
+			tempModel.refreshDependencies();
+			tempStructure.setName(getStructure().getName());
+			Model tempTempModel = (Model)BeanUtils.cloneSerializable(getModel());
+			SpeciesContext[] temptempSCArr = tempTempModel.getSpeciesContexts(tempTempModel.getStructure(getStructure().getName()));
+			for (int i = 0; i < temptempSCArr.length; i++) {
+				if(tempModel.getSpecies(temptempSCArr[i].getSpecies().getCommonName()) == null){
+					tempModel.addSpecies(temptempSCArr[i].getSpecies());
+				}
+				if(tempModel.getSpeciesContext(temptempSCArr[i].getName()) == null){
+					SpeciesContext newSpeciesContext =
+						new SpeciesContext(temptempSCArr[i].getSpecies(),tempStructure);
+					tempModel.addSpeciesContext(newSpeciesContext);
+				}
+			}
 		}
 		
-		//System.out.println("\n"+
-			//resolvedReaction.getReactionElement(i).getPreferredName()+
-			//" resolved to "+speciesContext.toString()+"\n");
+		tempModel.refreshDependencies();
+
+		setReactionDescription(null);
+		
+		for(int i=0;i<resolvedReaction.elementCount();i+= 1){
+			Species species = speciesOrder[speciesAssignmentJCB[i].getSelectedIndex()];
+			SpeciesContext speciesContext = null;
+			
+			if(tempStructure instanceof Feature){
+				//structure = getStructure();
+			}else if(resolvedReaction.isFluxReaction() && i == 0){
+				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getOutsideFeature();
+			}else if(resolvedReaction.isFluxReaction() && i == 1){
+				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getInsideFeature();
+			}else if(structureAssignmentJCB[i].getSelectedIndex() == 0){
+				//structure = getStructure();
+			}else if(structureAssignmentJCB[i].getSelectedIndex() == 1){
+				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getOutsideFeature();
+			}else if(structureAssignmentJCB[i].getSelectedIndex() == 2){
+				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getInsideFeature();
+			}
+
+			if(species != null){
+				speciesContext = tempModel.getSpeciesContext(tempModel.getSpecies(species.getCommonName()),tempStructure);
+			}else if(resolvedReaction.isFluxReaction() && i == resolvedReaction.getFluxIndexInside()){
+				//get the same species(flux carrier) for "Inside" as we generated for "Outside"
+				//Note: ReactionDescription always has Outside flux at index 0 and Inside flux at index 1
+				species = resolvedReaction.getResolved(resolvedReaction.getFluxIndexOutside()).getSpecies();
+			}else{
+				cbit.vcell.dictionary.DBSpecies dbSpecies = null;
+				cbit.vcell.dictionary.SpeciesDescription dbsd = resolvedReaction.getReactionElement(i);
+				if(dbsd instanceof cbit.vcell.dictionary.DBFormalSpecies){//get DBSpecies (Dictionary Reactions)
+					try{
+						dbSpecies = getDocumentManager().getBoundSpecies((cbit.vcell.dictionary.DBFormalSpecies)dbsd);
+					}catch(org.vcell.util.DataAccessException e){
+						//Do Nothing, this SC won't be bound in database, user can do it later
+					}
+				}else{//get DBSpecies (user Reactions)
+					String origSCName = resolvedReaction.getOrigSpeciesContextName(resolvedReaction.getDBSDIndex(dbsd));
+					ReactionParticipant[] rPart = getReactionStep().getReactionParticipants();
+					for(int j=0;j<rPart.length;j+= 1){
+						if(rPart[j].getSpeciesContext().getName().equals(origSCName)){
+							dbSpecies = rPart[j].getSpecies().getDBSpecies();
+						}
+					}
+				}
+				species =
+					new cbit.vcell.model.Species(org.vcell.util.TokenMangler.fixTokenStrict(dbsd.getPreferredName()),
+						null,
+						dbSpecies);
+			}
+
+			if(speciesContext == null){
+				speciesContext = new SpeciesContext(species,tempStructure);
+			}
+
+			try{
+				resolvedReaction.resolve(i,speciesContext);
+			}catch(IllegalArgumentException e){
+				PopupGenerator.showErrorDialog(this, "Error Resolving RX Elements --\n"+e.getMessage());
+				return;
+			}
+			
+			//System.out.println("\n"+
+				//resolvedReaction.getReactionElement(i).getPreferredName()+
+				//" resolved to "+speciesContext.toString()+"\n");
+		}
+
+		setReactionDescription(resolvedReaction);
+
+		done(tempModel,tempStructure);
+	} catch (Exception e) {
+		e.printStackTrace();
+		PopupGenerator.showErrorDialog(this,e.getMessage());
 	}
-
-	setReactionDescription(resolvedReaction);
-
-	done();
 }
 
 
