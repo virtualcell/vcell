@@ -108,16 +108,16 @@ public static boolean printIssues(Vector<Issue> issueVector, Component guiReques
  * @param guiRequestComponent : the parent component for the warning dialog that pops up the issues, if any, encountered in the pasting process
  * @throws Exception
  */
-protected static final void pasteReactionSteps(GraphPane graphPane, ReactionStep[] reactionStepsArrOrig,Model pasteModel, Structure struct, boolean bNew, Component guiRequestComponent) throws Exception {
+public static final void pasteReactionSteps(ReactionStep[] reactionStepsArrOrig,Model pasteModel, Structure struct, boolean bNew,boolean bUseDBSpecies, Component guiRequestComponent) throws Exception {
 	Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
-	Vector<Issue> issueList = pasteReactionSteps0(graphPane, reactionStepsArrOrig, clonedModel, clonedModel.getStructure(struct.getName()), bNew);
+	Vector<Issue> issueList = pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig, clonedModel, clonedModel.getStructure(struct.getName()), bNew,bUseDBSpecies);
 	if (issueList.size() != 0) {
 		if (!printIssues(issueList, guiRequestComponent)) {
 			return;
 		}
 	}
 	issueList.clear();
-	issueList = pasteReactionSteps0(graphPane, reactionStepsArrOrig, pasteModel, struct, bNew);
+	issueList = pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig, pasteModel, struct, bNew,bUseDBSpecies);
 }
 
 
@@ -131,7 +131,7 @@ protected static final void pasteReactionSteps(GraphPane graphPane, ReactionStep
  * @param struct cbit.vcell.model.Structure
  * @param bNew boolean
  */
-private static final Vector<Issue> pasteReactionSteps0(GraphPane graphPane, ReactionStep[] reactionStepsArr,Model model, Structure struct, boolean bNew) throws Exception {
+private static final Vector<Issue> pasteReactionSteps0(Component parent, ReactionStep[] reactionStepsArr,Model model, Structure struct, boolean bNew,boolean bUseDBSpecies) throws Exception {
 
 	if(reactionStepsArr == null || reactionStepsArr.length == 0 || model == null || struct == null){
 		throw new IllegalArgumentException("CartoonTool.pasteReactionSteps Error "+
@@ -189,7 +189,7 @@ private static final Vector<Issue> pasteReactionSteps0(GraphPane graphPane, Reac
 				}
 			}
 			// this adds the speciesContexts and species (if any) to the model)
-			SpeciesContext newSc = pasteSpecies(graphPane, rpArr[i].getSpecies(),model,pasteStruct,bNew, speciesHash);
+			SpeciesContext newSc = pasteSpecies(parent, rpArr[i].getSpecies(),model,pasteStruct,bNew, bUseDBSpecies,speciesHash);
 			// record the old-new speciesContexts (reactionparticipants) in the IdHashMap, this is useful, esp for 'Paste new', while replacing proxyparams. 
 			SpeciesContext oldSc = rpArr[i].getSpeciesContext();
 			if (speciesContextHash.get(oldSc) == null) {
@@ -240,11 +240,11 @@ private static final Vector<Issue> pasteReactionSteps0(GraphPane graphPane, Reac
 									// if paste-model has oldSc struct, paste it there, 
 									Structure newSCStruct = model.getStructure(oldSC.getStructure().getName()); 
 									if (newSCStruct != null) {
-										newSC = pasteSpecies(graphPane, oldSC.getSpecies(), model, newSCStruct, bNew, speciesHash);
+										newSC = pasteSpecies(parent, oldSC.getSpecies(), model, newSCStruct, bNew, bUseDBSpecies,speciesHash);
 										speciesContextHash.put(oldSC, newSC);
 									} else {
 										// oldStruct wasn't found in paste-model, paste it in newRxnStruct and add warning to issues list
-										newSC = pasteSpecies(graphPane, oldSC.getSpecies(), model, newRxnStruct, bNew, speciesHash);
+										newSC = pasteSpecies(parent, oldSC.getSpecies(), model, newRxnStruct, bNew, bUseDBSpecies,speciesHash);
 										speciesContextHash.put(oldSC, newSC);
 										Issue issue = new Issue(oldSC, "Species Context",
 												"SpeciesContext '" + oldSC.getSpecies().getCommonName() + "' was not found in compartment '" +
@@ -392,7 +392,7 @@ private static final Vector<Issue> pasteReactionSteps0(GraphPane graphPane, Reac
 	return issueVector;
 }
 
-private static Species getNewSpecies(IdentityHashMap<Species, Species> speciesHash, Species oldSpecies, Model newModel, boolean bNew, Structure newStruct) {
+private static Species getNewSpecies(IdentityHashMap<Species, Species> speciesHash, Species oldSpecies, Model newModel, boolean bNew, boolean bUseDBSpecies,Structure newStruct) {
 	Species newSpecies = speciesHash.get(oldSpecies);
 	if (newSpecies != null) {
 		return newSpecies;
@@ -413,7 +413,7 @@ private static Species getNewSpecies(IdentityHashMap<Species, Species> speciesHa
 			if(!newModel.contains(oldSpecies)){// Doesn't have Species (==)
 				//see if we have a species with DBSpecies that matches
 				Species[] speciesFromDBSpeciesArr = (oldSpecies.getDBSpecies() != null ? newModel.getSpecies(oldSpecies.getDBSpecies()) : null);
-				if(speciesFromDBSpeciesArr != null && speciesFromDBSpeciesArr.length > 0){//DBSpecies match
+				if(bUseDBSpecies && speciesFromDBSpeciesArr != null && speciesFromDBSpeciesArr.length > 0){//DBSpecies match
 					//Choose the species in struct if exists
 					newSpecies = speciesFromDBSpeciesArr[0];
 					for(int i=0;i<speciesFromDBSpeciesArr.length;i+= 1){
@@ -451,7 +451,7 @@ private static Species getNewSpecies(IdentityHashMap<Species, Species> speciesHa
  * @param newStruct cbit.vcell.model.Structure
  * @param bNew boolean
  */
-protected static final SpeciesContext pasteSpecies(GraphPane graphPane, Species oldSpecies,Model newModel, Structure newStruct, boolean bNew, 
+protected static final SpeciesContext pasteSpecies(Component parent, Species oldSpecies,Model newModel, Structure newStruct, boolean bNew,boolean bUseDBSpecies, 
 		IdentityHashMap<Species, Species> speciesHash) {
 
 	if(!newModel.contains(newStruct)){
@@ -461,14 +461,14 @@ protected static final SpeciesContext pasteSpecies(GraphPane graphPane, Species 
 	Species newSpecies = null;
 	if(oldSpecies != null){
 		try {
-			newSpecies = getNewSpecies(speciesHash, oldSpecies, newModel, bNew, newStruct);
+			newSpecies = getNewSpecies(speciesHash, oldSpecies, newModel, bNew, bUseDBSpecies,newStruct);
 			//see if we have SpeciesContext
 			SpeciesContext speciesContext = newModel.getSpeciesContext(newSpecies,newStruct);
 			if(speciesContext == null){ //Has Species but not SpeciesContext
 				newModel.addSpeciesContext(newSpecies,newStruct);
 			}
 		}catch(Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(graphPane, e.getMessage());
+			cbit.vcell.client.PopupGenerator.showErrorDialog(parent, e.getMessage());
 		}
 	}
 	return newModel.getSpeciesContext(newSpecies,newStruct);

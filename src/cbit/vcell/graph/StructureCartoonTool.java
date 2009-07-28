@@ -134,7 +134,9 @@ protected void menuAction(Shape shape, String menuAction) {
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 			IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 			if(species != null){
-				pasteSpecies(getGraphPane(), species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
+				boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);
+				boolean bUseDBSpecies = !bPasteNew;
+				pasteSpecies(getGraphPane(), species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),bPasteNew, bUseDBSpecies,speciesHash);
 			}
 		}
 	}else if (menuAction.equals(PROPERTIES_MENU_ACTION)){

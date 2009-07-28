@@ -1012,7 +1012,7 @@ public final void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throw
 								parmFromName = getUnresolvedParameter(parmName);
 							}
 							if (parmFromRole == null){
-								throw new RuntimeException("parameter for role '"+Kinetics.RoleTags+"' not defined");
+								throw new RuntimeException("parameter for role '"+Kinetics.RoleTags[role]+"' not defined");
 								////
 								//// "special" parameter not yet instantiated
 								////
