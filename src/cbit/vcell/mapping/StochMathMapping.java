@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -11,9 +12,12 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -349,6 +353,8 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 	{
 		//use local variable instead of using getter all the time.
 		SimulationContext simContext = getSimulationContext();
+		//local structure mapping list
+		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
 		String stochChkMsg =simContext.getBioModel().isValidForStochApp();
 		if(!(stochChkMsg.equals("")))
@@ -481,7 +487,34 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 			expr = getIdentifierSubstitutions(expr,modelParameters[j].getUnitDefinition(), null);
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), expr));
 		}
-
+		
+		//added July 2009, ElectricalStimulusParameter electric mapping tab
+		ElectricalStimulus[] elecStimulus = simContext.getElectricalStimuli();
+		if (elecStimulus.length > 0) {
+			throw new MappingException("Modles with electrophysiology are not supported for stochastic applications.");			
+		}
+		
+		//
+		// add constant mem voltage
+		//
+		
+		for (int j = 0; j < structureMappings.length; j++){
+			if (structureMappings[j] instanceof MembraneMapping){
+				MembraneMapping memMapping = (MembraneMapping)structureMappings[j];
+				Parameter initialVoltageParm = memMapping.getInitialVoltageParameter();
+				try{
+					Expression exp = initialVoltageParm.getExpression();
+					exp.evaluateConstant();
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping),
+							getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping)));
+				}catch(ExpressionException e){
+					e.printStackTrace(System.out);
+					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.");
+				}
+			}
+		}
+		
+		
 		//
 		// kinetic parameters (functions or constants)
 		//
@@ -512,7 +545,6 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 
 		//geometic mapping
 		//the parameter "Size" is already put into mathsymbolmapping in refreshSpeciesContextMapping()
-		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 		for (int i=0;i<structureMappings.length;i++){
 			StructureMapping sm = structureMappings[i];
 			StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
@@ -842,15 +874,26 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 						//jump process name
 						String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
 											
-						//get probability function, probExp = fluxRate*fluxCarrier*Size_membrane*602
 						//we do it here instead of fluxsolver, coz we need to use getMathSymbol0(), structuremapping...etc.
 						Expression rate = fluxFunc.getRateToInside();
-						Expression expr1 = Expression.mult(rate, new Expression(fluxFunc.getSpeciesContextOutside().getName()));
+						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
+						SpeciesContext scOut = fluxFunc.getSpeciesContextOutside();
+						Expression speciesFactor = null;
+						if(scOut.getStructure() instanceof Membrane) {
+							speciesFactor = Expression.invert(new Expression(scOut.getStructure().getStructureSize().getName()));
+						} else {
+							Expression numExpr = new Expression(ReservedSymbol.KMOLE.getName());
+							Expression denomExpr = new Expression(scOut.getStructure().getStructureSize().getName());
+							speciesFactor =  Expression.div(numExpr, denomExpr);
+						}
+						Expression speciesExp = Expression.mult(speciesFactor, new Expression(scOut.getName()));	
+						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
+						Expression expr1 = Expression.mult(rate, speciesExp);
 						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize().getName()));
 						Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
 						Expression probExp = Expression.div(numeratorExpr, denominatorExpr);
 						probExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
-						
+
 						MathMapping.ProbabilityParameter probParm = null;
 						try{
 							probParm = addProbabilityParameter("P_"+jpName,probExp,MathMapping.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
@@ -865,15 +908,20 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
-						SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
-						jp.addAction(action);
-							
-						sc = fluxFunc.getSpeciesContextInside();
-						spCountParam = getSpeciesCountParameter(sc);
-						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
-						jp.addAction(action);
 						
+						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
+							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
+							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
+							jp.addAction(action);
+						}	
+						
+						sc = fluxFunc.getSpeciesContextInside();
+						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
+							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
+							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
+							jp.addAction(action);
+						}
+							
 						subDomain.addJumpProcess(jp);
 					}
 					if(fluxFunc.getRateToOutside() != null && !fluxFunc.getRateToOutside().isZero()) 
@@ -881,9 +929,20 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 						//jump process name
 						String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
 											
-						//get probability function, probExp = fluxRate*fluxCarrier*Size_membrane*602
 						Expression rate = fluxFunc.getRateToOutside();
-						Expression expr1 = Expression.mult(rate, new Expression(fluxFunc.getSpeciesContextInside().getName()));
+						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
+						SpeciesContext scIn = fluxFunc.getSpeciesContextInside();
+						Expression speciesFactor = null;
+						if(scIn.getStructure() instanceof Membrane) {
+							speciesFactor = Expression.invert(new Expression(scIn.getStructure().getStructureSize().getName()));
+						} else {
+							Expression numExpr = new Expression(ReservedSymbol.KMOLE.getName());
+							Expression denomExpr = new Expression(scIn.getStructure().getStructureSize().getName());
+							speciesFactor =  Expression.div(numExpr, denomExpr);
+						}
+						Expression speciesExp = Expression.mult(speciesFactor, new Expression(scIn.getName()));	
+						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
+						Expression expr1 = Expression.mult(rate, speciesExp);
 						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize().getName()));
 						Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
 						Expression probRevExp = Expression.div(numeratorExpr, denominatorExpr);
@@ -903,14 +962,18 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
-						SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
-						jp.addAction(action);
+						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
+							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
+							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
+							jp.addAction(action);
+						}
 							
 						sc = fluxFunc.getSpeciesContextInside();
-						spCountParam = getSpeciesCountParameter(sc);
-						action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
-						jp.addAction(action);
+						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
+							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
+							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
+							jp.addAction(action);
+						}
 						
 						subDomain.addJumpProcess(jp);
 					}

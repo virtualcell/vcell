@@ -1260,7 +1260,7 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 		// convert concentration(particles/area) to number of particles
 		// particles = iniConcentration(molecules/um2)*size(um2)
 		try {
-			iniParticlesExpr = new Expression((int)Math.round(iniConcentration.evaluateConstant()* structSize));
+			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant()* structSize)));
 		} catch (ExpressionException e) {
 			iniParticlesExpr = Expression.mult(iniConcentration, new Expression(structSize)).flatten();
 		}
@@ -1268,7 +1268,7 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 		// convert concentration(particles/volume) to number of particles
 		// particles = [iniConcentration(uM)*size(um3)]/KMOLE
 		try {
-			iniParticlesExpr = new Expression((int)Math.round(iniConcentration.evaluateConstant() * structSize / ReservedSymbol.KMOLE.getExpression().evaluateConstant()));
+			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant() * structSize / ReservedSymbol.KMOLE.getExpression().evaluateConstant())));
 		} catch (ExpressionException e) {
 			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
 			Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getExpression().evaluateConstant());
