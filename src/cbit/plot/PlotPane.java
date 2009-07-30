@@ -581,6 +581,7 @@ private javax.swing.JCheckBox getJCheckBox_stepLike() {
 			ivjJCheckBox_stepLike = new javax.swing.JCheckBox();
 			ivjJCheckBox_stepLike.setName("JCheckBox_stepLike");
 			ivjJCheckBox_stepLike.setText("Step View");
+			ivjJCheckBox_stepLike.setSelected(true);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1356,12 +1357,10 @@ public void setIsHistogram(boolean isHistogram) {
 
 public void selectStepView(boolean bStoch, boolean bMultiTrialData) {
 	setIsHistogram(bMultiTrialData);
-	getJCheckBox_stepLike().setEnabled(!bMultiTrialData);
 	if(!bMultiTrialData && bStoch) {
-		getJCheckBox_stepLike().setSelected(true);
+		getJCheckBox_stepLike().setVisible(true);
 	} else {
-		getJCheckBox_stepLike().setSelected(false);
-		getJCheckBox_stepLike().setEnabled(false);
+		getJCheckBox_stepLike().setVisible(false);
 	}
 }
 }
