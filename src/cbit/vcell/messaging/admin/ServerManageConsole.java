@@ -2565,6 +2565,10 @@ public void configTable_mouseClicked(java.awt.event.MouseEvent mouseEvent) {
 	
 	getDeleteServiceButton().setEnabled(true);
 	getModifyServiceButton().setEnabled(true);
+	
+	if (mouseEvent.getClickCount() == 2) {
+		modifyService();
+	}
 }
 
 /**

@@ -575,7 +575,7 @@ private JToolBarToggleButton getDataButton() {
  * @return javax.swing.JCheckBox
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public javax.swing.JCheckBox getJCheckBox_stepLike() {
+private javax.swing.JCheckBox getJCheckBox_stepLike() {
 	if (ivjJCheckBox_stepLike == null) {
 		try {
 			ivjJCheckBox_stepLike = new javax.swing.JCheckBox();
@@ -1352,5 +1352,15 @@ public boolean getIsHistogram() {
 public void setIsHistogram(boolean isHistogram) {
 	getPlot2DPanel1().setIsHistogram(isHistogram);
 	getPlot2DPanel1().updateAutoRanges();
+}
+
+public void selectStepView(boolean bStoch, boolean bMultiTrialData) {
+	setIsHistogram(bMultiTrialData);
+	getJCheckBox_stepLike().setEnabled(!bMultiTrialData);
+	if(!bMultiTrialData && bStoch) {
+		getJCheckBox_stepLike().setSelected(true);
+	} else {
+		getJCheckBox_stepLike().setSelected(false);
+	}
 }
 }
