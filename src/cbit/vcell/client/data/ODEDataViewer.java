@@ -622,21 +622,13 @@ public void setVcDataIdentifier(org.vcell.util.VCDataIdentifier vcDataIdentifier
 
 public void iniHistogramDisplay()
 {
+	getPlotPane1().selectStepView(getSimulation().getSolverTaskDescription().getSolverDescription().isSTOCHSolver(), getOdeSolverResultSet().isMultiTrialData());
 	if(getOdeSolverResultSet().isMultiTrialData())
 	{
-		getPlotPane1().setIsHistogram(true);
-		getPlotPane1().getJCheckBox_stepLike().setEnabled(false);
 		getODESolverPlotSpecificationPanel1().getXAxisComboBox().setEnabled(false);
 	}
 	else //single trial
 	{
-		getPlotPane1().setIsHistogram(false);
-		getPlotPane1().getJCheckBox_stepLike().setEnabled(true);
-		if(getSimulation() != null && getSimulation().getSolverTaskDescription().getSolverDescription().isSTOCHSolver())
-		{
-			getPlotPane1().getJCheckBox_stepLike().doClick();
-		}
-		
 		getODESolverPlotSpecificationPanel1().getXAxisComboBox().setEnabled(true);
 	}
 }
