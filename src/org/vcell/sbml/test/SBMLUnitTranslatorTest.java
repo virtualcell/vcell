@@ -2,9 +2,6 @@ package org.vcell.sbml.test;
 
 import org.vcell.sbml.vcell.SBMLUnitTranslator;
 
-import cbit.vcell.units.VCUnitDefinition;
-
-
 public class SBMLUnitTranslatorTest {
 
 	static
@@ -27,8 +24,8 @@ public class SBMLUnitTranslatorTest {
 		java.util.Iterator<cbit.vcell.units.VCUnitDefinition> iter = cbit.vcell.units.VCUnitDefinition.getKnownUnits();
 		while (iter.hasNext()) {
 			cbit.vcell.units.VCUnitDefinition vcUnit = iter.next();
-			org.sbml.libsbml.UnitDefinition sbmlUnit = org.vcell.sbml.vcell.SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit);
-			cbit.vcell.units.VCUnitDefinition newVCUnit = org.vcell.sbml.vcell.SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit);
+			org.sbml.libsbml.UnitDefinition sbmlUnit = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, (long)2, (long)3);
+			cbit.vcell.units.VCUnitDefinition newVCUnit = SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit);
 			if (vcUnit.convertTo(1.0, newVCUnit) != 1.0) {
 				System.err.println("Failed Unit : " + vcUnit.getSymbol());
 			}

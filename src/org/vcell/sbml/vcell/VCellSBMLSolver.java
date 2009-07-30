@@ -146,7 +146,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 			// use the cvodeStandalone solver
 			File cvodeOutputFile = new File(outDir,filePrefix+SimDataConstants.IDA_DATA_EXTENSION);
-			Executable executable = new Executable(new String[]{"SundialsSolverStandalone_NoMessaging", cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
+			Executable executable = new Executable(new String[]{"SundialsSolverStandalone", cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
 			executable.start();
 	
 		// get the result 

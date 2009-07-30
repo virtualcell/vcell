@@ -283,7 +283,7 @@ private void addKineticAndGlobalParameterUnits(ArrayList<String> unitsList) {
 			continue;
 		}
 		if (!paramUnitDefn.isTBD()) {
-			UnitDefinition newUnitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(paramUnitDefn);
+			UnitDefinition newUnitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(paramUnitDefn, sbmlLevel, sbmlVersion);
 			if (newUnitDefn != null) {
 				unitsList.add(unitSymbol);
 				sbmlModel.addUnitDefinition(newUnitDefn);
@@ -310,7 +310,7 @@ protected void addParameters() throws ExpressionException {
 	for (int i = 0; vcGlobalParams != null && i < vcGlobalParams.length; i++) {
 		sbmlParam = sbmlModel.createParameter();
 		sbmlParam.setId(vcGlobalParams[i].getName());
-		Expression paramExpr = vcGlobalParams[i].getExpression();
+		Expression paramExpr = new Expression(vcGlobalParams[i].getExpression());
 		if (paramExpr.isNumeric()) {
 			// For a VCell global param, if it is numeric, it has a constant value and is not defined by a rule, hence set Constant = true.
 			sbmlParam.setValue(paramExpr.evaluateConstant());
@@ -324,7 +324,7 @@ protected void addParameters() throws ExpressionException {
 			// Get the VC (from SpeciesContextSpec) and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
 			// Replace the occurrence of species in the 'paramExpr' with the new expr : species*factor.
 			String[] symbols = paramExpr.getSymbols();
-			for (int j = 0; j < symbols.length; j++) {
+			for (int j = 0; symbols != null && j < symbols.length; j++) {
 				SpeciesContext vcSpeciesContext = vcModel.getSpeciesContext(symbols[j]); 
 				if (vcSpeciesContext != null) {
 					Species species = sbmlModel.getSpecies(vcSpeciesContext.getName());
@@ -789,34 +789,34 @@ private boolean checkSpeciesInitExprValidity(Expression spInitExpr) {
  */
 protected void addUnitDefinitions() {
 	// Define molecule - SUBSTANCE
-	UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getSubstanceUnits());
+	UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getSubstanceUnits(), sbmlLevel, sbmlVersion);
 	unitDefn.setId(SBMLUnitTranslator.SUBSTANCE);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um3 - VOLUME
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getVolumeUnits());
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getVolumeUnits(), sbmlLevel, sbmlVersion);
 	unitDefn.setId(SBMLUnitTranslator.VOLUME);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - AREA
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getAreaUnits());
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getAreaUnits(), sbmlLevel, sbmlVersion);
 	unitDefn.setId(SBMLUnitTranslator.AREA);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Redefine molecules as 'item' 
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_molecules);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_molecules, sbmlLevel, sbmlVersion);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define umol.um3.L-1 - VCell (actual units of concentration, but with a multiplication factor.  Value = 1e-15 umol).
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_umol_um3_per_L);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_umol_um3_per_L, sbmlLevel, sbmlVersion);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - VCell
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_um2);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_um2, sbmlLevel, sbmlVersion);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define KMOLE units : uM.um3/molecules - VCell (required in exported SBML for other tools).
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_uM_um3_per_molecules);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_uM_um3_per_molecules, sbmlLevel, sbmlVersion);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Add units from paramater list in kinetics

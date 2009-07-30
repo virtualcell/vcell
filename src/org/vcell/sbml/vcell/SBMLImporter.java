@@ -49,6 +49,8 @@ import org.vcell.util.TokenMangler;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import org.vcell.util.document.BioModelChildSummary;
+
+import sun.rmi.runtime.GetThreadPoolAction;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -200,13 +202,19 @@ protected void addCompartments() {
 							// Vol. of inner compartment: size = 4/3*PI*R^3; solving for R, substitute into surface of membrane : 4*PI*R^2
 							double membSize = 4 * Math.PI * Math.pow((size * 3/(4*Math.PI)), 2.0/3.0);
 							// add the newly added membrane as a compartment to the SBML model (set size, units, etc)
-							Compartment newCompartment = new Compartment(newMembrane.getName());
+							Compartment newCompartment = sbmlModel.createCompartment();
+							newCompartment.setId(newMembrane.getName());
 							newCompartment.setSpatialDimensions(2);
 							// deal with unit conversion, since default unit for membrane (area) in SBML is m2 and in VCell is always um2.
 							newCompartment.setSize(membSize);
 							// Define um2 - AREA; add it to model
-							UnitDefinition unitDefn = new UnitDefinition(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
-							org.sbml.libsbml.Unit um2_unit = new Unit("metre", 2, -6);
+							UnitDefinition unitDefn = new UnitDefinition(sbmlModel.getLevel(), sbmlModel.getVersion());
+							unitDefn.setId(TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
+							Unit um2_unit = new Unit(sbmlModel.getLevel(), sbmlModel.getVersion());
+							int kind = libsbml.UnitKind_forName("metre");
+							um2_unit.setKind(kind);
+							um2_unit.setExponent(2);
+							um2_unit.setScale(-6);
 							unitDefn.addUnit(um2_unit);
 							// Also add it to vcUnitsHash, to be able to retreive it later
 							String unitName = unitDefn.getId();
@@ -453,6 +461,34 @@ protected void addParameters() throws PropertyVetoException {
 			}
 		}
 		
+		// ************* TIME CONV_FACTOR if 'time' is present in global parameter expression
+		// If time 't' is present in the global expression, it is in VC units (secs), convert it back to SBML units
+		// hence, we take the inverse of the time factor (getSBMLTimeUnitsFactor() converts from SBML to VC units)
+		String t = ReservedSymbol.TIME.getName();
+		double timeFactorVal = 1.0/getSBMLTimeUnitsFactor(); 
+		if ((timeFactorVal != 1) && (valueExpr.hasSymbol(t))) {
+			String TIME_CONVFACTOR = t + "_ConvFactor";
+			if (!valueExpr.hasSymbol(TIME_CONVFACTOR)) {
+				// If no matching param for time conversion factor was found in sbml model, 
+				// add TIME_CONVFACTOR as a global param in VCell before setting this global.
+				ModelParameter timeConvParam = vcModel.getModelParameter(TIME_CONVFACTOR);
+				if (timeConvParam == null) {
+					timeConvParam = vcModel.new ModelParameter(TIME_CONVFACTOR, new Expression(timeFactorVal), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_DIMENSIONLESS);
+					String annotation = "Conversion from SBML time units to VC time units";
+					timeConvParam.setModelParameterAnnotation(annotation);
+					vcModel.addModelParameter(timeConvParam);	
+				}
+				// now replace 't' with 't*TIME_CONVFACTOR' in the parameter expression.
+				try {
+					valueExpr.substituteInPlace(new Expression(t), new Expression(t +"*" + TIME_CONVFACTOR));
+				} catch (ExpressionException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException(e.getMessage());
+				}
+			}
+		}
+		
+		// ************** SPECIES CONC_FACTOR if species are present in global parameter expression ******************
 		// if global parameter is an expression with model species, we need a conversion factor for the species units (SBML - VC units),
 		// similar to the conversion that is done in reactions.
 		if (valueExpr.getSymbols() != null) {
@@ -461,7 +497,7 @@ protected void addParameters() throws PropertyVetoException {
 				if (valueExpr.hasSymbol(vcSpContexts[j].getName())) {
 			    	Species sp = sbmlModel.getSpecies(vcSpContexts[j].getName());
 					String CONCFACTOR_PARAMETER = sp.getId() + "_ConcFactor";
-					if (spConcFactorInModelParamsList.contains(vcSpContexts[j].getName())) {
+					if (!spConcFactorInModelParamsList.contains(vcSpContexts[j].getName())) {
 						SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
 						VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
 						VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
@@ -513,7 +549,7 @@ protected void addParameters() throws PropertyVetoException {
 						try {
 							valueExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
 						} catch (ExpressionException e) {
-							e.printStackTrace();
+							e.printStackTrace(System.out);
 							throw new RuntimeException(e.getMessage());
 						}
 					}
@@ -1040,7 +1076,36 @@ protected void addReactions() {
 						}	// end - if concScaleFactor
 					}	// end - vcSpecContext found in vcRateExpression
 				}	// end for - k (vcSpeciesContext)
+				
+				
+				//  ************ <<<< Scale units of TIME if present in kinetic expressions (to VC time units : secs) ************
+				
+				// If kinetic rate expression has time 't' in it, and if SBML time unit is not in seconds, we need to multiply
+				// the 't' in the kinetic rate expression with the conversion factor (t_ConvFactor)
+				// 't' is in VC units (secs), convert it back to SBML units; hence, we take the inverse of 
+				// the time factor (getSBMLTimeUnitsFactor() converts from SBML to VC units)
+
+				double timeFactor = 1.0/getSBMLTimeUnitsFactor();
+				vcRateExpression = kinetics.getAuthoritativeParameter().getExpression();
+				String t = ReservedSymbol.TIME.getName();
+				if ((timeFactor != 1.0) && (vcRateExpression.hasSymbol(t))) {
+					String TIME_CONVFACTOR = t + "_ConvFactor";
+					// If TIME_CONVFACTOR is not already in the kinetic expression, include it.
+					if (!vcRateExpression.hasSymbol(TIME_CONVFACTOR)) {
+						vcRateExpression.substituteInPlace(new Expression(t), new Expression(t+"*"+TIME_CONVFACTOR));
+						kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), vcRateExpression);
+					}
+					// Check if TIME_CONVFACTOR is a global parameter, if not, add it as a local parameter. 
+					ModelParameter mp = model.getModelParameter(TIME_CONVFACTOR);
+					if (mp == null) {
+						// no global TIME_CONVFACTOR found (and there was no local), add it is as local.
+						kinetics.setParameterValue(kinetics.getKineticsParameter(TIME_CONVFACTOR), new Expression(timeFactor));
+						kinetics.getKineticsParameter(TIME_CONVFACTOR).setUnitDefinition(VCUnitDefinition.UNIT_DIMENSIONLESS);
+					} 
+				}	// if - (timeFactor != 1)
 	
+
+				
 				// If there are any global parameters used in the kinetics, and if they have species,
 				// check if the species are already reactionParticipants in the reaction. If not, add them as catalysts.
 				KineticsProxyParameter[] kpps = kinetics.getProxyParameters();
@@ -1058,7 +1123,6 @@ protected void addReactions() {
 								vcReactions[i].addCatalyst(model.getSpeciesContext(sp.getId()));
 							}
 						}
-	
 					}
 				}
 				
@@ -1762,6 +1826,11 @@ public Hashtable<String, SBVCConcentrationUnits> getSpeciesUnitsHash()  {
 	return speciesUnitsHash;
 }
 
+/**
+ * If SBML time units are not defined in seconds (default), we need to convert it to secs and use a conversion factor when using
+ * time 't' in rate and parameter expressions. This method converts from SBML time units to VC time units (seconds)
+ * @return
+ */
 public double getSBMLTimeUnitsFactor() {
 	double timeFactor = 1.0;
 	VCUnitDefinition timeUnits = getSBMLUnit("", SBMLUnitTranslator.TIME);

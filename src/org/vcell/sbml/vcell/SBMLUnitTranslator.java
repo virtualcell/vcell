@@ -1,5 +1,14 @@
 package org.vcell.sbml.vcell;
 
+import java.util.ArrayList;
+
+import org.sbml.libsbml.Unit;
+import org.sbml.libsbml.UnitDefinition;
+import org.sbml.libsbml.libsbml;
+import org.sbml.libsbml.libsbmlConstants;
+import org.vcell.util.TokenMangler;
+
+import cbit.vcell.solvers.SimExecutionException;
 import cbit.vcell.units.VCUnitDefinition;
 
 /**
@@ -28,7 +37,7 @@ public class SBMLUnitTranslator {
 		SbmlDefaultUnits.put("time", VCUnitDefinition.UNIT_s);
 	}
 
-	private static java.util.ArrayList SbmlBaseUnits = new java.util.ArrayList();
+	private static ArrayList SbmlBaseUnits = new ArrayList();
     static {
 		SbmlBaseUnits.add("ampere");
 		SbmlBaseUnits.add("becquerel");
@@ -70,7 +79,7 @@ public class SBMLUnitTranslator {
  *  convertVCUnitsToSbmlUnits :
  *  --------- !!!! Ignoring OFFSET for UNITS, since SBML L2V2 gets rid of the offset field. !!!! ---------
  */
-private static java.util.ArrayList convertVCUnitsToSbmlUnits(double unitMultiplier, ucar.units.Unit vcUcarUnit, java.util.ArrayList allSbmlUnitsList) {
+private static ArrayList<Unit> convertVCUnitsToSbmlUnits(double unitMultiplier, ucar.units.Unit vcUcarUnit, ArrayList<Unit> allSbmlUnitsList, long level, long version) {
 	int unitScale = 0;
 	if (vcUcarUnit instanceof ucar.units.UnitImpl) {
 		ucar.units.UnitImpl unitImpl = (ucar.units.UnitImpl)vcUcarUnit;
@@ -80,18 +89,32 @@ private static java.util.ArrayList convertVCUnitsToSbmlUnits(double unitMultipli
 			for (int i = 0; i < factors.length; i++) {
 				ucar.units.RationalNumber exponent = factors[i].getExponent();
 				String baseName  = ((ucar.units.BaseUnit)factors[i].getBase()).getName();
-				org.sbml.libsbml.Unit sbmlUnit = null;
+				Unit sbmlUnit = null;
 				if (factors.length > 1) {
 					// Units override each other's mult/multiplier before getting to the level of derived unit. 
 					// To avoid that, add a dimensionless unit. 
 					if (i == 0) {
-						org.sbml.libsbml.Unit dimensionlessUnit = new org.sbml.libsbml.Unit(SBMLUnitTranslator.DIMENSIONLESS, 1, unitScale, unitMultiplier);
+						Unit dimensionlessUnit = new Unit(level, version);
+						dimensionlessUnit.setKind(libsbmlConstants.UNIT_KIND_DIMENSIONLESS);
+						dimensionlessUnit.setExponent(1);
+						dimensionlessUnit.setScale(unitScale);
+						dimensionlessUnit.setMultiplier(unitMultiplier);
 	 					allSbmlUnitsList.add(dimensionlessUnit);
 					}
-					sbmlUnit = new org.sbml.libsbml.Unit(baseName, exponent.intValue(), unitScale, 1.0);
+					sbmlUnit = new Unit(level, version);
+					int kind = libsbml.UnitKind_forName(baseName);
+					sbmlUnit.setKind(kind);
+					sbmlUnit.setExponent(exponent.intValue());
+					sbmlUnit.setScale(unitScale);
+					sbmlUnit.setMultiplier(1.0);
 					allSbmlUnitsList.add(sbmlUnit);
 				} else {
-					sbmlUnit = new org.sbml.libsbml.Unit(baseName, exponent.intValue(), unitScale, Math.pow(unitMultiplier, exponent.inverse().doubleValue()));
+					sbmlUnit = new Unit(level, version);
+					int kind = libsbml.UnitKind_forName(baseName);
+					sbmlUnit.setKind(kind);
+					sbmlUnit.setExponent(exponent.intValue());
+					sbmlUnit.setScale(unitScale);
+					sbmlUnit.setMultiplier(Math.pow(unitMultiplier, exponent.inverse().doubleValue()));
 					allSbmlUnitsList.add(sbmlUnit);
 				}
 			}
@@ -100,7 +123,7 @@ private static java.util.ArrayList convertVCUnitsToSbmlUnits(double unitMultipli
 			ucar.units.ScaledUnit multdUnit = (ucar.units.ScaledUnit)unitImpl;
 			unitMultiplier *= multdUnit.getScale();
 			if (multdUnit.getUnit() != multdUnit.getDerivedUnit()){
-				return convertVCUnitsToSbmlUnits(unitMultiplier, multdUnit.getUnit(), allSbmlUnitsList);
+				return convertVCUnitsToSbmlUnits(unitMultiplier, multdUnit.getUnit(), allSbmlUnitsList, level, version);
 			}
 		} 
 		/***** COMMENTED OUT SINCE OFFSET IS NOT GOING TO BE USED FROM SBML L2 V2 ... ****
@@ -112,7 +135,7 @@ private static java.util.ArrayList convertVCUnitsToSbmlUnits(double unitMultipli
 			}
 		} */
 		if (unitImpl.getDerivedUnit() != vcUcarUnit) {                           //i.e. we have not reached the base unit, yet
-			return convertVCUnitsToSbmlUnits(unitMultiplier, unitImpl.getDerivedUnit(), allSbmlUnitsList);
+			return convertVCUnitsToSbmlUnits(unitMultiplier, unitImpl.getDerivedUnit(), allSbmlUnitsList, level, version);
 		} 
 	} else {
 		System.err.println("Unable to process unit translation for CellML: " + " " + vcUcarUnit.getSymbol());
@@ -127,26 +150,34 @@ public static VCUnitDefinition getDefaultSBMLUnit(String builtInName) {
 }
 
 
-public static org.sbml.libsbml.UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn) {
-	org.sbml.libsbml.UnitDefinition sbmlUnitDefn = null;
+public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, long level, long version) {
+	UnitDefinition sbmlUnitDefn = null;
 	String sbmlUnitSymbol = org.vcell.util.TokenMangler.mangleToSName(vcUnitDefn.getSymbol());
 
 	// If VC unit is DIMENSIONLESS ...
 	if (vcUnitDefn.isTBD()) {
 		throw new RuntimeException("TBD unit has no SBML equivalent");
 	} else if (vcUnitDefn.isCompatible(VCUnitDefinition.UNIT_DIMENSIONLESS)) {
-		double scale = 1.0;
-		scale = vcUnitDefn.convertTo(scale, VCUnitDefinition.UNIT_DIMENSIONLESS);
-		sbmlUnitDefn = new org.sbml.libsbml.UnitDefinition(org.vcell.util.TokenMangler.mangleToSName(vcUnitDefn.getSymbol()));
-		sbmlUnitDefn.addUnit(new org.sbml.libsbml.Unit(SBMLUnitTranslator.DIMENSIONLESS, 1, 0, scale));
+		double multiplier = 1.0;
+		multiplier = vcUnitDefn.convertTo(multiplier, VCUnitDefinition.UNIT_DIMENSIONLESS);
+		sbmlUnitDefn = new UnitDefinition(level, version);
+		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(vcUnitDefn.getSymbol())));
+		Unit dimensionlessUnit = new Unit(level, version);
+		dimensionlessUnit.setKind(libsbmlConstants.UNIT_KIND_DIMENSIONLESS);
+		dimensionlessUnit.setExponent(1);
+		dimensionlessUnit.setScale(0);
+		dimensionlessUnit.setMultiplier(multiplier);
+		sbmlUnitDefn.addUnit(dimensionlessUnit);
 	} else {
 		// Translate the VCUnitDef into libSBML UnitDef : convert the units of VCUnitDef into libSBML units and add them to sbmlUnitDefn
-		sbmlUnitDefn = new org.sbml.libsbml.UnitDefinition(sbmlUnitSymbol);
+		
+		sbmlUnitDefn = new UnitDefinition(level, version);
+		sbmlUnitDefn.setId(TokenMangler.mangleToSName(TokenMangler.mangleToSName(sbmlUnitSymbol))); 
 		ucar.units.Unit vcUcarUnit = vcUnitDefn.getUcarUnit();
-		java.util.ArrayList sbmlUnitsList = convertVCUnitsToSbmlUnits(1.0, vcUcarUnit, new java.util.ArrayList());
+		ArrayList<Unit> sbmlUnitsList = convertVCUnitsToSbmlUnits(1.0, vcUcarUnit, new ArrayList<Unit>(), level, version);
 
 		for (int i = 0; i < sbmlUnitsList.size(); i++){
-			org.sbml.libsbml.Unit sbmlUnit = (org.sbml.libsbml.Unit)sbmlUnitsList.get(i);
+			Unit sbmlUnit = (Unit)sbmlUnitsList.get(i);
 			sbmlUnitDefn.addUnit(sbmlUnit);
 		}
 	}

@@ -317,9 +317,14 @@ public class BiomodelsDB_SBMLSolverTest {
 			String line = lineTokenizer.nextToken();
 			StringTokenizer columnTokenizer = new StringTokenizer(line,delimiter,false);
 			if (lineCount==1){
+				int wordCount = 0;
 				while (columnTokenizer.hasMoreTokens()){
 					String label = columnTokenizer.nextToken();
+					if (wordCount == 0) {						
+						label = "t";
+					}
 					odeResultSet.addDataColumn(new ODESolverResultSetColumnDescription(label));
+					wordCount++;
 				}
 			}else{
 				double[] values = new double[odeResultSet.getDataColumnCount()];
@@ -329,10 +334,6 @@ public class BiomodelsDB_SBMLSolverTest {
 				odeResultSet.addRow(values);
 			}
 		}		
-		//
-		// replace column header for time (force name to "t")
-		//
-		odeResultSet.getColumnDescriptions()[0] = new ODESolverResultSetColumnDescription("t");
 		return odeResultSet;
 	}
 
