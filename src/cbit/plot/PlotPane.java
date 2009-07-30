@@ -1356,7 +1356,7 @@ public void setIsHistogram(boolean isHistogram) {
 
 public void selectStepView(boolean bStoch, boolean bMultiTrialData) {
 	setIsHistogram(bMultiTrialData);
-	getJCheckBox_stepLike().setEnabled(!bMultiTrialData);
+	getJCheckBox_stepLike().setEnabled(!bMultiTrialData || !bStoch);
 	if(!bMultiTrialData && bStoch) {
 		getJCheckBox_stepLike().setSelected(true);
 	} else {
