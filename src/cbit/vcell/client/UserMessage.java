@@ -20,10 +20,10 @@ public class UserMessage {
 	public final static String OPTION_CANCEL = "Cancel";
 	public final static String OPTION_DISCARD_CHANGES = "Discard changes";
 	public final static String OPTION_OVERWRITE_FILE = "Overwrite file";
-	public final static String OPTION_SAVE_AS_NEW_EDITION = "Save as new edition";
+	public final static String OPTION_SAVE_AS_NEW_EDITION = "Create new edition";
 	public final static String OPTION_DELETE = "Delete";
 	public final static String OPTION_CONTINUE= "Continue";
-	public final static String OPTION_DISCARD_RESULTS = "Discard results";
+	public final static String OPTION_DISCARD_RESULTS = "Save and Discard results";
 	public final static String OPTION_CLOSE = "Close";
 	public final static String OPTION_SAVE_AS_NEW = "Save As New...";
 	public final static String OPTION_UPDATE_DATABASE = "Update Database";
@@ -53,7 +53,7 @@ public class UserMessage {
 	public final static UserMessage warn_DeleteSelectedApp = new UserMessage("Are you sure you want to delete application '"+TEXT_REPLACE+"'?",
 			new String[] {OPTION_DELETE, OPTION_CANCEL},					OPTION_DELETE,			UserPreferences.WARN_DELETE_APPLICATION);
 
-	public final static UserMessage question_LostResults = new UserMessage("Saving model will overwrite existing simulation results for\n"+TEXT_REPLACE+"\noverwrite sim results or save as new edition?",
+	public final static UserMessage question_LostResults = new UserMessage("Saving the model will erase all existing simulation results. Save model and discard simulation results or create a new model edition?",
 				new String[] {OPTION_DISCARD_RESULTS, OPTION_SAVE_AS_NEW_EDITION},		OPTION_DISCARD_RESULTS,		-1);
 
 	public final static UserMessage warn_RevertToSaved = new UserMessage("Are you sure you want to discard changes and revert to saved version?",

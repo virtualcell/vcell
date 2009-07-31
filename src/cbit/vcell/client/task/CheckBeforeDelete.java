@@ -265,11 +265,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	}
 	boolean bLost = simulationsWithLostResults != null && simulationsWithLostResults.length > 0;
 	if (bLost) {
-		StringBuffer replacementMessage = new StringBuffer();
-		for (int i = 0; i < simulationsWithLostResults.length; i++){
-			replacementMessage.append("\""+simulationsWithLostResults[i].getName()+"\" ");
-		}
-		String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), UserMessage.question_LostResults, replacementMessage.toString());
+		String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), UserMessage.question_LostResults, null);
 		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW_EDITION)){
 			// user canceled deletion
 			throw UserCancelException.CANCEL_DELETE_OLD;
