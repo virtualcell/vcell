@@ -25,6 +25,7 @@ import javax.swing.BorderFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 
 import java.awt.Color;
@@ -1354,8 +1355,7 @@ private JButton getJButtonVarNameEdit() {
 		jButtonVarNameEdit.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
 				try{
-					String newVarName =
-						FieldDataGUIPanel.inputStrictName(jComboBoxVarNames.getSelectedItem().toString(),
+					String newVarName =	inputStrictName(jComboBoxVarNames.getSelectedItem().toString(),
 								"Edit Variable Name");
 
 					int selIndex = jComboBoxVarNames.getSelectedIndex();
@@ -1369,6 +1369,28 @@ private JButton getJButtonVarNameEdit() {
 		});
 	}
 	return jButtonVarNameEdit;
+}
+
+private String inputStrictName(String initalValue,String message)throws UserCancelException{
+	String strictName = initalValue;
+	while(true){
+		strictName =
+			PopupGenerator.showInputDialog(this, message, strictName);
+		String fixedVarName = TokenMangler.fixTokenStrict(strictName);
+		if(!strictName.equals(fixedVarName)){
+			int result =
+				PopupGenerator.showComponentOKCancelDialog(this, null,
+					"Special characters were removed.\n"+
+					"Is the value "+fixedVarName+" alright?");
+			if(result == JOptionPane.OK_OPTION){
+				strictName = fixedVarName;
+			}else{
+				continue;
+			}
+		}
+		return strictName;
+	}
+	
 }
 
 public void setSimulationMode(boolean bSim){

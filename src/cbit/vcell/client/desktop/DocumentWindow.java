@@ -3453,7 +3453,7 @@ public void showTransMADialog()
 		biomodel = (BioModel)getWindowManager().getVCDocument();
 	TransformMassActionPanel transMAPanel = new TransformMassActionPanel();
 	transMAPanel.setModel(biomodel.getModel());
-	int choice = DialogUtils.showComponentOKCancelDialog(null, transMAPanel, "Transform to Stochastic Capable Model");
+	int choice = DialogUtils.showComponentOKCancelDialog(this, transMAPanel, "Transform to Stochastic Capable Model");
 	if(choice == JOptionPane.OK_OPTION)
 	{
 		try
