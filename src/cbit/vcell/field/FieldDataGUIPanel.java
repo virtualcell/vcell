@@ -1,6 +1,5 @@
 package cbit.vcell.field;
 
-import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -240,28 +239,6 @@ public class FieldDataGUIPanel extends JPanel{
 public FieldDataGUIPanel() {
 	super();
 	initialize();
-}
-
-public static String inputStrictName(String initalValue,String message)throws UserCancelException{
-	String strictName = initalValue;
-	while(true){
-		strictName =
-			PopupGenerator.showInputDialog((Component)null, message, strictName);
-		String fixedVarName = TokenMangler.fixTokenStrict(strictName);
-		if(!strictName.equals(fixedVarName)){
-			int result =
-				PopupGenerator.showComponentOKCancelDialog(null, null,
-					"Special characters were removed.\n"+
-					"Is the value "+fixedVarName+" alright?");
-			if(result == JOptionPane.OK_OPTION){
-				strictName = fixedVarName;
-			}else{
-				continue;
-			}
-		}
-		return strictName;
-	}
-	
 }
 
 /**

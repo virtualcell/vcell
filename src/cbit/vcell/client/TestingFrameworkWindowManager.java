@@ -861,7 +861,7 @@ public void exportMessage(ExportEvent exportEvent) {
 	*/
 }
 
-public static SimulationInfo getUserSelectedRefSimInfo(RequestManager currentRequstManager,VCDocumentInfo vcDocInfo) throws Exception{
+public SimulationInfo getUserSelectedRefSimInfo(RequestManager currentRequstManager,VCDocumentInfo vcDocInfo) throws Exception{
 	final int MODELTYPE_INDEX = 0;
 	final int MODELKEY_INDEX = 2;
 	final int SIMNAME_INDEX = 5;
@@ -927,7 +927,7 @@ public static SimulationInfo getUserSelectedRefSimInfo(RequestManager currentReq
 	Object[][] rowData = new Object[simInfoV.size()][ROWDATACOLNAMES.length];
 	simInfoV.copyInto(rowData);
 		int[] simSelection = DialogUtils.showComponentOKCancelTableList(
-			null/*getComponent()*/, "Choose Ref Simulation",
+			getComponent(), "Choose Ref Simulation",
 			ROWDATACOLNAMES,
 			rowData, ListSelectionModel.SINGLE_SELECTION);
 	if(simSelection == null || simSelection.length == 0){
@@ -949,28 +949,6 @@ public static SimulationInfo getUserSelectedRefSimInfo(RequestManager currentReq
 	throw new Exception("Couldn't find selected simulation");
 }
 
-//private static Object[] createRow(VCDocumentInfo vcDocInfo,String appName,String simName){
-//	if(vcDocInfo instanceof BioModelInfo){
-//		BioModelInfo bmInfo = (BioModelInfo)vcDocInfo;
-//		return new Object[] {"BM",
-//				bmInfo.getVersion().getName(),
-//				bmInfo.getVersion().getVersionKey(),
-//				bmInfo.getVersion().getOwner().getName(),
-//				appName,
-//				simName,
-//				bmInfo.getVersion().getDate()};
-//	}else if(vcDocInfo instanceof MathModelInfo){
-//		MathModelInfo mmInfo = (MathModelInfo)vcDocInfo;
-//		return new Object[] {"MM",
-//				mmInfo.getVersion().getName(),
-//				mmInfo.getVersion().getVersionKey(),
-//				mmInfo.getVersion().getOwner().getName(),
-//				null,
-//				simName,
-//				mmInfo.getVersion().getDate()};
-//	}
-//	throw new IllegalArgumentException("Only BioModelInfo and MathModelInfo supported");
-//}
 /**
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
@@ -987,11 +965,6 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 		Simulation[] sims = null;
 		reportTCBuffer.append("\n\tTEST CASE : "+(testCase.getVersion() != null?testCase.getVersion().getName():"Null")+"\n\tAnnotation : "+testCase.getAnnotation()+"\n");
 		try{
-//			SimulationInfo userDefinedRefSimInfo = null;
-//			if(bUserSelectRefSimInfo){
-//				userDefinedRefSimInfo = getUserSelectedRefSimInfo(getRequestManager());
-//			}
-
 			if(testCase instanceof TestCaseNewMathModel){
 				MathModelInfo mmInfo = ((TestCaseNewMathModel)testCase).getMathModelInfo();
 				MathModel mathModel = getRequestManager().getDocumentManager().getMathModel(mmInfo);
@@ -1033,10 +1006,8 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 			//Sort
 			if(sims.length > 0){
 				java.util.Arrays.sort(sims,
-					new java.util.Comparator (){
-							public int compare(Object o1,Object o2){
-								Simulation si1 = (Simulation)o1;
-								Simulation si2 = (Simulation)o2;
+					new java.util.Comparator<Simulation> (){
+							public int compare(Simulation si1,Simulation si2){
 								return si1.getName().compareTo(si2.getName());
 							}
 							public boolean equals(Object obj){
@@ -1051,10 +1022,6 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 			for (int k = 0;k < sims.length; k++) {
 				TestCriteriaNew testCriteria = getMatchingTestCriteria(sims[k],testCriterias);
 				if(testCriteria != null){
-					//if(testCriteria.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_PASSED) ||
-						//testCriteria.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_FAILEDVARS)){
-							//continue;
-					//}
 					pp.setMessage((testCase instanceof TestCaseNewMathModel?"(MM)":"(BM)")+" "+
 						(onlyThisTCrit == null?"sim "+(k+1)+" of "+sims.length:"sim="+onlyThisTCrit.getSimInfo().getName())+"  "+testCase.getVersion().getName()+" "+testCase.getType());
 					reportTCBuffer.append(generateTestCriteriaReport(testCase,testCriteria,sims[k],userDefinedRefSimInfo));
@@ -2371,10 +2338,8 @@ private SimulationInfo selectSimInfoPrivate(Simulation[] sims) {
 	//Sort
 	if(sims.length > 0){
 		java.util.Arrays.sort(sims,
-			new java.util.Comparator (){
-					public int compare(Object o1,Object o2){
-						Simulation si1 = (Simulation)o1;
-						Simulation si2 = (Simulation)o2;
+			new java.util.Comparator<Simulation> (){
+					public int compare(Simulation si1,Simulation si2){
 						return si1.getName().compareTo(si2.getName());
 					}
 					public boolean equals(Object obj){
@@ -2842,12 +2807,6 @@ public void viewResults(TestCriteriaNew testCriteria) {
 			// just show it right now...
 			final JInternalFrame existingFrame = simCompareWindow.getFrame();
 			DocumentWindowManager.showFrame(existingFrame, getTestingFrameworkWindowPanel().getJDesktopPane1());
-			
-			//SwingUtilities.invokeLater(new Runnable() {
-				//public void run() {
-					//DocumentWindowManager.showFrame(existingFrame, desktopPane);
-				//}
-			//});
 		}
 	} catch (Throwable e) {
 		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, e.getMessage());

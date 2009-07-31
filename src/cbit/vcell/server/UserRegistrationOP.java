@@ -1,6 +1,5 @@
 package cbit.vcell.server;
 
-import java.awt.Component;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
@@ -192,7 +191,7 @@ public class UserRegistrationOP implements Serializable{
 			if(currentClientServerInfo.getUsername() == null || currentClientServerInfo.getUsername().length() == 0){
 				throw new IllegalArgumentException("Lost Password requires a VCell User Name.");
 			}
-			String result = PopupGenerator.showWarningDialog((Component)null, null,
+			String result = PopupGenerator.showWarningDialog(currWindowManager, null,
 					new UserMessage(
 						"Sending Password via email for user '"+currentClientServerInfo.getUsername()+
 						"'\nusing currently registered email address.",
@@ -234,7 +233,7 @@ public class UserRegistrationOP implements Serializable{
 					registrationPanel.setUserInfo(originalUserInfoHolder,true);					
 				}
 				do {
-					int result = DialogUtils.showComponentOKCancelDialog(null, registrationPanel,
+					int result = DialogUtils.showComponentOKCancelDialog(currWindowManager.getComponent(), registrationPanel,
 								(userAction.equals(LoginDialog.USERACTION_REGISTER)?"Create New User Registration":"Update Registration Information ("+clientServerManager.getUser().getName()+")"));
 					if (result != JOptionPane.OK_OPTION) {
 						throw UserCancelException.CANCEL_GENERIC;
@@ -242,7 +241,7 @@ public class UserRegistrationOP implements Serializable{
 					UserInfo newUserInfo = registrationPanel.getUserInfo();
 			
 					try {
-						if(!checkUserInfo(originalUserInfoHolder,newUserInfo)){
+						if(!checkUserInfo(currWindowManager, originalUserInfoHolder,newUserInfo)){
 							PopupGenerator.showInfoDialog(currWindowManager, "No registration information has changed.");
 							continue;
 						}
@@ -286,7 +285,7 @@ public class UserRegistrationOP implements Serializable{
 						}finally{
 							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
 							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
-								PopupGenerator.showErrorDialog((Component)null, "Automatic login of New user '"+registeredUserInfo.userid+"' failed.\n"+
+								PopupGenerator.showErrorDialog(currWindowManager, "Automatic login of New user '"+registeredUserInfo.userid+"' failed.\n"+
 									"Restart VCell and login as '"+registeredUserInfo.userid+"' to use new VCell account."
 								);
 						}
@@ -308,7 +307,7 @@ public class UserRegistrationOP implements Serializable{
 		}
 		return false;
 	}
-	private static boolean checkUserInfo(UserInfo origUserInfo,UserInfo newUserInfo) throws Exception{
+	private static boolean checkUserInfo(DocumentWindowManager currWindowManager, UserInfo origUserInfo,UserInfo newUserInfo) throws Exception{
 		TokenMangler.checkLoginID(newUserInfo.userid);
 		
 		String emptyMessge = " can not be empty";	
@@ -364,7 +363,7 @@ public class UserRegistrationOP implements Serializable{
 				String[][] tableData = new String[tableRow.size()][];
 				tableRow.copyInto(tableData);
 				DialogUtils.showComponentOKCancelTableList(
-					null, "Confirm Registration Info Changes",
+					currWindowManager.getComponent(), "Confirm Registration Info Changes",
 					columnNames, tableData,null);
 				return true;
 			}

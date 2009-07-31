@@ -409,7 +409,7 @@ private SimulationInfo getUserSelectedSimulationInfo() throws Exception{
 	}else{
 		userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectMathModelInfo(getTestingFrameworkWindowManager());					
 	}
-	return TestingFrameworkWindowManager.getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
+	return getTestingFrameworkWindowManager().getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
 
 }
 /**
