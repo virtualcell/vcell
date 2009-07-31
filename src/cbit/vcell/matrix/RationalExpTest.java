@@ -48,4 +48,23 @@ public static void main(java.lang.String[] args) {
 		System.exit(0);
 	}
 }
+
+public static void testRationalNumber(){
+	java.util.Random rand = new java.util.Random(0);
+	int numPassed = 0;
+	for(int i=0;i<100;i++){
+		int pow = rand.nextInt(100)-50;
+		double a = ((rand.nextDouble()-0.5)*Math.pow(10,pow));	
+		cbit.vcell.matrix.RationalNumber rationalNumberOld = cbit.vcell.matrix.RationalNumber.getApproximateFractionOld(a);
+		cbit.vcell.matrix.RationalNumber rationalNumberNew = cbit.vcell.matrix.RationalNumber.getApproximateFraction(a);
+		if (!rationalNumberOld.equals(rationalNumberNew)){
+			System.out.println(i+" FAILED: double = "+a+", orig ratnum = "+rationalNumberOld.toString()+", new ratnum = "+rationalNumberNew.toString()+",  valueOf="+cbit.vcell.matrix.RationalNumber.valueOf(a));
+		}else{
+			System.out.println(i+" PASSED: double = "+a+", ratNum = "+rationalNumberOld+",  valueOf="+cbit.vcell.matrix.RationalNumber.valueOf(a));
+			numPassed++;
+		}
+	}
+	System.out.println("num passed = "+numPassed);
+
+}
 }

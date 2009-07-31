@@ -1,6 +1,9 @@
 package cbit.vcell.matrix;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 /**
  * Insert the type's description here.
  * Creation date: (3/27/2003 12:16:31 PM)
@@ -173,13 +176,84 @@ public boolean equals(Object obj) {
 public float floatValue() {
 	return (float)doubleValue();
 }
+
+public static RationalNumber valueOf(double value) {
+	BigDecimal bd = BigDecimal.valueOf(value);
+	if (bd.scale()>=0){
+		BigInteger bd_numerator = bd.scaleByPowerOfTen(bd.scale()).toBigInteger();
+		BigInteger bd_denominator = BigDecimal.valueOf(1).scaleByPowerOfTen(bd.scale()).toBigInteger();
+		return new RationalNumber(bd_numerator,bd_denominator);
+	}else{
+		BigInteger bd_numerator = new BigDecimal(bd.unscaledValue()).scaleByPowerOfTen(-bd.scale()).toBigInteger();
+		BigInteger bd_denominator = BigInteger.ONE;
+		return new RationalNumber(bd_numerator,bd_denominator);
+	}
+}
+
+private static BigDecimal floor(BigDecimal value) {
+	int precision = value.precision();
+	int scale = value.scale();
+	if (precision-scale>0){
+		MathContext mathContext = new MathContext(precision-scale,java.math.RoundingMode.FLOOR);
+		java.math.BigDecimal floored = value.round(mathContext);
+		return floored;
+	}else{
+		if (value.compareTo(BigDecimal.ZERO)<0){
+			return BigDecimal.ONE.negate();
+		}else{
+			return BigDecimal.ZERO;
+		}
+	}
+}
+
+
+public static RationalNumber getApproximateFraction(double value) {
+
+	final BigDecimal tolerance = new BigDecimal(1e-5);
+	final MathContext roundHalfUp = new MathContext(64,RoundingMode.HALF_UP);
+
+	BigDecimal X = new BigDecimal(value).abs();
+	BigDecimal Z = X;
+	BigInteger D0 = BigInteger.ZERO;
+	BigInteger D1 = BigInteger.ONE;
+	BigInteger D2 = BigInteger.ONE;
+	BigInteger N = BigInteger.ZERO;
+
+	if ((X.subtract(floor(X))).abs().equals(BigDecimal.ZERO)){
+		return valueOf(value);
+	}
+
+	for (int i=0;i<30;i++){
+		if (new BigDecimal(N).divide(new BigDecimal(D2),roundHalfUp).subtract(X).divide(X,roundHalfUp).abs().compareTo(tolerance)<=0){
+			break;
+		}
+		Z = BigDecimal.ONE.divide(Z.subtract(new BigDecimal(floor(Z).toBigInteger())),roundHalfUp);
+		D2 = (D1.multiply(floor(Z).toBigInteger())).add(D0);
+		N = floor(X.multiply(new BigDecimal(D2)).add(new BigDecimal(0.5))).toBigInteger();
+		D0 = D1;
+		D1 = D2;
+	}
+
+	if (value>0){
+		return new RationalNumber(N,D2);
+	}else{
+		return new RationalNumber(N.negate(),D2);
+	}
+}
+
+
+	 
+
+
+
 /**
  * Insert the method's description here.
  * Creation date: (5/13/2003 1:05:26 PM)
  * @return cbit.vcell.matrix.RationalNumber
  * @param value double
+ * @deprecated doesn't work for very small or very large numbers.
  */
-public static RationalNumber getApproximateFraction(double value) {
+public static RationalNumber getApproximateFractionOld(double value) {
 	
 	final double tolerance = 1e-5;
 	
@@ -199,7 +273,7 @@ public static RationalNumber getApproximateFraction(double value) {
 	}
 
 	for (int i=0;i<30 && Math.abs(((double)N)/((double)D2) - X) > tolerance;i++){
-		//System.out.println("Z = "+Z+", N = "+N+",  D = "+D1+", N/D = "+(((double)N)/((double)D1)));
+//		System.out.println("Z = "+Z+", N = "+N+",  D = "+D1+", N/D = "+(((double)N)/((double)D1)));
 		Z = 1.0/(Z - Math.floor(Z));
 		D2 = D1*((long)Math.floor(Z)) + D0;
 		N = Math.round(X*D2);
