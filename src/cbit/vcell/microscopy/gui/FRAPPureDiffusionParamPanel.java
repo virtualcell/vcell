@@ -316,7 +316,7 @@ public class FRAPPureDiffusionParamPanel extends JPanel {
 					}
 				}catch (Exception e2){
 					e2.printStackTrace();
-					DialogUtils.showErrorDialog("Error setting parameter value for "+
+					DialogUtils.showErrorDialog(FRAPPureDiffusionParamPanel.this, "Error setting parameter value for "+
 							(e.getSource() == diffusionRateSetButton?"diffusionRate":"")+
 							(e.getSource() == mobileFractionSetButton?"mobileFraction":"")+
 							(e.getSource() == bleachWhileMonitorSetButton?"bleachWhileMonitor":"")+
@@ -452,7 +452,7 @@ public class FRAPPureDiffusionParamPanel extends JPanel {
 							pp.stop();
 							e2.printStackTrace();
 							SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-								DialogUtils.showErrorDialog("Error setting Best Fit Parameters\n"+e2.getMessage());
+								DialogUtils.showErrorDialog(FRAPPureDiffusionParamPanel.this, "Error setting Best Fit Parameters\n"+e2.getMessage());
 							}});
 						}finally{
 							pp.stop();
@@ -814,7 +814,7 @@ public class FRAPPureDiffusionParamPanel extends JPanel {
 		Parameter[] params = getCurrentParameters();
 		if (params == null)
 		{
-			DialogUtils.showErrorDialog("Some of the editable parameters are empty or in illegal forms!");
+			DialogUtils.showErrorDialog(this, "Some of the editable parameters are empty or in illegal forms!");
 			throw new RuntimeException("Some of the editable parameters are empty or in illegal forms!");
 		}
 		if(params.length ==5)

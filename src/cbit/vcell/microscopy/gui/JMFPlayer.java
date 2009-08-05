@@ -171,7 +171,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 					if(outputFile.getName().indexOf(".") == -1){
 						outputFile = new File(outputFile.getParentFile(),outputFile.getName()+"."+VirtualFrapLoader.QT_EXTENSION);
 					}else{
-						DialogUtils.showErrorDialog("Quick Time movie must have an extension of ."+VirtualFrapLoader.QT_EXTENSION);
+						DialogUtils.showErrorDialog(frameCopy, "Quick Time movie must have an extension of ."+VirtualFrapLoader.QT_EXTENSION);
 						return;
 					}
 				}
@@ -179,7 +179,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 				try {
 					FileUtils.copyFile(movieFile, outputFile);
 				} catch (IOException e) {
-					DialogUtils.showErrorDialog("Fail to save movie to file: "+ outputFile.getPath()+"."+ e.getMessage());
+					DialogUtils.showErrorDialog(frameCopy, "Fail to save movie to file: "+ outputFile.getPath()+"."+ e.getMessage());
 					return;
 				}
 			}else{

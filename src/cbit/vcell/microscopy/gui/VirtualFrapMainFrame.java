@@ -203,7 +203,7 @@ public class VirtualFrapMainFrame extends JFrame
 					  updateStatus((bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
 					  try{
 						  SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							  DialogUtils.showErrorDialog((bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
+							  DialogUtils.showErrorDialog(VirtualFrapMainFrame.this, (bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
 						  }});
 					  }catch(Exception e2){
 						  e2.printStackTrace();
@@ -235,7 +235,7 @@ public class VirtualFrapMainFrame extends JFrame
 	  			  }catch(Exception e2){
 	  				  e2.printStackTrace();
 	  				  PopupGenerator.showErrorDialog(
-	  					"Error opening file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
+	  						VirtualFrapMainFrame.this, "Error opening file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
 	  			  }
 		      }
 			  else if(arg.equals(SAVE_ACTION_COMMAND))
@@ -349,7 +349,7 @@ public class VirtualFrapMainFrame extends JFrame
 	  	   				try {
 					        menuHandler.actionPerformed(new ActionEvent(msave,0,SAVE_ACTION_COMMAND));
 	  	   				}catch(Exception e5){
-						    DialogUtils.showErrorDialog("Exception: " + e5.getMessage());
+						    DialogUtils.showErrorDialog(VirtualFrapMainFrame.this, "Exception: " + e5.getMessage());
 						    updateStatus("Exception: " + e5.getMessage());
 						}
 	  	   			break;

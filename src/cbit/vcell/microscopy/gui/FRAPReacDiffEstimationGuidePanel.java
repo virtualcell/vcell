@@ -57,7 +57,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	
 	private JScrollPane tableScroll = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 	private JTable paramTable = new JTable();
-	private EstimatedParameterTableModel paramTableModel = new EstimatedParameterTableModel();
+	private EstimatedParameterTableModel paramTableModel = new EstimatedParameterTableModel(this);
 	
 	private static final double PI = 3.14159;
 	private static final String piStr = "PI";
@@ -442,7 +442,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(NumberFormatException ex)
 							{
 								ex.printStackTrace(System.out);
-								DialogUtils.showErrorDialog("Parameter input error:" + ex.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
 								return;
 							}
 							//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
@@ -459,7 +459,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(ExpressionException ee)
 							{
 								ee.printStackTrace(System.out);
-								DialogUtils.showErrorDialog("Error creating expression when trying to update table: " + ee.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
 							}
 						}
 						else if(koffButton.isSelected() && !koffTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
@@ -472,7 +472,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(NumberFormatException ex)
 							{
 								ex.printStackTrace(System.out);
-								DialogUtils.showErrorDialog("Parameter input error:" + ex.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
 								return;
 							}
 							//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
@@ -488,12 +488,12 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(ExpressionException ee)
 							{
 								ee.printStackTrace(System.out);
-								DialogUtils.showErrorDialog("Error creating expression when trying to update table: " + ee.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
 							}
 						}
 						else
 						{
-							DialogUtils.showErrorDialog("Estimation cannot be performed. Please input requied parameters.");
+							DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Estimation cannot be performed. Please input requied parameters.");
 						}
 					}//
 					else //One diffusion (second diffusion is NOT applied) 
@@ -528,7 +528,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(ExpressionException ee)
 							{
 								ee.printStackTrace(System.out);
-								DialogUtils.showErrorDialog("Error creating expression when trying to update table: " + ee.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
 							}
 						}
 						else //effective diffusion
@@ -548,7 +548,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 								}catch(NumberFormatException ex)
 								{
 									ex.printStackTrace(System.out);
-									DialogUtils.showErrorDialog("Parameter input error:" + ex.getMessage());
+									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
 									return;
 								}
 								//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
@@ -564,7 +564,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 								}catch(ExpressionException ee)
 								{
 									ee.printStackTrace(System.out);
-									DialogUtils.showErrorDialog("Error creating expression when trying to update table: " + ee.getMessage());
+									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
 								}
 							}
 							else if(koffButton.isSelected() && !koffTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
@@ -577,7 +577,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 								}catch(NumberFormatException ex)
 								{
 									ex.printStackTrace(System.out);
-									DialogUtils.showErrorDialog("Parameter input error:" + ex.getMessage());
+									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
 									return;
 								}
 								//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
@@ -593,12 +593,12 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 								}catch(ExpressionException ee)
 								{
 									ee.printStackTrace(System.out);
-									DialogUtils.showErrorDialog("Error creating expression when trying to update table: " + ee.getMessage());
+									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
 								}
 							}
 							else
 							{
-								DialogUtils.showErrorDialog("Estimation cannot be performed. Please input requied parameters.");
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Estimation cannot be performed. Please input requied parameters.");
 							}
 						}
 					}
