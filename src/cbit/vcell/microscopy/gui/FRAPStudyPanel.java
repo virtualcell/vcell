@@ -734,7 +734,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						if(currentSimulationDataState.frapChangeInfo != null && 
 						   (currentSimulationDataState.frapChangeInfo.hasROIChanged() || currentSimulationDataState.frapChangeInfo.hasStartingIdxChanged()))
 						{
-							DialogUtils.showWarningDialog(currentSimulationDataState.frapChangeInfo.getROIOrStartingIdxChangeInfo()+" have been changed.\n 2D Results is out of synchronization. \n You may want to click 'Create 2D Simulation' button in 'Adjust Parameters' tab to update the 2D Results.");
+							DialogUtils.showWarningDialog(FRAPStudyPanel.this,currentSimulationDataState.frapChangeInfo.getROIOrStartingIdxChangeInfo()+" have been changed.\n 2D Results is out of synchronization. \n You may want to click 'Create 2D Simulation' button in 'Adjust Parameters' tab to update the 2D Results.");
 						}
 					}
 										
@@ -742,7 +742,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					{
 						refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
 					}else{
-						DialogUtils.showErrorDialog("Simulation Data are not found to view 2D spatial results. \nSimulation has never been run or simulation files are corrupt.\n" +
+						DialogUtils.showErrorDialog(this, "Simulation Data are not found to view 2D spatial results. \nSimulation has never been run or simulation files are corrupt.\n" +
 													"Please click 'Create 2D Simulation' button in 'Adjust Parameters' tab to run the simulation.");
 						return false;
 					}
@@ -869,7 +869,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //				new AsynchClientTask[] {saveTask}, false);
 		}else{
 			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-				DialogUtils.showErrorDialog("No FRAP Data exists to save");
+				DialogUtils.showErrorDialog(FRAPStudyPanel.this, "No FRAP Data exists to save");
 			}});
 		}
 	}
@@ -907,7 +907,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //				new AsynchClientTask[] {saveTask}, false);
 		}else{
 			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-				DialogUtils.showErrorDialog("No FRAP Data exists to save");
+				DialogUtils.showErrorDialog(FRAPStudyPanel.this, "No FRAP Data exists to save");
 			}});
 		}
 		return true;
@@ -1217,7 +1217,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					e.printStackTrace();
 					try{
 						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							DialogUtils.showErrorDialog("Failed loading " + inFileDescription+":\n"+e.getMessage());
+							DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Failed loading " + inFileDescription+":\n"+e.getMessage());
 						}});
 						}catch(Exception e2){
 							e2.printStackTrace();
@@ -1574,7 +1574,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					e.printStackTrace();
 					try{
 					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-						DialogUtils.showErrorDialog("Error running simulation/spatial analysis:\n"+e.getMessage());
+						DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running simulation/spatial analysis:\n"+e.getMessage());
 					}});
 					}catch(Exception e2){
 						e2.printStackTrace();
@@ -1670,7 +1670,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}catch(Exception e)
 				{
 					e.printStackTrace(System.out);
-					DialogUtils.showErrorDialog("Error making the movie!\n"+e.getMessage());
+					DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error making the movie!\n"+e.getMessage());
 					pp.stop();
 				}
 				finally
@@ -2267,7 +2267,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				e.printStackTrace();
 				try{
 				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-					DialogUtils.showErrorDialog("Error running spatial analysis:\n"+e.getMessage());
+					DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running spatial analysis:\n"+e.getMessage());
 				}});
 				}catch(Exception e2){
 					e2.printStackTrace();
@@ -2314,7 +2314,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		} catch (Exception e) {
 			if(!(e instanceof UserCancelException)){
 				e.printStackTrace();
-				DialogUtils.showErrorDialog("Creating New FRAP failed.  "+e.getMessage());
+				DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Creating New FRAP failed.  "+e.getMessage());
 			}
 		}
 
@@ -2325,13 +2325,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				try {
 					crop((Rectangle) evt.getNewValue());
 				} catch (Exception e) {
-					PopupGenerator.showErrorDialog("Error Cropping:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(FRAPStudyPanel.this, "Error Cropping:\n"+e.getMessage());
 				}
 			}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOROI_PROPERTY)){
 				if(!getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIType().equals(RoiType.ROI_CELL) &&
 					getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).isAllPixelsZero()
 					){
-					DialogUtils.showInfoDialog("Define '"+OverlayEditorPanelJAI.WHOLE_CELL_AREA_TEXT+"'"+
+					DialogUtils.showInfoDialog(FRAPStudyPanel.this,"Define '"+OverlayEditorPanelJAI.WHOLE_CELL_AREA_TEXT+"'"+
 							" ROI using ROI Tools or '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"'"+
 							" before using '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"' to define Bleach or Backgroun ROIs");
 					return;

@@ -252,11 +252,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 						imagePane.setCrop(null, null);
 						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
 					}else{
-						DialogUtils.showInfoDialog("AutoCrop: No zero values around outer edges.");
+						DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this,"AutoCrop: No zero values around outer edges.");
 					}
 				} catch (Exception e1) {
 					e1.printStackTrace();
-					DialogUtils.showErrorDialog("Error AutoCrop:\n"+e1.getMessage());
+					DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "Error AutoCrop:\n"+e1.getMessage());
 				}finally{
 					waitCursor(false);				
 				}
@@ -339,7 +339,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 							getImagePane().refreshImage();
 						}catch(Exception e1){
 							e1.printStackTrace();
-							DialogUtils.showErrorDialog("error importing ROI mask from file:\n"+
+							DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "error importing ROI mask from file:\n"+
 									inputFile.getAbsolutePath()+"\n"+e1.getMessage());
 						}finally{
 							if(iFormatReader != null){try{iFormatReader.close();}catch(Exception e2){e2.printStackTrace();}}
@@ -347,7 +347,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 					}
 				} catch (Exception e1) {
 					e1.printStackTrace();
-					DialogUtils.showErrorDialog("Error importing ROI"+e1.getMessage());
+					DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "Error importing ROI"+e1.getMessage());
 				}
 			}
 		});
@@ -392,7 +392,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				if(bHasROI){
 					firePropertyChange(FRAP_DATA_TIMEPLOTROI_PROPERTY, null,new Boolean(true));
 				}else{
-					DialogUtils.showInfoDialog(
+					DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this,
 						"ROI for "+roi.getROIType().name()+" is empty.\n"+
 						"Paint, Fill or Import ROI using ROI tools.");
 				}

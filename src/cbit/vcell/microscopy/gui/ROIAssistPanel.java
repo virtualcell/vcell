@@ -72,7 +72,7 @@ public class ROIAssistPanel extends JPanel {
 					}catch(final Exception e2){
 						waitCursor(false);
 						SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-							DialogUtils.showErrorDialog("Error creating ROI source\n"+e2.getMessage());
+							DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error creating ROI source\n"+e2.getMessage());
 						}});
 					}finally{
 						waitCursor(false);
@@ -91,7 +91,7 @@ public class ROIAssistPanel extends JPanel {
 						}catch(final Exception e2){
 							waitCursor(false);
 							SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-								DialogUtils.showErrorDialog("Error resolving ROI\n"+e2.getMessage());
+								DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error resolving ROI\n"+e2.getMessage());
 							}});
 						}finally{
 							waitCursor(false);
@@ -280,7 +280,7 @@ public class ROIAssistPanel extends JPanel {
 							}catch(final Exception e2){
 								waitCursor(false);
 								SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-									DialogUtils.showErrorDialog("Error resolving ROI\n"+e2.getMessage());
+									DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error resolving ROI\n"+e2.getMessage());
 								}});
 							}finally{
 								waitCursor(false);
@@ -288,7 +288,7 @@ public class ROIAssistPanel extends JPanel {
 						}}).start();
 					}
 				}catch(Exception e2){
-					DialogUtils.showErrorDialog("Error Resolving ROI.  "+e2.getMessage());
+					DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error Resolving ROI.  "+e2.getMessage());
 				}
 			}
 		});
@@ -320,7 +320,7 @@ public class ROIAssistPanel extends JPanel {
 					}catch(final Exception e2){
 						waitCursor(false);
 						SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-							DialogUtils.showErrorDialog("Error filling voids in ROI"+
+							DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error filling voids in ROI"+
 								frapData.getCurrentlyDisplayedROI().getROIType()+"\n"+e2.getMessage());
 						}});
 					}finally{
@@ -538,7 +538,7 @@ public class ROIAssistPanel extends JPanel {
 			}catch(final Exception e){
 				e.printStackTrace();
 				SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-					DialogUtils.showErrorDialog("Auto ROI error:"+e.getMessage());
+					DialogUtils.showErrorDialog(ROIAssistPanel.this, "Auto ROI error:"+e.getMessage());
 				}});
 			}
 		}}).start();
@@ -948,7 +948,7 @@ public class ROIAssistPanel extends JPanel {
 			lastROISourceDataShort = null;
 			e2.printStackTrace();
 			SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-				DialogUtils.showErrorDialog("Error setting new ROI. "+e2.getMessage());
+				DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error setting new ROI. "+e2.getMessage());
 			}});
 		}
 //		finally{

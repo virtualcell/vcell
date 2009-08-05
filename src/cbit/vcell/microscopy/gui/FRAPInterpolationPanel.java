@@ -309,7 +309,7 @@ public class FRAPInterpolationPanel extends JPanel {
 					}
 				}catch (Exception e2){
 					e2.printStackTrace();
-					DialogUtils.showErrorDialog("Error setting parameter value for "+
+					DialogUtils.showErrorDialog(FRAPInterpolationPanel.this, "Error setting parameter value for "+
 							(e.getSource() == diffusionRateSetButton?"diffusionRate":"")+
 							(e.getSource() == mobileFractionSetButton?"mobileFraction":"")+
 							(e.getSource() == bleachWhileMonitorSetButton?"bleachWhileMonitor":"")+
@@ -445,7 +445,7 @@ public class FRAPInterpolationPanel extends JPanel {
 							pp.stop();
 							e2.printStackTrace();
 							SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-								DialogUtils.showErrorDialog("Error setting Best Fit Parameters\n"+e2.getMessage());
+								DialogUtils.showErrorDialog(FRAPInterpolationPanel.this, "Error setting Best Fit Parameters\n"+e2.getMessage());
 							}});
 						}finally{
 							pp.stop();

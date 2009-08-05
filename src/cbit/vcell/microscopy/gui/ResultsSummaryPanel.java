@@ -499,7 +499,7 @@ public class ResultsSummaryPanel extends JPanel {
 			}
 		}catch(Exception e2){
 			e2.printStackTrace();
-			DialogUtils.showErrorDialog("Error graphing Optimizer data "+e2.getMessage());
+			DialogUtils.showErrorDialog(this, "Error graphing Optimizer data "+e2.getMessage());
 		}
 
 	}
