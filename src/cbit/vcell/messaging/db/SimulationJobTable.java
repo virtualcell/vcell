@@ -1,24 +1,25 @@
 package cbit.vcell.messaging.db;
-import java.util.Vector;
-import cbit.vcell.messaging.db.*;
-import java.text.*;
-import cbit.vcell.solver.*;
-import cbit.sql.*;
-import cbit.image.*;
-import cbit.vcell.server.*;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.modeldb.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.vcell.modeldb.DatabaseConstants;
+import cbit.vcell.modeldb.SimulationTable;
+import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
  * This type was created in VisualAge.
  ©*/
-public class SimulationJobTable extends cbit.sql.Table {
+public class SimulationJobTable extends Table {
 	private static final String TABLE_NAME = "vc_simulationjob";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
@@ -26,7 +27,7 @@ public class SimulationJobTable extends cbit.sql.Table {
 	public final Field submitDate		= new Field("submitDate",		"date",			"NOT NULL");
 	public final Field taskID			= new Field("taskID",			"integer",		"NOT NULL");		
 	public final Field schedulerStatus	= new Field("schedulerStatus",	"integer",		"NOT NULL");
-	public final Field statusMsg		= new Field("statusMsg",		"varchar(2048)",	"");	
+	public final Field statusMsg		= new Field("statusMsg",		"varchar(4000)",	"");	
 		
 	public final Field queueDate		= new Field("queueDate",		"date",			"");
 	public final Field queuePriority	= new Field("queuePriority",	"integer",		"");	
@@ -155,7 +156,11 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//schedulerStatus
 	buffer.append(schedulerStatus + "=" + simulationJobStatus.getSchedulerStatus() + ",");
 	//statusMsg
-	buffer.append(statusMsg + "='" + simulationJobStatus.getSimulationMessage().toSerialization() + "',");
+	String message = simulationJobStatus.getSimulationMessage().toSerialization();
+	if (message.length() > 4000) {
+		message = message.substring(0, 4000);
+	}
+	buffer.append(statusMsg + "='" + message + "',");
 
 	//
 	// queue info
@@ -273,7 +278,11 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	//schedulerStatus
 	buffer.append(simulationJobStatus.getSchedulerStatus() + ",");
 	//statusMsg
-	buffer.append("'" + simulationJobStatus.getSimulationMessage().toSerialization() + "',");
+	String message = simulationJobStatus.getSimulationMessage().toSerialization();
+	if (message.length() > 4000) {
+		message = message.substring(0, 4000);
+	}
+	buffer.append("'" + message + "',");
 	
 	// queue stuff
 	SimulationQueueEntryStatus simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
