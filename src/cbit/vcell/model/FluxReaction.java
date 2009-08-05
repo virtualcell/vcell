@@ -3,35 +3,42 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.beans.*;
-import java.io.*;
-import java.util.*;
+import java.beans.PropertyVetoException;
 
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-import org.vcell.util.document.Version;
+import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
-import cbit.util.*;
+import cbit.vcell.parser.ExpressionException;
 
 public class FluxReaction extends ReactionStep {
 	private Species fieldFluxCarrier = null;
 
-public FluxReaction(Membrane membrane, org.vcell.util.document.KeyValue argKey, String name) throws PropertyVetoException {
+public FluxReaction(Membrane membrane, KeyValue argKey, String name) throws PropertyVetoException {
     super(membrane, argKey, name);
+	try {
+		setKinetics(new GeneralKinetics(this));
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
 }
 
 
-public FluxReaction(Membrane membrane, Species fluxCarrier, Model model,org.vcell.util.document.KeyValue key,String name) throws Exception {
+public FluxReaction(Membrane membrane, Species fluxCarrier, Model model, KeyValue key,String name) throws Exception {
 	super(membrane,key,name);
 	setFluxCarrier(fluxCarrier,model);
+	try {
+		setKinetics(new GeneralKinetics(this));
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
 }   
 
 
 public FluxReaction(Membrane membrane, Species fluxCarrier, Model model,String name) throws Exception {
-	super(membrane,name);
-	setFluxCarrier(fluxCarrier,model);
+	this(membrane,fluxCarrier, model, null, name);
 }   
 
 
@@ -61,9 +68,8 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
+public void fromTokens(CommentStringTokenizer tokens, Model model) throws Exception {
 	String token = null;
-//	tokens.nextToken();  // read "{"
 	while (tokens.hasMoreTokens()){
 		token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCMODL.EndBlock)){
@@ -89,7 +95,7 @@ public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model
 				throw new Exception("unexpected EOF in FluxReaction");
 			}
 			KineticsDescription kineticsDescription = KineticsDescription.fromVCMLKineticsName(kineticsType);
-			if (kineticsDescription==null){
+			if (kineticsDescription!=null){
 				Kinetics kinetics = kineticsDescription.createKinetics(this);
 				setKinetics(kinetics);
 				getKinetics().fromTokens(tokens);
@@ -243,7 +249,6 @@ public void setKinetics(Kinetics kinetics) throws IllegalArgumentException {
  * @return java.lang.String
  */
 public String toString() {
-	// return "FluxReaction("+getKey()+", "+getName()+", "+getNumReactionParticipants()+" reactParticipants, valence="+getChargeCarrierValence()+")";
 	return "FluxReaction@"+Integer.toHexString(hashCode())+"("+getKey()+", "+getName()+", "+getReactionParticipants().length+" reactParticipants, valence="+getChargeCarrierValence()+", physicsOption="+getPhysicsOptions()+")";
 
 }

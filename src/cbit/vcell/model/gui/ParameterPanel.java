@@ -3,6 +3,7 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import javax.swing.table.TableColumn;
 import cbit.gui.TableCellEditorAutoCompletion;
@@ -214,14 +215,12 @@ private void initialize() {
 	try {
 		setName("ParameterPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(509, 240);
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 0;
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.weighty = 1.0;
-		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJScrollPane1(), constraintsJScrollPane1);
 		initConnections();
 		parameterPanel_Initialize();

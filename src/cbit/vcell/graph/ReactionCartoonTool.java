@@ -1447,7 +1447,7 @@ public void showFluxReactionPropertiesDialog(FluxReactionShape fluxReactionShape
 	FluxReaction_Dialog fluxReaction_Dialog = new FluxReaction_Dialog(parent,true);
 	fluxReaction_Dialog.init(fluxReactionShape.getFluxReaction(), getReactionCartoon().getModel());
 	fluxReaction_Dialog.setTitle("Flux Reaction Editor");
-	ZEnforcer.showModalDialogOnTop(fluxReaction_Dialog, getGraphPane());
+	ZEnforcer.showModalDialogOnTop(fluxReaction_Dialog, getJDesktopPane());
 	//
 	// update in case of name change (should really be a listener)
 	//
@@ -1597,7 +1597,7 @@ public void showSimpleReactionPropertiesDialog(SimpleReactionShape simpleReactio
 	SimpleReactionPanelDialog simpleReactionDialog = new SimpleReactionPanelDialog(parent,true);
 	simpleReactionDialog.setSimpleReaction(simpleReactionShape.getSimpleReaction());
 	simpleReactionDialog.setTitle("Reaction Kinetics Editor");
-	ZEnforcer.showModalDialogOnTop(simpleReactionDialog, getGraphPane());
+	ZEnforcer.showModalDialogOnTop(simpleReactionDialog, getJDesktopPane());
 	
 	//
 	//cleanup listeners after window closed for GC

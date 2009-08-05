@@ -112,30 +112,10 @@ protected ReactionStep(Structure structure, KeyValue key, String name,String ann
 	addVetoableChangeListener(this);
 	setName(name);
 	this.annotation = annotation;
-	try {
-		setKinetics(new GeneralKinetics(this));
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-	}
 }
 
 protected ReactionStep(Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
 	this(structure,key,name,null);
-//	super();
-//	nameScope = new ReactionStep.ReactionNameScope();
-//	fieldChargeCarrierValence = new ChargeCarrierValence("charge",getNameScope());
-//	setStructure(structure);
-//	this.key = key;
-//	removePropertyChangeListener(this);
-//	addPropertyChangeListener(this);
-//	removeVetoableChangeListener(this);
-//	addVetoableChangeListener(this);
-//	setName(name);
-//	try {
-//		setKinetics(new GeneralKinetics(this));
-//	}catch (Exception e){
-//		e.printStackTrace(System.out);
-//	}
 }
 /**
  * ReactionStep constructor comment.

@@ -1,23 +1,40 @@
 package cbit.vcell.model.gui;
 
-import javax.swing.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.model.*;
-import cbit.vcell.model.Model.ModelParameter;
-
 import java.awt.Component;
-import java.util.*;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyVetoException;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.BevelBorderBean;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
+
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/00 5:01:27 PM)
@@ -28,12 +45,9 @@ public class FluxReaction_Dialog extends JDialog {
 	private JLabel ivjJLabel1 = null;
 	private JLabel ivjJLabel2 = null;
 	private JLabel ivjJLabel3 = null;
-	private JLabel ivjJLabel4 = null;
-	private JLabel ivjJLabel5 = null;
+	private JTextField fluxReactionNameTextField = null;
 	private Model ivjModel1 = null;
 	private ReactionCanvas ivjReactionCanvas1 = null;
-	private JButton ivjChangeButton = null;
-	private JButton ivjRenameButton = null;
 	private JScrollPane ivjJScrollPane1 = null;
 	private Species ivjfluxCarrier1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -43,10 +57,8 @@ public class FluxReaction_Dialog extends JDialog {
 	private FluxReaction ivjFluxReaction1 = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private ReactionElectricalPropertiesPanel ivjReactionElectricalPropertiesPanel1 = null;
-	private boolean ivjConnPtoP4Aligning = false;
 	private Kinetics ivjKinetics = null;
 	private JButton jToggleButton = null;  //  @jve:decl-index=0:visual-constraint="251,111"
-	private JButton ivjShowGlobalParamsButton = null;
 	private JButton closeButton = new JButton("Close");
 	
 	private KineticsDescription[] kineticTypes = {
@@ -57,15 +69,11 @@ public class FluxReaction_Dialog extends JDialog {
 		KineticsDescription.GHK,
 		KineticsDescription.Nernst
 	};
+	private JTextArea annotationTextArea = null;
+	private JComboBox carrierComboBox = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, FocusListener, ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == FluxReaction_Dialog.this.getRenameButton()) 
-				connEtoC1(e);
-			if (e.getSource() == FluxReaction_Dialog.this.getShowGlobalParamsButton()) 
-				showGlobalParameters();
-			if (e.getSource() == FluxReaction_Dialog.this.getChangeButton()) 
-				connEtoC2(e);
 			if (e.getSource() == FluxReaction_Dialog.this.getJComboBox1()) 
 				connEtoC3();
 			if (e.getSource() == closeButton) {
@@ -73,19 +81,36 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == FluxReaction_Dialog.this.getfluxCarrier1() && (evt.getPropertyName().equals("commonName"))) 
-				connPtoP4SetTarget();
-			if (evt.getSource() == FluxReaction_Dialog.this.getJLabel5() && (evt.getPropertyName().equals("text"))) 
-				connPtoP4SetSource();
 			if (evt.getSource() == FluxReaction_Dialog.this.getFluxReaction1() && (evt.getPropertyName().equals("fluxCarrier"))) 
 				connEtoM7(evt);
 			if (evt.getSource() == FluxReaction_Dialog.this.getFluxReaction1() && (evt.getPropertyName().equals("name"))) 
 				connPtoP1SetTarget();
-			if (evt.getSource() == FluxReaction_Dialog.this.getJLabel4() && (evt.getPropertyName().equals("text"))) 
+			if (evt.getSource() == FluxReaction_Dialog.this.getFluxReactionNameTextField() && (evt.getPropertyName().equals("text"))) 
 				connPtoP1SetSource();
 			if (evt.getSource() == FluxReaction_Dialog.this.getFluxReaction1() && (evt.getPropertyName().equals("kinetics"))) 
 				connEtoM10(evt);
 		};
+		
+		public void focusGained(FocusEvent e) {
+			
+		}
+		public void focusLost(FocusEvent e) {
+			if (e.getSource() == annotationTextArea) {
+				getFluxReaction1().setAnnotation(annotationTextArea.getText());
+			} else if (e.getSource() == fluxReactionNameTextField) {
+				try {
+					getFluxReaction1().setName(fluxReactionNameTextField.getText());
+				} catch (PropertyVetoException e1) {
+					PopupGenerator.showErrorDialog(FluxReaction_Dialog.this,"Error changing name:\n"+e1.getMessage());
+				}
+			}
+		}
+		public void itemStateChanged(ItemEvent e) {
+			if (e.getSource() == carrierComboBox) {
+				changeFluxCarrier((String)carrierComboBox.getSelectedItem());
+			}
+			
+		}
 	};
 
 /**
@@ -109,18 +134,8 @@ public FluxReaction_Dialog(java.awt.Frame owner, boolean modal) {
 	initialize();
 }
 
-
-/**
- * Comment
- */
-private void changeFluxCarrier() {
-	String speciesNames[] = getModel1().getSpeciesNames();
-	if (speciesNames == null || speciesNames.length == 0) {
-		PopupGenerator.showErrorDialog(this, "No defined species present !");
-		return;
-	}
-	String selection = (String)PopupGenerator.showListDialog(this,speciesNames,"Select new flux carrier species:");
-	if (selection!=null){
+private void changeFluxCarrier(String selection) {
+	if (selection!=null && !selection.equals(getfluxCarrier1().getCommonName())) {
 		try {
 			Species species = getModel1().getSpecies(selection);
 			//
@@ -147,47 +162,6 @@ private void changeFluxCarrier() {
 		}
 	}
 }
-
-
-/**
- * connEtoC1:  (RenameButton.action.actionPerformed(java.awt.event.ActionEvent) --> FluxReactionDialog.renameFluxReaction()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.renameFluxReaction();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (ChangeButton.action.actionPerformed(java.awt.event.ActionEvent) --> FluxReactionDialog.changeFluxCarrier()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.changeFluxCarrier();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC3:  (JComboBox1.action. --> FluxReactionDialog.updateKineticChoice(Ljava.lang.String;)V)
@@ -345,7 +319,7 @@ private void connPtoP1SetSource() {
 			// user code end
 			ivjConnPtoP1Aligning = true;
 			if ((getFluxReaction1() != null)) {
-				getFluxReaction1().setName(getJLabel4().getText());
+				getFluxReaction1().setName(getFluxReactionNameTextField().getText());
 			}
 			// user code begin {2}
 			// user code end
@@ -372,7 +346,7 @@ private void connPtoP1SetTarget() {
 			// user code end
 			ivjConnPtoP1Aligning = true;
 			if ((getFluxReaction1() != null)) {
-				getJLabel4().setText(getFluxReaction1().getName());
+				getFluxReactionNameTextField().setText(getFluxReaction1().getName());
 			}
 			// user code begin {2}
 			// user code end
@@ -385,84 +359,6 @@ private void connPtoP1SetTarget() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connPtoP4SetSource:  (fluxCarrier1.commonName <--> JLabel5.text)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			if ((getfluxCarrier1() != null)) {
-				getfluxCarrier1().setCommonName(getJLabel5().getText());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetTarget:  (fluxCarrier1.name <--> JLabel5.text)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			if ((getfluxCarrier1() != null)) {
-				getJLabel5().setText(getfluxCarrier1().getCommonName());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * Return the JButton2 property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getChangeButton() {
-	if (ivjChangeButton == null) {
-		try {
-			ivjChangeButton = new javax.swing.JButton();
-			ivjChangeButton.setName("ChangeButton");
-			ivjChangeButton.setText("Change");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjChangeButton;
-}
-
 
 /**
  * Return the fluxCarrier1 property value.
@@ -556,104 +452,124 @@ private javax.swing.JPanel getJDialogContentPane() {
 			ivjJDialogContentPane.setName("JDialogContentPane");
 			ivjJDialogContentPane.setLayout(new java.awt.GridBagLayout());
 
+			// stoichiometry
 			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
 			constraintsJLabel1.anchor = java.awt.GridBagConstraints.EAST;
-			constraintsJLabel1.insets = new java.awt.Insets(4, 10, 4, 0);
+			constraintsJLabel1.insets = new java.awt.Insets(4, 10, 4, 4);
 			getJDialogContentPane().add(getJLabel1(), constraintsJLabel1);
-
-			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 1;
-			constraintsJLabel2.anchor = java.awt.GridBagConstraints.EAST;
-			constraintsJLabel2.insets = new java.awt.Insets(4, 10, 4, 0);
-			getJDialogContentPane().add(getJLabel2(), constraintsJLabel2);
-
-			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
-			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 2;
-			constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
-			constraintsJLabel3.insets = new java.awt.Insets(4, 10, 4, 0);
-			getJDialogContentPane().add(getJLabel3(), constraintsJLabel3);
-
-			java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
-			constraintsJLabel4.gridx = 1; constraintsJLabel4.gridy = 1;
-			constraintsJLabel4.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJLabel4.weightx = 1.0;
-			constraintsJLabel4.insets = new java.awt.Insets(4, 5, 4, 5);
-			getJDialogContentPane().add(getJLabel4(), constraintsJLabel4);
-
-			java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
-			constraintsJLabel5.gridx = 1; constraintsJLabel5.gridy = 2;
-			constraintsJLabel5.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJLabel5.insets = new java.awt.Insets(0, 5, 0, 5);
-			getJDialogContentPane().add(getJLabel5(), constraintsJLabel5);
-
-			java.awt.GridBagConstraints constraintsRenameButton = new java.awt.GridBagConstraints();
-			constraintsRenameButton.gridx = 2; constraintsRenameButton.gridy = 1;
-			constraintsRenameButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsRenameButton.insets = new java.awt.Insets(5, 5, 5, 10);
-			getJDialogContentPane().add(getRenameButton(), constraintsRenameButton);
-
-			java.awt.GridBagConstraints constraintsChangeButton = new java.awt.GridBagConstraints();
-			constraintsChangeButton.gridx = 2; constraintsChangeButton.gridy = 2;
-			constraintsChangeButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsChangeButton.insets = new java.awt.Insets(5, 5, 5, 10);
-			getJDialogContentPane().add(getChangeButton(), constraintsChangeButton);
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = 0;
 			constraintsJScrollPane1.gridwidth = 2;
 			constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsJScrollPane1.weightx = 1.0;
-			constraintsJScrollPane1.weighty = 0.8;
+			constraintsJScrollPane1.weighty = 0.5;
 			constraintsJScrollPane1.insets = new java.awt.Insets(10, 5, 10, 10);
 			getJDialogContentPane().add(getJScrollPane1(), constraintsJScrollPane1);
 
+			// Name
+			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
+			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 1;
+			constraintsJLabel2.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsJLabel2.insets = new java.awt.Insets(4, 10, 4, 4);
+			getJDialogContentPane().add(getJLabel2(), constraintsJLabel2);
+
+			java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
+			constraintsJLabel4.gridx = 1; constraintsJLabel4.gridy = 1;
+			constraintsJLabel4.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsJLabel4.weightx = 1.0;
+			constraintsJLabel4.insets = new java.awt.Insets(4, 5, 4, 5);
+			getJDialogContentPane().add(getFluxReactionNameTextField(), constraintsJLabel4);
+
+			// Flux carrier
+			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
+			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 2;
+			constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsJLabel3.insets = new java.awt.Insets(4, 10, 4, 4);
+			getJDialogContentPane().add(getJLabel3(), constraintsJLabel3);
+
+			java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
+			constraintsJLabel5.gridx = 1; constraintsJLabel5.gridy = 2;
+			constraintsJLabel5.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsJLabel5.insets = new java.awt.Insets(4, 5, 4, 5);
+			getJDialogContentPane().add(getCarrierComboBox(), constraintsJLabel5);
+
+			// Electrical Properties
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 3;
+			gbc.anchor = java.awt.GridBagConstraints.EAST;
+			gbc.insets = new java.awt.Insets(4, 10, 4, 4);
+			JLabel label1 = new JLabel("<html>&nbsp;&nbsp;Electrical<br>properties</html>");
+			label1.setFont(label1.getFont().deriveFont(Font.BOLD));
+			getJDialogContentPane().add(label1, gbc);
+			
+			java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
+			constraintsReactionElectricalPropertiesPanel1.gridx = 1; constraintsReactionElectricalPropertiesPanel1.gridy = 3;
+			constraintsReactionElectricalPropertiesPanel1.gridwidth = 2;
+			constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
+			constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJDialogContentPane().add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
+
+			// Annotation
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 4;
+			gbc.insets = new java.awt.Insets(4, 10, 4, 4);
+			gbc.anchor = GridBagConstraints.NORTHEAST;
+			JLabel label = new JLabel("Annotatation");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			getJDialogContentPane().add(label, gbc);
+			
+			annotationTextArea = new javax.swing.JTextArea();
+			annotationTextArea.setLineWrap(true);
+			annotationTextArea.setWrapStyleWord(true);
+			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; gbc.gridy = 4;
+			gbc.gridwidth = 2;
+			gbc.weightx = 1.0;
+			gbc.weighty = 0.1;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new java.awt.Insets(5, 5, 5, 10);
+			getJDialogContentPane().add(jsp, gbc);
+
+			// Kinetic type
 			java.awt.GridBagConstraints constraintsJLabel8 = new java.awt.GridBagConstraints();
-			constraintsJLabel8.gridx = 0; constraintsJLabel8.gridy = 4;
+			constraintsJLabel8.gridx = 0; constraintsJLabel8.gridy = 5;
 			constraintsJLabel8.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsJLabel8.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(getJLabel8(), constraintsJLabel8);
 
 			java.awt.GridBagConstraints constraintsJComboBox1 = new java.awt.GridBagConstraints();
-			constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = 4;
+			constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = 5;
 			constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJComboBox1.insets = new java.awt.Insets(0, 5, 0, 5);
 			getJDialogContentPane().add(getJComboBox1(), constraintsJComboBox1);
 
 			java.awt.GridBagConstraints constraintsToggleButton = new java.awt.GridBagConstraints();
-			constraintsToggleButton.gridx = 2; constraintsToggleButton.gridy = 4;
+			constraintsToggleButton.gridx = 2; constraintsToggleButton.gridy = 5;
 			constraintsToggleButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsToggleButton.insets = new java.awt.Insets(0, 5, 0, 5);
+			constraintsToggleButton.insets = new java.awt.Insets(5, 5, 5, 10);
 			getJDialogContentPane().add(getToggleButton(), constraintsToggleButton);
 
-			java.awt.GridBagConstraints constraintsShowGlobalParamsButton = new java.awt.GridBagConstraints();
-			constraintsShowGlobalParamsButton.gridx = 1; constraintsShowGlobalParamsButton.gridy = 5;
-	 		constraintsShowGlobalParamsButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsShowGlobalParamsButton.insets = new java.awt.Insets(5, 5, 5, 10);
-			getJDialogContentPane().add(getShowGlobalParamsButton(), constraintsShowGlobalParamsButton);
-
+			// Kinetics Parameters
 			java.awt.GridBagConstraints constraintsKineticsTypeTemplatePanel = new java.awt.GridBagConstraints();
 			constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = 6;
 			constraintsKineticsTypeTemplatePanel.gridwidth = 3;
 			constraintsKineticsTypeTemplatePanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsKineticsTypeTemplatePanel.weightx = 1.0;
 			constraintsKineticsTypeTemplatePanel.weighty = 1.0;
-			constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(4, 10, 4, 10);
 			getJDialogContentPane().add(getKineticsTypeTemplatePanel(), constraintsKineticsTypeTemplatePanel);
-
-			java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
-			constraintsReactionElectricalPropertiesPanel1.gridx = 0; constraintsReactionElectricalPropertiesPanel1.gridy = 3;
-			constraintsReactionElectricalPropertiesPanel1.gridwidth = 3;
-			constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
-			constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
 			
-			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			// close button
+			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = 7;
 			gbc.gridwidth = 3;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(closeButton, gbc);
+			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -675,7 +591,7 @@ private javax.swing.JLabel getJLabel1() {
 		try {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setFont(new java.awt.Font("Arial", 1, 12));
+			ivjJLabel1.setFont(ivjJLabel1.getFont().deriveFont(Font.BOLD));
 			ivjJLabel1.setText("Stoichiometry");
 			// user code begin {1}
 			// user code end
@@ -699,8 +615,8 @@ private javax.swing.JLabel getJLabel2() {
 		try {
 			ivjJLabel2 = new javax.swing.JLabel();
 			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setFont(new java.awt.Font("Arial", 1, 12));
-			ivjJLabel2.setText("Name:");
+			ivjJLabel2.setFont(ivjJLabel2.getFont().deriveFont(Font.BOLD));
+			ivjJLabel2.setText("Name");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -723,8 +639,8 @@ private javax.swing.JLabel getJLabel3() {
 		try {
 			ivjJLabel3 = new javax.swing.JLabel();
 			ivjJLabel3.setName("JLabel3");
-			ivjJLabel3.setFont(new java.awt.Font("Arial", 1, 12));
-			ivjJLabel3.setText("Flux carrier:");
+			ivjJLabel3.setFont(ivjJLabel3.getFont().deriveFont(Font.BOLD));
+			ivjJLabel3.setText("Flux carrier");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -742,37 +658,21 @@ private javax.swing.JLabel getJLabel3() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel4() {
-	if (ivjJLabel4 == null) {
+private javax.swing.JTextField getFluxReactionNameTextField() {
+	if (fluxReactionNameTextField == null) {
 		try {
-			ivjJLabel4 = new javax.swing.JLabel();
-			ivjJLabel4.setName("JLabel4");
-			ivjJLabel4.setText(" ");
-			ivjJLabel4.setForeground(java.awt.Color.black);
-			// user code begin {1}
-			// user code end
+			fluxReactionNameTextField = new javax.swing.JTextField();
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjJLabel4;
+	return fluxReactionNameTextField;
 }
 
-
-/**
- * Return the JLabel5 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel5() {
-	if (ivjJLabel5 == null) {
+private javax.swing.JComboBox getCarrierComboBox() {
+	if (carrierComboBox == null) {
 		try {
-			ivjJLabel5 = new javax.swing.JLabel();
-			ivjJLabel5.setName("JLabel5");
-			ivjJLabel5.setText(" ");
-			ivjJLabel5.setForeground(java.awt.Color.black);
+			carrierComboBox = new javax.swing.JComboBox();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -781,7 +681,7 @@ private javax.swing.JLabel getJLabel5() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJLabel5;
+	return carrierComboBox;
 }
 
 
@@ -796,8 +696,8 @@ private javax.swing.JLabel getJLabel8() {
 			ivjJLabel8 = new javax.swing.JLabel();
 			ivjJLabel8.setName("JLabel8");
 			ivjJLabel8.setAlignmentX(java.awt.Component.RIGHT_ALIGNMENT);
-			ivjJLabel8.setFont(new java.awt.Font("Arial", 1, 12));
-			ivjJLabel8.setText("Kinetic type:");
+			ivjJLabel8.setFont(ivjJLabel8.getFont().deriveFont(Font.BOLD));
+			ivjJLabel8.setText("Kinetic type");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -818,19 +718,8 @@ private javax.swing.JLabel getJLabel8() {
 private javax.swing.JScrollPane getJScrollPane1() {
 	if (ivjJScrollPane1 == null) {
 		try {
-			BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new BevelBorderBean();
-			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjJScrollPane1 = new javax.swing.JScrollPane();
 			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setBorder(ivjLocalBorder);
-
-			java.awt.GridBagConstraints constraintsReactionCanvas1 = new java.awt.GridBagConstraints();
-			constraintsReactionCanvas1.gridx = 1; constraintsReactionCanvas1.gridy = 1;
-			constraintsReactionCanvas1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsReactionCanvas1.weightx = 1.0;
-			constraintsReactionCanvas1.weighty = 1.0;
-			constraintsReactionCanvas1.insets = new java.awt.Insets(2, 2, 2, 2);
 			getJScrollPane1().setViewportView(getReactionCanvas1());
 			// user code begin {1}
 			// user code end
@@ -944,42 +833,6 @@ private ReactionElectricalPropertiesPanel getReactionElectricalPropertiesPanel1(
 	return ivjReactionElectricalPropertiesPanel1;
 }
 
-
-/**
- * Return the JButton1 property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getRenameButton() {
-	if (ivjRenameButton == null) {
-		try {
-			ivjRenameButton = new javax.swing.JButton();
-			ivjRenameButton.setName("RenameButton");
-			ivjRenameButton.setText("Rename");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjRenameButton;
-}
-
-private javax.swing.JButton getShowGlobalParamsButton() {
-	if (ivjShowGlobalParamsButton == null) {
-		try {
-			ivjShowGlobalParamsButton = new javax.swing.JButton();
-			ivjShowGlobalParamsButton.setName("ShowGlobalParamsButton");
-			ivjShowGlobalParamsButton.setText("List of All Global Parameters");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjShowGlobalParamsButton;
-}
-
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -1001,6 +854,9 @@ private void handleException(java.lang.Throwable exception) {
 public void init(FluxReaction fluxReaction, Model model) {
 	setFluxReaction1(fluxReaction);
 	setModel1(model);
+	refreshAnnotationTextField();
+	refreshNameTextField();
+	refreshCarrierComboBox();
 }
 
 
@@ -1012,14 +868,12 @@ public void init(FluxReaction fluxReaction, Model model) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getRenameButton().addActionListener(ivjEventHandler);
-	getShowGlobalParamsButton().addActionListener(ivjEventHandler);
-	getChangeButton().addActionListener(ivjEventHandler);
 	getJComboBox1().addActionListener(ivjEventHandler);
-	getJLabel5().addPropertyChangeListener(ivjEventHandler);
-	getJLabel4().addPropertyChangeListener(ivjEventHandler);
+	getFluxReactionNameTextField().addPropertyChangeListener(ivjEventHandler);
 	closeButton.addActionListener(ivjEventHandler);
-	connPtoP4SetTarget();
+	annotationTextArea.addFocusListener(ivjEventHandler);
+	fluxReactionNameTextField.addFocusListener(ivjEventHandler);
+	carrierComboBox.addItemListener(ivjEventHandler);
 	connPtoP1SetTarget();
 }
 
@@ -1034,7 +888,7 @@ private void initialize() {
 		// user code end
 		setName("FluxReactionDialog");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setSize(560, 691);
+		setSize(576, 691);
 		setModal(true);
 		setResizable(true);
 		setContentPane(getJDialogContentPane());
@@ -1088,52 +942,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-
-/**
- * Comment
- */
-private void renameFluxReaction() {
-	try {
-		String newName = null;
-		try{
-			newName = PopupGenerator.showInputDialog(this,"reaction name:",getFluxReaction1().getName());
-		}catch(UserCancelException e){
-			return;
-		}
-		if (newName != null) {
-			getFluxReaction1().setName(newName);
-		}
-	}catch (java.beans.PropertyVetoException e){
-		PopupGenerator.showErrorDialog(this,"Error changing name:\n"+e.getMessage());
-	}
-}
-
-private void showGlobalParameters() {
-	// pop-up a list of global parameters for user to refer to while deciding kinetic parameters
-	ModelParameter[] mps = getKinetics().getReactionStep().getModel().getModelParameters();
-	// set it up as a 2-d array of data
-	String[] colNames = new String[] {"Name","Value","Units"};
-	Vector<String[]> rowsV = new Vector<String[]>();
-	for (int i = 0; i < mps.length; i++) {
-		String[] rows = new String[colNames.length];
-		rows[0] = mps[i].getName();
-		rows[1] = mps[i].getExpression().infix();
-		rows[2] = mps[i].getUnitDefinition().getSymbol();
-		rowsV.add(rows);
-	}
-	String[][] rows = new String[rowsV.size()][];
-	rowsV.copyInto(rows);
-	
-	try {
-		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(this, "List of Global Parameters in Model",
-			colNames, rows, ListSelectionModel.SINGLE_SELECTION);
-	} catch (UserCancelException ex) {
-		// do nothing
-		System.out.println("FluxReaction_Dialog.showGlobalParameters(), user cancelled");
-	}
-}
-
-
 /**
  * Set the fluxCarrier1 to a new value.
  * @param newValue cbit.vcell.model.Species
@@ -1152,7 +960,6 @@ private void setfluxCarrier1(Species newValue) {
 			if (ivjfluxCarrier1 != null) {
 				ivjfluxCarrier1.addPropertyChangeListener(ivjEventHandler);
 			}
-			connPtoP4SetTarget();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1347,5 +1154,24 @@ private JButton getToggleButton() {
 		});
 	}
 	return jToggleButton;
+}
+
+private void refreshAnnotationTextField() {
+	annotationTextArea.setText(getFluxReaction1().getAnnotation());
+	annotationTextArea.setCaretPosition(0);
+}
+
+private void refreshNameTextField() {
+	fluxReactionNameTextField.setText(getFluxReaction1().getName());	
+}
+
+private void refreshCarrierComboBox() {
+	String speciesNames[] = getModel1().getSpeciesNames();
+	DefaultComboBoxModel cbm = new DefaultComboBoxModel();
+	for (String name : speciesNames) {
+		cbm.addElement(name);
+	}
+	carrierComboBox.setModel(cbm);
+	carrierComboBox.setSelectedItem(getfluxCarrier1().getCommonName());	
 }
 }

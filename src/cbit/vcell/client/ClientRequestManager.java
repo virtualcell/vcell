@@ -1605,7 +1605,12 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 	bOpening = true;
 	
 	// start a thread that gets it and updates the GUI by creating a new document desktop
-	String taskName = "Loading Document: '" + documentInfo.getVersion().getName() + "' from " + (documentInfo instanceof XMLInfo?"XML":"database");
+	String taskName = null;
+	if (documentInfo instanceof XMLInfo) {
+		taskName = "Importing XML document";
+	} else {
+		taskName = "Loading document '" + documentInfo.getVersion().getName() + "' from database";
+	}
 	
 	AsynchClientTask task0 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {

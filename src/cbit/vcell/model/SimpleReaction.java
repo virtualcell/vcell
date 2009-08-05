@@ -4,23 +4,25 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
-import java.util.*;
-
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
-import org.vcell.util.document.Version;
+import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.parser.*;
-import cbit.util.*;
+import cbit.vcell.parser.Expression;
 
 
 public class SimpleReaction extends ReactionStep
 {
-public SimpleReaction(Structure structure,org.vcell.util.document.KeyValue key,String name) throws java.beans.PropertyVetoException {
+public SimpleReaction(Structure structure,KeyValue key,String name) throws java.beans.PropertyVetoException {
 	super(structure,key,name);
+	try {
+		setKinetics(new MassActionKinetics(this));
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
 }   
 public SimpleReaction(Structure structure,String name) throws java.beans.PropertyVetoException {
-	super(structure,null,name);
+	this(structure,null,name);
 }   
 public void addProduct(SpeciesContext speciesContext,int stoichiometry) throws Exception {
 
@@ -88,11 +90,7 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
-//	String token = tokens.nextToken(); // read "{"
-//	if (!VCMODL.BeginBlock.equals(token)){
-//		throw new Exception("read '"+token+"', expecting '"+VCMODL.BeginBlock+"'");
-//	}
+public void fromTokens(CommentStringTokenizer tokens, Model model) throws Exception {
 	while (tokens.hasMoreTokens()){
 		String token = tokens.nextToken();
 		if (token==null){
@@ -133,7 +131,7 @@ public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model
 				throw new Exception("unexpected EOF in SimpleReaction");
 			}
 			KineticsDescription kineticsDescription = KineticsDescription.fromVCMLKineticsName(kineticsType);
-			if (kineticsDescription==null){
+			if (kineticsDescription!=null){
 				Kinetics kinetics = kineticsDescription.createKinetics(this);
 				setKinetics(kinetics);
 				getKinetics().fromTokens(tokens);
@@ -223,7 +221,6 @@ public boolean isMembrane() {
  * @return java.lang.String
  */
 public String toString() {
-	// return "SimpleReaction("+getKey()+", "+getName()+", "+getNumReactionParticipants()+" reactParticipants)";
 	return "SimpleReaction@"+Integer.toHexString(hashCode())+"("+getKey()+", "+getName()+", "+getReactionParticipants().length+" reactParticipants, valence="+getChargeCarrierValence()+", physicsOption="+getPhysicsOptions()+")";
 }
 /**

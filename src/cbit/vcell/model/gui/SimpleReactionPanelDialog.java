@@ -223,7 +223,7 @@ private void initialize() {
 		// user code end
 		setName("SimpleReactionPanelDialog");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setSize(576, 631);
+		setSize(576, 600);
 		setContentPane(getJDialogContentPane());
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {

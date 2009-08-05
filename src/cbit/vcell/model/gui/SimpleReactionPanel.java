@@ -1,15 +1,19 @@
 package cbit.vcell.model.gui;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.util.Vector;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyVetoException;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.ListSelectionModel;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 
-import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
@@ -21,14 +25,13 @@ import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.Model.ModelParameter;
 /**
  * Insert the type's description here.
  * Creation date: (7/24/2002 2:30:19 PM)
  * @author: Anuradha Lakshminarayana
  */
 public class SimpleReactionPanel extends javax.swing.JPanel {
-	private cbit.vcell.model.SimpleReaction fieldSimpleReaction = null;
+	private SimpleReaction fieldSimpleReaction = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimpleReaction ivjTornOffSimpleReaction = null;
@@ -36,8 +39,7 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 	private ReactionCanvas ivjReactionCanvas = null;
 	private javax.swing.JLabel ivjKineticTypeTitleLabel = null;
 	private javax.swing.JLabel ivjNameLabel = null;
-	private javax.swing.JButton ivjRenameButton = null;
-	private javax.swing.JLabel ivjSimpleReactionNameLabel = null;
+	private javax.swing.JTextField ivjSimpleReactionNameTextField = null;
 	private javax.swing.JLabel ivjStoichiometryLabel = null;
 	private javax.swing.JScrollPane ivjReactionScrollPane = null;
 	private ReactionElectricalPropertiesPanel ivjReactionElectricalPropertiesPanel1 = null;
@@ -45,7 +47,8 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 	private Kinetics ivjKinetics = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private JButton jToggleButton = null;
-	private JButton ivjShowGlobalParamsButton = null;
+	private JTextArea annotationTextArea = null;
+	private JLabel reactoinElectrialPropertiesLabel = null;
 	
 	private final static KineticsDescription[] kineticTypes = {
 		KineticsDescription.MassAction,
@@ -55,27 +58,38 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 		KineticsDescription.HMM_reversible
 	};
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, FocusListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == SimpleReactionPanel.this.getRenameButton()) 
-				connEtoC2(e);
-			if (e.getSource() == SimpleReactionPanel.this.getRenameButton()) 
-				connEtoM14(e);
-			if (e.getSource() == SimpleReactionPanel.this.getShowGlobalParamsButton()) 
-				showGlobalParameters();
 			if (e.getSource() == SimpleReactionPanel.this.getJComboBox1()) 
 				connEtoC3();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == SimpleReactionPanel.this && (evt.getPropertyName().equals("simpleReaction"))) 
+			if (evt.getSource() == SimpleReactionPanel.this && (evt.getPropertyName().equals("simpleReaction"))) {
 				connPtoP1SetTarget();
+				refreshAnnotationTextField();
+				refreshNameTextField();
+			}
 			if (evt.getSource() == SimpleReactionPanel.this.getTornOffSimpleReaction() && (evt.getPropertyName().equals("name"))) 
 				connPtoP2SetTarget();
-			if (evt.getSource() == SimpleReactionPanel.this.getSimpleReactionNameLabel() && (evt.getPropertyName().equals("text"))) 
+			if (evt.getSource() == SimpleReactionPanel.this.getSimpleReactionNameTextField() && (evt.getPropertyName().equals("text"))) 
 				connPtoP2SetSource();
 			if (evt.getSource() == SimpleReactionPanel.this.getTornOffSimpleReaction() && (evt.getPropertyName().equals("kinetics"))) 
 				connEtoM6(evt);
-		};
+		}
+		public void focusGained(FocusEvent e) {
+			
+		}
+		public void focusLost(FocusEvent e) {
+			if (e.getSource() == annotationTextArea) {
+				getSimpleReaction().setAnnotation(annotationTextArea.getText());
+			} else if (e.getSource() == ivjSimpleReactionNameTextField) {
+				try {
+					getSimpleReaction().setName(ivjSimpleReactionNameTextField.getText());
+				} catch (PropertyVetoException e1) {
+					PopupGenerator.showErrorDialog(SimpleReactionPanel.this, "Error changing name:\n"+e1.getMessage());
+				}
+			}
+		}		
 	};
 
 /**
@@ -124,26 +138,6 @@ public void cleanupOnClose() {
 
 
 /**
- * connEtoC2:  (RenameButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimpleReactionPanel.renameSimpleReaction()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.renameSimpleReaction();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC3:  (JComboBox1.action. --> SimpleReactionPanel.updateKineticChoice(Ljava.lang.String;)V)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -186,7 +180,7 @@ private void connEtoC9() {
  * @param value cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.model.SimpleReaction value) {
+private void connEtoM1(SimpleReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -203,31 +197,11 @@ private void connEtoM1(cbit.vcell.model.SimpleReaction value) {
 }
 
 /**
- * connEtoM14:  (RenameButton.action.actionPerformed(java.awt.event.ActionEvent) --> TornOffSimpleReaction.name)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM14(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getTornOffSimpleReaction().setName(getSimpleReactionNameLabel().getText());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoM15:  (Kinetics.this --> ReactionElectricalPropertiesPanel1.kinetics)
  * @param value cbit.vcell.model.Kinetics
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM15(cbit.vcell.model.Kinetics value) {
+private void connEtoM15(Kinetics value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -247,11 +221,13 @@ private void connEtoM15(cbit.vcell.model.Kinetics value) {
  * @param value cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM16(cbit.vcell.model.SimpleReaction value) {
+private void connEtoM16(SimpleReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
-		getReactionElectricalPropertiesPanel1().setVisible(this.getElectricalPropertiesVisible(getTornOffSimpleReaction()));
+		boolean electricalPropertiesVisible = this.getElectricalPropertiesVisible(getTornOffSimpleReaction());
+		getReactionElectricalPropertiesPanel1().setVisible(electricalPropertiesVisible);
+		getReactionElectricalPropertiesLabel().setVisible(electricalPropertiesVisible);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -267,7 +243,7 @@ private void connEtoM16(cbit.vcell.model.SimpleReaction value) {
  * @param value cbit.vcell.model.Kinetics
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.model.Kinetics value) {
+private void connEtoM2(Kinetics value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -287,7 +263,7 @@ private void connEtoM2(cbit.vcell.model.Kinetics value) {
  * @param value cbit.vcell.model.Kinetics
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.model.Kinetics value) {
+private void connEtoM3(Kinetics value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -329,7 +305,7 @@ private void connEtoM6(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(cbit.vcell.model.SimpleReaction value) {
+private void connEtoM7(SimpleReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -350,7 +326,7 @@ private void connEtoM7(cbit.vcell.model.SimpleReaction value) {
  * @param value cbit.vcell.model.Kinetics
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.model.Kinetics value) {
+private void connEtoM8(Kinetics value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -431,7 +407,7 @@ private void connPtoP2SetSource() {
 			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getTornOffSimpleReaction() != null)) {
-				getTornOffSimpleReaction().setName(getSimpleReactionNameLabel().getText());
+				getTornOffSimpleReaction().setName(getSimpleReactionNameTextField().getText());
 			}
 			// user code begin {2}
 			// user code end
@@ -458,7 +434,7 @@ private void connPtoP2SetTarget() {
 			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getTornOffSimpleReaction() != null)) {
-				getSimpleReactionNameLabel().setText(getTornOffSimpleReaction().getName());
+				getSimpleReactionNameTextField().setText(getTornOffSimpleReaction().getName());
 			}
 			// user code begin {2}
 			// user code end
@@ -563,7 +539,7 @@ private javax.swing.JComboBox getJComboBox1() {
  * @return cbit.vcell.model.Kinetics
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.model.Kinetics getKinetics() {
+private Kinetics getKinetics() {
 	// user code begin {1}
 	// user code end
 	return ivjKinetics;
@@ -578,7 +554,7 @@ private cbit.vcell.model.Kinetics getKinetics() {
 private KineticsTypeTemplatePanel getKineticsTypeTemplatePanel() {
 	if (ivjKineticsTypeTemplatePanel == null) {
 		try {
-			ivjKineticsTypeTemplatePanel = new cbit.vcell.model.gui.KineticsTypeTemplatePanel();
+			ivjKineticsTypeTemplatePanel = new KineticsTypeTemplatePanel();
 			ivjKineticsTypeTemplatePanel.setName("KineticsTypeTemplatePanel");
 			// user code begin {1}
 			// user code end
@@ -613,8 +589,9 @@ private javax.swing.JLabel getKineticTypeTitleLabel() {
 		try {
 			ivjKineticTypeTitleLabel = new javax.swing.JLabel();
 			ivjKineticTypeTitleLabel.setName("KineticTypeTitleLabel");
-			ivjKineticTypeTitleLabel.setFont(new java.awt.Font("Arial", 1, 12));
-			ivjKineticTypeTitleLabel.setText("Kinetic type:");
+			ivjKineticTypeTitleLabel.setFont(ivjKineticTypeTitleLabel.getFont().deriveFont(Font.BOLD));
+//			ivjKineticTypeTitleLabel.setFont(new java.awt.Font("Arial", 1, 12));
+			ivjKineticTypeTitleLabel.setText("Kinetic type");
 			ivjKineticTypeTitleLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			ivjKineticTypeTitleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 			// user code begin {1}
@@ -638,10 +615,10 @@ private javax.swing.JLabel getNameLabel() {
 		try {
 			ivjNameLabel = new javax.swing.JLabel();
 			ivjNameLabel.setName("NameLabel");
-			ivjNameLabel.setFont(new java.awt.Font("Arial", 1, 12));
-			ivjNameLabel.setText("Name:");
+			ivjNameLabel.setFont(ivjNameLabel.getFont().deriveFont(Font.BOLD));
+//			ivjNameLabel.setFont(new java.awt.Font("Arial", 1, 12));
+			ivjNameLabel.setText("Name");
 			ivjNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			ivjNameLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -661,9 +638,9 @@ private javax.swing.JLabel getNameLabel() {
 private ReactionCanvas getReactionCanvas() {
 	if (ivjReactionCanvas == null) {
 		try {
-			ivjReactionCanvas = new cbit.vcell.model.gui.ReactionCanvas();
+			ivjReactionCanvas = new ReactionCanvas();
 			ivjReactionCanvas.setName("ReactionCanvas");
-			ivjReactionCanvas.setBounds(0, 0, 359, 117);
+//			ivjReactionCanvas.setBounds(0, 0, 359, 117);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -683,7 +660,7 @@ private ReactionCanvas getReactionCanvas() {
 private ReactionElectricalPropertiesPanel getReactionElectricalPropertiesPanel1() {
 	if (ivjReactionElectricalPropertiesPanel1 == null) {
 		try {
-			ivjReactionElectricalPropertiesPanel1 = new cbit.vcell.model.gui.ReactionElectricalPropertiesPanel();
+			ivjReactionElectricalPropertiesPanel1 = new ReactionElectricalPropertiesPanel();
 			ivjReactionElectricalPropertiesPanel1.setName("ReactionElectricalPropertiesPanel1");
 			// user code begin {1}
 			// user code end
@@ -719,48 +696,12 @@ private javax.swing.JScrollPane getReactionScrollPane() {
 	return ivjReactionScrollPane;
 }
 
-
-/**
- * Return the JButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getRenameButton() {
-	if (ivjRenameButton == null) {
-		try {
-			ivjRenameButton = new javax.swing.JButton();
-			ivjRenameButton.setName("RenameButton");
-			ivjRenameButton.setText("Rename");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjRenameButton;
-}
-
-private javax.swing.JButton getShowGlobalParamsButton() {
-	if (ivjShowGlobalParamsButton == null) {
-		try {
-			ivjShowGlobalParamsButton = new javax.swing.JButton();
-			ivjShowGlobalParamsButton.setName("ShowGlobalParamsButton");
-			ivjShowGlobalParamsButton.setText("List of All Global Parameters");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjShowGlobalParamsButton;
-}
-
 /**
  * Gets the simpleReaction property (cbit.vcell.model.SimpleReaction) value.
  * @return The simpleReaction property value.
  * @see #setSimpleReaction
  */
-public cbit.vcell.model.SimpleReaction getSimpleReaction() {
+public SimpleReaction getSimpleReaction() {
 	return fieldSimpleReaction;
 }
 
@@ -770,13 +711,10 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getSimpleReactionNameLabel() {
-	if (ivjSimpleReactionNameLabel == null) {
+private javax.swing.JTextField getSimpleReactionNameTextField() {
+	if (ivjSimpleReactionNameTextField == null) {
 		try {
-			ivjSimpleReactionNameLabel = new javax.swing.JLabel();
-			ivjSimpleReactionNameLabel.setName("SimpleReactionNameLabel");
-			ivjSimpleReactionNameLabel.setText(" ");
-			ivjSimpleReactionNameLabel.setForeground(java.awt.Color.black);
+			ivjSimpleReactionNameTextField = new javax.swing.JTextField();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -785,7 +723,7 @@ private javax.swing.JLabel getSimpleReactionNameLabel() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjSimpleReactionNameLabel;
+	return ivjSimpleReactionNameTextField;
 }
 
 /**
@@ -798,7 +736,7 @@ private javax.swing.JLabel getStoichiometryLabel() {
 		try {
 			ivjStoichiometryLabel = new javax.swing.JLabel();
 			ivjStoichiometryLabel.setName("StoichiometryLabel");
-			ivjStoichiometryLabel.setFont(new java.awt.Font("Arial", 1, 12));
+			ivjStoichiometryLabel.setFont(ivjStoichiometryLabel.getFont().deriveFont(Font.BOLD));
 			ivjStoichiometryLabel.setText("Stoichiometry");
 			// user code begin {1}
 			// user code end
@@ -816,7 +754,7 @@ private javax.swing.JLabel getStoichiometryLabel() {
  * @return cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.model.SimpleReaction getTornOffSimpleReaction() {
+private SimpleReaction getTornOffSimpleReaction() {
 	// user code begin {1}
 	// user code end
 	return ivjTornOffSimpleReaction;
@@ -844,10 +782,9 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
-	getSimpleReactionNameLabel().addPropertyChangeListener(ivjEventHandler);
-	getRenameButton().addActionListener(ivjEventHandler);
-	getShowGlobalParamsButton().addActionListener(ivjEventHandler);
 	getJComboBox1().addActionListener(ivjEventHandler);
+	annotationTextArea.addFocusListener(ivjEventHandler);
+	getSimpleReactionNameTextField().addFocusListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 }
@@ -860,24 +797,31 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 3;
 		setName("SimpleReactionPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(461, 600);
 
+		// stoichiometry
 		java.awt.GridBagConstraints constraintsStoichiometryLabel = new java.awt.GridBagConstraints();
 		constraintsStoichiometryLabel.gridx = 0; constraintsStoichiometryLabel.gridy = 0;
 		constraintsStoichiometryLabel.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsStoichiometryLabel.insets = new java.awt.Insets(4, 10, 4, 0);
 		add(getStoichiometryLabel(), constraintsStoichiometryLabel);
 
+		java.awt.GridBagConstraints constraintsReactionScrollPane = new java.awt.GridBagConstraints();
+		constraintsReactionScrollPane.gridx = 1; constraintsReactionScrollPane.gridy = 0;
+		constraintsReactionScrollPane.gridwidth = 2;
+		constraintsReactionScrollPane.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsReactionScrollPane.weightx = 1.0;
+		constraintsReactionScrollPane.weighty = 0.5;
+		constraintsReactionScrollPane.insets = new java.awt.Insets(4, 4, 4, 10);
+		add(getReactionScrollPane(), constraintsReactionScrollPane);
+
+		// Name
 		java.awt.GridBagConstraints constraintsNameLabel = new java.awt.GridBagConstraints();
 		constraintsNameLabel.gridx = 0; constraintsNameLabel.gridy = 1;
 		constraintsNameLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsNameLabel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsNameLabel.insets = new java.awt.Insets(4, 4, 0, 4);
+		constraintsNameLabel.insets = new java.awt.Insets(4, 10, 4, 4);
 		add(getNameLabel(), constraintsNameLabel);
 
 		java.awt.GridBagConstraints constraintsSimpleReactionNameLabel = new java.awt.GridBagConstraints();
@@ -885,27 +829,68 @@ private void initialize() {
 		constraintsSimpleReactionNameLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsSimpleReactionNameLabel.weightx = 1.0;
 		constraintsSimpleReactionNameLabel.insets = new java.awt.Insets(4, 5, 4, 5);
-		add(getSimpleReactionNameLabel(), constraintsSimpleReactionNameLabel);
+		add(getSimpleReactionNameTextField(), constraintsSimpleReactionNameLabel);
 
-		java.awt.GridBagConstraints constraintsRenameButton = new java.awt.GridBagConstraints();
-		constraintsRenameButton.gridx = 2; constraintsRenameButton.gridy = 1;
-		constraintsRenameButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsRenameButton.insets = new java.awt.Insets(5, 5, 5, 10);
-		add(getRenameButton(), constraintsRenameButton);
-
+		// Electrical Properties
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; gbc.gridy = 2;
+		gbc.anchor = java.awt.GridBagConstraints.EAST;
+		gbc.insets = new java.awt.Insets(4, 10, 4, 4);
+		add(getReactionElectricalPropertiesLabel(), gbc);
+		
+		java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
+		constraintsReactionElectricalPropertiesPanel1.gridx = 1; constraintsReactionElectricalPropertiesPanel1.gridy = 2;
+		constraintsReactionElectricalPropertiesPanel1.gridwidth = 2;
+		constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
+		constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
+		
+		// Annotation
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; gbc.gridy = 3;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.NORTHEAST;
+		JLabel label = new JLabel("Annotatation");
+		label.setHorizontalAlignment(SwingConstants.RIGHT);
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(label, gbc);
+		
+		annotationTextArea = new javax.swing.JTextArea();
+		annotationTextArea.setLineWrap(true);
+		annotationTextArea.setWrapStyleWord(true);
+		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; gbc.gridy = 3;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.1;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new java.awt.Insets(5, 4, 5, 10);
+		add(jsp, gbc);
+		
+		// Kinetic Type
 		java.awt.GridBagConstraints constraintsKineticTypeTitleLabel = new java.awt.GridBagConstraints();
-		constraintsKineticTypeTitleLabel.gridx = 0; constraintsKineticTypeTitleLabel.gridy = 3;
+		constraintsKineticTypeTitleLabel.gridx = 0; constraintsKineticTypeTitleLabel.gridy = 4;
 		constraintsKineticTypeTitleLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsKineticTypeTitleLabel.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsKineticTypeTitleLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getKineticTypeTitleLabel(), constraintsKineticTypeTitleLabel);
 
-		java.awt.GridBagConstraints constraintsShowGlobalParamsButton = new java.awt.GridBagConstraints();
-		constraintsShowGlobalParamsButton.gridx = 1; constraintsShowGlobalParamsButton.gridy = 4;
- 		constraintsShowGlobalParamsButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsShowGlobalParamsButton.insets = new java.awt.Insets(5, 5, 5, 10);
-		add(getShowGlobalParamsButton(), constraintsShowGlobalParamsButton);
-
+		java.awt.GridBagConstraints constraintsJComboBox1 = new java.awt.GridBagConstraints();
+		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = 4;
+		constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJComboBox1.weightx = 1.0;
+		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJComboBox1(), constraintsJComboBox1);
+		
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 4;
+		gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
+		this.add(getJToggleButton(), gridBagConstraints);
+		
+		// Kinetic Parameters
 		java.awt.GridBagConstraints constraintsKineticsTypeTemplatePanel = new java.awt.GridBagConstraints();
 		constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = 5;
 		constraintsKineticsTypeTemplatePanel.gridwidth = 3;
@@ -913,33 +898,9 @@ private void initialize() {
 		constraintsKineticsTypeTemplatePanel.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsKineticsTypeTemplatePanel.weightx = 1.0;
 		constraintsKineticsTypeTemplatePanel.weighty = 1.0;
-		constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(5, 10, 5, 10);
 		add(getKineticsTypeTemplatePanel(), constraintsKineticsTypeTemplatePanel);
 
-		java.awt.GridBagConstraints constraintsReactionScrollPane = new java.awt.GridBagConstraints();
-		constraintsReactionScrollPane.gridx = 1; constraintsReactionScrollPane.gridy = 0;
-		constraintsReactionScrollPane.gridwidth = 2;
-		constraintsReactionScrollPane.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsReactionScrollPane.weightx = 1.0;
-		constraintsReactionScrollPane.weighty = 1.0;
-		constraintsReactionScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getReactionScrollPane(), constraintsReactionScrollPane);
-
-		java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
-		constraintsReactionElectricalPropertiesPanel1.gridx = 0; constraintsReactionElectricalPropertiesPanel1.gridy = 2;
-		constraintsReactionElectricalPropertiesPanel1.gridwidth = 3;
-		constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
-		constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
-
-		java.awt.GridBagConstraints constraintsJComboBox1 = new java.awt.GridBagConstraints();
-		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = 3;
-		constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJComboBox1.weightx = 1.0;
-		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJComboBox1(), constraintsJComboBox1);
-		this.add(getJToggleButton(), gridBagConstraints);
 		initConnections();
 		connEtoC9();
 	} catch (java.lang.Throwable ivjExc) {
@@ -947,6 +908,14 @@ private void initialize() {
 	}
 	// user code begin {2}
 	// user code end
+}
+
+private JLabel getReactionElectricalPropertiesLabel() {
+	if (reactoinElectrialPropertiesLabel == null) {
+		reactoinElectrialPropertiesLabel = new JLabel("<html>&nbsp;&nbsp;Electrical<br>Properties</html>");
+		reactoinElectrialPropertiesLabel.setFont(reactoinElectrialPropertiesLabel.getFont().deriveFont(Font.BOLD));
+	}
+	return reactoinElectrialPropertiesLabel;
 }
 
 /**
@@ -988,51 +957,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-
-/**
- * Comment
- */
-private void renameSimpleReaction() {
-	try {
-		String newName = null;
-		try{
-			newName = PopupGenerator.showInputDialog(this,"reaction name:",getSimpleReaction().getName());
-		}catch(UserCancelException e){
-			return;
-		}
-
-		if (newName != null) {
-			getSimpleReaction().setName(newName);
-		}
-	}catch (java.beans.PropertyVetoException e){
-		PopupGenerator.showErrorDialog(this, "Error changing name:\n"+e.getMessage());
-	}
-}
-
-private void showGlobalParameters() {
-	// pop-up a list of global parameters for user to refer to while deciding kinetic parameters
-	ModelParameter[] mps = getKinetics().getReactionStep().getModel().getModelParameters();
-	// set it up as a 2-d array of data 
-	String[] colNames = new String[] {"Name","Value","Units"};
-	Vector<String[]> rowsV = new Vector<String[]>();
-	for (int i = 0; i < mps.length; i++) {
-		String[] rows = new String[colNames.length];
-		rows[0] = mps[i].getName();
-		rows[1] = mps[i].getExpression().infix();
-		rows[2] = mps[i].getUnitDefinition().getSymbol();
-		rowsV.add(rows);
-	}
-	String[][] rows = new String[rowsV.size()][];
-	rowsV.copyInto(rows);
-	
-	try {
-		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(this, "List of Global Parameters in Model",
-				colNames, rows, ListSelectionModel.SINGLE_SELECTION);
-	} catch (UserCancelException ex) {
-		System.out.println("SimpleReactionPanel.showGlobalParameters(), user cancelled");
-	}
-}
-
 /**
  * Comment
  */
@@ -1050,7 +974,7 @@ public void setChargeCarrierValence_Exception(java.lang.Throwable e) {
  * @param newValue cbit.vcell.model.Kinetics
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setKinetics(cbit.vcell.model.Kinetics newValue) {
+private void setKinetics(Kinetics newValue) {
 	if (ivjKinetics != newValue) {
 		try {
 			ivjKinetics = newValue;
@@ -1074,8 +998,8 @@ private void setKinetics(cbit.vcell.model.Kinetics newValue) {
  * @param simpleReaction The new value for the property.
  * @see #getSimpleReaction
  */
-public void setSimpleReaction(cbit.vcell.model.SimpleReaction simpleReaction) {
-	cbit.vcell.model.SimpleReaction oldValue = fieldSimpleReaction;
+public void setSimpleReaction(SimpleReaction simpleReaction) {
+	SimpleReaction oldValue = fieldSimpleReaction;
 	fieldSimpleReaction = simpleReaction;
 	firePropertyChange("simpleReaction", oldValue, simpleReaction);
 }
@@ -1086,10 +1010,10 @@ public void setSimpleReaction(cbit.vcell.model.SimpleReaction simpleReaction) {
  * @param newValue cbit.vcell.model.SimpleReaction
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffSimpleReaction(cbit.vcell.model.SimpleReaction newValue) {
+private void setTornOffSimpleReaction(SimpleReaction newValue) {
 	if (ivjTornOffSimpleReaction != newValue) {
 		try {
-			cbit.vcell.model.SimpleReaction oldValue = getTornOffSimpleReaction();
+			SimpleReaction oldValue = getTornOffSimpleReaction();
 			/* Stop listening for events from the current object */
 			if (ivjTornOffSimpleReaction != null) {
 				ivjTornOffSimpleReaction.removePropertyChangeListener(ivjEventHandler);
@@ -1217,5 +1141,15 @@ private JButton getJToggleButton() {
 		});
 	}
 	return jToggleButton;
+}
+
+private void refreshAnnotationTextField() {
+	annotationTextArea.setText(getSimpleReaction().getAnnotation());
+	annotationTextArea.setCaretPosition(0);
+}
+
+
+private void refreshNameTextField() {
+	getSimpleReactionNameTextField().setText(getSimpleReaction().getName());	
 }
 }
