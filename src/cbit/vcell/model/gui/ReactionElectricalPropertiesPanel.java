@@ -575,21 +575,20 @@ private void initialize() {
 		// user code end
 		setName("ReactionElectricalPropertiesPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(425, 72);
 
 		java.awt.GridBagConstraints constraintsMolecularCheckbox = new java.awt.GridBagConstraints();
 		constraintsMolecularCheckbox.gridx = 0; constraintsMolecularCheckbox.gridy = 0;
-		constraintsMolecularCheckbox.fill = java.awt.GridBagConstraints.VERTICAL;
+		constraintsMolecularCheckbox.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsMolecularCheckbox.anchor = java.awt.GridBagConstraints.WEST;
 		constraintsMolecularCheckbox.weightx = 1.0;
-		constraintsMolecularCheckbox.insets = new java.awt.Insets(4, 8, 4, 4);
+		constraintsMolecularCheckbox.insets = new java.awt.Insets(4, 0, 4, 4);
 		add(getMolecularCheckbox(), constraintsMolecularCheckbox);
 
 		java.awt.GridBagConstraints constraintsJPanel = new java.awt.GridBagConstraints();
-		constraintsJPanel.gridx = 0; constraintsJPanel.gridy = 1;
-constraintsJPanel.gridheight = 2;
+		constraintsJPanel.gridx = 1; constraintsJPanel.gridy = 0;
 		constraintsJPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel.weightx = 1.0;
+		constraintsJPanel.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanel(), constraintsJPanel);
 		initConnections();
