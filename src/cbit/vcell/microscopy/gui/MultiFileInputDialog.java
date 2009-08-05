@@ -167,14 +167,14 @@ public class MultiFileInputDialog extends JDialog implements ActionListener
 					try{
 					VirtualFrapMainFrame.frapStudyPanel.load(files, new FRAPStudyPanel.MultiFileImportInfo(tSeries_radioButton.isSelected(), tInterval, zInterval));
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog(e.getMessage());
+						PopupGenerator.showErrorDialog(this, e.getMessage());
 					}
 				}
 				this.setVisible(false);
 			}
 			else
 			{
-				DialogUtils.showErrorDialog("Error: " + checkValidity());
+				DialogUtils.showErrorDialog(this, "Error: " + checkValidity());
 			}
 		}
 		else if(evt.getSource() instanceof JButton && ((JButton)evt.getSource()).equals(cancelButton))

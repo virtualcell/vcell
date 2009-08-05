@@ -361,7 +361,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		Parameter[] params = getCurrentParameters();
 		if (params == null)
 		{
-			DialogUtils.showErrorDialog("Some of the editable parameters are empty or in illegal forms!");
+			DialogUtils.showErrorDialog(this, "Some of the editable parameters are empty or in illegal forms!");
 			throw new RuntimeException("Some of the editable parameters are empty or in illegal forms!");
 		}
 		if(params.length ==5)
@@ -697,7 +697,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 				}
 			}catch(NumberFormatException e)
 			{
-				DialogUtils.showErrorDialog("Free particle/complex fraction is empty or in illegal form, please correct it.");
+				DialogUtils.showErrorDialog(this, "Free particle/complex fraction is empty or in illegal form, please correct it.");
 			}
 		}
 	}
@@ -708,22 +708,22 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		prebleachAvg = 1;
 		if(freeFractionTextField == null || freeFractionTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Free particle fraction is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Free particle fraction is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(complexFractionTextField == null || complexFractionTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Complex fraction is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Complex fraction is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(onRateTextField == null || onRateTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Reaction on rate is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Reaction on rate is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(offRateTextField == null || offRateTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Reaction off rate is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Reaction off rate is required to calculate Binding Site's concentration!");
 			return;
 		}
 		double freeFrac = Double.parseDouble(freeFractionTextField.getText());
@@ -742,22 +742,22 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		prebleachAvg = 1;
 		if(freeFractionTextField == null || freeFractionTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Free particle fraction is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Free particle fraction is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(complexFractionTextField == null || complexFractionTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Complex fraction is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Complex fraction is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(bsConcentrationTextField == null || bsConcentrationTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Binding site's concentration is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Binding site's concentration is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(offRateTextField == null || offRateTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Reaction off rate is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Reaction off rate is required to calculate Binding Site's concentration!");
 			return;
 		}
 		double freeFrac = Double.parseDouble(freeFractionTextField.getText());
@@ -776,22 +776,22 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		prebleachAvg = 1;
 		if(freeFractionTextField == null || freeFractionTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Free particle fraction is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Free particle fraction is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(complexFractionTextField == null || complexFractionTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Complex fraction is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Complex fraction is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(bsConcentrationTextField == null || bsConcentrationTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Binding site's concentration is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Binding site's concentration is required to calculate Binding Site's concentration!");
 			return;
 		}
 		if(onRateTextField == null || onRateTextField.getText().equals(""))
 		{
-			DialogUtils.showErrorDialog("Reaction on rate is required to calculate Binding Site's concentration!");
+			DialogUtils.showErrorDialog(this, "Reaction on rate is required to calculate Binding Site's concentration!");
 			return;
 		}
 		double freeFrac = Double.parseDouble(freeFractionTextField.getText());

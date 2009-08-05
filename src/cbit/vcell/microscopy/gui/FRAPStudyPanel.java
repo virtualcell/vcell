@@ -777,7 +777,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						try{
 							checkROIExsitence();
 						}catch(Exception ex){
-							DialogUtils.showErrorDialog(ex.getMessage());
+							DialogUtils.showErrorDialog(this, ex.getMessage());
 							return false;
 						}
 					}
@@ -790,7 +790,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_INI_PARAMS);
 					if(!getFRAPParametersPanel().checkIniParameters())
 					{
-						DialogUtils.showErrorDialog("Some of Initial Parameters are empty or in illegal forms.\n Please correct them.");
+						DialogUtils.showErrorDialog(this, "Some of Initial Parameters are empty or in illegal forms.\n Please correct them.");
 						return false;
 					}
 					checkStartIndexforRecovery();
@@ -1049,7 +1049,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //				new AsynchClientTask[] {saveTask}, false);
 		}else{
 			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-				DialogUtils.showErrorDialog("No FRAP Data exists to save");
+				DialogUtils.showErrorDialog(FRAPStudyPanel.this, "No FRAP Data exists to save");
 			}});
 		}
 	}
@@ -1087,7 +1087,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //				new AsynchClientTask[] {saveTask}, false);
 		}else{
 			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-				DialogUtils.showErrorDialog("No FRAP Data exists to save");
+				DialogUtils.showErrorDialog(FRAPStudyPanel.this, "No FRAP Data exists to save");
 			}});
 		}
 		return true;
@@ -1236,21 +1236,21 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getFRAPParametersPanel().insertFRAPIniModelParametersIntoFRAPStudy(getFrapStudy());
 		}catch(Exception e)
 		{
-			DialogUtils.showErrorDialog("Illegal inputs in Initial FRAP Model Parameters. \nPlease correct them before saving.");
+			DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Illegal inputs in Initial FRAP Model Parameters. \nPlease correct them before saving.");
 			return false; 
 		}
 		try{
 			getResultsSummaryPanel().insertPureDiffusionParametersIntoFRAPStudy(getFrapStudy());
 		}catch(Exception e)
 		{
-			DialogUtils.showErrorDialog("Illegal inputs in pure diffusion panel of Adjust Parameters tab . \nPlease correct them before saving.");
+			DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Illegal inputs in pure diffusion panel of Adjust Parameters tab . \nPlease correct them before saving.");
 			return false; 
 		}
 		try{
 			getResultsSummaryPanel().insertReactionDiffusionParametersIntoFRAPStudy(getFrapStudy());
 		}catch(Exception e)
 		{
-			DialogUtils.showErrorDialog("Illegal inputs in reaction diffusion panel of Adjust Parameters tab . \nPlease correct them before saving.");
+			DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Illegal inputs in reaction diffusion panel of Adjust Parameters tab . \nPlease correct them before saving.");
 			return false; 
 		}
 		return true;
@@ -1454,7 +1454,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					e.printStackTrace();
 					try{
 						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							DialogUtils.showErrorDialog("Failed loading " + inFileDescription+":\n"+e.getMessage());
+							DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Failed loading " + inFileDescription+":\n"+e.getMessage());
 						}});
 						}catch(Exception e2){
 							e2.printStackTrace();
@@ -1794,7 +1794,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					e.printStackTrace();
 					try{
 					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-						DialogUtils.showErrorDialog("Error running simulation/spatial analysis:\n"+e.getMessage());
+						DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running simulation/spatial analysis:\n"+e.getMessage());
 					}});
 					}catch(Exception e2){
 						e2.printStackTrace();
@@ -2443,7 +2443,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				e.printStackTrace();
 				try{
 				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-					DialogUtils.showErrorDialog("Error running spatial analysis:\n"+e.getMessage());
+					DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running spatial analysis:\n"+e.getMessage());
 				}});
 				}catch(Exception e2){
 					e2.printStackTrace();
@@ -2460,7 +2460,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			try {
 				runReactionDiffusionModel(newParameters, false);
 			} catch (Exception e) {
-				DialogUtils.showErrorDialog("Error occurred when running reaction diffusion simulation:" + e.getMessage());
+				DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error occurred when running reaction diffusion simulation:" + e.getMessage());
 				return;
 			}
 			return;
@@ -2514,13 +2514,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				try {
 					crop((Rectangle) evt.getNewValue());
 				} catch (Exception e) {
-					PopupGenerator.showErrorDialog("Error Cropping:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+e.getMessage());
 				}
 			}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOROI_PROPERTY)){
 				if(!getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()) &&
 					getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero()
 					){
-					DialogUtils.showInfoDialog("Define '"+OverlayEditorPanelJAI.WHOLE_CELL_AREA_TEXT+"'"+
+					DialogUtils.showInfoDialog(FRAPStudyPanel.this,"Define '"+OverlayEditorPanelJAI.WHOLE_CELL_AREA_TEXT+"'"+
 							" ROI using ROI Tools or '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"'"+
 							" before using '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"' to define Bleach or Backgroun ROIs");
 					return;
@@ -2774,7 +2774,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							e.printStackTrace();
 							try{
 							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-								DialogUtils.showErrorDialog("Error running simulation/spatial analysis:\n"+e.getMessage());
+								DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running simulation/spatial analysis:\n"+e.getMessage());
 							}});
 							}catch(Exception e2){
 								e2.printStackTrace();

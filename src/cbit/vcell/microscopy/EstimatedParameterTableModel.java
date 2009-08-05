@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy;
 
+import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
@@ -34,18 +35,15 @@ public class EstimatedParameterTableModel extends javax.swing.table.AbstractTabl
 	private String LABELS[] = { "Name", "Description", "Value", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Vector<EstimatedParameter> estParams = new Vector<EstimatedParameter>();
+	private Component errorDialogParent;
 		
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public EstimatedParameterTableModel() {
+public EstimatedParameterTableModel(Component errorDialogParent) {
 	super();
 	addPropertyChangeListener(this);
-}
-
-public EstimatedParameterTableModel(JTable argParentComponent) {
-	super();
-	addPropertyChangeListener(this);
+	this.errorDialogParent = errorDialogParent;
 }
 
 /**
@@ -224,7 +222,7 @@ public void setValueAt(Object aValue, int row, int col) {
 				}
 				else
 				{
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter name:\n" + aValue.toString());
+					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Error changing parameter name:\n" + aValue.toString());
 				}
 				break;
 			}
@@ -239,7 +237,7 @@ public void setValueAt(Object aValue, int row, int col) {
 				}
 				else
 				{
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter description:\n" + aValue.toString());
+					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Error changing parameter description:\n" + aValue.toString());
 				}
 				break;
 			}
@@ -254,7 +252,7 @@ public void setValueAt(Object aValue, int row, int col) {
 				}
 				else
 				{
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter value:\n" + aValue.toString());
+					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Error changing parameter value:\n" + aValue.toString());
 				}
 				break;
 			}
@@ -271,7 +269,7 @@ public void setValueAt(Object aValue, int row, int col) {
 					fireTableRowsUpdated(row,row);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Expression error:\n"+e.getMessage());
+					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Expression error:\n"+e.getMessage());
 				}
 				break;
 			}

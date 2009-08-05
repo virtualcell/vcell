@@ -242,7 +242,7 @@ private void startPrivate(final boolean bKeepOnTop) {
 				AsynchProgressPopup_orig.super.start();
 			}			
 			if(bKeepOnTop){
-				ZEnforcer.showModalDialogOnTop(getDialog());
+				ZEnforcer.showModalDialogOnTop(getDialog(),requester);
 			}else{
 				getDialog().setVisible(true);
 			}

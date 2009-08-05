@@ -102,7 +102,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 						try {
 							plotROI();
 						} catch (Exception e) {
-							PopupGenerator.showErrorDialog("Error Time Plot ROI:\n"+e.getMessage());
+							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Time Plot ROI:\n"+e.getMessage());
 						}
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 						try {
@@ -111,7 +111,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(
 									getFrapStudy().getFrapData().getRoi(roiName));
 						} catch (Exception e) {
-							PopupGenerator.showErrorDialog("Error Setting Current ROI:\n"+e.getMessage());
+							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
 						}						
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
 						try {
@@ -119,7 +119,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 							getFrapStudy().getFrapData().addReplaceRoi(undoableROI);
 //							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 						} catch (Exception e) {
-							PopupGenerator.showErrorDialog("Error Setting Current ROI:\n"+e.getMessage());
+							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
 						}						
 					}
 				}

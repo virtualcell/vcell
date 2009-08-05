@@ -508,7 +508,7 @@ public class ResultsSummaryPanel extends JPanel {
 			}
 		}catch(Exception e2){
 			e2.printStackTrace();
-			DialogUtils.showErrorDialog("Error graphing Optimizer data "+e2.getMessage());
+			DialogUtils.showErrorDialog(this, "Error graphing Optimizer data "+e2.getMessage());
 		}
 
 	}
@@ -749,7 +749,7 @@ public class ResultsSummaryPanel extends JPanel {
 				Parameter[] params = pureDiffusionPanel.getCurrentParameters();
 				if (params == null)
 				{
-					DialogUtils.showErrorDialog("Pure Diffusion parameters are empty or in illegal forms!");
+					DialogUtils.showErrorDialog(this, "Pure Diffusion parameters are empty or in illegal forms!");
 					return false;
 				}
 				if(reactionDiffusionPanel.isAllTextFieldEmpty() && do_once)
