@@ -21,7 +21,6 @@
 	<classpathentry kind="lib" path="new_activation.jar"/>
 	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="lib" path="new_mail.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/Developer/Eclipse/workspace/VCell IDE/MiriamJavaLib-standalone-20080421.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar" sourcepath="vcellClientThirdParty.jar"/>
 	<classpathentry kind="lib" path="sonic_Client.jar"/>
 	<classpathentry kind="lib" path="sonic_XA.jar"/>
