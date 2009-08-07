@@ -4,15 +4,15 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
+import java.util.Enumeration;
 
-import org.apache.axis.constants.Enum;
-
-import cbit.vcell.geometry.surface.FastSurface;
 import cbit.vcell.mapping.FastSystemAnalyzer;
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.PseudoConstant;
+import cbit.vcell.math.Variable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:57:23 PM)
