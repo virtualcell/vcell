@@ -3,9 +3,14 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
+
+import javax.swing.JViewport;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -206,6 +211,31 @@ private void handleException(Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(this);
 	connPtoP2SetTarget();
+	getJScrollPane1().getViewport().addChangeListener(new ChangeListener() {
+		
+		public void stateChanged(ChangeEvent e) {
+			JViewport jvp = (JViewport) (e.getSource());
+			int vpWidth = jvp.getSize().width;
+			int tableWidth = getScrollPaneTable().getPreferredSize().width;
+			
+			if (vpWidth > tableWidth) {
+				TableColumnModel tcm = getScrollPaneTable().getColumnModel();
+				int total_columns = tcm.getColumnCount();
+				for (int i = 0; i < total_columns; i++)	{
+					if (i != ParameterTableModel.COLUMN_VALUE) {
+						TableColumn column = tcm.getColumn(i);
+						vpWidth = vpWidth - column.getPreferredWidth();
+					}
+				}
+	
+				// expand expression column if the scrollpane is wider than table.
+				TableColumn exprColumn = tcm.getColumn(ParameterTableModel.COLUMN_VALUE);
+				if (vpWidth > exprColumn.getPreferredWidth()) {
+					exprColumn.setPreferredWidth(vpWidth);
+				}
+			}
+		}
+	});
 }
 
 /**

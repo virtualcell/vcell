@@ -135,7 +135,7 @@ public FluxReaction_Dialog(java.awt.Frame owner, boolean modal) {
 }
 
 private void changeFluxCarrier(String selection) {
-	if (selection!=null && !selection.equals(getfluxCarrier1().getCommonName())) {
+	if (selection!=null && (getfluxCarrier1() == null || !selection.equals(getfluxCarrier1().getCommonName()))) {
 		try {
 			Species species = getModel1().getSpecies(selection);
 			//
@@ -1172,6 +1172,11 @@ private void refreshCarrierComboBox() {
 		cbm.addElement(name);
 	}
 	carrierComboBox.setModel(cbm);
-	carrierComboBox.setSelectedItem(getfluxCarrier1().getCommonName());	
+	if (getfluxCarrier1() != null) {
+		carrierComboBox.setSelectedItem(getfluxCarrier1().getCommonName());
+	} else {
+		carrierComboBox.setSelectedIndex(-1);
+		carrierComboBox.setToolTipText("Please select flux carrier");
+	}
 }
 }

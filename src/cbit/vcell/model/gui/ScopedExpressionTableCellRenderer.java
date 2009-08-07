@@ -4,12 +4,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.util.Hashtable;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
-
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.parser.ScopedExpression;
 
@@ -19,8 +21,8 @@ import cbit.vcell.parser.ScopedExpression;
  * @author: Frank Morgan
  */
 public class ScopedExpressionTableCellRenderer implements javax.swing.table.TableCellRenderer {
-	private java.util.Hashtable scopedExpressionImageIconHash = new java.util.Hashtable();//Cache ScopedExpression ImageIcons
-	private java.util.Hashtable scopedExpressionSelectedHash = new java.util.Hashtable();//Cache ScopedExpression Selected
+	private Hashtable<String, ImageIcon> scopedExpressionImageIconHash = new Hashtable<String, ImageIcon>();//Cache ScopedExpression ImageIcons
+	private Hashtable<String, Boolean> scopedExpressionSelectedHash = new Hashtable<String, Boolean>();//Cache ScopedExpression Selected
 	private int scopedExpressionCacheSize = 0;
 	private static final int CACHE_SIZE_LIMIT = 250000;
 	private DefaultTableCellRendererEnhanced stringRenderer = new DefaultTableCellRendererEnhanced();
@@ -84,6 +86,9 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 			targetRows = (int[])targetRows.clone();
 			java.util.Arrays.sort(targetRows);
 		}
+		if (targetRows.length == 0) {
+			return;
+		}
 		if(targetColumns == null){
 			targetColumns = new int[targetTable.getColumnCount()];
 			for(int i=0;i<targetColumns.length;i+= 1){
@@ -115,11 +120,12 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//Set column widths to fit widest component in targetColumns
 		//without making any smaller than preferred
 		//
-		for(int columnIndex = 0;columnIndex < targetTable.getColumnCount();columnIndex+= 1){
-			if((java.util.Arrays.binarySearch(targetColumns,columnIndex) >= 0) &&
-				targetTable.getTableHeader().getColumnModel().getColumn(columnIndex).getPreferredWidth() < maxColumnWidths[columnIndex]){
-				targetTable.getTableHeader().getColumnModel().
-					getColumn(columnIndex).setPreferredWidth(maxColumnWidths[columnIndex]+targetTable.getTableHeader().getColumnModel().getColumnMargin());
+		for (int columnIndex : targetColumns) {
+			TableColumnModel columnModel = targetTable.getTableHeader().getColumnModel();
+			TableColumn column = columnModel.getColumn(columnIndex);
+			// set prefer width if it is expression since the size is computed through image.
+			if (targetTable.getValueAt(0, columnIndex) instanceof ScopedExpression || column.getPreferredWidth() < maxColumnWidths[columnIndex]){
+				column.setPreferredWidth(maxColumnWidths[columnIndex] + columnModel.getColumnMargin());
 			}
 		}
 		
@@ -165,21 +171,24 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 	 */
 public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-	try{
+	try{		
 		if(theTable != null){
-			templateJLabel.setBackground((isSelected?theTable.getSelectionBackground():theTable.getBackground()));
-			templateJLabel.setForeground((isSelected?theTable.getSelectionForeground():theTable.getForeground()));
-			imageRenderer.setBackground((isSelected?theTable.getSelectionBackground():theTable.getBackground()));
-			imageRenderer.setForeground((isSelected?theTable.getSelectionForeground():theTable.getForeground()));
+			Color background = isSelected ? theTable.getSelectionBackground() : theTable.getBackground();
+			Color foreground = isSelected ? theTable.getSelectionForeground() : theTable.getForeground();
+			templateJLabel.setBackground(background);
+			templateJLabel.setForeground(foreground);
+			imageRenderer.setBackground(background);
+			imageRenderer.setForeground(foreground);
 			
 			// set cell color to gray if the cell is not editable
 			if (!theTable.getModel().isCellEditable(row, column)) {
-				templateJLabel.setBackground(isSelected ? theTable.getSelectionBackground() : theTable.getBackground());
-				templateJLabel.setForeground(isSelected ? theTable.getSelectionForeground() : new Color(128,128,128));
-				stringRenderer.setBackground(isSelected ? theTable.getSelectionBackground() : theTable.getBackground());
-				stringRenderer.setForeground(isSelected ? theTable.getSelectionForeground() : new Color(128,128,128));
-				imageRenderer.setBackground(isSelected ? theTable.getSelectionBackground() : theTable.getBackground());
-				imageRenderer.setForeground(isSelected ? theTable.getSelectionForeground() : new Color(128,128,128));
+				foreground = isSelected ? theTable.getSelectionForeground() : new Color(128,128,128);
+				templateJLabel.setBackground(background);
+				templateJLabel.setForeground(foreground);
+				stringRenderer.setBackground(background);
+				stringRenderer.setForeground(foreground);
+				imageRenderer.setBackground(background);
+				imageRenderer.setForeground(foreground);
 			}
 		}
 
@@ -251,7 +260,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 			}catch(Exception e){
 				//Fallback to String
 				e.printStackTrace();
-				templateJLabel.setText(((cbit.vcell.parser.ScopedExpression)value).infix());
+				templateJLabel.setText(((ScopedExpression)value).infix());
 				return templateJLabel;
 			}
 
