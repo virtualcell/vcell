@@ -154,7 +154,7 @@ protected void menuAction(Shape shape, String menuAction) {
 		}else if (shape instanceof MembraneShape){
 			showMembranePropertiesDialog(getGraphPane(),((MembraneShape)shape).getMembrane());
 		}else if (shape instanceof SpeciesContextShape){
-			showEditSpeciesDialog(getGraphPane(),((SpeciesContextShape)shape).getSpeciesContext());
+			showEditSpeciesDialog(getGraphPane(), getStructureCartoon().getModel(), ((SpeciesContextShape)shape).getSpeciesContext());
 		}
 			
 	}else if (menuAction.equals(SHOW_PARAMETERS_MENU_ACTION)){

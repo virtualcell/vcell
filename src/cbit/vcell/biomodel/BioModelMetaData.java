@@ -7,8 +7,6 @@ import cbit.vcell.export.server.*;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.sql.*;
 import java.util.*;
 
@@ -21,7 +19,7 @@ import org.vcell.util.document.Versionable;
  * Creation date: (11/13/00 3:26:20 PM)
  * @author: Jim Schaff
  */
-public class BioModelMetaData implements Versionable, java.io.Serializable ,MIRIAMAnnotatable{
+public class BioModelMetaData implements Versionable, java.io.Serializable{
 	
 
 	//
@@ -35,15 +33,15 @@ public class BioModelMetaData implements Versionable, java.io.Serializable ,MIRI
 	private KeyValue modelKey = null;
 	private Vector simulationContextKeyList = new Vector();
 	private Vector simulationKeyList = new Vector();
-
+	private KeyValue metadataKey = null;
+	
 	private java.lang.String fieldName = new String("NoName");
 	private java.lang.String fieldDescription = new String();
-	private MIRIAMAnnotation miriamAnnotation;
 
 /**
  * BioModelMetaData constructor comment.
  */
-public BioModelMetaData(KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[], String argName, String argDescription) {
+public BioModelMetaData(KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[], KeyValue metadataKey, String argName, String argDescription) {
 	this.version = null;
 	this.fieldName = argName;
 	this.fieldDescription = argDescription;
@@ -58,13 +56,14 @@ public BioModelMetaData(KeyValue argModelKey, KeyValue simContextKeys[], KeyValu
 			this.simulationKeyList.addElement(simulationKeys[i]);
 		}
 	}
+	this.metadataKey = metadataKey;
 }
 
 
 /**
  * BioModelMetaData constructor comment.
  */
-public BioModelMetaData(Version argVersion, KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[]) {
+public BioModelMetaData(Version argVersion, KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[], KeyValue metadataKey) {
 	this.version = argVersion;
 	if (version!=null){
 		this.fieldName = version.getName();
@@ -81,15 +80,8 @@ public BioModelMetaData(Version argVersion, KeyValue argModelKey, KeyValue simCo
 			this.simulationKeyList.addElement(simulationKeys[i]);
 		}
 	}
+	this.metadataKey = metadataKey;
 }
-
-public MIRIAMAnnotation getMIRIAMAnnotation() {
-	return miriamAnnotation;
-}
-public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
-	this.miriamAnnotation = miriamAnnotation;
-}
-
 
 /**
  * Insert the method's description here.
@@ -129,7 +121,7 @@ public boolean compareEqual(org.vcell.util.Matchable matchable) {
 	if (!org.vcell.util.Compare.isEqual(modelKey,obj.modelKey)){
 		return false;
 	}
-	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), obj.getMIRIAMAnnotation())){
+	if(!Compare.isEqualOrNull(metadataKey, obj.metadataKey)){
 		return false;
 	}
 	return true;
@@ -245,5 +237,10 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  */
 public String toString() {
 	return super.toString()+"("+version+")";
+}
+
+
+public KeyValue getMetadataKey() {
+	return metadataKey;
 }
 }

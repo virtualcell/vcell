@@ -161,6 +161,8 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 	// get SimulationContext Keys for bioModelKey
 	//
 	KeyValue simContextKeys[] = getSimContextEntriesFromBioModel(con, bioModelKey);
+	
+	KeyValue metadataKey = getMetadataKeyBioModel(con, bioModelKey);
 
 	//
 	// get BioModelMetaData object for bioModelKey
@@ -181,7 +183,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys);
+			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys,metadataKey);
 		} else {
 			throw new org.vcell.util.ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
 		}
@@ -452,7 +454,7 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		}
 		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
 	}
-	MIRIAMTable.table.setMIRIAMAnnotation(con, (BioModelMetaData)versionable, versionable.getVersion().getVersionKey());
+//	MIRIAMTable.table.setMIRIAMAnnotation(con, (BioModelMetaData)versionable, versionable.getVersion().getVersionKey());
 	return versionable;
 }
 
@@ -487,7 +489,7 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 		insertSimContextEntryLinkSQL(con, getNewKey(con), bioModelKey, scKey);
 	}
 	
-	MIRIAMTable.table.insertMIRIAM(con, bioModel, newVersion.getVersionKey());
+//	MIRIAMTable.table.insertMIRIAM(con, bioModel, newVersion.getVersionKey());
 }
 
 
@@ -587,5 +589,11 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 	Version newVersion = updateVersionableInit(hash, con, user, bioModelMetaData, bVersion);
 	insertBioModelMetaData(con, user, bioModelMetaData, bmcs,newVersion);
 	return newVersion.getVersionKey();
+}
+
+
+public KeyValue getMetadataKeyBioModel(Connection con, KeyValue bioModelKey) {
+	System.err.println("BioModelDbDriver::getMetadataKeyBioModel() needs to be implemented");
+	return null;
 }
 }

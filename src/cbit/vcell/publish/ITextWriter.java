@@ -14,6 +14,7 @@ import cbit.vcell.model.gui.ReactionCanvasDisplaySpec;
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.xml.XMLTags;
@@ -2028,10 +2029,11 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 					
 					Section reactionSection = reactStructSection.addSection(type + " " + rs.getName(), reactStructSection.numberDepth() + 1);
 					//Annotation
-					if (rs.getAnnotation() != null) {
+					VCMetaData vcMetaData = rs.getModel().getVcMetaData();
+					if (vcMetaData.getFreeTextAnnotation(rs) != null) {
 						Table annotTable = getTable(1, 100, 1, 3, 3);
 						annotTable.addCell(createCell("Reaction Annotation", getBold(DEF_HEADER_FONT_SIZE), 1, 1, Element.ALIGN_CENTER, true));
-						annotTable.addCell(createCell(rs.getAnnotation(),getFont()));
+						annotTable.addCell(createCell(vcMetaData.getFreeTextAnnotation(rs),getFont()));
 						reactionSection.add(annotTable);
 						//reactionSection.add(new Paragraph("\""+rs.getAnnotation()+"\""));
 					}

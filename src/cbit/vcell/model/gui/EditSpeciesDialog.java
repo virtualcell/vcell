@@ -18,6 +18,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
@@ -362,7 +363,8 @@ private void connEtoM3(Species value) {
 		// user code begin {1}
 		// user code end
 		if ((getspecies1() != null)) {
-			setAnnotationString(getspecies1().getAnnotation());
+			// setAnnotationString(getspecies1().getAnnotation());
+			setAnnotationString(getModel().getVcMetaData().getFreeTextAnnotation(getspecies1()));
 		}
 		// user code begin {2}
 		// user code end
@@ -1232,7 +1234,7 @@ private void initConnections() throws java.lang.Exception {
  * @param argSpeciesContext cbit.vcell.model.SpeciesContext
  * @param argDocumentManager cbit.vcell.clientdb.DocumentManager
  */
-public void initEditSpecies(SpeciesContext argSpeciesContext, DocumentManager argDocumentManager) {
+public void initEditSpecies(SpeciesContext argSpeciesContext, Model argModel, DocumentManager argDocumentManager) {
 	
 	//
 	if(argSpeciesContext != null){
@@ -1240,6 +1242,7 @@ public void initEditSpecies(SpeciesContext argSpeciesContext, DocumentManager ar
 		getOKJButton().setText("OK");
 	}
 	mode = EDIT_SPECIES_MODE;
+	setModel(argModel);
 	setSpeciesContext(argSpeciesContext);
 	setDocumentManager(argDocumentManager);
 }
@@ -1299,8 +1302,13 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 		getSpeciesContext().getSpecies().setDBSpecies(
 				(getDBFormalSpecies() != null?getDocumentManager().getBoundSpecies(getDBFormalSpecies()):null)
 			);
+
+		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
 		setAnnotationString(annotationTextField.getText());
-		getSpeciesContext().getSpecies().setAnnotation(getAnnotationString());
+		// old ---- getSpeciesContext().getSpecies().setAnnotation(getAnnotationString());
+		VCMetaData vcMetaData = getModel().getVcMetaData();
+		vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), getAnnotationString());
+		
 		getSpeciesContext().setHasOverride(getJCheckBoxHasOverride().isSelected());
 		if (getJCheckBoxHasOverride().isSelected()){
 			getSpeciesContext().setName(getContextNameValueTextField().getText());

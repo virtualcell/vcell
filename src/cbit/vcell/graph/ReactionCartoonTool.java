@@ -28,6 +28,7 @@ import org.vcell.util.gui.ZEnforcer;
 import com.genlogic.GraphLayout.GlgGraphEdge;
 import com.genlogic.GraphLayout.GlgGraphNode;
 
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellTransferable;
 import edu.rpi.graphdrawing.Node;
@@ -560,7 +561,7 @@ protected void menuAction(Shape shape, String menuAction) {
 		}else if (shape instanceof ProductShape){
 			showProductPropertiesDialog((ProductShape)shape,shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()));
 		}else if (shape instanceof SpeciesContextShape){
-			showEditSpeciesDialog(getGraphPane(),((SpeciesContextShape)shape).getSpeciesContext());
+			showEditSpeciesDialog(getGraphPane(),getReactionCartoon().getModel(), ((SpeciesContextShape)shape).getSpeciesContext());
 		}else if (shape instanceof ReactionContainerShape){
 			ReactionContainerShape rcs = (ReactionContainerShape)shape;
 			if (rcs.getStructure() instanceof Feature){
@@ -672,25 +673,16 @@ protected void menuAction(Shape shape, String menuAction) {
 			//MIRIAMHelper.showMIRIAMAnnotationDialog(((SimpleReactionShape)shape).getReactionStep());
 			//System.out.println("Menu action annotate activated...");
 			ReactionStep rs = ((ReactionStepShape)shape).getReactionStep();
+			VCMetaData vcMetaData = rs.getModel().getVcMetaData();
 			try{
-				String newAnnotation = DialogUtils.showAnnotationDialog(getGraphPane(), rs.getAnnotation());
-				rs.setAnnotation(newAnnotation);
+				String newAnnotation = DialogUtils.showAnnotationDialog(getGraphPane(), vcMetaData.getFreeTextAnnotation(rs));
+				vcMetaData.setFreeTextAnnotation(rs, newAnnotation);
 			}catch(org.vcell.util.gui.UtilCancelException e){
 				//Do Nothing
 			}catch (Throwable exc) {
 				exc.printStackTrace(System.out);
 				PopupGenerator.showErrorDialog(getGraphPane(), "Failed to edit annotation!\n"+exc.getMessage());
 			}
-//			javax.swing.JTextArea jta = new javax.swing.JTextArea(rs.getAnnotation(),10,40);
-//			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(jta);
-//			javax.swing.JOptionPane.showMessageDialog(getGraphPane(),jsp,"Edit Reaction Annotation",javax.swing.JOptionPane.PLAIN_MESSAGE);
-//			String result = jta.getText();
-//			if((result != null) && (result.length() == 0)){
-//				result = null;
-//			}
-//			if(!Compare.isEqualOrNull(result, rs.getAnnotation())){
-//				rs.setAnnotation(result);
-//			}
 		}
 	}else{
 		//

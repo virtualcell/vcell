@@ -16,11 +16,15 @@ public class XMLTags {
 	public final static String SbmlAnnotationTag		 = "annotation";
 	public final static String SbmlNotesTag				 = "notes";
 	public final static String VCellInfoTag				 = "VCellInfo";
+	public final static String FreeTextAnnotationTag	 = "FreeText";
+	public final static String VCellRelatedInfoTag		 = "VCMLSpecific";
 
 	// VCML tags
 	public final static String VcmlRootNodeTag			 = "vcml";
 	public static final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
+	public static final String VCML_NS_OLD = "http://www.sbml.org/2001/ns/vcell";
 	public static final String VCML_NS_BLANK = "";
+	public static final String VCML_NS_PREFIX = "vcell";
 
 	//Tags related to MIRIAM
 	public static final String HTML_XHTML_ATTR_TAG			= "xhtml";

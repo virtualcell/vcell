@@ -14,6 +14,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
@@ -1080,11 +1081,13 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		// if it is a reaction parameter (authoritative parameter, i.e., reaction rate), it is editable
 		ReactionStep rs = getmodelParameterTableModel().getEditableAnnotationReactionStep(getScrollPaneTable().getSelectedRow());
 		if(rs != null){
-			String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, rs.getAnnotation());
+			VCMetaData vcMetaData = rs.getModel().getVcMetaData();
+			String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, vcMetaData.getFreeTextAnnotation(rs));
 			if(newAnnotation != null && newAnnotation.length() == 0){
 				newAnnotation = null;
 			}
-			rs.setAnnotation(newAnnotation);
+			
+			vcMetaData.setFreeTextAnnotation(rs, newAnnotation);
 			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
 		}
 		// if it is a model (global) parameter - annotation is editable

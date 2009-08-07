@@ -1,10 +1,26 @@
 package cbit.vcell.biomodel;
-import cbit.vcell.client.PopupGenerator;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Matchable;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
+
+import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
@@ -12,28 +28,12 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.math.MathDescription;
-import java.beans.PropertyVetoException;
-import java.util.Vector;
-
-import org.jdom.Element;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.Version;
-
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.stoch.FluxSolver;
-import cbit.vcell.solver.stoch.MassActionSolver;
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotation;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.stoch.FluxSolver;
+import cbit.vcell.solver.stoch.MassActionSolver;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -41,43 +41,35 @@ import cbit.vcell.parser.ExpressionException;
  */
 public class BioModel
 	implements
-		org.vcell.util.document.VCDocument, org.vcell.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener,
-		MIRIAMAnnotatable
+		VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
 {
-	private org.vcell.util.document.Version fieldVersion = null;
-	private java.lang.String fieldName = new String("NoName");
-	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.model.Model fieldModel = new cbit.vcell.model.Model("unnamed");
-	private cbit.vcell.mapping.SimulationContext[] fieldSimulationContexts = new cbit.vcell.mapping.SimulationContext[0];
-	private cbit.vcell.solver.Simulation[] fieldSimulations = new cbit.vcell.solver.Simulation[0];
-	private java.lang.String fieldDescription = new String();
-	private java.util.Hashtable simSimContextHash = new java.util.Hashtable();
-	private MIRIAMAnnotation miriamAnnotation;
+	private Version fieldVersion = null;
+	private String fieldName = new String("NoName");
+	protected transient VetoableChangeSupport vetoPropertyChange;
+	protected transient PropertyChangeSupport propertyChange;
+	private Model fieldModel = new Model("unnamed");
+	private SimulationContext[] fieldSimulationContexts = new SimulationContext[0];
+	private Simulation[] fieldSimulations = new Simulation[0];
+	private String fieldDescription = new String();
+	private Hashtable<Simulation, SimulationContext> simSimContextHash = 
+		new Hashtable<Simulation, SimulationContext>();
+	private VCMetaData vcMetaData;
 
-/**
- * BioModel constructor comment.
- */
-public BioModel(Version version) {
-	super();
-	addVetoableChangeListener(this);
-	addPropertyChangeListener(this);
-	try {
-		setVersion(version);
-	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+	/**
+	 * BioModel constructor comment.
+	 */
+	public BioModel(Version version) {
+		super();
+		addVetoableChangeListener(this);
+		addPropertyChangeListener(this);
+		vcMetaData = new VCMetaData(this, "http://vcell.org/data/", null); 
+		try {
+			setVersion(version);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
 	}
-}
-
-public MIRIAMAnnotation getMIRIAMAnnotation() {
-	return miriamAnnotation;
-}
-public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
-	this.miriamAnnotation = miriamAnnotation;
-	
-}
-
 
 /**
  * Insert the method's description here.
@@ -197,10 +189,10 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!org.vcell.util.Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
 		return false;
 	}
-	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), bioModel.getMIRIAMAnnotation())){
+	if(!getVCMetaData().compareEquals(bioModel.getVCMetaData())){
 		return false;
 	}
-
+	
 	return true;
 }
 
@@ -696,6 +688,7 @@ public void refreshDependencies() {
 	addVetoableChangeListener(this);
 	
 	fieldModel.refreshDependencies();
+	fieldModel.setVcMetaData(getVCMetaData());
 	for (int i=0;fieldSimulationContexts!=null && i<fieldSimulationContexts.length;i++){
 		fieldSimulationContexts[i].setBioModel(this);
 		fieldSimulationContexts[i].removePropertyChangeListener(this);
@@ -796,6 +789,9 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
 public void setModel(cbit.vcell.model.Model model) {
 	cbit.vcell.model.Model oldValue = fieldModel;
 	fieldModel = model;
+	if (model!=null){
+		model.setVcMetaData(getVCMetaData());
+	}
 	firePropertyChange("model", oldValue, model);
 }
 
@@ -1147,6 +1143,27 @@ private Expression substitueKineticPara(Expression exp, ReactionStep rs, boolean
 		
 	}
 	return result;
+}
+
+public VCMetaData getVCMetaData() {
+	return vcMetaData;
+}
+
+public void setVCMetaData(VCMetaData vcMetaData) {
+	this.vcMetaData = vcMetaData;
+}
+
+public void populateVCMetadata(boolean bMetadataPopulated) {
+	// (recursively) populate the identifiables with free text annotations if 'bMetaDataPopulated' is false
+	if (!bMetadataPopulated) {
+		String annotationText = this.getDescription();
+		vcMetaData.setFreeTextAnnotation(this, annotationText);
+
+		// now populate from model downwards
+		if  (fieldModel != null) {
+			fieldModel.populateVCMetadata(bMetadataPopulated);
+		}
+	}
 }
 
 }

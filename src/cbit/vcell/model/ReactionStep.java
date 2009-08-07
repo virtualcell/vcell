@@ -7,6 +7,7 @@ package cbit.vcell.model;
 import java.beans.*;
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -26,9 +27,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotation;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for
@@ -41,8 +39,7 @@ import cbit.vcell.xml.MIRIAMAnnotation;
  */
 public abstract class ReactionStep
 	implements
-		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener,
-		MIRIAMAnnotatable
+		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
 {
 
 	private String annotation = null;
@@ -69,7 +66,6 @@ public abstract class ReactionStep
 	private ChargeCarrierValence fieldChargeCarrierValence = null;  // see constructor
 	private ReactionParticipant[] fieldReactionParticipants = new ReactionParticipant[0];
 	private ReactionNameScope nameScope = null; // see constructor
-	private MIRIAMAnnotation miriamAnnotation;
 
 	public class ReactionNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -123,16 +119,6 @@ protected ReactionStep(Structure structure, KeyValue key, String name) throws ja
 protected ReactionStep(Structure structure, String name) throws PropertyVetoException {
 	this(structure,null,name);
 }
-
-
-public MIRIAMAnnotation getMIRIAMAnnotation() {
-	return miriamAnnotation;
-}
-public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
-	this.miriamAnnotation = miriamAnnotation;
-	
-}
-
 
 public void addCatalyst(SpeciesContext speciesContext) throws ModelException, PropertyVetoException {
 
@@ -202,15 +188,13 @@ protected boolean compareEqual0(ReactionStep rs) {
 		return false;
 	}
 	
-	if (!Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
+	if (!org.vcell.util.Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getAnnotation(), rs.getAnnotation())){
 		return false;
 	}
-	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), rs.getMIRIAMAnnotation())){
-		return false;
-	}
+	
 	return true;
 }
 /**

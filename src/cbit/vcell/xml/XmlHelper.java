@@ -11,6 +11,7 @@ import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.cellml.Translator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.document.VCDocument;
 
@@ -19,9 +20,16 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -142,9 +150,9 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, Simula
         throw new XmlParseException("Invalid arguments for exporting SBML.");
     } 
 	if (vcDoc instanceof BioModel) {
+		SimulationContext clonedSimContext = applyOverrides((BioModel)vcDoc, simContext, simJob);
 	    SBMLExporter sbmlExporter = new SBMLExporter((BioModel)vcDoc, level, version);
-//	    sbmlExporter.setVcPreferredSimContextName(appName);
-	    sbmlExporter.setSelectedSimContext(simContext);
+	    sbmlExporter.setSelectedSimContext(clonedSimContext);
 	    sbmlExporter.setSelectedSimulationJob(simJob);
 	    return sbmlExporter.getSBMLFile();
 	} else if (vcDoc instanceof MathModel) {
@@ -160,6 +168,83 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, Simula
 	} else{
 		throw new RuntimeException("unsupported Document Type "+vcDoc.getClass().getName()+" for SBML export");
 	}
+}
+
+/**
+ * applyOverrides: private method to apply overrides from the simulation in 'simJob' to simContext, if any.
+ * 				Start off by cloning biomodel, since all the references are required in cloned simContext and is
+ * 				best retained by cloning biomodel.
+ * @param bm - biomodel to be cloned
+ * @param sc - simulationContext to be cloned and overridden using math overrides in simulation
+ * @param simJob - simulationJob from where simulation with overrides is obtained. 
+ * @return
+ */
+private static SimulationContext applyOverrides(BioModel bm, SimulationContext sc, SimulationJob simJob) {
+	SimulationContext overriddenSimContext = sc;
+	if (simJob != null ) {
+		Simulation sim = simJob.getWorkingSim();
+		// need to clone Biomodel, simContext, etc. only if simulation has override(s)
+		try {
+			if (sim != null && sim.getMathOverrides().hasOverrides()) {
+				BioModel clonedBM = (BioModel)BeanUtils.cloneSerializable(bm);
+				clonedBM.refreshDependencies();
+				// get the simContext in cloned Biomodel that corresponds to 'sc'
+				SimulationContext[] simContexts = clonedBM.getSimulationContexts(); 
+				for (int i = 0; i < simContexts.length; i++) {
+					if (simContexts[i].getName().equals(sc.getName())) {
+						overriddenSimContext = simContexts[i];
+						break;
+					}
+				}
+				// 
+				overriddenSimContext.getModel().refreshDependencies();
+				overriddenSimContext.refreshDependencies();			
+				MathMapping mathMapping = new MathMapping(overriddenSimContext);
+				MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
+
+				cbit.vcell.solver.MathOverrides mathOverrides = sim.getMathOverrides();
+				String[] moConstNames = mathOverrides.getOverridenConstantNames();
+				for (int i = 0; i < moConstNames.length; i++){
+					cbit.vcell.math.Constant overriddenConstant = mathOverrides.getConstant(moConstNames[i]);
+					// Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], 0);
+					Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], simJob.getJobIndex());
+					// The above constant (from mathoverride) is not the same instance as the one in the MathSymbolMapping hash.
+					// Hence retreive the correct instance from mathSymbolMapping (mathMapping -> mathDescription) and use it to
+					// retrieve its value (symbolTableEntry) from hash.
+					cbit.vcell.math.Variable overriddenVar = msm.findVariableByName(overriddenConstant.getName());
+					cbit.vcell.parser.SymbolTableEntry[] stes = msm.getBiologicalSymbol(overriddenVar);
+					if (stes == null) {
+						throw new NullPointerException("No matching biological symbol for : " + overriddenConstant.getName());
+					}
+					if (stes.length > 1) {
+						throw new RuntimeException("Cannot have more than one mapping entry for constant : " + overriddenConstant.getName());
+					}
+					if (stes[0] instanceof Parameter) {
+						Parameter param = (Parameter)stes[0];
+						if (param.isExpressionEditable()) {
+							if (param instanceof Kinetics.KineticsParameter) {
+								// Kinetics param has to be set separately for the integrity of the kinetics object
+								Kinetics.KineticsParameter kinParam = (Kinetics.KineticsParameter)param;
+								ReactionStep[] rs = overriddenSimContext.getModel().getReactionSteps();
+								for (int j = 0; j < rs.length; j++){
+									if (rs[j].getNameScope().getName().equals(kinParam.getNameScope().getName())) {
+										rs[j].getKinetics().setParameterValue(kinParam, overriddenExpr);
+									}
+								}
+							} else if (param instanceof cbit.vcell.model.ExpressionContainer) {
+								// If it is any other editable param, set its expression with the 
+								((cbit.vcell.model.ExpressionContainer)param).setExpression(overriddenExpr);
+							}
+						}
+					}	// end - if (stes[0] is Parameter)
+				}	// end  - for moConstNames
+			} 	// end if (sim had MathOverrides)
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage());
+		} 
+	}	// end if (simJob != null)
+	return overriddenSimContext;
 }
 
 /**

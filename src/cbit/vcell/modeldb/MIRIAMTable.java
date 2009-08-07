@@ -16,13 +16,11 @@ import org.vcell.util.document.KeyValue;
 import cbit.sql.*;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.*;
 import cbit.vcell.server.*;
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotation;
-import cbit.vcell.xml.MIRIAMHelper;
 /**
  * This type was created in VisualAge.
  */
@@ -66,115 +64,97 @@ private MIRIAMTable() {
  * @return cbit.vcell.model.ReactionParticipant
  * @param rset java.sql.ResultSet
  */
-public void insertMIRIAM(Connection con,MIRIAMAnnotatable miriamAnnotatable,KeyValue referenceKey)throws DataAccessException,SQLException{
-
-	String miriamAnnotation = null;
-	String miriamNotes = null;
-	if(miriamAnnotatable.getMIRIAMAnnotation() != null){
-		if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation() != null){
-			miriamAnnotation = XmlUtil.xmlToString(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation(),true);
-//			miriamAnnotation = cbit.util.TokenMangler.getSQLEscapedString(miriamAnnotation);
-		}
-		if(miriamAnnotatable.getMIRIAMAnnotation().getUserNotes() != null){
-			miriamNotes = XmlUtil.xmlToString(miriamAnnotatable.getMIRIAMAnnotation().getUserNotes(),true);
-//			miriamNotes = cbit.util.TokenMangler.getSQLEscapedString(miriamNotes);
-		}
-	}
-	if(miriamAnnotation == null && miriamNotes == null){
-		return;
-	}
-	int annotLength = (miriamAnnotation == null?0:miriamAnnotation.length());
-	int notesLength = (miriamNotes == null?0:miriamNotes.length());
-	int maxLength =
-		Math.max(annotLength,notesLength);
-	final int MAX_CHARS = 3000;
-	for(int i=0;i<maxLength;i+= MAX_CHARS){
-		String annotS = (i<annotLength?miriamAnnotation.substring(i,i+Math.min(MAX_CHARS, annotLength-i)):null);
-		if(annotS != null){
-			annotS = org.vcell.util.TokenMangler.getSQLEscapedString(annotS);
-		}
-		String notesS = (i<notesLength?miriamNotes.substring(i,i+Math.min(MAX_CHARS, notesLength-i)):null);
-		if(notesS != null){
-			notesS = org.vcell.util.TokenMangler.getSQLEscapedString(notesS);
-		}
-		
-		String miriamTableValues = MIRIAMTable.table.getSQLValueList(miriamAnnotatable, referenceKey,annotS,notesS);
-//		if(miriamTableValues != null){
-			String sql = "INSERT INTO " + MIRIAMTable.table.getTableName() + " " + 
-				MIRIAMTable.table.getSQLColumnList() + " VALUES " + miriamTableValues;
-			DbDriver.updateCleanSQL(con,sql);
+//public void insertMIRIAM(Connection con,MIRIAMAnnotatable miriamAnnotatable,KeyValue referenceKey)throws DataAccessException,SQLException{
+//
+//	String miriamAnnotation = null;
+//	String miriamNotes = null;
+//	if(miriamAnnotatable.getMIRIAMAnnotation() != null){
+//		if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation() != null){
+//			miriamAnnotation = XmlUtil.xmlToString(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation(),true);
+////			miriamAnnotation = cbit.util.TokenMangler.getSQLEscapedString(miriamAnnotation);
 //		}
-	}
-
-}
-public void setMIRIAMAnnotation(Connection con,MIRIAMAnnotatable miriamAnnotatable,KeyValue referenceKey) throws java.sql.SQLException, DataAccessException {
-	
-	//MIRIAM Annotation
-	String sql =
-		" SELECT " +
-			MIRIAMTable.table.annotation.getQualifiedColName() + "," +
-			MIRIAMTable.table.userNotes.getQualifiedColName() +
-		" FROM " + MIRIAMTable.table.getTableName() + 
-		" WHERE " +
-			(miriamAnnotatable instanceof BioModelMetaData?MIRIAMTable.table.bioModelRef:"") +
-//			(miriamAnnotatable instanceof MathModelMetaData?MIRIAMTable.table.mathModelRef:"") +
-			(miriamAnnotatable instanceof Species?MIRIAMTable.table.speciesRef:"") +
-			(miriamAnnotatable instanceof Structure?MIRIAMTable.table.structRef:"") +
-			(miriamAnnotatable instanceof ReactionStep?MIRIAMTable.table.reactStepRef:"") +
-			" = " + referenceKey
-			+" ORDER BY "+MIRIAMTable.table.id.getUnqualifiedColName();
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		StringBuffer annotSB = new StringBuffer();
-		StringBuffer notesSB = new StringBuffer();
-		while(rset.next()){
-			String annotation = rset.getString(MIRIAMTable.table.annotation.toString());
-			if(!rset.wasNull()){
-				annotation = org.vcell.util.TokenMangler.getSQLRestoredString(annotation);
-				annotSB.append(annotation);
-			}
-			String notes = rset.getString(MIRIAMTable.table.userNotes.toString());
-			if(!rset.wasNull()){
-				notes = org.vcell.util.TokenMangler.getSQLRestoredString(notes);
-				notesSB.append(notes);
-			}
-		}
-		if(annotSB.length() > 0 || notesSB.length() > 0){
-			MIRIAMAnnotation miriamAnnot = new MIRIAMAnnotation();
-			if(annotSB.length() > 0){
-				Element annotElement = XmlUtil.stringToXML(annotSB.toString(), null);
-				MIRIAMHelper.cleanEmptySpace(annotElement);
-				miriamAnnot.setAnnotation(annotElement);
-			}
-			if(notesSB.length() > 0){
-				Element notesElement = XmlUtil.stringToXML(notesSB.toString(), null);
-				MIRIAMHelper.cleanEmptySpace(notesElement);
-				miriamAnnot.setUserNotes(notesElement);
-			}
-			miriamAnnotatable.setMIRIAMAnnotation(miriamAnnot);
-		}
-//		if (rset.next()) {
-//			MIRIAMAnnotation miriamAnnot = new MIRIAMAnnotation();
+//		if(miriamAnnotatable.getMIRIAMAnnotation().getUserNotes() != null){
+//			miriamNotes = XmlUtil.xmlToString(miriamAnnotatable.getMIRIAMAnnotation().getUserNotes(),true);
+////			miriamNotes = cbit.util.TokenMangler.getSQLEscapedString(miriamNotes);
+//		}
+//	}
+//	if(miriamAnnotation == null && miriamNotes == null){
+//		return;
+//	}
+//	int annotLength = (miriamAnnotation == null?0:miriamAnnotation.length());
+//	int notesLength = (miriamNotes == null?0:miriamNotes.length());
+//	int maxLength =
+//		Math.max(annotLength,notesLength);
+//	final int MAX_CHARS = 3000;
+//	for(int i=0;i<maxLength;i+= MAX_CHARS){
+//		String annotS = (i<annotLength?miriamAnnotation.substring(i,i+Math.min(MAX_CHARS, annotLength-i)):null);
+//		if(annotS != null){
+//			annotS = org.vcell.util.TokenMangler.getSQLEscapedString(annotS);
+//		}
+//		String notesS = (i<notesLength?miriamNotes.substring(i,i+Math.min(MAX_CHARS, notesLength-i)):null);
+//		if(notesS != null){
+//			notesS = org.vcell.util.TokenMangler.getSQLEscapedString(notesS);
+//		}
+//		
+//		String miriamTableValues = MIRIAMTable.table.getSQLValueList(miriamAnnotatable, referenceKey,annotS,notesS);
+////		if(miriamTableValues != null){
+//			String sql = "INSERT INTO " + MIRIAMTable.table.getTableName() + " " + 
+//				MIRIAMTable.table.getSQLColumnList() + " VALUES " + miriamTableValues;
+//			DbDriver.updateCleanSQL(con,sql);
+////		}
+//	}
+//
+//}
+public void setMIRIAMAnnotation(Connection con,Identifiable identifiable,KeyValue referenceKey) throws java.sql.SQLException, DataAccessException {
+//	
+//	//MIRIAM Annotation
+//	String sql =
+//		" SELECT " +
+//			MIRIAMTable.table.annotation.getQualifiedColName() + "," +
+//			MIRIAMTable.table.userNotes.getQualifiedColName() +
+//		" FROM " + MIRIAMTable.table.getTableName() + 
+//		" WHERE " +
+//			(identifiable instanceof BioModelMetaData?MIRIAMTable.table.bioModelRef:"") +
+////			(miriamAnnotatable instanceof MathModelMetaData?MIRIAMTable.table.mathModelRef:"") +
+//			(identifiable instanceof Species?MIRIAMTable.table.speciesRef:"") +
+//			(identifiable instanceof Structure?MIRIAMTable.table.structRef:"") +
+//			(identifiable instanceof ReactionStep?MIRIAMTable.table.reactStepRef:"") +
+//			" = " + referenceKey
+//			+" ORDER BY "+MIRIAMTable.table.id.getUnqualifiedColName();
+//	Statement stmt = con.createStatement();
+//	try {
+//		ResultSet rset = stmt.executeQuery(sql);
+//		StringBuffer annotSB = new StringBuffer();
+//		StringBuffer notesSB = new StringBuffer();
+//		while(rset.next()){
 //			String annotation = rset.getString(MIRIAMTable.table.annotation.toString());
-//			if(rset.wasNull()){
-//				annotation = null;
-//			}else{
-//				annotation = cbit.util.TokenMangler.getSQLRestoredString(annotation);
-//				miriamAnnot.setAnnotation(XmlUtil.stringToXML(annotation, null));
+//			if(!rset.wasNull()){
+//				annotation = org.vcell.util.TokenMangler.getSQLRestoredString(annotation);
+//				annotSB.append(annotation);
 //			}
 //			String notes = rset.getString(MIRIAMTable.table.userNotes.toString());
-//			if(rset.wasNull()){
-//				notes = null;
-//			}else{
-//				notes = cbit.util.TokenMangler.getSQLRestoredString(notes);
-//				miriamAnnot.setUserNotes(XmlUtil.stringToXML(notes, null));
+//			if(!rset.wasNull()){
+//				notes = org.vcell.util.TokenMangler.getSQLRestoredString(notes);
+//				notesSB.append(notes);
 //			}
-//			miriamAnnotatable.setMIRIAMAnnotation(miriamAnnot);
 //		}
-	} finally {
-		stmt.close(); // Release resources include resultset
-	}
+//		if(annotSB.length() > 0 || notesSB.length() > 0){
+//			MIRIAMAnnotation miriamAnnot = new MIRIAMAnnotation();
+//			if(annotSB.length() > 0){
+//				Element annotElement = XmlUtil.stringToXML(annotSB.toString(), null);
+//				MIRIAMHelper.cleanEmptySpace(annotElement);
+//				miriamAnnot.setAnnotation(annotElement);
+//			}
+//			if(notesSB.length() > 0){
+//				Element notesElement = XmlUtil.stringToXML(notesSB.toString(), null);
+//				MIRIAMHelper.cleanEmptySpace(notesElement);
+//				miriamAnnot.setUserNotes(notesElement);
+//			}
+//			identifiable.setMIRIAMAnnotation(miriamAnnot);
+//		}
+//	} finally {
+//		stmt.close(); // Release resources include resultset
+//	}
 }
 /**
  * This method was created in VisualAge.
@@ -183,7 +163,7 @@ public void setMIRIAMAnnotation(Connection con,MIRIAMAnnotatable miriamAnnotatab
  * @param modelName java.lang.String
  */
 private String getSQLValueList(
-		MIRIAMAnnotatable miriamAnnotatable,KeyValue referenceKey,
+		Identifiable miriamAnnotatable,KeyValue referenceKey,
 		String miriamAnnotation,String miriamNotes) throws DataAccessException {
 
 	StringBuffer buffer = new StringBuffer();

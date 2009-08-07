@@ -45,7 +45,6 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 
@@ -65,8 +64,10 @@ public class SBMLExporter {
 	private SimulationJob vcSelectedSimJob = null;
 	
 	// used for exporting vcell-related annotations.
-	Namespace sbml_vcml_ns = Namespace.getNamespace(SBMLUtils.SBML_VCML_NS);
+	Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCML_NS_PREFIX, SBMLUtils.SBML_VCML_NS);
 
+	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
+	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
 
 	private java.util.Hashtable<String, String> globalParamNamesHash = new java.util.Hashtable<String, String>();
 	private SBMLExportSpec sbmlExportSpec = new SBMLExportSpec(VCUnitDefinition.UNIT_molecules, VCUnitDefinition.UNIT_um3, VCUnitDefinition.UNIT_um2, VCUnitDefinition.UNIT_um, VCUnitDefinition.UNIT_s);
@@ -142,6 +143,10 @@ public class SBMLExporter {
 		vcBioModel = argBioModel;
 		sbmlLevel = argSbmlLevel;
 		sbmlVersion = argSbmlVersion;
+		if (vcBioModel != null) {
+			sbmlAnnotationUtil = 
+				new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.SBML_NS_2);
+		}
 	}
 	
 	/**
@@ -150,6 +155,10 @@ public class SBMLExporter {
 	public SBMLExporter(BioModel argBioModel) {
 		super();
 		vcBioModel = argBioModel;
+		if (vcBioModel != null) {
+			sbmlAnnotationUtil = 
+				new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.SBML_NS_2);
+		}
 	}
 
 /**
@@ -185,7 +194,7 @@ protected void addCompartments() {
 			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
 
-		StructureMapping vcStructMapping = getOverriddenSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
+		StructureMapping vcStructMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
 			// The unit for 3D compartment size in VCell is um3, we are going to write it out in um3 in the SBML document.
 			// Hence multiplying the size expression with the conversion factor between VC and SBML units for the compartment size. 
@@ -214,23 +223,11 @@ protected void addCompartments() {
 			}
 		}
 		
-		Element annotationElement = null;
-		String sbmlAnnotationString = sbmlCompartment.getAnnotationString();
-		if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
-			annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-		}else{
-			annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
-		}
-		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
-		if (annotationElement.getChildren().size()>0){
-			String annotationString = XmlUtil.xmlToString(annotationElement, true);
-			sbmlCompartment.setAnnotation(new String(annotationString));
-		}
-		if (vcStructures[i].getMIRIAMAnnotation() != null && vcStructures[i].getMIRIAMAnnotation().getUserNotes() != null) {
-			Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
-			MIRIAMHelper.addToSBML(notesElement, vcStructures[i].getMIRIAMAnnotation(), false);
-			sbmlCompartment.setNotes(XmlUtil.xmlToString(notesElement, true));
-		}
+		// Get annotation (RDF and non-RDF) for reactionStep from SBMLAnnotationUtils
+		sbmlAnnotationUtil.writeAnnotation(vcStructures[i], sbmlCompartment, null);
+		
+		// Now set notes,
+		sbmlAnnotationUtil.writeNotes(vcStructures[i], sbmlCompartment);
 	}
 }
 
@@ -305,7 +302,7 @@ protected void addParameters() throws ExpressionException {
 	sbmlParam.setUnits(paramUnits);
 	sbmlParam.setConstant(true);
 	// Now add VCell global parameters to the SBML listofParameters
-	Model vcModel = getOverriddenSimContext().getModel();
+	Model vcModel = getSelectedSimContext().getModel();
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
 	for (int i = 0; vcGlobalParams != null && i < vcGlobalParams.length; i++) {
 		sbmlParam = sbmlModel.createParameter();
@@ -328,7 +325,7 @@ protected void addParameters() throws ExpressionException {
 				SpeciesContext vcSpeciesContext = vcModel.getSpeciesContext(symbols[j]); 
 				if (vcSpeciesContext != null) {
 					Species species = sbmlModel.getSpecies(vcSpeciesContext.getName());
-					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
+					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
 					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
@@ -357,7 +354,7 @@ protected void addReactions() {
 
 	// Check if any reaction has electrical mapping
 	boolean bCalculatePotential = false;
-	StructureMapping structureMappings[] = getOverriddenSimContext().getGeometryContext().getStructureMappings();
+	StructureMapping structureMappings[] = getSelectedSimContext().getGeometryContext().getStructureMappings();
 	for (int i = 0; i < structureMappings.length; i++){
 		if (structureMappings[i] instanceof MembraneMapping){
 			if (((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
@@ -371,7 +368,7 @@ protected void addReactions() {
 		throw new RuntimeException("This VCell model has Electrical mapping; cannot be exported to SBML at this time");
 	}
 
-	cbit.vcell.mapping.ReactionSpec[] vcReactionSpecs = getOverriddenSimContext().getReactionContext().getReactionSpecs();
+	cbit.vcell.mapping.ReactionSpec[] vcReactionSpecs = getSelectedSimContext().getReactionContext().getReactionSpecs();
 	for (int i = 0; i < vcReactionSpecs.length; i++){
 		if (vcReactionSpecs[i].isExcluded()) {
 			continue;
@@ -386,21 +383,19 @@ protected void addReactions() {
 		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
 		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.
 		// Useful when roundtripping ...
-		Element annotationElement = null;
+		Element sbmlImportRelatedElement = null;
 		try {
-			annotationElement = getAnnotationElement(vcReactionStep);
-		} catch (cbit.vcell.xml.XmlParseException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
+			sbmlImportRelatedElement = getAnnotationElement(vcReactionStep);
+		} catch (XmlParseException e1) {
+			e1.printStackTrace(System.out);
+//			throw new RuntimeException("Error ");
 		}
-		MIRIAMHelper.addToSBML(annotationElement, vcReactionStep.getMIRIAMAnnotation(),false);
-		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
 		
-		if (vcReactionStep.getMIRIAMAnnotation() != null && vcReactionStep.getMIRIAMAnnotation().getUserNotes() != null) {
-			Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
-			MIRIAMHelper.addToSBML(notesElement, vcReactionStep.getMIRIAMAnnotation(), false);
-			sbmlReaction.setNotes(XmlUtil.xmlToString(notesElement, true));
-		}
+		// Get annotation (RDF and non-RDF) for reactionStep from SBMLAnnotationUtils
+		sbmlAnnotationUtil.writeAnnotation(vcReactionStep, sbmlReaction, sbmlImportRelatedElement);
+		
+		// Now set notes, 
+		sbmlAnnotationUtil.writeNotes(vcReactionStep, sbmlReaction);
 		
 		// Get reaction kineticLaw
 		Kinetics vcRxnKinetics = vcReactionStep.getKinetics();
@@ -653,7 +648,7 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 			}
 			// Get the VC and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
 			// Replace the occurance of species in the rate expression with the new expr : species*factor.
-			cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+			cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[i].getStructure().getDimension());
 			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
@@ -684,12 +679,12 @@ protected void addSpecies() {
 
 		// Get (and set) the initial concentration value
 
-		if (getOverriddenSimContext() == null) {
+		if (getSelectedSimContext() == null) {
 			throw new RuntimeException("No simcontext (application) specified; Cannot proceed.");
 		}
 
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
-		SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
 		VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
@@ -741,20 +736,16 @@ protected void addSpecies() {
 
 		// Add the common name of species to annotation, and add an annotation element to the species.
 		// This is required later while trying to read in fluxes ...
-		Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-		Element vcellInfoTag = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
+		Element sbmlImportRelatedElement = new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
 		Element speciesElement = new Element(XMLTags.SpeciesTag, sbml_vcml_ns);
-		speciesElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
-		vcellInfoTag.addContent(speciesElement);
-		annotationElement.addContent(vcellInfoTag);
-		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
-		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement,true));
+		speciesElement.setAttribute(XMLTags.NameAttrTag, TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
+		sbmlImportRelatedElement.addContent(speciesElement);
 		
-		if (vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation() != null && vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation().getUserNotes() != null) {
-			Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
-			MIRIAMHelper.addToSBML(notesElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(), false);
-			sbmlSpecies.setNotes(XmlUtil.xmlToString(notesElement, true));
-		}
+		// Get RDF annotation for species from SBMLAnnotationUtils
+		sbmlAnnotationUtil.writeAnnotation(vcSpeciesContexts[i].getSpecies(), sbmlSpecies, sbmlImportRelatedElement);
+
+		// Now set notes,
+		sbmlAnnotationUtil.writeNotes(vcSpeciesContexts[i].getSpecies(), sbmlSpecies);
 	}
 }
 
@@ -837,9 +828,9 @@ protected void addUnitDefinitions() {
  **/
 private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcell.xml.XmlParseException {
 	  		//"http://www.vcell.org/vcell";
-	Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+//	Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 
-	Element vcellInfoElement = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
+	Element sbmlImportRelatedElement = new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
 	Element rxnElement = null;
 	
 	if (reactionStep instanceof FluxReaction) {
@@ -893,11 +884,11 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcel
 		throw new RuntimeException("unexpected kinetic type "+reactionStep.getKinetics().getClass().getName());
 	}
 
-	vcellInfoElement.addContent(rxnElement);
-	vcellInfoElement.addContent(rateElement);
-	annotationElement.addContent(vcellInfoElement);
+	sbmlImportRelatedElement.addContent(rxnElement);
+	sbmlImportRelatedElement.addContent(rateElement);
+//	annotationElement.addContent(vcellInfoElement);
 	
-	return annotationElement;
+	return sbmlImportRelatedElement;
 }
 
 
@@ -907,7 +898,7 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcel
 private boolean getBoundaryCondition(SpeciesContext speciesContext) {
 
 	// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-	cbit.vcell.mapping.SimulationContext simContext = getOverriddenSimContext();
+	cbit.vcell.mapping.SimulationContext simContext = getSelectedSimContext();
 	if (simContext == null) {
 		return false;
 	}
@@ -953,50 +944,9 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 	return mathNode.deepCopy();
 }
 
-/*
-/**
- * 	getMatchingSimContext :
- 	Policy : If requested application (simContext) does not exist, behave as if none exist.
-    If it exists, but it is 1/2/3 dimensional (level 2), let it go through.
-    If no application specified, return the first one that is not 1/2/3 dimensional.
-    If none exist, return null.
- 
-private SimulationContext getMatchingSimContext() {
-	// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-	SimulationContext simContext = null;
-
-	SimulationContext[] vcSimContexts = vcBioModel.getSimulationContexts();
-
-	if (vcPreferredSimContextName != null) {
-		for (int i = 0; i < vcSimContexts.length; i++){
-			if (vcPreferredSimContextName.equals(vcSimContexts[i].getName())) {
-				simContext = vcSimContexts[i];
-			}
-		}
-		if (simContext == null) {
-			System.err.println("Error : specified simulationContext " + vcPreferredSimContextName + " does not exist");
-		}
-	} else {
-		// Check if it is non-spatial - SBML does not support geometries with dimensions > 0 !!
-		for (int i = 0; i < vcSimContexts.length; i++){
-			int dimension = vcSimContexts[i].getGeometry().getDimension();
-			if (dimension == 1 || dimension == 2 || dimension == 3) {
-				continue;
-			} else {
-				// Return  the first non-spatial simulationContext in 'simContext'.
-				simContext = vcSimContexts[i];
-				return simContext;
-			}
-		}
-	}
-	
-	return simContext;
-}
-*/
-
-private SimulationContext getOverriddenSimContext() {
-	return vcOverridenSimContext;
-}
+//private SimulationContext getOverriddenSimContext() {
+//	return vcOverridenSimContext;
+//}
 
 public SimulationContext getSelectedSimContext() {
 	return vcSelectedSimContext;
@@ -1013,24 +963,7 @@ private Simulation getSelectedSimulation() {
 	return vcSelectedSimJob.getWorkingSim();
 }
 
-/**
- * getVCellAnnotation : Culls VCell user annotations/notes from biomodel, selectedSimContext, simulation
- * 						and returns the annotation string to be set in the sbml model. 
- * @return
- */
-private String getVCellAnnotation() {
-	StringBuffer annotBuffer = new StringBuffer();
-	if (vcBioModel.getVersion().getAnnot() != null && !vcBioModel.getVersion().getAnnot().equals("")) {
-		annotBuffer.append("Biomodel : \n\t" + vcBioModel.getVersion().getAnnot());
-	}
-	if (getSelectedSimContext().getVersion().getAnnot() != null && !getSelectedSimContext().getVersion().getAnnot().equals("")) {
-		annotBuffer.append("\nSimulationContext : \n\t" + getSelectedSimContext().getVersion().getAnnot());
-	}
-	if (getSelectedSimulation() != null && getSelectedSimulation().getVersion().getAnnot() != null && !getSelectedSimulation().getVersion().getAnnot().equals("")) {
-		annotBuffer.append("\nSimulation : \n\t" + getSelectedSimulation().getVersion().getAnnot());
-	}
-	return annotBuffer.toString();
-}
+
 public String getSBMLFile() {
 
 	//
@@ -1038,58 +971,58 @@ public String getSBMLFile() {
 	// First clone the simContext, so that the original doesn't get overridden.
 	// Obtain the overrides from simulation, check which type of parameter and set the expression from mathOverrides object
 	//
-	try {
-		SimulationContext clonedSimContext = (SimulationContext)org.vcell.util.BeanUtils.cloneSerializable(getSelectedSimContext());
-		if (getSelectedSimulation() != null && getSelectedSimulation().getMathOverrides().hasOverrides()) {
-			// need to clone simContext and apply overrides before proceeding.
-			clonedSimContext.getModel().refreshDependencies();
-			clonedSimContext.refreshDependencies();			
-			cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(clonedSimContext);
-			cbit.vcell.mapping.MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
-
-			cbit.vcell.solver.MathOverrides mathOverrides = getSelectedSimulation().getMathOverrides();
-			String[] moConstNames = mathOverrides.getOverridenConstantNames();
-			for (int i = 0; i < moConstNames.length; i++){
-				cbit.vcell.math.Constant overriddenConstant = mathOverrides.getConstant(moConstNames[i]);
-				// Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], 0);
-				Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], getSelectedSimulationJob().getJobIndex());
-				// The above constant (from mathoverride) is not the same instance as the one in the MathSymbolMapping hash.
-				// Hence retreive the correct instance from mathSymbolMapping (mathMapping -> mathDescription) and use it to
-				// retrieve its value (symbolTableEntry) from hash.
-				cbit.vcell.math.Variable overriddenVar = msm.findVariableByName(overriddenConstant.getName());
-				cbit.vcell.parser.SymbolTableEntry[] stes = msm.getBiologicalSymbol(overriddenVar);
-				if (stes == null) {
-					throw new NullPointerException("No matching biological symbol for : " + overriddenConstant.getName());
-				}
-				if (stes.length > 1) {
-					throw new RuntimeException("Cannot have more than one mapping entry for constant : " + overriddenConstant.getName());
-				}
-				if (stes[0] instanceof Parameter) {
-					Parameter param = (Parameter)stes[0];
-					if (param.isExpressionEditable()) {
-						if (param instanceof Kinetics.KineticsParameter) {
-							// Kinetics param has to be set separately for the integrity of the kinetics object
-							Kinetics.KineticsParameter kinParam = (Kinetics.KineticsParameter)param;
-							ReactionStep[] rs = clonedSimContext.getModel().getReactionSteps();
-							for (int j = 0; j < rs.length; j++){
-								if (rs[j].getNameScope().getName().equals(kinParam.getNameScope().getName())) {
-									rs[j].getKinetics().setParameterValue(kinParam, overriddenExpr);
-								}
-							}
-						} else if (param instanceof cbit.vcell.model.ExpressionContainer) {
-							// If it is any other editable param, set its expression with the 
-							((cbit.vcell.model.ExpressionContainer)param).setExpression(overriddenExpr);
-						}
-					}
-				}
-			}
-		}
-		// After setting the overrides, set the vcOverriddenSimContext to the clonedSimContext
-		setOverriddenSimContext(clonedSimContext);
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage());
-	}
+//	try {
+//		SimulationContext clonedSimContext = (SimulationContext)org.vcell.util.BeanUtils.cloneSerializable(getSelectedSimContext());
+//		if (getSelectedSimulation() != null && getSelectedSimulation().getMathOverrides().hasOverrides()) {
+//			// need to clone simContext and apply overrides before proceeding.
+//			clonedSimContext.getModel().refreshDependencies();
+//			clonedSimContext.refreshDependencies();			
+//			cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(clonedSimContext);
+//			cbit.vcell.mapping.MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
+//
+//			cbit.vcell.solver.MathOverrides mathOverrides = getSelectedSimulation().getMathOverrides();
+//			String[] moConstNames = mathOverrides.getOverridenConstantNames();
+//			for (int i = 0; i < moConstNames.length; i++){
+//				cbit.vcell.math.Constant overriddenConstant = mathOverrides.getConstant(moConstNames[i]);
+//				// Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], 0);
+//				Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], getSelectedSimulationJob().getJobIndex());
+//				// The above constant (from mathoverride) is not the same instance as the one in the MathSymbolMapping hash.
+//				// Hence retreive the correct instance from mathSymbolMapping (mathMapping -> mathDescription) and use it to
+//				// retrieve its value (symbolTableEntry) from hash.
+//				cbit.vcell.math.Variable overriddenVar = msm.findVariableByName(overriddenConstant.getName());
+//				cbit.vcell.parser.SymbolTableEntry[] stes = msm.getBiologicalSymbol(overriddenVar);
+//				if (stes == null) {
+//					throw new NullPointerException("No matching biological symbol for : " + overriddenConstant.getName());
+//				}
+//				if (stes.length > 1) {
+//					throw new RuntimeException("Cannot have more than one mapping entry for constant : " + overriddenConstant.getName());
+//				}
+//				if (stes[0] instanceof Parameter) {
+//					Parameter param = (Parameter)stes[0];
+//					if (param.isExpressionEditable()) {
+//						if (param instanceof Kinetics.KineticsParameter) {
+//							// Kinetics param has to be set separately for the integrity of the kinetics object
+//							Kinetics.KineticsParameter kinParam = (Kinetics.KineticsParameter)param;
+//							ReactionStep[] rs = clonedSimContext.getModel().getReactionSteps();
+//							for (int j = 0; j < rs.length; j++){
+//								if (rs[j].getNameScope().getName().equals(kinParam.getNameScope().getName())) {
+//									rs[j].getKinetics().setParameterValue(kinParam, overriddenExpr);
+//								}
+//							}
+//						} else if (param instanceof cbit.vcell.model.ExpressionContainer) {
+//							// If it is any other editable param, set its expression with the 
+//							((cbit.vcell.model.ExpressionContainer)param).setExpression(overriddenExpr);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		// After setting the overrides, set the vcOverriddenSimContext to the clonedSimContext
+//		setOverriddenSimContext(clonedSimContext);
+//	} catch (Exception e) {
+//		e.printStackTrace(System.out);
+//		throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage());
+//	}
 
 	// Create an SBMLDocument and create the sbmlModel from the document, so that other details can be added to it in translateBioModel()
 	SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
@@ -1103,51 +1036,35 @@ public String getSBMLFile() {
 
 	translateBioModel();
 
-	// add annotations
-	Element annotationElement = null;
-	String sbmlAnnotationString = sbmlModel.getAnnotationString();
-	if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
-		// If there was no annotation in the sbmlmodel, we are exporting a fresh VCell biomodel. Add biomodel info to <annotation>
-		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-		Element vcellInfoElement = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
-		Element biomodelElement = new Element(XMLTags.BioModelTag, sbml_vcml_ns);
-		biomodelElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(vcBioModel.getName())); 
-		if (vcBioModel.getVersion() != null) {
-			biomodelElement.setAttribute(XMLTags.KeyValueAttrTag, vcBioModel.getVersion().getVersionKey().toString());
-		}
-		vcellInfoElement.addContent(biomodelElement);
-		Element simSpecElement = new Element(XMLTags.SimulationSpecTag, sbml_vcml_ns);
-		simSpecElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(getSelectedSimContext().getName()));
-		if (getSelectedSimContext().getVersion() != null) {
-			simSpecElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimContext().getVersion().getVersionKey().toString());
-		}
-		vcellInfoElement.addContent(simSpecElement);
-		if (getSelectedSimulation() != null) {
-			Element simElement = new Element(XMLTags.SimulationTag, sbml_vcml_ns);
-			simElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(getSelectedSimulation().getName()));
-			if (getSelectedSimulation().getVersion() != null) {
-				simElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimulation().getVersion().getVersionKey().toString());
-			}
-			vcellInfoElement.addContent(simElement);
-		}
-		annotationElement.addContent(vcellInfoElement);
-
-	}else{
-		// if sbmlmodel had annotations, it probably is an original sbml model, or a roundtripped model, so export existing annotations.
-		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
+	// include specific vcellInfo annotations
+	Element sbmlImportRelatedElement = new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
+	Element biomodelElement = new Element(XMLTags.BioModelTag, sbml_vcml_ns);
+	biomodelElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(vcBioModel.getName())); 
+	if (vcBioModel.getVersion() != null) {
+		biomodelElement.setAttribute(XMLTags.KeyValueAttrTag, vcBioModel.getVersion().getVersionKey().toString());
 	}
-	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
-	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
-
-	if (vcBioModel.getMIRIAMAnnotation() != null && vcBioModel.getMIRIAMAnnotation().getUserNotes() != null) {
-		Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
-		MIRIAMHelper.addToSBML(notesElement, vcBioModel.getMIRIAMAnnotation(), false);
-		sbmlModel.setNotes(XmlUtil.xmlToString(notesElement, true));
+	sbmlImportRelatedElement.addContent(biomodelElement);
+	Element simSpecElement = new Element(XMLTags.SimulationSpecTag, sbml_vcml_ns);
+	simSpecElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(getSelectedSimContext().getName()));
+	if (getSelectedSimContext().getVersion() != null) {
+		simSpecElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimContext().getVersion().getVersionKey().toString());
+	}
+	sbmlImportRelatedElement.addContent(simSpecElement);
+	if (getSelectedSimulation() != null) {
+		Element simElement = new Element(XMLTags.SimulationTag, sbml_vcml_ns);
+		simElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(getSelectedSimulation().getName()));
+		if (getSelectedSimulation().getVersion() != null) {
+			simElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimulation().getVersion().getVersionKey().toString());
+		}
+		sbmlImportRelatedElement.addContent(simElement);
 	}
 
-	// Add the user annotations in the biomodel, simContext and simulation as <notes> in the sbml model.
-	// ---- TODO ----
+	// Get RDF annotation for species from SBMLAnnotationUtils
+	sbmlAnnotationUtil.writeAnnotation(vcBioModel, sbmlModel, sbmlImportRelatedElement);
 	
+	// Now set notes, 
+	sbmlAnnotationUtil.writeNotes(vcBioModel, sbmlModel);
+
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
@@ -1166,32 +1083,9 @@ public String getSBMLFile() {
 	return sbmlStr;
 }
 
-/*
-/**
- * Insert the method's description here.
- * Creation date: (4/12/2006 5:09:09 PM)
- * @return java.lang.String
- 
-public java.lang.String getVcPreferredSimContextName() {
-	return vcPreferredSimContextName;
-}
-*/
-
-/**
- * Insert the method's description here.
- * Creation date: (4/12/2006 5:09:09 PM)
- * @param newVcPreferredSimContextName java.lang.String
- */
-/*
- * 
-public void setVcPreferredSimContextName(java.lang.String newVcPreferredSimContextName) {
-	vcPreferredSimContextName = newVcPreferredSimContextName;
-}
-*/
-
-public void setOverriddenSimContext(SimulationContext newVcOverriddenSimContext) {
-	vcOverridenSimContext = newVcOverriddenSimContext;
-}
+//public void setOverriddenSimContext(SimulationContext newVcOverriddenSimContext) {
+//	vcOverridenSimContext = newVcOverriddenSimContext;
+//}
 
 public void setSelectedSimContext(SimulationContext newVcSelectedSimContext) {
 	vcSelectedSimContext = newVcSelectedSimContext;

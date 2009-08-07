@@ -9,6 +9,7 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
@@ -374,7 +375,8 @@ public Object getValueAt(int row, int col) {
 				if(rxStep != null && parameter instanceof Kinetics.KineticsParameter){
 					KineticsParameter param = (KineticsParameter)parameter;
 					if (param.getKinetics().getAuthoritativeParameter() == param){
-						return (rxStep.getAnnotation() != null?rxStep.getAnnotation():"");
+						VCMetaData vcMetaData = rxStep.getModel().getVcMetaData();
+						return (vcMetaData != null ? vcMetaData.getFreeTextAnnotation(rxStep) : "");
 					}
 				}
 			}
@@ -722,7 +724,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 						ReactionStep rxStep = getEditableAnnotationReactionStep(rowIndex);
 						if(rxStep != null){
-							rxStep.setAnnotation(annotation);
+							VCMetaData vcMetaData = rxStep.getModel().getVcMetaData();
+							vcMetaData.setFreeTextAnnotation(rxStep, annotation);
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					} else if (parameter instanceof ModelParameter){

@@ -23,6 +23,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -51,6 +52,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private Diagram[] fieldDiagrams = new Diagram[0];
 	private ModelNameScope nameScope = new Model.ModelNameScope();
 	private Model.ModelParameter[] fieldModelParameters = new Model.ModelParameter[0];
+	private transient VCMetaData vcMetaData = null;
 
 
 	public class ModelNameScope extends BioNameScope {
@@ -2718,6 +2720,34 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);	
+}
+
+
+
+public VCMetaData getVcMetaData() {
+	return vcMetaData;
+}
+
+
+public void setVcMetaData(VCMetaData vcMetaData) {
+	this.vcMetaData = vcMetaData;
+}
+
+public void populateVCMetadata(boolean bMetadataPopulated) {
+	// populate free text for identifiables (species, reactionSteps, structures)
+	if (!bMetadataPopulated) {
+		for (int i = 0; i < fieldSpecies.length; i++) {
+			vcMetaData.setFreeTextAnnotation(fieldSpecies[i], fieldSpecies[i].getAnnotation());
+		}
+		for (int i = 0; i < fieldReactionSteps.length; i++) {
+			vcMetaData.setFreeTextAnnotation(fieldReactionSteps[i], fieldReactionSteps[i].getAnnotation());
+		}
+		
+		// No annotation in structures for the moment.
+//		for (int i = 0; i < fieldStructures.length; i++) {
+//			vcMetaData.setFreeTextAnnotation(fieldStructures[i], fieldStructures[i].getAnnotation());
+//		}
+	}		
 }
 
 }

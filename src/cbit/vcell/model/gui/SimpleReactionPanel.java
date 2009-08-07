@@ -81,7 +81,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		}
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
-				getSimpleReaction().setAnnotation(annotationTextArea.getText());
+				getSimpleReaction().getModel().getVcMetaData().setFreeTextAnnotation(getSimpleReaction(), annotationTextArea.getText());
 			} else if (e.getSource() == ivjSimpleReactionNameTextField) {
 				try {
 					getSimpleReaction().setName(ivjSimpleReactionNameTextField.getText());
@@ -1144,7 +1144,7 @@ private JButton getJToggleButton() {
 }
 
 private void refreshAnnotationTextField() {
-	annotationTextArea.setText(getSimpleReaction().getAnnotation());
+	annotationTextArea.setText(getSimpleReaction().getModel().getVcMetaData().getFreeTextAnnotation(getSimpleReaction()));
 	annotationTextArea.setCaretPosition(0);
 }
 

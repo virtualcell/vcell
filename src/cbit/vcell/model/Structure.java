@@ -1,5 +1,6 @@
 package cbit.vcell.model;
 
+import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.parser.ExpressionBindingException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -19,10 +20,9 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotation;
 
-public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener, MIRIAMAnnotatable
+public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener,
+		Identifiable
 {
 	private String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -30,7 +30,6 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 	private KeyValue fieldKey = null;
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
-	private MIRIAMAnnotation miriamAnnotation;
 	private StructureSize fieldStructureSize = null;
 	
 
@@ -114,14 +113,6 @@ protected Structure(KeyValue key){
 	addVetoableChangeListener(this);
 }      
 
-public MIRIAMAnnotation getMIRIAMAnnotation() {
-	return miriamAnnotation;
-}
-public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
-	this.miriamAnnotation = miriamAnnotation;
-	
-}
-
 public StructureSize getStructureSize(){
 	if (fieldStructureSize == null){
 		fieldStructureSize = new StructureSize(getDefaultStructureSizeName(fieldName));
@@ -157,9 +148,6 @@ protected boolean compareEqual0(Structure s) {
 	}
 
 	if (!getName().equals(s.getName())){
-		return false;
-	}
-	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), s.getMIRIAMAnnotation())){
 		return false;
 	}
 	return true;

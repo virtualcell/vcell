@@ -19,6 +19,7 @@ import org.vcell.util.document.VersionableType;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
@@ -296,7 +297,8 @@ public BioModel getBioModelUnresolved(User user, KeyValue bioModelKey) throws Da
 	//
 	BioModel newBioModel = new BioModel(bioModelMetaData.getVersion());
 	try {
-		newBioModel.setMIRIAMAnnotation(bioModelMetaData.getMIRIAMAnnotation());
+		// newBioModel.setMIRIAMAnnotation(bioModelMetaData.getMIRIAMAnnotation());
+		System.err.println("< < < < NEED TO GET VCMETADATA FROM METADATA TABLE ... METADATA IS EMPTY. > > > >");
 		newBioModel.setModel(model);
 		newBioModel.setSimulationContexts(scArray);
 		//
@@ -1292,11 +1294,20 @@ roundtripTimer += l2 - l1;
 		for (int i = 0; i < bioModel.getNumSimulations(); i++){
 			simKeys[i] = ((Simulation)memoryToDatabaseHash.get(bioModel.getSimulations(i))).getKey();
 		}
+		// @TODO Add VC_METADATA table ... pointed to by VC_BIOMODEL (metadataref on delete cascade)
+		// @TODO Write script to populate VC_METADATA from VC_MIRIAM
+		// @TODO save VCMetaData from this BioModel into VC_METADATA .. stick in memoryToDatabaseHash
+		//
+		VCMetaData savedVCMetaData = (VCMetaData)memoryToDatabaseHash.get(bioModel.getVCMetaData());
+		KeyValue metadataKey = null;
+		if (savedVCMetaData!=null){
+			metadataKey = savedVCMetaData.getKey();
+		}
 		BioModelMetaData bioModelMetaData = null;
 		if (oldVersion==null){
-			bioModelMetaData = new BioModelMetaData(modelKey, scKeys, simKeys, bioModel.getName(), bioModel.getDescription());
+			bioModelMetaData = new BioModelMetaData(modelKey, scKeys, simKeys, metadataKey, bioModel.getName(), bioModel.getDescription());
 		}else{
-			bioModelMetaData = new BioModelMetaData(oldVersion, modelKey, scKeys, simKeys);
+			bioModelMetaData = new BioModelMetaData(oldVersion, modelKey, scKeys, simKeys, metadataKey);
 			if (!bioModel.getDescription().equals(oldVersion.getAnnot())) {
 				try {
 					bioModelMetaData.setDescription(bioModel.getDescription());
@@ -1305,7 +1316,7 @@ roundtripTimer += l2 - l1;
 				}
 			}
 		}
-		bioModelMetaData.setMIRIAMAnnotation(bioModel.getMIRIAMAnnotation());
+//		bioModelMetaData.setMIRIAMAnnotation(bioModel.getMIRIAMAnnotation());
 		BioModelMetaData updatedBioModelMetaData = null;
 		if (bioModel.getVersion()==null || !bioModel.getVersion().getName().equals(bioModel.getName())){
 			KeyValue updatedBioModelKey = dbServer.getDBTopLevel().insertVersionable(user,bioModelMetaData,null/*hack*/,bioModel.getName(),false,true);
@@ -1326,7 +1337,8 @@ roundtripTimer += l2 - l1;
 		//
 		//bioModelXML = getBioModelXML(user,updatedBioModelMetaData.getVersion().getVersionKey());
 		BioModel updatedBioModel = new BioModel(updatedBioModelMetaData.getVersion());
-		updatedBioModel.setMIRIAMAnnotation(updatedBioModelMetaData.getMIRIAMAnnotation());
+		updatedBioModel.setVCMetaData(bioModel.getVCMetaData());
+		//updatedBioModel.setMIRIAMAnnotation(updatedBioModelMetaData.getMIRIAMAnnotation());
 		updatedBioModel.setModel((Model)memoryToDatabaseHash.get(bioModel.getModel()));
 		for (int i = 0; i < bioModel.getNumSimulationContexts(); i++){
 			updatedBioModel.addSimulationContext((SimulationContext)memoryToDatabaseHash.get(bioModel.getSimulationContexts(i)));
