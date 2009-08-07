@@ -31,6 +31,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionFlag;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
@@ -3219,21 +3220,36 @@ private void showDatabaseWindow() {
 private void showEditAnnotationWindow() {
 
 	try {
-		if (getWindowManager() != null && getWindowManager().getVCDocument() != null) {
-			try{
-				// initialize fields
-				String oldAnnotation = getWindowManager().getVCDocument().getDescription();
-				// show the editor
-				String newAnnotation = DialogUtils.showAnnotationDialog(this, oldAnnotation);
-				if (BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
-					// Update VCDocument annotation
-					getWindowManager().getVCDocument().setDescription(newAnnotation);
+		if (getWindowManager() != null) {
+			VCDocument vcDoc = getWindowManager().getVCDocument();
+			if (vcDoc != null) {
+				try{
+					// initialize fields - different for biomodel and mathmodel, geometry
+					String oldAnnotation = null;
+					if (vcDoc instanceof BioModel) {
+						oldAnnotation = ((BioModel)vcDoc).getVCMetaData().getFreeTextAnnotation((BioModel)vcDoc);
+					} else {
+						oldAnnotation = vcDoc.getDescription();	
+					}
+					// show the editor
+					String newAnnotation = DialogUtils.showAnnotationDialog(this, oldAnnotation);
+					if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
+						// if VCDocument is a Biomodel, set the vcMetadata, else edit VCDoc.description for now
+						if (vcDoc instanceof BioModel) {
+							// update free text annotation in VCMetaData
+							VCMetaData vcMetaData = ((BioModel)vcDoc).getVCMetaData();
+							vcMetaData.setFreeTextAnnotation((BioModel)vcDoc, newAnnotation);
+						} else {
+							// Update VCDocument annotation
+							vcDoc.setDescription(newAnnotation);
+						}
+					}
+				}catch(UtilCancelException e){
+					//Do Nothing
 				}
-			}catch(UtilCancelException e){
-				//Do Nothing
+			}else{
+				throw new Exception("No Document to Edit");
 			}
-		}else{
-			throw new Exception("No Document to Edit");
 		}
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
@@ -3423,7 +3439,7 @@ private void viewStatusBar() {
 private JMenuItem getJMenuItemMIRIAM() {
 	if (jMenuItemMIRIAM == null) {
 		jMenuItemMIRIAM = new JMenuItem();
-		jMenuItemMIRIAM.setText("MIRIAM...");
+		jMenuItemMIRIAM.setText("Model Annotation ...");
 		jMenuItemMIRIAM.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
 				if(getTopLevelWindowManager() instanceof BioModelWindowManager){

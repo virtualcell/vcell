@@ -35,7 +35,7 @@ public static void main(java.lang.String[] args) {
 		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args2,"CreateSpeciesDialogTest",new javax.swing.JFrame());
 		cbit.vcell.clientdb.DocumentManager docManager = managerManager.getDocumentManager();
 		if(mode.equalsIgnoreCase("edit")){
-			aEditSpeciesDialog.initEditSpecies(model.getSpeciesContexts(model.getStructures(0))[0],docManager);
+			aEditSpeciesDialog.initEditSpecies(model.getSpeciesContexts(model.getStructures(0))[0], model, docManager);
 		}else if(mode.equalsIgnoreCase("add")){
 			aEditSpeciesDialog.initAddSpecies(model,model.getStructures(0),docManager);
 		}else{

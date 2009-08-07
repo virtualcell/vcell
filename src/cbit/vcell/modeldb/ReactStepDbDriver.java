@@ -22,7 +22,6 @@ import org.vcell.util.document.VersionableType;
 
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.xml.MIRIAMAnnotation;
 /**
  * This type was created in VisualAge.
  */
@@ -252,7 +251,7 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 
 	dbc.putUnprotected(rsKey,rs);
 	
-	MIRIAMTable.table.setMIRIAMAnnotation(con, rs, rs.getKey());
+//	MIRIAMTable.table.setMIRIAMAnnotation(con, rs, rs.getKey());
 	return rs;
 }
 
@@ -358,7 +357,7 @@ public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) t
 		stmt.close(); // Release resources include resultset
 	}
 
-	MIRIAMTable.table.setMIRIAMAnnotation(con, species, speciesID);
+//	MIRIAMTable.table.setMIRIAMAnnotation(con, species, speciesID);
 	return species;
 }
 
@@ -657,9 +656,9 @@ public Structure[] getStructuresFromModel(Connection con,KeyValue modelKey) thro
 	}
 	Structure structures[] = new Structure[structList.size()];
 	structList.copyInto(structures);
-	for (int i = 0; i < structures.length; i++) {
-		MIRIAMTable.table.setMIRIAMAnnotation(con, structures[i], structures[i].getKey());
-	}
+//	for (int i = 0; i < structures.length; i++) {
+//		MIRIAMTable.table.setMIRIAMAnnotation(con, structures[i], structures[i].getKey());
+//	}
 	return structures;
 }
 
@@ -794,7 +793,7 @@ private void insertReactionStepSQL(Connection con, KeyValue modelKey, KeyValue s
 						ReactStepTable.table.kineticsLarge,
 						ReactStepTable.table.kineticsSmall);
 	
-	MIRIAMTable.table.insertMIRIAM(con,reactionStep,newKey);
+//	MIRIAMTable.table.insertMIRIAM(con,reactionStep,newKey);
 }
 
 
@@ -819,7 +818,7 @@ public KeyValue insertSpecies(InsertHashtable hash, Connection con,cbit.vcell.mo
 	updateCleanSQL(con,sql);
 	hash.put(species,key);
 	
-	MIRIAMTable.table.insertMIRIAM(con,species,key);
+//	MIRIAMTable.table.insertMIRIAM(con,species,key);
 	
 	return key;
 }
@@ -859,7 +858,7 @@ public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell
 	updateCleanSQL(con,sql);
 	hash.put(structure,key);
 	
-	MIRIAMTable.table.insertMIRIAM(con,structure,key);
+//	MIRIAMTable.table.insertMIRIAM(con,structure,key);
 	
 	return key;
 }

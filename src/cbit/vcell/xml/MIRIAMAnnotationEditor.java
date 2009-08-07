@@ -1,51 +1,63 @@
 package cbit.vcell.xml;
 
-import javax.swing.JPanel;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridBagLayout;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JButton;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
-
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.xml.MIRIAMHelper.DescriptiveHeirarchy;
-
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.Vector;
-import javax.swing.JLabel;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
+
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeSelectionModel;
+
+import org.jdom.Attribute;
 import org.jdom.Element;
-import uk.ac.ebi.miriam.lib.MiriamLink;
-import java.awt.SystemColor;
+import org.jdom.Namespace;
+import org.jdom.Text;
+import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.VCID;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.xml.XMLMetaData;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.Structure;
+import cbit.vcell.xml.MiriamTreeModel.IdentifiableNode;
+import cbit.vcell.xml.MiriamTreeModel.LinkNode;
+
+import com.hp.hpl.jena.rdf.model.Statement;
 
 public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
-	
+	public static final String[] MIRIAM_ANNOT_COLUMNS = new String[] {"Model Component","Component Name","Annotation Scheme","Annotation Qualifier","Authoritative Identifier"};
 	//SBML tag types
 	private static String TYPE_ID_SPECIES = "species";
 	private static String TYPE_ID_MODEL = "model";
@@ -120,23 +132,18 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			"http://www.who.int/classifications/icd/"
 	};
 
+	private JTree jTreeMIRIAM = null;
 	private JScrollPane jScrollPane = null;
-	private JTable jTableMIRIAM = null;
-	private JButton jButtonOK = null;
 	private JPanel jPanel = null;
+	private JButton jButtonEdit = null;
 	private JButton jButtonAdd = null;
 	private JButton jButtonDelete = null;
 	
 	private Vector<ActionListener> actionListenerV = new Vector<ActionListener>();
-	public static final String ACTION_OK ="OK";  //  @jve:decl-index=0:
-	public static final String ACTION_ADD ="Add Annotation...";  //  @jve:decl-index=0:
-	public static final String ACTION_EDIT ="Edit...";
+	public static final String ACTION_EDIT ="Edit Annotation ...";  //  @jve:decl-index=0:
+	public static final String ACTION_ADD ="Add Annotation ...";  //  @jve:decl-index=0:
 	public static final String ACTION_DELETE ="Delete Annotation";
 	
-	Vector<MIRIAMHelper.MIRIAMTableRow> rowData;  //  @jve:decl-index=0:
-	private JButton jButtonEditAnnotation = null;
-	Vector<Integer> rowMapV;
-	private JButton jButtonCopy = null;
 	private JPanel jPanelNewIdentifier = null;  //  @jve:decl-index=0:visual-constraint="86,363"
 	private JComboBox jComboBoxURI = null;
 	private JLabel jLabel2 = null;
@@ -158,7 +165,9 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JTextField jTextFieldFamily = null;
 	private JTextField jTextFieldEmail = null;
 	private JTextField jTextFieldOrganization = null;
-	private JButton jButtonDetails = null;
+	
+	private VCMetaData vcMetaData = null;
+	private TreeMap<Identifiable, List<Statement>> miriamDescrHeir = null;
 	/**
 	 * This method initializes 
 	 * 
@@ -167,13 +176,13 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		super();
 		initialize();
 		initQualifiers();
-		jButtonEditAnnotation.setVisible(false);
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		if(jTableMIRIAM.getCellEditor() != null){
-			jTableMIRIAM.getCellEditor().stopCellEditing();
-		}
+//		if(jTableMIRIAM.getCellEditor() != null){
+//			jTableMIRIAM.getCellEditor().stopCellEditing();
+//		}
+		
 		for (int i = 0; i < actionListenerV.size(); i++) {
 			actionListenerV.get(i).actionPerformed(e);
 		}
@@ -204,7 +213,6 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
         this.setSize(new Dimension(627, 333));
         this.add(getJScrollPane(), gridBagConstraints1);
         this.add(getJPanel(), gridBagConstraints5);
-			
 	}
 
 	/**
@@ -215,59 +223,102 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JScrollPane getJScrollPane() {
 		if (jScrollPane == null) {
 			jScrollPane = new JScrollPane();
-			jScrollPane.setViewportView(getJTableMIRIAM());
+			jScrollPane.setViewportView(getJTreeMIRIAM());
 		}
 		return jScrollPane;
 	}
 
-	/**
-	 * This method initializes jTableMIRIAM	
-	 * 	
-	 * @return javax.swing.JTable	
-	 */
-	private JTable getJTableMIRIAM() {
-		if (jTableMIRIAM == null) {
-			jTableMIRIAM = new JTable();
-			jTableMIRIAM.getSelectionModel().addListSelectionListener(
-				new ListSelectionListener(){
-					public void valueChanged(ListSelectionEvent e) {
-						if(e.getValueIsAdjusting()){
-							return;
+	private JTree getJTreeMIRIAM() {
+		if (jTreeMIRIAM == null) {
+			try {
+				DefaultTreeSelectionModel ivjLocalSelectionModel;
+				ivjLocalSelectionModel = new DefaultTreeSelectionModel();
+				ivjLocalSelectionModel.setSelectionMode(1);
+				jTreeMIRIAM = new JTree();
+				jTreeMIRIAM.setName("JTree1");
+				jTreeMIRIAM.setToolTipText("MODEL ANNOTATION");
+				jTreeMIRIAM.setBounds(0, 0, 357, 405);
+				jTreeMIRIAM.setMinimumSize(new java.awt.Dimension(100, 72));
+				jTreeMIRIAM.setSelectionModel(ivjLocalSelectionModel);
+				jTreeMIRIAM.setRowHeight(0);
+				
+				// Add cellRenderer
+				DefaultTreeCellRenderer dtcr = new DefaultTreeCellRenderer() {
+					@Override
+					public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
+							boolean leaf, int row, boolean hasFocus) {
+						super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,
+								row, hasFocus);
+						setBackgroundSelectionColor(Color.LIGHT_GRAY);
+						if (value instanceof LinkNode) {
+							LinkNode ln = (LinkNode)value;
+							String predicate = ln.getPredicatePrefix();
+							String link = ln.getLink();
+							String text = ln.getText();
+							if (link != null) {
+								setToolTipText("Double-click to open link");
+								setText("<html><font color='black'>" + predicate + "</font>" + 
+								"&nbsp;&nbsp;&nbsp;&nbsp;<a href=" + link + ">" + text + "</a></html>");
+							} 
+						} else {
+							setToolTipText(null);
+							String text = getText();
+							setText("<html><font color='black'>" + text + "</font></html>");
 						}
-						jButtonAdd.setEnabled(false);
-						jButtonDelete.setEnabled(false);
-						jButtonEditAnnotation.setEnabled(false);
-						jButtonDetails.setEnabled(false);
-						if(getSelectedDescriptionHeirarchy() == null){
-						//if(jTableMIRIAM.getSelectedRow() != -1 && rowData != null && rowData.get(rowMapV.get(jTableMIRIAM.getSelectedRow())).descriptiveHeirarchy == null){
-							jButtonAdd.setEnabled(true);
-						}
-						if(getSelectedDescriptionHeirarchy() != null){
-						//if(jTableMIRIAM.getSelectedRow() != -1 && rowData != null && rowData.get(rowMapV.get(jTableMIRIAM.getSelectedRow())).descriptiveHeirarchy != null){
-							jButtonDelete.setEnabled(true);
-							jButtonEditAnnotation.setEnabled(true);
-							jButtonDetails.setEnabled(getSelectedURI() != null);
-						}
+						return this;
 					}
-				}
-			);
-			jTableMIRIAM.getTableHeader().setReorderingAllowed(false);
-		}
-		return jTableMIRIAM;
-	}
+				};
+				jTreeMIRIAM.setCellRenderer(dtcr);
+				
+//				// add tree selection listener
+//				class MiriamTreeSelectionListener implements TreeSelectionListener {			
+//					public void valueChanged(TreeSelectionEvent e) {
+//						Object node = jTreeMIRIAM.getLastSelectedPathComponent();
+//						if (node instanceof LinkNode) {
+//							String link = ((LinkNode)node).getLink();
+//							if (link != null) {
+//								DialogUtils.browserLauncher(jTreeMIRIAM, link, "failed to launch", false);
+//							}
+//						}
+//					}
+//				};
+//				jTreeMIRIAM.addTreeSelectionListener(new MiriamTreeSelectionListener());
 
+				MouseListener mouseListener = new MouseAdapter() {
+					public void mousePressed(MouseEvent e) {
+						if(e.getClickCount() == 2) {
+							Object node = jTreeMIRIAM.getLastSelectedPathComponent();
+							if (node instanceof LinkNode) {
+								String link = ((LinkNode)node).getLink();
+								if (link != null) {
+									DialogUtils.browserLauncher(jTreeMIRIAM, link, "failed to launch", false);
+								}
+							}
+						}
+					} 
+				};
+				jTreeMIRIAM.addMouseListener(mouseListener);
+
+			} catch (java.lang.Throwable ivjExc) {
+				ivjExc.printStackTrace(System.out);
+			}
+		}
+		return jTreeMIRIAM;
+	}
+	
 	/**
-	 * This method initializes jButtonOK	
+	 * This method initializes jButtonEdit
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getJButtonOK() {
-		if (jButtonOK == null) {
-			jButtonOK = new JButton();
-			jButtonOK.setText(ACTION_OK);
-			jButtonOK.addActionListener(this);
+	private JButton getJButtonEdit() {
+		if (jButtonEdit == null) {
+			jButtonEdit = new JButton();
+			jButtonEdit.setText(ACTION_EDIT);
+			jButtonEdit.setEnabled(false);
+			jButtonEdit.addActionListener(this);
 		}
-		return jButtonOK;
+		return jButtonEdit;
 	}
 
 	/**
@@ -277,12 +328,6 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	 */
 	private JPanel getJPanel() {
 		if (jPanel == null) {
-			GridBagConstraints gridBagConstraints21 = new GridBagConstraints();
-			gridBagConstraints21.gridx = 4;
-			gridBagConstraints21.gridy = 0;
-			GridBagConstraints gridBagConstraints11 = new GridBagConstraints();
-			gridBagConstraints11.gridx = 2;
-			gridBagConstraints11.gridy = 0;
 			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
 			gridBagConstraints4.gridx = 3;
 			gridBagConstraints4.gridy = 0;
@@ -296,16 +341,9 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			final GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.columnWidths = new int[] {0,0,0,0,0,7};
 			jPanel.setLayout(gridBagLayout);
-			jPanel.add(getJButtonOK(), gridBagConstraints);
+			jPanel.add(getJButtonEdit(), gridBagConstraints);
 			jPanel.add(getJButtonAdd(), gridBagConstraints2);
 			jPanel.add(getJButtonDelete(), gridBagConstraints4);
-			jPanel.add(getJButtonEditAnnotation(), gridBagConstraints11);
-			jPanel.add(getJButtonCopy(), gridBagConstraints21);
-
-			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-			gridBagConstraints_1.gridy = 0;
-			gridBagConstraints_1.gridx = 5;
-			jPanel.add(getJButtonDetails(), gridBagConstraints_1);
 		}
 		return jPanel;
 	}
@@ -338,188 +376,56 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		return jButtonDelete;
 	}
 
-	public MIRIAMAnnotatable getSelectedMIRIAMAnnotatable(){
-		int selectedrow = jTableMIRIAM.getSelectedRow();
-		if(selectedrow != -1&& rowData != null && rowMapV != null){
-			return rowData.get(rowMapV.get(selectedrow)).miriamAnnotatable;
-			//return rowData.get(selectedrow).miriamAnnotatable;
+	public Identifiable getSelectedIdentifiable(){
+		Object treeNode = jTreeMIRIAM.getLastSelectedPathComponent();
+		if (treeNode instanceof IdentifiableNode) {
+			Identifiable identifiable = ((IdentifiableNode)treeNode).getIdentifiable();
+			return identifiable;
+		} else if (treeNode instanceof LinkNode) {
+			// treeNode = jTreeMIRIAM.getSelectionPath().getParentPath().getPathComponent(0);
+			return null;
 		}
 		return null;
 	}
 	
-	public MIRIAMHelper.DescriptiveHeirarchy getSelectedDescriptionHeirarchy(){
-		int selectedrow = jTableMIRIAM.getSelectedRow();
-		if(selectedrow != -1 && rowData != null && rowMapV != null){
-			return rowData.get(rowMapV.get(selectedrow)).descriptiveHeirarchy;
-			//return rowData.get(selectedrow).descriptiveHeirarchy;
+	public List<Statement> getSelectedStatements(){
+		Object treeNode = jTreeMIRIAM.getLastSelectedPathComponent();
+		if (treeNode instanceof IdentifiableNode) {
+			Identifiable identifiable = ((IdentifiableNode)treeNode).getIdentifiable();
+			if (miriamDescrHeir != null) {
+				List<Statement> stmtsList = miriamDescrHeir.get(identifiable);
+				return stmtsList;
+			} else {
+				DialogUtils.showErrorDialog(this, "No statement list for " + identifiable.toString());
+			}
 		}
 		return null;
 	}
 	
-	public void setMIRIAMAnnotation(TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir){
-		DefaultTableModel tableModel = new DefaultTableModel(){
-		    public boolean isCellEditable(int row, int column) {
-		    	return false;
-//		        return
-//		        	(column == (MIRIAMHelper.MIRIAM_ANNOT_COLUMNS.length-1))
-//		        	&&
-//		        	(rowData.get(row).descriptiveHeirarchy != null);
-		    }
-		};
+	public void setBioModel(BioModel bioModel) {
+		vcMetaData = bioModel.getVCMetaData();
+		createMiriamDescriptionHeirarchy(bioModel);
 
-		rowData = MIRIAMHelper.getTableFormattedData(mirimaDescrHeir);
-//		String[][] rowArr= new String[rowData.size()][];
-//		for (int i = 0; i < rowArr.length; i++) {
-//			rowArr[i] = rowData.get(i).rowData;
-//		}
-		Vector<String[]> rowArrV = new Vector<String[]>();
-		rowMapV = new Vector<Integer>();
-		HashMap<Integer, Vector<DescriptiveHeirarchy>> creatorsH =
-			new HashMap<Integer, Vector<DescriptiveHeirarchy>>();
-//		Vector<DescriptiveHeirarchy> latestCreator = null;
-		for (int i = 0; i < rowData.size(); i++) {
-			if(rowData.get(i).descriptiveHeirarchy != null && rowData.get(i).descriptiveHeirarchy.isCreatorChild()){
-				Vector<DescriptiveHeirarchy> latestCreator = new Vector<DescriptiveHeirarchy>();
-				creatorsH.put(rowArrV.size(),latestCreator);
-				rowArrV.add(new String[] {null,null,null,"Creator "+(creatorsH.size()),rowData.get(i).rowData[4]});
-				rowMapV.add(i);
-				latestCreator.add(rowData.get(i).descriptiveHeirarchy);
-				int index = i+1;
-				while(rowData.get(index).descriptiveHeirarchy != null && rowData.get(index).descriptiveHeirarchy.isCreatorChild()){
-					if(rowData.get(index).descriptiveHeirarchy.isSameCreator(latestCreator.firstElement())){
-						rowArrV.lastElement()[4]+= ","+rowData.get(index).rowData[4];
-						latestCreator.add(rowData.get(index).descriptiveHeirarchy);
-						index+= 1;
-						i+= 1;
-					}else{
-//						i=index-1;
-						break;
-					}
-				}
-//				if(!bIsCreator){//first time
-//					latestCreator = new Vector<DescriptiveHeirarchy>();
-//					creatorsH.put(rowArrV.size(),latestCreator);
-//					rowArrV.add(new String[] {null,null,null,"Creator "+(creatorsH.size()),rowData.get(i).rowData[4]});
-//				}else{
-//					rowArrV.lastElement()[4]+= ","+rowData.get(i).rowData[4];
-//				}
-//				latestCreator.add(rowData.get(i).descriptiveHeirarchy);
-//				bIsCreator = true;
-			}
-			else{
-//				bIsCreator = false;
-//				latestCreator = null;
-				rowArrV.add(rowData.get(i).rowData);
-				rowMapV.add(i);
-			}
-		}
-		tableModel.setDataVector(rowArrV.toArray(new String[0][]), MIRIAMHelper.MIRIAM_ANNOT_COLUMNS);
-		jTableMIRIAM.setModel(tableModel);
-		jTableMIRIAM.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-		tableModel.addTableModelListener(
-			new TableModelListener(){
-				public void tableChanged(TableModelEvent e) {
-					DescriptiveHeirarchy descrHeir = rowData.get(e.getFirstRow()).descriptiveHeirarchy;
-					MIRIAMHelper.editDescriptiveHeirarchy(
-							descrHeir, (String)jTableMIRIAM.getValueAt(e.getFirstRow(), e.getColumn()));
-				}	
-			}
-		);		
-		jTableMIRIAM.getSelectionModel().setSelectionInterval(0, 0);
+		// set tree model on jTableMIRIAM here, since we have access to miriamDescrHeir here
+		jTreeMIRIAM.setModel(new MiriamTreeModel(new DefaultMutableTreeNode("MODEL ANNOTATION",true), miriamDescrHeir, vcMetaData));
 	}
 
-	/**
-	 * This method initializes jButtonEditAnnotation	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getJButtonEditAnnotation() {
-		if (jButtonEditAnnotation == null) {
-			jButtonEditAnnotation = new JButton();
-			jButtonEditAnnotation.setText(ACTION_EDIT);
-			jButtonEditAnnotation.addActionListener(this);
+	private void editDescriptiveHeirarchy(List<Statement> descrHeir,String newValue){
+		if(descrHeir == null){
+			return;
 		}
-		return jButtonEditAnnotation;
-	}
-
-	/**
-	 * This method initializes jButtonCopy	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getJButtonCopy() {
-		if (jButtonCopy == null) {
-			jButtonCopy = new JButton();
-			jButtonCopy.setText("Copy All");
-			jButtonCopy.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent e) {
-					StringBuffer sb = new StringBuffer();
-					Vector<Vector<String>> dataVector = ((DefaultTableModel)jTableMIRIAM.getModel()).getDataVector();
-					for (Iterator<Vector<String>> iter = dataVector.iterator(); iter.hasNext();) {
-						Vector<String> element = iter.next();
-						for (int i = 0; i < element.size(); i++) {
-							sb.append((i>0?" ":"")+element.get(i));
-						}
-						sb.append("\n");
-					}
-					VCellTransferable.sendToClipboard(sb.toString());
-				}
-			});
-		}
-		return jButtonCopy;
-	}
-
-	private JButton getJButtonDetails() {
-		if (jButtonDetails == null) {
-			jButtonDetails = new JButton();
-			jButtonDetails.setText("Details...");
-			jButtonDetails.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent e) {
-					detailAction();
-				}
-			});
-		}
-		return jButtonDetails;
-	}
-
-	private void detailAction(){
-		final URI detailURI = getSelectedURI();
-		if (detailURI != null) {
-			AsynchClientTask task1 = new AsynchClientTask("Displaying MIRIAM Information in Web Browser", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
-				@Override
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					try {
-						getClientTaskStatusSupport().setMessage("Creating MiriamLink...");
-						getClientTaskStatusSupport().setMessage("Creating MiriamLink...");
-						MiriamLink	miriamLink = new MiriamLink();
-						getClientTaskStatusSupport().setMessage("Gathering Website Info...");
-						String[] urlArr = miriamLink.getDataEntries(detailURI.toString());
-						if(getClientTaskStatusSupport().isInterrupted()){
-							return;
-						}
-						if (urlArr != null && urlArr.length > 0) {
-							getClientTaskStatusSupport().setMessage("Displaying Details in Local Web Browser...");
-							PopupGenerator.browserLauncher(MIRIAMAnnotationEditor.this, urlArr[0],urlArr[0],false);
-						}else{
-							throw new Exception("MiriamLink network query returned null");
-						}
-						Thread.sleep(2000);//keep progress for a little while because browser takes time
-					} catch (Exception e) {
-						e.printStackTrace();
-						if(!(e instanceof InterruptedException)){
-							throw new Exception("Error displaying MIRIAM Web Information.\n"+e.getMessage());
-						}
-					}
-				}
-			};
-			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1 }, false, true, null);
+		if(descrHeir instanceof TextDescriptiveHeirarchy){
+			((TextDescriptiveHeirarchy)descrHeir).getText().setText(newValue);
+		}else if(descrHeir instanceof AttributeDescriptiveHeirarchy){
+			((AttributeDescriptiveHeirarchy)descrHeir).getAttribute().setValue(newValue);
+		}else{
+			throw new IllegalAccessError("Error editing unknown DescriptiveHeirarchy type.");
 		}
 	}
 	
 	private URI getSelectedURI(){
-		String detailInfo = (String)getJTableMIRIAM().getValueAt(jTableMIRIAM.getSelectedRow(), 4);
+		// String detailInfo = (String)getJTableMIRIAM().getValueAt(jTableMIRIAM.getSelectedRow(), 4);
+		String detailInfo = "ok.........";
 		if (detailInfo != null) {
 			System.out.println(detailInfo);
 			URL detailURL = null;
@@ -641,37 +547,28 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		}
 	}
 	public void addIdentifierDialog() throws URISyntaxException{
-//		JScrollPane jsp = new JScrollPane(jPanelNewIdentifier);
-//		jsp.setPreferredSize(new Dimension(800,40));
 		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelNewIdentifier(), "Define New Formal Identifier") == JOptionPane.OK_OPTION){
-			String qualifierName = (String)jComboBoxQualifier.getSelectedItem();
-			URI qualifierURI = null;
-			if(qualifierName.endsWith("(bio)")){
-				qualifierURI = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
-			}else if(qualifierName.endsWith("(model)")){
-				qualifierURI = new URI(XMLTags.BMMODELQUAL_NAMESPACE_URI);
+			String propertyID = (String)jComboBoxQualifier.getSelectedItem();
+			URI propertyNamespace = null;
+			if(propertyID.endsWith("(bio)")){
+				propertyNamespace = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
+			}else if(propertyID.endsWith("(model)")){
+				propertyNamespace = new URI(XMLTags.BMMODELQUAL_NAMESPACE_URI);
 			}
-			qualifierName = qualifierName.substring(0,qualifierName.indexOf(" ("));
-			Element newID =
-				MIRIAMHelper.createRDFIdentifier((String)jComboBoxURI.getSelectedItem(), jTextFieldFormalID.getText());
-			MIRIAMHelper.addIdentifierToAnnotation(
-					newID,
-					getSelectedMIRIAMAnnotatable(),
-					qualifierName,
-					qualifierURI);
+			propertyID = propertyID.substring(0,propertyID.indexOf(" ("));
+			String objectNamespace = (String)jComboBoxURI.getSelectedItem();
+			String objectID = jTextFieldFormalID.getText();
+			vcMetaData.addRDFStatement(getSelectedIdentifiable(),new URI(propertyNamespace+"/"+propertyID),new URI(objectNamespace+"/"+objectID));
 		}
 	}
 
 	
 	public void addTimeUTCDialog(){
-//		JScrollPane jsp = new JScrollPane(jPanelNewIdentifier);
-//		jsp.setPreferredSize(new Dimension(800,40));
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 		getJTextFieldTimeUTC().setText(sdf.format(new Date()));
 		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelTimeUTC(), "Define New Date") == JOptionPane.OK_OPTION){
-			MIRIAMHelper.addDateToAnnotation(
-					getSelectedMIRIAMAnnotatable(),
+			vcMetaData.addDateToAnnotation(getSelectedIdentifiable(),
 					getJTextFieldTimeUTC().getText(),
 					(String)getJComboBoxTimeUTCType().getSelectedItem());
 //			String qualifierName = (String)jComboBoxQualifier.getSelectedItem();
@@ -694,12 +591,18 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 
 	public void addCreatorDialog(){
 		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelCreator(), "Define New Creator") == JOptionPane.OK_OPTION){
-			MIRIAMHelper.addCreatorToAnnotation(
-					getSelectedMIRIAMAnnotatable(),
-					getJTextFieldFamily().getText(),
-					getJTextFieldGiven().getText(),
-					getJTextFieldEmail().getText(),
-					getJTextFieldOrganization().getText());
+			Identifiable identifiable = getSelectedIdentifiable();
+			String familyName = getJTextFieldFamily().getText();
+			String givenName = getJTextFieldGiven().getText();
+			String email = getJTextFieldEmail().getText();
+			String organization = getJTextFieldOrganization().getText();
+			vcMetaData.addCreatorToAnnotation(identifiable,familyName,givenName,email,organization);
+//			MIRIAMHelper.addCreatorToAnnotation(
+//					getSelectedMIRIAMAnnotatable(),
+//					getJTextFieldFamily().getText(),
+//					getJTextFieldGiven().getText(),
+//					getJTextFieldEmail().getText(),
+//					getJTextFieldOrganization().getText());
 			
 //			MIRIAMHelper.addDateToAnnotation(
 //					getSelectedMIRIAMAnnotatable(),
@@ -898,4 +801,286 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		}
 		return jTextFieldOrganization;
 	}
-}
+
+	private void createMiriamDescriptionHeirarchy(final BioModel bioModel){
+		miriamDescrHeir =
+			new TreeMap<Identifiable, List<Statement>>(
+					new Comparator<Identifiable>(){
+						public int compare(Identifiable o1, Identifiable o2) {
+							VCID vcid1 = VCID.getVCID(bioModel, o1);
+							VCID vcid2 = VCID.getVCID(bioModel, o2);
+							return vcid1.toASCIIString().compareTo(vcid2.toASCIIString());
+						}}
+			);
+		List<Statement> statements = vcMetaData.getStatements(bioModel);
+		miriamDescrHeir.put(bioModel,statements);
+
+		Species[] speciesArr = bioModel.getModel().getSpecies();
+		for (int i = 0; i < speciesArr.length; i++) {
+			statements = vcMetaData.getStatements(speciesArr[i]);
+			miriamDescrHeir.put(speciesArr[i],statements);
+		}
+		Structure[] structArr = bioModel.getModel().getStructures();
+		for (int i = 0; i < structArr.length; i++) {
+			statements = vcMetaData.getStatements(structArr[i]);
+			miriamDescrHeir.put(structArr[i],statements);
+		}
+		ReactionStep[] reactArr = bioModel.getModel().getReactionSteps();
+		for (int i = 0; i < reactArr.length; i++) {
+			statements = vcMetaData.getStatements(reactArr[i]);
+			miriamDescrHeir.put(reactArr[i],statements);
+		}
+	}
+	
+	private Vector<DescriptiveHeirarchy> traverse(Vector<DescriptiveHeirarchy> descrHeirV,Object content){
+		if(content instanceof Text){
+			TextDescriptiveHeirarchy textDescrHeir = null;
+			if(((Text)content).getText() != null && ((Text)content).getText().trim().length() > 0){//!((Text)content).getText().equals("\n")){
+				textDescrHeir = new TextDescriptiveHeirarchy((Text)content);
+				getDescriptiveHeirarchy(textDescrHeir,((Text)content).getParent());
+				if(textDescrHeir.getHeirarchy().size() > 0){
+					descrHeirV.add(textDescrHeir);
+				}
+			}
+			return descrHeirV;
+		}
+		if(content instanceof Element){
+			List children = ((Element)content).getContent();
+			if(children != null && children.size() > 0){
+				for(int i=0;i<children.size();i+= 1){
+					traverse(descrHeirV,children.get(i));
+				}
+				return descrHeirV;
+			}
+//			if(isDescriptiveScheme(((Element)content).getNamespace())){
+				List<Attribute> attributes = ((Element)content).getAttributes();
+				if(attributes != null && attributes.size() > 0){
+					for(int i=0;i<attributes.size();i+= 1){
+						AttributeDescriptiveHeirarchy attrDescrHeir =
+							new AttributeDescriptiveHeirarchy(attributes.get(i));
+						getDescriptiveHeirarchy(attrDescrHeir,attributes.get(i).getParent());
+						if(attrDescrHeir.getHeirarchy().size()>0){
+							descrHeirV.add(attrDescrHeir);
+						}
+					}
+					return descrHeirV;
+				}
+//			}
+		}
+		return descrHeirV;
+	}
+	
+	private void getDescriptiveHeirarchy(DescriptiveHeirarchy descriptiveHeirarchy,Element element){
+		if(element != null){
+			if(isListElement(element)){
+				descriptiveHeirarchy.setListElement(element);
+			}
+			if(descriptiveHeirarchy.getTypeElement() == null && isTypeElement(element)){
+				descriptiveHeirarchy.setTypeElement(element);
+			}
+			if(isDescriptiveScheme(element.getNamespace())){
+				descriptiveHeirarchy.getHeirarchy().add(element);
+			}
+			getDescriptiveHeirarchy(descriptiveHeirarchy, element.getParent());
+		}
+	}
+	private static boolean isDescriptiveScheme(Namespace nameSpace){
+		return
+		nameSpace.getURI().equals(XMLTags.VCARD_NAMESPACE_URI) ||
+		nameSpace.getURI().equals(XMLTags.DUBCORE_NAMESPACE_URI) ||
+		nameSpace.getURI().equals(XMLTags.DUBCORETERMS_NAMESPACE_URI) ||
+		nameSpace.getURI().equals(XMLTags.BMBIOQUAL_NAMESPACE_URI) ||
+		nameSpace.getURI().equals(XMLTags.BMMODELQUAL_NAMESPACE_URI);
+		
+	}
+
+	private static boolean isListElement(Element element){
+		return
+			element.getNamespaceURI().equals(XMLMetaData.rdfNameSpace.getURI())
+			&&
+			element.getName().equals("li");
+	}
+	private static boolean isTypeElement(Element element){
+		return
+			element.getName().equals("model") ||
+			element.getName().equals("reaction") ||
+			element.getName().equals("species") ||
+			element.getName().equals("compartment");
+	}
+
+	//	private Vector<IdentifiableMetaData> getTableFormattedData(TreeMap<Identifiable, List<Statement>> miriamDescrHeir){
+	//	Vector<IdentifiableMetaData> rowV = new Vector<IdentifiableMetaData>();
+	////	if(mirimaDescrHeir.size() > 0){
+	//		Set<Identifiable> keys = miriamDescrHeir.keySet();
+	//		Iterator<Identifiable> iter = keys.iterator();
+	//		while(iter.hasNext()){
+	//			Identifiable identifiable = iter.next();
+	//			List<Statement> descrHeirV = miriamDescrHeir.get(identifiable);
+	//			String modelComponentType = 
+	//				(identifiable instanceof BioModel?"BioModel":"")+
+	//				(identifiable instanceof Species?"Species":"")+
+	//				(identifiable instanceof Structure?"Structure":"")+
+	//				(identifiable instanceof ReactionStep?"ReactionStep":"");
+	//			String modelComponentName =
+	//				(identifiable instanceof BioModel?((BioModel)identifiable).getName():"")+
+	//				(identifiable instanceof Species?((Species)identifiable).getCommonName():"")+
+	//				(identifiable instanceof Structure?((Structure)identifiable).getName():"")+
+	//				(identifiable instanceof ReactionStep?((ReactionStep)identifiable).getName():"");
+	//			int descHeirSize = (descrHeirV==null)?(0):descrHeirV.size();
+	//			{
+	//			IdentifiableMetaData miriamTableRow = new IdentifiableMetaData();
+	//			miriamTableRow.statements = null;
+	//			miriamTableRow.identifiable = identifiable;
+	//			OpenRegistry.OpenEntry registryEntry = vcMetaData.getRegistry().forObject(identifiable);
+	//			Resource resource = registryEntry.resource();
+	//			miriamTableRow.rowData =
+	//				new String[] {
+	//					modelComponentType,
+	//					modelComponentName+"<"+resource+">",
+	////					modelComponentName,
+	//					(descHeirSize == 0?"-----":null),
+	//					(descHeirSize == 0?"-----":null),
+	//					(descHeirSize == 0?"None Defined":null)
+	//				};
+	//			rowV.add(miriamTableRow);
+	//			}
+	//			Model rdfModel = vcMetaData.getRdf();
+	//			for (int i = 0; i < descHeirSize; i++) {
+	//				Statement statement = descrHeirV.get(i);
+	//				String[] row = new String[MIRIAM_ANNOT_COLUMNS.length];
+	//				Triple triple = statement.asTriple();
+	//				row[0] = null;
+	//				row[1] = null;
+	//				row[2] = triple.getPredicate().getNameSpace();
+	//				row[3] = triple.getPredicate().toString().substring(triple.getPredicate().getNameSpace().length());
+	//				row[4] = null;
+	//				Node objectNode = triple.getObject();
+	//				RDFNode objectRDFNode = statement.getObject();
+	//				System.out.println("object = "+objectNode.toString());
+	//				System.out.println("isBlank() "+objectNode.isBlank());
+	//				System.out.println("isConcrete() "+objectNode.isConcrete());
+	//				System.out.println("isLiteral() "+objectNode.isLiteral());
+	//				System.out.println("isURI() "+objectNode.isURI());
+	//				System.out.println("isVariable() "+objectNode.isVariable());
+	//				System.out.println("instanceof Resource "+(objectNode instanceof Resource));
+	//				int count = 0;
+	//				while (count++<30 && !(objectNode.isURI() || objectNode.isLiteral())){
+	//					StmtIterator bagQueryIter = rdfModel.listStatements(
+	//							(Resource)objectRDFNode, 
+	//							rdfModel.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+	//							rdfModel.createResource("http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag"));
+	//					if (bagQueryIter.hasNext()){ // this is a bag, get contents of bag
+	//						final Resource finalObject = (Resource)objectRDFNode; 
+	//						Selector bagContentsSelector = new Selector() {
+	//							public RDFNode getObject() { return null; }
+	//							public Property getPredicate() { return null; }
+	//							public Resource getSubject() { return null; }
+	//							public boolean isSimple() { return false; }
+	//							public boolean test(Statement arg0) {
+	//								if (!arg0.getSubject().equals(finalObject)) { return false; }
+	//								Property property = arg0.getPredicate();
+	//								String propertyString = property.toString();
+	//								final String BagMemberPrefix = "http://www.w3.org/1999/02/22-rdf-syntax-ns#_";
+	//								if (propertyString.startsWith(BagMemberPrefix)){
+	//									try {
+	//										String rest = propertyString.substring(BagMemberPrefix.length());
+	//										int index = Integer.parseInt(rest);
+	//										return true;
+	//									}catch (NumberFormatException e){
+	//									}
+	//								}
+	//								return false;
+	//							}	
+	//						};
+	//						StmtIterator bagIter = rdfModel.listStatements(bagContentsSelector);
+	//						StringBuffer buffer = new StringBuffer("<html>");
+	//						int bagCount=0;
+	//						while (bagIter.hasNext()){
+	//							Statement stmt = bagIter.nextStatement();
+	//							if (bagCount>0){
+	//								buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+	//							}
+	//							String urn = stmt.getObject().toString();
+	//							String link = urn;
+	//							String text = urn;
+	//							if (urn.startsWith("urn:miriam:biomodels.db:")) {
+	//								link = urn.replaceFirst("urn:miriam:biomodels.db:", "http://www.ebi.ac.uk/biomodels-main/");
+	//								text = urn.replaceFirst("urn:miriam:biomodels.db:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:pubmed:")){
+	//								link = urn.replaceFirst("urn:miriam:pubmed:", "http://www.ncbi.nlm.nih.gov/pubmed/");
+	//								text = urn.replaceFirst("urn:miriam:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:obo.go:")) {
+	//								link = urn.replaceFirst("urn:miriam:obo.go:", "http://www.ebi.ac.uk/ego/GTerm?id=");
+	//								text = urn.replaceFirst("urn:miriam:obo.go:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:biomodels.db:")) {
+	//								link = urn.replaceFirst("urn:miriam:biomodels.db:", "http://www.ebi.ac.uk/biomodels-main/");
+	//								text = urn.replaceFirst("urn:miriam:biomodels.db:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:biomodels.db:")) {
+	//								link = urn.replaceFirst("urn:miriam:biomodels.db:", "http://www.ebi.ac.uk/biomodels-main/");
+	//								text = urn.replaceFirst("urn:miriam:biomodels.db:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:reactome:")) {
+	//								link = urn.replaceFirst("urn:miriam:reactome:", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?FROM_REACTOME=1&ST_ID=");
+	//								text = urn.replaceFirst("urn:miriam:reactome:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:ec-code:")) {
+	//								link = urn.replaceFirst("urn:miriam:ec-code:", "http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&ec=");
+	//								text = urn.replaceFirst("urn:miriam:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:taxonomy:")) {
+	//								link = urn.replaceFirst("urn:miriam:taxonomy:", "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=");
+	//								text = urn.replaceFirst("urn:miriam:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:interpro:")) {
+	//								link = urn.replaceFirst("urn:miriam:interpro:", "http://www.ebi.ac.uk/interpro/DisplayIproEntry?ac=");
+	//								text = urn.replaceFirst("urn:miriam:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							} else if (urn.startsWith("urn:miriam:kegg.pathway:")) {
+	//								link = urn.replaceFirst("urn:miriam:kegg.pathway:", "http://www.genome.ad.jp/dbget-bin/www_bget?pathway+");
+	//								text = urn.replaceFirst("urn:miriam:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							}  else if (urn.startsWith("urn:miriam:uniprot:")) {
+	//								link = urn.replaceFirst("urn:miriam:uniprot:", "http://www.ebi.uniprot.org/entry/");
+	//								text = urn.replaceFirst("urn:miriam:", "");
+	//								buffer.append("<a href="+link+">"+text+"</a>");
+	//							}else {
+	//								buffer.append(urn+" ");
+	//							}
+	//							bagCount++;
+	//						}
+	//						buffer.append("</html>");
+	//						row[4] = buffer.toString();
+	//					}else{ // not a bag
+	//						StmtIterator iter2 = rdfModel.listStatements((Resource)objectRDFNode, null, (RDFNode)null);
+	//						if (iter2.hasNext()){
+	//							Statement stmt = iter2.nextStatement();
+	//							objectNode = stmt.asTriple().getObject();
+	//							objectRDFNode = stmt.getObject();
+	//						}
+	//					}
+	//				}
+	//				if (count>=30){
+	//					System.out.println("GAVE UP TRYING TO RESOLVE STATEMENTS (LOOK FOR INFINITE RECURSION)");
+	//				}
+	//				if (row[4]==null){
+	//					row[4] = objectNode.toString();
+	//				}
+	//				{
+	//				IdentifiableMetaData miriamTableRow = new IdentifiableMetaData();
+	//				miriamTableRow.identifiable = identifiable;
+	//				miriamTableRow.rowData = row;
+	//				rowV.add(miriamTableRow);
+	//				}
+	////				rowV.add(row);
+	//			}
+	//			
+	//		}
+	//		return rowV;//rowV.toArray(new String[0][]);
+	//}
+
+	
+}  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -7,17 +7,22 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="lib" path="arq.jar"/>
+	<classpathentry kind="lib" path="xercesImpl.jar"/>
+	<classpathentry kind="lib" path="icu4j_3_4.jar"/>
+	<classpathentry kind="lib" path="jena.jar"/>
+	<classpathentry kind="lib" path="iri.jar"/>
+	<classpathentry kind="lib" path="xml-apis.jar"/>
 	<classpathentry exported="true" kind="lib" path="ome-xml_2009March15.zip"/>
 	<classpathentry exported="true" kind="lib" path="loci-common_2009March15.jar"/>
 	<classpathentry exported="true" kind="lib" path="bio-formats_2009March15.jar" sourcepath="/bio-formats"/>
 	<classpathentry kind="lib" path="sbmlj.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
-	<classpathentry kind="lib" path="xml-apis.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
 	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="lib" path="new_mail.jar"/>
-	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20070625.jar"/>
-	<classpathentry exported="true" kind="lib" path="thirdParty.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Developer/Eclipse/workspace/VCell IDE/MiriamJavaLib-standalone-20080421.jar"/>
+	<classpathentry exported="true" kind="lib" path="thirdParty.jar" sourcepath="vcellClientThirdParty.jar"/>
 	<classpathentry kind="lib" path="sonic_Client.jar"/>
 	<classpathentry kind="lib" path="sonic_XA.jar"/>
 	<classpathentry kind="lib" path="sonic_Crypto.jar"/>

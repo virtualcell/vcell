@@ -510,7 +510,7 @@ protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model
 /**
  * This method was created by a SmartGuide.
  */
-protected void showEditSpeciesDialog(GraphPane myGraphPane,SpeciesContext speciesContext) {
+protected void showEditSpeciesDialog(GraphPane myGraphPane, Model model, SpeciesContext speciesContext) {
 	//
 	if(getDialogOwner(myGraphPane) == null){
 		return;
@@ -518,7 +518,7 @@ protected void showEditSpeciesDialog(GraphPane myGraphPane,SpeciesContext specie
 	//
 	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
 	EditSpeciesDialog editSpeciesDialog = new EditSpeciesDialog(parent);
-	editSpeciesDialog.initEditSpecies(speciesContext,getDocumentManager());
+	editSpeciesDialog.initEditSpecies(speciesContext, model, getDocumentManager());
 	//
 	ZEnforcer.showModalDialogOnTop(editSpeciesDialog, myGraphPane);
 }

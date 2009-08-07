@@ -8,6 +8,8 @@ package cbit.vcell.xml;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.stoch.StochHybridOptions;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -296,13 +298,12 @@ public org.jdom.Element getXML(cbit.vcell.biomodel.BioModel param) throws XmlPar
 			biomodelnode.addContent( getXML(param.getSimulationContexts(index),param) );
 		}
 	}
-	//Add Metadata information
+	//Add Database Metadata (Version) information
 	if (param.getVersion() != null) {
 		biomodelnode.addContent( getXML(param.getVersion(), param.getName(), param.getDescription()) );
 	}
 
-	MIRIAMHelper.addToSBML(biomodelnode, param.getMIRIAMAnnotation(), true);
-
+	biomodelnode.addContent(XMLMetaDataWriter.getElement(param.getVCMetaData(), param));
 	return biomodelnode;
 }
 
@@ -2644,12 +2645,6 @@ public org.jdom.Element getXML(ReactionStep param) throws XmlParseException {
 	} else if (param instanceof SimpleReaction) {
 		rsElement = getXML((SimpleReaction)param);
 	}
-	if(rsElement != null){
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
-		annotationElem.setText(mangle(param.getAnnotation()));
-		rsElement.addContent(annotationElem);
-	}
-	MIRIAMHelper.addToSBML(rsElement, param.getMIRIAMAnnotation(), true);
 	return rsElement;
 }
 
@@ -2741,7 +2736,6 @@ public org.jdom.Element getXML(Species species) throws XmlParseException {
 		annotationElem.setText(mangle(species.getAnnotation()));
 		speciesElement.addContent(annotationElem);
 	}
-	MIRIAMHelper.addToSBML(speciesElement, species.getMIRIAMAnnotation(),true);
 	
 	//add DBSpecies
 	if (species.getDBSpecies()!=null) {
@@ -2750,6 +2744,7 @@ public org.jdom.Element getXML(Species species) throws XmlParseException {
 
 	return speciesElement;
 }
+
 
 
 /**
@@ -2807,8 +2802,6 @@ public org.jdom.Element getXML(Structure structure) throws XmlParseException {
 		structureElement.setAttribute(XMLTags.KeyValueAttrTag, structure.getKey().toString());
 	}
 
-	MIRIAMHelper.addToSBML(structureElement, structure.getMIRIAMAnnotation(),true);
-	
 	return structureElement;
 }
 
@@ -3114,4 +3107,5 @@ public org.jdom.Element getXML(cbit.vcell.solver.TimeStep param) {
 	
 	return timestep;
 }
+
 }

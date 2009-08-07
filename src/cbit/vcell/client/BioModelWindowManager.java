@@ -10,11 +10,12 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.InternalFrameListener;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
@@ -22,6 +23,8 @@ import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
@@ -34,9 +37,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotationEditor;
-import cbit.vcell.xml.MIRIAMHelper;
+import cbit.vcell.xml.MIRIAMAnnotationViewer;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:17:07 PM)
@@ -765,65 +767,37 @@ protected void refreshMIRIAMDependencies(BioModel oldBioModel,BioModel newBioMod
 public void showMIRIAMWindow() {
 
 	if(mIRIAMAnnotationEditorFrame == null){
-		final MIRIAMAnnotationEditor miriamAnnotationEditor =
-			new MIRIAMAnnotationEditor();
-		miriamAnnotationEditor.addActionListener(
-				new ActionListener(){
-					public void actionPerformed(ActionEvent e) {
-						try{
-							if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_OK)){
-								close(mIRIAMAnnotationEditorFrame,getJDesktopPane());
-							}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_DELETE)){
-								MIRIAMAnnotatable miriamAnnotatable = miriamAnnotationEditor.getSelectedMIRIAMAnnotatable();
-								if(miriamAnnotatable == null || miriamAnnotatable.getMIRIAMAnnotation() == null){
-									return;
-								}
-								MIRIAMHelper.deleteDescriptiveHeirarchy(miriamAnnotationEditor.getSelectedDescriptionHeirarchy());
-								if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation().getChildren().size() == 0){
-									miriamAnnotatable.setMIRIAMAnnotation(null);
-								}
-								TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
-									MIRIAMHelper.showList(getBioModel());
-								miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
-							}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_ADD)){
-								final String ID_CHOICE = "Identifier";
-								final String DATE_CHOICE = "Date";
-								final String CREATOR_CHOICE = "Creator";
-								String choice =
-									(String)DialogUtils.showListDialog(getJDesktopPane(), new String[] {CREATOR_CHOICE,ID_CHOICE,DATE_CHOICE/*,"Creator","Date"*/}, "Choose Annotation Type");
-								if(choice != null){
-									if(choice.equals(ID_CHOICE)){
-										miriamAnnotationEditor.addIdentifierDialog();
-									}else if(choice.equals(DATE_CHOICE)){
-										miriamAnnotationEditor.addTimeUTCDialog();
-									}else if(choice.equals(CREATOR_CHOICE)){
-										miriamAnnotationEditor.addCreatorDialog();
-									}
-									TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
-										MIRIAMHelper.showList(getBioModel());
-									miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
-								}
-							}
-						}catch(Exception e2){
-							DialogUtils.showErrorDialog(getComponent(), "Error during Edit action\n"+e2.getMessage());
-						}
-					}
-				}
-			);
-
+		MIRIAMAnnotationViewer miriamAnnotationViewer = new MIRIAMAnnotationViewer();
+		miriamAnnotationViewer.setBiomodel(bioModel);
 		mIRIAMAnnotationEditorFrame = new JInternalFrame();
 		mIRIAMAnnotationEditorFrame.setTitle("View/Add/Delete/Edit MIRIAM Annotation");
-		mIRIAMAnnotationEditorFrame.getContentPane().add(miriamAnnotationEditor);
+		mIRIAMAnnotationEditorFrame.addInternalFrameListener (
+				new InternalFrameListener(){
+					public void internalFrameActivated(InternalFrameEvent e) {
+					}
+					public void internalFrameClosed(InternalFrameEvent e) {
+						close(mIRIAMAnnotationEditorFrame, getJDesktopPane());
+					}
+					public void internalFrameClosing(InternalFrameEvent e) {
+					}
+					public void internalFrameDeactivated(InternalFrameEvent e) {
+					}
+					public void internalFrameDeiconified(InternalFrameEvent e) {
+					}
+					public void internalFrameIconified(InternalFrameEvent e) {
+					}
+					public void internalFrameOpened(InternalFrameEvent e) {
+					}
+				});
+
+		mIRIAMAnnotationEditorFrame.getContentPane().add(miriamAnnotationViewer);
 		mIRIAMAnnotationEditorFrame.setSize(600,400);
 		mIRIAMAnnotationEditorFrame.setClosable(true);
 		mIRIAMAnnotationEditorFrame.setResizable(true);
-
 	}
 
 	if(!mIRIAMAnnotationEditorFrame.isShowing()){
-		TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
-			MIRIAMHelper.showList(getBioModel());
-		((MIRIAMAnnotationEditor)mIRIAMAnnotationEditorFrame.getContentPane().getComponent(0)).setMIRIAMAnnotation(mirimaDescrHeir);
+		((MIRIAMAnnotationViewer)mIRIAMAnnotationEditorFrame.getContentPane().getComponent(0)).setBiomodel(bioModel);
 	}
 
 //	showDataViewerPlotsFrame(mIRIAMAnnotationEditorFrame);

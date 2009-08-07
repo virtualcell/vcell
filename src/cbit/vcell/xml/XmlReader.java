@@ -29,6 +29,8 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
 import cbit.image.VCPixelClass;
+import cbit.vcell.biomodel.meta.xml.XMLMetaData;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
@@ -319,8 +321,23 @@ public cbit.vcell.biomodel.BioModel getBioModel(Element param) throws XmlParseEx
 //long l6 = System.currentTimeMillis();
 //System.out.println("sims-------- "+((double)(l6-l5))/1000);		
 	}
-	MIRIAMHelper.setFromSBMLAnnotation(biomodel, param);
-	MIRIAMHelper.setFromSBMLNotes(biomodel, param);
+	
+	//	biomodel.getVCMetaData().setAnnotation(biomodel, param);
+	//	biomodel.getVCMetaData().setNotes(biomodel, param);
+	boolean bMetaDataPopulated = false;
+	List<Element> elementsMetaData = param.getChildren(XMLMetaData.VCMETADATA_TAG, XMLMetaData.nsVCML);
+	if (elementsMetaData != null && elementsMetaData.size() > 0) {
+		for(Element elementMetaData : elementsMetaData) {
+			XMLMetaDataReader.readFromElement(biomodel.getVCMetaData(), biomodel, elementMetaData);		
+		}
+		bMetaDataPopulated = true;
+	} else {
+		// no metadata was found, populate vcMetaData from biomodel (mainly free text annotation for identifiables)
+		if (!bMetaDataPopulated) {
+			biomodel.populateVCMetadata(bMetaDataPopulated);
+		}
+	}
+	
 	return biomodel;
 }
 
@@ -975,8 +992,6 @@ public cbit.vcell.model.Structure getFeature(Element param) throws XmlParseExcep
 	//*** Add Feture to the dictionnary ****
 	this.dictionary.put(param, newfeature.getClass().getName() + ":" + name, newfeature);
 
-	MIRIAMHelper.setFromSBMLAnnotation(newfeature, param);
-	MIRIAMHelper.setFromSBMLNotes(newfeature, param);
 	return newfeature;
 }
 
@@ -1208,7 +1223,7 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	if (annotationText!=null && annotationText.length()>0) {
 		rsAnnotation = unMangle(annotationText);
 	}
-	fluxreaction.setAnnotation(rsAnnotation);
+//	fluxreaction.setAnnotation(rsAnnotation);
 	
 	//set the valence
 	String valenceString = null;
@@ -2244,7 +2259,6 @@ public cbit.vcell.mathmodel.MathModel getMathModel(Element param) throws XmlPars
 		throw new XmlParseException("A PropertyVetoException occurred when adding the Simulations to the MathModel " + name+" : "+e.getMessage());
 	}
 
-//	MIRIAMHelper.setFromSBMLAnnotation(mathmodel, param);
 	return mathmodel;
 }
 
@@ -2350,8 +2364,6 @@ public Membrane getMembrane(Element param) throws XmlParseException {
 	//*** Add Membrane to the Dictionnary ***
 	this.dictionary.put(param, newmembrane.getClass().getName()+":"+name, newmembrane);
 
-	MIRIAMHelper.setFromSBMLAnnotation(newmembrane, param);
-	MIRIAMHelper.setFromSBMLNotes(newmembrane, param);
 	return newmembrane;
 }
 
@@ -3280,9 +3292,7 @@ public ReactionSpec getReactionSpec(Element param) throws XmlParseException{
 		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the reactionMapping value " + temp +", in a reactionSpec object!"+" : "+e.getMessage());
 	}
-	
-	MIRIAMHelper.setFromSBMLAnnotation(reactionstepref, re);
-	MIRIAMHelper.setFromSBMLNotes(reactionstepref, re);
+
 	return reactionspec;
 }
 
@@ -3361,7 +3371,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param, Model mo
 	if (annotationText!=null && annotationText.length()>0) {
 		rsAnnotation = unMangle(annotationText);
 	}
-	simplereaction.setAnnotation(rsAnnotation);
+//	simplereaction.setAnnotation(rsAnnotation);
 	
 	//set the fluxOption
 	String fluxOptionString = null;
@@ -3979,10 +3989,7 @@ public cbit.vcell.model.Species getSpecies(Element param) throws XmlParseExcepti
 	}
 	//create new Specie
 	cbit.vcell.model.Species newspecie = new cbit.vcell.model.Species( specieName, specieAnnotation);
-
-	MIRIAMHelper.setFromSBMLAnnotation(newspecie, param);
-	MIRIAMHelper.setFromSBMLNotes(newspecie, param);
-
+	
 	//Try to read the DBSpecie data
 	Element dbspecieElement = param.getChild(XMLTags.DBSpeciesTag, vcNamespace);
 	
@@ -3999,7 +4006,7 @@ public cbit.vcell.model.Species getSpecies(Element param) throws XmlParseExcepti
 	//***Add the Species to the dictionnary ****
 	String hashname = newspecie.getClass().getName() + ":" + specieName;
 	this.dictionary.put(param, hashname, newspecie);
-
+	
 	return newspecie;
 }
 
@@ -4696,4 +4703,5 @@ public VolVariable getVolVariable(Element param) {
 
 	return volVariable;
 }
+
 }

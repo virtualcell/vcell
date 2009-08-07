@@ -11,19 +11,17 @@ import org.vcell.util.document.User;
  * All rights reserved.
 ©*/
 import cbit.sql.DbDictionary;
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotation;
+import cbit.vcell.biomodel.meta.Identifiable;
 
 public class Species
 	implements
-		java.beans.VetoableChangeListener,org.vcell.util.Cacheable,MIRIAMAnnotatable {
+		java.beans.VetoableChangeListener,org.vcell.util.Cacheable,Identifiable {
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private java.lang.String fieldCommonName = null;
 	private String fieldAnnotation = null;
 	private cbit.vcell.dictionary.DBSpecies fieldDBSpecies = null;
-	private MIRIAMAnnotation miriamAnnotation = null;
 
 public Species(String commonName,String argAnnotation) throws IllegalArgumentException {
 	this(commonName,argAnnotation,null);
@@ -42,15 +40,6 @@ public Species(String commonName,String argAnnotation, cbit.vcell.dictionary.DBS
 		throw new IllegalArgumentException(e.getMessage());
 	}
 }      
-
-public MIRIAMAnnotation getMIRIAMAnnotation() {
-	return miriamAnnotation;
-}
-public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
-	this.miriamAnnotation = miriamAnnotation;
-	
-}
-
 
 
 /**
@@ -101,9 +90,6 @@ public boolean compareEqual(Matchable obj) {
 			return false;
 		}
 		if(!Compare.isEqualOrNull(getDBSpecies(),s.getDBSpecies())){
-			return false;
-		}
-		if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), s.getMIRIAMAnnotation())){
 			return false;
 		}
 		return true;

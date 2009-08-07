@@ -12,6 +12,7 @@ import org.vcell.util.document.User;
 import cbit.sql.*;
 import cbit.vcell.model.*;
 import cbit.vcell.server.*;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.dictionary.*;
 /**
  * This type was created in VisualAge.
@@ -172,8 +173,8 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 
 	String annot = rset.getString(ReactStepTable.table.annotation.getUnqualifiedColName());
 	if(!rset.wasNull()){
-		annot = TokenMangler.getSQLRestoredString(annot);
-		rs.setAnnotation(annot);
+//		annot = TokenMangler.getSQLRestoredString(annot);
+//		rs.setAnnotation(annot);
 	}
 	return rs;
 }
@@ -523,12 +524,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
 	}
 
-	if(reactionStep.getAnnotation() != null && reactionStep.getAnnotation().length() > 0){
-		String annot = TokenMangler.getSQLEscapedString(reactionStep.getAnnotation());
-		buffer.append("'"+annot+"'");
-	}else{
-		buffer.append("NULL");
-	}
+	buffer.append("NULL");
 	buffer.append(")");
 	
 	return buffer.toString();

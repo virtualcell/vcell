@@ -19,9 +19,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.xml.MIRIAMAnnotatable;
-import cbit.vcell.xml.MIRIAMAnnotation;
-import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
 
