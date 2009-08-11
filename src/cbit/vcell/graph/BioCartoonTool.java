@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -496,7 +497,7 @@ protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model
 	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
 	EditSpeciesDialog createSpeciesContextDialog = new EditSpeciesDialog(parent);	
 	createSpeciesContextDialog.initAddSpecies(model,structure,getDocumentManager());
-	ZEnforcer.showModalDialogOnTop(createSpeciesContextDialog, myGraphPane);
+	ZEnforcer.showModalDialogOnTop(createSpeciesContextDialog, getJDesktopPane());
 	if (locationForSpeciesContextShape != null && createSpeciesContextDialog.getSpeciesContext()!=null){
 		SpeciesContext speciesContext = model.getSpeciesContext(createSpeciesContextDialog.getSpeciesContext().getName());
 		if (speciesContext!=null){
@@ -520,7 +521,7 @@ protected void showEditSpeciesDialog(GraphPane myGraphPane, Model model, Species
 	EditSpeciesDialog editSpeciesDialog = new EditSpeciesDialog(parent);
 	editSpeciesDialog.initEditSpecies(speciesContext, model, getDocumentManager());
 	//
-	ZEnforcer.showModalDialogOnTop(editSpeciesDialog, myGraphPane);
+	ZEnforcer.showModalDialogOnTop(editSpeciesDialog, getJDesktopPane());
 }
 
 
@@ -573,7 +574,7 @@ public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model
 		featureDialog.setTitle("Properties for " + childFeature.getName());
 	}
 	//
-	ZEnforcer.showModalDialogOnTop(featureDialog, myGraphPane);
+	ZEnforcer.showModalDialogOnTop(featureDialog, JOptionPane.getDesktopPaneForComponent(myGraphPane));
 }
 
 
@@ -588,6 +589,6 @@ public static final void showMembranePropertiesDialog(GraphPane myGraphPane,Memb
 	MembraneDialog membraneDialog = new MembraneDialog(parent);
 	membraneDialog.init(membrane);
 	membraneDialog.setTitle("Properties for " + membrane.getName());
-	ZEnforcer.showModalDialogOnTop(membraneDialog, myGraphPane);
+	ZEnforcer.showModalDialogOnTop(membraneDialog, JOptionPane.getDesktopPaneForComponent(myGraphPane));
 }
 }
