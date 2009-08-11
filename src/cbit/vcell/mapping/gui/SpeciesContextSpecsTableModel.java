@@ -17,6 +17,7 @@ import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -294,6 +295,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
+	if (evt.getSource() instanceof GeometryContext) {
+		fireTableStructureChanged();
+	}
 }
 
 
@@ -313,11 +317,13 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
+		oldValue.getGeometryContext().removePropertyChangeListener(this);
 		updateListenersReactionContext(oldValue.getReactionContext(),true);
 	}
 	fieldSimulationContext = simulationContext;	
 	if (simulationContext!=null){
 		simulationContext.addPropertyChangeListener(this);
+		simulationContext.getGeometryContext().addPropertyChangeListener(this);
 		updateListenersReactionContext(simulationContext.getReactionContext(),false);
 		
 		autoCompleteSymbolFilter  = simulationContext.getAutoCompleteSymbolFilter();
