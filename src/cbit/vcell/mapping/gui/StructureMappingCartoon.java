@@ -138,6 +138,8 @@ public void refreshAll() {
 		StructureMapping structureMapping = structureMappings[i];
 		if (structureMapping instanceof FeatureMapping){
 			FeatureMapping featureMapping = (FeatureMapping)structureMapping;
+			structureMapping.removePropertyChangeListener(this);
+			structureMapping.addPropertyChangeListener(this);
 			if (featureMapping.getSubVolume()!=null){
 				FeatureShape featureShape = (FeatureShape)getShapeFromModelObject(featureMapping.getFeature());
 				SubvolumeLegendShape subvolumeLegendShape = (SubvolumeLegendShape)getShapeFromModelObject(featureMapping.getSubVolume());

@@ -1044,13 +1044,9 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				if (sc.getStructure()==membrane.getInsideFeature() || sc.getStructure()==membrane.getOutsideFeature()){
 					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
-						if (!scs.isDiffusing()){
-							throw new MappingException("Species '"+sc.getName()+"' ('"+sc.getSpecies().getCommonName()+"' in structure '"+sc.getStructure().getName()
-									+"') interacts with the spatially resolved membrane '"+membrane.getName()+"'"+
-									" which results in a flux, so it must diffuse."+
-									"\n"+
-									"\nEnable diffusion in spatial applications by setting a non-zero diffusion rate for species '"+sc.getName()+"'"+
-									" or disable those reaction(s)");
+						if (!scs.isDiffusing()) {
+							throw new MappingException("To save model or run simulations, enable diffusion for all the species in flux reactions (e.g '" + sc.getName() + "') " 
+									+ "by setting the diffusion rate to a non-zero value in Initial Conditions or disable those reactions in Reaction Mapping.\n\n");
 						}					
 						return scm.getVariable().getName()+ (sc.getStructure()==membrane.getInsideFeature() ? "_INSIDE" : "_OUTSIDE");
 					}else{
@@ -1064,6 +1060,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	}
 	return getNameScope().getSymbolName(ste);
 }
+
 
 
 /**
