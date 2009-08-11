@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 
@@ -39,7 +40,7 @@ public class EditSpeciesDialog extends JDialog {
 	//
 	//
 	private SpeciesContext fieldSpeciesContext = null;
-	private javax.swing.JPanel ivjJInternalFrameEnhancedContentPane = null;
+	private javax.swing.JPanel ivjJContentPane = null;
 	private javax.swing.JButton ivjCancelJButton = null;
 	private javax.swing.JLabel ivjContextNameJLabel = null;
 	private javax.swing.JButton ivjDBLinkJButton = null;
@@ -678,7 +679,7 @@ private javax.swing.JLabel getContextNameJLabel() {
 		try {
 			ivjContextNameJLabel = new javax.swing.JLabel();
 			ivjContextNameJLabel.setName("ContextNameJLabel");
-			ivjContextNameJLabel.setText("Context Name:");
+			ivjContextNameJLabel.setText("Context Name");
 			ivjContextNameJLabel.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -847,25 +848,10 @@ private javax.swing.JCheckBox getJCheckBoxHasOverride() {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getJDialogContentPane() {
-	if (ivjJInternalFrameEnhancedContentPane == null) {
+	if (ivjJContentPane == null) {
 		try {
-			ivjJInternalFrameEnhancedContentPane = new javax.swing.JPanel();
-			ivjJInternalFrameEnhancedContentPane.setName("JInternalFrameEnhancedContentPane");
-			ivjJInternalFrameEnhancedContentPane.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 5;
-			constraintsJPanel1.gridwidth = 4;
-			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel1.weightx = 1.0;
-			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getJPanel1(), constraintsJPanel1);
-
-			java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 3;
-			constraintsJPanel2.gridwidth = 3;
-			constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getJPanel2(), constraintsJPanel2);
+			ivjJContentPane = new javax.swing.JPanel();
+			ivjJContentPane.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsNameJLabel = new java.awt.GridBagConstraints();
 			constraintsNameJLabel.gridx = 0; constraintsNameJLabel.gridy = 0;
@@ -873,16 +859,18 @@ private javax.swing.JPanel getJDialogContentPane() {
 			constraintsNameJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(getNameJLabel(), constraintsNameJLabel);
 
+			java.awt.GridBagConstraints constraintsNameValueJTextField = new java.awt.GridBagConstraints();
+			constraintsNameValueJTextField.gridx = 1; constraintsNameValueJTextField.gridy = 0;
+			constraintsNameValueJTextField.gridwidth = 2;
+			constraintsNameValueJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsNameValueJTextField.weightx = 1.0;
+			constraintsNameValueJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJDialogContentPane().add(getNameValueJTextField(), constraintsNameValueJTextField);
+
 			java.awt.GridBagConstraints constraintsContextNameJLabel = new java.awt.GridBagConstraints();
 			constraintsContextNameJLabel.gridx = 0; constraintsContextNameJLabel.gridy = 1;
 			constraintsContextNameJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(getContextNameJLabel(), constraintsContextNameJLabel);
-
-			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; gbc.gridy = 2;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-			gbc.anchor = GridBagConstraints.NORTHWEST;
-			getJDialogContentPane().add(new JLabel("Annotatation:"), gbc);
 			
 			java.awt.GridBagConstraints constraintsContextNameValueTextField = new java.awt.GridBagConstraints();
 			constraintsContextNameValueTextField.gridx = 1; constraintsContextNameValueTextField.gridy = 1;
@@ -892,32 +880,38 @@ private javax.swing.JPanel getJDialogContentPane() {
 			constraintsContextNameValueTextField.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(getContextNameValueTextField(), constraintsContextNameValueTextField);
 
-			annotationTextField = new javax.swing.JTextArea("",4,40);
+			java.awt.GridBagConstraints constraintsJCheckBoxHasOverride = new java.awt.GridBagConstraints();
+			constraintsJCheckBoxHasOverride.gridx = 3; constraintsJCheckBoxHasOverride.gridy = 1;
+			constraintsJCheckBoxHasOverride.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJDialogContentPane().add(getJCheckBoxHasOverride(), constraintsJCheckBoxHasOverride);
+
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 2;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.NORTHEAST;
+			getJDialogContentPane().add(new JLabel("Annotatation"), gbc);
+
+			annotationTextField = new javax.swing.JTextArea("", 4, 30);
+			annotationTextField.setLineWrap(true);
+			annotationTextField.setWrapStyleWord(true);
 			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextField);
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 1; gbc.gridy = 2;
 			gbc.gridwidth = 2;
-			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.gridheight = 4;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
 			gbc.weightx = 1.0;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(jsp, gbc);
 			
-			java.awt.GridBagConstraints constraintsNameValueJTextField = new java.awt.GridBagConstraints();
-			constraintsNameValueJTextField.gridx = 1; constraintsNameValueJTextField.gridy = 0;
-			constraintsNameValueJTextField.gridwidth = 2;
-			constraintsNameValueJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsNameValueJTextField.weightx = 1.0;
-			constraintsNameValueJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getNameValueJTextField(), constraintsNameValueJTextField);
-
 			java.awt.GridBagConstraints constraintsLinkJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 4;
+			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 6;
 			constraintsLinkJLabel.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsLinkJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(getLinkJLabel(), constraintsLinkJLabel);
 
 			java.awt.GridBagConstraints constraintsLinkValueJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkValueJLabel.gridx = 1; constraintsLinkValueJLabel.gridy = 4;
+			constraintsLinkValueJLabel.gridx = 1; constraintsLinkValueJLabel.gridy = 6;
 			constraintsLinkValueJLabel.gridwidth = 2;
 			constraintsLinkValueJLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsLinkValueJLabel.anchor = java.awt.GridBagConstraints.WEST;
@@ -925,10 +919,27 @@ private javax.swing.JPanel getJDialogContentPane() {
 			constraintsLinkValueJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJDialogContentPane().add(getLinkValueJLabel(), constraintsLinkValueJLabel);
 
-			java.awt.GridBagConstraints constraintsJCheckBoxHasOverride = new java.awt.GridBagConstraints();
-			constraintsJCheckBoxHasOverride.gridx = 3; constraintsJCheckBoxHasOverride.gridy = 1;
-			constraintsJCheckBoxHasOverride.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getJCheckBoxHasOverride(), constraintsJCheckBoxHasOverride);
+			java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
+			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 7;
+			constraintsJPanel2.gridwidth = 3;
+			constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJDialogContentPane().add(getJPanel2(), constraintsJPanel2);
+
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 8;
+			gbc.gridwidth = 4;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			ivjJContentPane.add(new JSeparator(), gbc);
+
+			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 9;
+			constraintsJPanel1.gridwidth = 4;
+			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsJPanel1.weightx = 1.0;
+//			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJDialogContentPane().add(getJPanel1(), constraintsJPanel1);
+			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -937,7 +948,7 @@ private javax.swing.JPanel getJDialogContentPane() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJInternalFrameEnhancedContentPane;
+	return ivjJContentPane;
 }
 
 /**
@@ -950,16 +961,16 @@ private javax.swing.JPanel getJPanel1() {
 		try {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setBorder(new LineBorderBean());
+//			ivjJPanel1.setBorder(new LineBorderBean());
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsOKJButton = new java.awt.GridBagConstraints();
-			constraintsOKJButton.gridx = 1; constraintsOKJButton.gridy = 1;
+			constraintsOKJButton.gridx = 0; constraintsOKJButton.gridy = 1;
 			constraintsOKJButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getOKJButton(), constraintsOKJButton);
 
 			java.awt.GridBagConstraints constraintsCancelJButton = new java.awt.GridBagConstraints();
-			constraintsCancelJButton.gridx = 2; constraintsCancelJButton.gridy = 1;
+			constraintsCancelJButton.gridx = 1; constraintsCancelJButton.gridy = 1;
 			constraintsCancelJButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getCancelJButton(), constraintsCancelJButton);
 			// user code begin {1}
@@ -1015,8 +1026,7 @@ private javax.swing.JLabel getLinkJLabel() {
 		try {
 			ivjLinkJLabel = new javax.swing.JLabel();
 			ivjLinkJLabel.setName("LinkJLabel");
-			ivjLinkJLabel.setText("DB Link Info:");
-			ivjLinkJLabel.setEnabled(false);
+			ivjLinkJLabel.setText("DB Link");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1040,7 +1050,7 @@ private javax.swing.JLabel getLinkValueJLabel() {
 			ivjLinkValueJLabel = new javax.swing.JLabel();
 			ivjLinkValueJLabel.setName("LinkValueJLabel");
 			ivjLinkValueJLabel.setText("LinkValueJLabel");
-			ivjLinkValueJLabel.setEnabled(false);
+			ivjLinkValueJLabel.setBorder(getNameValueJTextField().getBorder());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1073,7 +1083,7 @@ private javax.swing.JLabel getNameJLabel() {
 		try {
 			ivjNameJLabel = new javax.swing.JLabel();
 			ivjNameJLabel.setName("NameJLabel");
-			ivjNameJLabel.setText("Name:");
+			ivjNameJLabel.setText("Name");
 			ivjNameJLabel.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -1119,6 +1129,7 @@ private javax.swing.JButton getOKJButton() {
 			ivjOKJButton = new javax.swing.JButton();
 			ivjOKJButton.setName("OKJButton");
 			ivjOKJButton.setText("OK");
+			ivjOKJButton.setPreferredSize(getCancelJButton().getPreferredSize());
 			ivjOKJButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -1257,9 +1268,9 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("EditSpeciesDialog");
-		setContentPane(getJDialogContentPane());
+		add(getJDialogContentPane());
 		initConnections();
-		pack();
+		setSize(480,300);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1637,12 +1648,8 @@ private void updateInterface() {
 		getJCheckBoxHasOverride().isSelected()
 		);
 
-	getLinkJLabel().setEnabled(getDBFormalSpecies() != null);
 	
-	getLinkValueJLabel().setEnabled(true);
-	getLinkValueJLabel().setText((getDBFormalSpecies() != null?getDBFormalSpecies().getFormalSpeciesInfo().getFormalID()+" - "+getDBFormalSpecies().getFormalSpeciesInfo().getPreferredName():null));
-	getLinkValueJLabel().setEnabled(getDBFormalSpecies() != null);
-
+	getLinkValueJLabel().setText((getDBFormalSpecies() != null?getDBFormalSpecies().getFormalSpeciesInfo().getFormalID()+" - "+getDBFormalSpecies().getFormalSpeciesInfo().getPreferredName():" "));	
 	
 	getDBLinkJButton().setEnabled(true);
 	getDBLinkJButton().setText((getDBFormalSpecies() != null?"Change DB Link...":"Add DB Link..."));
