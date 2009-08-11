@@ -74,6 +74,9 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				connEtoC1(evt);
 			if (evt.getSource() == PDEDataContextPanel.this) 
 				connEtoC6(evt);
+			if (evt.getSource() == PDEDataContextPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("multiSelectedVariables"))) { 
+				fireDataSamplers();
+			}
 		};
 	};
 /**

@@ -1,6 +1,7 @@
 package cbit.vcell.simdata.gui;
 
 import cbit.image.DisplayAdapterService;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.AnnotatedFunction;
@@ -1008,7 +1009,7 @@ private javax.swing.JList getJList1() {
 			ivjJList1 = new javax.swing.JList();
 			ivjJList1.setName("JList1");
 			ivjJList1.setBounds(0, 0, 131, 238);
-			ivjJList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+//			ivjJList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1643,6 +1644,32 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 	if(getPdeDataContext() == null){
 		return;
 	}
+	Object[] selectedValues = getJList1().getSelectedValues();
+	String[] names = new String[selectedValues.length];
+	System.arraycopy(selectedValues, 0, names, 0, selectedValues.length);
+	if (names.length > 1) {
+		DataIdentifier[] dataIdentifiers = getPdeDataContext().getDataIdentifiers();		
+		VariableType vt = null;
+		for (String name : names) {
+			for (DataIdentifier dataIdentifier : dataIdentifiers) {
+				if (dataIdentifier.getName().equals(name)) {
+					if (vt == null) {
+						vt = dataIdentifier.getVariableType();
+					} else if (!dataIdentifier.getVariableType().equals(vt)) {
+						PopupGenerator.showErrorDialog(PDEPlotControlPanel.this, "Please choose VOLUME variables or MEMBRANE variables only");
+						getJList1().clearSelection();
+						getJList1().setSelectedValue(getPdeDataContext().getVariableName(), true);
+						return;
+					}
+				}
+			}
+		}
+	}	
+	getPdeDataContext().setMultiSelectedVariables(names);
+	if (names.length > 1) {
+		return;
+	}
+		
 	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
 		final String newVariableName = (String)getJList1().getSelectedValue();
 		if(newVariableName != null){

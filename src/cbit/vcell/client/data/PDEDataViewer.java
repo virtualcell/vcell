@@ -73,6 +73,7 @@ import cbit.vcell.export.quicktime.VideoMediaChunk;
 import cbit.vcell.export.quicktime.VideoMediaSampleRaw;
 import cbit.vcell.export.quicktime.atoms.UserDataEntry;
 import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
@@ -265,6 +266,13 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 				connPtoP10SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getpdeDataContext1() && (evt.getPropertyName().equals("variableName"))) 
 				connEtoC7(evt);
+			if (evt.getSource() == PDEDataViewer.this.getpdeDataContext1() && (evt.getPropertyName().equals("variableName"))) {
+				connEtoC7(evt);
+				onMultiSelectedVariables();
+			}
+			if (evt.getSource() == PDEDataViewer.this.getpdeDataContext1() && (evt.getPropertyName().equals("multiSelectedVariables"))) {
+				onMultiSelectedVariables();
+			}
 		};
 	};
 	private JButton ivjJButtonStatistics = null;
@@ -2248,6 +2256,7 @@ private void showSpatialPlot() {
 					if (getSimulationModelInfo()!=null){
 						title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
 					}
+					plotPane.selectStepView(false, false);
 					showComponentInFrame(plotPane, title);
 				}
 			}
@@ -2273,47 +2282,53 @@ private void showTimePlot() {
 			}
 		}
 	}
-	final String varName = getPdeDataContext().getVariableName();
+	final String[] selectedVarNames = getPdeDataContext().getSelectedVariableNames();
+	
 	VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();	
-	if(singlePointSSOnly.size() == 0){
+	final int numSelectedSpatialPoints = singlePointSSOnly.size();
+	if (numSelectedSpatialPoints == 0){
 		PopupGenerator.showErrorDialog(this, "No Time sampling points match DataType="+varType);
 		return;
 	}
 	
 	try {		
-		int[] indices = null;
+		final int numSelectedVariables = selectedVarNames.length;
+		int[][] indices = new int[numSelectedVariables][numSelectedSpatialPoints];
 		//
-		indices = new int[singlePointSSOnly.size()];
-		final String[] plotNames = new String[singlePointSSOnly.size()];
-		final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotNames.length];
-		for (int i = 0; i < singlePointSSOnly.size(); i++){
-			Coordinate tp = null;
-			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-				SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
-				indices[i] = ssv.getIndex(0);
-				tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
-			}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-				SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)singlePointSSOnly.get(i);
-				indices[i] = ssm.getIndex(0);
-				double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
-				tp = ((cbit.vcell.geometry.SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
-			}
-			plotNames[i] = "P["+i+"] ("+niceCoordinateString(tp)+")";
-			try{				
-				if(getSimulation() != null && getSimulation().getMathDescription() != null){
-					symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(varName);
+		final String[] plotNames = new String[numSelectedVariables * numSelectedSpatialPoints];
+		final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[numSelectedVariables * numSelectedSpatialPoints];
+		for (int i = 0; i < numSelectedSpatialPoints; i++){
+			for (int v = 0; v < numSelectedVariables; v ++) {
+				String varName = selectedVarNames[v];
+				Coordinate tp = null;
+				if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+					SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
+					indices[v][i] = ssv.getIndex(0);
+					tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
+				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+					SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)singlePointSSOnly.get(i);
+					indices[v][i] = ssm.getIndex(0);
+					double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
+					tp = ((SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
 				}
-				if(symbolTableEntries[0] == null){
-					symbolTableEntries[0] = new VolVariable(varName);
+				int plotIndex = v * numSelectedSpatialPoints + i;
+				plotNames[plotIndex] = varName + " at P["+i+"] ("+niceCoordinateString(tp)+")";
+				try{
+					if(getSimulation() != null && getSimulation().getMathDescription() != null){
+						symbolTableEntries[plotIndex] = getSimulation().getMathDescription().getEntry(varName);
+					}
+					if(symbolTableEntries[plotIndex] == null){
+						symbolTableEntries[plotIndex] = new VolVariable(varName);
+					}
+				}catch(ExpressionBindingException e){
+					e.printStackTrace();
 				}
-			}catch(ExpressionBindingException e){
-				e.printStackTrace();
 			}
 		}
 
-		double[] timePoints = getPdeDataContext().getTimePoints();
-		TimeSeriesJobSpec tsjs = new TimeSeriesJobSpec(	new String[] {varName},
-				new int[][] {indices}, null, timePoints[0], 1, timePoints[timePoints.length-1],
+		final double[] timePoints = getPdeDataContext().getTimePoints();
+		TimeSeriesJobSpec tsjs = new TimeSeriesJobSpec(	selectedVarNames,
+				indices, null, timePoints[0], 1, timePoints[timePoints.length-1],
 				VCDataJobID.createVCDataJobID(getDataViewerManager().getUser(), true));
 
 		if (!tsjs.getVcDataJobID().isBackgroundTask()){
@@ -2323,22 +2338,33 @@ private void showTimePlot() {
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		hash.put(StringKey_timeSeriesJobSpec, tsjs);
 		
-		AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieving Data for '"+varName+"'...");	
-		AsynchClientTask task2 = new AsynchClientTask("showing time plot for '"+varName+"'", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask task1 = new TimeSeriesDataRetrievalTask("Retrieving Data");	
+		AsynchClientTask task2 = new AsynchClientTask("showing time plot", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				PlotPane plotPane = new PlotPane();
-				SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries, "Time", plotNames,
-					tsJobResultsNoStats.getTimesAndValuesForVariable(varName),
-					new String[] {"Time series for " + varName, "Time (s)", "[" + varName + "]"});
-				plotPane.setPlot2D(plot2D);
-				String title = "Timeplot: ("+varName+")";
-				if (getSimulationModelInfo()!=null){
-					title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+				PlotData[] plotDatas = new PlotData[numSelectedVariables * numSelectedSpatialPoints];
+				int plotCount = 0;
+				for (int v = 0; v < numSelectedVariables; v ++) {
+					String varName = selectedVarNames[v];
+					double[][] data = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
+					for (int i = 1; i < data.length; i++) {
+						plotDatas[plotCount ++] = new PlotData(data[0], data[i]);
+					}
 				}
-				showComponentInFrame(plotPane, title);				
+				String title = "Time Plot";
+				Plot2D plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
+						new String[] {title, "Time (s)", "Concentration"});				
+				plotPane.setPlot2D(plot2D);
+				plotPane.selectStepView(false, false);				
+				final JInternalFrame frame = new JInternalFrame(title, true, true, true, true);
+				frame.add(plotPane);
+				frame.setSize(700, 550);
+//				frame.pack();
+				BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
+				DocumentWindowManager.showFrame(frame, (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this));	
 			}						
 		};		
 		ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
@@ -2355,11 +2381,23 @@ private void updateDataSamplerContext(java.beans.PropertyChangeEvent propertyCha
 	if(propertyChangeEvent.getPropertyName().equals("timeDataSamplers")){
 		getJButtonTime().setEnabled(((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
 	}else if(propertyChangeEvent.getPropertyName().equals("spatialDataSamplers")){
-		getJButtonSpatial().setEnabled(((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
-		getKymographJButton().setEnabled((getPdeDataContext().getTimePoints().length > 1) && ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
+		boolean bSingleSelectedVar = getPdeDataContext().getSelectedVariableNames().length == 1;
+		getJButtonSpatial().setEnabled(bSingleSelectedVar && ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
+		getKymographJButton().setEnabled(bSingleSelectedVar && (getPdeDataContext().getTimePoints().length > 1) && ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue());
 	}
 }
 
+private void onMultiSelectedVariables() {
+	if (getPdeDataContext().getSelectedVariableNames().length == 1) {
+		getJButtonSnapshotROI().setEnabled(true);
+		getJButtonStatistics().setEnabled(true);
+		pdeDataContext1_VariableName();
+	} else {
+		getJButtonSnapshotROI().setEnabled(false);
+		getJButtonStatistics().setEnabled(false);
+		getJButtonSurfaces().setEnabled(false);
+	}
+}
 
 /**
  * Insert the method's description here.
