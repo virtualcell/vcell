@@ -1,4 +1,5 @@
 package cbit.vcell.simdata;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.simdata.gui.SpatialSelection;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -6,7 +7,10 @@ import cbit.vcell.simdata.gui.SpatialSelection;
 ©*/
 import cbit.vcell.solvers.*;
 import java.beans.*;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Set;
+
 import cbit.gui.PropertyChangeListenerProxyVCell;
 
 import org.vcell.util.BeanUtils;
@@ -65,6 +69,7 @@ public abstract class PDEDataContext implements PropertyChangeListener {
 	private CartesianMesh cartesianMesh = null;
 	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
+	private ArrayList<String> multiSelectedVariables = new ArrayList<String>(0);
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
 	public static final String PROP_CHANGE_FUNC_REMOVED = "functionRemoved";
@@ -247,17 +252,6 @@ public DataIdentifier[] getDataIdentifiers() {
 	return dataIdentifiers;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 4:32:00 PM)
- * @return cbit.image.Range
- */
-private Range getDataRange() {
-	return dataRange;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/22/2001 3:27:11 PM)
@@ -277,7 +271,7 @@ public double[] getDataValues() {
  *
  * @see Function
  */
-public abstract cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAccessException;
+public abstract AnnotatedFunction[] getFunctions() throws DataAccessException;
 
 
 /**
@@ -709,4 +703,21 @@ public void setVariableName(String variable) throws DataAccessException {
 	setVariableAndTime(variable, getTimePoint());
 }
 
+public void setMultiSelectedVariables(String[] names) {
+	multiSelectedVariables.clear();
+	for (String name : names) {
+		if (!multiSelectedVariables.contains(name)) {
+			multiSelectedVariables.add(name);
+		}
+	}
+	firePropertyChange("multiSelectedVariables", null, multiSelectedVariables);
+}
+
+public String[] getSelectedVariableNames() {
+	if (multiSelectedVariables.size() == 0) {
+		multiSelectedVariables.add(getVariableName());
+	}
+	String[] names = new String[multiSelectedVariables.size()];
+	return multiSelectedVariables.toArray(names);
+}
 }

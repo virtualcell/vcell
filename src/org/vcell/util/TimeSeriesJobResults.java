@@ -54,8 +54,8 @@ public TimeSeriesJobResults(String[] argVariableNames,int[][] argIndices,double[
  */
 public int getIndexForVarName(String varName) {
 	
-	for(int i =0;i<varName.length();i+= 1){
-		if(getVariableNames()[i].equals(varName)){
+	for(int i = 0;i<variableNames.length; i+= 1){
+		if(variableNames[i].equals(varName)){
 			return i;
 		}
 	}
