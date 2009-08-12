@@ -1,19 +1,9 @@
 package cbit.vcell.simdata.gui;
 
-import cbit.image.DisplayAdapterService;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
-import javax.swing.*;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.gui.DefaultListModelCivilized;
-import org.vcell.util.gui.ZEnforcer;
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -22,9 +12,32 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+
+import javax.swing.BoundedRangeModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JSplitPane;
+import javax.swing.JTextField;
+import javax.swing.WindowConstants;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.DefaultListModelCivilized;
+import org.vcell.util.gui.ZEnforcer;
+
+import cbit.image.DisplayAdapterService;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
 /**
  * Insert the type's description here.
  * Creation date: (1/21/2001 10:29:53 PM)
@@ -1009,7 +1022,7 @@ private javax.swing.JList getJList1() {
 			ivjJList1 = new javax.swing.JList();
 			ivjJList1.setName("JList1");
 			ivjJList1.setBounds(0, 0, 131, 238);
-//			ivjJList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+			ivjJList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1644,32 +1657,6 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 	if(getPdeDataContext() == null){
 		return;
 	}
-	Object[] selectedValues = getJList1().getSelectedValues();
-	String[] names = new String[selectedValues.length];
-	System.arraycopy(selectedValues, 0, names, 0, selectedValues.length);
-	if (names.length > 1) {
-		DataIdentifier[] dataIdentifiers = getPdeDataContext().getDataIdentifiers();		
-		VariableType vt = null;
-		for (String name : names) {
-			for (DataIdentifier dataIdentifier : dataIdentifiers) {
-				if (dataIdentifier.getName().equals(name)) {
-					if (vt == null) {
-						vt = dataIdentifier.getVariableType();
-					} else if (!dataIdentifier.getVariableType().equals(vt)) {
-						PopupGenerator.showErrorDialog(PDEPlotControlPanel.this, "Please choose VOLUME variables or MEMBRANE variables only");
-						getJList1().clearSelection();
-						getJList1().setSelectedValue(getPdeDataContext().getVariableName(), true);
-						return;
-					}
-				}
-			}
-		}
-	}	
-	getPdeDataContext().setMultiSelectedVariables(names);
-	if (names.length > 1) {
-		return;
-	}
-		
 	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
 		final String newVariableName = (String)getJList1().getSelectedValue();
 		if(newVariableName != null){

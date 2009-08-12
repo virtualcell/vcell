@@ -1,24 +1,21 @@
 package cbit.vcell.simdata;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.simdata.gui.SpatialSelection;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.solvers.*;
-import java.beans.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Comparator;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
 import org.vcell.util.TimeSeriesJobResults;
 import org.vcell.util.TimeSeriesJobSpec;
-import cbit.image.*;
+
+import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.image.SourceDataInfo;
+import cbit.plot.PlotData;
+import cbit.vcell.math.Function;
+import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (10/3/00 3:21:23 PM)
@@ -69,7 +66,6 @@ public abstract class PDEDataContext implements PropertyChangeListener {
 	private CartesianMesh cartesianMesh = null;
 	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
-	private ArrayList<String> multiSelectedVariables = new ArrayList<String>(0);
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
 	public static final String PROP_CHANGE_FUNC_REMOVED = "functionRemoved";
@@ -271,7 +267,7 @@ public double[] getDataValues() {
  *
  * @see Function
  */
-public abstract AnnotatedFunction[] getFunctions() throws DataAccessException;
+public abstract cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAccessException;
 
 
 /**
@@ -703,21 +699,4 @@ public void setVariableName(String variable) throws DataAccessException {
 	setVariableAndTime(variable, getTimePoint());
 }
 
-public void setMultiSelectedVariables(String[] names) {
-	multiSelectedVariables.clear();
-	for (String name : names) {
-		if (!multiSelectedVariables.contains(name)) {
-			multiSelectedVariables.add(name);
-		}
-	}
-	firePropertyChange("multiSelectedVariables", null, multiSelectedVariables);
-}
-
-public String[] getSelectedVariableNames() {
-	if (multiSelectedVariables.size() == 0) {
-		multiSelectedVariables.add(getVariableName());
-	}
-	String[] names = new String[multiSelectedVariables.size()];
-	return multiSelectedVariables.toArray(names);
-}
 }
