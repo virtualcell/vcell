@@ -670,7 +670,7 @@ private JRadioButton getAmountRadioButton()
 						try {
 							getSimulationContext().setUsingConcentration(false);
 							getSimulationContext().convertSpeciesIniCondition(false);
-							// force propertyChange(by setting old value to null), inform other listeners that simulation contect has changed.
+							// force propertyChange(by setting old value to null), inform other listeners that simulation context has changed.
 							firePropertyChange("simulationContext", null, getSimulationContext());
 						} catch (MappingException e1) {
 							e1.printStackTrace();

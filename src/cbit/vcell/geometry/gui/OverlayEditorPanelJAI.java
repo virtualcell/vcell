@@ -102,6 +102,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	public static final String FRAP_DATA_UNDOROI_PROPERTY = "FRAP_DATA_UNDOROI_PROPERTY";
 	private JLabel viewTLabel;
 	private JLabel viewZLabel;
+	private JLabel editRoiLabel;
 	
 	private JButton addROIButton;
 	private JButton delROIButton;
@@ -112,6 +113,13 @@ public class OverlayEditorPanelJAI extends JPanel {
 	
 	public static final String WHOLE_CELL_AREA_TEXT = "Whole Cell Area";
 	public static final String ROI_ASSIST_TEXT = "ROI Assist";
+	//used for new frap
+	public static final int DISPLAY_WITHOUT_ROIS = 0;
+	public static final int DISPLAY_WITH_ROIS = 1;
+	public static final int DEFINE_CROP = 2;
+	public static final int DEFINE_CELLROI = 3;
+	public static final int DEFINE_BLEACHEDROI = 4;
+	public static final int DEFINE_BACKGROUNDROI = 5;
 	
 	ActionListener ROI_COMBOBOX_ACTIONLISTENER =
 		new ActionListener() {
@@ -187,12 +195,15 @@ public class OverlayEditorPanelJAI extends JPanel {
 			if(imageDataset != null){
 				cropRectangle = imageDataset.getNonzeroBoundingRectangle();
 			}
+			else
+			{
+				return false;
+			}
 			if(cropRectangle != null &&
 				cropRectangle.x == 0 && cropRectangle.y == 0 &&
 				cropRectangle.width == imageDataset.getISize().getX() &&
 				cropRectangle.height == imageDataset.getISize().getY()){
 				return false;
-				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -241,14 +252,16 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagConstraints2.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints2.anchor = GridBagConstraints.NORTH;
 		gridBagConstraints2.gridy = 1;
-		gridBagConstraints2.gridx = 0;
+		gridBagConstraints2.gridx = 2;
 		GridBagConstraints gridBagConstraints12 = new GridBagConstraints();
+		gridBagConstraints12.gridwidth = 2;
+		gridBagConstraints12.ipadx = 570;
 		gridBagConstraints12.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints12.fill = GridBagConstraints.BOTH;
 		gridBagConstraints12.weighty = 1.0;
-		gridBagConstraints12.gridx = 1;
+		gridBagConstraints12.gridx = 0;
 		gridBagConstraints12.gridy = 1;
-		gridBagConstraints12.weightx = 1.0;
+		gridBagConstraints12.weightx = 1;
 		this.setSize(734, 534);
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.rowHeights = new int[] {0,7,0};
@@ -548,7 +561,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagConstraints_14.gridx = 1;
 		editROIPanel.add(panel, gridBagConstraints_14);
 
-		final JLabel editRoiLabel = new JLabel();
+		editRoiLabel = new JLabel();
 		editRoiLabel.setText("Active ROI:");
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.insets = new Insets(0, 0, 0, 4);
@@ -635,6 +648,150 @@ public class OverlayEditorPanelJAI extends JPanel {
 		
 		BeanUtils.enableComponents(getLeftJPanel(), false);
 		BeanUtils.enableComponents(editROIPanel, false);
+	}
+	
+	public void adjustComponentsForVFRAP(int choice)
+	{
+		if(choice == DISPLAY_WITHOUT_ROIS)
+		{
+			setAllComponentsVisible();
+			roiDrawButtonGroup.remove(paintButton);
+			roiDrawButtonGroup.remove(eraseButton);
+			roiDrawButtonGroup.remove(fillButton);
+			roiDrawButtonGroup.remove(cropButton);
+			
+//			cropButton.setEnabled(false);
+			cropButton.setVisible(false);
+			autoCropButton.setVisible(false);
+//			paintButton.setEnabled(false);
+			paintButton.setVisible(false);
+			paintButton.setSelected(false);
+//			eraseButton.setEnabled(false);
+			eraseButton.setVisible(false);
+//			fillButton.setEnabled(false);
+			fillButton.setVisible(false);
+			importROIMaskButton.setVisible(false);
+			clearROIbutton.setVisible(false);
+			roiTimePlotButton.setVisible(false);
+			roiAssistButton.setVisible(false);
+			
+			//disable ROI comboBox
+			roiComboBox.setEnabled(false);
+			editRoiLabel.setEnabled(false);
+			addROIButton.setVisible(false);
+			delROIButton.setVisible(false);
+		}
+		else if(choice == DISPLAY_WITH_ROIS)
+		{
+			setAllComponentsVisible();
+			roiDrawButtonGroup.remove(paintButton);
+			roiDrawButtonGroup.remove(eraseButton);
+			roiDrawButtonGroup.remove(fillButton);
+			roiDrawButtonGroup.remove(cropButton);
+			
+			cropButton.setVisible(false);
+			autoCropButton.setVisible(false);
+			paintButton.setVisible(false);
+			paintButton.setSelected(false);
+			eraseButton.setVisible(false);
+			fillButton.setVisible(false);
+			importROIMaskButton.setVisible(false);
+			clearROIbutton.setVisible(false);
+			roiTimePlotButton.setVisible(false);
+			roiAssistButton.setVisible(false);
+			//disable ROI comboBox
+			roiComboBox.setEnabled(true);
+			editRoiLabel.setEnabled(true);
+			addROIButton.setVisible(false);
+			delROIButton.setVisible(false);
+		}
+		else if(choice == DEFINE_CROP)
+		{
+			setAllComponentsVisible();
+						
+			zoomInButton.setEnabled(false);
+			zoomOutButton.setEnabled(false);
+			contrastButtonPlus.setEnabled(false);
+			contrastButtonMinus.setEnabled(false);
+			cropButton.setEnabled(true);
+			cropButton.setSelected(true);//paint button will not be selected
+			autoCropButton.setEnabled(isAutoCroppable());
+			paintButton.setSelected(false);
+			paintButton.setEnabled(false);
+			paintButton.setFocusPainted(false);
+			paintButton.setBorderPainted(false);
+			eraseButton.setEnabled(false);
+			fillButton.setEnabled(false);
+			importROIMaskButton.setEnabled(false);
+			clearROIbutton.setEnabled(false);
+			roiTimePlotButton.setEnabled(false);
+			roiAssistButton.setEnabled(false);
+			//other components
+			roiComboBox.setVisible(false);
+			editRoiLabel.setVisible(false);
+//			zSlider.setVisible(false);
+//			viewZLabel.setVisible(false);
+			addROIButton.setVisible(false);
+			delROIButton.setVisible(false);
+		}
+		else if(choice == DEFINE_CELLROI || choice == DEFINE_BLEACHEDROI || choice == DEFINE_BACKGROUNDROI)
+		{
+			setAllComponentsVisible();
+						
+			zoomInButton.setEnabled(true);
+			zoomOutButton.setEnabled(true);
+			contrastButtonPlus.setEnabled(true);
+			contrastButtonMinus.setEnabled(true);
+			cropButton.setEnabled(false);
+			autoCropButton.setEnabled(false);
+			paintButton.setEnabled(true);
+			eraseButton.setEnabled(true);
+			fillButton.setEnabled(true);
+			importROIMaskButton.setEnabled(true);
+			clearROIbutton.setEnabled(true);
+			roiTimePlotButton.setEnabled(true);
+			roiAssistButton.setEnabled(true);
+			//other components
+			roiComboBox.setVisible(false);
+			editRoiLabel.setVisible(false);
+//			zSlider.setVisible(false);
+//			viewZLabel.setVisible(false);
+			addROIButton.setVisible(false);
+			delROIButton.setVisible(false);
+		}
+	}
+	
+	private void setAllComponentsVisible()
+	{
+		BeanUtils.enableComponents(getLeftJPanel(), true);
+		BeanUtils.enableComponents(editROIPanel, true);
+		//buttons
+		zoomInButton.setVisible(true);
+		zoomOutButton.setVisible(true);
+		contrastButtonPlus.setVisible(true);
+		contrastButtonMinus.setVisible(true);
+		cropButton.setVisible(true);
+		autoCropButton.setVisible(true);
+		paintButton.setVisible(true);
+		paintButton.setSelected(true);
+		eraseButton.setVisible(true);
+		fillButton.setVisible(true);
+		importROIMaskButton.setVisible(true);
+		clearROIbutton.setVisible(true);
+		roiTimePlotButton.setVisible(true);
+		roiAssistButton.setVisible(true);
+		//other components
+		roiComboBox.setVisible(true);
+		editRoiLabel.setVisible(true);
+//		zSlider.setVisible(true);
+//		viewZLabel.setVisible(true);
+		addROIButton.setVisible(true);
+		delROIButton.setVisible(true);
+		
+		roiDrawButtonGroup.add(paintButton);
+		roiDrawButtonGroup.add(eraseButton);
+		roiDrawButtonGroup.add(fillButton);
+		roiDrawButtonGroup.add(cropButton);
 	}
 	
 	private void clearROI(){
@@ -831,9 +988,12 @@ public class OverlayEditorPanelJAI extends JPanel {
 			this.originalScaleFactor = originalScaleFactor;
 			this.originalOffsetFactor = originalOffsetFactor;
 			originalISize = (bNew?imageDataset.getISize():originalISize);
-			BeanUtils.enableComponents(leftJPanel, true);
-			BeanUtils.enableComponents(topJPanel, true);
-			BeanUtils.enableComponents(editROIPanel, true);
+			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
+			{
+				BeanUtils.enableComponents(leftJPanel, true);
+				BeanUtils.enableComponents(topJPanel, true);
+				BeanUtils.enableComponents(editROIPanel, true);
+			}
 			if(!bAllowAddROI){
 				addROIButton.setEnabled(false);
 			}
@@ -845,7 +1005,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 //				timeSlider.setLabelTable(timeSlider.createStandardLabels(imageDataset.getSizeT()-1,1));
 				Hashtable<Integer, JComponent> labeltable = new Hashtable<Integer, JComponent>();
 				labeltable.put(1, new JLabel(imageDataset.getImageTimeStamps()[0]+""));
-				labeltable.put(imageDataset.getSizeT()-1,
+				labeltable.put(imageDataset.getSizeT(),
 					new JLabel(NumberUtils.formatNumber(imageDataset.getImageTimeStamps()[imageDataset.getSizeT()-1])));
 				timeSlider.setLabelTable(labeltable);
 				timeSlider.setMaximum(imageDataset.getSizeT());
@@ -959,7 +1119,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		}
 		final ROI originalROI = undoableROI;
 		undoableROI = null;
-		if(editType != null){
+		if(editType != null && undoableEditSupport != null){
 			undoableEditSupport.postEdit(
 				new AbstractUndoableEdit(){
 					public boolean canUndo() {
@@ -975,7 +1135,10 @@ public class OverlayEditorPanelJAI extends JPanel {
 				}
 			);			
 		}else{
-			undoableEditSupport.postEdit(OverlayEditorPanelJAI.CLEAR_UNDOABLE_EDIT);
+			if(undoableEditSupport != null)
+			{
+				undoableEditSupport.postEdit(OverlayEditorPanelJAI.CLEAR_UNDOABLE_EDIT);
+			}
 		}
 		
 	}
@@ -1322,6 +1485,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			gridBagConstraints.ipady = 0;
 			gridBagConstraints.gridy = 0;
 			
+			//this so call "leftPanel" has been move to the right side of the editor panel for the new frap.
 			leftJPanel = new JPanel();
 			final GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.rowHeights = new int[] {0,0,7,7,7,0,7};

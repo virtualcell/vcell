@@ -23,22 +23,19 @@ import loci.formats.MetadataTools;
 import loci.formats.meta.MetadataRetrieve;
 import loci.formats.meta.MetadataStore;
 import cbit.image.ImageException;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class ImageDatasetReader {
 // This function has been amended in Jan 2008 to calculate progress when loading zip, or single image file. Class ImageLoadingProgress has been
 // added for counting the actual progress even when there are a couple of files inside a zip file.
-	public static ImageDataset readImageDataset(String imageID, ImageLoadingProgress status) throws FormatException, IOException, ImageException {
+	public static ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws FormatException, IOException, ImageException {
 		if (imageID.toUpperCase().endsWith(".ZIP")){
 			ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
 			ArrayList<ImageDataset> imageDatasetList = new ArrayList<ImageDataset>();
 			Enumeration<? extends ZipEntry> enumZipEntry = zipFile.entries();
 			int noOfZipEntry = 0;//added Jan 2008
 			while (enumZipEntry.hasMoreElements()){
-				if(status != null)//added Jan 2008
-				{
-					status.setMainProgressBegin((double)noOfZipEntry/(double)zipFile.size());
-					status.setMainProgressEnd((double)(noOfZipEntry+1)/(double)zipFile.size());
-				}
+
 				ZipEntry entry = enumZipEntry.nextElement();
 				String entryName = entry.getName();
 				String imageFileSuffix = null;
@@ -59,7 +56,8 @@ public class ImageDatasetReader {
 					fos.write(buffer, 0, bytesRead);
 				}
 				fos.close();
-				ImageDataset imageDataset = readImageDataset(tempImageFile.getAbsolutePath(), status);
+				//AMENDED July 2009, don't show exact progress for zip file
+				ImageDataset imageDataset = readImageDataset(tempImageFile.getAbsolutePath(), null); 
 				tempImageFile.delete();
 				imageDatasetList.add(imageDataset);
 				noOfZipEntry ++;//added Jan 2008
@@ -67,14 +65,7 @@ public class ImageDatasetReader {
 			ImageDataset completeImageDataset = ImageDataset.createZStack(imageDatasetList.toArray(new ImageDataset[imageDatasetList.size()]));
 			return completeImageDataset;
 		}
-		else //added Jan 2008
-		{
-			if(status != null)
-			{
-				status.setMainProgressBegin(0.0);
-				status.setMainProgressEnd(1.0);
-			}
-		}
+
 
 		ImageReader imageReader = new ImageReader();
 		// create OME-XML metadata store of the latest schema version
@@ -108,7 +99,7 @@ public class ImageDatasetReader {
 			if(status != null)
 			{
 				//start the progress display
-				status.setSubProgress(0);
+				status.setProgress(0);
 			}
 			int imageCount = 0;
 			for (int i = 0; i < numImages; i++) {
@@ -156,14 +147,14 @@ public class ImageDatasetReader {
 				//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
 				if(status != null)
 				{
-					status.setSubProgress(((double)i/numImages));
+					status.setProgress(((int)(i*100/numImages)));
 				}
 			}
 			//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
 			if(status != null && imageCount == numImages)
 			{
 				//the progress display
-				status.setSubProgress(1);
+				status.setProgress(100);
 			}
 			
 			System.out.println("before series, image size from Metadata Store("+
@@ -272,14 +263,8 @@ public class ImageDatasetReader {
 		return times;
 	}
 
-	public static ImageDataset readImageDatasetFromMultiFiles(File[] files, ImageLoadingProgress status, boolean isTimeSeries, double timeInterval, double zInterval) throws FormatException, IOException, ImageException 
+	public static ImageDataset readImageDatasetFromMultiFiles(File[] files, ClientTaskStatusSupport status, boolean isTimeSeries, double timeInterval) throws FormatException, IOException, ImageException 
 	{
-		if(status != null)
-		{
-			status.setMainProgressBegin(0.0);
-			status.setMainProgressEnd(1.0);
-		}
-		
 		int numImages = files.length;
 		UShortImage[] images = new UShortImage[numImages];
 		
@@ -292,7 +277,7 @@ public class ImageDatasetReader {
 		if(status != null)
 		{
 			//start the progress display
-			status.setSubProgress(0);
+			status.setProgress(0);
 		}
 		int imageCount = 0;
 		for (int i = 0; i < numImages; i++) 
@@ -304,6 +289,7 @@ public class ImageDatasetReader {
 		    imageReader.setMetadataStore(store);
 		    FormatReader.debug = true;
 		    String imageID = files[i].getAbsolutePath();
+		    imageReader.setId(imageID);
 			IFormatReader formatReader = imageReader.getReader(imageID);
 			formatReader.setId(imageID);
 			
@@ -349,7 +335,7 @@ public class ImageDatasetReader {
 					end = System.currentTimeMillis();
 					if((end - start) >= 2000)
 					{
-						status.setSubProgress(((double)i/numImages));
+						status.setProgress(((int)(i*100/numImages)));
 						start = end; 
 					}
 				}
@@ -357,7 +343,7 @@ public class ImageDatasetReader {
 				if(status != null && imageCount == numImages)
 				{
 					//the progress display
-					status.setSubProgress(1);
+					status.setProgress(100);
 				}
 				
 //				Integer ii = new Integer(0);			
