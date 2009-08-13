@@ -7,7 +7,10 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -30,6 +33,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -86,6 +90,7 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPOptData;
@@ -94,6 +99,27 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
+import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_ModelTypesDescriptor;
+import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorDescriptor;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BackgroundROIDescriptor;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BleachedROIDescriptor;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CellROIDescriptor;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CropDescriptor;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_CompareResultsDescriptor;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentDescriptor;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReacBindingDescriptor;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReacBindingInputDescriptor;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentDescriptor;
+import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypeDescriptor;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFileDescriptor;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SingleFileDescriptor;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryDescriptor;
+import org.vcell.wizard.Wizard;
+import org.vcell.wizard.WizardPanelDescriptor;
+
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
@@ -130,6 +156,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String VFRAP_PREFIX_SIM = "Sim";
 	public static final String[] VFRAP_DS_PREFIX = {VFRAP_PREFIX_EXP, VFRAP_PREFIX_MASK, VFRAP_PREFIX_SIM};
 	
+	//properties
+	public static final String NEW_FRAPSTUDY_KEY = "NEW_FRAPSTUDY";
+	public static final String LOADDATA_FRAPSTUDY_CHANGE_PROPERTY = "LOADDATA_FRAPSTUDY_CHANGE_PROPERTY";
+	public static final String LOADDATA_VERIFY_INFO_PROPERTY = "LOADDATA_VERIFY_INFO_PROPERTY";
+	public static final String DEFINEROI_CROP_PROPERTY = "DEFINEROI_CROP_PROPERTY";
+	public static final String DEFINEROI_CHANGE_PROPERTY = "DEFINEROI_CHANGE_PROPERTY";
+	
 	private Expression Norm_Exp_Fluor = null;
 	private Expression Norm_Sim = null;
 	
@@ -144,14 +177,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private static final String NORM_SIM_VAR = "Sim_norm_fluor";
 		
 	private FRAPStudy frapStudy = null;
-	private FRAPOptData frapOptData = null;
 	private FRAPDataPanel frapDataPanel = null;
 	private LocalWorkspace localWorkspace = null;
-	private JTabbedPane jTabbedPane = null;
+	private JPanel leftPanel = null;
+	private JPanel analysisProcedurePanel = null;
+	private JPanel analysisRestultsPanel = null;
 	private FRAPParametersPanel frapParametersPanel = null;
 	
-	private JRadioButton tabRadio = null;
-	private JRadioButton splitRadio = null;
 	private JButton showMovieButton = null;
 	private JPanel simResultsViewPanel = null;
 	private PDEDataViewer pdeDataViewer = null;
@@ -166,6 +198,58 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private boolean isSetTabIdxFromSpatialAnalysis = false;
 	public interface NewFRAPFromParameters{
 		void create(Parameter[] newParameters, String modelType);
+	}
+	
+	//wizards created for new VFRAP version
+	private Wizard loadFRAPDataWizard = null;
+	private Wizard defineROIWizard = null;
+	private Wizard modelTypeWizard = null;
+	private Wizard estimateParamWizard = null;
+	private Wizard restartWizard = null;
+	
+	
+	public class WorkFlowButtonHandler implements ActionListener
+	{
+	 	public void actionPerformed(ActionEvent e) 
+	    {
+	  	   	if(e.getSource() instanceof JButton)
+		    {
+	  	   		String commandStr = ((JButton)e.getSource()).getActionCommand();
+	  	   		if(commandStr.equals(VirtualFrapMainFrame.LOAD_IMAGE_COMMAND))
+	  	   		{
+	  	   			Wizard loadWizard = getLoadFRAPDataWizard();
+	  	   			if(loadWizard != null)
+	  	   			{
+	  	   				loadWizard.showModalDialog(new Dimension(460,300));
+	  	   			}
+	  	   		}
+	  	   		else if(commandStr.equals(VirtualFrapMainFrame.DEFINE_ROI_COMMAND))
+	  	   		{
+	  	   			Wizard roiWizard = getDefineROIWizard();
+	  	   			if(roiWizard != null)
+	  	   			{
+	  	   			    roiWizard.showModalDialog(new Dimension(640,670));
+	  	   			}
+	  	   		}
+	  	   		else if(commandStr.equals(VirtualFrapMainFrame.CHOOSE_MODEL_COMMAND))
+	  	   		{
+	  	   			Wizard modelTypeWizard = getChooseModelTypeWizard();
+	  	   			if(modelTypeWizard != null)
+	  	   			{
+	  	   				modelTypeWizard.showModalDialog(new Dimension(550,420));
+	  	   			}
+	  	   		}
+	  	   		else if(commandStr.equals(VirtualFrapMainFrame.EXTIMATE_PARAM_COMMAND))
+	  	   		{
+	  	   			Wizard estParamWizard = getEstimateParametersWizard();
+	  	   			if(estParamWizard != null)
+	  	   			{
+	  	   				estParamWizard.showModalDialog(new Dimension(1000,700));
+	  	   			}
+	  	   		}
+	  	   		
+		    }
+	    }
 	}
 	
 	enum DisplayChoice { PDE,EXTTIMEDATA};
@@ -423,7 +507,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		getFRAPDataPanel().getOverlayEditorPanelJAI().setUndoableEditSupport(undoableEditSupport);
 	}	
 	
-	private void setSavedFrapModelInfo(SavedFrapModelInfo savedFrapModelInfo) throws Exception{
+	public void setSavedFrapModelInfo(SavedFrapModelInfo savedFrapModelInfo) throws Exception{
 		try{
 			undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
 		}catch(Exception e){
@@ -546,21 +630,68 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
         this.setLayout(new BorderLayout());
         this.setSize(new Dimension(727, 607));
         this.setMinimumSize(new Dimension(640, 480));
-        this.add(getJTabbedPane(), BorderLayout.CENTER);
-//        this.add(getJPanel(), BorderLayout.SOUTH);
-			
+        FRAPDataPanel fDataPanel = getFRAPDataPanel();
+        fDataPanel.adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getLeftPanel(), fDataPanel);
+        split.setDividerLocation(356);
+        split.setDividerSize(2);
+        this.add(split);
+        iniConnection();
 	}
 
+	private void iniConnection()
+	{
+		WorkFlowButtonHandler buttonHandler = new WorkFlowButtonHandler();
+		((AnalysisProcedurePanel)analysisProcedurePanel).addButtonHandler(buttonHandler);
+	}
+	
+	/**
+	 * Left panel is to the left of the frapDataPanel(imagepanel).
+	 * It contains workFlowPanel and resultsDispalyPanel.
+	 */
+	
+	private JPanel getLeftPanel()
+	{
+		if(leftPanel == null)
+		{
+			leftPanel = new JPanel(new BorderLayout());
+			leftPanel.setBorder(new LineBorder(new Color(153, 186,243), 2));
+			JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getAnalysisProcedurePanel(),getAnalysisResultsPanel());
+	        split.setDividerLocation(112);
+	        split.setDividerSize(2);
+			leftPanel.add(split);
+		}
+		return leftPanel;
+	}
+	
+	private JPanel getAnalysisProcedurePanel()
+	{
+		if(analysisProcedurePanel == null)
+		{
+			analysisProcedurePanel = new AnalysisProcedurePanel();
+		}
+		return analysisProcedurePanel;
+	}
+	
+	private JPanel getAnalysisResultsPanel()
+	{
+		if(analysisRestultsPanel == null)
+		{
+			analysisRestultsPanel = new ResultDisplayPanel();
+		}
+		return analysisRestultsPanel;
+	}
+	
 	/**
 	 * This method initializes FRAPDataPanel	
 	 * 	
 	 * @return cbit.vcell.virtualmicroscopy.gui.FRAPDataPanel	
 	 */
-	private FRAPDataPanel getFRAPDataPanel() {
+	public FRAPDataPanel getFRAPDataPanel() {
 		if (frapDataPanel == null) {
 			frapDataPanel = new FRAPDataPanel();
 			frapDataPanel.setBorder(TAB_LINE_BORDER);
-			frapDataPanel.getOverlayEditorPanelJAI().addPropertyChangeListener(this);
+//			frapDataPanel.getOverlayEditorPanelJAI().addPropertyChangeListener(this);
 			
 			Hashtable<String, Cursor> cursorsForROIsHash = new Hashtable<String, Cursor>();
 			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_CELLROI]);
@@ -571,13 +702,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new OverlayEditorPanelJAI.CustomROIImport(){
 				public boolean importROI(File inputFile) throws Exception{
 					try{
-//						File inputFile = null;
-//						int option = VirtualFrapLoader.openFileChooser.showOpenDialog(null);
-//						if (option == JFileChooser.APPROVE_OPTION){
-//							inputFile = VirtualFrapLoader.openFileChooser.getSelectedFile();
-//						}else{
-//							throw UserCancelException.CANCEL_GENERIC;
-//						}
 						if(!VirtualFrapLoader.filter_vfrap.accept(inputFile)){
 							return false;
 						}
@@ -610,7 +734,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 							for (int i = 0; i < importedFrapStudy.getFrapData().getRois().length; i++) {
 								getFrapStudy().getFrapData().addReplaceRoi(importedFrapStudy.getFrapData().getRois()[i]);
-	//							overlayEditorPanelJAI.firePropertyChange(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY, null,importedFrapStudy.getFrapData().getRois()[i]);								
 							}
 							undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
 						}
@@ -626,42 +749,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return frapDataPanel;
 	}
 
-	/**
-	 * This method initializes jTabbedPane	
-	 * 	
-	 * @return javax.swing.JTabbedPane	
-	 */
-	protected JTabbedPane getJTabbedPane() {
-		if (jTabbedPane == null) {
-			jTabbedPane = new JTabbedPane();
-			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_IMAGES, null, getFRAPDataPanel(), null);
-			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_IniParameters, null, getFRAPParametersPanel(), null);
-			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_AdjParameters, null, getResultsSummaryPanel(), null);
-			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_2DResults, null, getSimResultsViewPanel(), null);
-			jTabbedPane.setModel(
-				new DefaultSingleSelectionModel(){
-					@Override
-					public void setSelectedIndex(int index) {
-						try{
-							String exitTabTitle = (getSelectedIndex() == -1?null:getJTabbedPane().getTitleAt(getSelectedIndex()));
-							if(updateTabbedView(exitTabTitle,getJTabbedPane().getTitleAt(index))){
-								super.setSelectedIndex(index);
-							}
-						}catch(Exception e){
-							DialogUtils.showWarningDialog(
-								FRAPStudyPanel.this, "Can't switch view beacause:\n"+e.getMessage(),
-								new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
-						}finally{
-							getFRAPDataPanel().getOverlayEditorPanelJAI().updateROICursor();
-						}
+	
 
-					}
-				}
-			);
-			jTabbedPane.setSelectedIndex(jTabbedPane.indexOfTab(FRAPSTUDYPANEL_TABNAME_IMAGES));
-		}
-		return jTabbedPane;
-	}
 
 	private FRAPSimDataViewerPanel getFRAPSimDataViewerPanel(){
 		if(frapSimDataViewerPanel == null){
@@ -889,7 +978,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //							}
 //							else//current sim status !=null, NO ROI and Starting Idx changes, NO ref file missing
 //							{
-								if(frapOptData == null)
+								if(getFrapStudy().getFrapOptData() == null)
 								{   //have to create frapOptData if it is null.
 									spatialAnalysis(null, false);
 								}
@@ -992,7 +1081,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return resultsSummaryPanel;
 	}
 	
-	private FRAPStudy getFrapStudy() {
+	public FRAPStudy getFrapStudy() {
 		return frapStudy;
 	}
 
@@ -1012,25 +1101,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		this.frapStudy = argFrapStudy;
 		frapStudy.addPropertyChangeListener(this);
-		getFRAPDataPanel().setFrapStudyNew(frapStudy,bNew);
+		getFRAPDataPanel().setFrapStudy(frapStudy,bNew);
 		getResultsSummaryPanel().setFrapStudy(argFrapStudy);
 	}
 	
-	protected void crop(Rectangle cropRectangle) throws ImageException {
-		if (getFrapStudy() == null || getFrapStudy().getFrapData()==null){
-			return;
-		}
-		getFRAPDataPanel().getOverlayEditorPanelJAI().saveUserChangesToROI();
-		FRAPData frapData = getFrapStudy().getFrapData();
-		FRAPData newFrapData = frapData.crop(cropRectangle);
-		FRAPStudy newFrapStudy = new FRAPStudy();
-		newFrapStudy.setFrapData(newFrapData);
-		newFrapStudy.setXmlFilename(getFrapStudy().getXmlFilename());
-		newFrapStudy.setFrapDataExternalDataInfo(getFrapStudy().getFrapDataExternalDataInfo());
-		newFrapStudy.setRoiExternalDataInfo(getFrapStudy().getRoiExternalDataInfo());
-		newFrapStudy.setStoredRefData(getFrapStudy().getStoredRefData());
-		setFrapStudy(newFrapStudy,false);
-	}
+	
 	
 	public void save(KeyValue argKey) throws Exception {
 		if(SwingUtilities.isEventDispatchThread()){
@@ -1059,8 +1134,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			throw new Exception("SaveAs not EventDispatchThread");
 		}
 		if(getFrapStudy().getFrapData() != null){
-			if(getJTabbedPane().getTitleAt(getJTabbedPane().getSelectedIndex()).equals(FRAPSTUDYPANEL_TABNAME_2DResults) ||
-				getJTabbedPane().getTitleAt(getJTabbedPane().getSelectedIndex()).equals(FRAPSTUDYPANEL_TABNAME_AdjParameters)){
 				//SaveASNew has empty sim data so can't be viewing these tabs after save
 				final String CONTINUE_SAVING = "Switch and continue SaveAsNew";
 				String result = DialogUtils.showWarningDialog(this,
@@ -1069,12 +1142,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				if(result == null || !result.equals(CONTINUE_SAVING)){
 					return false;
 				}
-				SwingUtilities.invokeAndWait(
-					new Runnable(){
-						public void run(){getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_IMAGES));}
-					}
-				);
-			}
+
 			saveAsInternal(null, argKey);
 //			try{
 //				refreshBiomodel();
@@ -1275,72 +1343,51 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return false;
 	}
 	
-	private void clearCurrentLoadState() throws Exception{
+	public void clearCurrentLoadState() throws Exception{
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 			setFrapStudy(new FRAPStudy(), true);						
             VirtualFrapLoader.mf.setMainFrameTitle("");
-            getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_IMAGES));
 		}});
 	}
-	protected void load(final File[] inFileArr,final MultiFileImportInfo multiFileImportInfo) throws Exception{
+	
+	public void load(final File[] inFileArr,final MultiFileImportInfo multiFileImportInfo) throws Exception{
 				
 		final String inFileDescription =
 			(inFileArr.length == 1
 				?"file "+inFileArr[0].getAbsolutePath()
 				:"files from "+inFileArr[0].getParentFile().getAbsolutePath());
 
-		final AsynchProgressPopup_orig pp =
-			new AsynchProgressPopup_orig(
-				FRAPStudyPanel.this,
-				"Loading FRAP data...",
-				"Working...",true,true
-		);
-		pp.start();
-//		final boolean[] bTest = new boolean[1];
-//		bTest[0] = true;
-		new Thread(new Runnable(){
-			public void run(){
-//				try{
-//					
-//				}catch(UserCancelException e){
-//					return;
-//				}catch(Exception e){
-//					//Shouldn't happen
-//					DialogUtils.showErrorDialog("Error saving before run simulation\n"+e.getMessage());
-//					return;
-//				}
-
+		final String LOADING_MESSAGE = "Loading "+inFileDescription+"...";
+		AsynchClientTask loadTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
 				try {
+//					boolean loaded = true;
 					saveIfNeeded();
-//					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-//						setFrapStudy(new FRAPStudy(), true);						
-//			            VirtualFrapLoader.mf.setMainFrameTitle("");
-//			            getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_IMAGES);
-//					}});
-
-					
+				
 					final DataSetControllerImpl.ProgressListener loadFileProgressListener =
 						new DataSetControllerImpl.ProgressListener(){
 							public void updateProgress(double progress) {
 								int percentProgress = (int)(progress*100);
 								VirtualFrapMainFrame.updateProgress(percentProgress);
-								pp.setProgress(percentProgress);
+//								pp.setProgress(percentProgress);
 							}
 							public void updateMessage(String message) {
 								//ignore
 							}
 					};
 
-					final String LOADING_MESSAGE = "Loading "+inFileDescription+"...";
+					
 					VirtualFrapMainFrame.updateStatus(LOADING_MESSAGE);
-					pp.setMessage(LOADING_MESSAGE);
+//					pp.setMessage(LOADING_MESSAGE);
 					
 					FRAPStudy newFRAPStudy = null;
 					SavedFrapModelInfo newSavedFrapModelInfo = null;
 					String newVFRAPFileName = null;
 					if(inFileArr.length == 1){
 						File inFile = inFileArr[0];
-						if(inFile.getName().endsWith("."+VirtualFrapLoader.VFRAP_EXTENSION) ||
+						if(inFile.getName().endsWith("."+VirtualFrapLoader.VFRAP_EXTENSION) || //.vfrap
 							inFile.getName().endsWith(".xml")){
 							clearCurrentLoadState();
 							String xmlString = XmlUtil.getXMLString(inFile.getAbsolutePath());
@@ -1350,119 +1397,62 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								newFRAPStudy.setFrapDataExternalDataInfo(null);
 								newFRAPStudy.setRoiExternalDataInfo(null);
 							}
-//							if(!areReferenceDataOK(getLocalWorkspace(),newFRAPStudy.getRefExternalDataInfo()))
-//							{
-//								newFRAPStudy.setRefExternalDataInfo(null);
-//							}
 							newSavedFrapModelInfo = FRAPStudyPanel.createSavedFrapModelInfo(newFRAPStudy);//this is based on frapModelParameters
 							newVFRAPFileName = inFile.getAbsolutePath();
-						}else if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)){
-							DataIdentifier[] dataIdentifiers =
-								FRAPData.getDataIdentiferListFromVCellSimulationData(inFile, 0);
-							String[][] rowData = new String[dataIdentifiers.length][1];
-							for (int i = 0; i < dataIdentifiers.length; i++) {
-								if(dataIdentifiers[i].getVariableType().equals(VariableType.VOLUME)){
-									rowData[i][0] = dataIdentifiers[i].getName();
-								}
-							}
-							int[] selectedIndexArr =
-								DialogUtils.showComponentOKCancelTableList(
-									getFRAPDataPanel(),
-									"Select Volume Variable",
-									new String[] {"Volume Variable Name"},
-									rowData, ListSelectionModel.SINGLE_SELECTION);
-							if(selectedIndexArr != null && selectedIndexArr.length > 0){
-								clearCurrentLoadState();
-								FRAPData newFrapData = 
-									FRAPData.importFRAPDataFromVCellSimulationData(inFile,
-										dataIdentifiers[selectedIndexArr[0]].getName(),
-										loadFileProgressListener);
-								newFRAPStudy = new FRAPStudy();
-								newFRAPStudy.setFrapData(newFrapData);
-							}else{
-								throw UserCancelException.CANCEL_GENERIC;
-							}
-						}else{//.lsm or other image file extensions
-							clearCurrentLoadState();
-							ImageLoadingProgress myImageLoadingProgress =
-								new ImageLoadingProgress(){
-									public void setSubProgress(double mbprog) {
-										loadFileProgressListener.updateProgress(mbprog);
-									}
-							};
-//	        				ImageLoadingProgress imgProgress = new ImageLoadingProgress();
-//	        				imgProgress.addPropertyChangeListener(getFRAPDataPanel());
-	            			ImageDataset imageDataset = ImageDatasetReader.readImageDataset(inFile.getAbsolutePath(), myImageLoadingProgress);
-	            			FRAPData newFrapData = FRAPData.importFRAPDataFromImageDataSet(imageDataset);
-							newFRAPStudy = new FRAPStudy();
-							newFRAPStudy.setFrapData(newFrapData);
-						}
-					}else{//multiple files
-						clearCurrentLoadState();
-	    				ImageLoadingProgress imgProgress = new ImageLoadingProgress();
-	        			imgProgress.addPropertyChangeListener(getFRAPDataPanel());
-	        			ImageDataset imageDataset = ImageDatasetReader.readImageDatasetFromMultiFiles(inFileArr, imgProgress, multiFileImportInfo.isTimeSeries, multiFileImportInfo.timeInterval, multiFileImportInfo.zInterval);
-	        			FRAPData newFrapData = new FRAPData(imageDataset, new String[] { FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
-//	        			frapData.setOriginalGlobalScaleInfo(null);
-						newFRAPStudy = new FRAPStudy();
-						newFRAPStudy.setFrapData(newFrapData);
-					}
-
-					final FRAPStudy finalNewFrapStudy = newFRAPStudy;
-					final SavedFrapModelInfo finalNewSavedFrapModelInfo = newSavedFrapModelInfo;
-					final String finalNewVFRAPFileName = newVFRAPFileName;
-//					FRAPStudy.InitialModelParameters temIniParameters = null;
-//					if((finalNewFrapStudy != null) && (finalNewFrapStudy.getFrapModelParameters() != null) && finalNewFrapStudy.getFrapModelParameters().getIniModelParameters() != null)
-//					{
-//						temIniParameters = finalNewFrapStudy.getFrapModelParameters().getIniModelParameters();
-//					}
-//					final FRAPStudy.InitialModelParameters finalIniParameters = temIniParameters;
-					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-						finalNewFrapStudy.setXmlFilename(finalNewVFRAPFileName);
-						setFrapStudy(finalNewFrapStudy,true);
-						try{
-							setSavedFrapModelInfo(finalNewSavedFrapModelInfo);
-							applySavedParameters(finalNewFrapStudy);
-//							getFRAPParametersPanel().updateSavedParameters(finalIniParameters, finalNewFrapStudy.getFrapData().getImageDataset().getImageTimeStamps());
-						}catch(Exception e){
-							throw new RuntimeException(e.getMessage());
-						}
 						
-						FRAPStudyPanel.this.refreshUI();			
-
-			            VirtualFrapLoader.mf.setMainFrameTitle((finalNewVFRAPFileName != null?finalNewVFRAPFileName:"New Document"));
-					}});
-
-		            VirtualFrapMainFrame.updateStatus("Loaded " + inFileDescription);
-		            VirtualFrapMainFrame.updateProgress(0);
-		            //after loading new file, we need to set frapOptData to null.
-		            frapOptData = null;
+						}
+					}
+					//else{//multiple files
+					//}
+					//for all loaded files
+					newFRAPStudy.setXmlFilename(newVFRAPFileName);
+					setFrapStudy(newFRAPStudy,true);
+					try{
+						setSavedFrapModelInfo(newSavedFrapModelInfo);
+						applySavedParameters(newFRAPStudy);
+					}catch(Exception e){
+						throw new RuntimeException(e.getMessage());
+					}
+					//after loading new file, we need to set frapOptData to null.
+		            newFRAPStudy.setFrapOptData(null);
 				}catch(UserCancelException uce){
 					//ignore
 				}catch(final Exception e){
-					pp.stop();
+//					pp.stop();
+					setFrapStudy(new FRAPStudy(), true);
 					try{
 						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							setFrapStudy(new FRAPStudy(), true);						
-				            VirtualFrapLoader.mf.setMainFrameTitle("");
+						    VirtualFrapLoader.mf.setMainFrameTitle("");
+						    VirtualFrapMainFrame.updateProgress(0);
+							VirtualFrapMainFrame.updateStatus("Failed loading " + inFileDescription+".");
+							DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Failed loading " + inFileDescription+":\n"+e.getMessage());
 						}});
 					}catch(Exception e2){
 						e.printStackTrace();
 					}
-					VirtualFrapMainFrame.updateProgress(0);
-					VirtualFrapMainFrame.updateStatus("Failed loading " + inFileDescription+".");
-					e.printStackTrace();
-					try{
-						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Failed loading " + inFileDescription+":\n"+e.getMessage());
-						}});
-						}catch(Exception e2){
-							e2.printStackTrace();
-						}				
 				}finally{
-					pp.stop();
+//					pp.stop();
 				}
-		}}).start();
+			}
+		};
+		
+		AsynchClientTask updateUIAfterLoadingTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				FRAPStudyPanel.this.refreshUI();			
+				String fName = "";
+				if(getFrapStudy() != null && getFrapStudy().getXmlFilename() != null && getFrapStudy().getXmlFilename().length() > 0)
+				{
+					fName = getFrapStudy().getXmlFilename();
+				}
+				VirtualFrapLoader.mf.setMainFrameTitle(fName);
+				VirtualFrapMainFrame.updateStatus("Loaded " + fName);
+	            VirtualFrapMainFrame.updateProgress(0);
+			}
+		};
+		//dispatch
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{loadTask,updateUIAfterLoadingTask}, false);
 	}
 	
 	private void saveIfNeeded() throws Exception{
@@ -1597,104 +1587,110 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return true;
 	}
 	
-	protected void runSimulation(final boolean bSpatialAnalysis, final boolean bReferenceSim) throws Exception{
-		
-		final File simulationDataDir =
-			new File(getLocalWorkspace().getDefaultSimDataDirectory());
-		if(!simulationDataDir.exists()){
-			final String CREATE_OPTION = "Create Directory";
-			String result = DialogUtils.showWarningDialog(this,
-					"Simulation data directory '"+
-					getLocalWorkspace().getDefaultSimDataDirectory()+
-					"' does not exits.  Create Simulation data directory now?",
-					new String[] {CREATE_OPTION,UserMessage.OPTION_CANCEL}, CREATE_OPTION);
-			if(result == null || !result.equals(CREATE_OPTION)){
-				return;
-			}
-			if(!simulationDataDir.mkdirs()){
-				DialogUtils.showWarningDialog(this,
-						"Failed to create Simulation Data Directory\n"+
-						simulationDataDir.getAbsolutePath()+"\n Simulation cannot run.",
-						new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
-				return;
-			}
-		}
-		//save if the Model has changed
-		final Boolean[] bSaveAsNew = new Boolean[] {null};
-		try{
-			FrapChangeInfo frapChangeInfo = refreshBiomodel();
-			boolean bNeedsExtData =
-				!areExternalDataOK(getLocalWorkspace(),
-					frapStudy.getFrapDataExternalDataInfo(),frapStudy.getRoiExternalDataInfo());
-			if(frapChangeInfo.hasAnyChanges() || bNeedsExtData){
-				bSaveAsNew[0] = new Boolean(false);
-				if(frapChangeInfo.hasAnyChanges()){
-		    		String saveMessage = null;
-		    		if(getSavedFrapModelInfo() != null){
-		    			saveMessage = "Current document has changes that must be saved before running simulation.\n"+
-		    				"Changes include "+frapChangeInfo.getChangeDescription();
-		    		}else{
-		    			saveMessage = "Current unsaved document must be saved before running simulation.";
-		    		}
-
-					String result = DialogUtils.showWarningDialog(
-						this,
-						saveMessage,
-						(getSavedFrapModelInfo() == null
-							?new String[] {UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL}
-							:new String[] {SAVE_FILE_OPTION,UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL})
-						
-						,UserMessage.OPTION_OK);
-					if(result.equals(SAVE_FILE_OPTION)){
-						bSaveAsNew[0] = new Boolean(false);
-					}else if(result.equals(UserMessage.OPTION_SAVE_AS_NEW)){
-						bSaveAsNew[0] = new Boolean(true);
-					}else{
+	protected void runSimulation(final boolean bSpatialAnalysis, final boolean bReferenceSim) throws Exception
+	{
+		AsynchClientTask checkSimDirTask = new AsynchClientTask("Checking simulation directory ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				File simulationDataDir =
+					new File(getLocalWorkspace().getDefaultSimDataDirectory());
+				if(!simulationDataDir.exists()){
+					final String CREATE_OPTION = "Create Directory";
+					String result = DialogUtils.showWarningDialog(FRAPStudyPanel.this,
+							"Simulation data directory '"+
+							getLocalWorkspace().getDefaultSimDataDirectory()+
+							"' does not exits.  Create Simulation data directory now?",
+							new String[] {CREATE_OPTION,UserMessage.OPTION_CANCEL}, CREATE_OPTION);
+					if(result == null || !result.equals(CREATE_OPTION)){
+						return;
+					}
+					if(!simulationDataDir.mkdirs()){
+						DialogUtils.showWarningDialog(FRAPStudyPanel.this,
+								"Failed to create Simulation Data Directory\n"+
+								simulationDataDir.getAbsolutePath()+"\n Simulation cannot run.",
+								new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
 						return;
 					}
 				}
 			}
-		}catch(Exception e){
-			throw new Exception("Error checking save before running simulation:\n"+e.getMessage());
-		}
-
-//		final boolean[] genericProgressStopSignal = new boolean[1];
-
-		final AsynchProgressPopup_orig pp =
-			new AsynchProgressPopup_orig(
-				FRAPStudyPanel.this,
-				"Running FRAP Model Simulation",
-				"Working...",true,true
-		);
-		pp.start();
+		};
 		
-		new Thread(new Runnable(){
-			public void run(){
-				try {
-					boolean executed = false;
-					if(bSaveAsNew[0] != null){
-						final String SAVING_BEFORE_RUN_MESSAGE = "Saving before simulation runs...";
-						VirtualFrapMainFrame.updateStatus(SAVING_BEFORE_RUN_MESSAGE);
-						pp.setMessage(SAVING_BEFORE_RUN_MESSAGE);
-						if(bSaveAsNew[0]){
-							executed = saveAs(null);
-						}else {
-							save(null);
+		AsynchClientTask saveBeforeRunTask = new AsynchClientTask("Saving before running simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				//save if the Model has changed
+				final Boolean[] bSaveAsNew = new Boolean[] {null};
+				try{
+					FrapChangeInfo frapChangeInfo = refreshBiomodel();
+					boolean bNeedsExtData =
+						!areExternalDataOK(getLocalWorkspace(),
+							frapStudy.getFrapDataExternalDataInfo(),frapStudy.getRoiExternalDataInfo());
+					if(frapChangeInfo.hasAnyChanges() || bNeedsExtData){
+						bSaveAsNew[0] = new Boolean(false);
+						if(frapChangeInfo.hasAnyChanges()){
+				    		String saveMessage = null;
+				    		if(getSavedFrapModelInfo() != null){
+				    			saveMessage = "Current document has changes that must be saved before running simulation.\n"+
+				    				"Changes include "+frapChangeInfo.getChangeDescription();
+				    		}else{
+				    			saveMessage = "Current unsaved document must be saved before running simulation.";
+				    		}
+
+							String result = DialogUtils.showWarningDialog(
+								FRAPStudyPanel.this,
+								saveMessage,
+								(getSavedFrapModelInfo() == null
+									?new String[] {UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL}
+									:new String[] {SAVE_FILE_OPTION,UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL})
+								
+								,UserMessage.OPTION_OK);
+							if(result.equals(SAVE_FILE_OPTION)){
+								bSaveAsNew[0] = new Boolean(false);
+							}else if(result.equals(UserMessage.OPTION_SAVE_AS_NEW)){
+								bSaveAsNew[0] = new Boolean(true);
+							}else{
+								return;
+							}
 						}
 					}
-					if(bSaveAsNew[0] != null && bSaveAsNew[0] && !executed) //cancelled saveas, then nothing should happen.
-					{
-						pp.stop();
-					}
-					else
-					{
+				}catch(Exception e){
+					throw new Exception("Error checking save before running simulation:\n"+e.getMessage());
+				}
+			}
+		};
+
+		
+		AsynchClientTask runTask = new AsynchClientTask("Running simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				try {
+					boolean executed = false;
+//					if(bSaveAsNew[0] != null){
+//						final String SAVING_BEFORE_RUN_MESSAGE = "Saving before simulation runs...";
+//						VirtualFrapMainFrame.updateStatus(SAVING_BEFORE_RUN_MESSAGE);
+////						pp.setMessage(SAVING_BEFORE_RUN_MESSAGE);
+//						if(bSaveAsNew[0]){
+//							executed = saveAs(null);
+//						}else {
+//							save(null);
+//						}
+//					}
+//					if(bSaveAsNew[0] != null && bSaveAsNew[0] && !executed) //cancelled saveas, then nothing should happen.
+//					{
+////						pp.stop();
+//					}
+//					else
+//					{
 						// Reset spatial analysis
 						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 							getResultsSummaryPanel().clearData();//spatialAnalysisList = null;
 						}});
 						final String SAVING_EXT_DATA_MESSAGE = "Saving ROI and initial conditions...";
 						VirtualFrapMainFrame.updateStatus(SAVING_EXT_DATA_MESSAGE);
-						pp.setMessage(SAVING_EXT_DATA_MESSAGE);
+//						pp.setMessage(SAVING_EXT_DATA_MESSAGE);
 						VirtualFrapMainFrame.updateProgress(0);
 //						genericProgress(10,genericProgressStopSignal);
 						if(getSavedFrapModelInfo() == null || cleanupSavedSimDataFilesIfNotOK()){
@@ -1711,21 +1707,21 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								public void updateProgress(double progress) {
 									int percentProgress = (int)(progress*100*RUN_SIM_PROGRESS_FRACTION);
 									VirtualFrapMainFrame.updateProgress(percentProgress);
-									pp.setProgress(percentProgress);
+//									pp.setProgress(percentProgress);
 								}
 								public void updateMessage(String message) {
 									VirtualFrapMainFrame.updateStatus(message);
-									pp.setMessage(message);
+//									pp.setMessage(message);
 								}
 						};
 	
 						final String RUNNING_SIM_MESSAGE = "Running simulation...";
 						VirtualFrapMainFrame.updateStatus(RUNNING_SIM_MESSAGE);
-						pp.setMessage(RUNNING_SIM_MESSAGE);
+//						pp.setMessage(RUNNING_SIM_MESSAGE);
 						Simulation simulation =
 							getFrapStudy().getBioModel().getSimulations()[0];
 						FRAPStudy.runFVSolverStandalone(
-							simulationDataDir,
+							new File(getLocalWorkspace().getDefaultSimDataDirectory()),
 							new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 							simulation,
 							getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
@@ -1733,13 +1729,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							runSimProgressListener);
 						
 						if(!bSpatialAnalysis){
-							pp.stop();
+//							pp.stop();
 							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 								try{
 									VirtualFrapMainFrame.updateStatus("Updating Simulation Data display.");
 									refreshPDEDisplay(DisplayChoice.PDE);//upper data viewer has simulated data and masks
 									refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);//lower data viewer has original data and masks
-									getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_2DResults));
+									//commented for new version
+//									getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_2DResults));
 									VirtualFrapMainFrame.updateProgress(0);
 									VirtualFrapMainFrame.updateStatus("");
 								}catch(Exception e){
@@ -1751,7 +1748,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						
 						final String FINISHED_MESSAGE = "Finished simulation, running spatial analysis...";
 						VirtualFrapMainFrame.updateStatus(FINISHED_MESSAGE);
-						pp.setMessage(FINISHED_MESSAGE);
+//						pp.setMessage(FINISHED_MESSAGE);
 //						VirtualFrapMainFrame.updateProgress(100);
 //						pp.setProgress(100);
 						
@@ -1761,33 +1758,26 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								public void updateProgress(double progress) {
 									if(progress == 1.0){
 										VirtualFrapMainFrame.updateProgress(0);
-										pp.stop();
+//										pp.stop();
 										return;
 									}
 									int percentProgress = (int)(100*(RUN_SIM_PROGRESS_FRACTION+progress*(1-RUN_SIM_PROGRESS_FRACTION)));
 									VirtualFrapMainFrame.updateProgress(percentProgress);
-									pp.setProgress(percentProgress);
+//									pp.setProgress(percentProgress);
 								}
 								public void updateMessage(String message) {
 									VirtualFrapMainFrame.updateStatus(message);
-									pp.setMessage(message);
+//									pp.setMessage(message);
 								}
 						};
 						
 						spatialAnalysis(optimizationProgressListener, bReferenceSim);
-						
-	
-//						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-//						getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_REPORT));
-//						VirtualFrapMainFrame.updateProgress(0);
-//						VirtualFrapMainFrame.updateStatus("");
-//						}});
-					}		
+//					}		
 				}catch(UserCancelException uce){
-					pp.stop();
+//					pp.stop();
 					return;
 				}catch (final Exception e) {
-					pp.stop();
+//					pp.stop();
 //					genericProgressStopSignal[0] = true;
 					VirtualFrapMainFrame.updateProgress(0);
 					VirtualFrapMainFrame.updateStatus("Error running simulation/spatial analysis: "+e.getMessage());
@@ -1803,7 +1793,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //					pp.stop();
 				}
 			}
-		}).start();
+		};
+		//dispatch
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{checkSimDirTask,saveBeforeRunTask,runTask}, false);
 	}	
 	
 	private void showMovie()
@@ -2217,242 +2209,242 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //	}
 	public void spatialAnalysis(final DataSetControllerImpl.ProgressListener progressListener,final boolean bRefSimulation) throws Exception{
 		
-		final AsynchProgressPopup_orig pp =
-			(progressListener != null?null:
-			new AsynchProgressPopup_orig(
-				FRAPStudyPanel.this,
-				"Running FRAP Spatial Analysis",
-				"Working...",true,true)
-			);
-		if(pp != null){pp.start();}
 		final FRAPStudy fStudy = getFrapStudy();
-		new Thread(new Runnable(){public void run(){
-			try{
-				if(getSavedFrapModelInfo()==null)//has not been saved yet
-				{
-					String saveMessage = "Current unsaved document must be saved before running simulation.";
-					String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, saveMessage,
-							        new String[] {UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL}, UserMessage.OPTION_SAVE_AS_NEW);
-					if(choice.equals(UserMessage.OPTION_CANCEL))
+		AsynchClientTask spatialAnalysisTask = new AsynchClientTask("Spatial Analysis ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				try{
+					if(getSavedFrapModelInfo()==null)//has not been saved yet
 					{
-						pp.stop();
-						return;
-					}
-					else
-					{
-						pp.setMessage("Saving model information...");
-						saveAs(null);//for new document the external data info. is created in saveProcedure.
-						getFrapStudy().saveROIsAsExternalData(localWorkspace,
-								getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
-						getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
-								getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
-					}
-				}
-				final double SPATIAL_ANLYSIS_PROGRESS_FRACTION = .5;
-				final double SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM = 1;
-				DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
-					new DataSetControllerImpl.ProgressListener(){
-						public void updateProgress(double progress) {
-							if(pp != null){
-								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
-								if(!bRefSimulation && fStudy.getStoredRefData()!= null)
-								{
-									percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
-								}
-								VirtualFrapMainFrame.updateProgress(percentProgress);
-								pp.setProgress(percentProgress);
-							}
-							if(progressListener != null){
-								if(!bRefSimulation && fStudy.getStoredRefData()!= null)
-								{
-									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
-								}
-								else
-								{
-									progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
-								}
-							}
-						}
-						public void updateMessage(String message) {
-							if(pp != null){
-								VirtualFrapMainFrame.updateStatus(message);
-								pp.setMessage(message);
-							}
-							if(progressListener != null){
-								progressListener.updateMessage(message);
-							}
-						}
-				};
-
-//				VCDataManager testVCDataManager = getLocalWorkspace().getVCDataManager();
-				//the prebleachAverage
-				final int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery).intValue();
-				double[] prebleachAverage = FRAPStudy.calculatePreBleachAverageXYZ(getFrapStudy().getFrapData(), startIndexForRecovery);
-//				double[] prebleachAverage = testVCDataManager.getSimDataBlock(
-//						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
-
-//				double[] prebleachAverage = getPreBleachAverageXYZ(null);
-				
-//				simulationDataManager = getDataManager(frapSimulation);
-				DataManager simulationDataManager = null;
-				if(frapStudy.getBioModel() != null && frapStudy.getBioModel().getSimulations()!=null &&
-						frapStudy.getBioModel().getSimulations().length > 0)
-				{
-					Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
-					simulationDataManager = getDataManager(frapSimulation);
-					try{
-						if(simulationDataManager.getDataSetTimes() == null)
+						String saveMessage = "Current unsaved document must be saved before running simulation.";
+						String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, saveMessage,
+								        new String[] {UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL}, UserMessage.OPTION_SAVE_AS_NEW);
+						if(choice.equals(UserMessage.OPTION_CANCEL))
 						{
-							simulationDataManager = null;
-						}
-					}catch(Exception e)
-					{
-						simulationDataManager = null;
-					}
-				}
-				
-				
-//				if(frapStudy.getBioModel() != null && frapStudy.getBioModel().getSimulations()!=null && )
-//				{	
-//					Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
-//					simulationDataManager = getDataManager(frapSimulation);
-//				}
-//				
-				final double[] frapDataTimeStamps = getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
-				FRAPStudy.SpatialAnalysisResults spatialAnalysisResults = null; 
-				if(getFrapStudy().getFrapModelParameters() != null && getFrapStudy().getFrapModelParameters().getReacDiffModelParameters()!=null)
-				{
-					spatialAnalysisResults =
-						FRAPStudy.spatialAnalysis(
-							simulationDataManager,
-							startIndexForRecovery,
-							frapDataTimeStamps[startIndexForRecovery],
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().freeDiffusionRate,
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().freeMobileFraction,
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().complexDiffusionRate,
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().complexMobileFraction,
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().monitorBleachRate,
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().bsConcentration,
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().reacOnRate,
-							getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().reacOffRate,
-							getFrapStudy().getFrapData(),
-							prebleachAverage,
-							runspatialAnalysisProgressListener);
-				}
-				else
-				{
-					spatialAnalysisResults =
-						FRAPStudy.spatialAnalysis(
-							simulationDataManager,
-							startIndexForRecovery,
-							frapDataTimeStamps[startIndexForRecovery],
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							null,
-							getFrapStudy().getFrapData(),
-							prebleachAverage,
-							runspatialAnalysisProgressListener);
-				}
-				
-				//Optimization
-				DataSetControllerImpl.ProgressListener optimizationProgressListener =
-					new DataSetControllerImpl.ProgressListener(){
-						public void updateProgress(double progress) {
-							if(pp != null){
-								int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
-								if(frapOptData != null && !bRefSimulation)
-								{
-									percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
-								}
-								VirtualFrapMainFrame.updateProgress(percentProgress);
-								pp.setProgress(percentProgress);
-							}
-							if(progressListener != null){
-								if(frapOptData != null && !bRefSimulation)
-								{
-									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
-								}
-								else
-								{
-									progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
-								}
-							}
-						}
-						public void updateMessage(String message) {
-							if(pp != null){
-								VirtualFrapMainFrame.updateStatus(message);
-								pp.setMessage(message);
-							}
-							if(progressListener != null){
-								progressListener.updateMessage(message);
-							}
-						}
-				};
-				if(bRefSimulation)
-				{
-					frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener/*, bRefSimulation*/);
-				}
-				else
-				{
-					if(frapOptData == null)
-					{
-						if(getFrapStudy().getStoredRefData() != null)
-						{
-							frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), getFrapStudy().getStoredRefData());
+	//						pp.stop();
+							return;
 						}
 						else
 						{
-							//reference data is null, it is not stored, we have to run ref simulation then
-							frapOptData = new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener/*, bRefSimulation*/);
+//							pp.setMessage("Saving model information...");
+							saveAs(null);//for new document the external data info. is created in saveProcedure.
+							getFrapStudy().saveROIsAsExternalData(localWorkspace,
+									getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
+							getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
+									getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
 						}
 					}
-				}
-				if(progressListener != null){
-					progressListener.updateProgress(1.0);
-				}
-
-				NewFRAPFromParameters newFRAPFromParameters =
-					new NewFRAPFromParameters (){
-						public void create(Parameter[] newParameters, String arg_modelType) {
-							createNewFRAPFromParameters(newParameters, arg_modelType);
-						}
+					final double SPATIAL_ANLYSIS_PROGRESS_FRACTION = .5;
+					final double SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM = 1;
+					DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
+						new DataSetControllerImpl.ProgressListener(){
+							public void updateProgress(double progress) {
+	//							if(pp != null){
+	//								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+	//								if(!bRefSimulation && fStudy.getStoredRefData()!= null)
+	//								{
+	//									percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
+	//								}
+	//								VirtualFrapMainFrame.updateProgress(percentProgress);
+	//								pp.setProgress(percentProgress);
+	//							}
+								if(progressListener != null){
+									if(!bRefSimulation && fStudy.getStoredRefData()!= null)
+									{
+										progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM);
+									}
+									else
+									{
+										progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+									}
+								}
+							}
+							public void updateMessage(String message) {
+	//							if(pp != null){
+	//								VirtualFrapMainFrame.updateStatus(message);
+	//								pp.setMessage(message);
+	//							}
+								if(progressListener != null){
+									progressListener.updateMessage(message);
+								}
+							}
 					};
+	
+	//				VCDataManager testVCDataManager = getLocalWorkspace().getVCDataManager();
+					//the prebleachAverage
+					final int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery).intValue();
+					double[] prebleachAverage = FRAPStudy.calculatePreBleachAverageXYZ(getFrapStudy().getFrapData(), startIndexForRecovery);
+	//				double[] prebleachAverage = testVCDataManager.getSimDataBlock(
+	//						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
+	
+	//				double[] prebleachAverage = getPreBleachAverageXYZ(null);
 					
-				//Report initialization //commented in Dec 2008
-				getResultsSummaryPanel().setData(newFRAPFromParameters,frapOptData,
-						spatialAnalysisResults,frapDataTimeStamps,startIndexForRecovery,
-						(simulationDataManager==null)?false:true);
-				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-					isSetTabIdxFromSpatialAnalysis = true;
-					getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_AdjParameters));
-					isSetTabIdxFromSpatialAnalysis = false;
-				}});
-				
-				
-				VirtualFrapMainFrame.updateProgress(0);
-				VirtualFrapMainFrame.updateStatus("Finished Spatial analysis.");
-			}catch(final Exception e){
-				if(pp != null){pp.stop();}
-				VirtualFrapMainFrame.updateProgress(0);
-				VirtualFrapMainFrame.updateStatus("Error running spatial analysis: "+e.getMessage());
-				e.printStackTrace();
-				try{
-				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-					DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running spatial analysis:\n"+e.getMessage());
-				}});
-				}catch(Exception e2){
-					e2.printStackTrace();
+	//				simulationDataManager = getDataManager(frapSimulation);
+					DataManager simulationDataManager = null;
+					if(frapStudy.getBioModel() != null && frapStudy.getBioModel().getSimulations()!=null &&
+							frapStudy.getBioModel().getSimulations().length > 0)
+					{
+						Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
+						simulationDataManager = getDataManager(frapSimulation);
+						try{
+							if(simulationDataManager.getDataSetTimes() == null)
+							{
+								simulationDataManager = null;
+							}
+						}catch(Exception e)
+						{
+							simulationDataManager = null;
+						}
+					}
+					
+					
+	//				if(frapStudy.getBioModel() != null && frapStudy.getBioModel().getSimulations()!=null && )
+	//				{	
+	//					Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
+	//					simulationDataManager = getDataManager(frapSimulation);
+	//				}
+	//				
+					final double[] frapDataTimeStamps = getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
+					FRAPStudy.SpatialAnalysisResults spatialAnalysisResults = null; 
+					if(getFrapStudy().getFrapModelParameters() != null && getFrapStudy().getFrapModelParameters().getReacDiffModelParameters()!=null)
+					{
+						spatialAnalysisResults =
+							FRAPStudy.spatialAnalysis(
+								simulationDataManager,
+								startIndexForRecovery,
+								frapDataTimeStamps[startIndexForRecovery],
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().freeDiffusionRate,
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().freeMobileFraction,
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().complexDiffusionRate,
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().complexMobileFraction,
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().monitorBleachRate,
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().bsConcentration,
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().reacOnRate,
+								getFrapStudy().getFrapModelParameters().getReacDiffModelParameters().reacOffRate,
+								getFrapStudy().getFrapData(),
+								prebleachAverage,
+								runspatialAnalysisProgressListener);
+					}
+					else
+					{
+						spatialAnalysisResults =
+							FRAPStudy.spatialAnalysis(
+								simulationDataManager,
+								startIndexForRecovery,
+								frapDataTimeStamps[startIndexForRecovery],
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								getFrapStudy().getFrapData(),
+								prebleachAverage,
+								runspatialAnalysisProgressListener);
+					}
+					
+					//Optimization
+					DataSetControllerImpl.ProgressListener optimizationProgressListener =
+						new DataSetControllerImpl.ProgressListener(){
+							public void updateProgress(double progress) {
+	//							if(pp != null){
+	//								int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+	//								if(frapOptData != null && !bRefSimulation)
+	//								{
+	//									percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
+	//								}
+	//								VirtualFrapMainFrame.updateProgress(percentProgress);
+	//								pp.setProgress(percentProgress);
+	//							}
+								if(progressListener != null){
+									if(getFrapStudy().getFrapOptData() != null && !bRefSimulation)
+									{
+										progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_WITHOUT_REF_SIM));
+									}
+									else
+									{
+										progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+									}
+								}
+							}
+							public void updateMessage(String message) {
+	//							if(pp != null){
+	//								VirtualFrapMainFrame.updateStatus(message);
+	//								pp.setMessage(message);
+	//							}
+								if(progressListener != null){
+									progressListener.updateMessage(message);
+								}
+							}
+					};
+					if(bRefSimulation)
+					{
+						getFrapStudy().setFrapOptData(new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener));
+					}
+					else
+					{
+						if(getFrapStudy().getFrapOptData() == null)
+						{
+							if(getFrapStudy().getStoredRefData() != null)
+							{
+								getFrapStudy().setFrapOptData(new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), getFrapStudy().getStoredRefData()));
+							}
+							else
+							{
+								//reference data is null, it is not stored, we have to run ref simulation then
+								getFrapStudy().setFrapOptData(new FRAPOptData(getFrapStudy(), FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), optimizationProgressListener));
+							}
+						}
+					}
+					if(progressListener != null){
+						progressListener.updateProgress(1.0);
+					}
+	
+					NewFRAPFromParameters newFRAPFromParameters =
+						new NewFRAPFromParameters (){
+							public void create(Parameter[] newParameters, String arg_modelType) {
+								createNewFRAPFromParameters(newParameters, arg_modelType);
+							}
+						};
+						
+					//Report initialization //commented in Dec 2008
+					getResultsSummaryPanel().setData(newFRAPFromParameters,getFrapStudy().getFrapOptData(),
+							spatialAnalysisResults,frapDataTimeStamps,startIndexForRecovery,
+							(simulationDataManager==null)?false:true);
+					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+						isSetTabIdxFromSpatialAnalysis = true;
+						//commented for new version
+	//					getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_AdjParameters));
+						isSetTabIdxFromSpatialAnalysis = false;
+					}});
+					
+					VirtualFrapMainFrame.updateProgress(0);
+					VirtualFrapMainFrame.updateStatus("Finished Spatial analysis.");
+				}catch(final Exception e){
+	//				if(pp != null){pp.stop();}
+					VirtualFrapMainFrame.updateProgress(0);
+					VirtualFrapMainFrame.updateStatus("Error running spatial analysis: "+e.getMessage());
+					e.printStackTrace();
+					try{
+					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+						DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running spatial analysis:\n"+e.getMessage());
+					}});
+					}catch(Exception e2){
+						e2.printStackTrace();
+					}
+			}finally{
+	//				if(pp != null){pp.stop();}
+
 				}
-		}finally{
-				if(pp != null){pp.stop();}
 			}
-		}}).start();
-	}
+	
+		};
+		//dispatch
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{spatialAnalysisTask}, false);
+	}	
 
 	private void createNewFRAPFromParameters(Parameter[] newParameters, String modelType){
 		if(modelType.equals(ResultsSummaryPanel.STR_REACTION_DIFFUSION))
@@ -2510,13 +2502,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(evt.getSource() == getFRAPDataPanel().getOverlayEditorPanelJAI()){
-			if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
-				try {
-					crop((Rectangle) evt.getNewValue());
-				} catch (Exception e) {
-					PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+e.getMessage());
-				}
-			}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOROI_PROPERTY)){
+			 if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOROI_PROPERTY)){
 				if(!getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()) &&
 					getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero()
 					){
@@ -2564,9 +2550,80 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 			}
 		}
+		if(evt.getPropertyName().equals(LOADDATA_FRAPSTUDY_CHANGE_PROPERTY))
+		{
+			//update FRAPStudyPanel and FRAPDataPanel after loading new file()
+			FRAPStudy fStudy = (FRAPStudy)evt.getNewValue();
+			setFrapStudy(fStudy, true); //if loaded fStudy=newFrapStudy, if failed fStudy=new FRAPStudy()
+			//adjust panel when loaded new FRAPData coz setFrapStudy will enable all the components in  frapDataPanel, no ROIs for sure
+			getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
+			refreshUI();
+			firePropertyChange(LOADDATA_FRAPSTUDY_CHANGE_PROPERTY, null, fStudy);
+		}
+		else if(evt.getPropertyName().equals(LOADDATA_VERIFY_INFO_PROPERTY))
+		{
+			FRAPData fData = null;
+			if(getFrapStudy() != null && getFrapStudy().getFrapData() !=null)
+			{
+				fData = getFrapStudy().getFrapData();
+			}
+			//set verify info
+			if(fData != null && evt.getNewValue() instanceof DataVerifyInfo )
+			{
+				double[] timeSteps = fData.getImageDataset().getImageTimeStamps();
+				
+				DataVerifyInfo dataVerifyInfo = (DataVerifyInfo)evt.getNewValue();
+				UShortImage[] images = fData.getImageDataset().getAllImages();
+				boolean isChanged = false;
+				if(dataVerifyInfo.getStartTimeIndex() > 0 || dataVerifyInfo.getEndTimeIndex() < (images.length-1))
+				{
+					fData.chopImages(dataVerifyInfo.getStartTimeIndex(), dataVerifyInfo.getEndTimeIndex());
+					isChanged = true;
+				}
+				
+				if(dataVerifyInfo.getImageSizeX()!= images[0].getExtent().getX() ||
+						dataVerifyInfo.getImageSizeY()!= images[0].getExtent().getY())
+				{
+					fData.changeImageExtent(dataVerifyInfo.getImageSizeX(), dataVerifyInfo.getImageSizeY());
+					isChanged = true;
+				}
+				if(isChanged)
+				{
+					getFRAPDataPanel().setFrapStudy(frapStudy,true); //if FrapData has been changed, need to update overlayImageJAI
+					//adjust panel when loaded new FRAPData coz setFrapStudy will enable all the components in  frapDataPanel, no ROIs for sure
+					getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
+					refreshUI();
+				}
+			}
+		}
+		else if(evt.getPropertyName().equals(DEFINEROI_CHANGE_PROPERTY))
+		{
+			FRAPStudy fStudy = (FRAPStudy)evt.getNewValue();
+			setFrapStudy(fStudy, true);
+			
+			boolean isROIExist = false;
+			ROI[] rois = fStudy.getFrapData().getRois();
+			for(int i = 0; i < rois.length; i++)
+			{
+				if(!rois[i].isAllPixelsZero())
+				{
+					isROIExist = true;
+					break;
+				}
+			}
+			if(isROIExist)
+			{
+				getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
+			}
+			else
+			{
+				getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
+			}
+			refreshUI();
+		}
 	}
 
-	private void refreshUI()
+	public void refreshUI()
 	{
 		VirtualFrapMainFrame.enableSave(true);
 		//TODO: not sure why we need to do refreshBioModel and clear the model again here???
@@ -2578,213 +2635,223 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 	}
 	
-	private void runReactionDiffusionModel(Parameter[] params, boolean bRefSim) throws Exception
+	private void runReactionDiffusionModel(Parameter[] params, final boolean bRefSim) throws Exception
 	{
 		if(params != null)
 		{
-			String choice = DialogUtils.showWarningDialog(this, 
-				   "Are you sure to run reaction diffusion simulation with parameters:\n" + getResultsSummaryPanel().getReactionDiffusionPanel().getFullParamDescritpion(),
-				   new String[]{UserMessage.OPTION_YES, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_YES);
-			if(choice.equals(UserMessage.OPTION_CANCEL))
+			AsynchClientTask prepareRunBindingReactionTask = new AsynchClientTask("Preparing binding reaction run...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 			{
-				return;
-			}
-			else
-			{
-				//check simulation directory
-				final boolean runRef = bRefSim;
-				final File simulationDataDir =
-					new File(getLocalWorkspace().getDefaultSimDataDirectory());
-				if(!simulationDataDir.exists()){
-					final String CREATE_OPTION = "Create  Directory";
-					String result = DialogUtils.showWarningDialog(this,
-							"Simulation data directory '"+
-							getLocalWorkspace().getDefaultSimDataDirectory()+
-							"' does not exits.  Create Simulation data directory now?",
-							new String[] {CREATE_OPTION,UserMessage.OPTION_CANCEL}, CREATE_OPTION);
-					if(result == null || !result.equals(CREATE_OPTION)){
-						return;
-					}
-					if(!simulationDataDir.mkdirs()){
-						DialogUtils.showWarningDialog(this,
-								"Failed to create Simulation Data Directory\n"+
-								simulationDataDir.getAbsolutePath()+"\n Simulation cannot run.",
-								new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
-						return;
-					}
-				}
-				//biomodel will be refreshed in saveProcedure.	
-				//always allow to run new simulation  REMEMBER: to remove old sim files when new sim is done.
-				KeyValue aSimKey = LocalWorkspace.createNewKeyValue();
-				KeyValue oldSimKey = null;
-				if(getFrapStudy() != null && getFrapStudy().getBioModel() != null && getFrapStudy().getBioModel().getSimulations()!=null &&
-				   getFrapStudy().getBioModel().getSimulations().length > 0 && getFrapStudy().getBioModel().getSimulations()[0].getVersion()!= null &&
-				   getFrapStudy().getBioModel().getSimulations()[0].getVersion().getVersionKey() != null)
+				public void run(Hashtable<String, Object> hashTable) throws Exception
 				{
-					oldSimKey = getFrapStudy().getBioModel().getSimulations()[0].getVersion().getVersionKey();
-				}
-				//save model 
-				final boolean bNewFile = (getFrapStudy().getXmlFilename() == null || getFrapStudy().getXmlFilename().length()<1)?true:false;
-				try{
-					FrapChangeInfo frapChangeInfo = refreshBiomodel();
-					boolean bNeedsExtData =
-						!areExternalDataOK(getLocalWorkspace(),
-							frapStudy.getFrapDataExternalDataInfo(),frapStudy.getRoiExternalDataInfo());
-					if(frapChangeInfo.hasAnyChanges() || bNeedsExtData)
-					{//simulation conditions have changed
-						String saveMessage = null;
-			    		if(bNewFile){
-			    			saveMessage = "Current unsaved document must be saved before running simulation.";
-			    		}else{
-			    			
-			    			saveMessage = "Current document has changes must be saved before running simulation.\nChanges include :" + frapChangeInfo.getChangeDescription()+
-  			              	(bNeedsExtData?"and external data info. missing":"") + ".";
-			    		}
-			    		String result = DialogUtils.showWarningDialog(this, saveMessage,
-								bNewFile?new String[] {UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL}
-								:new String[] {SAVE_FILE_OPTION,UserMessage.OPTION_CANCEL}
-								,UserMessage.OPTION_OK);
-						if(result.equals(UserMessage.OPTION_CANCEL)){
-							return;
-						}
+					String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, 
+						   "Are you sure to run reaction diffusion simulation with parameters:\n" + getResultsSummaryPanel().getReactionDiffusionPanel().getFullParamDescritpion(),
+						   new String[]{UserMessage.OPTION_YES, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_YES);
+					if(choice.equals(UserMessage.OPTION_CANCEL))
+					{
+						return;
 					}
-				}catch(Exception e){
-					throw new Exception("Error checking save before running simulation:\n"+e.getMessage());
-				}
-
-				//-------------------------------------------------------------------------
-				//run simulation 
-				final KeyValue finalOldSimKey = oldSimKey;
-				final KeyValue finalSimKey = aSimKey;
-				final AsynchProgressPopup_orig pp =
-					new AsynchProgressPopup_orig(
-						FRAPStudyPanel.this,
-						"Running FRAP Model Simulation",
-						"Working...",true,true
-				);
-				pp.start();
-				
-				new Thread(new Runnable(){
-					public void run(){
-						try 
+					else
+					{
+						//check simulation directory
+						final boolean runRef = bRefSim;
+						final File simulationDataDir =
+							new File(getLocalWorkspace().getDefaultSimDataDirectory());
+						if(!simulationDataDir.exists()){
+							final String CREATE_OPTION = "Create  Directory";
+							String result = DialogUtils.showWarningDialog(FRAPStudyPanel.this,
+									"Simulation data directory '"+
+									getLocalWorkspace().getDefaultSimDataDirectory()+
+									"' does not exits.  Create Simulation data directory now?",
+									new String[] {CREATE_OPTION,UserMessage.OPTION_CANCEL}, CREATE_OPTION);
+							if(result == null || !result.equals(CREATE_OPTION)){
+								return;
+							}
+							if(!simulationDataDir.mkdirs()){
+								DialogUtils.showWarningDialog(FRAPStudyPanel.this,
+										"Failed to create Simulation Data Directory\n"+
+										simulationDataDir.getAbsolutePath()+"\n Simulation cannot run.",
+										new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
+								return;
+							}
+						}
+						//biomodel will be refreshed in saveProcedure.	
+						//always allow to run new simulation  REMEMBER: to remove old sim files when new sim is done.
+						KeyValue aSimKey = LocalWorkspace.createNewKeyValue();
+						KeyValue oldSimKey = null;
+						if(getFrapStudy() != null && getFrapStudy().getBioModel() != null && getFrapStudy().getBioModel().getSimulations()!=null &&
+						   getFrapStudy().getBioModel().getSimulations().length > 0 && getFrapStudy().getBioModel().getSimulations()[0].getVersion()!= null &&
+						   getFrapStudy().getBioModel().getSimulations()[0].getVersion().getVersionKey() != null)
 						{
-							boolean executed = false;
-							final String SAVING_BEFORE_RUN_MESSAGE = "Saving before simulation runs...";
-							VirtualFrapMainFrame.updateStatus(SAVING_BEFORE_RUN_MESSAGE);
-							pp.setMessage(SAVING_BEFORE_RUN_MESSAGE);
-							if(bNewFile){
-								executed = saveAs(finalSimKey);
-							}
-							else 
-							{
-								save(finalSimKey);
-							}
-							if(bNewFile && !executed) //cancelled saveas, then nothing should happen.
-							{
-								pp.stop();
-							}
-							else //new file and saveAs cancelled, should execute the following code
-							{
-								// Reset spatial analysis
-								SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-									getResultsSummaryPanel().clearData();//spatialAnalysisList = null;
-								}});
-								final String SAVING_EXT_DATA_MESSAGE = "Saving ROI and initial conditions...";
-								VirtualFrapMainFrame.updateStatus(SAVING_EXT_DATA_MESSAGE);
-								pp.setMessage(SAVING_EXT_DATA_MESSAGE);
-								VirtualFrapMainFrame.updateProgress(0);
-								CurrentSimulationDataState currSimState = null;
-								if(getSavedFrapModelInfo() != null)
-								{
-									currSimState = new CurrentSimulationDataState();
+							oldSimKey = getFrapStudy().getBioModel().getSimulations()[0].getVersion().getVersionKey();
+						}
+						//save model 
+						final boolean bNewFile = (getFrapStudy().getXmlFilename() == null || getFrapStudy().getXmlFilename().length()<1)?true:false;
+						try{
+							FrapChangeInfo frapChangeInfo = refreshBiomodel();
+							boolean bNeedsExtData =
+								!areExternalDataOK(getLocalWorkspace(),
+									frapStudy.getFrapDataExternalDataInfo(),frapStudy.getRoiExternalDataInfo());
+							if(frapChangeInfo.hasAnyChanges() || bNeedsExtData)
+							{//simulation conditions have changed
+								String saveMessage = null;
+					    		if(bNewFile){
+					    			saveMessage = "Current unsaved document must be saved before running simulation.";
+					    		}else{
+					    			
+					    			saveMessage = "Current document has changes must be saved before running simulation.\nChanges include :" + frapChangeInfo.getChangeDescription()+
+		  			              	(bNeedsExtData?"and external data info. missing":"") + ".";
+					    		}
+					    		String result = DialogUtils.showWarningDialog(FRAPStudyPanel.this, saveMessage,
+										bNewFile?new String[] {UserMessage.OPTION_SAVE_AS_NEW,UserMessage.OPTION_CANCEL}
+										:new String[] {SAVE_FILE_OPTION,UserMessage.OPTION_CANCEL}
+										,UserMessage.OPTION_OK);
+								if(result.equals(UserMessage.OPTION_CANCEL)){
+									return;
 								}
-								if(getSavedFrapModelInfo() == null || (currSimState != null && !currSimState.areExtDataFileOK)){
-									getFrapStudy().saveROIsAsExternalData(localWorkspace,
-										getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
-									getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
-										getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
-								}
-								
-								final double RUN_SIM_PROGRESS_FRACTION = 0.2;
-								DataSetControllerImpl.ProgressListener runSimProgressListener =
-									new DataSetControllerImpl.ProgressListener(){
-										public void updateProgress(double progress) {
-											int percentProgress = (int)(progress*100*RUN_SIM_PROGRESS_FRACTION);
-											VirtualFrapMainFrame.updateProgress(percentProgress);
-											pp.setProgress(percentProgress);
-										}
-										public void updateMessage(String message) {
-											VirtualFrapMainFrame.updateStatus(message);
-											pp.setMessage(message);
-										}
-								};
-			
-								final String RUNNING_SIM_MESSAGE = "Running simulation...";
-								VirtualFrapMainFrame.updateStatus(RUNNING_SIM_MESSAGE);
-								pp.setMessage(RUNNING_SIM_MESSAGE);
-								Simulation simulation =
-									getFrapStudy().getBioModel().getSimulations()[0];
-								FRAPStudy.runFVSolverStandalone(
-									simulationDataDir,
-									new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
-									simulation,
-									getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
-									getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
-									runSimProgressListener);
-										
-								final String FINISHED_MESSAGE = "Finished simulation, loading data...";
-								VirtualFrapMainFrame.updateStatus(FINISHED_MESSAGE);
-								pp.setMessage(FINISHED_MESSAGE);
-										
-								DataSetControllerImpl.ProgressListener optimizationProgressListener =
-									new DataSetControllerImpl.ProgressListener(){
-										public void updateProgress(double progress) {
-											if(progress == 1.0){
-												VirtualFrapMainFrame.updateProgress(0);
-												pp.stop();
-												return;
-											}
-											int percentProgress = (int)(100*(RUN_SIM_PROGRESS_FRACTION+progress*(1-RUN_SIM_PROGRESS_FRACTION)));
-											VirtualFrapMainFrame.updateProgress(percentProgress);
-											pp.setProgress(percentProgress);
-										}
-										public void updateMessage(String message) {
-											VirtualFrapMainFrame.updateStatus(message);
-											pp.setMessage(message);
-										}
-								};
-								if(runRef)
-								{
-									spatialAnalysis(optimizationProgressListener, true);
-								}	
-								else
-								{
-									spatialAnalysis(optimizationProgressListener, false);
-								}
-								//remove old Simulation files
-								FRAPStudy.removeExternalDataAndSimulationFiles(finalOldSimKey, null, null, getLocalWorkspace());
-							}		
-						}catch(UserCancelException uce){
-							pp.stop();
-							return;
-						}catch (final Exception e) {
-							pp.stop();
-							VirtualFrapMainFrame.updateProgress(0);
-							VirtualFrapMainFrame.updateStatus("Error running simulation/spatial analysis: "+e.getMessage());
-							e.printStackTrace();
-							try{
-							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-								DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running simulation/spatial analysis:\n"+e.getMessage());
-							}});
-							}catch(Exception e2){
-								e2.printStackTrace();
 							}
-						}finally{
-	//						pp.stop();
+						}catch(Exception e){
+							throw new Exception("Error checking save before running simulation:\n"+e.getMessage());
 						}
 					}
-				}).start();
-			}
+				}
+			};
+			//-------------------------------------------------------------------------
+			//run simulation 
+			final KeyValue finalOldSimKey = getFrapStudy().getBioModel().getSimulations()[0].getVersion().getVersionKey();
+			final KeyValue finalSimKey = LocalWorkspace.createNewKeyValue();
+			
+//				pp.start();
+			
+//				new Thread(new Runnable(){
+//					public void run(){
+			AsynchClientTask runReactionBindingTask = new AsynchClientTask("Running binding reaction sim ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+			{
+				public void run(Hashtable<String, Object> hashTable) throws Exception
+				{
+					try 
+					{
+						boolean executed = false;
+						final String SAVING_BEFORE_RUN_MESSAGE = "Saving before simulation runs...";
+						VirtualFrapMainFrame.updateStatus(SAVING_BEFORE_RUN_MESSAGE);
+//							pp.setMessage(SAVING_BEFORE_RUN_MESSAGE);
+						boolean bNewFile = (getFrapStudy().getXmlFilename() == null || getFrapStudy().getXmlFilename().length()<1)?true:false;
+						if(bNewFile){
+							executed = saveAs(finalSimKey);
+						}
+						else 
+						{
+							save(finalSimKey);
+						}
+						if(bNewFile && !executed) //cancelled saveas, then nothing should happen.
+						{
+//								pp.stop();
+						}
+						else //new file and saveAs cancelled, should execute the following code
+						{
+							// Reset spatial analysis
+							SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+								getResultsSummaryPanel().clearData();//spatialAnalysisList = null;
+							}});
+							final String SAVING_EXT_DATA_MESSAGE = "Saving ROI and initial conditions...";
+							VirtualFrapMainFrame.updateStatus(SAVING_EXT_DATA_MESSAGE);
+//								pp.setMessage(SAVING_EXT_DATA_MESSAGE);
+							VirtualFrapMainFrame.updateProgress(0);
+							CurrentSimulationDataState currSimState = null;
+							if(getSavedFrapModelInfo() != null)
+							{
+								currSimState = new CurrentSimulationDataState();
+							}
+							if(getSavedFrapModelInfo() == null || (currSimState != null && !currSimState.areExtDataFileOK)){
+								getFrapStudy().saveROIsAsExternalData(localWorkspace,
+									getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
+								getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
+									getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery));
+							}
+							
+							final double RUN_SIM_PROGRESS_FRACTION = 0.2;
+							DataSetControllerImpl.ProgressListener runSimProgressListener =
+								new DataSetControllerImpl.ProgressListener(){
+									public void updateProgress(double progress) {
+										int percentProgress = (int)(progress*100*RUN_SIM_PROGRESS_FRACTION);
+										VirtualFrapMainFrame.updateProgress(percentProgress);
+//											pp.setProgress(percentProgress);
+									}
+									public void updateMessage(String message) {
+										VirtualFrapMainFrame.updateStatus(message);
+//											pp.setMessage(message);
+									}
+							};
+		
+							final String RUNNING_SIM_MESSAGE = "Running simulation...";
+							VirtualFrapMainFrame.updateStatus(RUNNING_SIM_MESSAGE);
+//								pp.setMessage(RUNNING_SIM_MESSAGE);
+							Simulation simulation =
+								getFrapStudy().getBioModel().getSimulations()[0];
+							FRAPStudy.runFVSolverStandalone(
+								new File(getLocalWorkspace().getDefaultSimDataDirectory()),
+								new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
+								simulation,
+								getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
+								getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
+								runSimProgressListener);
+									
+							final String FINISHED_MESSAGE = "Finished simulation, loading data...";
+							VirtualFrapMainFrame.updateStatus(FINISHED_MESSAGE);
+//							pp.setMessage(FINISHED_MESSAGE);
+									
+							DataSetControllerImpl.ProgressListener optimizationProgressListener =
+								new DataSetControllerImpl.ProgressListener(){
+									public void updateProgress(double progress) {
+										if(progress == 1.0){
+											VirtualFrapMainFrame.updateProgress(0);
+//												pp.stop();
+											return;
+										}
+										int percentProgress = (int)(100*(RUN_SIM_PROGRESS_FRACTION+progress*(1-RUN_SIM_PROGRESS_FRACTION)));
+										VirtualFrapMainFrame.updateProgress(percentProgress);
+//											pp.setProgress(percentProgress);
+									}
+									public void updateMessage(String message) {
+										VirtualFrapMainFrame.updateStatus(message);
+//											pp.setMessage(message);
+									}
+							};
+							if(bRefSim)//runRef)
+							{
+								spatialAnalysis(optimizationProgressListener, true);
+							}	
+							else
+							{
+								spatialAnalysis(optimizationProgressListener, false);
+							}
+							//remove old Simulation files
+							FRAPStudy.removeExternalDataAndSimulationFiles(finalOldSimKey, null, null, getLocalWorkspace());
+						}		
+					}catch(UserCancelException uce){
+//							pp.stop();
+						return;
+					}catch (final Exception e) {
+//							pp.stop();
+						VirtualFrapMainFrame.updateProgress(0);
+						VirtualFrapMainFrame.updateStatus("Error running simulation/spatial analysis: "+e.getMessage());
+						e.printStackTrace();
+						try{
+						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+							DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Error running simulation/spatial analysis:\n"+e.getMessage());
+						}});
+						}catch(Exception e2){
+							e2.printStackTrace();
+						}
+					}finally{
+//						pp.stop();
+					}
+				}
+			};
+			
+//				}).start();
+//			}
+			//dispatch
+			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{prepareRunBindingReactionTask, runReactionBindingTask}, false);
 		}
 		else
 		{
@@ -2887,6 +2954,294 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			}
 			getResultsSummaryPanel().getReactionDiffusionPanel().updateSavedParameters(null);
 			getResultsSummaryPanel().getPureDiffusionPanel().updateSavedParameters(null);
+		}
+	}
+	
+	public Wizard getLoadFRAPDataWizard()
+	{   // single/multipanel fires property change to frapstudyPanel after loaded a new exp dataset
+		// frapstudyPanel fires property change to summaryPanel to varify info and modify frapstudy in frapstudypanel
+		// then summarypanel fires varify change to frapstudypanel to set frapstudy(already changed in frapstudypanel when passing as paramter to 
+		// summarypanel) to frapdatapanel.
+		if(loadFRAPDataWizard == null)
+		{
+			loadFRAPDataWizard = new Wizard(JOptionPane.getFrameForComponent(this));
+			loadFRAPDataWizard.getDialog().setTitle("Load FRAP Data");
+	        
+	        WizardPanelDescriptor fTypeDescriptor = new LoadFRAPData_FileTypeDescriptor();
+	        fTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER); //goes next to single file input by default
+	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_FileTypeDescriptor.IDENTIFIER, fTypeDescriptor);
+	        
+	        WizardPanelDescriptor singleFileDescriptor = new LoadFRAPData_SingleFileDescriptor();
+	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_SingleFileDescriptor.IDENTIFIER, singleFileDescriptor);
+	        ((LoadFRAPData_SingleFileDescriptor)singleFileDescriptor).addPropertyChangeListener(this);
+	
+	        WizardPanelDescriptor multiFileDescriptor = new LoadFRAPData_MultiFileDescriptor();
+	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_MultiFileDescriptor.IDENTIFIER, multiFileDescriptor);
+	        ((LoadFRAPData_MultiFileDescriptor)multiFileDescriptor).addPropertyChangeListener(this);
+	        
+	        LoadFRAPData_SummaryDescriptor fSummaryDescriptor = new LoadFRAPData_SummaryDescriptor();
+	        fSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER); //goes back to single file input by default
+	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_SummaryDescriptor.IDENTIFIER, fSummaryDescriptor);
+	        this.addPropertyChangeListener(fSummaryDescriptor);
+	        fSummaryDescriptor.addPropertyChangeListener(this);
+	        
+	        final WizardPanelDescriptor fileTypeDescriptor =  fTypeDescriptor;
+	        final WizardPanelDescriptor fileSummaryDescriptor = fSummaryDescriptor;
+	        //actionListener to single file input radio button
+	        //this radio button affects the wizard series. especially on the next of file type and the back of summary 
+	        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getSingleFileButton().addActionListener(new ActionListener(){
+	        	public void actionPerformed(ActionEvent e) 
+	        	{
+	        		if(e.getSource() instanceof JRadioButton)
+	        		{
+	        			if(((JRadioButton)e.getSource()).isSelected())
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
+	        			}
+	        			else
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
+	        			}
+	        		}
+				}
+	        	
+	        });
+	        //actionListener to multiple file input radio button
+	        //this radio button affects the wizard series. especially on the next of file type and the back of summary
+	        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getMultipleFileButton().addActionListener(new ActionListener(){
+	        	public void actionPerformed(ActionEvent e) 
+	        	{
+	        		if(e.getSource() instanceof JRadioButton)
+	        		{
+	        			if(((JRadioButton)e.getSource()).isSelected())
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
+	        			}
+	        			else
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
+	        			}
+	        		}
+				}
+	        	
+	        });
+		}
+		loadFRAPDataWizard.setCurrentPanel(LoadFRAPData_FileTypeDescriptor.IDENTIFIER);//always start from the first page
+        return loadFRAPDataWizard;
+	}
+	
+	public Wizard getDefineROIWizard()
+	{
+//		if(defineROIWizard == null)
+//		{
+			//use one panel for all the steps.
+			DefineROI_Panel imgPanel = new DefineROI_Panel();
+		
+			defineROIWizard = new Wizard(JOptionPane.getFrameForComponent(this));
+			defineROIWizard.getDialog().setTitle("Define ROIs");
+	        
+			DefineROI_CropDescriptor cropDescriptor = new DefineROI_CropDescriptor(imgPanel);
+	        defineROIWizard.registerWizardPanel(DefineROI_CropDescriptor.IDENTIFIER, cropDescriptor);
+	        
+	        DefineROI_CellROIDescriptor cellROIDescriptor = new DefineROI_CellROIDescriptor(imgPanel);
+	        defineROIWizard.registerWizardPanel(DefineROI_CellROIDescriptor.IDENTIFIER, cellROIDescriptor);
+	
+	        DefineROI_BleachedROIDescriptor bleachedROIDescriptor = new DefineROI_BleachedROIDescriptor(imgPanel);
+	        defineROIWizard.registerWizardPanel(DefineROI_BleachedROIDescriptor.IDENTIFIER, bleachedROIDescriptor);
+	        
+	        DefineROI_BackgroundROIDescriptor backgroundROIDescriptor = new DefineROI_BackgroundROIDescriptor(imgPanel);
+	        defineROIWizard.registerWizardPanel(DefineROI_BackgroundROIDescriptor.IDENTIFIER, backgroundROIDescriptor);
+	        backgroundROIDescriptor.addPropertyChangeListener(this);
+//		}
+		//always start from the first page
+		defineROIWizard.setCurrentPanel(DefineROI_CropDescriptor.IDENTIFIER);
+		imgPanel.setFRAPStudy(getFrapStudy());
+	
+        return defineROIWizard;
+	}
+	
+	public Wizard getChooseModelTypeWizard()
+	{
+		if(modelTypeWizard == null)
+		{
+			modelTypeWizard = new Wizard(JOptionPane.getFrameForComponent(this));
+			modelTypeWizard.getDialog().setTitle("Choose Model Type");
+	        
+	        WizardPanelDescriptor modelTypesDescriptor = new ChooseModel_ModelTypesDescriptor();
+	        modelTypeWizard.registerWizardPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER, modelTypesDescriptor);
+	        ((ChooseModel_ModelTypesDescriptor)modelTypesDescriptor).setFrapStudy(getFrapStudy());
+	        
+	        WizardPanelDescriptor roiForErrorDescriptor = new ChooseModel_RoiForErrorDescriptor();
+	        modelTypeWizard.registerWizardPanel(ChooseModel_RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
+		}
+		//always start from the first page
+		modelTypeWizard.setCurrentPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER);
+        return modelTypeWizard;
+	}
+
+	public Wizard getEstimateParametersWizard()
+	{
+		if(getFrapStudy() == null || getFrapStudy().getSelectedModels()==null || getFrapStudy().getSelectedModels().size() ==0)
+		{
+			return null;
+		}
+		else
+		{
+//			if(estimateParamWizard == null) //if model types have been changed since last time, the wizard should be regenerated using propertyChange, commented for testing
+//			{
+				estimateParamWizard = new Wizard(JOptionPane.getFrameForComponent(this));
+				estimateParamWizard.getDialog().setTitle("Estimate Parameters");
+				WizardPanelDescriptor diffOneDescriptor = null;
+				WizardPanelDescriptor diffTwoDescriptor = null;
+				WizardPanelDescriptor bindingInputDescriptor = null;
+				WizardPanelDescriptor bindingDescriptor = null;
+				//Dynamicly link the wizard pages according to the selected models.
+				if(getFrapStudy().getSelectedModels().size() == 1)
+				{
+					if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_ONE_DIFF_COMPONENT))
+					{
+						diffOneDescriptor = new EstParams_OneDiffComponentDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+				        diffOneDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+				        diffOneDescriptor.setBackPanelDescriptorID(null);
+				        //the last one should always be the compare page	        
+				        WizardPanelDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+					}
+					else if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_TWO_DIFF_COMPONENTS))
+					{
+						diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
+				        diffTwoDescriptor.setBackPanelDescriptorID(null);
+				        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+				        
+				        //the last one should always be the compare page	        
+				        WizardPanelDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+					}
+					else if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_DIFF_BINDING))
+					{
+						bindingInputDescriptor = new EstParams_ReacBindingInputDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
+				        bindingInputDescriptor.setBackPanelDescriptorID(null);
+				        bindingDescriptor = new EstParams_ReacBindingDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
+				        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+				        //the last one should always be the compare page	        
+				        WizardPanelDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+					}
+				}
+				else if(getFrapStudy().getSelectedModels().size() == 2)
+				{
+					if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_ONE_DIFF_COMPONENT) &&
+					   getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_TWO_DIFF_COMPONENTS))
+					{
+						diffOneDescriptor = new EstParams_OneDiffComponentDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+				        diffOneDescriptor.setBackPanelDescriptorID(null);
+				        diffOneDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+				        diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
+				        diffTwoDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+				        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+				        
+      			        //the last one should always be the compare page	        
+				        WizardPanelDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+					}
+					else if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_ONE_DIFF_COMPONENT) &&
+							getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_DIFF_BINDING))
+					{
+						diffOneDescriptor = new EstParams_OneDiffComponentDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+				        diffOneDescriptor.setBackPanelDescriptorID(null);
+				        diffOneDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingInputDescriptor.IDENTIFIER);
+				        bindingInputDescriptor = new EstParams_ReacBindingInputDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
+				        bindingInputDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+				        bindingDescriptor = new EstParams_ReacBindingDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
+				        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+				        
+				        //the last one should always be the compare page	        
+				        WizardPanelDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+					}
+					else if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_TWO_DIFF_COMPONENTS) &&
+							getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_DIFF_BINDING))
+					{
+						diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
+				        diffTwoDescriptor.setBackPanelDescriptorID(null);
+				        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingInputDescriptor.IDENTIFIER);
+				        bindingInputDescriptor = new EstParams_ReacBindingInputDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
+				        bindingInputDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+				        bindingDescriptor = new EstParams_ReacBindingDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
+				        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+				        //the last one should always be the compare page	        
+				        WizardPanelDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+					}
+				}
+				else if(getFrapStudy().getSelectedModels().size() == 3)
+				{
+					diffOneDescriptor = new EstParams_OneDiffComponentDescriptor();
+			        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+			        diffOneDescriptor.setBackPanelDescriptorID(null);
+			        diffOneDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+			        
+			        diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
+			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
+			        diffTwoDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingInputDescriptor.IDENTIFIER);
+			        
+			        bindingInputDescriptor = new EstParams_ReacBindingInputDescriptor();
+			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
+			        bindingInputDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+			        
+			        bindingDescriptor = new EstParams_ReacBindingDescriptor();
+			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
+			        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+			        
+			        //the last one should always be the compare page	        
+			        WizardPanelDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+				}
+//			}
+			//each time when load the wizard, it should start from the first possible page.
+			if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_ONE_DIFF_COMPONENT))
+			{
+				estimateParamWizard.setCurrentPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+				return estimateParamWizard;
+			}
+			else if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_TWO_DIFF_COMPONENTS))
+			{
+				estimateParamWizard.setCurrentPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+				return estimateParamWizard;
+			}
+			else if(getFrapStudy().hasSelectedModel(FRAPStudy.MODEL_DIFF_BINDING))
+			{
+				estimateParamWizard.setCurrentPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER);
+				return estimateParamWizard;
+			}
+			else //this should not happen though
+			{
+				return estimateParamWizard;
+			}
 		}
 	}
 }

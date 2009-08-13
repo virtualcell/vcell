@@ -397,8 +397,8 @@ public class FRAPEstimationPanel extends JPanel {
 					refreshFRAPModelParameterEstimates(initFRAPData);
 				}catch (Exception e2){
 					e2.printStackTrace();
-					DialogUtils.showErrorDialog(
-						FRAPEstimationPanel.this, "Error setting estimation method "+
+					DialogUtils.showErrorDialog(FRAPEstimationPanel.this,
+						"Error setting estimation method "+
 						FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+
 						"\n"+e2.getMessage());
 				}

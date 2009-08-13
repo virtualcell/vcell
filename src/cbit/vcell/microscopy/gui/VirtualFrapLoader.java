@@ -2,6 +2,9 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.Font;
 import java.io.File;
+import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -9,6 +12,7 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.resource.ResourceUtil;
@@ -72,7 +76,8 @@ public class VirtualFrapLoader {
 	public final static  VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter(VFRAP_EXTENSION,"Virtual FRAP Files");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_qt = new VirtualFrapMainFrame.AFileFilter(QT_EXTENSION,"Quick Time Movie Files");
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
-    public static JFileChooser openFileChooser; 
+    public static JFileChooser openVFRAPFileChooser; 
+    public static JFileChooser loadFRAPImageFileChooser;
     public static JFileChooser saveFileChooser; 
     public static JFileChooser multiOpenFileChooser; 
     public static JFileChooser saveMovieFileChooser;
@@ -115,16 +120,21 @@ public class VirtualFrapLoader {
 			    	throw new RuntimeException(e.getMessage(),e);
 			    }
 			    //set up file choosers 
-			    openFileChooser = new JFileChooser(); 
-			    openFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory())); 
-			    openFileChooser.addChoosableFileFilter(filter_lsm); 
-			    openFileChooser.addChoosableFileFilter(filter_tif); 
-			    openFileChooser.addChoosableFileFilter(filter_vfrap); 
+			    openVFRAPFileChooser = new JFileChooser(); 
+			    openVFRAPFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory())); 
+			    openVFRAPFileChooser.addChoosableFileFilter(filter_lsm); 
+			    openVFRAPFileChooser.addChoosableFileFilter(filter_tif); 
+			    openVFRAPFileChooser.addChoosableFileFilter(filter_vfrap); 
+			    loadFRAPImageFileChooser = new JFileChooser(); 
+			    loadFRAPImageFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory())); 
+			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_tif);
+			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_lsm); 
 			    saveFileChooser = new JFileChooser();
 			    saveFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    saveFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser = new JFileChooser(); 
 			    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
+			    multiOpenFileChooser.addChoosableFileFilter(filter_tif);
 			    multiOpenFileChooser.setMultiSelectionEnabled(true);
 			    saveMovieFileChooser = new JFileChooser();
 			    saveMovieFileChooser.addChoosableFileFilter(filter_qt);
@@ -167,5 +177,23 @@ public class VirtualFrapLoader {
 		}
 
 	}
+	
+//	public final static Object loadProperty(String propName)
+//	{
+//		Object result = "";
+//		try { 
+//		            
+//            PropertyResourceBundle resources = (PropertyResourceBundle)
+//                ResourceBundle.getBundle("cbit.vcell.microscopy.vfrap");
+//            
+//            result = resources.getObject(propName);
+//        
+//        } catch (MissingResourceException mre) {
+//        	mre.printStackTrace(System.out);
+//			PopupGenerator.showErrorDialog("New user Registration error:\n"+mre.getMessage());
+////            System.exit(1);
+//        }
+//        return result;
+//	}
 
 }

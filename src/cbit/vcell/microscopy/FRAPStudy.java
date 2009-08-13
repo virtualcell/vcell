@@ -69,8 +69,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.microscopy.gui.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -118,18 +118,27 @@ public class FRAPStudy implements Matchable{
 	private String description = null;
 	private String originalImageFilePath = null;
 	private FRAPData frapData = null;
+	private int startingIndexForRecovery = -1;
 	private BioModel bioModel = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
-//	private ExternalDataInfo refExternalDataInfo = null;
 	//Added in Feb 2009, we want to store reference data together with the model in .vfrap file. 
 	private SimpleReferenceData storedRefData = null;
 	
 	public static final String IMAGE_EXTDATA_NAME = "timeData";
 	public static final String ROI_EXTDATA_NAME = "roiData";
 	public static final String REF_EXTDATA_NAME = "refData";
+	
+	//models
+	public static final String MODEL_ONE_DIFF_COMPONENT = "Diffusion with one diffusing component";
+	public static final String MODEL_TWO_DIFF_COMPONENTS = "Diffusion with two diffusing components";
+	public static final String MODEL_DIFF_BINDING = "Reaction plus binding";
+	public ArrayList<String> selectedModels = new ArrayList<String>();
+	public String bestModel = MODEL_ONE_DIFF_COMPONENT;
+	
 	private FRAPModelParameters frapModelParameters = null;
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+	private transient FRAPOptData frapOptData = null;//temporary data structure for reference data used in optimization
 	
 	public static class InitialModelParameters 
 	{
@@ -865,6 +874,39 @@ public class FRAPStudy implements Matchable{
 		
 	public BioModel getBioModel() {
 		return bioModel;
+	}
+	/*
+	 * for selected models
+	 */
+	public ArrayList<String> getSelectedModels()
+	{
+		return selectedModels;
+	}
+	
+	public void addAllSelectedModel(String[] modelTypes)
+	{
+		selectedModels.clear();
+		for(int i=0; i<modelTypes.length; i++)
+		{
+			selectedModels.add(modelTypes[i]);
+		}
+	}
+	
+	public boolean hasSelectedModel(String aModelType)
+	{
+		for(int i=0; i < selectedModels.size(); i++)
+		{
+			if(selectedModels.get(i).equals(aModelType))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void clearSelectedModel()
+	{
+		selectedModels.clear();
 	}
 	
 	public static void removeExternalDataAndSimulationFiles(
@@ -2039,6 +2081,13 @@ public class FRAPStudy implements Matchable{
 		this.storedRefData = storedRefData;
 	}
 	
-	
+	public FRAPOptData getFrapOptData() {
+		return frapOptData;
+	}
+
+
+	public void setFrapOptData(FRAPOptData frapOptData) {
+		this.frapOptData = frapOptData;
+	}
 
 }

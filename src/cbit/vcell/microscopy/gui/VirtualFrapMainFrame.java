@@ -11,6 +11,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URL;
+import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -35,8 +36,11 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 
 
 /**
@@ -64,7 +68,7 @@ public class VirtualFrapMainFrame extends JFrame
 
 	private MenuHandler menuHandler = new MenuHandler();
 	private static final String VERSION_NUMBER = "VFrap 0.9";
-	private static final String OPEN_ACTION_COMMAND = "Open";
+	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
 	private static final String IMPORTFILESERIES_ACTION_COMMAND = "Import file series ...";
@@ -73,6 +77,13 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
 	private static final String UNDO_ACTION_COMMAND = "Undo";
+	
+	//used for work flow buttons
+	public static final String LOAD_IMAGE_COMMAND = "Load FRAP images";
+	public static final String DEFINE_ROI_COMMAND = "Define ROIs";
+	public static final String CHOOSE_MODEL_COMMAND = "Choose model types";
+	public static final String EXTIMATE_PARAM_COMMAND = "Estimate model parameters";
+	public static final String RESTART_COMMAND = "Restart";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
@@ -91,7 +102,7 @@ public class VirtualFrapMainFrame extends JFrame
   private HelpViewer hviewer = null;
   private UndoableEdit lastUndoableEdit;
 
-  private MultiFileInputDialog multiFileDialog = null;
+  private LoadFRAPData_MultiFilePanel multiFileDialog = null;
   
   //Inner class AFileFilter
   //This class implements both ava.io.FileFilter and javax.swing.filechooser.FileFilter.
@@ -182,14 +193,12 @@ public class VirtualFrapMainFrame extends JFrame
   public class MenuHandler implements ActionListener
   {
 	  private void saveAndSaveAs(final boolean bSaveAs){
-			final AsynchProgressPopup_orig pp =
-				new AsynchProgressPopup_orig(
-					VirtualFrapMainFrame.this,
-					"Saving "+(bSaveAs?"New":"Current")+" FRAP document",
-					"Working...",true,false
-			);
-			pp.start();
-			new Thread(new Runnable(){public void run(){
+
+		    AsynchClientTask saveTask = new AsynchClientTask("Start saving ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+			{
+				public void run(Hashtable<String, Object> hashTable) throws Exception
+				{
+
 		    	  try {
 		    		  if(bSaveAs){
 		    			  frapStudyPanel.saveAs(null);
@@ -199,19 +208,23 @@ public class VirtualFrapMainFrame extends JFrame
 				  }catch(UserCancelException e1){
 					  //ignore
 				  }catch(final Exception e){
-					  pp.stop();
+//					  pp.stop();
 					  updateStatus((bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
 					  try{
 						  SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							  DialogUtils.showErrorDialog(VirtualFrapMainFrame.this, (bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
+							  DialogUtils.showErrorDialog(VirtualFrapMainFrame.this,(bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
 						  }});
 					  }catch(Exception e2){
 						  e2.printStackTrace();
 					  }
 				  }	finally{
-					  pp.stop();
+//					  pp.stop();
 				  }
-			}}).start();
+				}
+			};
+			//dispatch
+			ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask}, false);
+//			}}).start();
 
 	  }
  		public void actionPerformed(ActionEvent e) {
@@ -222,9 +235,9 @@ public class VirtualFrapMainFrame extends JFrame
 			  if(arg.equals(OPEN_ACTION_COMMAND))
 		      {
 				  File inputFile = null;
-	  			  int option = VirtualFrapLoader.openFileChooser.showOpenDialog(frapStudyPanel);
+	  			  int option = VirtualFrapLoader.openVFRAPFileChooser.showOpenDialog(frapStudyPanel);
 	  			  if (option == JFileChooser.APPROVE_OPTION){
-	  				  inputFile = VirtualFrapLoader.openFileChooser.getSelectedFile();
+	  				  inputFile = VirtualFrapLoader.openVFRAPFileChooser.getSelectedFile();
 	  			  }else{
 	  				  return;
 	  			  }
@@ -234,8 +247,8 @@ public class VirtualFrapMainFrame extends JFrame
 	  				  //ignore
 	  			  }catch(Exception e2){
 	  				  e2.printStackTrace();
-	  				  PopupGenerator.showErrorDialog(
-	  						VirtualFrapMainFrame.this, "Error opening file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
+	  				  DialogUtils.showErrorDialog(VirtualFrapMainFrame.this,
+	  						"Error opening file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
 	  			  }
 		      }
 			  else if(arg.equals(SAVE_ACTION_COMMAND))
@@ -294,7 +307,7 @@ public class VirtualFrapMainFrame extends JFrame
 				  }	 
 				  else
 				  {
-					  multiFileDialog = new MultiFileInputDialog(VirtualFrapMainFrame.this);
+					  multiFileDialog = new LoadFRAPData_MultiFilePanel(VirtualFrapMainFrame.this);
 					  multiFileDialog.setVisible(true);
 				  }
 		      }

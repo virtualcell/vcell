@@ -28,7 +28,7 @@ import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.microscopy.gui.FRAPReactionDiffusionParamPanel;
+import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel;

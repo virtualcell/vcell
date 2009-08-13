@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui;
+package cbit.vcell.microscopy.gui.estparamwizard;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -57,7 +58,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	
 	private JScrollPane tableScroll = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 	private JTable paramTable = new JTable();
-	private EstimatedParameterTableModel paramTableModel = new EstimatedParameterTableModel(this);
+	private EstimatedParameterTableModel paramTableModel = new EstimatedParameterTableModel(FRAPReacDiffEstimationGuidePanel.this);
 	
 	private static final double PI = 3.14159;
 	private static final String piStr = "PI";
@@ -150,7 +151,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		super();
 		setPreferredSize(new Dimension(580, 450));
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		this.setLayout(gridBagLayout);
+		this.setLayout(new GridBagLayout());
 		gridBagLayout.columnWidths = new int[] {7,0};
 		gridBagLayout.rowHeights = new int[] {7,7,7,7,7,7,0,0,7,7};
 
@@ -341,14 +342,13 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 //		tableScroll.setMinimumSize(new Dimension(0, 0));
 		tableScroll.setName("");
 		tableScroll.setPreferredSize(new Dimension(0, 0));
-		paramTable.setPreferredSize(new Dimension(0, 310));
 		paramTable.setName("");
 //		paramTable.setMinimumSize(new Dimension(0, 0));
 //		paramTable.setMaximumSize(new Dimension(0, 0));
 				
 		// The base panel
 		final GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
-		gridBagConstraints1.fill = GridBagConstraints.VERTICAL;
+		gridBagConstraints1.fill = GridBagConstraints.BOTH;
 		gridBagConstraints1.ipadx = 170;
 		gridBagConstraints1.gridy = 0;
 		gridBagConstraints1.gridx = 0;
@@ -395,7 +395,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		buttonPanel.add(bsRadiusUnitLabel, gridBagConstraints_8);
 
 		final JLabel inputbsAsLabel = new JLabel();
-		inputbsAsLabel.setText("(Input [BS] as a ratio of total Fluor.)");
+		inputbsAsLabel.setText("(Input [BS] as a ratio of total Fluor)");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.gridwidth = 5;
@@ -442,7 +442,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(NumberFormatException ex)
 							{
 								ex.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Parameter input error:" + ex.getMessage());
 								return;
 							}
 							//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
@@ -459,7 +459,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(ExpressionException ee)
 							{
 								ee.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Error creating expression when trying to update table: " + ee.getMessage());
 							}
 						}
 						else if(koffButton.isSelected() && !koffTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
@@ -472,7 +472,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 							}catch(NumberFormatException ex)
 							{
 								ex.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
+								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Parameter input error:" + ex.getMessage());
 								return;
 							}
 							//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
@@ -849,5 +849,25 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		fRadiusTextField.setEnabled(true);
 		bsRadiusTextField.setEnabled(true);
 		
+	}
+	
+	public static void main(java.lang.String[] args) {
+		try {
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			FRAPReacDiffEstimationGuidePanel aPanel = new FRAPReacDiffEstimationGuidePanel();
+			frame.setContentPane(aPanel);
+//			frame.pack();
+			frame.setSize(900,800);
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			frame.setVisible(true);
+			
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
 	}
 }

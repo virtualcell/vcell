@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -18,6 +19,7 @@ import javax.swing.JPanel;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.image.ImageException;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
@@ -44,7 +46,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	private FRAPStudy frapStudy = null;  //  @jve:decl-index=0:
 	private EventHandler eventHandler = new EventHandler();
 	private LocalWorkspace localWorkspace = null;
-	
+		
 	private class EventHandler implements PropertyChangeListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -69,6 +71,32 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			int prog = ((Integer)e.getNewValue()).intValue();
 			VirtualFrapMainFrame.updateProgress(prog);
 		}
+		else if(e.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
+			try {
+				crop((Rectangle) e.getNewValue());
+			} catch (Exception ex) {
+				PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+ex.getMessage());
+			}
+		}
+	}
+	//There are two FRAPDataPanel instances, one is in MainFrame and antoher is in DefineROIWizard
+	//The crop function is called in DefineROIWizard, the image change will only be reflected in the
+	//FRAPDataPanel in DefineROIWizard. The newFrapStudy will only be set to FrapdataPanel in Mainframe
+	//when FINISH button is pressed.
+	protected void crop(Rectangle cropRectangle) throws ImageException {
+		if (getFrapStudy() == null || getFrapStudy().getFrapData()==null){
+			return;
+		}
+		getOverlayEditorPanelJAI().saveUserChangesToROI();
+		FRAPData frapData = getFrapStudy().getFrapData();
+		FRAPData newFrapData = frapData.crop(cropRectangle);
+		FRAPStudy newFrapStudy = new FRAPStudy();
+		newFrapStudy.setFrapData(newFrapData);
+		newFrapStudy.setXmlFilename(getFrapStudy().getXmlFilename());
+		newFrapStudy.setFrapDataExternalDataInfo(getFrapStudy().getFrapDataExternalDataInfo());
+		newFrapStudy.setRoiExternalDataInfo(getFrapStudy().getRoiExternalDataInfo());
+		newFrapStudy.setStoredRefData(getFrapStudy().getStoredRefData());
+		setFrapStudy(newFrapStudy,false);
 	}
 	/**
 	 * This is the default constructor
@@ -102,16 +130,14 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 						try {
 							plotROI();
 						} catch (Exception e) {
-							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Time Plot ROI:\n"+e.getMessage());
+							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Time Plot ROI:\n"+e.getMessage());
 						}
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 						try {
 							String roiName = (String)evt.getNewValue();
-							saveROI();
-							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(
-									getFrapStudy().getFrapData().getRoi(roiName));
+							setCurrentROI(roiName);
 						} catch (Exception e) {
-							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
+							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
 						}						
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
 						try {
@@ -127,6 +153,15 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		);
 		
 	}
+	
+	public void setCurrentROI(String roiName)
+	{
+		saveROI();
+		if(roiName != null)
+		{
+			getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getRoi(roiName));
+		}
+	}
 
 	public OverlayEditorPanelJAI getOverlayEditorPanelJAI(){
 		if (overlayEditorPanel==null){
@@ -136,15 +171,16 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+			overlayEditorPanel.addPropertyChangeListener(this);
 		}
 		return overlayEditorPanel;
 	}
 
-	private FRAPStudy getFrapStudy() {
+	public FRAPStudy getFrapStudy() {
 		return frapStudy;
 	}
 
-	public void setFrapStudyNew(FRAPStudy argFrapStudy,boolean isNew) {
+	public void setFrapStudy(FRAPStudy argFrapStudy,boolean isNew) {
 		FRAPData oldFrapData = (frapStudy!=null)?(frapStudy.getFrapData()):(null);
 		FRAPStudy oldFrapStudy = this.frapStudy;
 		if (oldFrapStudy!=null){
@@ -165,9 +201,12 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			(frapData==null?null:frapData.getImageDataset()),isNew,
 			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:frapData.getOriginalGlobalScaleInfo().originalScaleFactor),
 			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:frapData.getOriginalGlobalScaleInfo().originalOffsetFactor));
-		if(frapData != null){
+		
+		if(frapData != null && frapData.getRois().length > 0 /*&& !frapData.getRois()[0].isAllPixelsZero()*/)
+		{
 			frapData.setCurrentlyDisplayedROI(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 		}
+
 //		overlayEditorPanel.setROI((frapData==null)?null:frapData.getCurrentlyDisplayedROI());
 	}
 
@@ -208,6 +247,10 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 //		reloadROI();
 //	}
 
+	public void adjustComponents(int choice)
+	{
+		getOverlayEditorPanelJAI().adjustComponentsForVFRAP(choice);
+	}
 		
 	public void main(String args[]){
 		try {
@@ -243,4 +286,5 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		frame.setSize(new Dimension(400,400));
 		frame.setVisible(true);
 	}
-}  //  @jve:decl-index=0:visual-constraint="10,10"
+	
+} 
