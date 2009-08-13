@@ -55,14 +55,14 @@ public class WizardModel {
     /**
      * Returns the currently displayed WizardPanelDescriptor.
      */    
-    WizardPanelDescriptor getCurrentPanelDescriptor() {
+    public WizardPanelDescriptor getCurrentPanelDescriptor() {
         return currentPanelDescriptor;
     }
     
     /**
      * Registers the WizardPanelDescriptor in the model using the Object-identifier specified.
      */    
-     void registerPanel(String id, WizardPanelDescriptor descriptor) {
+    public void registerPanel(String id, WizardPanelDescriptor descriptor) {
         //  Place a reference to it in a hashtable so we can access it later
         //  when it is about to be displayed.
         panelHashmap.put(id, descriptor);
@@ -71,7 +71,7 @@ public class WizardModel {
     /**
      * Sets the current panel to the Object that is passed in.
      */    
-     boolean setCurrentPanel(String id) throws WizardPanelNotFoundException {
+    public boolean setCurrentPanel(String id) throws WizardPanelNotFoundException {
 
         //  First, get the hashtable reference to the panel that should
         //  be displayed.

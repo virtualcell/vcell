@@ -14,7 +14,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
+import java.awt.Frame;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.border.EmptyBorder;
@@ -82,14 +82,14 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
      * Default constructor. This method creates a new WizardModel object and passes it
      * into the constructor.
      */    
-    public Wizard() {
-        this((JFrame)null);
-    }
+//    public Wizard() {
+//        this((JFrame)null);
+//    }
     
     /**
      * This method accepts a JFrame object as the javax.swing.JDialog's parent.
      */
-    public Wizard(JFrame owner) {
+    public Wizard(Frame owner) {
         wizardModel = new WizardModel();
         wizardDialog = new JDialog(owner);         
         initComponents();
@@ -196,6 +196,7 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
         WizardPanelDescriptor oldPanelDescriptor = wizardModel.getCurrentPanelDescriptor();
         try{
         	wizardModel.setCurrentPanel(id);
+        	wizardModel.getCurrentPanelDescriptor().aboutToDisplayPanel();
         }catch(WizardPanelNotFoundException e)
         {
         	e.printStackTrace(System.out);

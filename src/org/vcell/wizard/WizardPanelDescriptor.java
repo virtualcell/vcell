@@ -116,27 +116,27 @@ public class WizardPanelDescriptor {
      * or after the current panel is disappeared. Any time when cancel/next/back button is clicked, 
      * the action taken is dispatching of a series of ordered Asynchronous client tasks.
      */
-    public ArrayList<AsynchClientTask> preCancelProcess()
+    public ArrayList<AsynchClientTask> preCancelProcess()//actions before panel disappears when cancel is clicked
     {
     	return new ArrayList<AsynchClientTask>();
     }
-    public ArrayList<AsynchClientTask> postCancelProcess()
+    public ArrayList<AsynchClientTask> postCancelProcess()//actions after panel disappears when cancel is clicked
     {
     	return new ArrayList<AsynchClientTask>();
     }
-    public ArrayList<AsynchClientTask> preNextProcess()
+    public ArrayList<AsynchClientTask> preNextProcess()//actions before panel disappears when next/finish is clicked 
     {
     	return new ArrayList<AsynchClientTask>();
     }
-    public ArrayList<AsynchClientTask> postNextProcess()
+    public ArrayList<AsynchClientTask> postNextProcess()//actions after panel disappears when next/finish is clicked
     {
     	return new ArrayList<AsynchClientTask>();
     }
-    public ArrayList<AsynchClientTask> preBackProcess()
+    public ArrayList<AsynchClientTask> preBackProcess()//actions before panel disappears when back is clicked
     {
     	return new ArrayList<AsynchClientTask>();
     }
-    public ArrayList<AsynchClientTask> postBackProcess()
+    public ArrayList<AsynchClientTask> postBackProcess()//actions after panel disappears when back is clicked
     {
     	return new ArrayList<AsynchClientTask>();
     }
@@ -165,6 +165,11 @@ public class WizardPanelDescriptor {
 	}
 	public void setProgressPopupShown(boolean isProgressPopupShown) {
 		this.isProgressPopupShown = isProgressPopupShown;
+	}
+
+	//This method is called before displaying a new panel. No button action is required
+	public void aboutToDisplayPanel() {
+		//override in child class 
 	}
 
 }

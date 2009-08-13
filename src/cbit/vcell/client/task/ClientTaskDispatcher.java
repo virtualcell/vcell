@@ -94,8 +94,11 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				currentTask.setClientTaskStatusSupport(pp);
 				
 //System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
-				if (pp != null) {
-					pp.setProgress(i*100/taskList.size()); // beginning of task
+				if (pp != null ) {
+					if(!bKnowProgress)
+					{
+						pp.setProgress(i*100/taskList.size()); // beginning of task
+					}
 					pp.setMessage(currentTask.getTaskName());
 				}
 				boolean shouldRun = true;
