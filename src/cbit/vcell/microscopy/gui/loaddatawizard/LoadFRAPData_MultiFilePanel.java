@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui;
+package cbit.vcell.microscopy.gui.loaddatawizard;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -27,56 +27,49 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.VirtualFrapLoader;
+import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel.MultiFileImportInfo;
 
 /*
  * This dialog is used to input file series.
  * The file series are either time series or Z series.
  * For time series, the total time span and the index for recovery need to be specified.
  */
-public class MultiFileInputDialog extends JDialog implements ActionListener
+public class LoadFRAPData_MultiFilePanel extends JPanel implements ActionListener
 {
 	VirtualFrapMainFrame parent = null;
 	
-	private JRadioButton zSeries_radioButton = null;
-	private JRadioButton tSeries_radioButton = null;
 	private ButtonGroup butGroup = null;
-	private JLabel zSampleIntervalLabel = null;
-	private JTextField zSampleIntervalTextField = null;
 	private JLabel tSampleIntervalLabel = null;
 	private JTextField tSampleIntervalTextField = null;
 	private JTextArea fileTextArea = null;
 	private JScrollPane scroll = null;
 	private JButton inputFileButton = null;
-	private JButton okButton = null;
-	private JButton cancelButton = null;
 	
 	private File[] files = null;
 	private double zInterval, tInterval;
 		
-	public MultiFileInputDialog(VirtualFrapMainFrame arg_parent)
+	public LoadFRAPData_MultiFilePanel(VirtualFrapMainFrame arg_parent)
 	{
-		super(arg_parent, "File Series Input", true);
+		super();
 		parent = arg_parent;
 		initialize();
 	}
-	
+	public LoadFRAPData_MultiFilePanel()//constructor for wizard
+	{
+		super();
+//		parent = arg_parent;
+		initialize();
+	}
 	private void initialize()
 	{
-		Container contentPane = getContentPane();
-	    contentPane.setLayout(new BorderLayout());
-	    
-	    zSeries_radioButton = new JRadioButton("Z Series");
-	    zSeries_radioButton.addActionListener(this);
-		tSeries_radioButton = new JRadioButton("Time Series");
-		tSeries_radioButton.setSelected(true);
-		tSeries_radioButton.addActionListener(this);
+	    setLayout(new BorderLayout());
+
+		final JLabel timeSeriesLabel = new JLabel();
+		timeSeriesLabel.setText("  Time Series");
 		butGroup = new ButtonGroup();
-		butGroup.add(zSeries_radioButton);
-		butGroup.add(tSeries_radioButton);
-		zSampleIntervalLabel = new JLabel("  Z Sample Intv. (um)");
-		zSampleIntervalTextField = new JTextField(8);
-		zSampleIntervalTextField.setText("0.01");
-		zSampleIntervalTextField.setEnabled(false);
 		tSampleIntervalLabel = new JLabel("  Time Sample Intv. (s)");
 		tSampleIntervalTextField = new JTextField(8);
 		tSampleIntervalTextField.setText("0.01");
@@ -87,26 +80,19 @@ public class MultiFileInputDialog extends JDialog implements ActionListener
 		scroll.setAutoscrolls(true);
 		inputFileButton = new JButton("Choose Files");
 		inputFileButton.addActionListener(this);
-		okButton = new JButton("O K");
-		okButton.addActionListener(this);
-		cancelButton = new JButton ("Cancel");
-		cancelButton.addActionListener(this);
 	    
 		//separate to leftPanel, rightPanel and botPanel
 		//leftPanel puts those buttons and textfields
 		//rightPanel puts testarea and the inputfile button
 		//botPanel puts ok and cancel buttons
 		JPanel leftPanel = new JPanel(new GridLayout(0,1));
-		leftPanel.add(tSeries_radioButton);
+		leftPanel.add(timeSeriesLabel);
 	    JPanel p1 = new JPanel(new GridLayout(0,2)); // put time interval label and text field togeter
 		p1.add(tSampleIntervalLabel);
 		p1.add(tSampleIntervalTextField);
 		leftPanel.add(p1);
 		leftPanel.add(new JLabel(""));
-		leftPanel.add(zSeries_radioButton);
 		p1 = new JPanel(new GridLayout(0,2)); // put z interval label and text field together
-		p1.add(zSampleIntervalLabel);
-		p1.add(zSampleIntervalTextField);
 		leftPanel.add(p1);
 				
 		JPanel rightPanel = new JPanel(new BorderLayout());
@@ -127,17 +113,10 @@ public class MultiFileInputDialog extends JDialog implements ActionListener
 		
 		//create botPanel
 		JPanel botPanel = new JPanel(new GridLayout(0,1));
-		JPanel p3 = new JPanel(new GridLayout(0,5));
-		p3.add(new JLabel(" "));
-		p3.add(okButton);
-		p3.add(new JLabel(" "));
-		p3.add(cancelButton);
-		p3.add(new JLabel(" "));
 		botPanel.add(new JLabel(" "));
-		botPanel.add(p3);
 				
-		contentPane.add(upPanel, BorderLayout.CENTER);
-		contentPane.add(botPanel, BorderLayout.SOUTH);
+		add(upPanel, BorderLayout.CENTER);
+		add(botPanel, BorderLayout.SOUTH);
 		    
 	    setSize(440,200);
 	}
@@ -150,70 +129,71 @@ public class MultiFileInputDialog extends JDialog implements ActionListener
 			if (option == JFileChooser.APPROVE_OPTION) 
 			{
 			    files = VirtualFrapLoader.multiOpenFileChooser.getSelectedFiles();
-			}
-			String fileString = "";
-			for(int i =0; i < files.length; i++)
-			{
-				fileString = fileString + files[i].getName()+"\n";
-			}
-			fileTextArea.setText(fileString);
-		}
-		else if(evt.getSource() instanceof JButton && ((JButton)evt.getSource()).equals(okButton))
-		{
-			if((zSeries_radioButton.isSelected() || tSeries_radioButton.isSelected()) &&  checkValidity().equals(""))
-			{
-				if(files != null && files.length > 0)
+			    String fileString = "";
+				for(int i =0; i < files.length; i++)
 				{
-					try{
-					VirtualFrapMainFrame.frapStudyPanel.load(files, new FRAPStudyPanel.MultiFileImportInfo(tSeries_radioButton.isSelected(), tInterval, zInterval));
-					}catch(Exception e){
-						PopupGenerator.showErrorDialog(this, e.getMessage());
-					}
+					fileString = fileString + files[i].getName()+"\n";
 				}
-				this.setVisible(false);
-			}
-			else
-			{
-				DialogUtils.showErrorDialog(this, "Error: " + checkValidity());
+				fileTextArea.setText(fileString);
 			}
 		}
-		else if(evt.getSource() instanceof JButton && ((JButton)evt.getSource()).equals(cancelButton))
-		{
-			this.setVisible(false);
-		}
-		else if(evt.getSource() instanceof JRadioButton && ((JRadioButton)evt.getSource()).equals(zSeries_radioButton))
-		{
-			zSampleIntervalTextField.setEnabled(true);
-			tSampleIntervalTextField.setEnabled(false);
-		}
-		else if(evt.getSource() instanceof JRadioButton && ((JRadioButton)evt.getSource()).equals(tSeries_radioButton))
-		{
-			tSampleIntervalTextField.setEnabled(true);
-			zSampleIntervalTextField.setEnabled(false);
-		}
+		//ok and cancel button actions
+//		else if(evt.getSource() instanceof JButton && ((JButton)evt.getSource()).equals(okButton))
+//		{
+//			if(checkValidity().equals(""))
+//			{
+//				if(files != null && files.length > 0)
+//				{
+//					try{
+//						//need to be changed later, coz there is not z series any more, only time series
+//						VirtualFrapMainFrame.frapStudyPanel.load(files, new FRAPStudyPanel.MultiFileImportInfo(true, tInterval, zInterval));
+//					}catch(Exception e){
+//						PopupGenerator.showErrorDialog(e.getMessage());
+//					}
+//				}
+//				this.setVisible(false);
+//			}
+//			else
+//			{
+//				DialogUtils.showErrorDialog("Error: " + checkValidity());
+//			}
+//		}
+//		else if(evt.getSource() instanceof JButton && ((JButton)evt.getSource()).equals(cancelButton))
+//		{
+//			this.setVisible(false);
+//		}
 	}
 	
-	private String checkValidity()
+	private String checkTimeValidity()
 	{
-		if(tSeries_radioButton.isSelected())
+		try{
+			tInterval = Double.parseDouble(tSampleIntervalTextField.getText());
+		}catch(Exception e)
 		{
-			try{
-				tInterval = Double.parseDouble(tSampleIntervalTextField.getText());
-			}catch(Exception e)
-			{
-				return e.getMessage(); 
-			}
-		}
-		else if(zSeries_radioButton.isSelected())
-		{
-			try{
-				zInterval = Double.parseDouble(zSampleIntervalTextField.getText());
-			}catch(Exception e)
-			{
-				return e.getMessage(); 
-			}
+			return e.getMessage(); 
 		}
 		
 		return "";
+	}
+	
+	public File[] getSelectedFiles()
+	{
+		return files;
+	}
+	
+	public boolean isTimeSeries()
+	{
+		return true; //deal with time series only currently.
+	}
+	
+	public double getTimeInterval() throws NumberFormatException
+	{
+		try{
+			tInterval = Double.parseDouble(tSampleIntervalTextField.getText());
+			return tInterval;
+		}catch(Exception e)
+		{
+			throw new NumberFormatException("Time interval input error:\n " + e.getMessage()); 
+		}
 	}
 }

@@ -310,4 +310,8 @@ public abstract class AnnotatedImageDataset {
 		propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI, null, currentlyDisplayedROI);
 	}
 
+	public void setImageDataset(ImageDataset newImgDataset)
+	{
+		imageDataset = newImgDataset;
+	}
 }

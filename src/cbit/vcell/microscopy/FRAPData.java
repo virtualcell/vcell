@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.BitSet;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Extent;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.TSJobResultsSpaceStats;
 import org.vcell.util.TimeSeriesJobSpec;
@@ -18,6 +19,8 @@ import org.vcell.util.document.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
+
 import org.vcell.util.document.User;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
@@ -113,7 +116,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 
 	}
 	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName,
-			final DataSetControllerImpl.ProgressListener progressListener) throws Exception{
+			final ClientTaskStatusSupport progressListener) throws Exception{
 		if(!vcellSimLogFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)){
 			throw new IllegalArgumentException("VCell simulation logfile with extension "+SimDataConstants.LOGFILE_EXTENSION+" expected.");
 		}
@@ -131,7 +134,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 				public void dataJobMessage(DataJobEvent event) {
 					bStatus[0] = event;
 					if(progressListener != null){
-						progressListener.updateProgress(event.getProgress()/100.0*.75);
+						progressListener.setProgress((int)(event.getProgress()/100.0*.75));
 					}
 				}
 			};
@@ -204,7 +207,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 					cartesianMesh.getOrigin(),
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
-			if(progressListener != null){progressListener.updateProgress(.75+(.25*(double)(i+1)/times.length));}
+			if(progressListener != null){progressListener.setProgress((int)(.75+(.25*(double)(i+1)/times.length)));}
 		}
 		ImageDataset imageDataSet = new ImageDataset(scaledDataImages,times,cartesianMesh.getSizeZ());
 		FRAPData frapData = new FRAPData(imageDataSet,
@@ -281,6 +284,36 @@ public boolean compareEqual(Matchable obj)
 		return true;
 	}
 	return false;
+}
+
+public void chopImages(int startTimeIndex, int endTimeIndex) 
+{
+	UShortImage[] origImages = getImageDataset().getAllImages();
+	double[] origTimeSteps = getImageDataset().getImageTimeStamps();
+	
+	UShortImage[] newImages = new UShortImage[endTimeIndex - startTimeIndex + 1];
+	double[] newTimeSteps = new double[endTimeIndex - startTimeIndex + 1];
+	System.arraycopy(origImages, startTimeIndex, newImages, 0, (endTimeIndex - startTimeIndex + 1));
+	System.arraycopy(origTimeSteps, startTimeIndex, newTimeSteps, 0, (endTimeIndex - startTimeIndex + 1));
+	//shift time to start from 0, it's not necessary 
+//	double firstTimePoint = newTimeSteps[0];
+//	for(int i = 0; i < newTimeSteps.length; i++)
+//	{
+//		newTimeSteps[i] = newTimeSteps[i] - firstTimePoint;
+//	}
+	
+	int numOfZ = getImageDataset().getSizeZ();
+	ImageDataset imgDataset = new ImageDataset(newImages, newTimeSteps, numOfZ);
+	setImageDataset(imgDataset);
+}
+
+public void changeImageExtent(double imageSizeX, double imageSizeY) {
+	UShortImage[] images = getImageDataset().getAllImages();
+	double imageSizeZ = images[0].getExtent().getZ();
+	for(int i = 0; i < images.length; i++)
+	{
+		images[i].setExtent(new Extent(imageSizeX, imageSizeY, imageSizeZ));
+	}
 }
 
 }

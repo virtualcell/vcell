@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui;
+package cbit.vcell.microscopy.gui.estparamwizard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -41,9 +41,8 @@ import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.gui.estparamwizard.FRAPDiffTwoParamPanel;
-import cbit.vcell.microscopy.gui.estparamwizard.FRAPReacDiffEstimationGuidePanel;
-import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.ROIImagePanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -52,7 +51,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
-public class ResultsSummaryPanel extends JPanel {
+public class EstParams_ReacBindingPanel extends JPanel {
 	
 	public static final String STR_REACTION_DIFFUSION = "Reaction Diffusion Model";
 	public static final String STR_PURE_DIFFUSION = "Pure Diffusion Model";
@@ -61,19 +60,18 @@ public class ResultsSummaryPanel extends JPanel {
 	
 	private FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters; //will be initialized in setData
 	private FRAPStudy.SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
-	private final JTabbedPane paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
+	private final JPanel paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
 //	private final JLabel standardErrorseLabel;
-	private JLabel simulationParametersLabel;
-	private final JLabel interactiveAnalysisUsingLabel_1;
 	
 //	private final JRadioButton reactionDiffusionRadioButton; 
 //	private final JRadioButton pureDiffusionRadioButton;
 //	private ButtonGroup plotButtonGroup = new ButtonGroup();
 	
-	private FRAPDiffTwoParamPanel pureDiffusionPanel;
+//	private FRAPPureDiffusionParamPanel pureDiffusionPanel;
 	private FRAPReactionDiffusionParamPanel reactionDiffusionPanel;
-	private FRAPReacDiffEstimationGuidePanel estGuidePanel;
+//	private FRAPReacDiffEstimationGuidePanel estGuidePanel;
 	
+	private ROIImagePanel roiImagePanel;
 	private FRAPOptData frapOptData;
 	private FRAPStudy frapStudy;
 	
@@ -81,11 +79,6 @@ public class ResultsSummaryPanel extends JPanel {
 //	private final JTable table;
 	private MultisourcePlotPane multisourcePlotPane;
 	private Hashtable<FRAPStudy.AnalysisParameters, DataSource[]> allDataHash;
-	private Object[][] summaryData;
-	
-	private JPopupMenu jPopupMenu = new JPopupMenu();
-	private JMenuItem copyValueJMenuItem;
-	private JMenuItem copyTimeDataJMenuItem;
 	
 	private boolean B_TABLE_DISABLED = false;
 	private boolean do_once = true;
@@ -93,23 +86,8 @@ public class ResultsSummaryPanel extends JPanel {
 	private static String[] summaryReportColumnNames =
 		FRAPStudy.SpatialAnalysisResults.getSummaryReportColumnNames();
 	
-	//	private ActionListener plotButtonActionListener = new ActionListener(){
-//		public void actionPerformed(ActionEvent e) {
-//			if(reactionDiffusionRadioButton.isSelected()){
-//				B_TABLE_DISABLED = false;
-//				standardErrorseLabel.setEnabled(true);
-//				processTableSelection();
-//				cl.show(cardPanel, TAB_REACTION_DIFFUSION);
-//			}else if(pureDiffusionRadioButton.isSelected()){
-//				B_TABLE_DISABLED = true;
-//				plotDerivedSimulationResults();
-//				cl.show(cardPanel, TAB_PURE_DIFFUSION);
-//			}
-//		}
-//	};
-//	
-	public ResultsSummaryPanel() {
-		super();
+
+	public EstParams_ReacBindingPanel() {
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowHeights = new int[] {7,7,7,0,7};
 		gridBagLayout.columnWidths = new int[] {7};
@@ -118,150 +96,36 @@ public class ResultsSummaryPanel extends JPanel {
 		JPanel topPanel = new JPanel(new BorderLayout());
 		JPanel buttonPanel = new JPanel(new FlowLayout());
 				
-//		JMenuItem copyReportJMenuItem = new JMenuItem("Copy Summary Report");
-//		copyReportJMenuItem.addActionListener(
-//			new ActionListener(){
-//				public void actionPerformed(ActionEvent e) {
-//					SimpleTransferable.sendToClipboard(
-//						FRAPStudy.SpatialAnalysisResults.createCSVSummaryReport(
-//							summaryReportColumnNames, summaryData));
-//				}
-//			}
-//		);
-//		copyValueJMenuItem = new JMenuItem("Copy Value");
-//		copyValueJMenuItem.addActionListener(
-//			new ActionListener(){
-//				public void actionPerformed(ActionEvent e) {
-//					SimpleTransferable.sendToClipboard(""+table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
-//				}
-//			}
-//		);
-//		
-//		copyTimeDataJMenuItem = new JMenuItem("Copy Time Data");
-//		copyTimeDataJMenuItem.addActionListener(
-//			new ActionListener(){
-//				public void actionPerformed(ActionEvent e) {
-//					try{
-//						Double selectedDiffusionRate =
-//							(Double)table.getValueAt(table.getSelectedRow(),
-//							FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE);
-//						DataSource[] selectedRowDataSourceArr = allDataHash.get(selectedDiffusionRate);
-//						ReferenceData expDataSource =
-//							(ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
-//						ODESolverResultSet simDataSource =
-//							(ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
-//						double[] expTimes = expDataSource.getColumnData(0);
-//						double[] expColumnData = expDataSource.getColumnData(table.getSelectedColumn());
-//						double[] simTimes = simDataSource.extractColumn(0);
-//						double[] simColumnData = simDataSource.extractColumn(table.getSelectedColumn());
-//						
-//						SimpleTransferable.sendToClipboard(
-//								FRAPStudy.SpatialAnalysisResults.createCSVTimeData(
-//									summaryReportColumnNames,table.getSelectedColumn(),
-//									expTimes,expColumnData,simTimes,simColumnData
-//						));
-//					}catch(Exception e2){
-//						e2.printStackTrace();
-//						DialogUtils.showErrorDialog(
-//							"Erro copying Time Data for row="+table.getSelectedRow()+", col="+table.getSelectedColumn()+".  "+e2.getMessage());
-//					}
-//				}
-//			}
-//		);
-
-//		jPopupMenu.add(copyValueJMenuItem);
-//		jPopupMenu.add(copyReportJMenuItem);
-//		jPopupMenu.add(copyTimeDataJMenuItem);
-		
-		
 		//set up tabbed pane for two kinds of models.
-		paramPanel=new JTabbedPane();
+		paramPanel=new JPanel();
 		paramPanel.setForeground(new Color(0,0,244));
-		
-		final JPanel panel_2 = new JPanel();
-		panel_2.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
-		panel_2.setLayout(new GridBagLayout());
-		paramPanel.addTab(STR_PURE_DIFFUSION, null, panel_2, null);
-		
-
-//		pureDiffusionRadioButton = new JRadioButton();
-//		pureDiffusionRadioButton.setFont(new Font("", Font.BOLD, 12));
-//		buttonPanel.add(pureDiffusionRadioButton);
-//		pureDiffusionRadioButton.setText(ADJUST_PARAM_PURE_DIFFUSION);
-//		pureDiffusionRadioButton.addActionListener(plotButtonActionListener);
+		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
+		paramPanel.setLayout(new GridBagLayout());
+//		paramPanel.addTab(STR_PURE_DIFFUSION, null, panel_2, null);
 	
-		final JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
-		panel_1.setLayout(new GridBagLayout());
-		paramPanel.addTab(STR_REACTION_DIFFUSION, null, panel_1, null);
-		paramPanel.setModel(
-				new DefaultSingleSelectionModel(){
-					@Override
-					public void setSelectedIndex(int index) {
-						try{
-							String exitTabTitle = (getSelectedIndex() == -1?null:paramPanel.getTitleAt(getSelectedIndex()));
-							if(changeTabView(exitTabTitle,paramPanel.getTitleAt(index))){
-								super.setSelectedIndex(index);
-							}
-						}catch(Exception e){
-							DialogUtils.showWarningDialog(
-								ResultsSummaryPanel.this, "Can't switch view beacause:\n"+e.getMessage(),
-								new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
-						}finally{
-						
-						}
-
-					}
-				}
-			);
-		paramPanel.setSelectedIndex(paramPanel.indexOfTab(STR_PURE_DIFFUSION));
-			
-//		reactionDiffusionRadioButton = new JRadioButton();
-//		reactionDiffusionRadioButton.setEnabled(false);
-//		reactionDiffusionRadioButton.setFont(new Font("", Font.BOLD, 12));
-//		buttonPanel.add(reactionDiffusionRadioButton);
-//		reactionDiffusionRadioButton.setText(ADJUST_PARAM_REACTION_DIFFUSION);
-//		reactionDiffusionRadioButton.addActionListener(plotButtonActionListener);
-
-		/*Amended in Dec 2008. We don't want to show the standard error in adjust parameters tab
-		 *From now on we have two models : pure diffusion and reaction diffusion. Therefore, 
-		 *We use cardlayout either display pure diffusion parameters or reaction diffusion parameters.
-		 */
-		
-//		table = new JTable (){
-//		      public Component prepareRenderer (final TableCellRenderer renderer,int row, int column){
-//		        Component comp = super.prepareRenderer (renderer, row, column);
-//		        if(!table.isEnabled()){
-//		        	comp.setBackground(table.getBackground());
-//		        }
-//		        comp.setEnabled (table.isEnabled());
-//		        return comp;
-//		      }
-//			};
-//			standardErrorseLabel=new JLabel();
-//			scrollPane = new JScrollPane();
 		//card panel for reaction diffusion
 		JLabel reactionDiffPanelLabel = new JLabel();
 		final GridBagConstraints gridBagConstraints_rdl = new GridBagConstraints();
 		gridBagConstraints_rdl.gridy = 0;
 		gridBagConstraints_rdl.gridx = 0;
-		panel_1.add(reactionDiffPanelLabel, gridBagConstraints_rdl);
+		paramPanel.add(reactionDiffPanelLabel, gridBagConstraints_rdl);
 		reactionDiffPanelLabel.setFont(new Font("", Font.PLAIN, 14));
 		reactionDiffPanelLabel.setText("Analysis on Reaction Diffusion Model using FRAP Simulation Results");
 		
 		reactionDiffusionPanel = new FRAPReactionDiffusionParamPanel();
+		reactionDiffusionPanel.setButtonsEnabled(false);
 		final GridBagConstraints gridBagConstraints_rdp = new GridBagConstraints();
 		gridBagConstraints_rdp.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_rdp.gridy = 1;
 		gridBagConstraints_rdp.gridx = 0;
 		gridBagConstraints_rdp.weightx = 1.5;
-		panel_1.add(reactionDiffusionPanel, gridBagConstraints_rdp);
+		paramPanel.add(reactionDiffusionPanel, gridBagConstraints_rdp);
 		reactionDiffusionPanel.addPropertyChangeListener(
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
 						if(evt.getSource() == reactionDiffusionPanel){
 							if((evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_FROM_PURE_DIFFUSION))){
-								activateReacDiffEstPanel();
+//								activateReacDiffEstPanel();
 							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_BS_CONCENTRATION)){
 								if(frapStudy != null && frapStudy.getFrapData() != null)
 								{
@@ -285,39 +149,6 @@ public class ResultsSummaryPanel extends JPanel {
 				}
 		);
 		
-//		table.setModel(getTableModel(summaryReportColumnNames,new Object[][] {{"diffTest","summaryTest"}}));
-		//pure diffusion panel
-		interactiveAnalysisUsingLabel_1 = new JLabel();
-		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-		gridBagConstraints_8.gridy = 0;
-		gridBagConstraints_8.gridx = 0;
-		panel_2.add(interactiveAnalysisUsingLabel_1, gridBagConstraints_8);
-		interactiveAnalysisUsingLabel_1.setFont(new Font("", Font.PLAIN, 14));
-		interactiveAnalysisUsingLabel_1.setText("Interactive Analysis on Pure Diffusion Model using FRAP Simulation Results");
-
-		pureDiffusionPanel = new FRAPDiffTwoParamPanel();
-		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
-		gridBagConstraints_10.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_10.gridy = 1;
-		gridBagConstraints_10.gridx = 0;
-		gridBagConstraints_10.weightx = 1.5;
-		panel_2.add(pureDiffusionPanel, gridBagConstraints_10);
-		pureDiffusionPanel.addPropertyChangeListener(
-				new PropertyChangeListener(){
-					public void propertyChange(PropertyChangeEvent evt) {
-						if(evt.getSource() == pureDiffusionPanel){
-							if((evt.getPropertyName().equals(FRAPDiffTwoParamPanel.PROPERTY_CHANGE_OPTIMIZER_VALUE)))
-							{
-								plotDerivedSimulationResults(false, spatialAnalysisResults.getAnalysisParameters());
-							}
-//							else if(evt.getPropertyName().equals(FRAPPureDiffusionParamPanel.PROPERTY_CHANGE_RUNSIM)){
-//								newFRAPFromParameters.create(pureDiffusionPanel.getCurrentParameters(), STR_PURE_DIFFUSION);
-//							}
-						}
-					}
-				}
-		);
-
 		topPanel.add(buttonPanel, BorderLayout.NORTH);
 		topPanel.add(paramPanel, BorderLayout.CENTER);
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
@@ -370,7 +201,7 @@ public class ResultsSummaryPanel extends JPanel {
 				roiImagePanel.init(plottedROIArr,ringROIColors,
 					frapOptData.getExpFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),Color.white,
 					frapOptData.getExpFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),allROIColors[0]);
-				DialogUtils.showComponentCloseDialog(ResultsSummaryPanel.this, roiImagePanel, "FRAP Model ROIs");
+				DialogUtils.showComponentCloseDialog(EstParams_ReacBindingPanel.this, roiImagePanel, "FRAP Model ROIs");
 			}
 		});
 		showROIbutton.setBorder(new EtchedBorder());
@@ -447,28 +278,9 @@ public class ResultsSummaryPanel extends JPanel {
 			//
 			// populate values
 			//
-//			double[][] currentOptFitData = null;
-//			if(!bBestFit){//evt.getPropertyName().equals(FRAPInterpolationPanel.PROPERTY_CHANGE_OPTIMIZER_VALUE)){
-//				currentOptFitData = interpolationPanel.getCurrentFitData();
-//			}else{
-//				currentOptFitData = interpolationPanel.getBestFitData();
-//			}
-			double[][] currentOptFitData = pureDiffusionPanel.getCurrentFitData();
-			if(allDataHash != null && currentOptFitData != null)
+
+			if(allDataHash != null)
 			{
-				//populate optimization data
-				int columncounter = 0;
-				for (int j = 0; j < numROITypes; j++) {
-					if(!wantsROITypes[j]){continue;}
-					if(!isSimData) //opt data
-					{
-						double[] values = currentOptFitData[j];
-						for (int k = 0; k < values.length; k++) {
-							fitOdeSolverResultSet.setValue(k, columncounter/*j*/+1, values[k]);
-						}
-					}
-					columncounter++;
-				}
 				boolean hasSimData = false;
 				
 				if(frapStudy.getBioModel() != null && frapStudy.getBioModel().getSimulations()!=null && anaParams[0].isAllSimParamExist())
@@ -498,10 +310,6 @@ public class ResultsSummaryPanel extends JPanel {
 					{
 						multisourcePlotPane.setDataSources(null);
 					}
-					else if(!isSimData && currentOptFitData == null)
-					{
-						multisourcePlotPane.setDataSources(null);
-					}
 					else
 					{
 						multisourcePlotPane.setDataSources(newDataSourceArr);
@@ -511,7 +319,7 @@ public class ResultsSummaryPanel extends JPanel {
 			}
 		}catch(Exception e2){
 			e2.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Error graphing Optimizer data "+e2.getMessage());
+			DialogUtils.showErrorDialog(this,"Error graphing Optimizer data "+e2.getMessage());
 		}
 
 	}
@@ -626,37 +434,7 @@ public class ResultsSummaryPanel extends JPanel {
 //		}
 //
 //	}
-	private TableModel getTableModel(final String[] columnNames,final Object[][] rowData){
-
-		summaryData = rowData;
 		
-		TableModel tableModel = 
-			new AbstractTableModel() {
-			    public String getColumnName(int col) {
-			        return columnNames[col].toString();
-			    }
-			    public int getRowCount() {
-			    	return rowData.length; }
-			    public int getColumnCount() {
-			    	return columnNames.length; }
-			    public Object getValueAt(int row, int col) {
-			    	if(col < FRAPStudy.SpatialAnalysisResults.ANALYSISPARAMETERS_COLUMNS_COUNT){
-			        return rowData[row][col];
-			    	}
-			    	final double DIGIT_SCALE = 1000000.0;
-			    	return ((double)((int)((Double)rowData[row][col]*DIGIT_SCALE)))/DIGIT_SCALE;
-			    }
-			    public boolean isCellEditable(int row, int col){
-			    	return false;
-			    }
-			    public void setValueAt(Object value, int row, int col) {
-			        rowData[row][col] = value;
-			        fireTableCellUpdated(row, col);
-			    }
-			};
-		return tableModel;
-	}
-	
 	public void setData(FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters,
 			final FRAPOptData frapOptData,
 			FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
@@ -674,48 +452,16 @@ public class ResultsSummaryPanel extends JPanel {
 				
 				//we still need to process the simResultsRadioButton does
 				//but now we show Derived FRAP simulation result by default
-//				processTableSelection();
 			
-				pureDiffusionPanel.init(frapOptData);
-//				table.setModel(getTableModel(summaryReportColumnNames,tableData));				
-//				sortColumn(FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE,false);
+//				pureDiffusionPanel.init(frapOptData);
 				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1.5));
-//				if(modelDiffusionRate != null){
-//					int matchingRow = -1;
-//					for (int i = 0; i < summaryData.length; i++) {
-//						if(summaryData[i][FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE].equals(modelDiffusionRate)){
-//							matchingRow = i;
-//							break;
-//						}
-//					}
-//					if(matchingRow != -1){
-//						setTableCellSelection(matchingRow,
-//							new int[] {FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE});
-//					}else{
-//						DialogUtils.showErrorDialog("Summary Table couldn't find model diffusion rate "+modelDiffusionRate);
-//					}
-//				}
-				if(paramPanel.getSelectedIndex()==IDX_REACTION_DIFFUSION)
-				{
-					plotDerivedSimulationResults(true, finalSpatialAnalysisResults.getAnalysisParameters());
-				}
-				else
-				{
-					plotDerivedSimulationResults(false,finalSpatialAnalysisResults.getAnalysisParameters());
-				}
+				plotDerivedSimulationResults(true, finalSpatialAnalysisResults.getAnalysisParameters());
+				
 			}catch(Exception e){
 				throw new RuntimeException("Error setting data to result summary panel");
 			}
 		}});
 	}
-	
-//	private void setTableCellSelection(int selectedRow, int[] selectedColumns){
-//		table.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
-//		table.getColumnModel().getSelectionModel().setSelectionInterval(selectedColumns[0], selectedColumns[0]);
-//		for (int i = 1; i < selectedColumns.length; i++) {
-//			table.getColumnModel().getSelectionModel().addSelectionInterval(selectedColumns[i], selectedColumns[i]);
-//		}
-//	}
 	
 	public void clearData(){
 		if(allDataHash != null)
@@ -728,204 +474,18 @@ public class ResultsSummaryPanel extends JPanel {
 		return allDataHash != null;
 	}
 	
-	private boolean changeTabView(String exitTabTitle, String enterTabTitle) 
-	{
-		if(exitTabTitle != null)
-		{
-			if(exitTabTitle.equals(STR_PURE_DIFFUSION))
-			{
-				try {
-					insertPureDiffusionParametersIntoFRAPStudy(frapStudy);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			if(exitTabTitle.equals(STR_REACTION_DIFFUSION))
-			{
-				System.out.println("exit reaction diffusion");
-			}
-			//from pure diffusion to reaction diffusion
-			if(exitTabTitle.equals(STR_PURE_DIFFUSION) && enterTabTitle.equals(STR_REACTION_DIFFUSION))
-			{
-				//set possible estimated data from pure diffusion parameters
-				Parameter[] params = pureDiffusionPanel.getCurrentParameters();
-				if (params == null)
-				{
-					DialogUtils.showErrorDialog(this, "Pure Diffusion parameters are empty or in illegal forms!");
-					return false;
-				}
-				if(reactionDiffusionPanel.isAllTextFieldEmpty() && do_once)
-				{
-					do_once = false;
-					int choice = JOptionPane.showConfirmDialog(ResultsSummaryPanel.this, "Reaction diffusion model parameters are empty. \nDo you want to get estimats from the pure diffusion model?", "Want estimates?", JOptionPane.YES_NO_OPTION);
-					if(choice == JOptionPane.YES_OPTION)
-					{
-						activateReacDiffEstPanel();
-					}
-				}else
-				{
-					if(allDataHash != null && allDataHash.get(spatialAnalysisResults.getAnalysisParameters()[0])!= null )
-					{
-						DataSource[] selectedRowDataSourceArr = allDataHash.get(spatialAnalysisResults.getAnalysisParameters()[0]);
-						ODESolverResultSet simDataResultSet = null;
-						if(selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] != null)
-						{
-							simDataResultSet = (ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
-						}
-						if(simDataResultSet != null)
-						{
-							plotDerivedSimulationResults(true, spatialAnalysisResults.getAnalysisParameters());
-						}
-						else
-						{
-							multisourcePlotPane.setDataSources(null);
-						}
-					}
-					else
-					{
-						multisourcePlotPane.setDataSources(null);
-					}
-				}
-			}
-			else if(exitTabTitle.equals(STR_REACTION_DIFFUSION) && enterTabTitle.equals(STR_PURE_DIFFUSION))
-			{
-				plotDerivedSimulationResults(false, spatialAnalysisResults.getAnalysisParameters());
-			}
-			return true;
-		}
-		else return true;
-		
-	}	
-	
 	public void setFrapStudy(FRAPStudy fStudy)
 	{
 		this.frapStudy = fStudy;
 		do_once = true;
 	}
 	
-	public FRAPDiffTwoParamPanel getPureDiffusionPanel() {
-		return pureDiffusionPanel;
-	}
-
 	public FRAPReactionDiffusionParamPanel getReactionDiffusionPanel() {
 		return reactionDiffusionPanel;
 	}
-	
-	public void insertPureDiffusionParametersIntoFRAPStudy(FRAPStudy arg_FRAPStudy) throws Exception
-	{
-		getPureDiffusionPanel().insertPureDiffusionParametersIntoFRAPStudy(arg_FRAPStudy);
-	}
-	
 	public void insertReactionDiffusionParametersIntoFRAPStudy(FRAPStudy arg_FRAPStudy) throws Exception
 	{
 		getReactionDiffusionPanel().insertReacDiffusionParametersIntoFRAPStudy(arg_FRAPStudy);
 	}
 	
-	public void activateReacDiffEstPanel()
-	{
-		if(estGuidePanel == null)
-		{
-			estGuidePanel = new FRAPReacDiffEstimationGuidePanel();
-		}
-		
-		String secDiffStr = pureDiffusionPanel.getSecondDiffString();
-		String secFracStr = pureDiffusionPanel.getSecondMobileFracString();
-		double secDiff = Double.parseDouble(pureDiffusionPanel.getSecondDiffString());
-		double secFrac = Double.parseDouble(pureDiffusionPanel.getSecondMobileFracString());
-		//TODO need to take care of the code here
-//		if(!pureDiffusionPanel.getIsSecondDiffusionApplied())
-//		{
-//			secDiffStr = null;
-//			secFracStr = null;
-//			secDiff = -1; //if set to -1, it won't be displayed in table in diffRateEstimationPanel.
-//			secFrac = -1; //if set to -1, it won't be displayed in table in diffRateEstimationPanel.
-//			BeanUtils.enableComponents(estGuidePanel.getDiffTypePanel(), true);
-//			estGuidePanel.updateUIForPureDiffusion();
-//		}
-//		else
-//		{
-//			BeanUtils.enableComponents(estGuidePanel.getDiffTypePanel(), false);
-//			estGuidePanel.updateUIForReacDiffusion();
-//		}
-//		estGuidePanel.setIniParamFromPureDiffusion(pureDiffusionPanel.getDiffusionRateString(),
-//									pureDiffusionPanel.getMobileFractionString(),
-//									pureDiffusionPanel.getIsSecondDiffusionApplied(),
-//	            					secDiffStr,
-//	            					secFracStr,
-//	            					pureDiffusionPanel.getBleachWhileMonitorRateString());
-		try {
-			estGuidePanel.updateTableParameters(Double.parseDouble(pureDiffusionPanel.getDiffusionRateString()), 
-					                            Double.parseDouble(pureDiffusionPanel.getMobileFractionString()),
-					                            secDiff, secFrac, Double.parseDouble(pureDiffusionPanel.getBleachWhileMonitorRateString()),
-					                            -1, -1, null, -1, -1, -1, null, -1, null, -1, -1, -1, -1, null, -1, -1, null);
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		int choice2 = DialogUtils.showComponentOKCancelDialog(ResultsSummaryPanel.this, estGuidePanel, "FRAP Parameter Estimation Guide");
-		if (choice2 == JOptionPane.OK_OPTION)
-		{
-			if(estGuidePanel.getParamTable() != null)
-			{
-				int rowLen = estGuidePanel.getParamTable().getRowCount();
-				for(int i=0; i<rowLen; i++)
-				{
-					 String name = ((String)estGuidePanel.getParamTable().getValueAt(i, EstimatedParameterTableModel.COLUMN_NAME));
-					 double val = ((Double)estGuidePanel.getParamTable().getValueAt(i, EstimatedParameterTableModel.COLUMN_VALUE)).doubleValue();
-					 if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartDiffRate]))
-					 {
-						 reactionDiffusionPanel.setFreeDiffRate(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartFraction]))
-					 {
-						 reactionDiffusionPanel.setFreeFraction(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BleachMonitorRate]))
-					 {
-						 reactionDiffusionPanel.setBleachMonitorRate(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexDiffRate]))
-					 {
-						 reactionDiffusionPanel.setComplexDiffRate(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexFraction]))
-					 {
-						 reactionDiffusionPanel.setComplexFraction(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BSConc]))
-					 {
-						 reactionDiffusionPanel.setBSConcentration(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacOnRate]))
-					 {
-						 reactionDiffusionPanel.setOnRate(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacOffRate]))
-					 {
-						 reactionDiffusionPanel.setOffRate(val+"");
-					 }
-				}
-				//calculate immobile fraction
-				double immFrac = 0;
-				try
-				{
-					immFrac = 1- Double.parseDouble(reactionDiffusionPanel.getFreeFraction())- Double.parseDouble(reactionDiffusionPanel.getComplexFraction());
-					if(immFrac < (1+FRAPOptimization.epsilon) && immFrac > (1-FRAPOptimization.epsilon))
-					{
-						immFrac = 0;
-					}
-					reactionDiffusionPanel.setImmobileFraction(immFrac+"");
-				}catch(NumberFormatException e)
-				{
-					reactionDiffusionPanel.setImmobileFraction(immFrac+"");
-					e.printStackTrace(System.out);
-				}
-				multisourcePlotPane.setDataSources(null);
-			}
-		}
-	}
 }

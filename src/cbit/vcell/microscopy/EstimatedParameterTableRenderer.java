@@ -6,7 +6,7 @@ import java.text.NumberFormat;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import cbit.vcell.microscopy.gui.FRAPReacDiffEstimationGuidePanel;
+import cbit.vcell.microscopy.gui.estparamwizard.FRAPReacDiffEstimationGuidePanel;
 //this cell renderer is used for table in FRAPReacDiffEstimationGuidPanel.
 //it has two functionalities 1) precision renderer for Double column 2)highlight estimated parameters in row
 public class EstimatedParameterTableRenderer extends DefaultTableCellRenderer

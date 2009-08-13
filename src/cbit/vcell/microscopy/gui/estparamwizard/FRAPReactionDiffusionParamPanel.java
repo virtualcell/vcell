@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui;
+package cbit.vcell.microscopy.gui.estparamwizard;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -17,10 +17,13 @@ import javax.swing.JTextField;
 import org.vcell.util.Compare;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.task.RunSims;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel.SavedFrapModelInfo;
 import cbit.vcell.opt.Parameter;
 
 public class FRAPReactionDiffusionParamPanel extends JPanel{
@@ -62,14 +65,19 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	public static String STR_BINDING_SITE_CONCENTRATION = "Binding site concentration";
 	public static String STR_ON_RATE = "Reaction on rate";
 	public static String STR_OFF_RATE = "Reaction off rate";
-		
+
+	private JButton runSimbutton = null;
+	private JButton estFromDiffParamButton = null; 
+	private JButton estBSButton = null;
+	private JButton estOnRateButton = null; 
+	private JButton estOffRateButton = null;
 	public FRAPReactionDiffusionParamPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {7,7,7,7,7,7,7,0,7,7,0,0,7,7};
 		gridBagLayout.rowHeights = new int[] {7,7,7,7,0,7,0,0,7};
 		setLayout(gridBagLayout);
-		final JButton runSimbutton = new JButton();
+		runSimbutton = new JButton();
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_13.insets = new Insets(2, 2, 2, 0);
@@ -87,7 +95,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		runSimbutton.setText("Simulate with Params");
 		runSimbutton.setToolTipText("Create new FRAP simulation using current parameter settings");
 
-		final JButton estFromDiffParamButton = new JButton();
+		estFromDiffParamButton = new JButton();
 		estFromDiffParamButton.setText("Est. from Pure Diffusion Params");
 		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
 		gridBagConstraints_20.anchor = GridBagConstraints.WEST;
@@ -164,7 +172,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints_17.gridx = 11;
 		add(bsConcentrationTextField, gridBagConstraints_17);
 
-		final JButton estBSButton = new JButton();
+		estBSButton = new JButton();
 		estBSButton.setText("Estimate");
 		final GridBagConstraints gridBagConstraints_21 = new GridBagConstraints();
 		gridBagConstraints_21.insets = new Insets(2, 2, 2, 0);
@@ -240,7 +248,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints_18.gridx = 11;
 		add(onRateTextField, gridBagConstraints_18);
 
-		final JButton estOnRateButton = new JButton();
+		estOnRateButton = new JButton();
 		estOnRateButton.setText("Estimate");
 		final GridBagConstraints gridBagConstraints_22 = new GridBagConstraints();
 		gridBagConstraints_22.anchor = GridBagConstraints.WEST;
@@ -311,7 +319,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints_19.gridx = 11;
 		add(offRateTextField, gridBagConstraints_19);
 
-		final JButton estOffRateButton = new JButton();
+		estOffRateButton = new JButton();
 		estOffRateButton.setText("Estimate");
 		final GridBagConstraints gridBagConstraints_23 = new GridBagConstraints();
 		gridBagConstraints_23.anchor = GridBagConstraints.WEST;
@@ -1134,5 +1142,14 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		return
 			(offRateTextField.getText() == null || offRateTextField.getText().length() == 0
 				?null:offRateTextField.getText());
+	}
+	
+	public void setButtonsEnabled(boolean enable)
+	{
+		runSimbutton.setVisible(enable);
+		estFromDiffParamButton.setVisible(enable);
+		estBSButton.setVisible(enable);
+		estOnRateButton.setVisible(enable);
+		estOffRateButton.setVisible(enable);
 	}
 }
