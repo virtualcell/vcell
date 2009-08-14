@@ -1,22 +1,30 @@
 package cbit.vcell.client.desktop.biomodel;
 import java.awt.event.ActionEvent;
+import java.util.Hashtable;
 
 import cbit.vcell.biomodel.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import javax.swing.*;
 
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.Versionable;
+import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.*;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelTreePanel;
+import cbit.vcell.graph.CartoonEditorPanelFixed;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 2:55:18 PM)
  * @author: Ion Moraru
  */
 public class BioModelEditor extends JPanel {
-	private cbit.vcell.desktop.BioModelTreePanel ivjBioModelTreePanel1 = null;
-	private cbit.vcell.graph.CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;
+	private BioModelTreePanel ivjBioModelTreePanel1 = null;
+	private CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;
 	private JLabel ivjJLabel2 = null;
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanel2 = null;
@@ -29,10 +37,10 @@ public class BioModelEditor extends JPanel {
 	private JSeparator ivjJSeparator1 = null;
 	private JMenuItem ivjOpenAppMenuItem = null;
 	private JMenuItem ivjRenameMenuItem = null;
-	private org.vcell.util.gui.JInternalFrameEnhanced ivjjInternalFrameApplication = null;
+	private JInternalFrameEnhanced ivjjInternalFrameApplication = null;
 	private JMenuBar ivjjInternalFrameApplicationJMenuBar = null;
-	private cbit.vcell.biomodel.BioModel fieldBioModel = new BioModel(null);
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private BioModel fieldBioModel = new BioModel(null);
+	private DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private boolean ivjConnPtoP2Aligning = false;
 	private JMenuItem ivjJMenuItemNonStochApp = null;
@@ -399,7 +407,7 @@ private void copyApplication(ActionEvent evt) {
 				//get valid application name
 				try{
 					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(org.vcell.util.UserCancelException e){
+				}catch(UserCancelException e){
 					return;
 				}
 				if (newApplicationName != null) {
@@ -422,7 +430,7 @@ private void copyApplication(ActionEvent evt) {
 				//get valid application name
 				try{
 					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(org.vcell.util.UserCancelException e){
+				}catch(UserCancelException e){
 					return;
 				}
 				if (newApplicationName != null) {
@@ -439,7 +447,7 @@ private void copyApplication(ActionEvent evt) {
 				//get valid application name
 				try{
 					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(org.vcell.util.UserCancelException e){
+				}catch(UserCancelException e){
 					return;
 				}
 				if (newApplicationName != null) {
@@ -537,7 +545,7 @@ private javax.swing.JMenu getApplicationMenu() {
  * @return The bioModel property value.
  * @see #setBioModel
  */
-public cbit.vcell.biomodel.BioModel getBioModel() {
+public BioModel getBioModel() {
 	return fieldBioModel;
 }
 
@@ -547,10 +555,10 @@ public cbit.vcell.biomodel.BioModel getBioModel() {
  * @return cbit.vcell.desktop.BioModelTreePanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.desktop.BioModelTreePanel getBioModelTreePanel1() {
+private BioModelTreePanel getBioModelTreePanel1() {
 	if (ivjBioModelTreePanel1 == null) {
 		try {
-			ivjBioModelTreePanel1 = new cbit.vcell.desktop.BioModelTreePanel();
+			ivjBioModelTreePanel1 = new BioModelTreePanel();
 			ivjBioModelTreePanel1.setName("BioModelTreePanel1");
 			// user code begin {1}
 			// user code end
@@ -578,10 +586,10 @@ public BioModelWindowManager getBioModelWindowManager() {
  * @return cbit.vcell.graph.CartoonEditorPanelFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.graph.CartoonEditorPanelFixed getCartoonEditorPanel1() {
+private CartoonEditorPanelFixed getCartoonEditorPanel1() {
 	if (ivjCartoonEditorPanel1 == null) {
 		try {
-			ivjCartoonEditorPanel1 = new cbit.vcell.graph.CartoonEditorPanelFixed();
+			ivjCartoonEditorPanel1 = new CartoonEditorPanelFixed();
 			ivjCartoonEditorPanel1.setName("CartoonEditorPanel1");
 			// user code begin {1}
 			// user code end
@@ -646,7 +654,7 @@ private javax.swing.JMenuItem getDeleteMenuItem() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -656,10 +664,10 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return cbit.gui.JInternalFrameEnhanced
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public org.vcell.util.gui.JInternalFrameEnhanced getjInternalFrameApplication() {
+public JInternalFrameEnhanced getjInternalFrameApplication() {
 	if (ivjjInternalFrameApplication == null) {
 		try {
-			ivjjInternalFrameApplication = new org.vcell.util.gui.JInternalFrameEnhanced();
+			ivjjInternalFrameApplication = new JInternalFrameEnhanced();
 			ivjjInternalFrameApplication.setName("jInternalFrameApplication");
 			ivjjInternalFrameApplication.setVisible(true);
 			ivjjInternalFrameApplication.setStripped(true);
@@ -1025,7 +1033,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1040,7 +1047,6 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void newApplication(java.awt.event.ActionEvent event) {
-	SimulationContext newSimulationContext = null;
 	boolean isStoch = false;
 	if (event.getActionCommand().equals("Create Stochastic Application"))
 	{
@@ -1057,15 +1063,40 @@ private void newApplication(java.awt.event.ActionEvent event) {
 		String newApplicationName = null;
 		try{
 			newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the new application:");
-		}catch(org.vcell.util.UserCancelException e){
+		}catch(UserCancelException e){
 			return;
 		}
 		if (newApplicationName != null) {
 			if (newApplicationName.equals("")) {
 				PopupGenerator.showErrorDialog(this, "Blank name not allowed");
 			} else {
-				newSimulationContext = getBioModel().addNewSimulationContext(newApplicationName, isStoch);
-				getBioModelWindowManager().showApplicationFrame(newSimulationContext);
+				final String finalNewAppName = newApplicationName; 
+				final boolean finalIsStoch = isStoch;
+				AsynchClientTask task0 = new AsynchClientTask("create application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SimulationContext newSimulationContext = getBioModel().addNewSimulationContext(finalNewAppName, finalIsStoch);
+						hashTable.put("newSimulationContext", newSimulationContext);
+					}
+				};
+				AsynchClientTask task1 = new AsynchClientTask("process geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+						newSimulationContext.getGeometry().precomputeAll();
+					}
+				};
+				AsynchClientTask task2 = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
+					}
+				};
+				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1, task2});
 			}
 		}
 	} catch (Throwable exc) {
@@ -1105,7 +1136,7 @@ private void renameApplication() {
 			String newApplicationName = null;
 			try{
 				newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "New name for the application:");
-			}catch(org.vcell.util.UserCancelException e){
+			}catch(UserCancelException e){
 				return;
 			}
 			if (newApplicationName != null) {
@@ -1129,7 +1160,7 @@ private void renameApplication() {
  * @param bioModel The new value for the property.
  * @see #getBioModel
  */
-public void setBioModel(cbit.vcell.biomodel.BioModel bioModel) {
+public void setBioModel(BioModel bioModel) {
 	BioModel oldValue = fieldBioModel;
 	fieldBioModel = bioModel;
 	firePropertyChange("bioModel", oldValue, bioModel);
@@ -1151,8 +1182,8 @@ public void setBioModelWindowManager(BioModelWindowManager newBioModelWindowMana
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(DocumentManager documentManager) {
+	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }
