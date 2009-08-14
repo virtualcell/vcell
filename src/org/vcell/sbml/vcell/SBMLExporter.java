@@ -60,11 +60,10 @@ public class SBMLExporter {
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 
 	private SimulationContext vcSelectedSimContext = null;
-	private SimulationContext vcOverridenSimContext = null;
 	private SimulationJob vcSelectedSimJob = null;
 	
 	// used for exporting vcell-related annotations.
-	Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCML_NS_PREFIX, SBMLUtils.SBML_VCML_NS);
+	Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
 
 	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
@@ -747,32 +746,6 @@ protected void addSpecies() {
 		// Now set notes,
 		sbmlAnnotationUtil.writeNotes(vcSpeciesContexts[i].getSpecies(), sbmlSpecies);
 	}
-}
-
-/**
- * checkSpeciesInitExprValidity :
- * 		Checks if spInitExpr (speciesContext initial expression) is valid : no reserved symbols x, y, z, no other speciesContexts
- * in expression. 
- * @param spInitExpr
- * @return
- */
-private boolean checkSpeciesInitExprValidity(Expression spInitExpr) {
-	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
-	for (int sp = 0; sp < vcSpeciesContexts.length; sp++) {
-		if (spInitExpr.hasSymbol(vcSpeciesContexts[sp].getName())) {
-			return false;
-		}
-	}
-	cbit.vcell.parser.SymbolTable reservedSymbolTable= new ReservedSymbol.ReservedSymbolTable(true);
-	try {
-		spInitExpr.bindExpression(reservedSymbolTable);
-	} catch (ExpressionBindingException e) {
-		// reserved sybmol found, return false
-		return false;
-	}
-
-	// no reserved symbol or model species in expression, return true.
-	return true;
 }
 
 /**

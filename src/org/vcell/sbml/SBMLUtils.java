@@ -23,12 +23,13 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLTags;
 
 public abstract class SBMLUtils {
 
 	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
 	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
-	public static final String SBML_VCML_NS = "http://sourceforge.net/projects/vcell";
+	public static final String SBML_VCELL_NS = XMLTags.SBML_VCELL_NS;
 
 	public static class SBMLUnitParameter implements SymbolTableEntry {
 		private String paramName = null;
