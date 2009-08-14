@@ -802,7 +802,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 		} else {
 			log.alert("Can't stop, simulation [" + vcSimID + "] doesn't exist in database");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Can't start, simulation [" + 
+				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Can't stop, simulation [" + 
 						vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 		}

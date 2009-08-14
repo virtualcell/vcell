@@ -1,6 +1,7 @@
 package cbit.vcell.model.gui;
 
 import java.awt.GridBagConstraints;
+import java.util.Hashtable;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -12,7 +13,6 @@ import javax.swing.event.DocumentEvent;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.model.Model;
@@ -22,6 +22,8 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
@@ -1309,69 +1311,84 @@ public static void main(java.lang.String[] args) {
  */
 private void oK(java.awt.event.ActionEvent actionEvent) {
 	try{
-		getSpeciesContext().getSpecies().setCommonName(getNameValueJTextField().getText());
-		getSpeciesContext().getSpecies().setDBSpecies(
-				(getDBFormalSpecies() != null?getDocumentManager().getBoundSpecies(getDBFormalSpecies()):null)
-			);
-
-		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
-		setAnnotationString(annotationTextField.getText());
-		// old ---- getSpeciesContext().getSpecies().setAnnotation(getAnnotationString());
-		VCMetaData vcMetaData = getModel().getVcMetaData();
-		vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), getAnnotationString());
+		AsynchClientTask task0 = new AsynchClientTask("step1", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {				
+				getSpeciesContext().getSpecies().setDBSpecies(
+						(getDBFormalSpecies() != null?getDocumentManager().getBoundSpecies(getDBFormalSpecies()):null)
+					);
+			}
+		};
 		
-		getSpeciesContext().setHasOverride(getJCheckBoxHasOverride().isSelected());
-		if (getJCheckBoxHasOverride().isSelected()){
-			getSpeciesContext().setName(getContextNameValueTextField().getText());
-		}
-		//
-		if(mode == ADD_SPECIES_MODE && getModel() != null){
-			Species existingSpecies = getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName());
-			if (existingSpecies==null){
+		AsynchClientTask task1 = new AsynchClientTask("step2", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getSpeciesContext().getSpecies().setCommonName(getNameValueJTextField().getText());				
+
+				// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
+				setAnnotationString(annotationTextField.getText());
+				// old ---- getSpeciesContext().getSpecies().setAnnotation(getAnnotationString());
+				VCMetaData vcMetaData = getModel().getVcMetaData();
+				vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), getAnnotationString());
+				
+				getSpeciesContext().setHasOverride(getJCheckBoxHasOverride().isSelected());
+				if (getJCheckBoxHasOverride().isSelected()){
+					getSpeciesContext().setName(getContextNameValueTextField().getText());
+				}
 				//
-				// unique species name, use new species
-				//
-				getModel().addSpecies(getSpeciesContext().getSpecies());
-				getModel().addSpeciesContext(getSpeciesContext());
-			}else if (getModel().getSpeciesContext(existingSpecies,getSpeciesContext().getStructure()) != null){
-				//
-				// existing species name found in same compartment
-				//
-				throw new RuntimeException("species named '"+existingSpecies.getCommonName()+"' already exists in structure '"+getSpeciesContext().getStructure().getName()+"'");
-			}else{
-				//
-				// existing species name found in other compartment, either use existing species or abort
-				//
-				String name = getSpeciesContext().getSpecies().getCommonName();
-				String msg = "Warning: species name same as existing species\n\n"+
-							"species '"+name+"' found in structure(s): ";
-				SpeciesContext speciesContexts[] = getModel().getSpeciesContexts();
-				for (int i = 0; i < speciesContexts.length; i++){
-					if (speciesContexts[i].getSpecies() == existingSpecies){
-						msg += "'"+speciesContexts[i].getStructure().getName()+"' ";
+				if(mode == ADD_SPECIES_MODE && getModel() != null){
+					Species existingSpecies = getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName());
+					if (existingSpecies==null){
+						//
+						// unique species name, use new species
+						//
+						getModel().addSpecies(getSpeciesContext().getSpecies());
+						getModel().addSpeciesContext(getSpeciesContext());
+					}else if (getModel().getSpeciesContext(existingSpecies,getSpeciesContext().getStructure()) != null){
+						//
+						// existing species name found in same compartment
+						//
+						throw new RuntimeException("species named '"+existingSpecies.getCommonName()+"' already exists in structure '"+getSpeciesContext().getStructure().getName()+"'");
+					}else{
+						//
+						// existing species name found in other compartment, either use existing species or abort
+						//
+						String name = getSpeciesContext().getSpecies().getCommonName();
+						String msg = "Warning: species name same as existing species\n\n"+
+									"species '"+name+"' found in structure(s): ";
+						SpeciesContext speciesContexts[] = getModel().getSpeciesContexts();
+						for (int i = 0; i < speciesContexts.length; i++){
+							if (speciesContexts[i].getSpecies() == existingSpecies){
+								msg += "'"+speciesContexts[i].getStructure().getName()+"' ";
+							}
+						}
+						msg += "\n\nDid you want to reuse that species?\n\n";
+						msg += "(Note: species may be copied and pasted using using popup menus or keyboard <CTRL-C><CTRL-V>)";
+						String selection = PopupGenerator.showWarningDialog(getParent(),msg,new String[]{UserMessage.OPTION_USE_EXISTING_SPECIES, UserMessage.OPTION_CANCEL},UserMessage.OPTION_USE_EXISTING_SPECIES);
+						if (selection.equals(UserMessage.OPTION_CANCEL)){
+							return;
+						}else if (selection.equals(UserMessage.OPTION_USE_EXISTING_SPECIES)){
+							//
+							// user requested to use existing species
+							//
+							SpeciesContext newSC = new SpeciesContext(	null,
+																		getSpeciesContext().getName(),
+																		getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName()),
+																		getSpeciesContext().getStructure(),
+																		getSpeciesContext().getHasOverride());
+							getModel().addSpeciesContext(newSC);
+							setSpeciesContext(newSC);
+						}
 					}
 				}
-				msg += "\n\n          Did you want to reuse that species?\n\n";
-				msg += "(Note: species may be copied and pasted using using popup menus or keyboard <CTRL-C><CTRL-V>)";
-				String selection = PopupGenerator.showWarningDialog(this,msg,new String[]{UserMessage.OPTION_USE_EXISTING_SPECIES, UserMessage.OPTION_CANCEL},UserMessage.OPTION_USE_EXISTING_SPECIES);
-				if (selection.equals(UserMessage.OPTION_CANCEL)){
-					return;
-				}else if (selection.equals(UserMessage.OPTION_USE_EXISTING_SPECIES)){
-					//
-					// user requested to use existing species
-					//
-					SpeciesContext newSC = new SpeciesContext(	null,
-																getSpeciesContext().getName(),
-																getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName()),
-																getSpeciesContext().getStructure(),
-																getSpeciesContext().getHasOverride());
-					getModel().addSpeciesContext(newSC);
-					setSpeciesContext(newSC);
-				}
+				//
+				dispose();
 			}
-		}
-		//
-		dispose();
+		};
+		ClientTaskDispatcher.dispatch(getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1});
+		
 	}catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage());
