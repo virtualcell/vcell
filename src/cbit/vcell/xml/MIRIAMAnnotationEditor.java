@@ -236,7 +236,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 				ivjLocalSelectionModel.setSelectionMode(1);
 				jTreeMIRIAM = new JTree();
 				jTreeMIRIAM.setName("JTree1");
-				jTreeMIRIAM.setToolTipText("MODEL ANNOTATION");
+				jTreeMIRIAM.setToolTipText("");
 				jTreeMIRIAM.setBounds(0, 0, 357, 405);
 				jTreeMIRIAM.setMinimumSize(new java.awt.Dimension(100, 72));
 				jTreeMIRIAM.setSelectionModel(ivjLocalSelectionModel);

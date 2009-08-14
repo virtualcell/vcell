@@ -1205,10 +1205,10 @@ public void initAddSpecies(
 		getOKJButton().setText("Add");
 	}
 	mode = ADD_SPECIES_MODE;
+	setModel(argModel);
 	Species newSpecies = new Species(argModel.getFreeSpeciesName(),null);
 	SpeciesContext newSpeciesContext = new SpeciesContext(newSpecies,argStructure);
 	setSpeciesContext(newSpeciesContext);
-	setModel(argModel);
 	setDocumentManager(argDocumentManager);
 	
 	

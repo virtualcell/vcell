@@ -43,11 +43,11 @@ public class SBMLAnnotationUtil {
 	protected XMLTriple tripleAnnotation;
 	protected XMLTriple tripleRDF = new XMLTriple("RDF", NameSpace.RDF.uri, NameSpace.RDF.prefix);
 	protected XMLTriple tripleFreeText = 
-		new XMLTriple(XMLTags.FreeTextAnnotationTag, XMLTags.VCML_NS, XMLTags.VCML_NS_PREFIX);
+		new XMLTriple(XMLTags.FreeTextAnnotationTag, XMLTags.SBML_VCELL_NS, XMLTags.VCELL_NS_PREFIX);
 	protected XMLTriple tripleImportRelated = 
-		new XMLTriple(XMLTags.VCellRelatedInfoTag, XMLTags.VCML_NS, XMLTags.VCML_NS_PREFIX);
+		new XMLTriple(XMLTags.VCellRelatedInfoTag, XMLTags.SBML_VCELL_NS, XMLTags.VCELL_NS_PREFIX);
 	protected XMLTriple tripleVCellInfo = 
-		new XMLTriple(XMLTags.VCellInfoTag, XMLTags.VCML_NS, XMLTags.VCML_NS_PREFIX);
+		new XMLTriple(XMLTags.VCellInfoTag, XMLTags.SBML_VCELL_NS, XMLTags.VCELL_NS_PREFIX);
 	protected XMLTriple tripleXHTML = 
 		new XMLTriple(XMLTags.HTML_XHTML_ATTR_TAG, XMLTags.XHTML_URI, XMLTags.HTML_XHTML_ATTR_TAG);
 	
@@ -107,7 +107,7 @@ public class SBMLAnnotationUtil {
 		// Deal with the non-RDF; VCell free-text annotations
 		// get free text annotation from NonRDFAnnotation (associated with identifiable); create XMLNode
 		XMLNode rootVCellInfo = new XMLNode(tripleVCellInfo, new XMLAttributes());
-		rootVCellInfo.addNamespace(XMLTags.VCML_NS, XMLTags.VCML_NS_PREFIX);
+		rootVCellInfo.addNamespace(XMLTags.SBML_VCELL_NS, XMLTags.VCELL_NS_PREFIX);
 		String freeTextStr = metaData.getFreeTextAnnotation(identifiable);
 		if (freeTextStr != null && freeTextStr.length() > 0) {
 			XMLNode contentFreeText = new XMLNode(freeTextStr);
@@ -118,7 +118,7 @@ public class SBMLAnnotationUtil {
 		// VCell specific info to be exported to SBML as annotation - used for import, not needed for metadata
 		if (vcellImportRelatedElement != null) {
 			XMLNode xn = elementToXMLNode(vcellImportRelatedElement);
-			xn.removeNamespace(XMLTags.VCML_NS_PREFIX);
+			xn.removeNamespace(XMLTags.VCELL_NS_PREFIX);
 			rootVCellInfo.addChild(xn);
 		}
 		if (rootVCellInfo.getNumChildren() > 0) {
@@ -167,7 +167,8 @@ public class SBMLAnnotationUtil {
 			for(long i = 0; i < childCount; ++i) {
 				XMLNode annotationBranch = annotationRoot.getChild(i);
 				String namespace = annotationBranch.getNamespaceURI(annotationBranch.getPrefix());
-				if((namespace != null) && (namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD))) {
+				if((namespace != null) && (namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
+						namespace.equals(XMLTags.SBML_VCELL_NS)) ) {
 					int numChildren = (int)annotationBranch.getNumChildren();
 					for (int j = 0; j < numChildren; j++) {
 						XMLNode child = annotationBranch.getChild(j);
@@ -217,8 +218,8 @@ public class SBMLAnnotationUtil {
 						// read in RDF annotation
 						Model rdfNew = JenaIOUtil.modelFromText(annotationBranch.toXMLString());
 						metaData.getRdf().add(rdfNew);
-					} else if(namespace.equals(tripleVCellInfo.getURI()) || 
-							namespace.equals(XMLTags.VCML_NS_OLD)) {
+					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
+							namespace.equals(XMLTags.SBML_VCELL_NS)) {
 						int numChildren = (int)annotationBranch.getNumChildren();
 						for (int j = 0; j < numChildren; j++) {
 							XMLNode child = annotationBranch.getChild(j);

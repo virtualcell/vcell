@@ -21,10 +21,11 @@ public class XMLTags {
 
 	// VCML tags
 	public final static String VcmlRootNodeTag			 = "vcml";
-	public static final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
-	public static final String VCML_NS_OLD = "http://www.sbml.org/2001/ns/vcell";
-	public static final String VCML_NS_BLANK = "";
-	public static final String VCML_NS_PREFIX = "vcell";
+	public static final String VCML_NS 					 = "http://sourceforge.net/projects/vcell/vcml";
+	public static final String SBML_VCELL_NS 			 = "http://sourceforge.net/projects/vcell";
+	public static final String VCML_NS_OLD 				 = "http://www.sbml.org/2001/ns/vcell";
+	public static final String VCML_NS_BLANK 			 = "";
+	public static final String VCELL_NS_PREFIX 			 = "vcell";
 
 	//Tags related to MIRIAM
 	public static final String HTML_XHTML_ATTR_TAG			= "xhtml";
