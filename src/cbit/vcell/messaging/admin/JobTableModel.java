@@ -20,13 +20,14 @@ public class JobTableModel extends ManageTableModel {
 	private final static int columnIndex_SubmitDate = 8;
 	private final static int columnIndex_StartDate = 9;
 	private final static int columnIndex_EndDate = 10;
+	private final static int columnIndex_ElapsedTime = 11;
 
 /**
  * JobTableModel constructor comment.
  */
 public JobTableModel() {
 	super();
-	columns = new String[]{"User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date"};
+	columns = new String[]{"User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)"};
 }
 
 
@@ -41,6 +42,8 @@ public Class getColumnClass(int columnIndex) {
 		return Number.class;
 	} else if (columnIndex == columnIndex_SubmitDate || columnIndex == columnIndex_StartDate || columnIndex == columnIndex_EndDate) {
 		return Date.class;
+	} else if (columnIndex == columnIndex_ElapsedTime){
+		return Long.class;
 	} else {		
 		return String.class;
 	}

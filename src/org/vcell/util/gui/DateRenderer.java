@@ -1,5 +1,6 @@
 package org.vcell.util.gui;
-import java.util.*;
+import java.util.Date;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/8/2004 2:17:40 PM)
@@ -39,11 +40,38 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 		return this;
 	}
 	
-	java.text.SimpleDateFormat sdtf = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
-	java.text.SimpleDateFormat ddtf = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
-	
-	setText(sdtf.format(value));
-	setToolTipText(ddtf.format(value));
+	if (value instanceof Long){
+		setText(dateString((Long)value));
+		setToolTipText(""+((Long)value).longValue()/1000 + " seconds");
+		return this;
+	}
+	if (value instanceof Date){
+		java.text.SimpleDateFormat sdtf = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
+		java.text.SimpleDateFormat ddtf = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+		
+		setText(sdtf.format(value));
+		setToolTipText(ddtf.format(value));
+		return this;
+	}
 	return this;
 }
+
+public static String dateString(long value){
+	long HOURS = 3600000;
+	long MINUTES = 60000;
+	long SECONDS = 1000;
+	long hours = ((Long)value).longValue()/HOURS;
+	long minutes = (((Long)value).longValue()-hours*HOURS)/MINUTES;
+	long seconds = (((Long)value).longValue()-hours*HOURS-minutes*MINUTES)/SECONDS;
+	return pad(hours,4,' ')+":"+pad(minutes,2,'0')+":"+pad(seconds,2,'0');
+}	
+
+public static String pad(long value, int width, char pad){
+	String valueStr = Long.toString(value);
+	while (valueStr.length()<width){
+		valueStr = pad+valueStr;
+	}
+	return valueStr;
+}
+
 }

@@ -16,6 +16,7 @@ public class SimpleJobStatus implements ComparableObject {
 	private String userID = null;
 	private SimulationJobStatus jobStatus = null;
 	private SolverTaskDescription solverTaskDesc = null;
+	private Long elapsedTime = null;
 
 /**
  * SimpleJobStatus constructor comment.
@@ -25,6 +26,15 @@ public SimpleJobStatus(String user, SimulationJobStatus arg_jobStatus, SolverTas
 	this.userID = user;
 	this.jobStatus = arg_jobStatus;
 	this.solverTaskDesc = arg_solverTaskDesc;
+	this.elapsedTime = null;
+	if (getStartDate()!=null){
+		if (getEndDate()!=null){
+			this.elapsedTime = ((getEndDate().getTime()-getStartDate().getTime()));
+		}else if (jobStatus.isRunning()){
+			this.elapsedTime = ((System.currentTimeMillis()-getStartDate().getTime()));
+		}
+	}
+
 }
 
 
@@ -186,6 +196,7 @@ public boolean isRunning() {
 public Object[] toObjects() {	
 	return new Object[] {userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
 		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getDisplayLabel(), 		
-		getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate()};
+		getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate(),
+		elapsedTime};
 }
 }
