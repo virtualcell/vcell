@@ -5,6 +5,8 @@ import cbit.vcell.server.VCellBootstrap;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.server.VCellServer;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.messaging.server.RpcDbServerProxy;
 import java.awt.*;
 import java.awt.event.*;
@@ -22,13 +24,16 @@ import javax.jms.*;
 import javax.swing.*;
 
 import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.gui.DateRenderer;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.messaging.*;
@@ -36,6 +41,7 @@ import cbit.vcell.messaging.db.*;
 import cbit.vcell.messaging.server.RpcSimServerProxy;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
+import cbit.vcell.modeldb.UserTable;
 
 /**
  * Insert the type's description here.
@@ -107,6 +113,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JButton ivjExitButton = null;
 	private JButton ivjRefreshButton = null;
 	private JButton ivjRemoveFromListButton = null;
+	private JButton ivjSubmitSelectedButton = null;
 	private JTextField ivjQueryServerIDField = null;
 	private JPanel ivjUserConnectionPage = null;
 	private org.vcell.util.gui.sorttable.JSortTable ivjUserConnectionTable = null;
@@ -142,6 +149,8 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 					exitButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getRemoveFromListButton()) 
 					removeFromListButton_ActionPerformed(e);
+				if (e.getSource() == ServerManageConsole.this.getSubmitSelectedButton()) 
+					submitSelectedButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getSendMessageButton()) 
 					sendMessageButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getMessageResetButton()) 
@@ -486,7 +495,7 @@ private javax.swing.JPanel getBroadcastPanel() {
  * Creation date: (7/19/2004 3:44:01 PM)
  * @return cbit.vcell.messaging.server.RpcDbServerProxy
  */
-private cbit.vcell.messaging.server.RpcDbServerProxy getDbProxy(User user) throws JMSException, org.vcell.util.DataAccessException, java.rmi.RemoteException {
+private RpcDbServerProxy getDbProxy(User user) throws JMSException, DataAccessException, java.rmi.RemoteException {
 	if (dbProxyHash == null) {
 		dbProxyHash = new HashMap<User, RpcDbServerProxy>();
 	}
@@ -495,7 +504,7 @@ private cbit.vcell.messaging.server.RpcDbServerProxy getDbProxy(User user) throw
 
 	if (dbProxy == null) {
 		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
-		dbProxy = new cbit.vcell.messaging.server.RpcDbServerProxy(user, jmsClientMessaging, log);
+		dbProxy = new RpcDbServerProxy(user, jmsClientMessaging, log);
 		dbProxyHash.put(user, dbProxy);
 	}
 	
@@ -834,7 +843,10 @@ private javax.swing.JSplitPane getJSplitPane1() {
 			textPanel.add(getNumSelectedLabel());
 			textPanel.add(new JLabel(" selected "));
 			panel8.add(textPanel, "West");
-			panel8.add(getRemoveFromListButton(), "East");			
+			JPanel panel = new JPanel();
+			panel.add(getSubmitSelectedButton());
+			panel.add(getRemoveFromListButton());
+			panel8.add(panel, "East");			
 			panel7.add(panel8, "North");			
 			JScrollPane scrollPane2 = new javax.swing.JScrollPane();
 			scrollPane2.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -860,7 +872,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
  */
 private String getLocalVCellBootstrapUrl() {
 	String rmiHost = "ms3";
-	int rmiPort = org.vcell.util.PropertyLoader.getIntProperty(org.vcell.util.PropertyLoader.rmiPortRegistry, 1099);
+	int rmiPort = PropertyLoader.getIntProperty(PropertyLoader.rmiPortRegistry, 1099);
 	return "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
 }
 
@@ -1105,7 +1117,7 @@ private javax.swing.JPanel getQueryEndDatePanel() {
 private DatePanel getQueryEndFromDate() {
 	if (ivjQueryEndFromDate == null) {
 		try {
-			ivjQueryEndFromDate = new cbit.vcell.messaging.admin.DatePanel();
+			ivjQueryEndFromDate = new DatePanel();
 			ivjQueryEndFromDate.setName("QueryEndFromDate");
 			ivjQueryEndFromDate.setLayout(new FlowLayout());
 			ivjQueryEndFromDate.setEnabled(false);
@@ -1128,7 +1140,7 @@ private DatePanel getQueryEndFromDate() {
 private DatePanel getQueryEndToDate() {
 	if (ivjQueryEndToDate == null) {
 		try {
-			ivjQueryEndToDate = new cbit.vcell.messaging.admin.DatePanel();
+			ivjQueryEndToDate = new DatePanel();
 			ivjQueryEndToDate.setName("QueryEndToDate");
 			ivjQueryEndToDate.setLayout(new FlowLayout());
 			ivjQueryEndToDate.setEnabled(false);
@@ -1284,13 +1296,13 @@ private javax.swing.JButton getQueryResetButton() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.sorttable.JSortTable getQueryResultTable() {
+private JSortTable getQueryResultTable() {
 	if (ivjQueryResultTable == null) {
 		try {
-			ivjQueryResultTable = new org.vcell.util.gui.sorttable.JSortTable();
+			ivjQueryResultTable = new JSortTable();
 			ivjQueryResultTable.setName("QueryResultTable");
 			//getJScrollPane2().setColumnHeaderView(ivjQueryResultTable.getTableHeader());
-			ivjQueryResultTable.setModel(new cbit.vcell.messaging.admin.JobTableModel());
+			ivjQueryResultTable.setModel(new JobTableModel());
 			ivjQueryResultTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
 			// user code end
@@ -1429,7 +1441,7 @@ private javax.swing.JPanel getQueryStartDatePanel() {
 private DatePanel getQueryStartFromDate() {
 	if (ivjQueryStartFromDate == null) {
 		try {
-			ivjQueryStartFromDate = new cbit.vcell.messaging.admin.DatePanel();
+			ivjQueryStartFromDate = new DatePanel();
 			ivjQueryStartFromDate.setName("QueryStartFromDate");
 			ivjQueryStartFromDate.setLayout(new FlowLayout());
 			ivjQueryStartFromDate.setEnabled(false);
@@ -1452,7 +1464,7 @@ private DatePanel getQueryStartFromDate() {
 private DatePanel getQueryStartToDate() {
 	if (ivjQueryStartToDate == null) {
 		try {
-			ivjQueryStartToDate = new cbit.vcell.messaging.admin.DatePanel();
+			ivjQueryStartToDate = new DatePanel();
 			ivjQueryStartToDate.setName("QueryStartToDate");
 			ivjQueryStartToDate.setLayout(new FlowLayout());
 			ivjQueryStartToDate.setEnabled(false);
@@ -1578,7 +1590,7 @@ private javax.swing.JPanel getQuerySubmitDatePanel() {
 private DatePanel getQuerySubmitFromDate() {
 	if (ivjQuerySubmitFromDate == null) {
 		try {
-			ivjQuerySubmitFromDate = new cbit.vcell.messaging.admin.DatePanel();
+			ivjQuerySubmitFromDate = new DatePanel();
 			ivjQuerySubmitFromDate.setName("QuerySubmitFromDate");
 			ivjQuerySubmitFromDate.setLayout(new FlowLayout());
 			ivjQuerySubmitFromDate.setEnabled(true);
@@ -1601,7 +1613,7 @@ private DatePanel getQuerySubmitFromDate() {
 private DatePanel getQuerySubmitToDate() {
 	if (ivjQuerySubmitToDate == null) {
 		try {
-			ivjQuerySubmitToDate = new cbit.vcell.messaging.admin.DatePanel();
+			ivjQuerySubmitToDate = new DatePanel();
 			ivjQuerySubmitToDate.setName("QuerySubmitToDate");
 			ivjQuerySubmitToDate.setLayout(new FlowLayout());
 			ivjQuerySubmitToDate.setEnabled(true);
@@ -1709,6 +1721,30 @@ private javax.swing.JButton getRemoveFromListButton() {
 
 
 /**
+ * Return the RemoveFromListButton property value.
+ * @return javax.swing.JButton
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JButton getSubmitSelectedButton() {
+	if (ivjSubmitSelectedButton == null) {
+		try {
+			ivjSubmitSelectedButton = new javax.swing.JButton();
+			ivjSubmitSelectedButton.setName("SubmitSelected");
+			ivjSubmitSelectedButton.setText("Submit selected jobs");
+			ivjSubmitSelectedButton.setEnabled(false);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjSubmitSelectedButton;
+}
+
+
+/**
  * Return the SendMessageButton property value.
  * @return javax.swing.JButton
  */
@@ -1785,10 +1821,10 @@ private javax.swing.JPanel getServiceStatusPage() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.sorttable.JSortTable getConfigTable() {
+private JSortTable getConfigTable() {
 	if (ivjConfigTable == null) {
 		try {
-			ivjConfigTable = new org.vcell.util.gui.sorttable.JSortTable();
+			ivjConfigTable = new JSortTable();
 			//getConfigScrollPane().setColumnHeaderView(ivjConfigTable.getTableHeader());
 			ivjConfigTable.setModel(new ServiceStatusTableModel());
 			//ivjConfigTable.setBounds(0, 0, 200, 200);
@@ -1808,10 +1844,10 @@ private org.vcell.util.gui.sorttable.JSortTable getConfigTable() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.sorttable.JSortTable getServiceStatusTable() {
+private JSortTable getServiceStatusTable() {
 	if (ivjServiceStatusTable == null) {
 		try {
-			ivjServiceStatusTable = new org.vcell.util.gui.sorttable.JSortTable();
+			ivjServiceStatusTable = new JSortTable();
 			ivjServiceStatusTable.setModel(new ServiceInstanceStatusTableModel());
 			//ivjServiceStatusTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
@@ -1831,7 +1867,7 @@ private org.vcell.util.gui.sorttable.JSortTable getServiceStatusTable() {
  * Creation date: (7/19/2004 3:44:01 PM)
  * @return cbit.vcell.messaging.server.RpcsimServerProxy
  */
-private RpcSimServerProxy getSimProxy(User user) throws JMSException, org.vcell.util.DataAccessException, java.rmi.RemoteException {
+private RpcSimServerProxy getSimProxy(User user) throws JMSException, DataAccessException, java.rmi.RemoteException {
 	if (simProxyHash == null) {
 		simProxyHash = new HashMap<User, RpcSimServerProxy>();
 	}
@@ -1840,7 +1876,7 @@ private RpcSimServerProxy getSimProxy(User user) throws JMSException, org.vcell.
 
 	if (simProxy == null) {
 		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
-		simProxy = new cbit.vcell.messaging.server.RpcSimServerProxy(user, jmsClientMessaging, log);
+		simProxy = new RpcSimServerProxy(user, jmsClientMessaging, log);
 		simProxyHash.put(user, simProxy);
 	}
 	
@@ -2059,13 +2095,13 @@ private javax.swing.JPanel getUserConnectionPage() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.sorttable.JSortTable getUserConnectionTable() {
+private JSortTable getUserConnectionTable() {
 	if (ivjUserConnectionTable == null) {
 		try {
-			ivjUserConnectionTable = new org.vcell.util.gui.sorttable.JSortTable();
+			ivjUserConnectionTable = new JSortTable();
 			//getJScrollPane4().setColumnHeaderView(ivjUserConnectionTable.getTableHeader());
 			//ivjUserConnectionTable.setBounds(0, 0, 200, 200);
-			getUserConnectionTable().setModel(new cbit.vcell.messaging.admin.UserConnectionTableModel());
+			getUserConnectionTable().setModel(new UserConnectionTableModel());
 			//getUserConnectionTable().createDefaultColumnsFromModel();			
 			// user code begin {1}
 			// user code end
@@ -2124,6 +2160,7 @@ private void initConnections() throws java.lang.Exception {
 	getRefreshButton().addActionListener(ivjEventHandler);
 	getExitButton().addActionListener(ivjEventHandler);
 	getRemoveFromListButton().addActionListener(ivjEventHandler);
+	getSubmitSelectedButton().addActionListener(ivjEventHandler);
 	getSendMessageButton().addActionListener(ivjEventHandler);
 	getMessageResetButton().addActionListener(ivjEventHandler);
 	getNewServiceButton().addActionListener(ivjEventHandler);
@@ -2154,7 +2191,7 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		try {
-			log = new org.vcell.util.StdoutSessionLog("Console");
+			log = new StdoutSessionLog("Console");
 			setTitle("Virtual Cell Management Console -- " + VCellServerID.getSystemServerID());
 			reconnect();
 			
@@ -2176,8 +2213,8 @@ private void initialize() {
 		}	
 		// user code end
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setSize(1085, 700);
-		setContentPane(getJFrameContentPane());
+		setSize(1200, 700);
+		add(getJFrameContentPane());
 		
 		initFilter();
 		
@@ -2190,6 +2227,7 @@ private void initialize() {
 		statusChecks.add(getQueryFailedCheck());
 
 		getQueryResultTable().setDefaultRenderer(Date.class, new DateRenderer());
+		getQueryResultTable().setDefaultRenderer(Long.class, new DateRenderer());
 		getServiceStatusTable().setDefaultRenderer(Date.class, new DateRenderer());
 		
 		initConnections();
@@ -2332,7 +2370,8 @@ private void pingAll(int waitingTimeSec) {
 private void query() {	
 	boolean bOtherConditions = false;
 	
-	getRemoveFromListButton().setEnabled(false);	
+	getRemoveFromListButton().setEnabled(false);
+	getSubmitSelectedButton().setEnabled(false);
 	StringBuffer conditions = new StringBuffer();
 	String text = getQuerySimField().getText();
 	if (text != null && text.trim().length() > 0) {
@@ -2368,7 +2407,7 @@ private void query() {
 		if (conditions.length() > 0) {
 			conditions.append(" AND ");
 		}
-		conditions.append(cbit.vcell.modeldb.UserTable.table.userid.getQualifiedColName() + "='" + text + "'");
+		conditions.append(UserTable.table.userid.getQualifiedColName() + "='" + text + "'");
 	}
 
 	StringBuffer status = new StringBuffer();
@@ -2516,6 +2555,23 @@ public void queryQueuedCheck_ItemStateChanged(java.awt.event.ItemEvent itemEvent
 	return;
 }
 
+private void submitSelectedButton_ActionPerformed(ActionEvent e) {
+	int srows[] = getQueryResultTable().getSelectedRows();
+	if (srows==null || srows.length==0) {
+		return;
+	}
+	final String SUBMIT_JOBS_OPTION = "submit jobs";
+	final String CANCEL_OPTION = "cancel";
+	String response = DialogUtils.showWarningDialog(this, "Are you sure you want to submit "+srows.length+" simulation job(s)? (see console for progress printed to stdout)", new String[] { SUBMIT_JOBS_OPTION, CANCEL_OPTION }, CANCEL_OPTION);
+	if (response.equals(SUBMIT_JOBS_OPTION)){
+		for (int i = 0; i < srows.length; i++) {
+			int selectedRow = srows[i];
+			SimpleJobStatus jobStatus = getReturnedSimulationJobStatus(selectedRow);
+			System.out.println("Submitting job ("+(i+1)+" of "+srows.length+") : "+jobStatus.toObjects());
+			resubmitSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+		}
+	}
+}
 
 /**
  * Comment
@@ -2544,15 +2600,18 @@ public void queryResetButton_ActionPerformed(java.awt.event.ActionEvent actionEv
 public void queryResultTable_MouseClicked(java.awt.event.MouseEvent mouseEvent) {
 	int srow = getQueryResultTable().getSelectedRow();
 	if (srow < 0) {
+		getRemoveFromListButton().setEnabled(false);
+		getSubmitSelectedButton().setEnabled(false);
 		return;
 	}
 	if (mouseEvent.getClickCount() == 1) {
 		getRemoveFromListButton().setEnabled(true);
+		getSubmitSelectedButton().setEnabled(true);
 		getNumSelectedLabel().setText("" + getQueryResultTable().getSelectedRowCount());
 	} else if (mouseEvent.getClickCount() == 2) {
 		SimulationJobStatusDetailDialog dialog = new SimulationJobStatusDetailDialog(this, getQueryResultTable().getRowCount(), srow);
 		dialog.setLocationRelativeTo(this);
-		dialog.setVisible(true);		
+		dialog.setVisible(true);
 	}
 }
 
@@ -2727,7 +2786,7 @@ private void refresh () {
 		userList.clear();
 		try {
 			if (vcellBootstrap == null) {
-				vcellBootstrap = (cbit.vcell.server.VCellBootstrap) java.rmi.Naming.lookup(getLocalVCellBootstrapUrl());
+				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(getLocalVCellBootstrapUrl());
 				vcellServer = vcellBootstrap.getVCellServer(new User("Administrator",new KeyValue("2")), "icnia66");
 			}		
 			
@@ -2774,7 +2833,7 @@ public void removeFromListButton_ActionPerformed(java.awt.event.ActionEvent acti
  * Creation date: (7/19/2004 3:32:52 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public void resubmitSimulation(String userid, org.vcell.util.document.KeyValue simKey) {
+public void resubmitSimulation(String userid, KeyValue simKey) {
 	try {
 		User user = adminDbTop.getUser(userid, true);
 		RpcDbServerProxy dbProxy = getDbProxy(user);
@@ -2783,12 +2842,12 @@ public void resubmitSimulation(String userid, org.vcell.util.document.KeyValue s
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
+		Simulation sim = XmlHelper.XMLToSim(simxml.toString());
 		if (sim == null) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		cbit.vcell.messaging.server.RpcSimServerProxy simProxy = getSimProxy(user);
+		RpcSimServerProxy simProxy = getSimProxy(user);
 		simProxy.startSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
