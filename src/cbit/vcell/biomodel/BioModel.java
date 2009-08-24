@@ -4,10 +4,11 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-import java.util.Hashtable;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
@@ -39,30 +40,29 @@ import cbit.vcell.solver.stoch.MassActionSolver;
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class BioModel
-	implements
-		VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
+public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
 {
 	private Version fieldVersion = null;
-	private String fieldName = new String("NoName");
+	private String fieldName = null;
 	protected transient VetoableChangeSupport vetoPropertyChange;
 	protected transient PropertyChangeSupport propertyChange;
-	private Model fieldModel = new Model("unnamed");
+	private Model fieldModel = null;
 	private SimulationContext[] fieldSimulationContexts = new SimulationContext[0];
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private String fieldDescription = new String();
-	private Hashtable<Simulation, SimulationContext> simSimContextHash = 
-		new Hashtable<Simulation, SimulationContext>();
-	private VCMetaData vcMetaData;
+	private VCMetaData vcMetaData = null;
 
 	/**
 	 * BioModel constructor comment.
 	 */
 	public BioModel(Version version) {
 		super();
+		fieldName = new String("NoName");		
+		fieldModel = new Model("unnamed");
+		vcMetaData = new VCMetaData(this, "http://vcell.org/data/", null); 
+		fieldModel.setVcMetaData(vcMetaData);
 		addVetoableChangeListener(this);
 		addPropertyChangeListener(this);
-		vcMetaData = new VCMetaData(this, "http://vcell.org/data/", null); 
 		try {
 			setVersion(version);
 		} catch (PropertyVetoException e) {
@@ -169,24 +169,24 @@ public void clearVersion(){
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof BioModel)){
 		return false;
 	}
 	BioModel bioModel = (BioModel)obj;
-	if (!org.vcell.util.Compare.isEqualOrNull(getName(),bioModel.getName())){
+	if (!Compare.isEqualOrNull(getName(),bioModel.getName())){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),bioModel.getDescription())){
+	if (!Compare.isEqualOrNull(getDescription(),bioModel.getDescription())){
 		return false;
 	}
 	if (!getModel().compareEqual(bioModel.getModel())){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
+	if (!Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
+	if (!Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
 		return false;
 	}
 	if(!getVCMetaData().compareEquals(bioModel.getVCMetaData())){
@@ -203,7 +203,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return boolean
  * @param simulationContext cbit.vcell.mapping.SimulationContext
  */
-public boolean contains(cbit.vcell.mapping.SimulationContext simulationContext) {
+public boolean contains(SimulationContext simulationContext) {
 	if (simulationContext == null){
 		throw new IllegalArgumentException("simulationContext was null");
 	}
@@ -382,7 +382,7 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (5/12/2004 10:38:12 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(Vector issueList) {
+public void gatherIssues(Vector<Issue> issueList) {
 	getModel().gatherIssues(issueList);
 }
 
@@ -495,7 +495,7 @@ public SimulationContext getSimulationContext(Simulation simulation) throws Obje
  * @return The simulationContexts property value.
  * @see #setSimulationContexts
  */
-public cbit.vcell.mapping.SimulationContext[] getSimulationContexts() {
+public SimulationContext[] getSimulationContexts() {
 	return fieldSimulationContexts;
 }
 
@@ -506,7 +506,7 @@ public cbit.vcell.mapping.SimulationContext[] getSimulationContexts() {
  * @param index The index value into the property array.
  * @see #setSimulationContexts
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContexts(int index) {
+public SimulationContext getSimulationContexts(int index) {
 	return getSimulationContexts()[index];
 }
 
@@ -516,7 +516,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContexts(int index) {
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
@@ -527,7 +527,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -549,7 +549,7 @@ public Simulation[] getSimulations(SimulationContext simulationContext) {
 	if (sims == null){
 		return null;
 	}
-	Vector scSimList = new Vector();
+	Vector<Simulation> scSimList = new Vector<Simulation>();
 	for (int i=0;i<sims.length;i++){
 		if (sims[i].getMathDescription() == simulationContext.getMathDescription()){
 			scSimList.addElement(sims[i]);
@@ -565,7 +565,7 @@ public Simulation[] getSimulations(SimulationContext simulationContext) {
  * Gets the version property (cbit.sql.Version) value.
  * @return The version property value.
  */
-public org.vcell.util.document.Version getVersion() {
+public Version getVersion() {
 	return fieldVersion;
 }
 
@@ -786,8 +786,8 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
  * @param model The new value for the property.
  * @see #getModel
  */
-public void setModel(cbit.vcell.model.Model model) {
-	cbit.vcell.model.Model oldValue = fieldModel;
+public void setModel(Model model) {
+	Model oldValue = fieldModel;
 	fieldModel = model;
 	if (model!=null){
 		model.setVcMetaData(getVCMetaData());
@@ -816,8 +816,8 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulationContexts
  */
-public void setSimulationContexts(cbit.vcell.mapping.SimulationContext[] simulationContexts) throws java.beans.PropertyVetoException {
-	cbit.vcell.mapping.SimulationContext[] oldValue = fieldSimulationContexts;
+public void setSimulationContexts(SimulationContext[] simulationContexts) throws java.beans.PropertyVetoException {
+	SimulationContext[] oldValue = fieldSimulationContexts;
 	fireVetoableChange("simulationContexts", oldValue, simulationContexts);
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 		oldValue[i].removePropertyChangeListener(this);
@@ -840,8 +840,8 @@ public void setSimulationContexts(cbit.vcell.mapping.SimulationContext[] simulat
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void setSimulations(cbit.vcell.solver.Simulation[] simulations) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
+public void setSimulations(Simulation[] simulations) throws java.beans.PropertyVetoException {
+	Simulation[] oldValue = fieldSimulations;
 	fireVetoableChange("simulations", oldValue, simulations);
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 		oldValue[i].removePropertyChangeListener(this);
@@ -861,7 +861,7 @@ public void setSimulations(cbit.vcell.solver.Simulation[] simulations) throws ja
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(org.vcell.util.document.Version version) throws PropertyVetoException {
+private void setVersion(Version version) throws PropertyVetoException {
 	this.fieldVersion = version;
 	if (version != null){
 		setName(version.getName());
