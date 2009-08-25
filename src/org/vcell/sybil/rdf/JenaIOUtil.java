@@ -4,9 +4,8 @@ package org.vcell.sybil.rdf;
  *   Utilities for Jena model input and output
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -15,16 +14,14 @@ public class JenaIOUtil {
 	
 	public static Model modelFromText(String text) {
 		Model model = ModelFactory.createDefaultModel();
-		byte[] textBytes = text.getBytes();
-		ByteArrayInputStream stream = new ByteArrayInputStream(textBytes);
-		model.read(stream, "");
+		StringReader strReader = new StringReader(text);
+		model.read(strReader, "");
 		return model;
 	}
 	
 	public static Model modelFromText(Model model, String text) {
-		byte[] textBytes = text.getBytes();
-		ByteArrayInputStream stream = new ByteArrayInputStream(textBytes);
-		model.read(stream, "");
+		StringReader strReader = new StringReader(text);
+		model.read(strReader, "");
 		return model;
 	}
 	
@@ -39,14 +36,15 @@ public class JenaIOUtil {
 	public static final Style N_TRIPLE = new Style("N-TRIPLE");
 	public static final Style N3 = new Style("N3");
 
-	public static void writeModel(Model model, OutputStream out, Style style) {
-		model.write(out, style.toString());
+	public static void writeModel(Model model, StringWriter writer, Style style) {
+		model.write(writer, style.toString());
 	}
 
 	public static String textFromModel(Model model, Style style) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		model.write(out, style.toString());
-		return out.toString();
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		StringWriter strWriter = new StringWriter();
+		model.write(strWriter, style.toString());
+		return strWriter.getBuffer().toString();
 	}
 
 }

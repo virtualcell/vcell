@@ -100,7 +100,7 @@ public abstract class Translator {
   	public VCDocument translate (Reader reader, boolean validationOn) throws Exception {
 
 		if (validationOn) {
-      		this.sRoot = XmlUtil.readXML(reader, schemaLocation, null, schemaLocationPropName);
+      		this.sRoot = (XmlUtil.readXML(reader, schemaLocation, null, schemaLocationPropName)).getRootElement();
       		String errorLog = XmlUtil.getErrorLog();
       		if (errorLog.length() > 0) {
 				System.err.println(errorLog);
@@ -111,7 +111,7 @@ public abstract class Translator {
 				}
       		}
 		} else {
-			this.sRoot = XmlUtil.readXML(reader, null, null, null);
+			this.sRoot = (XmlUtil.readXML(reader, null, null, null)).getRootElement();
 		} 
   		VCDocument vcDoc = translate();
 		if (vcLogger != null && vcLogger.hasMessages()) {

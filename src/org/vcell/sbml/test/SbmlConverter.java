@@ -43,6 +43,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class SbmlConverter {
@@ -186,7 +187,7 @@ public static void main(String[] args) {
 	        }
 		} else if (args[0].equals("-export")) {
 	        try {
-				BioModel bioModel = XmlHelper.XMLToBioModel(xmlString);
+				BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(xmlString));
 				SimulationContext simContext = null;
 				for (int i = 0; i < bioModel.getSimulationContexts().length; i++) {
 					if (bioModel.getSimulationContexts(i).getGeometry().getDimension() == 0 && !bioModel.getSimulationContexts(i).isStoch()) {

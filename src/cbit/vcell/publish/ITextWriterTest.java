@@ -1,6 +1,9 @@
 package cbit.vcell.publish;
 import java.awt.print.PageFormat;
+import java.io.File;
 import java.io.FileOutputStream;
+
+import cbit.util.xml.XmlUtil;
 
 /**
  * Test class for the publish package.
@@ -27,8 +30,7 @@ public static void main(java.lang.String[] args) {
 			System.err.println("Usage: ITextWriterTest inputFileName [-b|-m|-g]");
 			System.exit(0);
 		}
-		String xmlStr = cbit.util.xml.XmlUtil.getXMLString(args[0]);
-		org.jdom.Element root = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);
+		org.jdom.Element root = XmlUtil.readXML(new File(args[0])).getRootElement();
 		cbit.vcell.xml.XmlReader xmlReader = new cbit.vcell.xml.XmlReader(true);//new cbit.vcell.xml.XmlReader(false);
 		PDFWriter pdfWriter = new PDFWriter();
 		RTFWriter rtfWriter = new RTFWriter();

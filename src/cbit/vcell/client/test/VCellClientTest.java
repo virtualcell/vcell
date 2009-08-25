@@ -1,9 +1,13 @@
 package cbit.vcell.client.test;
+import java.io.File;
 import java.util.StringTokenizer;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
+
+import org.jdom.Document;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 12:02:01 PM)
@@ -51,7 +55,8 @@ public static void main(java.lang.String[] args) {
 	}else if (args.length==2 && args[0].equals("-open")){
 		String filename = args[1];
 		try {
-			String vcmlString = cbit.util.xml.XmlUtil.getXMLString(filename);
+			Document xmlDoc = XmlUtil.readXML(new File(filename));
+			String vcmlString = XmlUtil.xmlToString(xmlDoc, false);
 			java.awt.Component parent = null;
 			cbit.util.xml.VCLogger vcLogger = new TranslationLogger(parent);
 			initialDocument = cbit.vcell.xml.XmlHelper.XMLToDocument(vcLogger,vcmlString);

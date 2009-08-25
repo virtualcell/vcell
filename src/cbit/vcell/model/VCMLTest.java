@@ -2,14 +2,7 @@ package cbit.vcell.model;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.rmi.server.LogStream;
-import java.util.StringTokenizer;
-
-import org.apache.axis.utils.XMLUtils;
-import org.xml.sax.XMLReader;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
@@ -18,8 +11,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlReader;
 
 public class VCMLTest {
 	
@@ -44,11 +37,11 @@ public static void main(String[] args) {
 			logFilePrintStream = new java.io.PrintStream(new FileOutputStream(args[1], true), true);
 		}
 
-		String directoryForNewVcmlFiles = dataDir.getParent() + "\\temp";
+		String directoryForNewVcmlFiles = dataDir.getParent() + "\\tempLes";
 		File[] vcmlFiles = dataDir.listFiles();
 		for (File vcmlFile : vcmlFiles){
-			String vcmlText = XmlUtil.getXMLString(vcmlFile.getAbsolutePath());
-			bioModel = XmlHelper.XMLToBioModel(vcmlText);
+			// String vcmlText = XmlUtil.getXMLString(vcmlFile.getAbsolutePath());
+			bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFile));
 			
 			SimulationContext[] simContexts = bioModel.getSimulationContexts();
 			for (int k = 0; k < simContexts.length; k++) {
@@ -109,7 +102,7 @@ public static void main(String[] args) {
 
 			// after regenerating math for all spatial simContexts, write out new vcml file for bioModel (in different directory)
 			File biomodelFile = new File(directoryForNewVcmlFiles, "alt__"+bioModel.getVersion().getName()+".vcml");
-			XmlUtil.writeXMLString(XmlHelper.bioModelToXML(bioModel), biomodelFile.getAbsolutePath());
+			XmlUtil.writeXMLStringToFile(XmlHelper.bioModelToXML(bioModel), biomodelFile.getAbsolutePath(),true);
 		}
 	} catch (Exception e) {
 		// e.printStackTrace(System.out);

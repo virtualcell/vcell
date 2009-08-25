@@ -36,6 +36,8 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModel;
 /**
@@ -121,8 +123,8 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 				// read in the BioModel from the database
 				//
 				BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfos[j].getVersion().getVersionKey());
-				BioModel bioModelFromDB = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
-				BioModel bioModelNewMath = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
+				BioModel bioModelFromDB = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+				BioModel bioModelNewMath = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 				bioModelFromDB.refreshDependencies();
 				bioModelNewMath.refreshDependencies();
 
@@ -371,8 +373,8 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 			// read in the BioModel from the database
 			//
 			BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfo.getVersion().getVersionKey());
-			BioModel bioModelFromDB = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
-			BioModel bioModelNewMath = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
+			BioModel bioModelFromDB = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+			BioModel bioModelNewMath = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 			bioModelFromDB.refreshDependencies();
 			bioModelNewMath.refreshDependencies();
 
@@ -643,8 +645,8 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
             // read in the BioModel from the database
             //
             BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfo.getVersion().getVersionKey());
-            BioModel bioModelFromDB = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
-            BioModel bioModelNewMath = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
+            BioModel bioModelFromDB = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+            BioModel bioModelNewMath = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
             bioModelFromDB.refreshDependencies();
             bioModelNewMath.refreshDependencies();
 

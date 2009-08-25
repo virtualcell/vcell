@@ -43,6 +43,7 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import cbit.vcell.util.RowColumnResultSet;
+import cbit.vcell.xml.XMLSource;
 
 
 public class SBVCVerifier implements VCDatabaseVisitor {
@@ -290,7 +291,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				SBMLUtils.writeStringToFile(exportedSBMLStr, "C:\\VCell\\SBML_Testing\\SBMLValidationSuiteTests\\"+bioModel_1.getName()+".xml");
 
 				// Import the exported model
-				BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, exportedSBMLStr);
+				BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr));
 
 				//
 		        // Generate math and create a single simulation for the original simContext and for the model that was exported to SBML

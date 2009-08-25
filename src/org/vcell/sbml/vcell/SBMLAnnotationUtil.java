@@ -168,7 +168,7 @@ public class SBMLAnnotationUtil {
 				XMLNode annotationBranch = annotationRoot.getChild(i);
 				String namespace = annotationBranch.getNamespaceURI(annotationBranch.getPrefix());
 				if((namespace != null) && (namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
-						namespace.equals(XMLTags.SBML_VCELL_NS)) ) {
+						namespace.equals(XMLTags.VCML_NS)) ) {
 					int numChildren = (int)annotationBranch.getNumChildren();
 					for (int j = 0; j < numChildren; j++) {
 						XMLNode child = annotationBranch.getChild(j);
@@ -219,7 +219,7 @@ public class SBMLAnnotationUtil {
 						Model rdfNew = JenaIOUtil.modelFromText(annotationBranch.toXMLString());
 						metaData.getRdf().add(rdfNew);
 					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
-							namespace.equals(XMLTags.SBML_VCELL_NS)) {
+							namespace.equals(XMLTags.VCML_NS)) {
 						int numChildren = (int)annotationBranch.getNumChildren();
 						for (int j = 0; j < numChildren; j++) {
 							XMLNode child = annotationBranch.getChild(j);
@@ -268,7 +268,7 @@ public class SBMLAnnotationUtil {
 		String xmlString = xmlNode.toXMLString();
 		Element annotationElement = null;
 		try {
-			annotationElement = XmlUtil.stringToXML(xmlString, null);
+			annotationElement = (XmlUtil.stringToXML(xmlString, null)).getRootElement();
 		} catch (RuntimeException e) {
 			e.printStackTrace(System.out);
 			// don't do anything .... we want to continue reading in the model, we cannot fail import because annotation is not well-formed.

@@ -1,4 +1,5 @@
 package cbit.vcell.modeldb;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.model.Feature;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -77,7 +78,7 @@ private void assignAnalysisTasksSQL(Connection con,KeyValue simContextKey, Simul
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
 			String analysisXML = (String)getLOB(rset,analysisTaskTable.analysisTaskXML.toString());
-			org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(analysisXML,null);
+			org.jdom.Element rootElement = XmlUtil.stringToXML(analysisXML,null).getRootElement();
 			cbit.vcell.modelopt.ParameterEstimationTask parameterEstimationTask = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getParameterEstimationTask(rootElement,simContext);
 			simContext.addAnalysisTask(parameterEstimationTask);
 		}

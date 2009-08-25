@@ -144,7 +144,7 @@ public class AnatomicalStructure {
 		Namespace rdfNamespace = Namespace.getNamespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 		Namespace bioqualifierNamespace = Namespace.getNamespace("http://biomodels.net/biology-qualifiers/");
 		
-		Element rootSBML = XmlUtil.stringToXML(sbmlText,null);
+		Element rootSBML = (XmlUtil.stringToXML(sbmlText,null)).getRootElement();
 		Element sbmlModelElement = rootSBML.getChild("model",sbmlNamespace);
 		Element listOfCompartments = sbmlModelElement.getChild("listOfCompartments",sbmlNamespace);
 		List<Element> compartmentElementList = listOfCompartments.getChildren("compartment", sbmlNamespace);

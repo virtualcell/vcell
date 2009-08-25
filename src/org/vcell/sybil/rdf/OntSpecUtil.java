@@ -4,12 +4,14 @@ package org.vcell.sybil.rdf;
  *   Methods for supporting the creation of specifications for ontologies
  */
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.sybil.rdf.JenaIOUtil.Style;
+
+import cbit.util.xml.XmlUtil;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -23,8 +25,13 @@ public class OntSpecUtil {
 
 	public static void writeToFile(Model schema, String fileName, Style style) {
 		System.out.println("Writing SBPAX to " + fileName);
-		try { JenaIOUtil.writeModel(schema, new FileOutputStream(fileName), style); } 
-		catch (FileNotFoundException e) { e.printStackTrace(); }
+		try { 
+			java.io.StringWriter strWriter = new StringWriter();
+			JenaIOUtil.writeModel(schema, strWriter, style);
+			XmlUtil.writeXMLStringToFile(strWriter.getBuffer().toString(), fileName, true);
+		} catch (IOException e) { 
+			e.printStackTrace(System.out); 
+		}
 		System.out.println("Done");
 	}
 	

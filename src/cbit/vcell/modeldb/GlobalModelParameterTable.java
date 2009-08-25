@@ -102,7 +102,7 @@ public void setModelParameters(Connection con,Model model) throws SQLException,D
 		}
 		if(modelParameeterXMLSB.length() > 0){
 			XmlReader xmlReader = new XmlReader(true);
-			Element modelParameeterXMLElement = XmlUtil.stringToXML(modelParameeterXMLSB.toString(), null);
+			Element modelParameeterXMLElement = XmlUtil.stringToXML(modelParameeterXMLSB.toString(), null).getRootElement();
 			try{
 				Model.ModelParameter[] modelParameterArr =
 					xmlReader.getModelParams(modelParameeterXMLElement, model);

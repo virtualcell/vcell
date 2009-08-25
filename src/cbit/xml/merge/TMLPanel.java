@@ -14,6 +14,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.ZEnforcer;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1458,8 +1459,8 @@ public static void main(java.lang.String[] args) {
 		if (args.length == 3) {
 			ignoreVersion = new Boolean(args[2]).booleanValue();
 		}
-		String baselineXML = XmlUtil.getXMLString(args[0]);
-		String modifiedXML = XmlUtil.getXMLString(args[1]);
+		String baselineXML = XmlUtil.xmlToString(XmlUtil.readXML(new File(args[0])), false);
+		String modifiedXML = XmlUtil.xmlToString(XmlUtil.readXML(new File(args[1])), false);
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		TMLPanel aTMLPanel = new TMLPanel();
 		XmlTreeDiff diffTree = cbit.vcell.xml.XmlHelper.compareMerge(baselineXML, modifiedXML, TMLPanel.COMPARE_DOCS_SAVED, ignoreVersion);
@@ -1517,7 +1518,7 @@ private Element nodeInfo2Element(NodeInfo node) {
 			//} 
 			String xmlStr = root.toXmlString();
 			//System.out.println(xmlStr);
-			Element rootElement = XmlUtil.stringToXML(xmlStr, null);
+			Element rootElement = (XmlUtil.stringToXML(xmlStr, null)).getRootElement();
 			XmlReader reader = new XmlReader(true);            //?
 			String rootName = rootElement.getName();
 			Document doc = rootElement.getDocument();

@@ -86,7 +86,7 @@ public class VCMLExtractor implements VCDatabaseVisitor {
 			newMathModel.setMathDescription(mathDesc);
 			
 			File biomodelFile = new File(directory,"BIOMODEL_Math_"+bioModel.getVersion().getVersionKey().toString()+".vcml");
-			XmlUtil.writeXMLString(XmlHelper.mathModelToXML(newMathModel), biomodelFile.getAbsolutePath());
+			XmlUtil.writeXMLStringToFile(XmlHelper.mathModelToXML(newMathModel), biomodelFile.getAbsolutePath(),true);
 			SBMLDocument sbmlDocument = MathModel_SBMLExporter.getSBML(newMathModel);
 			sbmlDocument.write(new XMLOutputStream(new OFStream(new File(directory,"BIOMODEL_Math_"+bioModel.getVersion().getVersionKey()+".sbml").getAbsolutePath())));
 		} catch (Exception e1) {

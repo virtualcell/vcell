@@ -2,9 +2,12 @@ package cbit.vcell.client.task;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Hashtable;
 import javax.swing.filechooser.FileFilter;
 import org.vcell.util.gui.FileFilters;
+
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
@@ -17,6 +20,8 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
 import org.vcell.util.document.VCDocument;
+
+import sun.misc.CharacterEncoder;
 
 /**
  * Insert the type's description here.
@@ -100,6 +105,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					}
 					if (selectedSim == null) {
 						resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, selectedSimContext, null);
+						XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
+						return;
 					} else {
 						for (int sc = 0; sc < selectedSim.getScanCount(); sc++) {
 							SimulationJob simJob = new SimulationJob(selectedSim, null, sc);
@@ -107,10 +114,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 							// Need to export each parameter scan into a separate file 
 							String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
 							exportFile.renameTo(new File(newExportFileName));
-							java.io.FileWriter fileWriter = new java.io.FileWriter(exportFile);
-							fileWriter.write(resultString);
-							fileWriter.flush();
-							fileWriter.close();
+							XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 						}
 						return;
 					}
@@ -118,10 +122,13 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
 					String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
 					resultString = XmlHelper.exportCellML(bioModel, applicationName);
+					// cellml still uses default character encoding for now ... maybe UTF-8 in the future
 				}
 			} else {
 				// if format is VCML, get it from biomodel.
 				resultString = XmlHelper.bioModelToXML(bioModel);
+				XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
+				return;
 			}
 		}
 	} else if (documentToExport instanceof MathModel) {

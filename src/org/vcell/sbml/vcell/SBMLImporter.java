@@ -48,6 +48,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 
@@ -85,7 +86,7 @@ public class SBMLImporter {
 	private static int level = 2;
 	private static int version = 3;
 	
-	private String sbmlString = null;
+	private String sbmlFileName = null;
 	private org.sbml.libsbml.Model sbmlModel = null;
 	private cbit.vcell.mapping.SimulationContext simContext = null;
 	private LambdaFunction[] lambdaFunctions = null;
@@ -130,9 +131,9 @@ public class SBMLImporter {
 		ResourceUtil.loadlibSbmlLibray();
 	}
 
-	public SBMLImporter(String argSbmlString, cbit.util.xml.VCLogger argVCLogger) {
+	public SBMLImporter(String argSbmlFileName, cbit.util.xml.VCLogger argVCLogger) {
 		super();
-		sbmlString = argSbmlString;
+		sbmlFileName = argSbmlFileName;
 		this.logger = argVCLogger;
 	}
 
@@ -1711,7 +1712,7 @@ private void substituteOtherGlobalParams(Kinetics kinetics, Expression paramExpr
 public BioModel getBioModel() {
 	// Read SBML model into libSBML SBMLDocument and create an SBML model
 	SBMLReader reader = new SBMLReader();
-	SBMLDocument document = reader.readSBMLFromString(sbmlString);
+	SBMLDocument document = reader.readSBML(sbmlFileName);
 	
 	long numProblems = document.getNumErrors();
 	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");

@@ -30,6 +30,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -693,7 +694,7 @@ long start = System.currentTimeMillis();
 	//
 	// this invokes "update" on the database layer
 	//
-	BioModel bioModel = XmlHelper.XMLToBioModel(bioModelXML);
+	BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
 
 	forceDeepDirtyIfForeign(user,bioModel);
 	
@@ -714,7 +715,7 @@ long start = System.currentTimeMillis();
 	BioModel origBioModel = null;
 	if (oldVersion!=null){
 		String origBioModelXML = getBioModelXML(user,oldVersion.getVersionKey());
-		origBioModel = XmlHelper.XMLToBioModel(origBioModelXML);
+		origBioModel = XmlHelper.XMLToBioModel(new XMLSource(origBioModelXML));
 	}
 
 	boolean bSomethingChanged = false;
@@ -1367,7 +1368,7 @@ System.out.println("------------------------------> Time spent on roundtrip: " +
  */
 public String saveGeometry(User user,String geometryXML,String newName) throws DataAccessException, cbit.vcell.xml.XmlParseException, java.sql.SQLException {
 
-	Geometry geometry = XmlHelper.XMLToGeometry(geometryXML);
+	Geometry geometry = XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
 	
 	forceDeepDirtyIfForeign(user,geometry);
 
@@ -1437,7 +1438,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 	//
 	// this invokes "update" on the database layer
 	//
-	MathModel mathModel = XmlHelper.XMLToMathModel(mathModelXML);
+	MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
 
 	forceDeepDirtyIfForeign(user,mathModel);
 	
@@ -1458,7 +1459,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 	MathModel origMathModel = null;
 	if (oldVersion!=null){
 		String origMathModelXML = getMathModelXML(user,oldVersion.getVersionKey());
-		origMathModel = XmlHelper.XMLToMathModel(origMathModelXML);
+		origMathModel = XmlHelper.XMLToMathModel(new XMLSource(origMathModelXML));
 	}
 
 	boolean bSomethingChanged = false;

@@ -54,8 +54,8 @@ private VCMLComparatorTest() {}
 
 		String xmlStr1, xmlStr2;
 		try {
-			xmlStr1 = XmlUtil.getXMLString(fileName1);
-			xmlStr2 = XmlUtil.getXMLString(fileName2);
+			xmlStr1 = XmlUtil.xmlToString(XmlUtil.readXML(new File(fileName1)), false);
+			xmlStr2 = XmlUtil.xmlToString(XmlUtil.readXML(new File(fileName2)), false);
 			boolean testResult = VCMLComparator.compareEquals(xmlStr1, xmlStr2);
 			if (testResult == expectedResult) {
 				System.out.println("Tested succeeded for the files: " + fileName1 + " " + fileName2);
@@ -72,19 +72,13 @@ private VCMLComparatorTest() {}
 	private static void compareXMLParsers(String xmlFileName) throws XmlParseException {
 
 		long fileSize = new File(xmlFileName).length();
-		String xmlStr;
-		try {
-			xmlStr = XmlUtil.getXMLString(xmlFileName);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new XmlParseException("Unable to read xml file: " + xmlFileName+" : "+e.getMessage());
-		}
+		String xmlStr = XmlUtil.xmlToString(XmlUtil.readXML(new File(xmlFileName)), false);
 		//System.out.println("File: " + xmlFileName + " " + fileSize);
 		fileSizeList.add(new Long(fileSize));
 		for (int i = 0; i < parsers.size(); i++) {
 			String curParser = (String)parsers.get(i);
 			long startTime = System.currentTimeMillis();
-			Element root = XmlUtil.stringToXML(xmlStr, null, curParser);
+			Element root = XmlUtil.stringToXML(xmlStr, null, curParser).getRootElement();
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;
 			if (XmlUtil.PARSER_XERCES.equals(curParser)) {
@@ -215,8 +209,8 @@ private VCMLComparatorTest() {}
 		System.out.println("Roundtrip test for File: " + xmlFileName);
 		String xmlStr1, xmlStr2;
 		try {
-			xmlStr1 = XmlUtil.getXMLString(xmlFileName);
-			Element root = XmlUtil.stringToXML(xmlStr1, null);
+			xmlStr1 = XmlUtil.xmlToString(XmlUtil.readXML(new File(xmlFileName)), false);
+			Element root = XmlUtil.stringToXML(xmlStr1, null).getRootElement();
 			XmlReader reader = new XmlReader(true);
 			cbit.vcell.biomodel.BioModel biomodel = reader.getBioModel(root);
 			Xmlproducer producer = new Xmlproducer(true);

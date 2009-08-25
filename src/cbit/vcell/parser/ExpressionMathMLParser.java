@@ -36,7 +36,7 @@ public Expression fromMathML(String mathML) throws ExpressionException {
 	}
 	Element rootElement;
 	try {
-		rootElement = XmlUtil.stringToXML(mathML, null);
+		rootElement = XmlUtil.stringToXML(mathML, null).getRootElement();
 	} catch (RuntimeException e) {
 		e.printStackTrace(System.out);
 		throw new ExpressionException("Unable to parse the xml string.");

@@ -55,6 +55,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -754,7 +755,7 @@ public BioModel getBioModel(BioModelInfo bioModelInfo) throws DataAccessExceptio
 private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAccessException{
 
 	try{
-		BioModel bm = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML);
+		BioModel bm = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
 		cacheSimulations(bm.getSimulations());
 		// XmlHelper.XMLToBioModel() already calls BioModel.refreshDependencies()
 		//bm.refreshDependencies(); 
@@ -918,7 +919,8 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 
 	Geometry geometry = null;
 	try {
-		geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(getGeometryXML(geometryInfo.getVersion().getVersionKey()));
+		XMLSource geomSource = new XMLSource(getGeometryXML(geometryInfo.getVersion().getVersionKey()));
+		geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(geomSource);
 	}catch (cbit.vcell.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
@@ -946,7 +948,7 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAccessException{
 
 	try{
-		Geometry geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(geometryXML);
+		Geometry geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
 		geometry.refreshDependencies();
 
 		try {
@@ -1196,7 +1198,7 @@ public MathModel getMathModel(MathModelInfo mathModelInfo) throws DataAccessExce
 private MathModel getMathModelFromDatabaseXML(String mathModelXML) throws DataAccessException{
 
 	try{
-		MathModel mm = cbit.vcell.xml.XmlHelper.XMLToMathModel(mathModelXML);
+		MathModel mm = cbit.vcell.xml.XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
 		cacheSimulations(mm.getSimulations());
 		mm.refreshDependencies();
 

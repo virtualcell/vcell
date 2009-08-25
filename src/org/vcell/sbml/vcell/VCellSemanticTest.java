@@ -1,6 +1,7 @@
 package org.vcell.sbml.vcell;
 import java.io.File;
 
+import org.jdom.Element;
 import org.vcell.sbml.SimSpec;
 
 import cbit.util.xml.XmlUtil;
@@ -40,7 +41,8 @@ public static void main(java.lang.String[] args) {
         for (int i = 0; i < args.length - 5; i++) {
             speciesNames[i] = args[i + 5];
         }
-        String sbmlString = XmlUtil.getXMLString(sbmlFile.getAbsolutePath());
+        Element sbmlroot = XmlUtil.readXML(sbmlFile).getRootElement();
+        String sbmlString = XmlUtil.xmlToString(sbmlroot);
         VCellSBMLSolver vcellSBMLSolver = new VCellSBMLSolver();
         File solverOutputFile = vcellSBMLSolver.solve(outputFile.getName(), outputFile.getParentFile(), sbmlString, new SimSpec(speciesNames,endTime,numTimeSteps));
         if (!solverOutputFile.equals(outputFile)){
