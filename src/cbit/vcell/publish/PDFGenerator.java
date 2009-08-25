@@ -7,6 +7,7 @@ import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import java.awt.PrintJob;
 
@@ -65,7 +66,7 @@ public void scan(User users[], String bioModelName) throws DataAccessException {
 				// read in the BioModel from the database
 				//
 				BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfos[j].getVersion().getVersionKey());
-				BioModel bioModelFromDB = XmlHelper.XMLToBioModel(bioModelXML.toString());
+				BioModel bioModelFromDB = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 				bioModelFromDB.refreshDependencies();
 
 				// If biomodel doesn't have any applications, pdf is not generated. Display an error message and continue

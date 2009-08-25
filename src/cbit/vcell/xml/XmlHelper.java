@@ -1,5 +1,6 @@
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -123,8 +124,11 @@ public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, Stri
 		    (!TMLPanel.COMPARE_DOCS_SAVED.equals(comparisonSetting) && !TMLPanel.COMPARE_DOCS_OTHER.equals(comparisonSetting)) ) {
 	        throw new XmlParseException("Invalid XML comparison params.");
 	    }
-	    Element baselineRoot = XmlUtil.stringToXML(xmlBaseString, null);            //default setting, no validation
-	    Element modifiedRoot = XmlUtil.stringToXML(xmlModifiedString, null);
+		XMLSource xmlBaseSource = new XMLSource(xmlBaseString);
+		XMLSource xmlModifiedSource = new XMLSource(xmlModifiedString);
+		
+	    Element baselineRoot = xmlBaseSource.getXmlDoc().getRootElement();            //default setting, no validation
+	    Element modifiedRoot = xmlModifiedSource.getXmlDoc().getRootElement();
 	    //Merge the Documents
 	    XmlTreeDiff merger = new XmlTreeDiff(ignoreVersionInfo);
 	    NodeInfo top = merger.merge(baselineRoot.getDocument(), modifiedRoot.getDocument(), comparisonSetting);     
@@ -328,30 +332,46 @@ public static String exportCellML(VCDocument vcDoc, String appName) throws XmlPa
 /**
 Allows the translation process to interact with the user via TranslationMessager
 */
-public static VCDocument importSBML(VCLogger vcLogger, String xmlString) throws Exception {
+public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
 
-	//checks that the string is not empty
-    if (xmlString == null || xmlString.length() == 0 || vcLogger == null) {
-        throw new XmlParseException("Invalid params for importing sbml.");
-    }
+	//checks that the source is not empty
+	if (xmlSource == null){
+		throw new XmlParseException("Invalid params for importing sbml model.");
+	}
+	
+	// First try getting xmlfile from xmlSource. If not file, get xmlStr and save it in file 
+	// (since we send only file name to SBMLImporter). If xmlString is also not present in xmlSource, throw exception. 
+	File sbmlFile = xmlSource.getXmlFile();
+	if (sbmlFile == null) {
+		String sbmlStr = xmlSource.getXmlString();
+		if (sbmlStr != null) {
+			sbmlFile = File.createTempFile("temp", ".xml");
+			sbmlFile.deleteOnExit();
+			XmlUtil.writeXMLStringToFile(sbmlStr, sbmlFile.getAbsolutePath(), true);
+		} else {
+			throw new RuntimeException("Error importing from SBML : no SBML source.");
+		}
+	}
     VCDocument vcDoc = null;
-	org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(xmlString, vcLogger);
+	org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger);
 	vcDoc = sbmlImporter.getBioModel();
 	vcDoc.refreshDependencies();
     return vcDoc;
 }
 
-public static VCDocument importBioCellML(VCLogger vcLogger, String xmlString) throws Exception {
+public static VCDocument importBioCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
 	throw new Exception("CellML import to a Biomodel has been disabled.");
 }
 
-public static VCDocument importMathCellML(VCLogger vcLogger, String xmlString) throws Exception {
+public static VCDocument importMathCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
 	// throw new Exception("CellML support has been disabled.");
 
 	//checks that the string is not empty
-    if (xmlString == null || xmlString.length() == 0 || vcLogger == null) {
-        throw new XmlParseException("Invalid params for importing sbml.");
-    }
+	if (xmlSource == null){
+		throw new XmlParseException("Invalid params for importing cellml model to Mathmodel.");
+	}
+	Document xmlDoc = xmlSource.getXmlDoc();
+	String xmlString = XmlUtil.xmlToString(xmlDoc, false);
 	Translator cellmlTranslator = new CellQuanVCTranslator();
 	VCDocument vcDoc = cellmlTranslator.translate(new StringReader(xmlString), false);
 	vcDoc.refreshDependencies();
@@ -424,20 +444,22 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 	}
 
 
-public static BioModel XMLToBioModel(String xmlString) throws XmlParseException {
+public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {
 
-	return XMLToBioModel(xmlString, true);
+	return XMLToBioModel(xmlSource, true);
 }
 
 
-	static BioModel XMLToBioModel(String xmlString, boolean printkeys) throws XmlParseException {
+	static BioModel XMLToBioModel(XMLSource xmlSource, boolean printkeys) throws XmlParseException {
 
 		long l0 = System.currentTimeMillis();
 		BioModel bioModel = null;
 		
-		if (xmlString == null || xmlString.length() == 0){
-			throw new XmlParseException("Invalid xml for BioModel: " + xmlString);
+		if (xmlSource == null){
+			throw new XmlParseException("Invalid xml for Biomodel.");
 		}
+		
+		Document xmlDoc = xmlSource.getXmlDoc();
 
 		// NOTES:
 		//	* The root element can be <Biomodel> (old-style vcml) OR <vcml> (new-style vcml)
@@ -449,7 +471,7 @@ public static BioModel XMLToBioModel(String xmlString) throws XmlParseException 
 		// 	* The final new-style vcml has (should have) the namespace "http://sourceforge.net/projects/vcell/vcml"
 		//		for <vcml> and all children elements.
 		// The code below attempts to take care of this situation.
-		Element root = XmlUtil.stringToXML(xmlString, null);      
+		Element root = xmlDoc.getRootElement();      
 		Namespace ns = null;
 		if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
 			// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
@@ -492,7 +514,8 @@ public static BioModel XMLToBioModel(String xmlString) throws XmlParseException 
  */
 public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) throws Exception {
 	VCDocument doc = null;
-	org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlString, null);         //some overhead.
+	XMLSource xmlSource = new XMLSource(xmlString);
+	org.jdom.Element rootElement = xmlSource.getXmlDoc().getRootElement();         //some overhead.
 	String xmlType = rootElement.getName();
 	if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
 		// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
@@ -502,15 +525,15 @@ public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) thro
 		xmlType = modelElement.getName();
 	}
 	if (xmlType.equals(XMLTags.BioModelTag)) {
-		doc = XmlHelper.XMLToBioModel(xmlString);
+		doc = XmlHelper.XMLToBioModel(xmlSource);
 	} else if (xmlType.equals(XMLTags.MathModelTag)) {
-		doc = XmlHelper.XMLToMathModel(xmlString);
+		doc = XmlHelper.XMLToMathModel(xmlSource);
 	} else if (xmlType.equals(XMLTags.GeometryTag)) {
-		doc = XmlHelper.XMLToGeometry(xmlString);
+		doc = XmlHelper.XMLToGeometry(xmlSource);
 	} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
-		doc = XmlHelper.importSBML(vcLogger, xmlString);
+		doc = XmlHelper.importSBML(vcLogger, xmlSource);
 	} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
-		doc = XmlHelper.importMathCellML(vcLogger, xmlString);
+		doc = XmlHelper.importMathCellML(vcLogger, xmlSource);
 	} else { // unknown XML format
 		throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 	}
@@ -518,25 +541,22 @@ public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) thro
 }
 
 
-/**
-  *
-  * for any VCDocument, must refreshDependencies().
-  *
-  */
 
-public static Geometry XMLToGeometry(String xmlString) throws XmlParseException {
+public static Geometry XMLToGeometry(XMLSource xmlSource) throws XmlParseException {
 	
-	return XMLToGeometry(xmlString, true);
+	return XMLToGeometry(xmlSource, true);
 }
 
 
-static Geometry XMLToGeometry(String xmlString, boolean printkeys) throws XmlParseException {
+static Geometry XMLToGeometry(XMLSource xmlSource, boolean printkeys) throws XmlParseException {
 
 	Geometry geometry = null;
 	
-	if (xmlString == null || xmlString.length() == 0){
-		throw new XmlParseException("Invalid xml for Geometry: " + xmlString);
+	if (xmlSource == null){
+		throw new XmlParseException("Invalid xml for Geometry.");
 	}
+	
+	Document xmlDoc = xmlSource.getXmlDoc();
 
 	// NOTES:
 	//	* The root element can be <Biomodel> (old-style vcml) OR <vcml> (new-style vcml)
@@ -548,7 +568,7 @@ static Geometry XMLToGeometry(String xmlString, boolean printkeys) throws XmlPar
 	// 	* The final new-style vcml has (should have) the namespace "http://sourceforge.net/projects/vcell/vcml"
 	//		for <vcml> and all children elements.
 	// The code below attempts to take care of this situation.
-	Element root = XmlUtil.stringToXML(xmlString, null);
+	Element root = xmlDoc.getRootElement();
 	Namespace ns = null;
 	if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
 		// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
@@ -591,7 +611,7 @@ static VCImage XMLToImage(String xmlString, boolean printKeys) throws XmlParseEx
 	if (xmlString == null || xmlString.length() == 0) {
 		throw new XmlParseException("Invalid xml for Image: " + xmlString);
 	}
-	Element root = XmlUtil.stringToXML(xmlString, null);     //default parser and no validation
+	Element root = (XmlUtil.stringToXML(xmlString, null)).getRootElement();     //default parser and no validation
 	Element extentElement = root.getChild(XMLTags.ExtentTag, ns);
 	Element imageElement = root.getChild(XMLTags.ImageTag, ns);
 //		Element extentElement = root.getChild(XMLTags.ExtentTag);
@@ -606,19 +626,21 @@ static VCImage XMLToImage(String xmlString, boolean printKeys) throws XmlParseEx
 }
 
 
-public static MathModel XMLToMathModel(String xmlString) throws XmlParseException {
+public static MathModel XMLToMathModel(XMLSource xmlSource) throws XmlParseException {
 
-	return XMLToMathModel(xmlString, true);
+	return XMLToMathModel(xmlSource, true);
 }
 
 
-static MathModel XMLToMathModel(String xmlString, boolean printkeys) throws XmlParseException {
+static MathModel XMLToMathModel(XMLSource xmlSource, boolean printkeys) throws XmlParseException {
 
 	MathModel mathModel = null;
 	
-	if (xmlString == null || xmlString.length() == 0){
-		throw new XmlParseException("Invalid xml for MathModel: " + xmlString);
+	if (xmlSource == null){
+		throw new XmlParseException("Invalid xml for Geometry.");
 	}
+	
+	Document xmlDoc = xmlSource.getXmlDoc();
 
 	// NOTES:
 	//	* The root element can be <Biomodel> (old-style vcml) OR <vcml> (new-style vcml)
@@ -630,7 +652,7 @@ static MathModel XMLToMathModel(String xmlString, boolean printkeys) throws XmlP
 	// 	* The final new-style vcml has (should have) the namespace "http://sourceforge.net/projects/vcell/vcml"
 	//		for <vcml> and all children elements.
 	// The code below attempts to take care of this situation.
-	Element root = XmlUtil.stringToXML(xmlString, null);
+	Element root = xmlDoc.getRootElement();
 	Namespace ns = null;
 	if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
 		// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
@@ -669,7 +691,7 @@ public static Simulation XMLToSim(String xmlString) throws XmlParseException {
 		if (xmlString == null || xmlString.length() == 0) {
 			throw new XmlParseException("Invalid xml for Simulation: " + xmlString);
 		}
-		Element root =  XmlUtil.stringToXML(xmlString, null);     //default parser and no validation
+		Element root =  (XmlUtil.stringToXML(xmlString, null)).getRootElement();     //default parser and no validation
 		Element simElement = root.getChild(XMLTags.SimulationTag, ns);
 		Element mdElement = root.getChild(XMLTags.MathDescriptionTag, ns);
 		Element geomElement = root.getChild(XMLTags.GeometryTag, ns);

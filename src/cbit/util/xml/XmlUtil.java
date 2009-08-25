@@ -13,10 +13,14 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 /**
@@ -72,21 +76,26 @@ private XmlUtil() {
 			}
 		}
 	}
-	
-	public static void writeXMLString(String xmlString, String filename) throws IOException {
+
+	public static void writeXMLStringToFile(String xmlString, String filename, boolean bUseUTF8) throws IOException {
 		File outputFile = new File(filename);
-		java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile);
-		fileWriter.write(xmlString);
-		fileWriter.flush();
-		fileWriter.close();
+		OutputStreamWriter fileOSWriter = null;
+		if (bUseUTF8){
+			fileOSWriter = new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8");
+		}else{
+			fileOSWriter = new OutputStreamWriter(new FileOutputStream(outputFile));
+		}
+		fileOSWriter.write(xmlString);
+		fileOSWriter.flush();
+		fileOSWriter.close();
 	}
 
 
 //useful for the translators.
-	public static Element readXML(Reader reader, String schemaLocation, String parserClass, String schemaLocationPropName) throws RuntimeException {
+	public static Document readXML(Reader reader, String schemaLocation, String parserClass, String schemaLocationPropName) throws RuntimeException {
 		
 		SAXBuilder builder = null; 
-		Element root = null;
+		Document sDoc = null;
 		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
 		try {
 			if (schemaLocation != null && schemaLocation.length() > 0) {           //ignores the parserClass, since xerces is the only validating parser we have
@@ -103,8 +112,9 @@ private XmlUtil() {
 				}
 				builder.setErrorHandler(errorHandler);
 			}
-	  		Document sDoc = builder.build(reader);
-	  		root = sDoc.getRootElement();
+	  		sDoc = builder.build(reader);
+			// ----- Element root = null;
+	  		// ----- root = sDoc.getRootElement();
 	  		// flush/replace previous error log with every read.
 	  		String errorHandlerLog = errorHandler.getErrorLog();
 	  		if (errorHandlerLog.length() > 0) {
@@ -121,9 +131,38 @@ private XmlUtil() {
         	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
     	}
 
-    	return root;
+    	return sDoc;
 	}
+	
+	public static Document readXML(File file) throws RuntimeException {
+		
+		SAXBuilder builder = new SAXBuilder(false);                           
+		Document sDoc = null;
+		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
+  		builder.setErrorHandler(errorHandler);
+		try {
+	  		sDoc = builder.build(file);
+			// Element root = null;
+	  		// root = sDoc.getRootElement();
+	  		// flush/replace previous error log with every read.
+	  		String errorHandlerLog = errorHandler.getErrorLog();
+	  		if (errorHandlerLog.length() > 0) {
+				System.out.println(errorHandlerLog);
+				XmlUtil.errorLog = errorHandlerLog;
+	  		} else {
+				XmlUtil.errorLog = "";                     
+	  		}
+		} catch (JDOMException e) { 
+        	e.printStackTrace();
+        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage());
+    	} catch (IOException e) { 
+        	e.printStackTrace();
+        	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
+    	}
 
+    	return sDoc;
+	}
+	
 
 /**
  * This method is used to set the Default Namespace to the XML document represented by 'rootNode'.
@@ -152,13 +191,13 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 }
 
 
-	public static Element stringToXML(String str, String schemaLocation) throws RuntimeException { 
+	public static Document stringToXML(String str, String schemaLocation) throws RuntimeException { 
 
 		return stringToXML(str, schemaLocation, null);
 	}
 
 
-	public static Element stringToXML(String str, String schemaLocation, String parserClass) throws RuntimeException { 
+	public static Document stringToXML(String str, String schemaLocation, String parserClass) throws RuntimeException { 
 
 		return readXML(new StringReader(str), schemaLocation, parserClass, XmlUtil.SCHEMA_LOC_PROP_NAME);
 	}
@@ -182,5 +221,4 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);		
 		return xmlOut.outputString(xmlDoc);		        
 	}
-
 }

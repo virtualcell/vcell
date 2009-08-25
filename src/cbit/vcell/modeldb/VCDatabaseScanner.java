@@ -26,6 +26,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
@@ -115,7 +116,7 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 				}
 				try {
 					BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfos[j].getVersion().getVersionKey());
-					BioModel bioModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
+					BioModel bioModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 					bioModel.refreshDependencies();
 					databaseVisitor.visitBioModel(bioModel,logFilePrintStream);
 				}catch (Exception e2){
@@ -172,7 +173,7 @@ public void scanGeometries(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 				}
 				try {
 					BigString geometryXML = dbServerImpl.getGeometryXML(user, geoInfos[j].getVersion().getVersionKey());
-					Geometry geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(geometryXML.toString());
+					Geometry geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(new XMLSource(geometryXML.toString()));
 					geometry.refreshDependencies();
 					databaseVisitor.visitGeometry(geometry,logFilePrintStream);
 				}catch (Exception e2){
@@ -223,7 +224,7 @@ public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 				}
 				try {
 					BigString mathModelXML = dbServerImpl.getMathModelXML(user, mathInfos[j].getVersion().getVersionKey());
-					MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(mathModelXML.toString());
+					MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
 					mathModel.refreshDependencies();
 					databaseVisitor.visitMathModel(mathModel,logFilePrintStream);
 				}catch (Exception e2){

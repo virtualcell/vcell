@@ -111,7 +111,7 @@ public Double getTimeAbsoluteError() {
  * @return java.lang.String
  */
 public String toShortString() {
-	return "var="+getName()+":MSE="+mse+",MAE="+absError+",MRE="+relError+",MnR="+minRef+",MxR="+maxRef+",@tA="+timeAbsError+",@indexA="+indexAbsError+",@tR="+timeRelError+",@indexR="+indexRelError;
+	return "var="+getName()+": \tMSE="+mse+",\tMAE="+absError+",\tMRE="+relError+",\tMnR="+minRef+",\tMxR="+maxRef+",\t@tA="+timeAbsError+",\t@indexA="+indexAbsError+",\t@tR="+timeRelError+",\t@indexR="+indexRelError;
 }
 
 

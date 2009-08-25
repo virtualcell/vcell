@@ -21,6 +21,7 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class VCellSBMLSolver implements SBMLSolver {
@@ -87,7 +88,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath());
 			    
 			    // re-import bioModel from exported sbml
-			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml);
+			    XMLSource vcml_sbml_Src = new XMLSource(vcml_sbml);
+			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml_Src);
 			    String vcml_sbml_vcml = XmlHelper.bioModelToXML(newBioModel);
 			    SBMLUtils.writeStringToFile(vcml_sbml_vcml, new File(outDir,filePrefix+".vcml.sbml.vcml").getAbsolutePath());
 			    

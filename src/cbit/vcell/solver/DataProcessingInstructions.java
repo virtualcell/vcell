@@ -62,7 +62,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 	}
 
 	public static DataProcessingInstructions fromDbXml(String xmlString){
-		Element root = XmlUtil.stringToXML(xmlString, null);
+		Element root = XmlUtil.stringToXML(xmlString, null).getRootElement();
 		if (!root.getName().equals(XMLTags.DataProcessingInstructionsTag)){
 			throw new RuntimeException("expected root element to be named "+XMLTags.DataProcessingInstructionsTag);
 		}

@@ -1634,8 +1634,8 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 				GeometryInfo gmi = (GeometryInfo)documentInfo;
 				doc = getDocumentManager().getGeometry(gmi);
 			} else if (documentInfo instanceof XMLInfo) {
-				String xmlStr = ((XMLInfo)documentInfo).getXmlString();
-				org.jdom.Element rootElement = XmlUtil.stringToXML(xmlStr, null);         //some overhead.
+				XMLInfo xmlInfo = (XMLInfo)documentInfo;
+				org.jdom.Element rootElement = xmlInfo.getXmlDoc().getRootElement();
 				String xmlType = rootElement.getName();
 				String modelXmlType = null;
 				if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
@@ -1646,21 +1646,21 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					modelXmlType = modelElement.getName();
 				}
 				if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
-					doc = XmlHelper.XMLToBioModel(xmlStr);
+					doc = XmlHelper.XMLToBioModel(xmlInfo);
 				} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
-					doc = XmlHelper.XMLToMathModel(xmlStr);					
+					doc = XmlHelper.XMLToMathModel(xmlInfo);					
 				} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
-					doc = XmlHelper.XMLToGeometry(xmlStr);
+					doc = XmlHelper.XMLToGeometry(xmlInfo);
 				} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
 					TranslationLogger transLogger = new TranslationLogger(requester);
-					doc = XmlHelper.importSBML(transLogger, xmlStr);
+					doc = XmlHelper.importSBML(transLogger, xmlInfo);
 				} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
 					if (requester instanceof BioModelWindowManager){
 						TranslationLogger transLogger = new TranslationLogger(requester);
-						doc = XmlHelper.importBioCellML(transLogger, xmlStr);
+						doc = XmlHelper.importBioCellML(transLogger, xmlInfo);
 					}else{
 						TranslationLogger transLogger = new TranslationLogger(requester);
-						doc = XmlHelper.importMathCellML(transLogger, xmlStr);
+						doc = XmlHelper.importMathCellML(transLogger, xmlInfo);
 					}
 				} else { // unknown XML format
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");

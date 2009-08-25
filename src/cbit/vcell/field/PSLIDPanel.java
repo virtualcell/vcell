@@ -380,7 +380,7 @@ public class PSLIDPanel extends JPanel{
 				return null;
 			}
 		  
-		  Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null);
+		  Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null).getRootElement();
 		  JDOMTreeWalker jdtw = new JDOMTreeWalker(
 				element, new Filter() {
 					public boolean matches(Object obj) {
@@ -421,7 +421,7 @@ public class PSLIDPanel extends JPanel{
 			System.out.println("Fetch request has expired");
 			return null;
 		}
-		Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null);
+		Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null).getRootElement();
 		JDOMTreeWalker jdtw = new JDOMTreeWalker(
 					element, new Filter() {
 						public boolean matches(java.lang.Object obj) {
@@ -508,7 +508,7 @@ public class PSLIDPanel extends JPanel{
 						return;
 					}
 
-				    Element element = XmlUtil.stringToXML(wci.getDoc().toString(),null);
+				    Element element = XmlUtil.stringToXML(wci.getDoc().toString(),null).getRootElement();
 				    JDOMTreeWalker jdtw = new JDOMTreeWalker(element,
 				    			new Filter(){
 									public boolean matches(Object obj){

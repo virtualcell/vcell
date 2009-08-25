@@ -27,6 +27,7 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class VCML_SBMLSolverTest {
@@ -43,8 +44,10 @@ public class VCML_SBMLSolverTest {
 					int numTimeSteps = 100;
 					float timeStep = 0.1f;
 					try {
-						String vcmlText = XmlUtil.getXMLString(vcmlFile.getAbsolutePath());
-						BioModel bioModel = XmlHelper.XMLToBioModel(vcmlText);
+						// org.jdom.Element vcmlRoot = XmlUtil.readXML(vcmlFile);
+						// String vcmlText = XmlUtil.xmlToString(vcmlRoot);
+						XMLSource vcmlSrc = new XMLSource(vcmlFile);
+						BioModel bioModel = XmlHelper.XMLToBioModel(vcmlSrc);
 						// simulate non-spatial applications (that are not stochastic).
 						SimulationContext[] simContexts = bioModel.getSimulationContexts();
 						for (SimulationContext simContext : simContexts){

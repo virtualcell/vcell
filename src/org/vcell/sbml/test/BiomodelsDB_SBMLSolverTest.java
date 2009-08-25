@@ -5,12 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.util.StringTokenizer;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.copasi.CopasiSBMLSolver;
 import org.vcell.sbml.mathsbml.MathSBMLSolver;
@@ -75,11 +73,12 @@ public class BiomodelsDB_SBMLSolverTest {
 						System.setOut(new_sysout);
 						System.setErr(new_syserr);
 						StringBuffer combinedErrorBuffer = new StringBuffer();
-						String sbmlText = XmlUtil.getXMLString(sbmlFile.getAbsolutePath());
+						
 						//
 						// get SBML model "name" (or "id")
 						//
-						Element rootSBML = SBMLUtils.readXML(new StringReader(sbmlText));
+						Element rootSBML = XmlUtil.readXML(sbmlFile).getRootElement();
+						String sbmlText = XmlUtil.xmlToString(rootSBML);
 						Namespace sbmlNamespace = rootSBML.getNamespace();
 						// Namespace sbmlNamespace = Namespace.getNamespace("http://www.sbml.org/sbml/level2");
 						Element sbmlModelElement = rootSBML.getChild("model",sbmlNamespace);

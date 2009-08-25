@@ -1,5 +1,6 @@
     package org.vcell.sbml.vcell;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.StringReader;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -20,6 +21,7 @@ import org.vcell.util.TokenMangler;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.xml.XMLSource;
 /**
  * Insert the type's description here.
  * Creation date: (4/11/2006 11:35:34 AM)
@@ -178,8 +180,8 @@ public static void main(String[] args) {
 		}
 		String inputVCMLFileName = args[0];
 		String outputSBMLFileName = args[1];
-		String vcml = cbit.util.xml.XmlUtil.getXMLString(inputVCMLFileName);
-		cbit.vcell.mathmodel.MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(vcml);
+		XMLSource vcmlSource = new XMLSource(new File(inputVCMLFileName));
+		cbit.vcell.mathmodel.MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(vcmlSource);
 		org.sbml.libsbml.SBMLDocument sbmlDoc = getSBML(mathModel);
 		org.sbml.libsbml.SBMLWriter sbmlWriter = new org.sbml.libsbml.SBMLWriter();
 		sbmlWriter.setProgramName("Virtual Cell");

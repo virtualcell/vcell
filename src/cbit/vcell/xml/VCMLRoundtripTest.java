@@ -103,9 +103,10 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 		BioModel bioModel_2 = null;
 		// Import into VCell		
 		exportedVCMLStr = XmlHelper.bioModelToXML(bioModel_1);
-		XmlUtil.writeXMLString(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + bioModel_1.getName()+".vcml");
+		XmlUtil.writeXMLStringToFile(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + bioModel_1.getName()+".vcml",true);
 		// Import the exported VCML model
-		bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.XMLToBioModel(exportedVCMLStr);
+		XMLSource bioSource = new XMLSource(exportedVCMLStr);
+		bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.XMLToBioModel(bioSource);
 
 		//			SimulationContext[] simContexts = bioModel_2.getSimulationContexts();
 		//			for (int i = 0; i < simContexts.length; i++) {
@@ -115,7 +116,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 		
 		// export again to compare the 2 exported strings
 		String newExportedString = XmlHelper.bioModelToXML(bioModel_2);
-		XmlUtil.writeXMLString(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + bioModel_1.getName()+"__RT.vcml");
+		XmlUtil.writeXMLStringToFile(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + bioModel_1.getName()+"__RT.vcml",true);
 		// compare the 2 biomodel objects:
 		boolean bModelsEqual = bioModel_1.compareEqual(bioModel_2);
 		// compare the 2 strings:
@@ -134,17 +135,18 @@ public void visitGeometry(Geometry geometry_1, PrintStream logFilePrintStream) {
 		/* Roundtrip (export -> import) this model to VCML  and back */
 
 		// Export to VCML
-		logFilePrintStream.println("\nUser : " + geometry_1.getVersion().getOwner().getName() + ";\tMathmodel : " + geometry_1.getName() + ";\tDate : " + geometry_1.getVersion().getDate().toString());
+		logFilePrintStream.println("\nUser : " + geometry_1.getVersion().getOwner().getName() + ";\tGeometry : " + geometry_1.getName() + ";\tDate : " + geometry_1.getVersion().getDate().toString());
 		String exportedVCMLStr = null;
 		Geometry geometry_2 = null;
 		// Import into VCell		
 		exportedVCMLStr = XmlHelper.geometryToXML(geometry_1);
-		XmlUtil.writeXMLString(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + geometry_1.getName()+".vcml");
-		// Import the exported VCML model
-		geometry_2 = XmlHelper.XMLToGeometry(exportedVCMLStr);
+		XmlUtil.writeXMLStringToFile(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + geometry_1.getName()+".vcml",true);
+		// Import the exported VCML geometry
+		XMLSource geomSource = new XMLSource(exportedVCMLStr);
+		geometry_2 = XmlHelper.XMLToGeometry(geomSource);
 		// export again to compare the 2 exported strings
 		String newExportedString = XmlHelper.geometryToXML(geometry_2);
-		XmlUtil.writeXMLString(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + geometry_1.getName()+"__RT.vcml");
+		XmlUtil.writeXMLStringToFile(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + geometry_1.getName()+"__RT.vcml",true);
 		// compare the 2 biomodel objects:
 		boolean bModelsEqual = geometry_1.compareEqual(geometry_2);
 		// compare the 2 strings:
@@ -168,12 +170,13 @@ public void visitMathModel(MathModel mathModel_1, PrintStream logFilePrintStream
 		MathModel mathModel_2 = null;
 		// Import into VCell		
 		exportedVCMLStr = XmlHelper.mathModelToXML(mathModel_1);
-		XmlUtil.writeXMLString(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + mathModel_1.getName()+".vcml");
+		XmlUtil.writeXMLStringToFile(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + mathModel_1.getName()+".vcml",true);
 		// Import the exported VCML model
-		mathModel_2 = XmlHelper.XMLToMathModel(exportedVCMLStr);
+		XMLSource mathSource = new XMLSource(exportedVCMLStr);
+		mathModel_2 = XmlHelper.XMLToMathModel(mathSource);
 		// export again to compare the 2 exported strings
 		String newExportedString = XmlHelper.mathModelToXML(mathModel_2);
-		XmlUtil.writeXMLString(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + mathModel_1.getName()+"__RT.vcml");
+		XmlUtil.writeXMLStringToFile(exportedVCMLStr, "C:\\VCML_Schema\\VCMLRoundtripValidation\\Validation3_26_08\\" + mathModel_1.getName()+"__RT.vcml",true);
 		// compare the 2 biomodel objects:
 		boolean bModelsEqual = mathModel_1.compareEqual(mathModel_2);
 		// compare the 2 strings:

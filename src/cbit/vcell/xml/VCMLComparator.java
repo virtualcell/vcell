@@ -277,8 +277,8 @@ public class VCMLComparator {
 			ps.println("The xml strings are identical.");
 			return true;
 		}
-		Element sRoot = XmlUtil.stringToXML(xmlStr1, null);
-		Element tRoot = XmlUtil.stringToXML(xmlStr2, null);
+		Element sRoot = XmlUtil.stringToXML(xmlStr1, null).getRootElement();
+		Element tRoot = XmlUtil.stringToXML(xmlStr2, null).getRootElement();
 		if (compareVCML(sRoot, tRoot, testAll)) {
 			ps.println("The two xml trees: " + sRoot.getName() + " are identical with different ordering.");
 			return true;

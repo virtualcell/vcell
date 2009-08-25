@@ -939,7 +939,7 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 		case VCDocument.XML_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
 			File xmlFile = showFileChooserDialog(requester, FileFilters.FILE_FILTER_XML);
-			return new cbit.vcell.xml.XMLInfo(XmlUtil.getXMLString(xmlFile.getAbsolutePath()));
+			return new cbit.vcell.xml.XMLInfo(xmlFile);
 		}		
 		default: {
 			throw new RuntimeException("ERROR: Unknown document type: " + documentType);
