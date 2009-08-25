@@ -855,7 +855,7 @@ private AsynchClientTask[] createNewDocument(final TopLevelWindowManager request
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							File imageFile = (File)hashTable.get("imageFile");
 							try {
-								FieldDataFileOperationSpec fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,true);
+								FieldDataFileOperationSpec fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,false);
 								hashTable.put("fdfos", fdfos);
 							} catch (DataFormatException ex) {
 								throw new Exception("Cannot read image file '" + imageFile.getAbsolutePath()+"'\n"+ex.getMessage());
@@ -1028,7 +1028,7 @@ private AsynchClientTask[] createNewDocument(final TopLevelWindowManager request
 
 public static VCImage segmentRawImage(Component guiParent,
 		Origin origin,Extent extent,ISize isize,short[] dataToSegment) throws Exception{
-	OverlayEditorPanelJAI overlayEditorPanelJAI = new OverlayEditorPanelJAI();
+	final OverlayEditorPanelJAI overlayEditorPanelJAI = new OverlayEditorPanelJAI();
 	overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
 	overlayEditorPanelJAI.setROITimePlotVisible(false);
 	overlayEditorPanelJAI.setAllowAddROI(false);
@@ -1040,18 +1040,32 @@ public static VCImage segmentRawImage(Component guiParent,
 		System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
 		zImageSet[i] = new UShortImage(shortData,newOrigin,newExtent,isize.getX(),isize.getY(),1);
 	}
-	ImageDataset imageDataset = new ImageDataset(zImageSet, new double[] { 0.0 }, isize.getZ());
-	overlayEditorPanelJAI.setImages(imageDataset, true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+	final ImageDataset[] imageDatasetHolder = new ImageDataset[] { new ImageDataset(zImageSet, new double[] { 0.0 }, isize.getZ())};
+	overlayEditorPanelJAI.setImages(imageDatasetHolder[0], true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
 	overlayEditorPanelJAI.setROITimePlotVisible(false);
 	UShortImage roiImage = new UShortImage(new short[dataToSegment.length],origin,extent,isize.getX(),isize.getY(),isize.getZ());
-	ROI roi = new ROI(roiImage,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
-	overlayEditorPanelJAI.addROIName(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name(),true,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
-	overlayEditorPanelJAI.setROI(roi);
+	overlayEditorPanelJAI.addROIName(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name(),false,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
+	overlayEditorPanelJAI.setROI(new ROI(roiImage,ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 	
+	overlayEditorPanelJAI.addPropertyChangeListener(
+			new PropertyChangeListener(){
+				public void propertyChange(PropertyChangeEvent evt) {
+					if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY))
+						try{
+							imageDatasetHolder[0] = imageDatasetHolder[0].crop((Rectangle)evt.getNewValue());
+							overlayEditorPanelJAI.setImages(imageDatasetHolder[0], true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+							overlayEditorPanelJAI.setROI(overlayEditorPanelJAI.getROI().crop((Rectangle)evt.getNewValue()));
+						}catch(ImageException e){
+							DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Crop failed:\n"+e.getMessage());
+						}
+				}
+			}
+		);
+
 	int retCode = DialogUtils.showComponentOKCancelDialog(guiParent, overlayEditorPanelJAI, "segment cell image for geometry");
 	if (retCode == JOptionPane.OK_OPTION){
 		overlayEditorPanelJAI.saveUserChangesToROI();
-		roi = overlayEditorPanelJAI.getROI();
+		ROI roi = overlayEditorPanelJAI.getROI();
 		short[] roiData = roi.getPixelsXYZ();
 		byte[] segmentedData = new byte[roiData.length];
 		Vector<Short> distinctValues = new Vector<Short>();
@@ -1066,7 +1080,7 @@ public static VCImage segmentRawImage(Component guiParent,
 			}
 			segmentedData[i] = (byte)index;
 		}
-		VCImage initImage = new VCImageUncompressed(null,segmentedData, extent,isize.getX(),isize.getY(),isize.getZ());
+		VCImage initImage = new VCImageUncompressed(null,segmentedData, extent,imageDatasetHolder[0].getISize().getX(),imageDatasetHolder[0].getISize().getY(),imageDatasetHolder[0].getSizeZ());
 		return initImage;
 	} else{
 		throw UserCancelException.CANCEL_GENERIC;

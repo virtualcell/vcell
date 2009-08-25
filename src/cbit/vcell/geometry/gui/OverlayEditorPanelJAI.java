@@ -75,7 +75,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JButton importROIMaskButton;
 	private JButton clearROIbutton;
 	private JButton roiTimePlotButton;
-	private JToggleButton autoCropButton;
+	private JButton autoCropButton;
 	private JButton roiAssistButton;
 	private static final long serialVersionUID = 1L;
 	private OverlayImageDisplayJAI imagePane = null;
@@ -313,7 +313,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
 		topJPanel.setLayout(gridBagLayout);
 
-		autoCropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
+		autoCropButton = new JButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
 		autoCropButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try {
