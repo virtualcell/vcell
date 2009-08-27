@@ -1,6 +1,7 @@
 package cbit.gui;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Event;
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -31,13 +32,16 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CellEditorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent.EventType;
+import javax.swing.table.TableCellEditor;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.vcell.util.BeanUtils;
@@ -114,8 +118,12 @@ public class TextFieldAutoCompletion extends JTextField {
 
 		public void keyReleased(KeyEvent e) {
 			if (e.getSource() == TextFieldAutoCompletion.this) {
-				if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {		
-					showPopupChoices(null);
+				if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+					if (e.getModifiersEx() != 0) {
+						autoCompJPopupMenu.setVisible(false);
+					} else {
+						showPopupChoices(null);
+					}
 				} else if (e.getKeyCode() == KeyEvent.VK_TAB) {
 					if (autoCompJPopupMenu.isVisible()) {
 						autoCompJPopupMenu.requestFocus();
@@ -201,8 +209,15 @@ public class TextFieldAutoCompletion extends JTextField {
 	
 	private class DismissList extends AbstractAction {
 		public void actionPerformed(ActionEvent ev) {
-			autoCompJPopupMenu.setVisible(false);
-			requestFocus();
+			if (autoCompJPopupMenu.isVisible()) {
+				autoCompJPopupMenu.setVisible(false);
+				requestFocus();
+			} else {
+				Container parent = TextFieldAutoCompletion.this.getParent();
+				if (parent instanceof JTable) {
+					((JTable)parent).getCellEditor().cancelCellEditing();
+				}
+			}
 		}
 	}
 

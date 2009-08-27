@@ -27,6 +27,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		thisTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 	}
 	
+	@Override
 	public boolean stopCellEditing() {
 		if (thisTable.getCellEditor() == null) {
 			return true;
@@ -48,11 +49,11 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 					}
 				} catch (ExpressionBindingException ex) {
 					ex.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse Ctrl-Space to see a list of available names in your model.");
+					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Ctrl-Space' to see a list of available names in your model or 'Esc' to revert to the original expression.");
 					bOK = false;
 				} catch (ExpressionException ex) {
 					ex.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage());
+					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Esc' to revert to the original expression.");
 					bOK = false;
 				}
 			}
@@ -82,7 +83,8 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 	}
 
-	 public void cancelCellEditing() {
+	@Override
+	public void cancelCellEditing() {
 		if (textFieldAutoCompletion.getSelectedIndex() >= 0) {
 			return;
 		} 
