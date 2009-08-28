@@ -68,7 +68,7 @@ public class EditImageAttributes extends AsynchClientTask {
 			String newName = null;
 			boolean bNameIsGood = false;
 			while (!bNameIsGood){
-				newName = PopupGenerator.showInputDialog((Component)null,  "type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
+				newName = PopupGenerator.showInputDialog(guiParent, "type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
 				if (newName == null || newName.length() == 0){
 					bNameIsGood = false;
 					continue;

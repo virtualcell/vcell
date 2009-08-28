@@ -163,15 +163,19 @@ public class SimulationMessage implements Serializable {
 
 	public static SimulationMessage fromSerializedMessage(String serializedMessage) {
 		if (serializedMessage != null) {
-			int indexOfDelimiter = serializedMessage.indexOf('|');
-			if (indexOfDelimiter>0){
-				// delimiter found try to extract detailed status
-				String detailedStatusString = serializedMessage.substring(0, indexOfDelimiter);
-				DetailedState detailedState = DetailedState.valueOf(detailedStatusString);
-				String message = serializedMessage.substring(indexOfDelimiter+1);
-				if (detailedState!=null){
-					return new SimulationMessage(detailedState,message);
+			try {
+				int indexOfDelimiter = serializedMessage.indexOf('|');
+				if (indexOfDelimiter>0){
+					// delimiter found try to extract detailed status
+					String detailedStatusString = serializedMessage.substring(0, indexOfDelimiter);
+					DetailedState detailedState = DetailedState.valueOf(detailedStatusString);
+					String message = serializedMessage.substring(indexOfDelimiter+1);
+					if (detailedState!=null){
+						return new SimulationMessage(detailedState,message);
+					}
 				}
+			} catch (Exception ex) {
+				ex.printStackTrace(System.out);
 			}
 		}
 		return null;
