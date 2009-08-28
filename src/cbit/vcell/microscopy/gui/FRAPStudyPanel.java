@@ -537,7 +537,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 						}catch(Exception e){
 							DialogUtils.showWarningDialog(
-								FRAPStudyPanel.this, "Can't switch view beacause:\n"+e.getMessage(),
+								FRAPStudyPanel.this, "Can't switch view because:\n"+e.getMessage(),
 								new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
 						}finally{
 							getFRAPDataPanel().getOverlayEditorPanelJAI().updateROICursor();
@@ -1370,24 +1370,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		final File simulationDataDir =
 			new File(getLocalWorkspace().getDefaultSimDataDirectory());
-		if(!simulationDataDir.exists()){
-			final String CREATE_OPTION = "Create Directory";
-			String result = DialogUtils.showWarningDialog(this,
-					"Simulation data directory '"+
-					getLocalWorkspace().getDefaultSimDataDirectory()+
-					"' does not exits.  Create Simulation data directory now?",
-					new String[] {CREATE_OPTION,UserMessage.OPTION_CANCEL}, CREATE_OPTION);
-			if(result == null || !result.equals(CREATE_OPTION)){
-				return;
-			}
-			if(!simulationDataDir.mkdirs()){
-				DialogUtils.showWarningDialog(this,
-						"Failed to create Simulation Data Directory\n"+
-						simulationDataDir.getAbsolutePath()+"\n Simulation cannot run.",
-						new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
-				return;
-			}
-		}
 		//save if the Model has changed
 		final Boolean[] bSaveAsNew = new Boolean[] {null};
 		try{

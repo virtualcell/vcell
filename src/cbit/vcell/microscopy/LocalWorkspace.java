@@ -107,7 +107,11 @@ public class LocalWorkspace {
 	 * @return String
 	 */
 	public String getDefaultSimDataDirectory() {
-		return getDefaultWorkspaceDirectory()+SIMULATION_OWNER.getName()+System.getProperty("file.separator");
+		File simulationDataDir = new File(getDefaultWorkspaceDirectory()+SIMULATION_OWNER.getName()+System.getProperty("file.separator"));		
+		if(!simulationDataDir.exists()){
+			simulationDataDir.mkdirs();	
+		}
+		return simulationDataDir.getAbsolutePath();
 	}
 
 	/**

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DOCUMENT type="Advanced Installer" CreateVersion="6.5.2" version="6.5.2" modules="java" RootPath="." Language="en">
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
+    <ROW Property="ALLUSERS" Value="2"/>
+    <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="ARPCONTACT" Value="vcell_support@uchc.edu"/>
+    <ROW Property="ARPPRODUCTICON" Value="controlPanelIcon.exe"/>
+    <ROW Property="ARPURLINFOABOUT" Value="http://vcell.org/vm"/>
+    <ROW Property="ARPURLUPDATEINFO" Value="http://vcell.org/vm/update"/>
+    <ROW Property="BannerBitmap" Value="default_banner.bmp" Type="1"/>
+    <ROW Property="DialogBitmap" Value="default_dialog.bmp" Type="1"/>
+    <ROW Property="Manufacturer" Value="UCHC" ValueLocId="*"/>
+    <ROW Property="ProductCode" Value="1033:{DEB1D242-9ED1-4497-81CC-85792AEEEB17} "/>
+    <ROW Property="ProductLanguage" Value="1033"/>
+    <ROW Property="ProductName" Value="VirtualMicroscopy" ValueLocId="*"/>
+    <ROW Property="ProductVersion" Value="0.9.0"/>
+    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
+    <ROW Property="UpgradeCode" Value="{B5DC4949-EB3C-4497-ABC2-00C707236EAF}"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
+    <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
+    <ROW Directory="SampleData_DIR" Directory_Parent="APPDIR" DefaultDir="Sample~1|SampleData"/>
+    <ROW Directory="SimulationData_DIR" Directory_Parent="APPDIR" DefaultDir="Simula~1|SimulationData"/>
+    <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
+    <ROW Directory="fvexecutables_DIR" Directory_Parent="APPDIR" DefaultDir="fvexec~1|fvexecutables"/>
+    <ROW Directory="mac_DIR" Directory_Parent="fvexecutables_DIR" DefaultDir="mac"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
+    <ROW Component="FiniteVolume" ComponentId="{156CD789-1FC1-42FF-BEA7-062D0EB98AAA}" Directory_="mac_DIR" Attributes="0" KeyPath="FiniteVolume" Type="0"/>
+    <ROW Component="VCell.exe" ComponentId="{F905AD30-1B15-4304-8F3F-C573C3D6FA98}" Directory_="APPDIR" Attributes="0" KeyPath="VCell.exe"/>
+    <ROW Component="VCellCore.jar" ComponentId="{C5D14903-6C6E-42DE-8D9F-3564A01672CF}" Directory_="APPDIR" Attributes="0" KeyPath="VCellCore.jar" Type="0"/>
+    <ROW Component="gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" ComponentId="{AF95A86D-B7A7-491D-BD98-C22477BA1B24}" Directory_="SampleData_DIR" Attributes="0" KeyPath="gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" Type="0"/>
+    <ROW Component="readme.txt" ComponentId="{65728F40-41B7-4325-89D4-8E1BCA8653E5}" Directory_="SimulationData_DIR" Attributes="0" KeyPath="readme.txt" Type="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
+    <ROW Feature="VCell" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="VCell.exe VCellCore.jar FiniteVolume readme.txt gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap"/>
+    <ATTRIBUTE name="CurrentFeature" value="VCell"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
+    <ROW File="FiniteVolume" Component_="FiniteVolume" FileName="Finite~1|FiniteVolume" Attributes="0" SourcePath="VirtualMicroscopy\fvexecutables\mac\FiniteVolume" SelfReg="false" Sequence="28"/>
+    <ROW File="JLink.jar" Component_="VCellCore.jar" FileName="JLink.jar" Attributes="0" SourcePath="VirtualMicroscopy\JLink.jar" SelfReg="false" Sequence="6"/>
+    <ROW File="MiriamJavaLib_standalone_20070625.jar" Component_="VCellCore.jar" FileName="Miriam~1.jar|MiriamJavaLib-standalone-20070625.jar" Attributes="0" SourcePath="VirtualMicroscopy\MiriamJavaLib-standalone-20070625.jar" SelfReg="false" Sequence="8"/>
+    <ROW File="NetCDF2_2_20_VCell.jar" Component_="VCellCore.jar" FileName="NetCDF~1.jar|NetCDF2_2_20_VCell.jar" Attributes="0" SourcePath="VirtualMicroscopy\NetCDF2_2_20_VCell.jar" SelfReg="false" Sequence="9"/>
+    <ROW File="VCell.exe" Component_="VCell.exe" FileName="VFrap.exe" Attributes="0" SourcePath="&lt;AI_STUBS&gt;aijclw.exe" SelfReg="false" Sequence="1" DigSign="true"/>
+    <ROW File="VCellCore.jar" Component_="VCellCore.jar" FileName="VCellC~1.jar|VCellCore.jar" Attributes="0" SourcePath="VirtualMicroscopy\VCellCore.jar" SelfReg="false" Sequence="2"/>
+    <ROW File="VFrap.jar" Component_="VCellCore.jar" FileName="VFrap.jar" Attributes="0" SourcePath="VirtualMicroscopy\VFrap.jar" SelfReg="false" Sequence="24"/>
+    <ROW File="bio_formats_2009March15.jar" Component_="VCellCore.jar" FileName="bio-fo~1.jar|bio-formats_2009March15.jar" Attributes="0" SourcePath="VirtualMicroscopy\bio-formats_2009March15.jar" SelfReg="false" Sequence="3"/>
+    <ROW File="gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" Component_="gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" FileName="gaussi~1.vfr|gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" Attributes="0" SourcePath="Sample data\gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" SelfReg="false" Sequence="30"/>
+    <ROW File="halfcell_28380727_totalfluor_diffp3_bwmp0075_mfp675.vfrap" Component_="gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" FileName="halfce~1.vfr|halfcell_28380727_totalfluor_diffp3_bwmp0075_mfp675.vfrap" Attributes="0" SourcePath="Sample data\halfcell_28380727_totalfluor_diffp3_bwmp0075_mfp675.vfrap" SelfReg="false" Sequence="31"/>
+    <ROW File="jai_codec.jar" Component_="VCellCore.jar" FileName="jai_co~1.jar|jai_codec.jar" Attributes="0" SourcePath="VirtualMicroscopy\jai_codec.jar" SelfReg="false" Sequence="4"/>
+    <ROW File="jai_core.jar" Component_="VCellCore.jar" FileName="jai_core.jar" Attributes="0" SourcePath="VirtualMicroscopy\jai_core.jar" SelfReg="false" Sequence="5"/>
+    <ROW File="jh_2_0_05.jar" Component_="VCellCore.jar" FileName="jh_2_0~1.jar|jh_2_0_05.jar" Attributes="0" SourcePath="VirtualMicroscopy\jh_2_0_05.jar" SelfReg="false" Sequence="26"/>
+    <ROW File="jmf.jar" Component_="VCellCore.jar" FileName="jmf.jar" Attributes="0" SourcePath="VirtualMicroscopy\jmf.jar" SelfReg="false" Sequence="27"/>
+    <ROW File="libNativeSolvers.jnilib" Component_="VCellCore.jar" FileName="libNat~1.jni|libNativeSolvers.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libNativeSolvers.jnilib" SelfReg="false" Sequence="18"/>
+    <ROW File="libNativeSolversG5.jnilib" Component_="VCellCore.jar" FileName="libNat~2.jni|libNativeSolversG5.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libNativeSolversG5.jnilib" SelfReg="false" Sequence="19"/>
+    <ROW File="libexpat.jnilib" Component_="VCellCore.jar" FileName="libexp~1.jni|libexpat.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libexpat.jnilib" SelfReg="false" Sequence="16"/>
+    <ROW File="libexpatG5.jnilib" Component_="VCellCore.jar" FileName="libexp~2.jni|libexpatG5.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libexpatG5.jnilib" SelfReg="false" Sequence="17"/>
+    <ROW File="libsbml.jnilib" Component_="VCellCore.jar" FileName="libsbm~1.jni|libsbml.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libsbml.jnilib" SelfReg="false" Sequence="20"/>
+    <ROW File="libsbmlG5.jnilib" Component_="VCellCore.jar" FileName="libsbm~2.jni|libsbmlG5.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libsbmlG5.jnilib" SelfReg="false" Sequence="21"/>
+    <ROW File="libsbmlj.jnilib" Component_="VCellCore.jar" FileName="libsbm~3.jni|libsbmlj.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libsbmlj.jnilib" SelfReg="false" Sequence="22"/>
+    <ROW File="libsbmljG5.jnilib" Component_="VCellCore.jar" FileName="libsbm~4.jni|libsbmljG5.jnilib" Attributes="0" SourcePath="VirtualMicroscopy\libsbmljG5.jnilib" SelfReg="false" Sequence="23"/>
+    <ROW File="loci_common_2009March15.jar" Component_="VCellCore.jar" FileName="loci-c~1.jar|loci-common_2009March15.jar" Attributes="0" SourcePath="VirtualMicroscopy\loci-common_2009March15.jar" SelfReg="false" Sequence="7"/>
+    <ROW File="logo_vfrap.ico" Component_="VCellCore.jar" FileName="logo_v~1.ico|logo_vfrap.ico" Attributes="0" SourcePath="VirtualMicroscopy\logo_vfrap.ico" SelfReg="false" Sequence="25"/>
+    <ROW File="new_activation.jar" Component_="VCellCore.jar" FileName="new_ac~1.jar|new_activation.jar" Attributes="0" SourcePath="VirtualMicroscopy\new_activation.jar" SelfReg="false" Sequence="10"/>
+    <ROW File="new_mail.jar" Component_="VCellCore.jar" FileName="new_mail.jar" Attributes="0" SourcePath="VirtualMicroscopy\new_mail.jar" SelfReg="false" Sequence="11"/>
+    <ROW File="ome_xml_2009March15.zip" Component_="VCellCore.jar" FileName="ome-xm~1.zip|ome-xml_2009March15.zip" Attributes="0" SourcePath="VirtualMicroscopy\ome-xml_2009March15.zip" SelfReg="false" Sequence="12"/>
+    <ROW File="readme.txt" Component_="readme.txt" FileName="readme~1.txt|.readme.txt" Attributes="0" SourcePath="SimulationData\.readme.txt" SelfReg="false" Sequence="29"/>
+    <ROW File="sbmlj.jar" Component_="VCellCore.jar" FileName="sbmlj.jar" Attributes="0" SourcePath="VirtualMicroscopy\sbmlj.jar" SelfReg="false" Sequence="13"/>
+    <ROW File="test2.lsm" Component_="gaussian_28349973_totalfluor_diffp3_bwmp0075_mfp675.vfrap" FileName="test2.lsm" Attributes="0" SourcePath="Sample data\test2.lsm" SelfReg="false" Sequence="32"/>
+    <ROW File="thirdParty.jar" Component_="VCellCore.jar" FileName="thirdP~1.jar|thirdParty.jar" Attributes="0" SourcePath="VirtualMicroscopy\thirdParty.jar" SelfReg="false" Sequence="14"/>
+    <ROW File="xml_apis.jar" Component_="VCellCore.jar" FileName="xml-apis.jar" Attributes="0" SourcePath="VirtualMicroscopy\xml-apis.jar" SelfReg="false" Sequence="15"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
+    <ROW BuildKey="BuildMacOS" BuildName="BuildMacOS" BuildOrder="2" BuildType="2" PackageName="VMSetup_macosx" Languages="en" MacDefaultMemorySize="500"/>
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" Languages="en" InstallationType="4"/>
+    <ATTRIBUTE name="CurrentBuild" value="DefaultBuild"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
+    <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
+    <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
+    <ROW Fragment="FolderDlg.aip" Path="&lt;AI_FRAGS&gt;FolderDlg.aip"/>
+    <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
+    <ROW Fragment="UI.aip" Path="&lt;AI_FRAGS&gt;UI.aip"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
+    <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
+    <ROW Name="default_banner.bmp" SourcePath="&lt;AI_RES&gt;default-banner.bmp"/>
+    <ROW Name="default_dialog.bmp" SourcePath="&lt;AI_RES&gt;default-dialog.bmp"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlComponent">
+    <ATTRIBUTE name="FixedSizeBitmaps" value="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlEventComponent">
+    <ROW Dialog_="FolderDlg" Control_="Back" Event="NewDialog" Argument="WelcomeDlg" Condition="AI_INSTALL" Ordering="1"/>
+    <ROW Dialog_="WelcomeDlg" Control_="Next" Event="NewDialog" Argument="FolderDlg" Condition="AI_INSTALL" Ordering="1"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="FolderDlg" Condition="AI_INSTALL" Ordering="1"/>
+    <ROW Dialog_="FolderDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_INSTALL" Ordering="3"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceWelcomeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="MaintenanceWelcomeDlg" Control_="Next" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="2"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="PatchWelcomeDlg" Condition="AI_PATCH" Ordering="1"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_PATCH" Ordering="3"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
+    <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
+    <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
+    <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
+    <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
+    <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
+    <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
+    <ROW Name="controlPanelIcon.exe" SourcePath="VirtualMicroscopy\logo_vfrap.ico" Index="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIniFileComponent">
+    <ROW IniFile="Application_Type" FileName="VFrap.ini" DirProperty="APPDIR" Section="Application" Key="Application Type" Value="gui" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Class_Path" FileName="VFrap.ini" DirProperty="APPDIR" Section="Class Path" Key="Class Path" Value="[#VFrap.jar];[#jh_2_0_05.jar];[#jai_core.jar];[#jai_codec.jar];[#jmf.jar];[#VCellCore.jar];[#xml_apis.jar];[#sbmlj.jar];[#new_mail.jar];[#new_activation.jar];[#ome_xml_2009March15.zip];[#loci_common_2009March15.jar];[#bio_formats_2009March15.jar];[#NetCDF2_2_20_VCell.jar];[#MiriamJavaLib_standalone_20070625.jar];[#JLink.jar];[#thirdParty.jar];[APPDIR];" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Error_File" FileName="VFrap.ini" DirProperty="APPDIR" Section="Application" Key="Error File" Value="[APPDIR]error.log" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Failure_Check" FileName="VFrap.ini" DirProperty="APPDIR" Section="Application" Key="Failure Check" Value="yes" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Library_Path" FileName="VFrap.ini" DirProperty="APPDIR" Section="Java Runtime Environment" Key="Library Path" Value="[APPDIR];" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Main_Class" FileName="VFrap.ini" DirProperty="APPDIR" Section="Java Runtime Environment" Key="Main Class" Value="cbit.vcell.microscopy.gui.VirtualFrapLoader" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Maximum_Version" FileName="VFrap.ini" DirProperty="APPDIR" Section="Java Runtime Environment" Key="Maximum Version" Value="1.5" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Minimum_Version" FileName="VFrap.ini" DirProperty="APPDIR" Section="Java Runtime Environment" Key="Minimum Version" Value="1.5" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Output_File" FileName="VFrap.ini" DirProperty="APPDIR" Section="Application" Key="Output File" Value="[APPDIR]output.log" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Override_WorkingDir" FileName="VFrap.ini" DirProperty="APPDIR" Section="Application" Key="Override WorkingDir" Value="yes" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Preferred_versions" FileName="VFrap.ini" DirProperty="APPDIR" Section="Java Runtime Environment" Key="Preferred versions" Value="1.5" Action="0" Component_="VCell.exe"/>
+    <ROW IniFile="Virtual_Machine_Parameters" FileName="VFrap.ini" DirProperty="APPDIR" Section="Java Runtime Environment" Key="Virtual Machine Parameters" Value="-Xms10:50:600P -Xmx30:100:600P " Action="0" Component_="VCell.exe"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
+    <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="740"/>
+    <ROW Action="AI_STORE_LOCATION" Condition="Not Installed" Sequence="1545"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1300"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="740"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiJavaComponent">
+    <ROW Name="VCell.exe" Launcher="VCell.exe" MainClass="Main_Class" ClassPath="Class_Path" VMParams="Virtual_Machine_Parameters" JREMin="Minimum_Version" JREMax="Maximum_Version" IconPath="VirtualMicroscopy\logo_vfrap.ico" AppType="Application_Type" PreferredVersion="Preferred_versions" LibPath="Library_Path" PlusList="APPDIR;" MinusList="SampleData_DIR;#VCell.exe;" MacVersion="10.0.0" MacDescription="[|CurrentJavaProductName] [|ProductVersion] © [|Manufacturer], Inc, 2008" MacBundleId="com.[|Manufacturer].[|ProductName].[|CurrentJavaProductName]" OutputFile="Output_File" ErrorFile="Error_File" FailureCheck="Failure_Check" OverrideWkDir="Override_WorkingDir" UACExecutionLevel="0"/>
+    <ATTRIBUTE name="MacCommonPlusList" value="SampleData_DIR;SimulationData_DIR;"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMax="[|ProductVersion]" Attributes="1025" ActionProperty="OLDPRODUCTS"/>
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.SynchronizedFolderComponent">
+    <ROW Directory_="APPDIR" SourcePath="VirtualMicroscopy" ExcludePattern="*~|#*#|%*%|._|CVS|.cvsignore|SCCS|vssver.scc|mssccprj.scc|vssver2.scc|.svn|.DS_Store" ExcludeFlags="6"/>
+    <ROW Directory_="SampleData_DIR" SourcePath="Sample data" ExcludePattern="*~|#*#|%*%|._|CVS|.cvsignore|SCCS|vssver.scc|mssccprj.scc|vssver2.scc|.svn|.DS_Store" ExcludeFlags="6"/>
+  </COMPONENT>
+</DOCUMENT>
