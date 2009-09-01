@@ -12,6 +12,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Hashtable;
 
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -44,25 +46,23 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	private static final long serialVersionUID = 1L;
 	private OverlayEditorPanelJAI overlayEditorPanel = null;
 	private FRAPStudy frapStudy = null;  //  @jve:decl-index=0:
-	private EventHandler eventHandler = new EventHandler();
+//	private EventHandler eventHandler = new EventHandler();
 	private LocalWorkspace localWorkspace = null;
+	//The frap data panel can be editable or not. e.g. the frapData panel in the main frame is not editable.
+	//However the frap data panel in define ROI wizard is editable
+	private boolean isEditable = true;
 		
-	private class EventHandler implements PropertyChangeListener {
-
-		public void propertyChange(PropertyChangeEvent evt) {
-			if (frapStudy!=null){
-				if (evt.getSource()==frapStudy.getFrapData()){
-					if (evt.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI)){
-						//Save user changes from viewer to ROI
-						getOverlayEditorPanelJAI().saveUserChangesToROI();
-						//Set new ROI on viewer
-						getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
-					}
-				}
-			}
-		}
-		
-	}// end of class EventHandler
+//	private class EventHandler implements PropertyChangeListener {
+//
+//		public void propertyChange(PropertyChangeEvent evt) {
+//			if (frapStudy!=null){
+//				if (evt.getSource()==frapStudy.getFrapData()){
+//					
+//				}
+//			}
+//		}
+//		
+//	}// end of class EventHandler
 	
 	//implementation of propertychange as a propertyChangeListener
 	public void propertyChange(PropertyChangeEvent e) {
@@ -77,6 +77,16 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			} catch (Exception ex) {
 				PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+ex.getMessage());
 			}
+		}
+		else if (e.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI)){
+			//Save user changes from viewer to ROI
+			//To save only when the image is editable in this panel
+			if(isEditable)
+			{
+				getOverlayEditorPanelJAI().saveUserChangesToROI();
+			}
+			//Set new ROI on viewer
+			getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
 		}
 	}
 	//There are two FRAPDataPanel instances, one is in MainFrame and antoher is in DefineROIWizard
@@ -102,7 +112,16 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	 * This is the default constructor
 	 */
 	public FRAPDataPanel() {
+		this(true);
+	}
+	
+	/**
+	 * The constructor which specifies whether the image is editable or not is the panel.
+	 * Added in August, 2009
+	 */
+	public FRAPDataPanel(boolean arg_isEditable) {
 		super();
+		isEditable = arg_isEditable;
 		initialize();
 	}
 
@@ -135,7 +154,11 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 						try {
 							String roiName = (String)evt.getNewValue();
-							setCurrentROI(roiName);
+//							saveROI();
+							if(roiName != null)
+							{
+								getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getRoi(roiName));
+							}
 						} catch (Exception e) {
 							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
 						}						
@@ -154,14 +177,14 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		
 	}
 	
-	public void setCurrentROI(String roiName)
-	{
-		saveROI();
-		if(roiName != null)
-		{
-			getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getRoi(roiName));
-		}
-	}
+//	public void setCurrentROI(String roiName)
+//	{
+//		saveROI();
+//		if(roiName != null)
+//		{
+//			getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getRoi(roiName));
+//		}
+//	}
 
 	public OverlayEditorPanelJAI getOverlayEditorPanelJAI(){
 		if (overlayEditorPanel==null){
@@ -180,22 +203,22 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		return frapStudy;
 	}
 
-	public void setFrapStudy(FRAPStudy argFrapStudy,boolean isNew) {
+	public void setFrapStudy(final FRAPStudy argFrapStudy,boolean isNew) {
 		FRAPData oldFrapData = (frapStudy!=null)?(frapStudy.getFrapData()):(null);
 		FRAPStudy oldFrapStudy = this.frapStudy;
 		if (oldFrapStudy!=null){
-			oldFrapStudy.removePropertyChangeListener(eventHandler);
+			oldFrapStudy.removePropertyChangeListener(this);
 		}
 		if (oldFrapData!=null){
-			oldFrapData.removePropertyChangeListener(eventHandler);
+			oldFrapData.removePropertyChangeListener(this);
 		}
 		this.frapStudy = argFrapStudy;
 		if (frapStudy!=null){
-			frapStudy.addPropertyChangeListener(eventHandler);
+			frapStudy.addPropertyChangeListener(this);
 		}
 		FRAPData frapData = ((frapStudy!=null)?(frapStudy.getFrapData()):(null));
 		if (frapData!=null){
-			frapData.addPropertyChangeListener(eventHandler);
+			frapData.addPropertyChangeListener(this);
 		}
 		overlayEditorPanel.setImages(
 			(frapData==null?null:frapData.getImageDataset()),isNew,
@@ -233,7 +256,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		double[] averageFluor =
 			FRAPDataAnalysis.getAverageROIIntensity(getFrapStudy().getFrapData(),
 				getFrapStudy().getFrapData().getCurrentlyDisplayedROI(),null,null);
-		FRAPDataPanel.showCurve(null, new String[] { "f" }, getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
+		FRAPDataPanel.showCurve(new String[] { "f" }, getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
 	}
 	
 	public void saveROI(){
@@ -267,7 +290,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	public void setLocalWorkspace(LocalWorkspace localWorkspace) {
 		this.localWorkspace = localWorkspace;
 	}
-	private static void showCurve(WindowListener windowListener, String[] varNames, double[] independent, double[][] dependents){
+	private static void showCurve(String[] varNames, double[] independent, double[][] dependents){
 		PlotPane plotter = new PlotPane();
 		PlotData[] plotDatas = new PlotData[dependents.length];
 		for (int i = 0; i < plotDatas.length; i++) {
@@ -276,15 +299,16 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		Plot2D plot2D = new Plot2D(null, varNames, plotDatas);
 		
 		plotter.setPlot2D(plot2D);
+		plotter.selectStepView(false, false);
+
 		
-		JFrame frame = new JFrame();
-		frame.setTitle("ROI time course");
-		frame.addWindowListener(windowListener);
-		frame.getContentPane().add(plotter);
-		frame.setLocation(new Point(300,300));
-		frame.pack();
-		frame.setSize(new Dimension(400,400));
-		frame.setVisible(true);
+		JDialog plotDialog = new JDialog();
+		plotDialog.setTitle("ROI time course");
+		plotDialog.getContentPane().add(plotter);
+		plotDialog.setLocation(new Point(300,300));
+		plotDialog.setSize(new Dimension(400,400));
+		plotDialog.setModal(true);
+		plotDialog.setVisible(true);
 	}
 	
 } 

@@ -1,18 +1,43 @@
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.Hashtable;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotUndoException;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
+
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.geometry.gui.ROISourceData;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.geometry.gui.ROIAssistPanel;
+import cbit.vcell.microscopy.gui.VirtualFrapLoader;
+import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
+import cbit.vcell.simdata.DataSetControllerImpl;
 
-public class DefineROI_Panel extends JPanel
+public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 {
 	DefineROITopTitlePanel topPanel = null;
 	FRAPDataPanel centerPanel = null;
+	FRAPStudy fStudy = null;
 	
 	public DefineROI_Panel() {
 		super();
@@ -34,6 +59,7 @@ public class DefineROI_Panel extends JPanel
 		if(centerPanel == null)
 		{
 			centerPanel = new FRAPDataPanel();
+			centerPanel.addPropertyChangeListener(this);
 		}
 		return centerPanel;
 	}
@@ -49,6 +75,7 @@ public class DefineROI_Panel extends JPanel
 	
 	public void setFRAPStudy(FRAPStudy fStudy)
 	{
+		this.fStudy = fStudy;
 		centerPanel.setFrapStudy(fStudy, true);
 	}
 	
@@ -60,6 +87,13 @@ public class DefineROI_Panel extends JPanel
 	
 	public void setCurrentROI(String roiName)
 	{
-		centerPanel.setCurrentROI(roiName);
+		FRAPData fData = centerPanel.getFrapStudy().getFrapData();
+		fData.setCurrentlyDisplayedROI(fData.getRoi(roiName));
+	}
+	
+	public void propertyChange(PropertyChangeEvent evt) {
+		if(evt.getSource() == getCenterPanel().getOverlayEditorPanelJAI()){
+			 
+		}
 	}
 }

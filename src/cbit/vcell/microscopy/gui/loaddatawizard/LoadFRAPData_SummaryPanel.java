@@ -19,6 +19,7 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
@@ -222,9 +223,9 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			sTimeCombo.setSelectedIndex(0);
 			eTimeCombo.setSelectedIndex(timeSteps.length-1);
 			totTimeLabel.setText((timeSteps[timeSteps.length-1] - timeSteps[0])+""); 
-			UShortImage img = frapStudy.getFrapData().getImageDataset().getAllImages()[0];
-			imgSizeX.setText(NumberUtils.formatNumber(img.getExtent().getX(), 15));
-			imgSizeY.setText(NumberUtils.formatNumber(img.getExtent().getY(), 15));
+			ImageDataset imgDataset = frapStudy.getFrapData().getImageDataset();
+			imgSizeX.setText(NumberUtils.formatNumber(imgDataset.getExtent().getX(), 15));
+			imgSizeY.setText(NumberUtils.formatNumber(imgDataset.getExtent().getY(), 15));
 		}
 		else
 		{
