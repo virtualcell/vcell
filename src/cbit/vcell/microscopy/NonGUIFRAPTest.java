@@ -152,7 +152,7 @@ public class NonGUIFRAPTest {
 		String xmlString = XmlUtil.getXMLString(xmlFileName);
 		//System.out.println(xmlString);
 		MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
-		FRAPStudy frapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),null);
+		FRAPStudy frapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),null);
 		
 		if(frapStudy == null || frapStudy.getFrapData() == null){
 			throw new Exception("no FrapData in file "+xmlFileName);

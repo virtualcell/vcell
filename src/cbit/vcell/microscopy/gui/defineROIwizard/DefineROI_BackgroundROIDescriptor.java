@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -18,18 +19,25 @@ import org.vcell.wizard.WizardPanelDescriptor;
 
 public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
     
-    public static final String IDENTIFIER = "DefineROI_BackgroundROI";
+    public static final String IDENTIFIER = "DefineROI_backgroundROI";
     private PropertyChangeSupport propertyChangeSupport;
-    
+    private JPanel imgPanel = null;
     public DefineROI_BackgroundROIDescriptor (JPanel imagePanel) {
-        super(IDENTIFIER, imagePanel);
+    	super();
+        imgPanel = imagePanel;
+        JPanel bgPanel = new JPanel(new BorderLayout());
+//        cropPanel.add(imagePanel);
+        setPanelDescriptorIdentifier(IDENTIFIER);
+        setPanelComponent(bgPanel);
         setProgressPopupShown(false); 
         setTaskProgressKnown(false);
+        
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
     
     public String getNextPanelDescriptorID() {
-        return Wizard.FINISH.getPanelDescriptorIdentifier();
+        return DefineROI_SummaryDescriptor.IDENTIFIER;
+//    	return Wizard.FINISH.getPanelDescriptorIdentifier();
     }
     
     public String getBackPanelDescriptorID() {
@@ -38,7 +46,9 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
     
     public void aboutToDisplayPanel()
     {
-    	((DefineROI_Panel)getPanelComponent()).adjustComponents(OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI);
+    	((JPanel)getPanelComponent()).removeAll();
+    	((JPanel)getPanelComponent()).add(imgPanel);
+    	((DefineROI_Panel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI);
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()
@@ -52,8 +62,8 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it goes next to
-				((DefineROI_Panel)getPanelComponent()).setCurrentROI(nextROIStr);
-				firePropertyChange(FRAPStudyPanel.DEFINEROI_CHANGE_PROPERTY, null, ((DefineROI_Panel)getPanelComponent()).getCenterPanel().getFrapStudy());
+				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr);
+				firePropertyChange(FRAPStudyPanel.DEFINEROI_CHANGE_PROPERTY, null, ((DefineROI_Panel)imgPanel).getCenterPanel().getFrapStudy());
 			}
 		};
 		taskArrayList.add(setCurrentROITask);
@@ -71,7 +81,7 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it backs to 
-				((DefineROI_Panel)getPanelComponent()).setCurrentROI(backROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(backROIStr);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);															

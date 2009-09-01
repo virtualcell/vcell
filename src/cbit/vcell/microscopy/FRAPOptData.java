@@ -744,7 +744,7 @@ public class FRAPOptData {
 			String expFileName = "C:/VirtualMicroscopy/testFastD_4_fastFrac_0p5_slowD_1_slowFrac_0p3_ImmobileFrac_0p2_mwb_0p0015_new.vfrap";
 			xmlString = XmlUtil.getXMLString(expFileName);
 			MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
-			FRAPStudy expFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null), null);
+			FRAPStudy expFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(), null);
 			expFrapStudy.setXmlFilename(expFileName);
 			System.out.println("experimental data time points"+expFrapStudy.getFrapData().getImageDataset().getSizeT());
 			System.out.println("finish loading original data....");

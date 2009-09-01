@@ -67,7 +67,7 @@ public MicroscopyXmlReader(boolean readKeys) {
 
 public static ExternalDataAndSimulationInfo getExternalDataAndSimulationInfo(File vfrapDocument) throws Exception{
 	String xmlString = XmlUtil.getXMLString(vfrapDocument.getAbsolutePath());
-	Element param  = XmlUtil.stringToXML(xmlString, null);
+	Element param  = XmlUtil.stringToXML(xmlString, null).getRootElement();
 	MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
 	
 	KeyValue simulationKeyValue = null;

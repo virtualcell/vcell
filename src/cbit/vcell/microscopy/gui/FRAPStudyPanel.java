@@ -106,6 +106,7 @@ import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BleachedROIDescriptor
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CellROIDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CropDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_SummaryDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_CompareResultsDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReacBindingDescriptor;
@@ -162,6 +163,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String LOADDATA_VERIFY_INFO_PROPERTY = "LOADDATA_VERIFY_INFO_PROPERTY";
 	public static final String DEFINEROI_CROP_PROPERTY = "DEFINEROI_CROP_PROPERTY";
 	public static final String DEFINEROI_CHANGE_PROPERTY = "DEFINEROI_CHANGE_PROPERTY";
+	public static final String DEFINEROI_VERIFY_INFO_PROPERTY = "DEFINEROI_VERIFY_INFO_PROPERTY";
 	
 	private Expression Norm_Exp_Fluor = null;
 	private Expression Norm_Sim = null;
@@ -206,7 +208,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private Wizard modelTypeWizard = null;
 	private Wizard estimateParamWizard = null;
 	private Wizard restartWizard = null;
-	
+	private DefineROI_Panel imgPanel = null;
 	
 	public class WorkFlowButtonHandler implements ActionListener
 	{
@@ -689,7 +691,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	 */
 	public FRAPDataPanel getFRAPDataPanel() {
 		if (frapDataPanel == null) {
-			frapDataPanel = new FRAPDataPanel();
+			frapDataPanel = new FRAPDataPanel(false);//the frap data panel in the main frame is not editable
 			frapDataPanel.setBorder(TAB_LINE_BORDER);
 //			frapDataPanel.getOverlayEditorPanelJAI().addPropertyChangeListener(this);
 			
@@ -716,7 +718,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 									//ignore
 								}
 							};
-						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),progressListener);
+						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),progressListener);
 						VirtualFrapMainFrame.updateProgress(0);
 						ROI roi = getFrapStudy().getFrapData().getCurrentlyDisplayedROI();
 						if(importedFrapStudy.getFrapData() != null && importedFrapStudy.getFrapData().getRois() != null){
@@ -1085,7 +1087,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return frapStudy;
 	}
 
-	public void setFrapStudy(final FRAPStudy argFrapStudy,boolean bNew) {
+	public void setFrapStudy(FRAPStudy argFrapStudy,boolean bNew) {
 		SwingUtilities.invokeLater(new Runnable(){public void run(){
 			getResultsSummaryPanel().clearData();//spatialAnalysisList = null;
 		}});
@@ -1392,7 +1394,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							clearCurrentLoadState();
 							String xmlString = XmlUtil.getXMLString(inFile.getAbsolutePath());
 							MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
-							newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),loadFileProgressListener);
+							newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),loadFileProgressListener);
 							if(!areExternalDataOK(getLocalWorkspace(),newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo())){
 								newFRAPStudy.setFrapDataExternalDataInfo(null);
 								newFRAPStudy.setRoiExternalDataInfo(null);
@@ -2501,55 +2503,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 	}
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(evt.getSource() == getFRAPDataPanel().getOverlayEditorPanelJAI()){
-			 if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOROI_PROPERTY)){
-				if(!getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()) &&
-					getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero()
-					){
-					DialogUtils.showInfoDialog(FRAPStudyPanel.this,"Define '"+OverlayEditorPanelJAI.WHOLE_CELL_AREA_TEXT+"'"+
-							" ROI using ROI Tools or '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"'"+
-							" before using '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"' to define Bleach or Backgroun ROIs");
-					return;
-				}
-				JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(this, JFrame.class));
-				roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
-				roiDialog.setModal(true);
-				ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
-				ROI originalROI = null;
-				try{
-					originalROI = new ROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
-				}catch(Exception e){
-					e.printStackTrace();
-					//can't happen
-				}
-				roiAssistPanel.init(roiDialog,originalROI,
-						getFrapStudy().getFrapData(),getFRAPDataPanel().getOverlayEditorPanelJAI());
-				roiDialog.setContentPane(roiAssistPanel);
-				roiDialog.pack();
-				roiDialog.setSize(400,200);
-				ZEnforcer.showModalDialogOnTop(roiDialog, this);
-				
-				if(!originalROI.compareEqual(getFrapStudy().getFrapData().getCurrentlyDisplayedROI())){
-					final ROI finalOriginalROI = originalROI;
-					undoableEditSupport.postEdit(
-						new AbstractUndoableEdit(){
-							public boolean canUndo() {
-								return true;
-							}
-							public String getUndoPresentationName() {
-								return "ROI Threshold "+finalOriginalROI.getROIName();
-							}
-							public void undo() throws CannotUndoException {
-								super.undo();
-								getFrapStudy().getFrapData().addReplaceRoi(finalOriginalROI);
-							}
-						}
-					);					
-				}else{
-					undoableEditSupport.postEdit(CLEAR_UNDOABLE_EDIT);
-				}
-			}
-		}
+		
 		if(evt.getPropertyName().equals(LOADDATA_FRAPSTUDY_CHANGE_PROPERTY))
 		{
 			//update FRAPStudyPanel and FRAPDataPanel after loading new file()
@@ -2600,17 +2554,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			FRAPStudy fStudy = (FRAPStudy)evt.getNewValue();
 			setFrapStudy(fStudy, true);
-			
 			boolean isROIExist = false;
 			ROI[] rois = fStudy.getFrapData().getRois();
 			for(int i = 0; i < rois.length; i++)
 			{
-				if(!rois[i].isAllPixelsZero())
+				if((rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()) ||
+					rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) ||
+					rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())) 
+					&& !rois[i].isAllPixelsZero())
 				{
 					isROIExist = true;
 					break;
 				}
 			}
+			
 			if(isROIExist)
 			{
 				getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
@@ -2620,6 +2577,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
 			}
 			refreshUI();
+			firePropertyChange(DEFINEROI_CHANGE_PROPERTY, null, fStudy);
+		}
+		else if(evt.getPropertyName().equals(DEFINEROI_VERIFY_INFO_PROPERTY))
+		{
+			int startIndex = ((Integer)evt.getNewValue()).intValue();
+			getFrapStudy().setStartingIndexForRecovery(startIndex);
 		}
 	}
 
@@ -3036,10 +2999,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public Wizard getDefineROIWizard()
 	{
-//		if(defineROIWizard == null)
-//		{
+		
+		if(defineROIWizard == null)
+		{
 			//use one panel for all the steps.
-			DefineROI_Panel imgPanel = new DefineROI_Panel();
+			imgPanel = new DefineROI_Panel();
 		
 			defineROIWizard = new Wizard(JOptionPane.getFrameForComponent(this));
 			defineROIWizard.getDialog().setTitle("Define ROIs");
@@ -3056,7 +3020,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        DefineROI_BackgroundROIDescriptor backgroundROIDescriptor = new DefineROI_BackgroundROIDescriptor(imgPanel);
 	        defineROIWizard.registerWizardPanel(DefineROI_BackgroundROIDescriptor.IDENTIFIER, backgroundROIDescriptor);
 	        backgroundROIDescriptor.addPropertyChangeListener(this);
-//		}
+	        
+	        DefineROI_SummaryDescriptor ROISummaryDescriptor = new DefineROI_SummaryDescriptor(imgPanel);
+	        defineROIWizard.registerWizardPanel(DefineROI_SummaryDescriptor.IDENTIFIER, ROISummaryDescriptor);
+	        this.addPropertyChangeListener(ROISummaryDescriptor);
+	        ROISummaryDescriptor.addPropertyChangeListener(this);
+		}
 		//always start from the first page
 		defineROIWizard.setCurrentPanel(DefineROI_CropDescriptor.IDENTIFIER);
 		imgPanel.setFRAPStudy(getFrapStudy());

@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -29,11 +30,16 @@ import org.vcell.wizard.WizardPanelDescriptor;
 public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
     
     public static final String IDENTIFIER = "DefineROI_CellROI";
-    
+    private JPanel imgPanel = null;
     public DefineROI_CellROIDescriptor (JPanel imagePanel) {
-        super(IDENTIFIER, imagePanel);
-        setProgressPopupShown(false); 
-        setTaskProgressKnown(false);
+    	 super();
+         imgPanel = imagePanel;
+         JPanel cellPanel = new JPanel(new BorderLayout());
+//         cropPanel.add(imagePanel);
+         setPanelDescriptorIdentifier(IDENTIFIER);
+         setPanelComponent(cellPanel);
+         setProgressPopupShown(false); 
+         setTaskProgressKnown(false);
     }
     
     public String getNextPanelDescriptorID() {
@@ -46,7 +52,9 @@ public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
     
     public void aboutToDisplayPanel()
     {
-    	((DefineROI_Panel)getPanelComponent()).adjustComponents(OverlayEditorPanelJAI.DEFINE_CELLROI);
+    	((JPanel)getPanelComponent()).removeAll();
+    	((JPanel)getPanelComponent()).add(imgPanel);
+    	((DefineROI_Panel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_CELLROI);
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()
@@ -60,7 +68,7 @@ public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it goes next to
-				((DefineROI_Panel)getPanelComponent()).setCurrentROI(nextROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);
@@ -72,13 +80,13 @@ public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
     	//create AsynchClientTask arraylist
 		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
     	
-		final String backROIStr = null;
+		final String backROIStr = FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name();
 		AsynchClientTask setCurrentROITask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it backs to 
-				((DefineROI_Panel)getPanelComponent()).setCurrentROI(backROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(backROIStr);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);															

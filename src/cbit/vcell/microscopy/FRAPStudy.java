@@ -119,6 +119,7 @@ public class FRAPStudy implements Matchable{
 	private String originalImageFilePath = null;
 	private FRAPData frapData = null;
 	private int startingIndexForRecovery = -1;
+
 	private BioModel bioModel = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
@@ -2090,4 +2091,13 @@ public class FRAPStudy implements Matchable{
 		this.frapOptData = frapOptData;
 	}
 
+	public int getStartingIndexForRecovery() {
+		return startingIndexForRecovery;
+	}
+
+
+	public void setStartingIndexForRecovery(int startingIndexForRecovery) {
+		this.startingIndexForRecovery = startingIndexForRecovery;
+	}
+	
 }
