@@ -2512,7 +2512,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			//adjust panel when loaded new FRAPData coz setFrapStudy will enable all the components in  frapDataPanel, no ROIs for sure
 			getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
 			refreshUI();
-			firePropertyChange(LOADDATA_FRAPSTUDY_CHANGE_PROPERTY, null, fStudy);
 		}
 		else if(evt.getPropertyName().equals(LOADDATA_VERIFY_INFO_PROPERTY))
 		{
@@ -2577,7 +2576,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
 			}
 			refreshUI();
-			firePropertyChange(DEFINEROI_CHANGE_PROPERTY, null, fStudy);
 		}
 		else if(evt.getPropertyName().equals(DEFINEROI_VERIFY_INFO_PROPERTY))
 		{
@@ -2922,7 +2920,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public Wizard getLoadFRAPDataWizard()
 	{   // single/multipanel fires property change to frapstudyPanel after loaded a new exp dataset
-		// frapstudyPanel fires property change to summaryPanel to varify info and modify frapstudy in frapstudypanel
+		// it also fires property change to summaryPanel to varify info and modify frapstudy in frapstudypanel
 		// then summarypanel fires varify change to frapstudypanel to set frapstudy(already changed in frapstudypanel when passing as paramter to 
 		// summarypanel) to frapdatapanel.
 		if(loadFRAPDataWizard == null)
@@ -2945,8 +2943,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        LoadFRAPData_SummaryDescriptor fSummaryDescriptor = new LoadFRAPData_SummaryDescriptor();
 	        fSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER); //goes back to single file input by default
 	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_SummaryDescriptor.IDENTIFIER, fSummaryDescriptor);
-	        this.addPropertyChangeListener(fSummaryDescriptor);
 	        fSummaryDescriptor.addPropertyChangeListener(this);
+	        ((LoadFRAPData_MultiFileDescriptor)multiFileDescriptor).addPropertyChangeListener(fSummaryDescriptor);
+	        ((LoadFRAPData_SingleFileDescriptor)singleFileDescriptor).addPropertyChangeListener(fSummaryDescriptor);
 	        
 	        final WizardPanelDescriptor fileTypeDescriptor =  fTypeDescriptor;
 	        final WizardPanelDescriptor fileSummaryDescriptor = fSummaryDescriptor;
@@ -3023,7 +3022,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        
 	        DefineROI_SummaryDescriptor ROISummaryDescriptor = new DefineROI_SummaryDescriptor(imgPanel);
 	        defineROIWizard.registerWizardPanel(DefineROI_SummaryDescriptor.IDENTIFIER, ROISummaryDescriptor);
-	        this.addPropertyChangeListener(ROISummaryDescriptor);
+	        backgroundROIDescriptor.addPropertyChangeListener(ROISummaryDescriptor);
 	        ROISummaryDescriptor.addPropertyChangeListener(this);
 		}
 		//always start from the first page
