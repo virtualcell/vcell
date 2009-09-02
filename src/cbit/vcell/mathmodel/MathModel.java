@@ -3,12 +3,18 @@ package cbit.vcell.mathmodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.math.AbstractSimulationOwner;
 import cbit.vcell.math.MathDescription;
+
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.solver.Simulation;
@@ -18,7 +24,7 @@ import cbit.vcell.model.gui.VCellNames;
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class MathModel implements cbit.vcell.document.SimulationOwner, org.vcell.util.document.VCDocument, org.vcell.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
+public class MathModel extends AbstractSimulationOwner implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener {
 	private org.vcell.util.document.Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;

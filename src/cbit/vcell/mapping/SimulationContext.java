@@ -30,6 +30,8 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.math.AbstractSimulationOwner;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
@@ -57,7 +59,7 @@ import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext implements Versionable, Matchable, SimulationOwner, 
+public class SimulationContext extends AbstractSimulationOwner implements Versionable, Matchable, 
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable,FieldFunctionContainer {
 
 	public class SimulationContextNameScope extends BioNameScope {
@@ -490,7 +492,6 @@ public void addSimulationContextParameter(SimulationContextParameter scParameter
 	}	
 }   
 
-
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
@@ -595,7 +596,6 @@ public boolean contains(SimulationContextParameter scParameter) {
 	}
 	return false;
 }
-
 
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
@@ -1048,7 +1048,6 @@ public SimulationContext.SimulationContextParameter[] getSimulationContextParame
 	return fieldSimulationContextParameters;
 }
 
-
 /**
  * Gets the simulationContextParameters index property (cbit.vcell.model.Parameter) value.
  * @return The simulationContextParameters property value.
@@ -1456,7 +1455,6 @@ public void removeSimulationContextParameter(SimulationContext.SimulationContext
 	}
 }         
 
-
 /**
  * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
@@ -1656,7 +1654,6 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 	fieldName = name;
 	firePropertyChange("name", oldValue, name);
 }
-
 
 /**
  * Sets the simulationContextParameters property (cbit.vcell.model.Parameter[]) value.

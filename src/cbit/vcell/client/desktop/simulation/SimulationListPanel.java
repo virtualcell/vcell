@@ -2,13 +2,17 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Vector;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -27,8 +31,10 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  */
 public class SimulationListPanel extends JPanel {
 	private JPanel buttonsAndSimSummarypanel;
+	private ObservablesPanel observablesPanel;
+	private JSplitPane outerSplitPane;
 	private JScrollPane scrollPane;
-	private JSplitPane splitPane;
+	private JSplitPane innerSplitPane;
 	private JPanel ivjButtonPanel = null;
 	private JButton ivjCopyButton = null;
 	private JButton ivjDeleteButton = null;
@@ -101,7 +107,7 @@ public SimulationListPanel() {
 	gridBagConstraints.fill = GridBagConstraints.BOTH;
 	gridBagConstraints.gridx = 0;
 	gridBagConstraints.gridy = 0;
-	add(getSplitPane(), gridBagConstraints);
+	add(getOuterSplitPane(), gridBagConstraints);
 }
 
 /**
@@ -117,17 +123,10 @@ private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
 /**
  * connEtoC1:  (SimulationListPanel.initialize() --> SimulationListPanel.setSelectionMode()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC1() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.customizeTable();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -136,17 +135,10 @@ private void connEtoC1() {
  * connEtoC10:  (SimulationListTableModel1.tableModel.tableChanged(javax.swing.event.TableModelEvent) --> SimulationListPanel.refreshButtonsAndSummary()V)
  * @param arg1 javax.swing.event.TableModelEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC10(javax.swing.event.TableModelEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.refreshButtonsAndSummary();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -156,17 +148,10 @@ private void connEtoC10(javax.swing.event.TableModelEvent arg1) {
  * connEtoC11:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> SimulationListPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
  * @param arg1 java.awt.event.FocusEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC11(java.awt.event.FocusEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.component1_FocusLost(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -175,17 +160,10 @@ private void connEtoC11(java.awt.event.FocusEvent arg1) {
 /**
  * connEtoC12:  ( (EditButton,action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel,editSimulation()V).normalResult --> SimulationListPanel.refreshButtonsAndSummary()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC12() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.refreshSimListTable();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -194,17 +172,10 @@ private void connEtoC12() {
  * connEtoC13:  (StatusDetailsButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.showStatusDetails(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC13(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.showSimulationStatusDetails(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -213,17 +184,10 @@ private void connEtoC13(java.awt.event.ActionEvent arg1) {
  * connEtoC2:  (NewButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.newSimulation()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC2(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.newSimulation();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -233,18 +197,11 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
  * connEtoC3:  (EditButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.editSimulation()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC3(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.editSimulation();
 		connEtoC12();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -253,17 +210,10 @@ private void connEtoC3(java.awt.event.ActionEvent arg1) {
  * connEtoC4:  (CopyButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.copySimulation()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC4(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.copySimulations();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -272,17 +222,10 @@ private void connEtoC4(java.awt.event.ActionEvent arg1) {
  * connEtoC5:  (DeleteButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.deleteSimulation()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC5(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.deleteSimulations();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -291,17 +234,10 @@ private void connEtoC5(java.awt.event.ActionEvent arg1) {
  * connEtoC6:  (RunButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.runSimulation()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC6(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.runSimulations();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -310,17 +246,10 @@ private void connEtoC6(java.awt.event.ActionEvent arg1) {
  * connEtoC7:  (StopButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.stopSimulation()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC7(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.stopSimulations();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -329,17 +258,10 @@ private void connEtoC7(java.awt.event.ActionEvent arg1) {
  * connEtoC8:  (ResultsButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.showSimulationResults()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC8(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.showSimulationResults();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -349,17 +271,10 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
  * connEtoC9:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SimulationListPanel.refreshButtons()V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC9(javax.swing.event.ListSelectionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.refreshButtonsAndSummary();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -368,17 +283,11 @@ private void connEtoC9(javax.swing.event.ListSelectionEvent arg1) {
  * connEtoM1:  (SimulationListPanel.simulationWorkspace --> SimulationListTableModel1.simulationWorkspace)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		getSimulationListTableModel1().setSimulationWorkspace(this.getSimulationWorkspace());
-		// user code begin {2}
-		// user code end
+		getObservablesPanel().setSimulationOwner(this.getSimulationWorkspace().getSimulationOwner());
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -388,19 +297,12 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
  * connEtoM2:  (cellEditor1.this --> Component1.this)
  * @param value javax.swing.table.TableCellEditor
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(javax.swing.DefaultCellEditor value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getcellEditor1() != null)) {
 			setComponent1(getcellEditor1().getComponent());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -409,17 +311,10 @@ private void connEtoM2(javax.swing.DefaultCellEditor value) {
  * connEtoM4:  (ScrollPaneTable.cellEditor --> cellEditor1.this)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM4(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		setcellEditor1((javax.swing.DefaultCellEditor)getScrollPaneTable().getCellEditor());
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -427,17 +322,12 @@ private void connEtoM4(java.beans.PropertyChangeEvent arg1) {
 /**
  * connPtoP1SetTarget:  (SimulationListTableModel1.this <--> ScrollPaneTable.model)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		getScrollPaneTable().setModel(getSimulationListTableModel1());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {1}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -446,25 +336,18 @@ private void connPtoP1SetTarget() {
 /**
  * connPtoP2SetSource:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getselectionModel1() != null)) {
 				getScrollPaneTable().setSelectionModel(getselectionModel1());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -473,23 +356,16 @@ private void connPtoP2SetSource() {
 /**
  * connPtoP2SetTarget:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			setselectionModel1(getScrollPaneTable().getSelectionModel());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -901,6 +777,18 @@ private cbit.vcell.solver.ode.gui.SimulationSummaryPanel getSimulationSummaryPan
 	return ivjSimulationSummaryPanel1;
 }
 
+private ObservablesPanel getObservablesPanel() {
+	if (observablesPanel == null) {
+		try {
+			observablesPanel = new ObservablesPanel();
+			observablesPanel.setPreferredSize(new Dimension(750, 150));
+			observablesPanel.setName("ObservablesPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return observablesPanel;
+}
 
 /**
  * Gets the simulationWorkspace property (cbit.vcell.client.desktop.simulation.SimulationWorkspace) value.
@@ -1299,15 +1187,34 @@ private void stopSimulations() {
 	/**
 	 * @return
 	 */
-	protected JSplitPane getSplitPane() {
-		if (splitPane == null) {
-			splitPane = new JSplitPane();
-			splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			splitPane.setLeftComponent(getJScrollPane1());
-			splitPane.setRightComponent(getScrollPane());
+	protected JSplitPane getInnerSplitPane() {
+		if (innerSplitPane == null) {
+			innerSplitPane = new JSplitPane();
+			innerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+			innerSplitPane.setLeftComponent(getJScrollPane1());
+			innerSplitPane.setRightComponent(getButtonsAndSimSummarypanel());
 		}
-		return splitPane;
+		return innerSplitPane;
 	}
+
+	protected JSplitPane getOuterSplitPane() {
+		if (outerSplitPane == null) {
+			outerSplitPane = new JSplitPane();
+			outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+			outerSplitPane.setLeftComponent(getObservablesPanel());
+			JPanel simPanel = new JPanel();
+			simPanel.setLayout(new BoxLayout(simPanel, BoxLayout.Y_AXIS));
+			JLabel simLabel = new JLabel("  Simulations:");
+			simLabel.setFont(simLabel.getFont().deriveFont(Font.BOLD));
+			simPanel.add(Box.createRigidArea(new Dimension(5,10)));
+			simPanel.add(simLabel);
+			simPanel.add(Box.createRigidArea(new Dimension(5,5)));
+			simPanel.add(getInnerSplitPane());
+			outerSplitPane.setRightComponent(simPanel);
+		}
+		return outerSplitPane;
+	}
+
 	/**
 	 * @return
 	 */
@@ -1315,7 +1222,7 @@ private void stopSimulations() {
 		if (scrollPane == null) {
 			scrollPane = new JScrollPane();
 			scrollPane.setPreferredSize(new Dimension(750, 450));
-			scrollPane.setViewportView(getButtonsAndSimSummarypanel());
+			scrollPane.setViewportView(getSimulationSummaryPanel1());
 		}
 		return scrollPane;
 	}
@@ -1328,7 +1235,7 @@ private void stopSimulations() {
 			buttonsAndSimSummarypanel.setLayout(new BorderLayout());
 			buttonsAndSimSummarypanel.setPreferredSize(new Dimension(730, 400));
 			buttonsAndSimSummarypanel.add(getButtonPanel(), BorderLayout.NORTH);
-			buttonsAndSimSummarypanel.add(getSimulationSummaryPanel1());
+			buttonsAndSimSummarypanel.add(getScrollPane());
 		}
 		return buttonsAndSimSummarypanel;
 	}
