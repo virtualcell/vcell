@@ -7,11 +7,9 @@ import javax.swing.table.AbstractTableModel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.math.Function;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -91,7 +89,7 @@ public Object getValueAt(int row, int column) {
 					if (obsFunction.getExpression() == null) {
 						return null; 
 					} else {
-						return new ScopedExpression(obsFunction.getExpression(),obsFunction.getNameScope(), true);
+						return new ScopedExpression(obsFunction.getExpression(),simulationOwner.getNameScope(), true);
 					}
 				} 
 				default: {

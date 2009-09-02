@@ -19,6 +19,7 @@ import org.vcell.util.document.Version;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.model.gui.VCellNames;
+import cbit.vcell.parser.NameScope;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -735,4 +736,10 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	
 	TokenMangler.checkNameProperty(this, "MathModel", evt);
 }
+
+
+	public NameScope getNameScope() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

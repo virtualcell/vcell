@@ -28,7 +28,7 @@ public abstract class AbstractSimulationOwner implements SimulationOwner {
 	}   
 
 	public void removeObservableFunction(Function obsFunction) throws PropertyVetoException {
-		if (!observableFunctionsList.contains(obsFunction)){
+		if (observableFunctionsList.contains(obsFunction)){
 			ArrayList<Function> newObsFunctionsList = new ArrayList<Function>(observableFunctionsList);
 			newObsFunctionsList.remove(obsFunction);
 			setObservableFunctionsList(newObsFunctionsList);

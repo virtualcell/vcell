@@ -3,26 +3,27 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JTableFixed;
-import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TableCellEditorAutoCompletion;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.math.Function;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
@@ -37,41 +38,35 @@ public class ObservablesPanel extends JPanel {
 	private JScrollPane fnTableScrollPane = null;
 	private JTableFixed obsFnsScrollPaneTable = null;
 	private ObservablesListTableModel observablesListTableModel1 = null;
-	private ListSelectionModel selectionModel1 = null;
-	private DefaultCellEditor cellEditor1 = null;
-	private java.awt.Component Component1 = null;
 	private SimulationOwner simulationOwner = null;
-//	private Function[] fieldObservableFunctionsList = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener {
+	class IvjEventHandler implements ActionListener, MouseListener{
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ObservablesPanel.this.getAddFnButton()) 
-				addObservableFunction(e);
+				addObservableFunction();
 			if (e.getSource() == ObservablesPanel.this.getDeleteFnButton()) 
-				deleteObservableFunction(e);
-		};
-		public void focusGained(java.awt.event.FocusEvent e) {};
-		public void focusLost(java.awt.event.FocusEvent e) {
-//			if (e.getSource() == ObservablesPanel.this.getComponent1()) 
-//				connEtoC11(e);
-		};
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-//			if (evt.getSource() == ObservablesPanel.this && (evt.getPropertyName().equals("observableFunctionsList"))) 
-//				setObservableFunctionsOnTableModel();
-//			if (evt.getSource() == ObservablesPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) 
-//				connPtoP2SetTarget();
-//			if (evt.getSource() == ObservablesPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("cellEditor"))) 
-//				connEtoM4(evt);
-		};
-		public void tableChanged(javax.swing.event.TableModelEvent e) {
-//			if (e.getSource() == ObservablesPanel.this.getSimulationListTableModel1()) 
-//				connEtoC10(e);
-		};
-		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-//			if (e.getSource() == ObservablesPanel.this.getselectionModel1()) 
-//				connEtoC9(e);
+				deleteObservableFunction();
+		}
+
+		public void mouseClicked(MouseEvent e) {
+			if (e.getSource() == ObservablesPanel.this.getFnScrollPaneTable()) {
+				enableDeleteFnButton();
+			}
+				
+		}
+
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		public void mouseExited(MouseEvent e) {
+		}
+
+		public void mousePressed(MouseEvent e) {
+		}
+
+		public void mouseReleased(MouseEvent e) {
 		};
 	};
 	
@@ -107,7 +102,7 @@ public class ObservablesPanel extends JPanel {
 				deleteButton = new javax.swing.JButton();
 				deleteButton.setName("DeleteFnButton");
 				deleteButton.setText("Delete Function");
-				deleteButton.setEnabled(true);
+				deleteButton.setEnabled(false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
@@ -197,20 +192,10 @@ public class ObservablesPanel extends JPanel {
 		return observablesListTableModel1;
 	}
 	
-	private javax.swing.ListSelectionModel getselectionModel1() {
-		return selectionModel1;
-	}
-
-//	private javax.swing.DefaultCellEditor getcellEditor1() {
-//		return ivjcellEditor1;
-//	}
-
 	private void initConnections() throws java.lang.Exception {
 		getAddFnButton().addActionListener(ivjEventHandler);
 		getDeleteFnButton().addActionListener(ivjEventHandler);
-		this.addPropertyChangeListener(ivjEventHandler);
-		getObservablesListTableModel1().addTableModelListener(ivjEventHandler);
-		getFnScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
+		getFnScrollPaneTable().addMouseListener(ivjEventHandler);
 
 		// for scrollPaneTable, set tableModel and create default columns
 		getFnScrollPaneTable().setModel(getObservablesListTableModel1());
@@ -234,17 +219,62 @@ public class ObservablesPanel extends JPanel {
 		}
 	}
 
-	private void addObservableFunction(ActionEvent e) {
-		PopupGenerator.showWarningDialog(this, "Not yet implemented");
+	private void addObservableFunction() {
+		ArrayList<Function> obsFunctionList = simulationOwner.getObservableFunctionsList();
+		String defaultName = null;
+		int count = 0;
+		while (true) {
+			boolean nameUsed = false;
+			count++;
+			defaultName = "Function" + count;
+			for (Function function : obsFunctionList){
+				if (function.getName().equals(defaultName)) {
+					nameUsed = true;
+				}
+			}
+			if (!nameUsed) {
+				break;
+			}
+		}
+
+		Function newFunction = new Function(defaultName, new Expression(0.0));
+		try {
+			simulationOwner.addObservableFunction(newFunction);
+			getObservablesListTableModel1().fireTableDataChanged();
+		} catch (PropertyVetoException e1) {
+			e1.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Function '" + newFunction.getName() + "' already exists." + e1.getMessage());
+		}
+		enableDeleteFnButton();
 	}
 
-	private void deleteObservableFunction(ActionEvent e) {
-		PopupGenerator.showWarningDialog(this, "Not yet implemented");
+	private void deleteObservableFunction() {
+		ArrayList<Function> obsFunctionList = simulationOwner.getObservableFunctionsList();
+		int selectedRow = getFnScrollPaneTable().getSelectedRow();
+		Function function = obsFunctionList.get(selectedRow);
+		if (selectedRow > -1) {
+			try {
+				simulationOwner.removeObservableFunction(function);
+				getObservablesListTableModel1().fireTableDataChanged();
+			} catch (PropertyVetoException e1) {
+				e1.printStackTrace(System.out);
+				DialogUtils.showErrorDialog(this, " Deletion of function '" + function.getName() + "' failed." + e1.getMessage());
+			}
+		}
+		enableDeleteFnButton();
 	}
 
 	public void setSimulationOwner(SimulationOwner simulationOwner) {
 		this.simulationOwner = simulationOwner;
 		getObservablesListTableModel1().setSimulationOwner(simulationOwner);
+	}
+
+	private void enableDeleteFnButton() {
+		if (getFnScrollPaneTable().getSelectedRow() > -1) {
+			getDeleteFnButton().setEnabled(true);
+		} else {
+			getDeleteFnButton().setEnabled(false);
+		}
 	}
 
 	public static void main(java.lang.String[] args) {

@@ -4,6 +4,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
 import cbit.vcell.math.Function;
+import cbit.vcell.parser.NameScope;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -31,5 +32,7 @@ public interface SimulationOwner {
 	void removeObservableFunction(Function obsFunction) throws PropertyVetoException;
 
 	void replaceObservableFunction(Function oldObsFunction, Function newObsFunction) throws PropertyVetoException;
+	
+	NameScope getNameScope(); 
 
 }
