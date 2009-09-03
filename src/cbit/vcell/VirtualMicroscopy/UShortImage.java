@@ -456,4 +456,16 @@ public ImageStatistics getImageStatistics() {
 	
 	return stats;
 }
+
+//copy from another image with the same size.
+public void copyImage(UShortImage argImage)
+{
+	short[] localShortArray = getPixels();
+	short[] argShortArray = argImage.getPixels();
+	if(localShortArray.length == argShortArray.length)
+	{
+		System.arraycopy(argShortArray, 0, localShortArray, 0, argShortArray.length);
+	}
+}
+
 }

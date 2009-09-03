@@ -6,7 +6,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
+import java.util.Arrays;
+import java.util.Random;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -32,7 +35,6 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 	private RenderedImage alphaImageHightlight = null;
 	private short[] highlightImageWritebackBuffer = null;
 	private float zoom = 1.0f;
-	private PlanarImage source = null;
 	
 	private int contrastFactor = 0;
 	private static final int CONTRAST_BOUND = 4;
@@ -89,15 +91,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 	public BufferedImage getHighlightImage(){
 		return highlightImage;
 	}
-	
-	/**
-	 * Method getUnderlyingImage.
-	 * @return BufferedImage
-	 */
-	public BufferedImage getUnderlyingImage(){
-		return underlyingImage;
-	}
-	
+		
 	/**
 	 * Method setZoom.
 	 * @param argZoom float
@@ -150,6 +144,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 
 	public void refreshImage(){
 		if (underlyingImage!=null && highlightImage!=null){
+			PlanarImage sourceOverlay = null;
 			alphaImageUnderlying = makeAlpha(underlyingImage, .6f);
 			alphaImageHightlight = makeAlpha(highlightImage, .3f);
 			RenderedImage contrastEnhancedUnderlyingImage = underlyingImage;
@@ -182,39 +177,19 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 				}
 			}
 			
-//			System.out.println("contrastEnhancedUnderlyingImage " +
-//					contrastEnhancedUnderlyingImage.getSampleModel().getNumBands()+" "+
-//					contrastEnhancedUnderlyingImage.getSampleModel().getDataType()+" "+
-//					contrastEnhancedUnderlyingImage.getWidth()+" " + 
-//					contrastEnhancedUnderlyingImage.getHeight());
-//			System.out.println("highlightImage " +
-//					highlightImage.getSampleModel().getNumBands()+" "+
-//					highlightImage.getSampleModel().getDataType()+" "+
-//					highlightImage.getWidth()+" " + 
-//					highlightImage.getHeight());
-//			System.out.println("alphaImageUnderlying " +
-//					alphaImageUnderlying.getSampleModel().getNumBands()+" "+
-//					alphaImageUnderlying.getSampleModel().getDataType()+" "+
-//					alphaImageUnderlying.getWidth()+" " + 
-//					alphaImageUnderlying.getHeight());
-//			System.out.println("alphaImageHightlight " +
-//					alphaImageHightlight.getSampleModel().getNumBands()+" "+
-//					alphaImageHightlight.getSampleModel().getDataType()+" "+
-//					alphaImageHightlight.getWidth()+" " + 
-//					alphaImageHightlight.getHeight());
-
-		     source =
+			
+		     sourceOverlay =
 				CompositeDescriptor.create(
 						contrastEnhancedUnderlyingImage, highlightImage,
 					alphaImageUnderlying, alphaImageHightlight,
 					false, CompositeDescriptor.NO_DESTINATION_ALPHA, null);
 
-		     source =
+		     sourceOverlay =
 				ScaleDescriptor.create(
-					source, (float)zoom, (float)zoom, 0f, 0f,
+					sourceOverlay, (float)zoom, (float)zoom, 0f, 0f,
 					Interpolation.getInstance(Interpolation.INTERP_NEAREST),null);
 
-			set(source, 0, 0);
+			set(sourceOverlay, 0, 0);
 		}else{
 			set(new BufferedImage(10,10,BufferedImage.TYPE_INT_ARGB),0,0);
 		}
