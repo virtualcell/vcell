@@ -108,7 +108,23 @@ public class ROI implements Matchable {
 	public UShortImage[] getRoiImages() {
 		return roiImages;
 	}
+	//copy ROI images when they are the exactly same size.
+	public void copyROIImages(UShortImage[] argImages)
+	{
+		UShortImage[] localImages = getRoiImages();
+		if(localImages.length == argImages.length)
+		{
+			for(int i=0; i<localImages.length; i++)
+			{
+				localImages[i].copyImage(argImages[i]);
+			}
+		}
+	}
 	
+	public void setROIImages(UShortImage[] argImages)
+	{
+		roiImages = argImages;
+	}
 	/**
 	 * Method getISize.
 	 * @return ISize
@@ -149,6 +165,11 @@ public class ROI implements Matchable {
 	public String getROIName(){
 		return roiName;
 	}
+	
+	public void setRoiName(String roiName) {
+		this.roiName = roiName;
+	}
+
 	/**
 	 * Method crop.
 	 * @param rect Rectangle

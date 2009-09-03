@@ -94,7 +94,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JLabel textLabel = null;
 	private JPanel topJPanel = null;
 	private JPanel editROIPanel = null;
-	public static final String FRAP_DATA_AUTOROI_PROPERTY = "FRAP_DATA_AUTOROI_PROPERTY";
 	public static final String FRAP_DATA_CROP_PROPERTY = "FRAP_DATA_CROP_PROPERTY";
 	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
 	private ISize originalISize;
@@ -462,11 +461,21 @@ public class OverlayEditorPanelJAI extends JPanel {
 		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
 		roiAssistButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				firePropertyChange(FRAP_DATA_AUTOROI_PROPERTY, null,new Object());
-				
 				ROISourceData roiSourceData = new ROISourceData(){
 					public void addReplaceRoi(ROI originalROI) {
-						OverlayEditorPanelJAI.this.setROI(originalROI);
+//						OverlayEditorPanelJAI.this.setROI(originalROI);
+						roi.setRoiName(originalROI.getROIName());
+						roi.setROIImages(originalROI.getRoiImages());
+						refreshROI();
+						if(roi != null){
+							for (int i = 0; i < roiComboBox.getItemCount(); i++) {
+								if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
+									roiComboBox.setSelectedIndex(i);
+									break;
+								}
+							}
+						}
+						updateROICursor();
 					}
 					public ROI getCurrentlyDisplayedROI() {
 						return OverlayEditorPanelJAI.this.getROI();
@@ -676,7 +685,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			roiAssistButton.setVisible(false);
 			
 			//disable ROI comboBox
-			roiComboBox.setEnabled(false);
+//			roiComboBox.setEnabled(false);
 			editRoiLabel.setEnabled(false);
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
@@ -700,7 +709,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			roiTimePlotButton.setVisible(false);
 			roiAssistButton.setVisible(false);
 			//disable ROI comboBox
-			roiComboBox.setEnabled(true);
+//			roiComboBox.setEnabled(true);
 			editRoiLabel.setEnabled(true);
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
@@ -728,6 +737,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			roiAssistButton.setEnabled(false);
 			//other components
 			roiComboBox.setVisible(false);
+			roiComboBox.setEnabled(false);
 			editRoiLabel.setVisible(false);
 //			zSlider.setVisible(false);
 //			viewZLabel.setVisible(false);
@@ -753,6 +763,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			roiAssistButton.setEnabled(true);
 			//other components
 			roiComboBox.setVisible(false);
+			roiComboBox.setEnabled(false);
 			editRoiLabel.setVisible(false);
 //			zSlider.setVisible(false);
 //			viewZLabel.setVisible(false);

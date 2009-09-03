@@ -1248,7 +1248,7 @@ public class ROIAssistPanel extends JPanel {
 		int[] resultArr = null;
 //		SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
 			try{
-				resultArr = /*DialogUtils.*/showComponentOKCancelTableList(null, "Select ROI to Keep",
+				resultArr = /*DialogUtils.*/showComponentOKCancelTableList(this, "Select ROI to Keep",
 					new String[] {"ROI Size (pixel count)"}, rowData, ListSelectionModel.SINGLE_SELECTION,
 					regionInfoArr,beforeROI.getPixelsXYZ());
 			}catch(UserCancelException e){
