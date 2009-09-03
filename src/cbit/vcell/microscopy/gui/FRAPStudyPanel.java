@@ -2553,28 +2553,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			FRAPStudy fStudy = (FRAPStudy)evt.getNewValue();
 			setFrapStudy(fStudy, true);
-			boolean isROIExist = false;
-			ROI[] rois = fStudy.getFrapData().getRois();
-			for(int i = 0; i < rois.length; i++)
-			{
-				if((rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()) ||
-					rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) ||
-					rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())) 
-					&& !rois[i].isAllPixelsZero())
-				{
-					isROIExist = true;
-					break;
-				}
-			}
-			
-			if(isROIExist)
-			{
-				getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
-			}
-			else
-			{
-				getFRAPDataPanel().adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITHOUT_ROIS);
-			}
 			refreshUI();
 		}
 		else if(evt.getPropertyName().equals(DEFINEROI_VERIFY_INFO_PROPERTY))

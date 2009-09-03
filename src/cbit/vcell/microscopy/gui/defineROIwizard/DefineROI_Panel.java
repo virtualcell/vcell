@@ -73,10 +73,12 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 		return topPanel;
 	}
 	
-	public void setFRAPStudy(FRAPStudy fStudy)
+	public void setFRAPStudy(FRAPStudy argFrapStudy)
 	{
-		this.fStudy = fStudy;
+//		FRAPStudy oldFrapStudy = this.fStudy;
+		this.fStudy = argFrapStudy;
 		centerPanel.setFrapStudy(fStudy, true);
+		centerPanel.getOverlayEditorPanelJAI().setROI(fStudy.getFrapData().getCurrentlyDisplayedROI());
 	}
 	
 	public void adjustComponents(int choice)
