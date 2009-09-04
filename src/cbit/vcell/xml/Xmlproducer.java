@@ -1120,6 +1120,14 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	if (param.getMathDescription() != null) {
 		simulationcontext.addContent(getXML(param.getMathDescription()));
 	}
+	
+	ArrayList<Function> observableFunctions = param.getObservableFunctionsList();
+	if(observableFunctions != null) {
+		// get observable functions
+		simulationcontext.addContent(getXML(observableFunctions));
+
+	}
+	
 	//Add Simulations to the simulationSpec
 	if (bioModel!=null){
 		cbit.vcell.solver.Simulation simulations[] = bioModel.getSimulations(param);
@@ -2424,6 +2432,15 @@ public org.jdom.Element getXML(Membrane param/*, Model model*/) {
 	return membrane;
 }
 
+public org.jdom.Element getXML(ArrayList<Function> observableFunctions) {
+	Element observableFunctionsElement = new Element(XMLTags.ObservableFunctionsTag);
+	for (Function function : observableFunctions) {
+		Element functionElement = getXML(function);
+		observableFunctionsElement.addContent(functionElement);
+	}
+
+	return observableFunctionsElement;
+}
 public org.jdom.Element getXML(ModelParameter[] modelParams) {
 	Element globalsElement = new Element(XMLTags.ModelParametersTag);
 	for (int i = 0; i < modelParams.length; i++) {
