@@ -3605,7 +3605,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	try {
 		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version, bStoch);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new XmlParseException("A propertyveto exception was generated when creating the new SimulationContext " + name+" : "+e.getMessage());
 	}
 	
@@ -3621,7 +3621,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 		newsimcontext.setUsingConcentration(bUseConcentration);
 		 
 	} catch(java.beans.PropertyVetoException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new XmlParseException("Exception : "+e.getMessage());
 	} 
 	
@@ -3630,7 +3630,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 		try {
 			newsimcontext.setCharacteristicSize( Double.valueOf(tempchar) );
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException("A PropertyVetoException was fired when setting the CharacteristicSize "+ tempchar+" : "+e.getMessage());
 		}
 	}
@@ -3655,7 +3655,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	try {
 		newsimcontext.getGeometryContext().setStructureMappings(structarray);
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new XmlParseException("A PopertyVetoException was fired when trying to set the StructureMappings array to the Geometrycontext of the SimContext "+ name+" : "+e.getMessage());
 	}
 	//
@@ -3677,7 +3677,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 		try {
 			newsimcontext.getReactionContext().setReactionSpecs(reactionSpecs);
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException("A PropertyVetoException occurred while setting the ReactionSpecs to the SimContext " + name+" : "+e.getMessage());
 		}
 	}
@@ -3685,6 +3685,17 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	// Retrieve SpeciesContextSpecs
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
 	getSpeciesContextSpecs(children, newsimcontext.getReactionContext());
+
+	// Add observable functions
+	Element observableFunctionsElement = param.getChild(XMLTags.ObservableFunctionsTag, vcNamespace);
+	if (observableFunctionsElement != null) {
+		ArrayList<Function> observableFunctions = getObservableFunctions(observableFunctionsElement); 
+		try {
+			newsimcontext.setObservableFunctionsList(observableFunctions);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());		}
+	}
 
 	//Retrieve Electrical context
 	org.jdom.Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
@@ -3699,7 +3710,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 			try {
 				newsimcontext.setElectricalStimuli(electArray);
 			} catch (java.beans.PropertyVetoException e) {
-				e.printStackTrace();
+				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
 			}
 		}
@@ -3711,7 +3722,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 			try{
 				newsimcontext.setGroundElectrode(groundElectrode);
 			} catch (java.beans.PropertyVetoException e) {
-				e.printStackTrace();
+				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
 			}
 		}
@@ -3965,6 +3976,22 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 	}
 	
 	return ((ModelParameter[])BeanUtils.getArray(modelParamsVector, ModelParameter.class));
+}
+
+public ArrayList<Function> getObservableFunctions(Element observableFunctionsElement) throws XmlParseException {
+	Iterator<Element> observableIterator = observableFunctionsElement.getChildren(XMLTags.FunctionTag, vcNamespace).iterator();
+	ArrayList<Function> observableFunctions = new ArrayList<Function>();
+	while (observableIterator.hasNext()) {
+		org.jdom.Element observableElement = (Element) observableIterator.next();
+		Function func = getFunction(observableElement);
+		observableFunctions.add(func);
+	}
+	if(observableFunctions.size() > 0) {
+		return (observableFunctions);
+
+	} else {
+		return null;
+	}
 }
 
 /**

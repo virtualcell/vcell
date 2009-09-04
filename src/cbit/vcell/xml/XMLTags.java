@@ -298,6 +298,7 @@ public class XMLTags {
     
     public final static String PseudoSteadyAttrTag = "PseudoSteady";
     public final static String ModelParametersTag = "ModelParameters";
+    public final static String ObservableFunctionsTag = "ObservableFunctions";
     public final static String ParameterTag = "Parameter";
     public final static String ExpressionAttrTag = "ExpressionAttr";
     public final static String RateTag = "Rate";
