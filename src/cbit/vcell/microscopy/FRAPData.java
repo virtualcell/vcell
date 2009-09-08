@@ -20,6 +20,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
+import cbit.vcell.geometry.gui.ROISourceData;
 
 import org.vcell.util.document.User;
 import cbit.vcell.simdata.Cachetable;
@@ -38,7 +39,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * @version $Revision: 1.0 $
  */
 
-public class FRAPData extends AnnotatedImageDataset implements Matchable{
+public class FRAPData extends AnnotatedImageDataset implements Matchable, ROISourceData{
 
 	public static class OriginalGlobalScaleInfo{
 		public final int originalGlobalScaledMin;
