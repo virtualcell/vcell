@@ -5,7 +5,7 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 
 public interface ROISourceData {
 
-	enum VFRAP_ROI_ENUM { ROI_CELL, ROI_BACKGROUND };
+	enum VFRAP_ROI_ENUM { ROI_CELL, ROI_BLEACHED, ROI_BACKGROUND};
 
 	void addReplaceRoi(ROI originalROI);
 
