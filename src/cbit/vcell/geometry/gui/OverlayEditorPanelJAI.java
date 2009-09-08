@@ -119,6 +119,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	public static final int DEFINE_CELLROI = 3;
 	public static final int DEFINE_BLEACHEDROI = 4;
 	public static final int DEFINE_BACKGROUNDROI = 5;
+	private ROISourceData roiSourceData = null;
 	
 	ActionListener ROI_COMBOBOX_ACTIONLISTENER =
 		new ActionListener() {
@@ -263,7 +264,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagConstraints12.weightx = 1;
 		this.setSize(734, 534);
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
-		gridBagLayout_1.rowHeights = new int[] {0,7,0};
+		gridBagLayout_1.rowHeights = new int[] {0,7,0};  
 		this.setLayout(gridBagLayout_1);
 
 		editROIPanel = new JPanel();
@@ -461,33 +462,13 @@ public class OverlayEditorPanelJAI extends JPanel {
 		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
 		roiAssistButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				ROISourceData roiSourceData = new ROISourceData(){
-					public void addReplaceRoi(ROI originalROI) {
-//						OverlayEditorPanelJAI.this.setROI(originalROI);
-						roi.setRoiName(originalROI.getROIName());
-						roi.setROIImages(originalROI.getRoiImages());
-						refreshROI();
-						if(roi != null){
-							for (int i = 0; i < roiComboBox.getItemCount(); i++) {
-								if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
-									roiComboBox.setSelectedIndex(i);
-									break;
-								}
-							}
-						}
-						updateROICursor();
-					}
-					public ROI getCurrentlyDisplayedROI() {
-						return OverlayEditorPanelJAI.this.getROI();
-					}
-					public ImageDataset getImageDataset() {
-						return OverlayEditorPanelJAI.this.imageDataset;
-					}
-					public ROI getRoi(String name) {
-						return OverlayEditorPanelJAI.this.getROI();
-					}
-				};
-				
+				//only check when doing roiAssist for bleached, this is actually used by VFRAP. (VCell has Cell ROI only)
+				if(getRoiSouceData().getCurrentlyDisplayedROI().getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
+						getRoiSouceData().getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+				{
+					DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this,"Cell ROI must be defined before using ROI Assist Tool to create Bleached ROI.");
+					return;
+				}
 				JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(OverlayEditorPanelJAI.this, JFrame.class));
 				roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
 				roiDialog.setModal(true);
@@ -500,7 +481,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 					//can't happen
 				}
 				roiAssistPanel.init(roiDialog,originalROI,
-						roiSourceData,OverlayEditorPanelJAI.this);
+						getRoiSouceData(),OverlayEditorPanelJAI.this);
 				roiDialog.setContentPane(roiAssistPanel);
 				roiDialog.pack();
 				roiDialog.setSize(400,200);
@@ -1749,5 +1730,46 @@ public class OverlayEditorPanelJAI extends JPanel {
 	    for (int i = 0; i < fileFilterArr.length; i++) {
 	    	openJFileChooser.addChoosableFileFilter(fileFilterArr[i]);
 		}
+	}
+	
+	public ROISourceData getRoiSouceData()
+	{
+		//if roiSourceData is not set when the panel is created, we create an instance here.
+		//VCell uses the instance created here and VFRAP uses instance which is set when the panel is created.
+		if(roiSourceData == null)
+		{
+			roiSourceData = new ROISourceData(){
+				public void addReplaceRoi(ROI originalROI) {
+					roi.setRoiName(originalROI.getROIName());
+					roi.setROIImages(originalROI.getRoiImages());
+					refreshROI();
+					if(roi != null){
+						for (int i = 0; i < roiComboBox.getItemCount(); i++) {
+							if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
+								roiComboBox.setSelectedIndex(i);
+								break;
+							}
+						}
+					}
+					updateROICursor();
+				}
+				public ROI getCurrentlyDisplayedROI() {
+					return OverlayEditorPanelJAI.this.getROI();
+				}
+				public ImageDataset getImageDataset() {
+					return OverlayEditorPanelJAI.this.imageDataset;
+				}
+				public ROI getRoi(String name) {
+					return OverlayEditorPanelJAI.this.getROI();
+				}
+			};
+		}
+		return roiSourceData;
+	}
+
+	public void setRoiSouceData(ROISourceData roiSourceData) 
+	{
+		
+		this.roiSourceData = roiSourceData;
 	}
 }
