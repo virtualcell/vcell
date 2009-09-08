@@ -227,6 +227,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		
 		if(frapData != null && frapData.getRois().length > 0 /*&& !frapData.getRois()[0].isAllPixelsZero()*/)
 		{
+			overlayEditorPanel.setRoiSouceData(frapData);
 			frapData.setCurrentlyDisplayedROI(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 		}
 
