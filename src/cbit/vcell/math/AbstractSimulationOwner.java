@@ -58,12 +58,18 @@ public abstract class AbstractSimulationOwner implements SimulationOwner {
 		}
 		return null;
 	}
+	
+	public abstract void fireVetoableChange(String name, Object oldValue, Object newValue) throws PropertyVetoException;
+	public abstract void firePropertyChange(String name, Object oldValue, Object newValue);
 
 	public void setObservableFunctionsList(ArrayList<Function> observableFunctions) throws java.beans.PropertyVetoException {
-//		ArrayList<Function> oldValue = observableFunctionsList;
-//		fireVetoableChange("observableFunctions", oldValue, observableFunctions);
-//		observableFunctionsList = observableFunctions;
-//		firePropertyChange("observableFunctions", oldValue, observableFunctions);
+		if (observableFunctions==null){
+			throw new RuntimeException("observable functions cannot be null");
+		}
+		ArrayList<Function> oldValue = observableFunctionsList;
+		fireVetoableChange("observableFunctions", oldValue, observableFunctions);
+		observableFunctionsList = observableFunctions;
+		firePropertyChange("observableFunctions", oldValue, observableFunctions);
 
 		observableFunctionsList = observableFunctions;
 	}
