@@ -9,8 +9,11 @@ import cbit.vcell.model.Structure;
 import java.beans.*;
 
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.Function;
+
 import java.sql.*;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -684,6 +687,12 @@ private SimulationContext getSimulationContextSQL(Connection con,User user, KeyV
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	assignAnalysisTasksSQL(con,simContextKey, simContext);
+	
+	ArrayList<Function> outputFunctionList = ApplicationMathTable.table.getOutputFunctions(con, simContextKey);
+	if(outputFunctionList != null){
+		simContext.setObservableFunctionsList(outputFunctionList);
+	}
+	
 	simContext.getModel().refreshDependencies();
 	simContext.refreshDependencies();  // really needed to calculate MembraneMapping parameters that are not stored (inside/outside flux correction factors).
 	
@@ -856,7 +865,8 @@ private void insertSimulationContext(InsertHashtable hash, Connection con, User 
 	insertSpeciesContextSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to speciesContext
 	insertReactionSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to reactionSteps
 	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext); // inserts AnalysisTasks
-
+	ApplicationMathTable.table.saveOutputFunctions(con, newVersion.getVersionKey(), simContext.getObservableFunctionsList());
+	
 	hash.put(simContext,newVersion.getVersionKey());
 }
 
