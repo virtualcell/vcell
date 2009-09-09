@@ -3986,12 +3986,12 @@ public ArrayList<Function> getObservableFunctions(Element observableFunctionsEle
 		Function func = getFunction(observableElement);
 		observableFunctions.add(func);
 	}
-	if(observableFunctions.size() > 0) {
+//	if(observableFunctions.size() > 0) {
 		return (observableFunctions);
-
-	} else {
-		return null;
-	}
+//
+//	} else {
+//		return null;
+//	}
 }
 
 /**

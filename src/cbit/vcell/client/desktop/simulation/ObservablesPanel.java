@@ -22,6 +22,7 @@ import javax.swing.ListSelectionModel;
 import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JTableFixed;
+import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.document.SimulationOwner;
@@ -36,7 +37,7 @@ public class ObservablesPanel extends JPanel {
 	private JButton addButton = null;
 	private JButton deleteButton = null;
 	private JScrollPane fnTableScrollPane = null;
-	private JTableFixed obsFnsScrollPaneTable = null;
+	private JSortTable obsFnsScrollPaneTable = null;
 	private ObservablesListTableModel observablesListTableModel1 = null;
 	private SimulationOwner simulationOwner = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -165,7 +166,7 @@ public class ObservablesPanel extends JPanel {
 	private JTableFixed getFnScrollPaneTable() {
 		if (obsFnsScrollPaneTable == null) {
 			try {
-				obsFnsScrollPaneTable = new JTableFixed();
+				obsFnsScrollPaneTable = new JSortTable();
 				obsFnsScrollPaneTable.setName("ScrollPaneTable");
 				getFnTableScrollPane().setColumnHeaderView(obsFnsScrollPaneTable.getTableHeader());
 				obsFnsScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
