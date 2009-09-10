@@ -4,10 +4,12 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.document.SimulationOwner;
 
-public abstract class AbstractSimulationOwner implements SimulationOwner {
+public abstract class AbstractSimulationOwner implements SimulationOwner, Matchable {
 	
 	private ArrayList<Function> observableFunctionsList = new ArrayList<Function>();
 	
@@ -15,6 +17,15 @@ public abstract class AbstractSimulationOwner implements SimulationOwner {
 		return observableFunctionsList;
 	}
 	
+	protected boolean compareEqual0(AbstractSimulationOwner obj){
+		if (obj==null){
+			return false;
+		}
+		if (!Compare.isEqualOrNull(observableFunctionsList, obj.observableFunctionsList)){
+			return false;
+		}
+		return true;
+	}
 
 	public void addObservableFunction(Function obsFunction) throws PropertyVetoException {
 		if (obsFunction == null){

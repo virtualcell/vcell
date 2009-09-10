@@ -529,6 +529,9 @@ public boolean compareEqual(Matchable object) {
 	}else{
 		simContext = (SimulationContext)object;
 	}
+	if (!compareEqual0(simContext)){
+		return false;
+	}
 	if(simContext.isStoch != isStoch)
 	{
 		return false;

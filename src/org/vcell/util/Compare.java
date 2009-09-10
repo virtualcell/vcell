@@ -4,6 +4,7 @@ package org.vcell.util;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.AbstractList;
 import java.util.Vector;
 
 /**
@@ -254,13 +255,23 @@ public static boolean isEqual(java.util.Date obj1, java.util.Date obj2) {
 	}
 	return true;
 }
+
+public static boolean isEqualOrNull(AbstractList<? extends Matchable> v1, AbstractList<? extends Matchable> v2) {
+	if (v1 == null && v2 == null){
+		return true;
+	}
+	if (v1 == null || v2 == null){
+		return false;
+	}
+	return isEqual(v1,v2);
+}
 /**
  * This method was created in VisualAge.
  * @return boolean
- * @param v1 java.util.Vector
- * @param v2 java.util.Vector
+ * @param v1 java.util.AbstractList
+ * @param v2 java.util.AbstractList
  */
-public static boolean isEqual(Vector<? extends Matchable> v1, Vector<? extends Matchable> v2) {
+public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList<? extends Matchable> v2) {
 	if (v1.size() != v2.size()){
 		return false;
 	}
@@ -269,10 +280,10 @@ public static boolean isEqual(Vector<? extends Matchable> v1, Vector<? extends M
 	// check that every element in v1 is in v2
 	//
 	for (int i=0;i<v1.size();i++){
-		Matchable c1 = (Matchable)v1.elementAt(i);
+		Matchable c1 = v1.get(i);
 		boolean bFound = false;
 		for (int j=0;j<v2.size();j++){
-			Matchable c2 = (Matchable)v2.elementAt(j);
+			Matchable c2 = v2.get(j);
 			if (c2.compareEqual(c1)){
 				bFound = true;
 				break;
@@ -286,10 +297,10 @@ public static boolean isEqual(Vector<? extends Matchable> v1, Vector<? extends M
 	// check that every element in v2 is in v1
 	//
 	for (int i=0;i<v2.size();i++){
-		Matchable c2 = (Matchable)v2.elementAt(i);
+		Matchable c2 = v2.get(i);
 		boolean bFound = false;
 		for (int j=0;j<v1.size();j++){
-			Matchable c1 = (Matchable)v1.elementAt(j);
+			Matchable c1 = v1.get(j);
 			if (c1.compareEqual(c2)){
 				bFound = true;
 				break;

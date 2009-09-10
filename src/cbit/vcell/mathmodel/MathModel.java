@@ -165,6 +165,9 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 		return false;
 	}
 	MathModel mathModel = (MathModel)obj;
+	if (!compareEqual0(mathModel)){
+		return false;
+	}
 	if (!org.vcell.util.Compare.isEqualOrNull(getName(),mathModel.getName())){
 		return false;
 	}
