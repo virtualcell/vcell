@@ -382,7 +382,8 @@ private void scanBio(User user, String modelKeyValue, BioModelMetaData bmMeta []
 		//Load the biomodel from DB
 		BioModel bm = null;
 		try {
-			bm = dbImpl.getServerDocumentManager().getBioModelUnresolved(user, bmMeta[i].getVersion().getVersionKey());
+			String dbXML = dbImpl.getServerDocumentManager().getBioModelXML(user, bmMeta[i].getVersion().getVersionKey());
+			bm = XmlHelper.XMLToBioModel(new XMLSource(dbXML));
 			//compareBioWithCached(bm, user, bmMeta[i]);                                   //temporary?
 		} catch (Exception e) {
 			e.printStackTrace(ps);

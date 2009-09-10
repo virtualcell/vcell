@@ -32,6 +32,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:08:30 AM)
@@ -247,7 +248,7 @@ private void forceDirtyIfForeign(User user,Versionable versionable) {
 //
 // this returns a BioModel that contains multiple instances of objects.
 // 
-public BioModel getBioModelUnresolved(User user, KeyValue bioModelKey) throws DataAccessException, java.sql.SQLException {
+private String getBioModelUnresolved(User user, KeyValue bioModelKey) throws DataAccessException, XmlParseException, java.sql.SQLException {
 	
 	//
 	// get meta data associated with BioModel
@@ -326,22 +327,27 @@ public BioModel getBioModelUnresolved(User user, KeyValue bioModelKey) throws Da
 		throw new DataAccessException("PropertyVetoException caught "+e.getMessage());
 	}
 
-	//
-	// clone BioModel (so that children can't be corrupted in the cache)
-	//
-	try {
-		newBioModel = (BioModel)BeanUtils.cloneSerializable(newBioModel);
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException("BioModel clone failed: "+e.getMessage());
-	}
+//
+// The BioModel is no longer cloned because the reference to this BioModel is no longer returned to the calling method.
+//   the only possible side effect is the "BioModel:refreshDependencies()" method call.
+//   this will reconnect internal listeners and other transient fields, and is not going to harm the cache integrity.
+//
+//	//
+//	// clone BioModel (so that children can't be corrupted in the cache)
+//	//
+//	try {
+//		newBioModel = (BioModel)BeanUtils.cloneSerializable(newBioModel);
+//	}catch (Exception e){
+//		e.printStackTrace(System.out);
+//		throw new DataAccessException("BioModel clone failed: "+e.getMessage());
+//	}
 
 	newBioModel.refreshDependencies();
 	
 	//
-	// return new BioModel
+	// return new BioModel as an XML document
 	//
-	return newBioModel;
+	return cbit.vcell.xml.XmlHelper.bioModelToXML(newBioModel);
 }
 
 
@@ -371,9 +377,8 @@ public String getBioModelXML(User user, KeyValue bioModelKey) throws DataAccessE
 	
 
 	try {
-		BioModel bm = getBioModelUnresolved(user,bioModelKey);
+		bioModelXML = getBioModelUnresolved(user,bioModelKey);
 
-		bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(bm);
 		dbServer.insertVersionableXML(user,VersionableType.BioModelMetaData,bioModelKey,bioModelXML);
 
 		return bioModelXML;
