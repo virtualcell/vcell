@@ -58,7 +58,7 @@ public class SimulationMessage implements Serializable {
 	};
 
 	public static final SimulationMessage MESSAGE_DATAMOVEREVENT_MOVED				= new SimulationMessage(DetailedState.DATAMOVEREVENT_MOVED,			"data moved");
-	public static final SimulationMessage MESSAGE_WORKEREVENT_WORKERALIVE			= new SimulationMessage(DetailedState.WORKEREVENT_WORKERALIVE,		"worker alive");
+	public static final SimulationMessage MESSAGE_WORKEREVENT_WORKERALIVE			= new SimulationMessage(DetailedState.WORKEREVENT_WORKERALIVE,		"running, waiting for progress");
 	public static final SimulationMessage MESSAGE_JOB_WAITING						= new SimulationMessage(DetailedState.JOB_WAITING,					"waiting to be dispatched");
 	public static final SimulationMessage MESSAGE_JOB_QUEUED						= new SimulationMessage(DetailedState.JOB_QUEUED,					"queued..."); 
 	public static final SimulationMessage MESSAGE_JOB_QUEUED_RETRY					= new SimulationMessage(DetailedState.JOB_QUEUED_RETRY,				"Retry automatically upon server failure."); 
