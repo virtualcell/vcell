@@ -1,8 +1,17 @@
 package org.vcell.util.gui;
+
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Iterator;
+import java.util.Vector;
 import javax.swing.Timer;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
+import org.vcell.util.BeanUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/26/2004 9:04:03 PM)
@@ -118,7 +127,7 @@ public static void showModalDialogOnTop(Dialog dialog, Component toBeCenteredOn)
 /**
  * Insert the method's description here.
  * Creation date: (5/26/2004 9:09:45 PM)
- * @param window java.awt.Window
+ * @param dialog java.awt.Window
  */
 
 /*
@@ -129,16 +138,15 @@ public static void showModalDialogOnTop(Dialog dialog, Component toBeCenteredOn)
  Once window is disposed or removed from control, the previous entry in our stack will stay on top, until the stack is empty
  */
  
-private static void showOnTop(Window window, Component toBeCenteredOn) {
-	if (window != null && (! windowStack.contains(window))) {
+private static void showOnTop(Dialog dialog, Component toBeCenteredOn) {
+	if (dialog != null && (! windowStack.contains(dialog))) {
 		if (topWindow() != null) {
 			topWindow().setEnabled(false);
 		}
-		windowStack.add(window);
-		window.addWindowListener(listener);
-		org.vcell.util.BeanUtils.centerOnComponent(window, toBeCenteredOn);
-		window.setVisible(true);
-		window.toFront();
+		windowStack.add(dialog);
+		dialog.addWindowListener(listener);
+		BeanUtils.centerOnComponent(dialog, toBeCenteredOn);
+		dialog.setVisible(true);
 		timer.start(); // no need to check isRunning(), Timer checks it anyway...
 	}
 }
