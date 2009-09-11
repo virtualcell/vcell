@@ -1633,7 +1633,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			roiAssistButton.setMinimumSize(new Dimension(32, 32));
 			roiAssistButton.setMaximumSize(new Dimension(32, 32));
 			roiAssistButton.setMargin(new Insets(2, 2, 2, 2));
-			roiAssistButton.setToolTipText("ROI assistant");
+			roiAssistButton.setToolTipText("ROI Assist");
 			final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 			gridBagConstraints_11.gridy = 12;
 			gridBagConstraints_11.gridx = 0;
@@ -1771,5 +1771,10 @@ public class OverlayEditorPanelJAI extends JPanel {
 	{
 		
 		this.roiSourceData = roiSourceData;
+	}
+	
+	public void showROIAssist()
+	{
+		roiAssistButton.doClick();
 	}
 }
