@@ -1121,11 +1121,12 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 		simulationcontext.addContent(getXML(param.getMathDescription()));
 	}
 	
-	ArrayList<Function> observableFunctions = param.getObservableFunctionsList();
-	if(observableFunctions != null) {
-		// get observable functions
-		simulationcontext.addContent(getXML(observableFunctions));
-
+	if (param.getOutputFunctionContext() != null) {
+		ArrayList<AnnotatedFunction> outputFunctions = param.getOutputFunctionContext().getOutputFunctionsList();
+		if(outputFunctions != null) {
+			// get observable functions
+			simulationcontext.addContent(getXML(outputFunctions));
+		}
 	}
 	
 	//Add Simulations to the simulationSpec
@@ -1492,6 +1493,22 @@ public org.jdom.Element getXML(Function param) {
 	return function;
 }
 
+public org.jdom.Element getXML(AnnotatedFunction param) {
+	org.jdom.Element function = new org.jdom.Element(XMLTags.AnnotatedFunctionTag);
+
+	//Add atributes
+	function.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getErrorString() != null) {
+		function.setAttribute(XMLTags.ErrorStringTag, param.getErrorString());
+	} else {
+		function.setAttribute(XMLTags.ErrorStringTag, "");
+	}
+	function.setAttribute(XMLTags.FunctionTypeTag, param.getFunctionType().toString());
+	function.setAttribute(XMLTags.UserDefinedTag, Boolean.toString(param.isUserDefined()));
+	function.addContent(mangleExpression(param.getExpression()) );
+
+	return function;
+}
 
 /**
  * This method returns a XML representation of a JumpCondition object.
@@ -2432,14 +2449,14 @@ public org.jdom.Element getXML(Membrane param/*, Model model*/) {
 	return membrane;
 }
 
-public org.jdom.Element getXML(ArrayList<Function> observableFunctions) {
-	Element observableFunctionsElement = new Element(XMLTags.ObservableFunctionsTag);
-	for (Function function : observableFunctions) {
-		Element functionElement = getXML(function);
-		observableFunctionsElement.addContent(functionElement);
+public org.jdom.Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
+	Element outputFunctionsElement = new Element(XMLTags.OutputFunctionsTag);
+	for (AnnotatedFunction outputfunction : outputFunctions) {
+		Element functionElement = getXML(outputfunction);
+		outputFunctionsElement.addContent(functionElement);
 	}
 
-	return observableFunctionsElement;
+	return outputFunctionsElement;
 }
 public org.jdom.Element getXML(ModelParameter[] modelParams) {
 	Element globalsElement = new Element(XMLTags.ModelParametersTag);

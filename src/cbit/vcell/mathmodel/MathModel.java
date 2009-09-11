@@ -3,9 +3,6 @@ package cbit.vcell.mathmodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.AbstractSimulationOwner;
-import cbit.vcell.math.MathDescription;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
@@ -17,20 +14,23 @@ import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.model.gui.VCellNames;
-import cbit.vcell.parser.NameScope;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class MathModel extends AbstractSimulationOwner implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener {
+public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener {
 	private org.vcell.util.document.Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private MathDescription fieldMathDescription = new MathDescription("unnamed");
+	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext();
 	private cbit.vcell.solver.Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
 
@@ -41,6 +41,7 @@ public MathModel(Version version) {
 	super();
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
+	outputFunctionContext.setMathDescription(fieldMathDescription);
 	try {
 		setVersion(version);
 	} catch (PropertyVetoException e) {
@@ -165,9 +166,6 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 		return false;
 	}
 	MathModel mathModel = (MathModel)obj;
-	if (!compareEqual0(mathModel)){
-		return false;
-	}
 	if (!org.vcell.util.Compare.isEqualOrNull(getName(),mathModel.getName())){
 		return false;
 	}
@@ -178,6 +176,9 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 		return false;
 	}
 	if (!org.vcell.util.Compare.isEqualOrNull(getSimulations(),mathModel.getSimulations())){
+		return false;
+	}
+	if (!outputFunctionContext.compareEqual(mathModel.outputFunctionContext)){
 		return false;
 	}
 
@@ -521,6 +522,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 		}
+		outputFunctionContext.setMathDescription((MathDescription)evt.getNewValue());
 	}
 
 	//
@@ -568,6 +570,8 @@ public void refreshDependencies() {
 	fieldMathDescription.removePropertyChangeListener(this);
 	fieldMathDescription.addVetoableChangeListener(this);
 	fieldMathDescription.addPropertyChangeListener(this);
+
+	outputFunctionContext.refreshDependencies();
 
 	for (int i=0;i<fieldSimulations.length;i++){
 		fieldSimulations[i].removeVetoableChangeListener(this);
@@ -741,8 +745,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 }
 
 
-	public NameScope getNameScope() {
-		// TODO Auto-generated method stub
-		return null;
+	public OutputFunctionContext getOutputFunctionContext() {
+		return outputFunctionContext;
 	}
 }

@@ -124,7 +124,7 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 			TableColumnModel columnModel = targetTable.getTableHeader().getColumnModel();
 			TableColumn column = columnModel.getColumn(columnIndex);
 			// set prefer width if it is expression since the size is computed through image.
-			if (targetTable.getValueAt(0, columnIndex) instanceof ScopedExpression || column.getPreferredWidth() < maxColumnWidths[columnIndex]){
+			if (targetTable.getColumnClass(columnIndex) == ScopedExpression.class || column.getPreferredWidth() < maxColumnWidths[columnIndex]){
 				column.setPreferredWidth(maxColumnWidths[columnIndex] + columnModel.getColumnMargin());
 			}
 		}

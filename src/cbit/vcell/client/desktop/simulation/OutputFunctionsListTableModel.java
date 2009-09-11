@@ -4,14 +4,11 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.document.SimulationOwner;
-import cbit.vcell.math.Function;
-import cbit.vcell.model.Parameter;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
@@ -20,10 +17,8 @@ import cbit.vcell.parser.ScopedExpression;
  * Creation date: (5/7/2004 4:07:40 PM)
  * @author: Ion Moraru
  */
-//public class ObservablesListTableModel extends AbstractTableModel implements PropertyChangeListener {
-public class ObservablesListTableModel extends ManageTableModel implements PropertyChangeListener {
-
-	private class FunctionColumnComparator implements Comparator<Function> {
+public class OutputFunctionsListTableModel extends ManageTableModel implements PropertyChangeListener {
+	private class FunctionColumnComparator implements Comparator<AnnotatedFunction> {
 		protected int index;
 		protected boolean ascending;
 
@@ -32,10 +27,10 @@ public class ObservablesListTableModel extends ManageTableModel implements Prope
 			this.ascending = ascending;
 		}
 		
-		public int compare(Function parm1, Function parm2){
+		public int compare(AnnotatedFunction parm1, AnnotatedFunction parm2){
 			
 			switch (index){
-				case COLUMN_OBS_NAME:{
+				case COLUMN_OUTPUTFN_NAME:{
 					if (ascending){
 						return parm1.getName().compareToIgnoreCase(parm2.getName());
 					}else{
@@ -46,22 +41,19 @@ public class ObservablesListTableModel extends ManageTableModel implements Prope
 			return 1;
 		}
 	}
-	public boolean isSortable(int col) {
-		return (col != COLUMN_OBS_EXPRESSION);
-	}
-	private final static int COLUMN_OBS_NAME = 0;
-	private final static int COLUMN_OBS_EXPRESSION = 1;
+
+	public final static int COLUMN_OUTPUTFN_NAME = 0;
+	public final static int COLUMN_OUTPUTFN_EXPRESSION = 1;
 	
 	private final static int NUM_COLUMNS = 2;
-//	private Function[] observableFunctionsList = null;
-	private SimulationOwner simulationOwner = null;
+	private OutputFunctionContext outputFunctionContext = null;
 	private String[] columnNames = new String[] {"Name", "Expression"};
 	private JTable ownerTable = null;
 
 /**
  * SimulationListTableModel constructor comment.
  */
-public ObservablesListTableModel(JTable table) {
+public OutputFunctionsListTableModel(JTable table) {
 	super();
 	ownerTable = table;
 }
@@ -85,8 +77,8 @@ public String getColumnName(int column) {
  * getRowCount method comment.
  */
 public int getRowCount() {
-	if (simulationOwner != null) {
-		return simulationOwner.getObservableFunctionsList().size();
+	if (outputFunctionContext != null) {
+		return outputFunctionContext.getOutputFunctionsList().size();
 	} else {
 		return 0;
 	}
@@ -94,10 +86,10 @@ public int getRowCount() {
 
 public Class<?> getColumnClass(int column) {
 	switch (column){
-		case COLUMN_OBS_NAME:{
+		case COLUMN_OUTPUTFN_NAME:{
 			return String.class;
 		}
-		case COLUMN_OBS_EXPRESSION:{
+		case COLUMN_OUTPUTFN_EXPRESSION:{
 			return cbit.vcell.parser.ScopedExpression.class;
 		}
 		default:{
@@ -112,17 +104,17 @@ public Class<?> getColumnClass(int column) {
  */
 public Object getValueAt(int row, int column) {
 	try{
-		Function obsFunction = (Function)getData().get(row);
+		AnnotatedFunction obsFunction = (AnnotatedFunction)getData().get(row);
 		if (row >= 0 && row < getRowCount()) {
 			switch (column) {
-				case COLUMN_OBS_NAME: {
+				case COLUMN_OUTPUTFN_NAME: {
 					return obsFunction.getName();
 				} 
-				case COLUMN_OBS_EXPRESSION: {
+				case COLUMN_OUTPUTFN_EXPRESSION: {
 					if (obsFunction.getExpression() == null) {
 						return null; 
 					} else {
-						return new ScopedExpression(obsFunction.getExpression(),simulationOwner.getNameScope(), true);
+						return new ScopedExpression(obsFunction.getExpression(),outputFunctionContext.getNameScope(), true);
 					}
 				} 
 				default: {
@@ -138,6 +130,14 @@ public Object getValueAt(int row, int column) {
 	}
 }
 
+public boolean isSortable(int col) {
+	if (col == COLUMN_OUTPUTFN_NAME){
+		return true;
+	}else {
+		return false;
+	}
+}
+
 
 /**
  * Insert the method's description here.
@@ -147,7 +147,11 @@ public Object getValueAt(int row, int column) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	return true;
+	if (columnIndex == COLUMN_OUTPUTFN_NAME){
+		return false;
+	}else {
+		return true;
+	}
 }
 
 
@@ -157,13 +161,9 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == getSimulationOwner() && evt.getPropertyName().equals("observableFunctions")) {
-		setData(simulationOwner.getObservableFunctionsList());
-		fireTableDataChanged();
+	if (evt.getSource() == getOutputFunctionContext() && evt.getPropertyName().equals("outputFunctions")) {
+		setData(outputFunctionContext.getOutputFunctionsList());
 	}
-//	if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("status")) {
-//		fireTableRowsUpdated(((Integer)evt.getNewValue()).intValue(), ((Integer)evt.getNewValue()).intValue());
-//	}
 }
 
 
@@ -181,35 +181,21 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
 		throw new RuntimeException("ObservablesListTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	Function obsFunction = (Function)getData().get(rowIndex);
+	AnnotatedFunction outputFunction = (AnnotatedFunction)getData().get(rowIndex);
 	switch (columnIndex){
-		case COLUMN_OBS_NAME:{
-			 try {
-				if (aValue instanceof String){
-					String newName = (String)aValue;
-					if (!obsFunction.getName().equals(newName)){
-						// cannot set name on fn, so create new fn with new name, old expr; replace old fn with new fn in simOwner
-						Function newObsFunction = new Function(newName, obsFunction.getExpression());
-						getSimulationOwner().replaceObservableFunction(obsFunction, newObsFunction);
-						// fireTableRowsUpdated(rowIndex,rowIndex);
-					}
-				}
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
-			}
-			break;
-		}
-		case COLUMN_OBS_EXPRESSION:{
+		case COLUMN_OUTPUTFN_EXPRESSION:{
 			try {
 				if (aValue instanceof ScopedExpression){
 					Expression exp = ((ScopedExpression)aValue).getExpression();
-					obsFunction.setExpression(exp);
+					// bind expression to outputFunctionContext
+					exp.bindExpression(outputFunctionContext);
+					outputFunction.setExpression(exp);
 				}else if (aValue instanceof String) {
-					String newExpressionString = (String)aValue;
-					obsFunction.setExpression(new Expression(newExpressionString));
+					Expression exp = new Expression((String)aValue);
+					exp.bindExpression(outputFunctionContext);
+					outputFunction.setExpression(exp);
 				}
-				// fireTableRowsUpdated(rowIndex,rowIndex);
+				fireTableRowsUpdated(rowIndex,rowIndex);
 			} catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				cbit.vcell.client.PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
@@ -220,23 +206,28 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 }
 
+public OutputFunctionContext getOutputFunctionContext() {
+	return outputFunctionContext;
+}
+
+public void setOutputFunctionContext(OutputFunctionContext argOutputFnContext) {
+	if (argOutputFnContext!=null){
+		argOutputFnContext.removePropertyChangeListener(this);
+	}
+	this.outputFunctionContext = argOutputFnContext;
+	if (this.outputFunctionContext!=null){
+		this.outputFunctionContext.addPropertyChangeListener(this);
+	}
+	if (argOutputFnContext != null) {
+		setData(argOutputFnContext.getOutputFunctionsList());
+	}
+	// fireTableDataChanged();
+}
+
 public void sortColumn(int col, boolean ascending)
 {
   Collections.sort(rows, new FunctionColumnComparator(col, ascending));
-  fireTableRowsUpdated(0,rows.size()-1);//Added to make sure formatted table cells display with enough space
+  fireTableDataChanged();
 }
 
-public SimulationOwner getSimulationOwner() {
-	return simulationOwner;
-}
-
-public void setSimulationOwner(SimulationOwner simulationOwner) {
-	if (simulationOwner!=null){
-		simulationOwner.removePropertyChangeListener(this);
-	}
-	this.simulationOwner = simulationOwner;
-	if (this.simulationOwner!=null){
-		this.simulationOwner.addPropertyChangeListener(this);
-	}
-}
 }

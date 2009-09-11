@@ -1,10 +1,8 @@
 package cbit.vcell.document;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 
-import cbit.vcell.math.Function;
-import cbit.vcell.parser.NameScope;
+import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -24,15 +22,7 @@ public interface SimulationOwner {
 	void removePropertyChangeListener(PropertyChangeListener listener);
 
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;
-
-	ArrayList<Function> getObservableFunctionsList();
 	
-	void addObservableFunction(Function obsFunction) throws PropertyVetoException;
-	
-	void removeObservableFunction(Function obsFunction) throws PropertyVetoException;
-
-	void replaceObservableFunction(Function oldObsFunction, Function newObsFunction) throws PropertyVetoException;
-	
-	NameScope getNameScope(); 
-
+	OutputFunctionContext getOutputFunctionContext();
 }
+

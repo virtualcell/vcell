@@ -204,6 +204,12 @@ public class XMLTags {
     public final static String ExpressionTag = "Expression";
     public final static String NameAttrTag = "Name";
     public final static String FunctionTag = "Function";
+    
+    public final static String AnnotatedFunctionTag = "AnnotatedFunction";
+    public final static String ErrorStringTag = "ErrorString";
+    public final static String FunctionTypeTag = "FunctionType";
+    public final static String UserDefinedTag = "UserDefined";
+
     public final static String MembraneVariableTag = "MembraneVariable";
     public final static String FilamentVariableTag = "FilamentVariable";
     public final static String VolumeVariableTag = "VolumeVariable";
@@ -298,7 +304,7 @@ public class XMLTags {
     
     public final static String PseudoSteadyAttrTag = "PseudoSteady";
     public final static String ModelParametersTag = "ModelParameters";
-    public final static String ObservableFunctionsTag = "ObservableFunctions";
+    public final static String OutputFunctionsTag = "OutputFunctions";
     public final static String ParameterTag = "Parameter";
     public final static String ExpressionAttrTag = "ExpressionAttr";
     public final static String RateTag = "Rate";
