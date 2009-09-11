@@ -58,6 +58,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.Action;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -79,6 +80,7 @@ import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.ReservedVariable;
@@ -120,6 +122,7 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.SolverDescription;
@@ -1410,6 +1413,22 @@ public Function getFunction(Element param) throws XmlParseException {
 	return function;
 }
 
+public AnnotatedFunction getAnnotatedFunction(Element param) throws XmlParseException {
+	//get attributes
+	String name = unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
+	String temp = param.getText();
+	Expression exp = unMangleExpression(temp);
+	String errStr = unMangle( param.getAttributeValue( XMLTags.ErrorStringTag) );
+	String funcTypeStr = unMangle( param.getAttributeValue( XMLTags.FunctionTypeTag) );
+	// VariableType funcType = VariableType.getVariableTypeFromVariableTypeName(funcTypeStr);
+	VariableType funcType = VariableType.UNKNOWN;
+	boolean userDefined = Boolean.parseBoolean(unMangle(param.getAttributeValue( XMLTags.UserDefinedTag)));
+	
+	//-- create new AnnotatedFunction --
+	AnnotatedFunction function = new AnnotatedFunction(name, exp, errStr, funcType, userDefined);
+
+	return function;
+}
 
 /**
  * This method returns a Geometry object from a XML representation.
@@ -3687,14 +3706,19 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	getSpeciesContextSpecs(children, newsimcontext.getReactionContext());
 
 	// Add observable functions
-	Element observableFunctionsElement = param.getChild(XMLTags.ObservableFunctionsTag, vcNamespace);
-	if (observableFunctionsElement != null) {
-		ArrayList<Function> observableFunctions = getObservableFunctions(observableFunctionsElement); 
+	Element outputFunctionsElement = param.getChild(XMLTags.OutputFunctionsTag, vcNamespace);
+	if (outputFunctionsElement != null) {
+		ArrayList<AnnotatedFunction> outputFunctions = getOutputFunctions(outputFunctionsElement); 
 		try {
-			newsimcontext.setObservableFunctionsList(observableFunctions);
+			// construct OutputFnContext from mathDesc in newSimContext and add output functions that were read in from XML.
+			OutputFunctionContext outputFnContext = newsimcontext.getOutputFunctionContext();
+			for (AnnotatedFunction outputFunction : outputFunctions) {
+				outputFnContext.addOutputFunction(outputFunction);
+			}
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
-			throw new XmlParseException(e.getMessage());		}
+			throw new XmlParseException(e.getMessage());		
+		}
 	}
 
 	//Retrieve Electrical context
@@ -3978,16 +4002,16 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 	return ((ModelParameter[])BeanUtils.getArray(modelParamsVector, ModelParameter.class));
 }
 
-public ArrayList<Function> getObservableFunctions(Element observableFunctionsElement) throws XmlParseException {
-	Iterator<Element> observableIterator = observableFunctionsElement.getChildren(XMLTags.FunctionTag, vcNamespace).iterator();
-	ArrayList<Function> observableFunctions = new ArrayList<Function>();
-	while (observableIterator.hasNext()) {
-		org.jdom.Element observableElement = (Element) observableIterator.next();
-		Function func = getFunction(observableElement);
-		observableFunctions.add(func);
+public ArrayList<AnnotatedFunction> getOutputFunctions(Element outputFunctionsElement) throws XmlParseException {
+	Iterator<Element> outputFnsIterator = outputFunctionsElement.getChildren(XMLTags.AnnotatedFunctionTag, vcNamespace).iterator();
+	ArrayList<AnnotatedFunction> outputFunctions = new ArrayList<AnnotatedFunction>();
+	while (outputFnsIterator.hasNext()) {
+		org.jdom.Element observableElement = (Element) outputFnsIterator.next();
+		AnnotatedFunction func = getAnnotatedFunction(observableElement);
+		outputFunctions.add(func);
 	}
 //	if(observableFunctions.size() > 0) {
-		return (observableFunctions);
+		return (outputFunctions);
 //
 //	} else {
 //		return null;

@@ -13,6 +13,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
@@ -45,7 +46,7 @@ private ApplicationMathTable() {
 	addFields(fields);
 }
 
-public void saveOutputFunctions(Connection con,KeyValue simContextRef,ArrayList<Function> outputFunctionsList) throws SQLException,DataAccessException{
+public void saveOutputFunctions(Connection con,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
 	
 	if(outputFunctionsList == null || outputFunctionsList.size() == 0){
 		return;
@@ -76,7 +77,7 @@ public void saveOutputFunctions(Connection con,KeyValue simContextRef,ArrayList<
 		ApplicationMathTable.table.outputFuncSmall);
 }
 
-public ArrayList<Function> getOutputFunctions(Connection con,KeyValue simContextRef) throws SQLException,DataAccessException{
+public ArrayList<AnnotatedFunction> getOutputFunctions(Connection con,KeyValue simContextRef) throws SQLException,DataAccessException{
 	Statement stmt = null;
 	try{
 		stmt = con.createStatement();
@@ -101,9 +102,9 @@ public ArrayList<Function> getOutputFunctions(Connection con,KeyValue simContext
 	}
 }
 
-private ArrayList<Function> convertOutputFunctionXMLToFuncList(String outputFunctionsXML) throws XmlParseException{
+private ArrayList<AnnotatedFunction> convertOutputFunctionXMLToFuncList(String outputFunctionsXML) throws XmlParseException{
 	Element outputFunctionElement = XmlUtil.stringToXML(outputFunctionsXML, null).getRootElement();
-	ArrayList<Function> outputFunctionList = (new XmlReader(false)).getObservableFunctions(outputFunctionElement);
+	ArrayList<AnnotatedFunction> outputFunctionList = (new XmlReader(false)).getOutputFunctions(outputFunctionElement);
 	return outputFunctionList;
 
 }

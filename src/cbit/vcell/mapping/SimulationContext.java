@@ -30,10 +30,9 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.math.AbstractSimulationOwner;
-import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -59,7 +58,7 @@ import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext extends AbstractSimulationOwner implements Versionable, Matchable, 
+public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable,FieldFunctionContainer {
 
 	public class SimulationContextNameScope extends BioNameScope {
@@ -218,6 +217,7 @@ public class SimulationContext extends AbstractSimulationOwner implements Versio
 	private Version version = null;
 	private GeometryContext geoContext = null;
 	private ReactionContext reactionContext = null;
+	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext();
 	private MathDescription mathDesc = null;
 	private Double characteristicSize = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -529,9 +529,6 @@ public boolean compareEqual(Matchable object) {
 	}else{
 		simContext = (SimulationContext)object;
 	}
-	if (!compareEqual0(simContext)){
-		return false;
-	}
 	if(simContext.isStoch != isStoch)
 	{
 		return false;
@@ -578,6 +575,9 @@ public boolean compareEqual(Matchable object) {
 	}
 
 	if (!Compare.isEqualOrNull(fieldAnalysisTasks,simContext.fieldAnalysisTasks)){
+		return false;
+	}
+	if (!outputFunctionContext.compareEqual(simContext.outputFunctionContext)){
 		return false;
 	}
 	
@@ -977,6 +977,9 @@ public MathDescription getMathDescription() {
 	return mathDesc;
 }
 
+public OutputFunctionContext getOutputFunctionContext() {
+	return outputFunctionContext;
+}
 
 /**
  * This method was created in VisualAge.
@@ -1197,6 +1200,10 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])event.getNewValue());
 		firePropertyChange("simulations",oldSimulations,newSimulations);
 	}
+	
+	if (event.getSource() == this && event.getPropertyName().equals("mathDescription")) {
+		getOutputFunctionContext().setMathDescription((MathDescription)event.getNewValue());
+	}
 }
 
 
@@ -1301,7 +1308,9 @@ public void refreshDependencies() {
 	getGeometry().refreshDependencies();
 	if (getMathDescription()!=null){
 		getMathDescription().refreshDependencies();
+		getOutputFunctionContext().setMathDescription(getMathDescription());
 	}
+	getOutputFunctionContext().refreshDependencies();
 	getModel().removePropertyChangeListener(this);
 	getModel().addPropertyChangeListener(this);
 	getGeometry().getGeometrySpec().removePropertyChangeListener(this);
@@ -1632,7 +1641,6 @@ public void setMathDescription(MathDescription argMathDesc) throws PropertyVetoE
 	this.mathDesc = argMathDesc;
 	firePropertyChange("mathDescription",oldValue,argMathDesc);
 }
-
 
 /**
  * This method was created in VisualAge.

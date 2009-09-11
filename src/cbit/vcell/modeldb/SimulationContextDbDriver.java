@@ -8,8 +8,10 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Structure;
 import java.beans.*;
 
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.OutputFunctionContext;
 
 import java.sql.*;
 import java.sql.Statement;
@@ -688,9 +690,12 @@ private SimulationContext getSimulationContextSQL(Connection con,User user, KeyV
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	assignAnalysisTasksSQL(con,simContextKey, simContext);
 	
-	ArrayList<Function> outputFunctionList = ApplicationMathTable.table.getOutputFunctions(con, simContextKey);
+	ArrayList<AnnotatedFunction> outputFunctionList = ApplicationMathTable.table.getOutputFunctions(con, simContextKey);
 	if(outputFunctionList != null){
-		simContext.setObservableFunctionsList(outputFunctionList);
+		OutputFunctionContext outputFnContext = simContext.getOutputFunctionContext();
+		for (AnnotatedFunction outputFn : outputFunctionList) {
+			outputFnContext.addOutputFunction(outputFn);
+		}
 	}
 	
 	simContext.getModel().refreshDependencies();
@@ -865,7 +870,7 @@ private void insertSimulationContext(InsertHashtable hash, Connection con, User 
 	insertSpeciesContextSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to speciesContext
 	insertReactionSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to reactionSteps
 	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext); // inserts AnalysisTasks
-	ApplicationMathTable.table.saveOutputFunctions(con, newVersion.getVersionKey(), simContext.getObservableFunctionsList());
+	ApplicationMathTable.table.saveOutputFunctions(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getOutputFunctionsList());
 	
 	hash.put(simContext,newVersion.getVersionKey());
 }

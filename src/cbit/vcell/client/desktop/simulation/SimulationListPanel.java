@@ -31,7 +31,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  */
 public class SimulationListPanel extends JPanel {
 	private JPanel buttonsAndSimSummarypanel;
-	private ObservablesPanel observablesPanel;
+	private OutputFunctionsPanel observablesPanel;
 	private JSplitPane outerSplitPane;
 	private JScrollPane scrollPane;
 	private JSplitPane innerSplitPane;
@@ -286,7 +286,7 @@ private void connEtoC9(javax.swing.event.ListSelectionEvent arg1) {
 private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
 		getSimulationListTableModel1().setSimulationWorkspace(this.getSimulationWorkspace());
-		getObservablesPanel().setSimulationOwner(this.getSimulationWorkspace().getSimulationOwner());
+		getObservablesPanel().setOutputFunctionContext(this.getSimulationWorkspace().getSimulationOwner().getOutputFunctionContext());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -777,10 +777,10 @@ private cbit.vcell.solver.ode.gui.SimulationSummaryPanel getSimulationSummaryPan
 	return ivjSimulationSummaryPanel1;
 }
 
-private ObservablesPanel getObservablesPanel() {
+private OutputFunctionsPanel getObservablesPanel() {
 	if (observablesPanel == null) {
 		try {
-			observablesPanel = new ObservablesPanel();
+			observablesPanel = new OutputFunctionsPanel();
 			observablesPanel.setPreferredSize(new Dimension(750, 150));
 			observablesPanel.setName("ObservablesPanel");
 		} catch (java.lang.Throwable ivjExc) {
