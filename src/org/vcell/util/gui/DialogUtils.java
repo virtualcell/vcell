@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
@@ -404,12 +406,18 @@ public static int showComponentOKCancelDialog(final Component requester,final Co
  * @param message java.lang.Object
  */
 private static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
+	Component newRequester = requester;
+	if (requester instanceof JTable) {
+		newRequester = BeanUtils.findTypeParentOfComponent(requester, Window.class);
+	}
 	JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-	final JDialog d = inputDialog.createDialog(requester, title);
+	final JDialog d = inputDialog.createDialog(newRequester, title);
 	d.setResizable(true);
-	if(okEnabler != null){okEnabler.setJOptionPane(inputDialog);}
+	if (okEnabler != null) {
+		okEnabler.setJOptionPane(inputDialog);
+	}
 	try {
-		ZEnforcer.showModalDialogOnTop(d,requester);
+		ZEnforcer.showModalDialogOnTop(d,newRequester);
 		if(inputDialog.getValue() instanceof Integer){
 			return ((Integer)inputDialog.getValue()).intValue();
 		}else if(inputDialog.getValue() == null){
