@@ -2,6 +2,7 @@ package cbit.vcell.messaging.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
@@ -84,7 +85,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	//schedulerStatus
 	int parsedSchedulerStatus = rset.getInt(schedulerStatus.toString());	
 	//statusMsg
-	String parsedStatusMsg = rset.getString(statusMsg.toString());
+	String parsedStatusMsg = TokenMangler.getSQLRestoredString(rset.getString(statusMsg.toString()));
 	
 	SimulationMessage simulationMessage = SimulationMessage.fromSerialized(parsedSchedulerStatus,parsedStatusMsg);
 	//
@@ -157,10 +158,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	buffer.append(schedulerStatus + "=" + simulationJobStatus.getSchedulerStatus() + ",");
 	//statusMsg
 	String message = simulationJobStatus.getSimulationMessage().toSerialization();
-	if (message.length() > 4000) {
-		message = message.substring(0, 4000);
-	}
-	buffer.append(statusMsg + "='" + message + "',");
+	buffer.append(statusMsg + "='" + TokenMangler.getSQLEscapedString(message, 4000) + "',");
 
 	//
 	// queue info
@@ -279,10 +277,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	buffer.append(simulationJobStatus.getSchedulerStatus() + ",");
 	//statusMsg
 	String message = simulationJobStatus.getSimulationMessage().toSerialization();
-	if (message.length() > 4000) {
-		message = message.substring(0, 4000);
-	}
-	buffer.append("'" + message + "',");
+	buffer.append("'" + TokenMangler.getSQLEscapedString(message, 4000) + "',");
 	
 	// queue stuff
 	SimulationQueueEntryStatus simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
