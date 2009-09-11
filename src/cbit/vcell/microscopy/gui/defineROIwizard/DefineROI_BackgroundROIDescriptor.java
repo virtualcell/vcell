@@ -6,11 +6,14 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 
@@ -85,6 +88,26 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			}
 		};
 		taskArrayList.add(setCurrentROITask);															
+		return taskArrayList;
+    }
+    
+    public ArrayList<AsynchClientTask> postBackProcess()
+    {
+    	//create AsynchClientTask arraylist
+		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
+		
+		AsynchClientTask ifNeedROIAssistTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
+				   ((DefineROI_Panel)imgPanel).fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+				{
+					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+				}
+			}
+		};
+		taskArrayList.add(ifNeedROIAssistTask);
 		return taskArrayList;
     }
     

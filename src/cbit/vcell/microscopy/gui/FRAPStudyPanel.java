@@ -207,7 +207,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private Wizard defineROIWizard = null;
 	private Wizard modelTypeWizard = null;
 	private Wizard estimateParamWizard = null;
-	private Wizard restartWizard = null;
 	private DefineROI_Panel imgPanel = null;
 	
 	public class WorkFlowButtonHandler implements ActionListener

@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
@@ -14,6 +15,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
@@ -23,8 +25,10 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
@@ -74,6 +78,26 @@ public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
 		taskArrayList.add(setCurrentROITask);
 		return taskArrayList;
     } 
+    
+    public ArrayList<AsynchClientTask> postNextProcess()
+    {
+    	//create AsynchClientTask arraylist
+		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
+		
+		AsynchClientTask ifNeedROIAssistTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
+				   ((DefineROI_Panel)imgPanel).fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).isAllPixelsZero())
+				{
+					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+				}
+			}
+		};
+		taskArrayList.add(ifNeedROIAssistTask);
+		return taskArrayList;
+    }
     
     public ArrayList<AsynchClientTask> preBackProcess()
     {

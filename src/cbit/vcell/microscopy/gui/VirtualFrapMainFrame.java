@@ -29,6 +29,7 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
@@ -40,6 +41,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 
 
@@ -77,13 +79,13 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
 	private static final String UNDO_ACTION_COMMAND = "Undo";
+	private static final String PREFERENCE_ACTION_COMMAND = "Preference";
 	
 	//used for work flow buttons
 	public static final String LOAD_IMAGE_COMMAND = "Load FRAP images";
 	public static final String DEFINE_ROI_COMMAND = "Define ROIs";
 	public static final String CHOOSE_MODEL_COMMAND = "Choose model types";
 	public static final String EXTIMATE_PARAM_COMMAND = "Estimate model parameters";
-	public static final String RESTART_COMMAND = "Restart";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
@@ -94,6 +96,7 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
 	private static final JMenuItem mUndo = new JMenuItem(UNDO_ACTION_COMMAND);
+	private static final JMenuItem mPreference = new JMenuItem(PREFERENCE_ACTION_COMMAND);
 
   public static JMenuBar mb = null;
   private static StatusBar statusBarNew = new StatusBar();
@@ -101,7 +104,7 @@ public class VirtualFrapMainFrame extends JFrame
   public static FRAPStudyPanel frapStudyPanel = null;
   private HelpViewer hviewer = null;
   private UndoableEdit lastUndoableEdit;
-
+  private PreferencePanel preferencePanel = null;
   private LoadFRAPData_MultiFilePanel multiFileDialog = null;
   
   //Inner class AFileFilter
@@ -341,9 +344,31 @@ public class VirtualFrapMainFrame extends JFrame
 		    	  lastUndoableEdit.undo();
 		    	  lastUndoableEdit = null;
 		      }
+		      else if(arg.equals(PREFERENCE_ACTION_COMMAND))
+		      {
+		    	  PreferencePanel panel = getPreferencePanel();
+		    	  if(!panel.isStatusSet())
+		    	  {
+		    		  panel.setIniStatus();
+		    	  }
+		    	  int Choice = DialogUtils.showComponentOKCancelDialog(VirtualFrapMainFrame.this, panel, "Preferences");
+		    	  if(Choice == JOptionPane.OK_OPTION)
+		    	  {
+		    		  VFRAPPreference.putValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, panel.getROIAssistType());
+		    	  }
+		      }
 		  }
 	  }
   }// end of inner class MenuHandler
+  
+  public PreferencePanel getPreferencePanel()
+  {
+	  if(preferencePanel == null)
+	  {
+		  preferencePanel = new PreferencePanel();
+	  }
+	  return preferencePanel;
+  }
   
   //Inner class ToolBarHandler
   public class ToolBarHandler implements ActionListener
@@ -528,6 +553,14 @@ public class VirtualFrapMainFrame extends JFrame
             KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
     mUndo.setEnabled(false);
     editMenu.add(mUndo);
+
+    //Tools Menu
+    JMenu toolsMenu =new JMenu("Tools");
+    toolsMenu.setMnemonic('T');
+    mb.add(toolsMenu);
+    
+    mPreference.addActionListener(menuHandler);
+    toolsMenu.add(mPreference);
     
     //Help Menu
     JMenu helpMenu =new JMenu("Help");
@@ -542,7 +575,6 @@ public class VirtualFrapMainFrame extends JFrame
     
     mabout.addActionListener(menuHandler);
     helpMenu.add(mabout);
-    setJMenuBar(mb);
     
     setJMenuBar(mb);
   } // end of setup menu
