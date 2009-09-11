@@ -4,12 +4,14 @@ import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import org.vcell.wizard.WizardPanelDescriptor;
 
@@ -61,4 +63,38 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
 		return taskArrayList;
     } 
     
+    public ArrayList<AsynchClientTask> postNextProcess()
+    {
+    	//create AsynchClientTask arraylist
+		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
+		
+		AsynchClientTask ifNeedROIAssistTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				String test = VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET); 
+				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_PREF_NOT_SET))
+				{
+					DefineROI_RequireAssistPanel assistPanel = new DefineROI_RequireAssistPanel();
+					JOptionPane.showMessageDialog(imgPanel, assistPanel);
+					VFRAPPreference.putValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, assistPanel.getRequireAssistType());
+					if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
+						((DefineROI_Panel)imgPanel).fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+					{
+						((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+					}
+				}
+				else
+				{
+					if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
+					   ((DefineROI_Panel)imgPanel).fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+					{
+						((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+					}
+				}
+			}
+		};
+		taskArrayList.add(ifNeedROIAssistTask);
+		return taskArrayList;
+    }
 }
