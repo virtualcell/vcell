@@ -1,4 +1,5 @@
 package cbit.vcell.model.gui;
+import java.awt.GridBagConstraints;
 import java.util.Iterator;
 
 import javax.swing.DefaultComboBoxModel;
@@ -6,8 +7,11 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
+
+import org.vcell.util.Compare;
 
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.Model;
@@ -38,7 +42,6 @@ public class AddModelParamDialog extends org.vcell.util.gui.JInternalFrameEnhanc
 	private JLabel ivjUnitsJLabel = null;
 	private JComboBox ivjUnitsJComboBox = null;
 	private DefaultComboBoxModel ivjUnitsComboBoxModel = null;
-	private JButton ivjAnnotateJButton = null;
 	private String ivjAnnotationString = null;
 	private JPanel ivjJPanel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -46,6 +49,7 @@ public class AddModelParamDialog extends org.vcell.util.gui.JInternalFrameEnhanc
 	private Document ivjdocument2 = null;
 	private cbit.vcell.model.Model fieldModel = null;
 	private DocumentManager fieldDocumentManager = null;
+	private JTextArea annotationTextField = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -53,19 +57,29 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				cancel(e);
 			if (e.getSource() == AddModelParamDialog.this.getOKJButton()) 
 				oK(e);
-			if (e.getSource() == AddModelParamDialog.this.getAnnotateJButton()) 
-				annotateJButton_ActionPerformed(e);
 		};
 		public void changedUpdate(javax.swing.event.DocumentEvent e) {
 			if (e.getDocument() == AddModelParamDialog.this.getdocument1()) 
 				updateInterface();
 			if (e.getDocument() == AddModelParamDialog.this.getdocument2()) 
 				updateInterface();
+			if (e.getDocument() == AddModelParamDialog.this.annotationTextField.getDocument()) 
+				updateInterface();
 		};
 		public void insertUpdate(javax.swing.event.DocumentEvent e) {
 			if (e.getDocument() == AddModelParamDialog.this.getdocument1()) 
 				updateInterface();
 			if (e.getDocument() == AddModelParamDialog.this.getdocument2()) 
+				updateInterface();
+			if (e.getDocument() == AddModelParamDialog.this.annotationTextField.getDocument()) 
+				updateInterface();
+		};
+		public void removeUpdate(javax.swing.event.DocumentEvent e) {
+			if (e.getDocument() == AddModelParamDialog.this.getdocument1()) 
+				updateInterface();
+			if (e.getDocument() == AddModelParamDialog.this.getdocument2()) 
+				updateInterface();
+			if (e.getDocument() == AddModelParamDialog.this.annotationTextField.getDocument()) 
 				updateInterface();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -77,12 +91,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				updateInterface();
 			if (evt.getSource() == AddModelParamDialog.this.getExpressionValueTextField() && (evt.getPropertyName().equals("document")))
 				setdocument2(getExpressionValueTextField().getDocument());
-		};
-		public void removeUpdate(javax.swing.event.DocumentEvent e) {
-			if (e.getDocument() == AddModelParamDialog.this.getdocument1()) 
-				updateInterface();
-			if (e.getDocument() == AddModelParamDialog.this.getdocument2()) 
-				updateInterface();
 		};
 	};
 
@@ -171,25 +179,6 @@ private void annotateJButton_ActionPerformed(java.awt.event.ActionEvent actionEv
  */
 private void cancel(java.awt.event.ActionEvent actionEvent) {
 	dispose();
-}
-
-/**
- * Return the AnnotateJButton property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getAnnotateJButton() {
-	if (ivjAnnotateJButton == null) {
-		try {
-			ivjAnnotateJButton = new javax.swing.JButton();
-			ivjAnnotateJButton.setName("AnnotateJButton");
-			ivjAnnotateJButton.setText("Annotate...");
-			ivjAnnotateJButton.setEnabled(true);
-			ivjAnnotateJButton.setVisible(true);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjAnnotateJButton;
 }
 
 /**
@@ -295,14 +284,6 @@ private javax.swing.JPanel getJInternalFrameEnhancedContentPane() {
 			ivjJInternalFrameEnhancedContentPane.setName("JInternalFrameEnhancedContentPane");
 			ivjJInternalFrameEnhancedContentPane.setLayout(new java.awt.GridBagLayout());
 
-			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;
-			constraintsJPanel1.gridwidth = 4;
-			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel1.weightx = 1.0;
-			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getJPanel1(), constraintsJPanel1);
-
 			java.awt.GridBagConstraints constraintsNameJLabel = new java.awt.GridBagConstraints();
 			constraintsNameJLabel.gridx = 0; constraintsNameJLabel.gridy = 0;
 			constraintsNameJLabel.anchor = java.awt.GridBagConstraints.EAST;
@@ -345,11 +326,32 @@ private javax.swing.JPanel getJInternalFrameEnhancedContentPane() {
 			constraintsUnitsComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJInternalFrameEnhancedContentPane().add(getUnitsJComboBox(), constraintsUnitsComboBox);
 			
-			java.awt.GridBagConstraints constraintsAnnotateJButton = new java.awt.GridBagConstraints();
-			constraintsAnnotateJButton.gridx = 0; constraintsAnnotateJButton.gridy = 3;
-			constraintsAnnotateJButton.anchor = java.awt.GridBagConstraints.EAST;
-			constraintsAnnotateJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJInternalFrameEnhancedContentPane().add(getAnnotateJButton(), constraintsAnnotateJButton);
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 3;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.NORTHEAST;
+			getJInternalFrameEnhancedContentPane().add(new JLabel("Annotatation"), gbc);
+
+			annotationTextField = new javax.swing.JTextArea("", 4, 30);
+			annotationTextField.setLineWrap(true);
+			annotationTextField.setWrapStyleWord(true);
+			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextField);
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; gbc.gridy = 3;
+			gbc.gridwidth = 2;
+			gbc.gridheight = 4;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.weightx = 1.0;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJInternalFrameEnhancedContentPane().add(jsp, gbc);
+
+			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 7;
+			constraintsJPanel1.gridwidth = 4;
+			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsJPanel1.weightx = 1.0;
+			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJInternalFrameEnhancedContentPane().add(getJPanel1(), constraintsJPanel1);
 
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -568,8 +570,7 @@ private void initConnections() throws java.lang.Exception {
 	getNameValueJTextField().addPropertyChangeListener(ivjEventHandler);
 	getCancelJButton().addActionListener(ivjEventHandler);
 	getOKJButton().addActionListener(ivjEventHandler);
-	getAnnotateJButton().addActionListener(ivjEventHandler);
-//	getUnitsJComboBox().addItemListener(ivjEventHandler);
+	annotationTextField.getDocument().addDocumentListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getExpressionValueTextField().addPropertyChangeListener(ivjEventHandler);
 	// set comboboxmodel on combobox for units
@@ -684,6 +685,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 
 		getModelParameter().setExpression(exp);
 		getModelParameter().setUnitDefinition(VCUnitDefinition.getInstance((String)getUnitsJComboBox().getSelectedItem()));
+		setAnnotationString(annotationTextField.getText());
 		getModelParameter().setModelParameterAnnotation(getAnnotationString());
 
 		getModel().addModelParameter(getModelParameter());
@@ -811,15 +813,14 @@ private void updateInterface() {
 
 	getExpressionValueTextField().setEnabled(getModelParameter() != null);
 
-	getAnnotateJButton().setEnabled(getModelParameter() != null);
 	getOKJButton().setEnabled(
 			(getModelParameter() != null) && (getModel() != null) &&
 			(getNameValueJTextField().getText() != null) && (getNameValueJTextField().getText().length() > 0) && 
 			(getExpressionValueTextField().getText() != null) && (getExpressionValueTextField().getText().length() > 0) && 
 				(
-					!org.vcell.util.Compare.isEqualOrNull(getNameValueJTextField().getText(),getModelParameter().getName()) ||
-					!org.vcell.util.Compare.isEqualOrNull(getModelParameter().getDescription(),getAnnotationString()) ||
-					!org.vcell.util.Compare.isEqualOrNull(getModelParameter().getExpression().infix(),getExpressionValueTextField().getText())
+					!Compare.isEqualOrNull(getNameValueJTextField().getText(),getModelParameter().getName()) ||
+					!Compare.isEqualOrNull(getAnnotationString(),annotationTextField.getText()) ||
+					!Compare.isEqualOrNull(getModelParameter().getExpression().infix(),getExpressionValueTextField().getText())
 				)
 			);
 }
