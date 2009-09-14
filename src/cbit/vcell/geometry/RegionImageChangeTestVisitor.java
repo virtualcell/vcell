@@ -10,7 +10,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 
-import com.sun.java_cup.internal.lexer;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;

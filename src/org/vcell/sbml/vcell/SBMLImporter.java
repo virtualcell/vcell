@@ -39,22 +39,16 @@ import org.sbml.libsbml.Species;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.Unit;
 import org.sbml.libsbml.UnitDefinition;
-import org.sbml.libsbml.XMLAttributes;
-import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
-
-import cbit.util.xml.VCLogger;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.VCMetaData;
-
 import org.vcell.util.document.BioModelChildSummary;
 
-import sun.rmi.runtime.GetThreadPoolAction;
+import cbit.util.xml.VCLogger;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -71,7 +65,6 @@ import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCMODL;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;

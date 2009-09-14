@@ -1,19 +1,9 @@
 package cbit.vcell.solver.stoch;
 
-import java.awt.Dimension;
 import java.io.IOException;
 
-import com.sun.java_cup.internal.reduce_action;
-
-import sun.rmi.runtime.GetThreadPoolAction;
-import ucar.ma2.Array;
 import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayDouble;
-import ucar.ma2.ArrayFloat;
-import ucar.ma2.ArrayInt;
-import ucar.ma2.Index;
-import ucar.ma2.InvalidRangeException;
-import ucar.nc2.NCdump;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
@@ -39,7 +29,6 @@ public class NetCDFReader {
 		try {
 			ncfile = NetcdfFile.open(filename);
 		} catch (IOException ioe) {
-		    // DialogUtils.showErrorDialog("Cannot open NetCDF file:" + filename +". \n Please check if file is not existing or damaged.");
 			ioe.printStackTrace(System.out);
 		    throw new IOException("Cannot open file:"+filename +"!"+ ioe.getMessage());
 		} 
@@ -51,7 +40,6 @@ public class NetCDFReader {
 		if (null != ncfile) try {
 	      ncfile.close();
 	    } catch (IOException ioe) {
-	    	//DialogUtils.showErrorDialog("Cannot close NetCDF file:" + filename +". \n Please check if file is not existing or damaged.");
 	    	ioe.printStackTrace(System.out);
 		    throw new IOException("Cannot close file:"+filename+"!");
 	    }
