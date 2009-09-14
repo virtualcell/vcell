@@ -1,7 +1,23 @@
 package pool;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.CallableStatement;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.NClob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLClientInfoException;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Savepoint;
+import java.sql.Statement;
+import java.sql.Struct;
+import java.util.Map;
+import java.util.Properties;
 
 import org.vcell.util.document.UserInfo;
 
@@ -120,7 +136,7 @@ public class JDCConnection implements Connection {
 	/**
 	 * getTypeMap method comment.
 	 */
-	public java.util.Map getTypeMap() throws java.sql.SQLException {
+	public java.util.Map<String, Class<?>> getTypeMap() throws java.sql.SQLException {
 		return conn.getTypeMap();
 	}
 
@@ -321,55 +337,55 @@ public class JDCConnection implements Connection {
 		return true;
 	}
 
-//	public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-//		return conn.createArrayOf(typeName, elements);
-//	}
-//
-//	public Blob createBlob() throws SQLException {
-//		return conn.createBlob();
-//	}
-//
-//	public Clob createClob() throws SQLException {
-//		return conn.createClob();
-//	}
-//
-//	public NClob createNClob() throws SQLException {
-//		return conn.createNClob();
-//	}
-//
-//	public SQLXML createSQLXML() throws SQLException {
-//		return conn.createSQLXML();
-//	}
-//
-//	public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-//		return conn.createStruct(typeName, attributes);
-//	}
-//
-//	public Properties getClientInfo() throws SQLException {
-//		return conn.getClientInfo();
-//	}
-//
-//	public String getClientInfo(String name) throws SQLException {
-//		return conn.getClientInfo(name);
-//	}
-//
-//	public boolean isValid(int timeout) throws SQLException {
-//		return conn.isValid(timeout);
-//	}
-//
-//	public void setClientInfo(Properties properties) throws SQLClientInfoException {
-//		conn.setClientInfo(properties);
-//	}
-//
-//	public void setClientInfo(String name, String value) throws SQLClientInfoException {
-//		conn.setClientInfo(name, value);
-//	}
-//
-//	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-//		return conn.isWrapperFor(iface);
-//	}
-//
-//	public <T> T unwrap(Class<T> iface) throws SQLException {
-//		return conn.unwrap(iface);
-//	}
+	public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+		return conn.createArrayOf(typeName, elements);
+	}
+
+	public Blob createBlob() throws SQLException {
+		return conn.createBlob();
+	}
+
+	public Clob createClob() throws SQLException {
+		return conn.createClob();
+	}
+
+	public NClob createNClob() throws SQLException {
+		return conn.createNClob();
+	}
+
+	public SQLXML createSQLXML() throws SQLException {
+		return conn.createSQLXML();
+	}
+
+	public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+		return conn.createStruct(typeName, attributes);
+	}
+
+	public Properties getClientInfo() throws SQLException {
+		return conn.getClientInfo();
+	}
+
+	public String getClientInfo(String name) throws SQLException {
+		return conn.getClientInfo(name);
+	}
+
+	public boolean isValid(int timeout) throws SQLException {
+		return conn.isValid(timeout);
+	}
+
+	public void setClientInfo(Properties properties) throws SQLClientInfoException {
+		conn.setClientInfo(properties);
+	}
+
+	public void setClientInfo(String name, String value) throws SQLClientInfoException {
+		conn.setClientInfo(name, value);
+	}
+
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		return conn.isWrapperFor(iface);
+	}
+
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		return conn.unwrap(iface);
+	}
 }

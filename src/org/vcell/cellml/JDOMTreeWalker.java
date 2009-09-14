@@ -7,7 +7,6 @@ import java.util.NoSuchElementException;
 
 import org.jdom.Element;
 import org.jdom.Document;
-import org.jdom.filter.ElementFilter;
 import org.jdom.filter.Filter;
 
 /**
@@ -60,7 +59,7 @@ public class JDOMTreeWalker implements Iterator {
 			add(0, iter = list.iterator());
 		}
 
-		private void pop() {
+		private void pop0() {
 			if (size() > 0) {
 				this.remove(0);
 			}
@@ -85,35 +84,12 @@ public class JDOMTreeWalker implements Iterator {
 						return node;
 					}
 				}
-				pop();
+				pop0();
 				if (iter == null){
 					return null;
 				}
 			}
 		}
-		
-		/*public Object getNext() {
-			if (iter == null) {
-				return null;
-			}
-
-			while (iter.hasNext()) {
-				Object node = iter.next();
-				if (node instanceof Element) {
-					List list = ((Element) node).getContent();
-					if (list.size() > 0) {
-						push(((Element)node).getContent());
-					}
-				}
-				if (_filter == null || _filter.matches(node)) {
-					//return node;
-				}
-			}
-			pop();
-			return getNext();
-		}*/
-        
-
 	} /* class Stack */
 
 	/**
