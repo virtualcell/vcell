@@ -137,10 +137,9 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//JTable setRowHeight(int,int) method template doesn't exist in VAJ old JRE
 		//but is preferred and available in newer JRE.
 		//Check for preferred setRowHeight(int,int) by introspection to avoid compile errors in VAJ
-		for(int rowIndex=0;rowIndex<targetTable.getRowCount();rowIndex+= 1){
-			if((java.util.Arrays.binarySearch(targetRows,rowIndex) >= 0) && 
-					targetTable.getRowHeight(rowIndex) < maxRowHeights[rowIndex]){
-					targetTable.setRowHeight(rowIndex,maxRowHeights[rowIndex]+targetTable.getRowMargin());
+		for(int rowIndex : targetRows){
+			if (targetTable.getRowHeight(rowIndex) < maxRowHeights[rowIndex]){
+				targetTable.setRowHeight(rowIndex,maxRowHeights[rowIndex]+targetTable.getRowMargin());
 			}
 		}
 	}catch(Exception exc){
