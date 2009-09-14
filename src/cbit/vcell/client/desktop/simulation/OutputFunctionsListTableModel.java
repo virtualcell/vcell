@@ -163,6 +163,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == getOutputFunctionContext() && evt.getPropertyName().equals("outputFunctions")) {
 		setData(outputFunctionContext.getOutputFunctionsList());
+		fireTableRowsUpdated(0, getRowCount());
 	}
 }
 
@@ -195,6 +196,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					exp.bindExpression(outputFunctionContext);
 					outputFunction.setExpression(exp);
 				}
+				// both the 'fire's are being used so that the scopedExpressionRenderer renders the exprs properly, esp with num/dem exprs.
+				fireTableDataChanged();
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			} catch (ExpressionException e){
 				e.printStackTrace(System.out);
