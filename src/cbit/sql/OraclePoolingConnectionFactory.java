@@ -4,56 +4,39 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import oracle.jdbc.pool.OracleConnectionPoolDataSource;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-
-import cbit.sql.ConnectionFactory;
 /**
  * This type was created in VisualAge.y
  */
 public final class OraclePoolingConnectionFactory implements ConnectionFactory  {
 
-	private static pool.JDCConnectionDriver jdcConnectionDriver = null;
+	private OracleConnectionPoolDataSource oracleConnectionPoolDataSource = null;
 	private SessionLog log = null;
-	
-/**
- * This method was created in VisualAge.
- * @param maxConnections int
- */
+
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
+	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName), 
+			PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL), 
+			PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid), 
+			PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));	
+}
 
-	String driverName =	PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-	String connectURL =	PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL);
-	String password =		PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword);
-	String userid =		PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid);
+public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
 	this.log = sessionLog;
-	if (jdcConnectionDriver==null){
-		jdcConnectionDriver = new pool.JDCConnectionDriver(driverName,connectURL,userid,password);
+	if (oracleConnectionPoolDataSource==null){
+		oracleConnectionPoolDataSource = new OracleConnectionPoolDataSource();
+		oracleConnectionPoolDataSource.setURL(argConnectURL);
+		oracleConnectionPoolDataSource.setUser(argUserid);
+		oracleConnectionPoolDataSource.setPassword(argPassword);
 	}
 	
 }
-/**
- * This method was created in VisualAge.
- * @param maxConnections int
- */
-public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName,String argConnectURL,String argUserid,String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
 
-	String driverName =	argDriverName;
-	String connectURL =	argConnectURL;
-	String password =		argPassword;
-	String userid =		argUserid;
-	this.log = sessionLog;
-	if (jdcConnectionDriver==null){
-		jdcConnectionDriver = new pool.JDCConnectionDriver(driverName,connectURL,userid,password);
-	}
-	
-}
-/**
- * This method was created in VisualAge.
- */
 public synchronized void closeAll() throws java.sql.SQLException {
 }
 /**
@@ -61,16 +44,12 @@ public synchronized void closeAll() throws java.sql.SQLException {
  * @param con java.sql.Connection
  */
 public void failed(Connection con, Object lock) throws SQLException {
-	System.out.println("OraclePoolingConnectionFactory.failed("+con+")");
-	((pool.JDCConnection)con).failed("OraclePoolingConnectionFactory.failed()");
+	log.print("OraclePoolingConnectionFactory.failed("+con+")");
 	release(con, lock);
 }
-/**
- * This method was created in VisualAge.
- * @return Connection
- */
+
 public Connection getConnection(Object lock) throws SQLException {	
-	return java.sql.DriverManager.getConnection("jdbc:jdc:jdcpool");
+	return oracleConnectionPoolDataSource.getConnection();
 }
 /**
  * This method was created in VisualAge.
