@@ -37,11 +37,9 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.CellEditorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent.EventType;
-import javax.swing.table.TableCellEditor;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.vcell.util.BeanUtils;
@@ -185,18 +183,39 @@ public class TextFieldAutoCompletion extends JTextField {
 		
 	private class GoToList extends AbstractAction {
 		int increment = 0;
+		boolean bRequireListHasFocus = false;
+		
 		public GoToList(int incr) {
+			this(incr, false);
+		}
+		
+		public GoToList(int incr, boolean bRequireFocus) {
 			increment = incr;
+			bRequireListHasFocus = bRequireFocus;
 		}
 		public void actionPerformed(ActionEvent ev) {
-			if (increment != 0) {				
-				int totalLen = listModel.getSize();
-				if (totalLen == 0) {
-					return;
+			if (autoCompJPopupMenu.isVisible() && (!bRequireListHasFocus || autoCompJList.getSelectedIndex() >= 0)) {
+				if (increment != 0) {
+					int totalLen = listModel.getSize();
+					if (totalLen == 0) {
+						return;
+					}
+					int si = 0;
+					if (increment == Integer.MIN_VALUE) {
+						si = 0;
+					} else if (increment == Integer.MAX_VALUE) {
+						si = totalLen - 1;
+					} else {
+						si = Math.min(totalLen - 1, Math.max(0, autoCompJList.getSelectedIndex() + increment));
+					}
+					autoCompJList.setSelectedIndex(si);
+					autoCompJList.ensureIndexIsVisible(si);
 				}
-				int si = Math.min(totalLen - 1, Math.max(0, autoCompJList.getSelectedIndex() + increment));
-				autoCompJList.setSelectedIndex(si);
-				autoCompJList.ensureIndexIsVisible(si);
+			} else {
+				if ((increment == Integer.MIN_VALUE) || (increment == Integer.MAX_VALUE)) {
+					setCaretPosition(increment == Integer.MIN_VALUE ? 0 : getText().length());
+					showPopupChoices(null);
+				}
 			}
 		}
 	}
@@ -294,8 +313,8 @@ public class TextFieldAutoCompletion extends JTextField {
 		am.put(GODOWNLIST_ACTION, new GoToList(1));
 		am.put(GOPAGEUPLIST_ACTION, new GoToList(-5));
 		am.put(GOPAGEDOWNLIST_ACTION, new GoToList(5));
-		am.put(GOHOMELIST_ACTION, new GoToList(-1000000));
-		am.put(GOENDLIST_ACTION, new GoToList(1000000));
+		am.put(GOHOMELIST_ACTION, new GoToList(Integer.MIN_VALUE, true));
+		am.put(GOENDLIST_ACTION, new GoToList(Integer.MAX_VALUE, true));
 		am.put(SHOWLIST_ACTION, new ShowList());
 		am.put(DISMISSLIST_ACTION, new DismissList());
 	}
