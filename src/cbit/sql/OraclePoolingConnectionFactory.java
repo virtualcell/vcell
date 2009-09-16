@@ -11,6 +11,7 @@ import oracle.jdbc.pool.OracleConnectionPoolDataSource;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+
 /**
  * This type was created in VisualAge.y
  */
@@ -48,8 +49,36 @@ public void failed(Connection con, Object lock) throws SQLException {
 	release(con, lock);
 }
 
-public Connection getConnection(Object lock) throws SQLException {	
-	return oracleConnectionPoolDataSource.getConnection();
+public Connection getConnection(Object lock) throws SQLException {
+	// possibly because OracleConnectionPoolDataSource can't generate connections at fast rate.
+	// it worked before probably because our inefficient code had built-in delay.
+	Connection conn = null;
+	boolean bRetry = true;
+	try {
+		Thread.sleep(50);
+	} catch (InterruptedException e) {
+		e.printStackTrace();
+	}
+	while (conn == null) {
+		try {
+			conn = oracleConnectionPoolDataSource.getConnection();
+		} catch (SQLException x) {
+			if (bRetry && x.getMessage().indexOf("ORA-12519") != -1){
+				// sleep for a while
+				System.out.println("failed");
+				bRetry = false;
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			} else {
+				throw x;
+			}
+		}
+	}
+	
+	return conn;
 }
 /**
  * This method was created in VisualAge.
