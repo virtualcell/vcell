@@ -288,7 +288,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				logFilePrintStream.println("User : " + bioModel_1.getVersion().getOwner().getName() + ";\tBiomodel : " + bioModel_1.getName() + ";\tDate : " + bioModel_1.getVersion().getDate().toString() + ";\tAppln : " + simContexts[k].getName());
 //				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k].getName());
 				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k], null);
-				SBMLUtils.writeStringToFile(exportedSBMLStr, "C:\\VCell\\SBML_Testing\\SBMLValidationSuiteTests\\"+bioModel_1.getName()+".xml");
+				SBMLUtils.writeStringToFile(exportedSBMLStr, "C:\\VCell\\SBML_Testing\\SBMLValidationSuiteTests\\"+bioModel_1.getName()+".xml", true);
 
 				// Import the exported model
 				BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr));

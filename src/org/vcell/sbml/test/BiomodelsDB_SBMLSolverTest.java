@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.sbml.SimSpec;
@@ -77,8 +78,9 @@ public class BiomodelsDB_SBMLSolverTest {
 						//
 						// get SBML model "name" (or "id")
 						//
-						Element rootSBML = XmlUtil.readXML(sbmlFile).getRootElement();
-						String sbmlText = XmlUtil.xmlToString(rootSBML);
+						Document sbmlDoc = XmlUtil.readXML(sbmlFile);
+						String sbmlText = XmlUtil.xmlToString(sbmlDoc, false);
+						Element rootSBML = sbmlDoc.getRootElement();
 						Namespace sbmlNamespace = rootSBML.getNamespace();
 						// Namespace sbmlNamespace = Namespace.getNamespace("http://www.sbml.org/sbml/level2");
 						Element sbmlModelElement = rootSBML.getChild("model",sbmlNamespace);
@@ -161,7 +163,7 @@ public class BiomodelsDB_SBMLSolverTest {
 								VCellSBMLSolver vcellSBMLSolver_RT = new VCellSBMLSolver();
 								vcellSBMLSolver_RT.setRoundTrip(true);
 								String columnDelimiter = vcellSBMLSolver_RT.getResultsFileColumnDelimiter();
-								File resultFile = vcellSBMLSolver_RT.solve(filePrefix, outDir, sbmlText, simSpec);
+								File resultFile = vcellSBMLSolver_RT.solve(filePrefix, outDir, sbmlFile.getAbsolutePath(), simSpec);
 								vcellResults_RT = readResultFile(resultFile, columnDelimiter); 
 							}catch (Exception e){
 								printWriter.println("vcell solve(roundtrip=true) failed");

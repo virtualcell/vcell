@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -76,12 +78,17 @@ public abstract class SBMLUtils {
 		}
 	}
 	
-	public static void writeStringToFile(String xmlString, String filename) throws IOException {
+	public static void writeStringToFile(String xmlString, String filename, boolean bUseUTF8) throws IOException {
 		File outputFile = new File(filename);
-		java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile);
-		fileWriter.write(xmlString);
-		fileWriter.flush();
-		fileWriter.close();
+		OutputStreamWriter fileOSWriter = null;
+		if (bUseUTF8){
+			fileOSWriter = new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8");
+		}else{
+			fileOSWriter = new OutputStreamWriter(new FileOutputStream(outputFile));
+		}
+		fileOSWriter.write(xmlString);
+		fileOSWriter.flush();
+		fileOSWriter.close();
 	}
 
 	public static String readStringFromFile(String fileName) throws IOException {

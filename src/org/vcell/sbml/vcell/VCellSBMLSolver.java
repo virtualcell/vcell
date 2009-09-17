@@ -42,7 +42,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 	}
 
-	public File solve(String filePrefix, File outDir, String sbmlString, SimSpec testSpec) throws IOException, SolverException, SbmlException {
+	public File solve(String filePrefix, File outDir, String sbmlFileName, SimSpec testSpec) throws IOException, SolverException, SbmlException {
 		try {
 		    cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
 		        private StringBuffer buffer = new StringBuffer();
@@ -66,13 +66,13 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 		    // and import SBML  (sbml->bioModel)
-			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlString, logger);
+			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFileName, logger);
 			BioModel bioModel = sbmlImporter.getBioModel();
 			Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 			double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();
 
 		    String vcml_1 = XmlHelper.bioModelToXML(bioModel);
-		    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath());
+		    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath(), true);
 
 		    if (bRoundTrip){
 			    // Round trip the bioModel (bioModel->sbml->bioModel).
@@ -85,13 +85,13 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
 			    // SimulationJob simJob = new SimulationJob(bioModel.getSimulations(bioModel.getSimulationContexts(0))[0], null, 0);
 			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0), null);
-			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath());
+			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath(), true);
 			    
 			    // re-import bioModel from exported sbml
 			    XMLSource vcml_sbml_Src = new XMLSource(vcml_sbml);
 			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml_Src);
 			    String vcml_sbml_vcml = XmlHelper.bioModelToXML(newBioModel);
-			    SBMLUtils.writeStringToFile(vcml_sbml_vcml, new File(outDir,filePrefix+".vcml.sbml.vcml").getAbsolutePath());
+			    SBMLUtils.writeStringToFile(vcml_sbml_vcml, new File(outDir,filePrefix+".vcml.sbml.vcml").getAbsolutePath(), true);
 			    
 			    // have rest of code use the round-tripped biomodel
 			    bioModel = newBioModel;

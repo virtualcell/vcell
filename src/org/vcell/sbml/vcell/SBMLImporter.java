@@ -29,6 +29,7 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.KineticLaw;
 import org.sbml.libsbml.ListOf;
 import org.sbml.libsbml.ModifierSpeciesReference;
+import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.Reaction;
@@ -1709,6 +1710,10 @@ public BioModel getBioModel() {
 	
 	long numProblems = document.getNumErrors();
 	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");
+//	System.out.println("\n\nSBML Import Error Report");
+//	OStringStream oStrStream = new OStringStream();
+//	document.printErrors(oStrStream);
+//	System.out.println(oStrStream.str());
 	
 	sbmlModel = document.getModel();
 	

@@ -133,7 +133,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 			throw new RuntimeException("directory "+outDir.getAbsolutePath()+" doesn't exist");
 		}
 		File sbmlFile = new File(outDir,filePrefix+".sbml");
-		SBMLUtils.writeStringToFile(sbmlText,sbmlFile.getAbsolutePath());
+		SBMLUtils.writeStringToFile(sbmlText,sbmlFile.getAbsolutePath(), true);
 		
 		File origCopasiFile = new File(outDir,filePrefix+".orig.cps");
 		File modifiedCopasiFile = new File(outDir,filePrefix+".mod.cps");
@@ -268,7 +268,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 		
 		String modifiedCopasiText = SBMLUtils.xmlToString(copasiRootElement,true);
 		String preamble = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!-- generated with COPASI 4.2 (Build 22) (http://www.copasi.org) at 2007-09-14 13:38:52 UTC -->\n";
-		SBMLUtils.writeStringToFile(preamble+modifiedCopasiText, modifiedCopasiFile.getAbsolutePath());
+		SBMLUtils.writeStringToFile(preamble+modifiedCopasiText, modifiedCopasiFile.getAbsolutePath(), true);
 		
 		ProcessBuilder processBuilderCopasiSim = new ProcessBuilder(new String[] {
 				"cmd",
