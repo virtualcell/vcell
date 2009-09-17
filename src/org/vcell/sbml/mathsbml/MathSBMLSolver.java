@@ -43,7 +43,7 @@ public class MathSBMLSolver implements SBMLSolver {
 			File sbmlFile = new File(args[1]);
 			String sbmlText = SBMLUtils.readStringFromFile(sbmlFile.getAbsolutePath());
 	
-			MathSBMLSolver mathSBMLSolver = new MathSBMLSolver(new File("c:\\program files\\wolfram research\\mathematica\\6.0\\mathkernel.exe"));
+			MathSBMLSolver mathSBMLSolver = new MathSBMLSolver(new File("c:\\program files\\wolfram research\\mathematica\\7.0\\mathkernel.exe"));
 			
 			SimSpec simSpec = SimSpec.fromSBML(sbmlText);
 			String prefixName = sbmlFile.getName();
@@ -109,7 +109,7 @@ public File solve(String filePrefix, File outDir, String sbmlText, SimSpec testS
 		outDir.mkdirs();
 	}
 	File sbmlFile = new File(outDir,filePrefix+".sbml");
-	SBMLUtils.writeStringToFile(sbmlText, sbmlFile.getAbsolutePath());
+	SBMLUtils.writeStringToFile(sbmlText, sbmlFile.getAbsolutePath(), true);
 	
 	File csvFile = new File(outDir,filePrefix+".csv");
 	if (csvFile.exists()){
@@ -178,7 +178,7 @@ public File solve(String filePrefix, File outDir, String sbmlText, SimSpec testS
 		//
 		String results = SBMLUtils.readStringFromFile(csvFile.getAbsolutePath());
 		results = results.replace(CONTEXT_PREFIX, "");
-		SBMLUtils.writeStringToFile(results, csvFile.getAbsolutePath());
+		SBMLUtils.writeStringToFile(results, csvFile.getAbsolutePath(), false);
 	}
 	return csvFile;
 }
