@@ -77,7 +77,8 @@ public class OutputFunctionsPanel extends JPanel {
 			if (evt.getSource() == OutputFunctionsPanel.this && (evt.getPropertyName().equals("outputFunctionContext"))) {
 				// disable add/delete function buttons
 				if (outputFunctionContext != null && 
-						outputFunctionContext.getMathDescription() != null && outputFunctionContext.getMathDescription().isSpatial()) {
+					outputFunctionContext.getMathDescription() != null && 
+					(outputFunctionContext.getMathDescription().isSpatial() || outputFunctionContext.getMathDescription().isStoch())) {
 					getAddFnButton().setEnabled(false);
 					getDeleteFnButton().setEnabled(false);
 				}
