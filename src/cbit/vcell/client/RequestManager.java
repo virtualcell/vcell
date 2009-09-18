@@ -12,11 +12,12 @@ import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.server.DynamicDataManager;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.server.DataViewerController;
+import cbit.vcell.client.server.MergedDatasetViewerController;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;
@@ -147,7 +148,7 @@ DocumentManager getDocumentManager();
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-DynamicDataManager getDynamicDataManager(VCDataIdentifier vcdId) throws DataAccessException;
+MergedDatasetViewerController getMergedDatasetViewerController(VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException;
 
 SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException;
 
@@ -157,7 +158,7 @@ SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException;
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-DynamicDataManager getDynamicDataManager(Simulation simulation) throws DataAccessException;
+DataViewerController getDataViewerController(Simulation simulation) throws DataAccessException;
 
 
 /**

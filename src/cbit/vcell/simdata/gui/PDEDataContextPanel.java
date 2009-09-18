@@ -6,7 +6,7 @@ import org.vcell.util.Coordinate;
 
 import cbit.vcell.simdata.*;
 import cbit.image.*;
-import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.*;
 import cbit.vcell.geometry.gui.CurveRenderer;
 /*©
@@ -21,7 +21,7 @@ import cbit.vcell.geometry.gui.CurveRenderer;
  */
 public class PDEDataContextPanel extends javax.swing.JPanel implements CurveValueProvider {
 	//
-	private DataViewer.DataInfoProvider dataInfoProvider;
+	private PDEDataViewer.DataInfoProvider dataInfoProvider;
 	//
 	private java.util.Vector<Curve> membraneSamplerCurves = null;
 	private java.util.Hashtable<SampledCurve, int[]> membranesAndIndexes = null;
@@ -763,7 +763,7 @@ public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
 										membraneValues[csi.getSegment()];
 							if(getDataInfoProvider() != null){
-								DataViewer.MembraneDataInfo membraneDataInfo =
+								PDEDataViewer.MembraneDataInfo membraneDataInfo =
 									getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);
 								infoS+= "          ";
 								infoS+= " \""+membraneDataInfo.membraneName+"\"";
@@ -1479,10 +1479,10 @@ private void updateMembraneCurves() {
 	//
 	fireDataSamplers();
 }
-private DataViewer.DataInfoProvider getDataInfoProvider() {
+private PDEDataViewer.DataInfoProvider getDataInfoProvider() {
 	return dataInfoProvider;
 }
-public void setDataInfoProvider(DataViewer.DataInfoProvider dataInfoProvider) {
+public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider) {
 	this.dataInfoProvider = dataInfoProvider;
 	getImagePlaneManagerPanel().setDataInfoProvider(getDataInfoProvider());
 }

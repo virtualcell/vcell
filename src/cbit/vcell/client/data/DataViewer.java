@@ -1,8 +1,6 @@
 package cbit.vcell.client.data;
 import javax.swing.*;
 import cbit.rmi.event.*;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solvers.MembraneElement;
 /**
  * Insert the type's description here.
  * Creation date: (6/14/2004 9:48:35 PM)
@@ -13,50 +11,7 @@ public abstract class DataViewer extends JPanel implements ExportListener,cbit.r
 	private cbit.vcell.client.DataViewerManager fieldDataViewerManager = null;
 	private SimulationModelInfo fieldSimulationModelInfo = null;
 
-	public static class VolumeDataInfo{
-		public final int volumeIndex;
-		public final String volumeNamePhysiology;
-		public final String volumeNameGeometry;
-		public final int subvolumeID;
-		public final int volumeRegionID;
-		public VolumeDataInfo(int volumeIndex,CartesianMesh cartesianMesh,SimulationModelInfo simulationModelInfo){
-			this.volumeIndex = volumeIndex;
-			volumeRegionID = cartesianMesh.getVolumeRegionIndex(volumeIndex);
-			subvolumeID = cartesianMesh.getSubVolumeFromVolumeIndex(volumeIndex);
-			volumeNamePhysiology = simulationModelInfo.getVolumeNamePhysiology(subvolumeID);
-			volumeNameGeometry = simulationModelInfo.getVolumeNameGeometry(subvolumeID);
-		}
-	}
-	public static class MembraneDataInfo{
-		public final int membraneIndex;
-		public final MembraneElement membraneElement;
-		public final String membraneName;
-		public final int membraneRegionID;
-		public MembraneDataInfo(int membraneIndex,CartesianMesh cartesianMesh,SimulationModelInfo simulationModelInfo){
-			this.membraneIndex = membraneIndex;
-			membraneElement = cartesianMesh.getMembraneElements()[membraneIndex];
-			membraneRegionID = cartesianMesh.getMembraneRegionIndex(membraneIndex);
-			membraneName =
-				simulationModelInfo.getMembraneName(
-						cartesianMesh.getSubVolumeFromVolumeIndex(membraneElement.getInsideVolumeIndex()),
-						cartesianMesh.getSubVolumeFromVolumeIndex(membraneElement.getOutsideVolumeIndex()));
-		}
-	}
-	public static class DataInfoProvider{
-		private CartesianMesh cartesianMesh;
-		private SimulationModelInfo simulationModelInfo;
-		public DataInfoProvider(CartesianMesh cartesianMesh,SimulationModelInfo simulationModelInfo){
-			this.cartesianMesh = cartesianMesh;
-			this.simulationModelInfo = simulationModelInfo;
-		}
-		public VolumeDataInfo getVolumeDataInfo(int volumeIndex){
-			return new VolumeDataInfo(volumeIndex,cartesianMesh,simulationModelInfo);
-		}
-		public MembraneDataInfo getMembraneDataInfo(int membraneIndex){
-			return new MembraneDataInfo(membraneIndex,cartesianMesh,simulationModelInfo);
-		}
-	}
-/**
+	/**
  * Insert the method's description here.
  * Creation date: (3/31/2006 8:22:43 AM)
  */

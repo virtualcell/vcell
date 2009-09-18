@@ -1422,14 +1422,12 @@ public DataManager getDataManager(VCDataIdentifier vcDataId, boolean isSpatial) 
 	// Create ODE or PDE or Merged Datamanager depending on ODE or PDE or Merged data.
 	//
 	DataManager dataManager = null;
-	if (vcDataId instanceof MergedDataInfo) {
-		dataManager = new MergedDataManager(getClientServerManager().getVCDataManager(), vcDataId);
-	} else if (!isSpatial) {
+	if (!isSpatial) {
 		dataManager = new ODEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
 	} else {
 		dataManager = new PDEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
 	}
-	dataManager.connect();
+//	dataManager.connect();
 	return dataManager;
 }
 
@@ -1452,9 +1450,9 @@ public DocumentManager getDocumentManager() {
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-public DynamicDataManager getDynamicDataManager(VCDataIdentifier vcdId) throws DataAccessException {
+public MergedDatasetViewerController getMergedDatasetViewerController(VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException {
 	if (vcdId instanceof MergedDataInfo) {
-		return new MergedDynamicDataManager(getClientServerManager().getVCDataManager(), vcdId);
+		return new MergedDatasetViewerController(getClientServerManager().getVCDataManager(), vcdId, expectODEData);
 	} else {
 		return null;
 	}
@@ -1467,8 +1465,8 @@ public DynamicDataManager getDynamicDataManager(VCDataIdentifier vcdId) throws D
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-public DynamicDataManager getDynamicDataManager(Simulation simulation) throws DataAccessException {
-	return new SimulationDataManager(getClientServerManager().getVCDataManager(), simulation);
+public DataViewerController getDataViewerController(Simulation simulation) throws DataAccessException {
+	return new SimResultsViewerController(getClientServerManager().getVCDataManager(), simulation);
 }
 
 

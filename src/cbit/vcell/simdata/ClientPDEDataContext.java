@@ -3,8 +3,9 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
 
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.desktop.controls.DataListener;
-import cbit.vcell.desktop.controls.DataManager;
 
 /**
  * Insert the type's description here.
@@ -13,14 +14,14 @@ import cbit.vcell.desktop.controls.DataManager;
  */
 public abstract class ClientPDEDataContext extends PDEDataContext implements DataListener {
 		//
-	private DataManager dataManager = null;
+	private PDEDataManager dataManager = null;
 
 /**
  * Insert the method's description here.
  * Creation date: (5/22/2001 3:18:21 PM)
  * @param simManager cbit.vcell.desktop.controls.SimulationManager
  */
-protected ClientPDEDataContext(DataManager argDataManager) {
+protected ClientPDEDataContext(PDEDataManager argDataManager) {
 	super();
 	if (argDataManager != null) {
 		this.dataManager = argDataManager;
@@ -49,7 +50,7 @@ public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean
  * Creation date: (5/22/2001 3:19:48 PM)
  * @return cbit.vcell.desktop.controls.SimulationManager
  */
-public DataManager getDataManager() {
+public PDEDataManager getDataManager() {
 	return dataManager;
 }
 
@@ -229,7 +230,7 @@ public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws or
  * Creation date: (10/19/2005 12:21:50 PM)
  * @param newDataManager cbit.vcell.desktop.controls.DataManager
  */
-public void setDataManager(cbit.vcell.desktop.controls.DataManager newDataManager) throws DataAccessException{
+public void setDataManager(PDEDataManager newDataManager) throws DataAccessException{
 	VCDataIdentifier oldid = dataManager.getVCDataIdentifier();
 	VCDataIdentifier newid = newDataManager.getVCDataIdentifier();
 	if (oldid instanceof VCSimulationDataIdentifier &&

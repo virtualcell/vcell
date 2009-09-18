@@ -55,13 +55,8 @@ private void initialize(DataViewer dataViewer) {
 	// create frame
 	setFrame(new org.vcell.util.gui.JInternalFrameEnhanced("Comparing ... "+getVcDataIdentifier().getID(), true, true, true, true));
 	getFrame().setContentPane(dataViewer);
-	if (dataViewer instanceof ODEDataViewer) {
-		getFrame().setSize(450, 450);
-		getFrame().setMinimumSize(new Dimension(400, 400));
-	} else {
-		getFrame().setSize(850, 650);
-		getFrame().setMinimumSize(new Dimension(800, 600));
-	}
+	getFrame().setSize(450, 450);
+	getFrame().setMinimumSize(new Dimension(400, 400));
 }
 
 

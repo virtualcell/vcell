@@ -3,7 +3,6 @@ package cbit.vcell.client.server;
 import org.vcell.util.DataAccessException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.client.data.*;
-import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
@@ -11,11 +10,11 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  * Creation date: (10/16/2005 2:42:43 PM)
  * @author: Ion Moraru
  */
-public class SimulationDataManager implements DynamicDataManager {
+public class SimResultsViewerController implements DataViewerController {
 	private VCDataManager vcDataManager = null;
 	private Simulation simulation = null;
 	private VCSimulationIdentifier vcSimulationIdentifier = null;
-	private SimDataViewer simDataViewer = null;
+	private SimResultsViewer simResultsViewer = null;
 
 /**
  * Insert the method's description here.
@@ -23,7 +22,7 @@ public class SimulationDataManager implements DynamicDataManager {
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  * @param vcSimulationIdentifier cbit.vcell.solver.VCSimulationIdentifier
  */
-public SimulationDataManager(VCDataManager vcDataManager, Simulation simulation) {
+public SimResultsViewerController(VCDataManager vcDataManager, Simulation simulation) {
 	this.vcDataManager = vcDataManager;
 	this.simulation = simulation;
 	this.vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
@@ -34,10 +33,10 @@ public SimulationDataManager(VCDataManager vcDataManager, Simulation simulation)
  * Creation date: (10/16/2005 2:42:43 PM)
  * @return javax.swing.JPanel
  */
-public DataViewer createViewer(boolean expectODEData, DataManager dataManager) throws DataAccessException {
+public DataViewer createViewer() throws DataAccessException {
 	try{
-		simDataViewer = new SimDataViewer(simulation, vcDataManager, expectODEData, dataManager);
-		return simDataViewer;
+		simResultsViewer = new SimResultsViewer(simulation, vcDataManager);
+		return simResultsViewer;
 	}catch(Exception e){
 		if(e instanceof DataAccessException){
 			throw (DataAccessException)e;
@@ -69,8 +68,8 @@ public void newData(cbit.vcell.desktop.controls.DataEvent event) {
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 public void refreshData() throws org.vcell.util.DataAccessException {
-	if (simDataViewer != null) {
-		simDataViewer.refreshData();
+	if (simResultsViewer != null) {
+		simResultsViewer.refreshData();
 	}
 }
 }

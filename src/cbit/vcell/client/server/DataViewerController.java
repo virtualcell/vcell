@@ -9,13 +9,13 @@ import org.vcell.util.DataAccessException;
  * Creation date: (6/11/2004 1:51:53 PM)
  * @author: Ion Moraru
  */
-public interface DynamicDataManager extends DataListener {
+public interface DataViewerController extends DataListener {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:33:04 PM)
  * @return javax.swing.JPanel
  */
-DataViewer createViewer(boolean expectODEData, DataManager dataManager) throws DataAccessException;
+DataViewer createViewer() throws DataAccessException;
 
 /**
  * Insert the method's description here.

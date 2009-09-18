@@ -4,8 +4,9 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.server.ODEDataManager;
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
-import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
@@ -13,12 +14,11 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * Creation date: (10/17/2005 11:22:58 PM)
  * @author: Ion Moraru
  */
-public class MergedDataViewer extends DataViewer {
+public class MergedDatasetViewer extends DataViewer {
 	private VCDataManager vcDataManager = null;
 	private VCDataIdentifier vcDataId = null;
 	private DataViewer mainViewer = null;
 	private boolean isODEData;
-	private DataManager dataManager = null;
 	private ODEDataViewer odeDataViewer = null;
 	private PDEDataViewer pdeDataViewer = null;
 
@@ -28,12 +28,11 @@ public class MergedDataViewer extends DataViewer {
  * @param simulation cbit.vcell.solver.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
-public MergedDataViewer(VCDataManager argVcDataManager, VCDataIdentifier argMergedDataID, boolean argIsODEData, DataManager dataManager) throws DataAccessException {
+public MergedDatasetViewer(VCDataManager argVcDataManager, VCDataIdentifier argMergedDataID, boolean argIsODEData) throws DataAccessException {
 	super();
 	setVcDataId(argMergedDataID);
 	setVcDataManager(argVcDataManager);
 	this.isODEData = argIsODEData;
-	this.dataManager = dataManager;
 	initialize();
 }
 
@@ -46,13 +45,15 @@ public MergedDataViewer(VCDataManager argVcDataManager, VCDataIdentifier argMerg
 private DataViewer createDataViewer() {
 	try {
 		if (isODEData) {
+			ODEDataManager odeDataManager = new ODEDataManager(vcDataManager, vcDataId);
 			odeDataViewer = new ODEDataViewer();
-			odeDataViewer.setOdeSolverResultSet(dataManager.getODESolverResultSet());
+			odeDataViewer.setOdeSolverResultSet(odeDataManager.getODESolverResultSet());
 			odeDataViewer.setVcDataIdentifier(vcDataId);
 			return odeDataViewer;
 		} else {
+			PDEDataManager pdeDataManager = new PDEDataManager(vcDataManager, vcDataId);
 			pdeDataViewer = new PDEDataViewer();
-			pdeDataViewer.setPdeDataContext(dataManager.getPDEDataContext());
+			pdeDataViewer.setPdeDataContext(pdeDataManager.getPDEDataContext());
 			return pdeDataViewer;
 		}
 	} catch (org.vcell.util.DataAccessException exc) {
@@ -92,7 +93,7 @@ private void initialize() throws org.vcell.util.DataAccessException {
 	setMainViewer(createDataViewer());
 	java.beans.PropertyChangeListener pcl = new java.beans.PropertyChangeListener() {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == MergedDataViewer.this && (evt.getPropertyName().equals("dataViewerManager"))) {
+			if (evt.getSource() == MergedDatasetViewer.this && (evt.getPropertyName().equals("dataViewerManager"))) {
 				try {
 					getMainViewer().setDataViewerManager(getDataViewerManager());
 				} catch (java.beans.PropertyVetoException exc) {

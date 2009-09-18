@@ -4,7 +4,8 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.server.PDEDataManager;
 import java.util.Vector;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
@@ -94,7 +95,7 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResults(Simulation testSim, PDEDataManager testDataManager, Simulation refSim, PDEDataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	boolean bTimesEqual = true;
@@ -319,7 +320,7 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, cbit.vcell.desktop.controls.DataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, PDEDataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	

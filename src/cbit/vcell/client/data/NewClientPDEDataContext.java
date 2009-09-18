@@ -2,6 +2,7 @@ package cbit.vcell.client.data;
 
 import org.vcell.util.DataAccessException;
 
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.simdata.*;
 /**
  * Insert the type's description here.
@@ -13,7 +14,7 @@ public class NewClientPDEDataContext extends ClientPDEDataContext {
  * NewClientPDEDataContext constructor comment.
  * @param dataManager cbit.vcell.desktop.controls.DataManager
  */
-public NewClientPDEDataContext(cbit.vcell.desktop.controls.DataManager dataManager) {
+public NewClientPDEDataContext(PDEDataManager dataManager) {
 	super(dataManager);
 }
 
