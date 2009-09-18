@@ -179,7 +179,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);				
 				}
-				slowRateExp.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+				slowRateExp.substituteInPlace(od.getDiscontinuityExp(), new Expression("(" + dname + "==1)"));
 			}
 			
 			sb.append(slowRateExp.infix()+";\n");
@@ -199,7 +199,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);
 				}
-				fastRateExp.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+				fastRateExp.substituteInPlace(od.getDiscontinuityExp(), new Expression("(" + dname + "==1)"));
 			}
 			
 			sb.append(fastRateExp.flatten().infix()+";\n");
@@ -254,7 +254,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 					dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 					discontinuityNameMap.put(od, dname);				
 				}
-				rateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+				rateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression("(" + dname + "==1)"));
 			}
 			
 			sb.append(rateExpr.infix() + ";\n");
