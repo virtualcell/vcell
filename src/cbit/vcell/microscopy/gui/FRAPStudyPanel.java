@@ -80,11 +80,10 @@ import cbit.vcell.client.data.NewClientPDEDataContext;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
-import cbit.vcell.client.server.MergedDataManager;
+import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
@@ -1830,7 +1829,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
 				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
 								
-				DataManager dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
+				PDEDataManager dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 						
 				int format = ExportConstants.FORMAT_QUICKTIME;
@@ -1891,7 +1890,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier());
 		}
 		PDEDataViewer flourViewer = getFlourDataViewer();/*, getFlourDataViewer2()*/
-		DataManager dataManager = null;
+		PDEDataManager dataManager = null;
 
 		if (choice == DisplayChoice.EXTTIMEDATA){
 			
@@ -1951,7 +1950,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
 			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
 							
-			dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
+			dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 			// add function to display normalized fluorence data 
 			Norm_Exp_Fluor = new Expression(Norm_Exp_Fluor_Str);
@@ -2181,7 +2180,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	    return split;
 	}
 	
-	private DataManager getDataManager(Simulation sim) throws Exception{
+	private PDEDataManager getDataManager(Simulation sim) throws Exception{
 		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
 		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
@@ -2189,7 +2188,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}		
 		int jobIndex = 0;
 		SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
-		DataManager dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
+		PDEDataManager dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
 		return dataManager;
 	}
 	
@@ -2282,7 +2281,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	//				double[] prebleachAverage = getPreBleachAverageXYZ(null);
 					
 	//				simulationDataManager = getDataManager(frapSimulation);
-					DataManager simulationDataManager = null;
+					PDEDataManager simulationDataManager = null;
 					if(frapStudy.getBioModel() != null && frapStudy.getBioModel().getSimulations()!=null &&
 							frapStudy.getBioModel().getSimulations().length > 0)
 					{
