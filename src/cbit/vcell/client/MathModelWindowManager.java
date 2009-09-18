@@ -1,12 +1,15 @@
 package cbit.vcell.client;
 
-import cbit.vcell.desktop.controls.DataEvent;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.solver.*;
-import cbit.vcell.client.desktop.simulation.*;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.swing.JInternalFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
@@ -15,15 +18,23 @@ import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
+import cbit.vcell.client.desktop.mathmodel.EquationViewerPanel;
+import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
+import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
-import cbit.vcell.client.desktop.mathmodel.*;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
+import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import java.util.Hashtable;
-import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
-import java.util.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 10:52:17 AM)
@@ -87,15 +98,17 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 	 */
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	
-	if(e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Open Geometry")){
+	String actionCommand = e.getActionCommand();
+	Object source = e.getSource();
+	if(source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_GEOMETRY)){
 		//KeyValue geometryKey = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry().getVersion().getVersionKey();
 		openGeometryDocumentWindow(((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry());
 	}
 
-	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Change Geometry...")) {
+	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
 		getRequestManager().changeGeometry(this, null);
 	}
-	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("View Surfaces")) {
+	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_SURFACES)) {
 		showSurfaceViewerFrame();
 		if(getMathModel() != null && getMathModel().getMathDescription() != null &&
 			getMathModel().getMathDescription().getGeometry() != null &&

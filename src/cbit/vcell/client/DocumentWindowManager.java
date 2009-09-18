@@ -3,6 +3,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -898,7 +899,12 @@ public static void showFrame(JInternalFrame frame, JDesktopPaneEnhanced pane) {
 		}
 	}
 	frame.show();
-	pane.getDesktopManager().activateFrame(frame);
+//	pane.getDesktopManager().activateFrame(frame);
+	try {
+		frame.setSelected(true);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace();
+	}
 }
 
 
