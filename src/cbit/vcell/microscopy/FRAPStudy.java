@@ -56,7 +56,8 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -656,7 +657,7 @@ public class FRAPStudy implements Matchable{
 	
 	
 	public static FRAPStudy.SpatialAnalysisResults spatialAnalysis(
-			DataManager simulationDataManager,
+			PDEDataManager simulationDataManager,
 			int startingIndexForRecovery,
 			double startingIndexForRecoveryExperimentalTimePoint,
 			String freeDiffusionRate,

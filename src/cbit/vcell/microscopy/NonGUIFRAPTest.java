@@ -24,9 +24,9 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
-import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.modelopt.gui.DataReference;
@@ -409,7 +409,7 @@ public class NonGUIFRAPTest {
 			new VCSimulationDataIdentifier(
 				bioModel.getSimulations()[0].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
 				FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
-		DataManager simulationDataManager =
+		PDEDataManager simulationDataManager =
 			new PDEDataManager(localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
 		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 		//
