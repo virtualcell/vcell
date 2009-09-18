@@ -31,10 +31,12 @@ public class ODEDataManager implements DataManager {
  * Creation date: (6/11/2004 3:46:51 PM)
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
+ * @throws DataAccessException 
  */
-public ODEDataManager(VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier) {
+public ODEDataManager(VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier) throws DataAccessException {
 	setVcDataManager(vcDataManager);
 	setVcDataIdentifier(vcDataIdentifier);
+	connect();
 }
 
 
@@ -105,57 +107,6 @@ public boolean getIsODEData() throws DataAccessException {
 
 
 /**
- * retrieves a line scan (data sampled along a line in space) for the specified simulation.
- * 
- * @param variable name of variable to be sampled
- * @param time simulation time which is to be sampled.
- * @param begin i,j,k of start of line.
- * @param end i,j,k coordinate of end of line.
- * 
- * @returns annotated array of 'concentration vs. distance' in a plot ready format.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * 
- * @see PlotData
- */
-public PlotData getLineScan(String variable, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException {
-	throw new RuntimeException("Not implemented");
-}
-
-
-/**
- * retrieves a line scan (data sampled along a curve in space) for the specified simulation.
- * 
- * @param variable name of variable to be sampled
- * @param time simulation time which is to be sampled.
- * @param spatialSelection spatial curve.
- * 
- * @returns annotated array of 'concentration vs. distance' in a plot ready format.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * 
- * @see PlotData
- */
-public cbit.plot.PlotData getLineScan(String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
-	throw new RuntimeException("Not implemented");
-}
-
-
-/**
- * retrieves the Mesh object for this Simulation.
- * 
- * @returns mesh associated with this data (allows spatial interpretation of indexed data).
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * 
- * @see CartesianMesh
- */
-public CartesianMesh getMesh() throws DataAccessException {
-	return null;
-}
-
-
-/**
  * retrieves the non-spatial (ODE) results for this Simulation.  This is assumed not to change over the life
  * of the simulation
  * 
@@ -165,80 +116,6 @@ public CartesianMesh getMesh() throws DataAccessException {
  */
 public ODESolverResultSet getODESolverResultSet() throws DataAccessException {	
 	return odeSolverResultSet;
-}
-
-
-/**
- * retrieves the particle data for this Simulation.
- * 
- * @returns particle data for this result set.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found, or if no particle data.
- * 
- * @see ParticleDataBlock
- */
-public ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException {
-	return null;
-}
-
-
-public DataProcessingOutput getDataProcessingOutput() throws DataAccessException {
-	return getVcDataManager().getDataProcessingOutput(getVcDataIdentifier());
-}
-
-
-/**
- * determines if the result set for this Simulation contains particle data.
- * 
- * @returns <i>true</i> if there is particle data availlable.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- */
-public boolean getParticleDataExists() throws DataAccessException {
-	return false;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/13/2004 3:04:49 PM)
- * @return cbit.vcell.simdata.PDEDataContext
- */
-public PDEDataContext getPDEDataContext() {
-	return null;
-}
-
-
-/**
- * retrieves the spatial (PDE) data for this Simulation, Variable, and Time.
- * 
- * @param varName name of dataSet (state variable or function).
- * @param time simulation time of data.
- * 
- * @returns spatial (PDE) data for this result set associated with the specified variable name and time, 
- *          or <i>null</i> if no data availlable.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- */
-public SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException {
-	return null;
-}
-
-
-/**
- * retrieves a time series (single point as a function of time) of a specified spatial data set.
- * 
- * @param variable name of variable to be sampled
- * @param index identifies index into data array.
- * 
- * @returns annotated array of 'concentration vs. time' in a plot ready format.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * 
- * @see CartesianMesh for transformation between indices and coordinates.
- */
-public TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
-	throw new RuntimeException("Not implemented");
 }
 
 
@@ -303,7 +180,7 @@ private void setVcDataManager(VCDataManager newVcDataManager) {
 	vcDataManager = newVcDataManager;
 }
 
-public void connect() throws DataAccessException {
+private void connect() throws DataAccessException {
 	odeSolverResultSet = getVcDataManager().getODEData(getVcDataIdentifier());
 }
 

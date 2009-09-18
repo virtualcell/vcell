@@ -1,5 +1,4 @@
 package cbit.vcell.client;
-import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.rmi.event.ExportEvent;
@@ -26,7 +25,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
-import cbit.vcell.client.server.DynamicDataManager;
+
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.server.DataViewerController;
+import cbit.vcell.client.server.MergedDatasetViewerController;
+import cbit.vcell.client.server.ODEDataManager;
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -566,9 +570,9 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 
 		
 		// make the viewer
-		DynamicDataManager dynamicMergedDataMgr = getRequestManager().getDynamicDataManager(mergedDataInfo);
+		MergedDatasetViewerController dynamicMergedDataMgr = getRequestManager().getMergedDatasetViewerController(mergedDataInfo, mergedDataManager.getIsODEData());
 		addDataListener(dynamicMergedDataMgr);
-		DataViewer viewer = dynamicMergedDataMgr.createViewer(mergedDataManager.getIsODEData(), mergedDataManager);
+		DataViewer viewer = dynamicMergedDataMgr.createViewer();
 		viewer.setDataViewerManager(this);
 		addExportListener(viewer);
 		
@@ -1084,18 +1088,19 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
 			simReportStatus = TestCriteriaNew.TCRIT_STATUS_NOREFREGR;
 		}else{
 			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
-			DataManager dataManager = getRequestManager().getDataManager(vcdID, sim.getIsSpatial());
+			DataManager simDataManager = getRequestManager().getDataManager(vcdID, sim.getIsSpatial());
 			
-			double timeArray[] = dataManager.getDataSetTimes();
+			double timeArray[] = simDataManager.getDataSetTimes();
 			if (timeArray == null || timeArray.length == 0) {
 				reportTCBuffer.append("\t\t\tNO DATA : Simulation not run yet.\n");
 				simReportStatus = TestCriteriaNew.TCRIT_STATUS_NODATA;
 			} else {
 				// SPATIAL simulation
 				if (sim.getMathDescription().isSpatial()){
+					PDEDataManager pdeDataManager = (PDEDataManager)simDataManager;
 					// Get EXACT solution if test case type is EXACT, Compare with numerical
 					if (testCase.getType().equals(TestCaseNew.EXACT) || testCase.getType().equals(TestCaseNew.EXACT_STEADY)) {
-						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, dataManager,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
+						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, pdeDataManager,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -1121,7 +1126,7 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
 						}
 					// Get CONSTRUCTED solution if test case type is CONSTRUCTED, Compare with numerical
 					} else if (testCase.getType().equals(TestCaseNew.CONSTRUCTED)) {
-						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, dataManager,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
+						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, pdeDataManager,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -1148,10 +1153,10 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
 					} else if (testCase.getType().equals(TestCaseNew.REGRESSION)) {
 						Simulation refSim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(refSimInfo);
 						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
-						DataManager refDataManager = getRequestManager().getDataManager(refVcdID, refSim.getIsSpatial());
+						PDEDataManager refDataManager = (PDEDataManager)getRequestManager().getDataManager(refVcdID, refSim.getIsSpatial());
 						
 						String varsToCompare[] = getVariableNamesToCompare(sim,refSim);
-						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResults(sim, dataManager, refSim, refDataManager, varsToCompare,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
+						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResults(sim, pdeDataManager, refSim, refDataManager, varsToCompare,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -1177,7 +1182,8 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
 						}							
 					}
 				}else{  // NON-SPATIAL CASE
-					ODESolverResultSet numericalResultSet = dataManager.getODESolverResultSet();
+					ODEDataManager odeDataManager = (ODEDataManager)simDataManager;
+					ODESolverResultSet numericalResultSet = odeDataManager.getODESolverResultSet();
 					// Get EXACT result set if test case type is EXACT, Compare with numerical
 					if (testCase.getType().equals(TestCaseNew.EXACT) || testCase.getType().equals(TestCaseNew.EXACT_STEADY)) {
 						ODESolverResultSet exactResultSet = MathTestingUtilities.getExactResultSet(sim.getMathDescription(), timeArray, sim.getSolverTaskDescription().getSensitivityParameter());
@@ -1241,7 +1247,7 @@ public String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew te
 						String varsToTest[] = getVariableNamesToCompare(sim,refSim);
 						
 						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
-						DataManager refDataManager = getRequestManager().getDataManager(refVcdID, refSim.getIsSpatial());
+						ODEDataManager refDataManager = (ODEDataManager)getRequestManager().getDataManager(refVcdID, refSim.getIsSpatial());
 						ODESolverResultSet referenceResultSet = refDataManager.getODESolverResultSet();
 						SimulationComparisonSummary simCompSummary_regr = null;							
 						int interpolationOrder = 1;
@@ -2792,11 +2798,10 @@ public void viewResults(TestCriteriaNew testCriteria) {
 		Simulation sim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(testCriteria.getSimInfo());
 		DataManager dataManager = getRequestManager().getDataManager(vcdID, sim.getIsSpatial());
 		
-		DynamicDataManager dynamicDataMgr = getRequestManager().getDynamicDataManager(sim);
+		DataViewerController dynamicDataMgr = getRequestManager().getDataViewerController(sim);
 		addDataListener(dynamicDataMgr);
 		// make the viewer
-		boolean expectODEdata = sim.getMathDescription().getGeometry().getDimension() == 0;
-		DataViewer viewer = dynamicDataMgr.createViewer(expectODEdata, dataManager);
+		DataViewer viewer = dynamicDataMgr.createViewer();
 		viewer.setDataViewerManager(this);
 		addExportListener(viewer);
 		

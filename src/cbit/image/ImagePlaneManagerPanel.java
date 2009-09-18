@@ -1,7 +1,8 @@
 package cbit.image;
 
 import java.awt.*;
-import cbit.vcell.client.data.DataViewer;
+
+import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.gui.CurveRenderer;
 
 /*©
@@ -15,7 +16,7 @@ import cbit.vcell.geometry.gui.CurveRenderer;
  */
 public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	//
-	private DataViewer.DataInfoProvider dataInfoProvider;
+	private PDEDataViewer.DataInfoProvider dataInfoProvider;
 	//
 	private static final String defaultInfoString = "Info";
 	//
@@ -1460,7 +1461,7 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 							(getSourceDataInfo().getZSize() > 1?","+ci.z:"")+"] "+
 							(getSourceDataInfo().isDataNull()?"empty":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
 						if(getDataInfoProvider() != null){
-							DataViewer.VolumeDataInfo volumeDataInfo =
+							PDEDataViewer.VolumeDataInfo volumeDataInfo =
 								getDataInfoProvider().getVolumeDataInfo(volumeIndex);
 							infoS+= "          ";
 							infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
@@ -1505,10 +1506,10 @@ private void updatePanZoom() {
 		//cbit.util.BeanUtils.setCursorThroughout(getImagePaneScroller1(), defaultCursor);
 	//}
 }
-private DataViewer.DataInfoProvider getDataInfoProvider() {
+private PDEDataViewer.DataInfoProvider getDataInfoProvider() {
 	return dataInfoProvider;
 }
-public void setDataInfoProvider(DataViewer.DataInfoProvider dataInfoProvider) {
+public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider) {
 	this.dataInfoProvider = dataInfoProvider;
 }
 }

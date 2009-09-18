@@ -24,6 +24,7 @@ public class PDEDataManager implements DataManager {
 public PDEDataManager(VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier) {
 	setVcDataManager(vcDataManager);
 	setVcDataIdentifier(vcDataIdentifier);
+	connect();
 }
 
 
@@ -145,19 +146,6 @@ public cbit.vcell.solvers.CartesianMesh getMesh() throws org.vcell.util.DataAcce
 
 
 /**
- * retrieves the non-spatial (ODE) results for this Simulation.  This is assumed not to change over the life
- * of the simulation
- * 
- * @returns non-spatial (ODE) data.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- */
-public cbit.vcell.solver.ode.ODESolverResultSet getODESolverResultSet() throws org.vcell.util.DataAccessException {
-	return null;
-}
-
-
-/**
  * retrieves the particle data for this Simulation.
  * 
  * @returns particle data for this result set.
@@ -169,12 +157,6 @@ public cbit.vcell.solver.ode.ODESolverResultSet getODESolverResultSet() throws o
 public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.util.DataAccessException {
 	return getVcDataManager().getParticleDataBlock(getVcDataIdentifier(), time);
 }
-
-public DataProcessingOutput getDataProcessingOutput() throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getDataProcessingOutput(getVcDataIdentifier());
-}
-
-
 
 /**
  * determines if the result set for this Simulation contains particle data.
@@ -293,7 +275,7 @@ private void setVcDataManager(VCDataManager newVcDataManager) {
 }
 
 
-public void connect() {
+private void connect() {
 	newClientPDEDataContext = new NewClientPDEDataContext(this);	
 }
 }
