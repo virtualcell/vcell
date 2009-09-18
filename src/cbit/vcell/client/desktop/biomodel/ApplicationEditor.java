@@ -2,6 +2,7 @@ package cbit.vcell.client.desktop.biomodel;
 
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.solver.*;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -39,7 +40,14 @@ import org.vcell.util.gui.UtilCancelException;
  * @author: Ion Moraru
  */
 public class ApplicationEditor extends JPanel {
+	public static final int TAB_IDX_STRUCTURE_MAPPING = 0;
+	public static final int TAB_IDX_INITIAL_CONDITIONS = 1;
+	public static final int TAB_IDX_REACTION_MAPPING = 2;
+	public static final int TAB_IDX_ELECTRICAL_MAPPING = 3;
+	public static final int TAB_IDX_VIEW_MATH = 4;
+	public static final int TAB_IDX_SIMULATION = 5;
 	public static final int TAB_IDX_ANALYSIS = 6;
+	
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP2Aligning = false;
@@ -1371,13 +1379,13 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.setName("JTabbedPane1");
 			ivjJTabbedPane1.setPreferredSize(new java.awt.Dimension(682, 640));
 			ivjJTabbedPane1.setFont(new java.awt.Font("dialog", 0, 14));
-			ivjJTabbedPane1.insertTab("StructureMapping", null, getStructureMappingPanel(), null, 0);
-			ivjJTabbedPane1.insertTab("Initial Conditions", null, getInitialConditionsPanel(), null, 1);
-			ivjJTabbedPane1.insertTab("Reaction Mapping", null, getReactionSpecsPanel(), null, 2);
-			ivjJTabbedPane1.insertTab("Electrical Mapping", null, getElectricalMembraneMappingPanel(), null, 3);
-			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, 4);
-			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, 5);
-			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, 6);
+			ivjJTabbedPane1.insertTab("Structure Mapping", null, getStructureMappingPanel(), null, TAB_IDX_STRUCTURE_MAPPING);
+			ivjJTabbedPane1.insertTab("Initial Conditions", null, getInitialConditionsPanel(), null, TAB_IDX_INITIAL_CONDITIONS);
+			ivjJTabbedPane1.insertTab("Reaction Mapping", null, getReactionSpecsPanel(), null, TAB_IDX_REACTION_MAPPING);
+			ivjJTabbedPane1.insertTab("Electrical Mapping", null, getElectricalMembraneMappingPanel(), null, TAB_IDX_ELECTRICAL_MAPPING);
+			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, TAB_IDX_VIEW_MATH);
+			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, TAB_IDX_SIMULATION);
+			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, TAB_IDX_ANALYSIS);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1806,6 +1814,7 @@ private javax.swing.JButton getViewModifyGeometryButton() {
 			ivjViewModifyGeometryButton = new javax.swing.JButton();
 			ivjViewModifyGeometryButton.setName("ViewModifyGeometryButton");
 			ivjViewModifyGeometryButton.setText("View / Change Geometry");
+			ivjViewModifyGeometryButton.setActionCommand(GuiConstants.ACTIONCMD_VIEW_CHANGE_GEOMETRY);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1958,7 +1967,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2365,6 +2373,10 @@ private void refreshMappingInfoLabel() {
 	} else {
 		mappingInfoLabel.setVisible(true);
 	}
+}
+
+public void setTabIndex(int tabIndex) {
+	getJTabbedPane1().setSelectedIndex(tabIndex);	
 }
 
 }

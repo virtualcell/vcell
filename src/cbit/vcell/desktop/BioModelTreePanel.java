@@ -3,6 +3,7 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 
@@ -22,13 +23,17 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JTreeFancy;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.GuiConstants;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
 
 /**
@@ -37,6 +42,7 @@ import cbit.vcell.solver.Simulation;
  * @author: Jim Schaff
  */
 public class BioModelTreePanel extends JPanel {
+	
 	private JScrollPane ivjJScrollPane1 = null;
 	private BioModelCellRenderer ivjBioModelCellRendererFactory = null;
 	private JTreeFancy ivjJTree2 = null;
@@ -164,32 +170,50 @@ public BioModelTreePanel(boolean isDoubleBuffered) {
  * Comment
  */
 private void actionsOnClick(MouseEvent mouseEvent) {
-	if (mouseEvent.getClickCount() == 2 && this.getSelectedVersionable() instanceof SimulationContext) {
-		getJMenuItemOpen().doClick();
-		return;
-	}
 	DefaultMutableTreeNode currentTreeSelection = (DefaultMutableTreeNode)getJTree2().getLastSelectedPathComponent();
 	Object selectedObject = null;
-	if(currentTreeSelection != null){
-		selectedObject = currentTreeSelection.getUserObject();	
-	}
-	if (SwingUtilities.isRightMouseButton(mouseEvent) && selectedObject instanceof BioModel) {
-		getBioModelPopupMenu().show(getJTree2(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
-	}	
-	if (SwingUtilities.isRightMouseButton(mouseEvent) && this.getSelectedVersionable() instanceof SimulationContext) {
-		getAppPopupMenu().show(getJTree2(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
-	}
-	if (SwingUtilities.isRightMouseButton(mouseEvent) && this.getSelectedVersionable() instanceof Simulation) {
-		getSimPopupMenu().show(getJTree2(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
-	}
+	if(currentTreeSelection == null){
+		return;
+	} 
 	
-	if (selectedObject instanceof Annotation) {
-		if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-			getEditAnnotationPopupMenu().show(getJTree2(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
-		} else if (mouseEvent.getClickCount() == 2) {
+	selectedObject = currentTreeSelection.getUserObject();	
+	
+	// double click
+	if (mouseEvent.getClickCount() == 2) {
+		if (selectedObject instanceof SimulationContext) {
+			fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION, mouseEvent.getModifiers()));
+		} else if (selectedObject instanceof Annotation) {
 			editAnnotation();
+		} else if (selectedObject instanceof MathDescription) {			
+			fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_MATH, mouseEvent.getModifiers()));
+		} else if (selectedObject instanceof Geometry) {
+			fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_GEOMETRY, mouseEvent.getModifiers()));
+		} else if (selectedObject instanceof Simulation) {
+			fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_SIMULATION, mouseEvent.getModifiers()));
+		} else if (selectedObject instanceof String) { // deterministic or stochastic
+			String detStochString = (String)selectedObject;
+			if (detStochString.equals(BioModelChildSummary.TYPE_DETER_STR) || detStochString.equals(BioModelChildSummary.TYPE_STOCH_STR)
+					|| detStochString.equals(BioModelChildSummary.TYPE_UNKNOWN_STR)) {
+				fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_DETSTOCH, mouseEvent.getModifiers()));
+			}
 		}
-	}
+		return;
+	}	
+	
+	// right click
+	boolean bRightClick = SwingUtilities.isRightMouseButton(mouseEvent);
+	if (bRightClick) {
+		Point mousePoint = mouseEvent.getPoint();
+		if (selectedObject instanceof BioModel) {	
+			getBioModelPopupMenu().show(getJTree2(), mousePoint.x, mousePoint.y);
+		} else if (selectedObject instanceof SimulationContext) {
+			getAppPopupMenu().show(getJTree2(), mousePoint.x, mousePoint.y);
+		} else if (selectedObject instanceof Simulation) {
+			getSimPopupMenu().show(getJTree2(), mousePoint.x, mousePoint.y);
+		} if (selectedObject instanceof Annotation) {
+			getEditAnnotationPopupMenu().show(getJTree2(), mousePoint.x, mousePoint.y);
+		}
+	}	
 }
 
 
@@ -874,7 +898,7 @@ private javax.swing.JMenuItem getJMenuItemAnnotation() {
 			ivjJMenuItemAnnotation = new javax.swing.JMenuItem();
 			ivjJMenuItemAnnotation.setName("JMenuItemAnnotation");
 			ivjJMenuItemAnnotation.setMnemonic('a');
-			ivjJMenuItemAnnotation.setText("Edit App Annotation");
+			ivjJMenuItemAnnotation.setText("Edit Application Annotation");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -893,7 +917,7 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
 			ivjJMenuItemCopy.setName("JMenuItemCopy");
 			ivjJMenuItemCopy.setMnemonic('c');
 			ivjJMenuItemCopy.setText("Copy");
-			ivjJMenuItemCopy.setActionCommand("Copy");
+			ivjJMenuItemCopy.setActionCommand(GuiConstants.ACTIONCMD_COPY_APPLICATION);
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -919,11 +943,11 @@ private javax.swing.JMenu getJMenuCopy() {
 			copyStochApp=new JMenuItem();
 			copyStochApp.setName("JMenuItemToStochApp");
 			copyStochApp.setText("Stochastic Application");
-			copyStochApp.setActionCommand("Copy To Stochastic Application");
+			copyStochApp.setActionCommand(GuiConstants.ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION);
 			copyNonStochApp = new javax.swing.JMenuItem();
 			copyNonStochApp.setName("JMenuItemToNonStochApp");
 			copyNonStochApp.setText("Deterministic Application");
-			copyNonStochApp.setActionCommand("Copy To Non-stochastic Application");
+			copyNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION);
 			//add menu items to menu
 			ivjJMenuCopy.add(copyStochApp);
 			ivjJMenuCopy.add(copyNonStochApp);
@@ -948,6 +972,7 @@ private javax.swing.JMenuItem getJMenuItemCreateStochApp() {
 			ivjJMenuItemCreateStochApp = new javax.swing.JMenuItem();
 			ivjJMenuItemCreateStochApp.setName("JMenuItemCreateStochApp");
 			ivjJMenuItemCreateStochApp.setText("Create Stochastic Application");
+			ivjJMenuItemCreateStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -972,6 +997,7 @@ private javax.swing.JMenuItem getJMenuItemDelete() {
 			ivjJMenuItemDelete.setName("JMenuItemDelete");
 			ivjJMenuItemDelete.setMnemonic('d');
 			ivjJMenuItemDelete.setText("Delete");
+			ivjJMenuItemDelete.setActionCommand(GuiConstants.ACTIONCMD_DELETE_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -995,7 +1021,7 @@ private javax.swing.JMenuItem getJMenuItemEdit() {
 			ivjJMenuItemEdit = new javax.swing.JMenuItem();
 			ivjJMenuItemEdit.setName("JMenuItemEdit");
 			ivjJMenuItemEdit.setMnemonic('c');
-			ivjJMenuItemEdit.setText("Edit Sim Annotation");
+			ivjJMenuItemEdit.setText("Edit Simulation Annotation");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1022,11 +1048,11 @@ private javax.swing.JMenu getJMenuNew() {
 			newStochApp=new JMenuItem();
 			newStochApp.setName("JMenuItemStochApp");
 			newStochApp.setText("Stochastic Application");
-			newStochApp.setActionCommand("Create Stochastic Application");
+			newStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION);
 			newNonStochApp = new javax.swing.JMenuItem();
 			newNonStochApp.setName("JMenuItemNonStochApp");
 			newNonStochApp.setText("Deterministic Application");
-			newNonStochApp.setActionCommand("Create Non-stochastic Application");
+			newNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
 			//add menu items to menu
 			ivjJMenuNew.add(newStochApp);
 			ivjJMenuNew.add(newNonStochApp);
@@ -1051,6 +1077,7 @@ private javax.swing.JMenuItem getJMenuItemOpen() {
 			ivjJMenuItemOpen.setName("JMenuItemOpen");
 			ivjJMenuItemOpen.setMnemonic('o');
 			ivjJMenuItemOpen.setText("Open");
+			ivjJMenuItemOpen.setActionCommand(GuiConstants.ACTIONCMD_OPEN_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1075,7 +1102,7 @@ private javax.swing.JMenuItem getJMenuItemRename() {
 			ivjJMenuItemRename.setName("JMenuItemRename");
 			ivjJMenuItemRename.setMnemonic('r');
 			ivjJMenuItemRename.setText("Rename");
-			ivjJMenuItemRename.setActionCommand("Rename");
+			ivjJMenuItemRename.setActionCommand(GuiConstants.ACTIONCMD_RENAME_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1165,7 +1192,7 @@ private org.vcell.util.gui.JTreeFancy getJTree2() {
 			javax.swing.tree.DefaultTreeSelectionModel ivjLocalSelectionModel;
 			ivjLocalSelectionModel = new javax.swing.tree.DefaultTreeSelectionModel();
 			ivjLocalSelectionModel.setRowMapper(getLocalSelectionModelVariableHeightLayoutCache());
-			ivjJTree2 = new org.vcell.util.gui.JTreeFancy();
+			ivjJTree2 = new JTreeFancy();
 			ivjJTree2.setName("JTree2");
 			ivjJTree2.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("loading",false)));
 			ivjJTree2.setBounds(0, 0, 78, 72);
@@ -1214,7 +1241,7 @@ private javax.swing.JMenuItem getNewApplnMenuItem() {
 			ivjNewApplnMenuItem = new javax.swing.JMenuItem();
 			ivjNewApplnMenuItem.setName("NewApplnMenuItem");
 			ivjNewApplnMenuItem.setText("Create Deterministic Application");
-			ivjNewApplnMenuItem.setActionCommand("Create Non-stochastic Application");
+			ivjNewApplnMenuItem.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1239,7 +1266,7 @@ public Object getSelectedObject(BioModelNode selectedBioModelNode) {
  * @return The selectedVersionable property value.
  * @see #setSelectedVersionable
  */
-public org.vcell.util.document.Versionable getSelectedVersionable() {
+public Versionable getSelectedVersionable() {
 	return fieldSelectedVersionable;
 }
 
@@ -1452,8 +1479,8 @@ private void setBioModelCellRendererFactory(BioModelCellRenderer newValue) {
  * @param selectedVersionable The new value for the property.
  * @see #getSelectedVersionable
  */
-private void setSelectedVersionable(org.vcell.util.document.Versionable selectedVersionable) {
-	org.vcell.util.document.Versionable oldValue = fieldSelectedVersionable;
+private void setSelectedVersionable(Versionable selectedVersionable) {
+	Versionable oldValue = fieldSelectedVersionable;
 	fieldSelectedVersionable = selectedVersionable;
 	firePropertyChange("selectedVersionable", oldValue, selectedVersionable);
 }
@@ -1494,7 +1521,7 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
  * Set the BioModel to a new value.
  * @param newValue cbit.vcell.biomodel.BioModel
  */
-public void setTheBioModel(cbit.vcell.biomodel.BioModel newValue) {
+public void setTheBioModel(BioModel newValue) {
 	setBioModel(newValue);
 }
 
@@ -1510,13 +1537,28 @@ private Versionable treeSelection() {
 	}
 	BioModelNode bioModelNode = (BioModelNode)treePath.getLastPathComponent();
 	Object object = bioModelNode.getUserObject();
-	if (object instanceof org.vcell.util.document.Versionable){
-		setSelectedVersionable((org.vcell.util.document.Versionable)object);
+	if (object instanceof Versionable){
+		setSelectedVersionable((Versionable)object);
 		return (Versionable)object;
 	}else{
 		setSelectedVersionable(null);
 		return null;
 	}
+}
+
+public SimulationContext getSelectedApplicationParent() {
+	DefaultMutableTreeNode treeSelection = (DefaultMutableTreeNode)getJTree2().getLastSelectedPathComponent();
+	
+	while (true) {		
+		if(treeSelection == null){
+			return null;
+		} 
+		Object selectedObject = treeSelection.getUserObject();
+		if (selectedObject instanceof SimulationContext) {
+			return (SimulationContext)selectedObject;
+		}
+		treeSelection = (DefaultMutableTreeNode)treeSelection.getParent();
+	}	
 }
 
 }

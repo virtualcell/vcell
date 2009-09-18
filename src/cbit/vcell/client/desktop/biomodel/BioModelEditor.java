@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
+
 import javax.swing.*;
 
 import org.vcell.util.UserCancelException;
@@ -47,7 +48,7 @@ public class BioModelEditor extends JPanel {
 	private JMenuItem ivjJMenuItemStochApp = null;
 	private JMenu ivjJMenuNew = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {		
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == BioModelEditor.this.getCopyMenuItem()) 
 				connEtoC3(e);
@@ -91,23 +92,32 @@ public BioModelEditor() {
  * Creation date: (5/5/2004 9:44:15 PM)
  */
 public void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
-	if (e.getActionCommand().equals("Open")) {
+	String actionCommand = e.getActionCommand();
+	if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION)) {
 		openApplication();
-	} else if (e.getActionCommand().equals("Create Non-stochastic Application")) {
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_MATH)) {
+		openApplication(ApplicationEditor.TAB_IDX_VIEW_MATH);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_GEOMETRY)) {
+		openApplication(ApplicationEditor.TAB_IDX_STRUCTURE_MAPPING);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_SIMULATION)) {
+		openApplication(ApplicationEditor.TAB_IDX_SIMULATION);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_DETSTOCH)) {
+		openApplication();
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION)) {
 		newApplication(e);
-	}  else if (e.getActionCommand().equals("Create Stochastic Application")) {
+	}  else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION)) {
 		newApplication(e);
-	} else if (e.getActionCommand().equals("Delete")) {
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_DELETE_APPLICATION)) {
 		deleteApplication();
-	} else if (e.getActionCommand().equals("Rename")) {
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_RENAME_APPLICATION)) {
 		renameApplication();
-	} else if (e.getActionCommand().equals("Copy")) {
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
 		copyApplication(e);
-	} else if (e.getActionCommand().equals("Copy To Stochastic Application")) {
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION)) {
 		copyApplication(e);
-	} else if (e.getActionCommand().equals("Copy To Non-stochastic Application")) {
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION)) {
 		copyApplication(e);
-	} else if (e.getActionCommand().equals("Create New Application")) {
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NEW_APPLICATION)) {
 		newApplication(e);
 	} 
 }
@@ -385,15 +395,21 @@ private void connPtoP3SetTarget() {
  */
 private void copyApplication(ActionEvent evt) {
 	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	if (selection == null) {
-		PopupGenerator.showErrorDialog(this, "There is no application currently selected to be copied!");
+	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
+	if (selection == null && selectedParent == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}	
+	if(!(selection instanceof SimulationContext)) {
+		PopupGenerator.showWarningDialog(this, "This will copy the whole application.");
+		selection = selectedParent;
+	}
 	try {
 		String newApplicationName = null;
 		
 		if (selection instanceof SimulationContext) {
-			if(evt.getActionCommand().equals("Copy"))
+			String actionCommand = evt.getActionCommand();
+			if(actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION))
 			{
 				//check validity if selected application is a stochastic application
 				if(((SimulationContext)selection).isStoch())
@@ -419,7 +435,7 @@ private void copyApplication(ActionEvent evt) {
 					}
 				}
 			}
-			else if(evt.getActionCommand().equals("Copy To Stochastic Application"))
+			else if(actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION))
 			{
 				//check validity if copy to stochastic application
 				String message = getBioModel().isValidForStochApp();
@@ -442,7 +458,7 @@ private void copyApplication(ActionEvent evt) {
 					}
 				}
 			}
-			else if (evt.getActionCommand().equals("Copy To Non-stochastic Application"))
+			else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION))
 			{
 				//get valid application name
 				try{
@@ -472,10 +488,15 @@ private void copyApplication(ActionEvent evt) {
  */
 private void deleteApplication() {
 	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	if (selection == null) {
-		PopupGenerator.showErrorDialog(this, "There is no application currently selected for deletion!");
+	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
+	if (selection == null && selectedParent == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}	
+	if(!(selection instanceof SimulationContext)) {
+		PopupGenerator.showWarningDialog(this, "This will delete the whole application.");
+		selection = selectedParent;
+	}
 	try {
 		if (selection instanceof SimulationContext) {
 			//
@@ -615,6 +636,7 @@ private javax.swing.JMenuItem getCopyMenuItem() {
 			ivjCopyMenuItem.setName("CopyMenuItem");
 			ivjCopyMenuItem.setMnemonic('c');
 			ivjCopyMenuItem.setText("Copy");
+			ivjCopyMenuItem.setActionCommand(GuiConstants.ACTIONCMD_COPY_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -638,6 +660,7 @@ private javax.swing.JMenuItem getDeleteMenuItem() {
 			ivjDeleteMenuItem.setName("DeleteMenuItem");
 			ivjDeleteMenuItem.setMnemonic('d');
 			ivjDeleteMenuItem.setText("Delete");
+			ivjDeleteMenuItem.setActionCommand(GuiConstants.ACTIONCMD_DELETE_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -764,7 +787,7 @@ private javax.swing.JMenuItem getJMenuItemNonStochApp() {
 			ivjJMenuItemNonStochApp = new javax.swing.JMenuItem();
 			ivjJMenuItemNonStochApp.setName("JMenuItemNonStochApp");
 			ivjJMenuItemNonStochApp.setText("Deterministic Application");
-			ivjJMenuItemNonStochApp.setActionCommand("Create Non-stochastic Application");
+			ivjJMenuItemNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -788,7 +811,7 @@ private javax.swing.JMenuItem getJMenuItemStochApp() {
 			ivjJMenuItemStochApp.setName("JMenuItemStochApp");
 			ivjJMenuItemStochApp.setMnemonic('n');
 			ivjJMenuItemStochApp.setText("Stochastic Application");
-			ivjJMenuItemStochApp.setActionCommand("Create Stochastic Application");
+			ivjJMenuItemStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -913,6 +936,7 @@ private javax.swing.JMenuItem getOpenAppMenuItem() {
 			ivjOpenAppMenuItem.setName("OpenAppMenuItem");
 			ivjOpenAppMenuItem.setMnemonic('o');
 			ivjOpenAppMenuItem.setText("Open");
+			ivjOpenAppMenuItem.setActionCommand(GuiConstants.ACTIONCMD_OPEN_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -936,6 +960,7 @@ private javax.swing.JMenuItem getRenameMenuItem() {
 			ivjRenameMenuItem.setName("RenameMenuItem");
 			ivjRenameMenuItem.setMnemonic('r');
 			ivjRenameMenuItem.setText("Rename");
+			ivjRenameMenuItem.setActionCommand(GuiConstants.ACTIONCMD_RENAME_APPLICATION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1048,7 +1073,7 @@ public static void main(java.lang.String[] args) {
  */
 private void newApplication(java.awt.event.ActionEvent event) {
 	boolean isStoch = false;
-	if (event.getActionCommand().equals("Create Stochastic Application"))
+	if (event.getActionCommand().equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION))
 	{
 		isStoch = true;
 		String message = getBioModel().isValidForStochApp();
@@ -1105,30 +1130,42 @@ private void newApplication(java.awt.event.ActionEvent event) {
 	}
 }
 
+private void openApplication() {
+	openApplication(-1);
+}
 
 /**
  * Comment
  */
-private void openApplication() {
+private void openApplication(int tabIndex) {
 	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	if (selection == null) {
-		PopupGenerator.showErrorDialog(this, "There is no application currently selected to be opened!");
+	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
+	if (selection == null && selectedParent == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}	
+	if(!(selection instanceof SimulationContext)) {
+//		PopupGenerator.showWarningDialog(this, "This will open the whole application.");
+		selection = selectedParent;
+	}
 	if (selection instanceof SimulationContext) {
-		getBioModelWindowManager().showApplicationFrame((SimulationContext)selection);
+		getBioModelWindowManager().showApplicationFrame((SimulationContext)selection, tabIndex);
 	}
 }
-
 
 /**
  * Comment
  */
 private void renameApplication() {
 	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	if (selection == null) {
-		PopupGenerator.showErrorDialog(this, "There is no application currently selected to be renamed!");
+	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
+	if (selection == null && selectedParent == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
+	}	
+	if(!(selection instanceof SimulationContext)) {
+		PopupGenerator.showWarningDialog(this, "This will rename the application.");
+		selection = selectedParent;
 	}	
 	try {
 		if (selection instanceof SimulationContext) {

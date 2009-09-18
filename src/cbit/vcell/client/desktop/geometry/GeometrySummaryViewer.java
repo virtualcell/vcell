@@ -3,6 +3,8 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
+import cbit.vcell.client.GuiConstants;
+
 
 /**
  * Insert the type's description here.
@@ -209,6 +211,7 @@ private javax.swing.JButton getJButton1() {
 			ivjJButton1 = new javax.swing.JButton();
 			ivjJButton1.setName("JButton1");
 			ivjJButton1.setText("Change Geometry...");
+			ivjJButton1.setActionCommand(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -232,7 +235,7 @@ private javax.swing.JButton getJButtonOpenGeometry() {
 			ivjJButtonOpenGeometry = new javax.swing.JButton();
 			ivjJButtonOpenGeometry.setName("JButtonOpenGeometry");
 			ivjJButtonOpenGeometry.setText("Open Geometry");
-			ivjJButtonOpenGeometry.setActionCommand("Open Geometry");
+			ivjJButtonOpenGeometry.setActionCommand(GuiConstants.ACTIONCMD_OPEN_GEOMETRY);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -255,6 +258,7 @@ private javax.swing.JButton getJButtonViewSurfaces() {
 			ivjJButtonViewSurfaces = new javax.swing.JButton();
 			ivjJButtonViewSurfaces.setName("JButtonViewSurfaces");
 			ivjJButtonViewSurfaces.setText("View Surfaces");
+			ivjJButtonViewSurfaces.setActionCommand(GuiConstants.ACTIONCMD_VIEW_SURFACES);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

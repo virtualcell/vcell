@@ -3,7 +3,6 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -17,41 +16,45 @@ import javax.swing.JPanel;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modeldb.SimContextStatus;
+import cbit.vcell.opt.solvers.LocalOptimizationService;
+import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.xml.MIRIAMAnnotationEditor;
 import cbit.vcell.xml.MIRIAMAnnotationViewer;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:17:07 PM)
  * @author: Ion Moraru
  */
-public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {
+public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {	
 	private BioModel bioModel = null;
 	private Hashtable<SimulationContext, ApplicationComponents> applicationsHash = new Hashtable<SimulationContext, ApplicationComponents>();
 	private JDesktopPaneEnhanced jDesktopPane = null;
 	private BioModelEditor bioModelEditor = null;
 	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 
-	private cbit.vcell.opt.solvers.LocalOptimizationService localOptService = null;
+	private LocalOptimizationService localOptService = null;
 	
 	private JInternalFrame mIRIAMAnnotationEditorFrame = null;
 	private PropertyChangeListener miriamPropertyChangeListener =
@@ -88,26 +91,28 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 	 */
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	
-	if(e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Open Geometry")){
+	String actionCommand = e.getActionCommand();
+	Object source = e.getSource();
+	if(source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_GEOMETRY)){
 		openGeometryDocumentWindow(((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry());
 	}
 	
-	if (e.getSource() instanceof ApplicationEditor && e.getActionCommand().equals("Create Math Model")) {
-		SimulationContext sc = (SimulationContext)((ApplicationEditor)e.getSource()).getSimulationWorkspace().getSimulationOwner();
+	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_MATH_MODEL)) {
+		SimulationContext sc = (SimulationContext)((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner();
 		getRequestManager().createMathModelFromApplication(this, "Untitled", sc);
 	}
-	if (e.getSource() instanceof ApplicationEditor && e.getActionCommand().equals("View / Change Geometry")) {
-		SimulationContext sc = (SimulationContext)((ApplicationEditor)e.getSource()).getSimulationWorkspace().getSimulationOwner();
+	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_CHANGE_GEOMETRY)) {
+		SimulationContext sc = (SimulationContext)((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner();
 		showGeometryViewerFrame(sc);
 	}
-	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("Change Geometry...")) {
+	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
 		Geometry geom = ((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
 		// Lookup application components based on instance of GeometrySummaryViewer
  		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 		while (appComponentsEnum.hasMoreElements()) {
 			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
 			GeometrySummaryViewer geomViewer = appComponents.getGeometrySummaryViewer();
-			if (geomViewer == (GeometrySummaryViewer)e.getSource()) {
+			if (geomViewer == (GeometrySummaryViewer)source) {
 				SimulationOwner simOwner  = (SimulationOwner)appComponents.getAppEditor().getSimulationWorkspace().getSimulationOwner();
 				if (simOwner instanceof SimulationContext) {
 					getRequestManager().changeGeometry(this, (SimulationContext)simOwner);
@@ -117,14 +122,14 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		}
 		DialogUtils.showErrorDialog(getComponent(), "Geometry "+geom.getName()+" key="+geom.getVersion().getVersionKey()+" not found in application hash");
 	}
-	if (e.getSource() instanceof GeometrySummaryViewer && e.getActionCommand().equals("View Surfaces")) {
+	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_SURFACES)) {
 		Geometry geom = ((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
 		// Lookup application components based on instance of GeometrySummaryViewer
  		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 		while (appComponentsEnum.hasMoreElements()) {
 			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
 			GeometrySummaryViewer geomViewer = appComponents.getGeometrySummaryViewer();
-			if (geomViewer == (GeometrySummaryViewer)e.getSource()) {
+			if (geomViewer == (GeometrySummaryViewer)source) {
 				SimulationOwner simOwner  = (SimulationOwner)appComponents.getAppEditor().getSimulationWorkspace().getSimulationOwner();
 				if (simOwner instanceof SimulationContext) {
 					appComponents.getSurfaceViewer().setGeometry(geom);
@@ -281,7 +286,7 @@ private java.util.Hashtable<SimulationContext, ApplicationComponents> getApplica
  * Creation date: (5/5/2004 8:37:05 PM)
  * @return cbit.vcell.biomodel.BioModel
  */
-private cbit.vcell.biomodel.BioModel getBioModel() {
+private BioModel getBioModel() {
 	return bioModel;
 }
 
@@ -291,7 +296,7 @@ private cbit.vcell.biomodel.BioModel getBioModel() {
  * Creation date: (6/1/2004 1:02:55 AM)
  * @return cbit.vcell.client.desktop.biomodel.BioModelEditor
  */
-private cbit.vcell.client.desktop.biomodel.BioModelEditor getBioModelEditor() {
+private BioModelEditor getBioModelEditor() {
 	return bioModelEditor;
 }
 
@@ -321,9 +326,9 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (12/19/2005 9:45:48 PM)
  * @return cbit.vcell.opt.solvers.OptimizationService
  */
-public cbit.vcell.opt.solvers.OptimizationService getOptimizationService() {
+public OptimizationService getOptimizationService() {
 	if (localOptService==null){
-		localOptService = new cbit.vcell.opt.solvers.LocalOptimizationService();
+		localOptService = new LocalOptimizationService();
 	}
 
 	return localOptService;
@@ -335,7 +340,7 @@ public cbit.vcell.opt.solvers.OptimizationService getOptimizationService() {
  * Creation date: (5/14/2004 3:41:06 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public org.vcell.util.document.VCDocument getVCDocument() {
+public VCDocument getVCDocument() {
 	return getBioModel();
 }
 
@@ -345,7 +350,7 @@ public org.vcell.util.document.VCDocument getVCDocument() {
  * Creation date: (6/11/2004 7:57:44 AM)
  * @return cbit.vcell.document.VCDocument
  */
-cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
+SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
 	Enumeration<ApplicationComponents> en = getApplicationsHash().elements();
 	while (en.hasMoreElements()) {
 		ApplicationComponents appComponents = (ApplicationComponents)en.nextElement();
@@ -449,7 +454,7 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(final org.vcell.util.document.VCDocument newDocument) {
+public void resetDocument(VCDocument newDocument) {
 	setBioModel((BioModel)newDocument);
 	setDocumentID(getBioModel());
 	getBioModelEditor().setBioModel(getBioModel());
@@ -466,7 +471,7 @@ public void resetDocument(final org.vcell.util.document.VCDocument newDocument) 
  * Creation date: (5/5/2004 8:37:05 PM)
  * @param newBioModel cbit.vcell.biomodel.BioModel
  */
-private void setBioModel(cbit.vcell.biomodel.BioModel newBioModel) {
+private void setBioModel(BioModel newBioModel) {
 	refreshMIRIAMDependencies(getBioModel(), newBioModel);
 	if (getBioModel() != null) {
 		getBioModel().removePropertyChangeListener(this);
@@ -483,7 +488,7 @@ private void setBioModel(cbit.vcell.biomodel.BioModel newBioModel) {
  * Creation date: (6/1/2004 1:02:55 AM)
  * @param newBioModelEditor cbit.vcell.client.desktop.biomodel.BioModelEditor
  */
-private void setBioModelEditor(cbit.vcell.client.desktop.biomodel.BioModelEditor newBioModelEditor) {
+private void setBioModelEditor(BioModelEditor newBioModelEditor) {
 	bioModelEditor = newBioModelEditor;
 }
 
@@ -497,25 +502,56 @@ private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
 	jDesktopPane = newJDesktopPane;
 }
 
+public void showApplicationFrame(SimulationContext simContext) {
+	showApplicationFrame(simContext, -1);
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:44:15 PM)
  */
-public void showApplicationFrame(SimulationContext simContext) {
-	try {
-		org.vcell.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		if (! getApplicationsHash().containsKey(simContext)) {
-			// create components
-			createAppComponents(simContext);
+public void showApplicationFrame(final SimulationContext simContext, final int tabIndex) {
+	AsynchClientTask task1 = new AsynchClientTask("preload the application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			simContext.getGeometry().precomputeAll();
+			Simulation[] simulations = simContext.getSimulations();
+			if (simulations != null) {	
+				// preload simulation status
+				VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+				for (int i = 0; i < simulations.length; i++){
+					simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+				}
+				getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
+			}
 		}
-		JInternalFrameEnhanced editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getAppEditorFrame();
-		showFrame(editorFrame);
-	} finally {	
-		org.vcell.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-	}
+	};
+		
+	AsynchClientTask task2 = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try {			
+				BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				if (! getApplicationsHash().containsKey(simContext)) {
+					// create components
+					createAppComponents(simContext);
+				}
+				ApplicationComponents applicationComponents = (ApplicationComponents)getApplicationsHash().get(simContext);
+				if (tabIndex >= 0) {
+					applicationComponents.getAppEditor().setTabIndex(tabIndex);
+				}
+				JInternalFrameEnhanced editorFrame = applicationComponents.getAppEditorFrame();
+				showFrame(editorFrame);
+			} finally {
+				BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(getJDesktopPane(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });		
+	
 }
-
 
 /**
  * Insert the method's description here.
