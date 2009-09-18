@@ -8,6 +8,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SolverDescription;
 
 /**
  * Insert the type's description here.
@@ -74,7 +75,11 @@ public double getEstimatedMemorySizeMB() {
 	
 	// 180 bytes per pde variable plus ode per mesh point + 15M overhead 
 	// there is 70M PBS overhead which will be added when submitted to pbs
-	return ((180 * pdeVarCount + 16 * odeVarCount) * numMeshPoints / 1e6 + 15);
+	double est = ((180 * pdeVarCount + 16 * odeVarCount) * numMeshPoints / 1e6 + 15);
+	if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+		est *= 2;
+	}
+	return est;	
 }
 
 /**
