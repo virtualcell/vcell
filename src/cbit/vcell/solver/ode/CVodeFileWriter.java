@@ -66,7 +66,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 				dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
 				discontinuityNameMap.put(od, dname);				
 			}
-			rateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+			rateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression("(" + dname + "==1)"));
 		}
 
 		sb.append("ODE "+stateVar.getVariable().getName()+" INIT "+ initExpr.flatten().infix() + ";\n\t RATE " + rateExpr.flatten().infix() + ";\n");
