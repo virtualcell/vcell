@@ -463,8 +463,7 @@ public class ROIAssistPanel extends JPanel {
 		System.arraycopy(roiSourceData, finalROISourceData.length*overlayEditorPanelJAI.getZ(), finalROISourceData, 0, finalROISourceData.length);
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
 			try{
-			overlayEditorPanelJAI.displaySpecialData(
-					finalROISourceData, oldROI.getISize().getX(), oldROI.getISize().getY());
+			overlayEditorPanelJAI.displaySpecialData(finalROISourceData, oldROI.getISize().getX(), oldROI.getISize().getY());
 			}catch(Exception e){
 				throw new RuntimeException("Error displaying TimeAverage data.  "+e.getMessage());
 			}
