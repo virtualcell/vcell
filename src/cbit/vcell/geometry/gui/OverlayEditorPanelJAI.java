@@ -16,6 +16,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Hashtable;
 
@@ -61,11 +64,35 @@ import cbit.vcell.geometry.gui.ROIAssistPanel;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
-public class OverlayEditorPanelJAI extends JPanel {
+public class OverlayEditorPanelJAI extends JPanel{
 
-	private JComboBox roiComboBox;
-	public static final String INITIAL_BLEACH_AREA_TEXT = "Initial Bleach Area";
 	
+	private static final long serialVersionUID = 1L;
+	private static final double SHORT_TO_BYTE_FACTOR = 256;
+	
+	public static final String INITIAL_BLEACH_AREA_TEXT = "Initial Bleach Area";
+	public static final String WHOLE_CELL_AREA_TEXT = "Whole Cell Area";
+	public static final String ROI_ASSIST_TEXT = "ROI Assist";
+	//properties
+	public static final String FRAP_DATA_CROP_PROPERTY = "FRAP_DATA_CROP_PROPERTY";
+	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
+	public static final String FRAP_DATA_CURRENTROI_PROPERTY = "FRAP_DATA_CURRENTROI_PROPERTY";
+	public static final String FRAP_DATA_UNDOROI_PROPERTY = "FRAP_DATA_UNDOROI_PROPERTY";
+	//used for new frap
+	public static final int DISPLAY_WITH_ROIS = 0;
+	public static final int DEFINE_CROP = 1;
+	public static final int DEFINE_CELLROI = 2;
+	public static final int DEFINE_BLEACHEDROI = 3;
+	public static final int DEFINE_BACKGROUNDROI = 4;
+	private ROISourceData roiSourceData = null;
+	//scale factors
+	public static final double DEFAULT_SCALE_FACTOR = 1.0;
+	public static final double DEFAULT_OFFSET_FACTOR = 0.0;
+	private double originalScaleFactor = DEFAULT_SCALE_FACTOR;
+	private double originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
+	private ISize originalISize;
+	//panel components
+	private JComboBox roiComboBox;
 	private JButton contrastButtonMinus;
 	private JButton contrastButtonPlus;
 	private JToggleButton cropButton;
@@ -77,7 +104,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JButton roiTimePlotButton;
 	private JButton autoCropButton;
 	private JButton roiAssistButton;
-	private static final long serialVersionUID = 1L;
 	private OverlayImageDisplayJAI imagePane = null;
 	private JSlider timeSlider = null;
 	private ImageDataset imageDataset = null;
@@ -94,11 +120,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JLabel textLabel = null;
 	private JPanel topJPanel = null;
 	private JPanel editROIPanel = null;
-	public static final String FRAP_DATA_CROP_PROPERTY = "FRAP_DATA_CROP_PROPERTY";
-	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
-	private ISize originalISize;
-	public static final String FRAP_DATA_CURRENTROI_PROPERTY = "FRAP_DATA_CURRENTROI_PROPERTY";
-	public static final String FRAP_DATA_UNDOROI_PROPERTY = "FRAP_DATA_UNDOROI_PROPERTY";
 	private JLabel viewTLabel;
 	private JLabel viewZLabel;
 	private JLabel editRoiLabel;
@@ -106,26 +127,31 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JButton addROIButton;
 	private JButton delROIButton;
 	private boolean bAllowAddROI = true;
-	
+	//variables for undo function	
 	UndoableEditSupport undoableEditSupport;
 	ROI undoableROI;
+		
+	private Hashtable<String, Cursor> cursorsForROIsHash = null;
 	
-	public static final String WHOLE_CELL_AREA_TEXT = "Whole Cell Area";
-	public static final String ROI_ASSIST_TEXT = "ROI Assist";
-	//used for new frap
-	public static final int DISPLAY_WITHOUT_ROIS = 0;
-	public static final int DISPLAY_WITH_ROIS = 1;
-	public static final int DEFINE_CROP = 2;
-	public static final int DEFINE_CELLROI = 3;
-	public static final int DEFINE_BLEACHEDROI = 4;
-	public static final int DEFINE_BACKGROUNDROI = 5;
-	private ROISourceData roiSourceData = null;
+	public interface CustomROIImport {
+		public boolean importROI(File importROIFile) throws Exception;
+	};
+	private CustomROIImport customROIImport;
+	private JFileChooser openJFileChooser = new JFileChooser();
+	private Range minmaxPixelValues = null;
+	//variable used to avoid unnecessary firing of the combobox action event
+	private String roiName;
 	
+	//ROI comboBox action
 	ActionListener ROI_COMBOBOX_ACTIONLISTENER =
 		new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				delROIButton.setEnabled(((ComboboxROIName)roiComboBox.getSelectedItem()).isEditable());
-				firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,((ComboboxROIName)roiComboBox.getSelectedItem()).getROIName());
+				delROIButton.setEnabled(((ComboboxROIName)roiComboBox.getSelectedItem()).isEditable());				
+				String selectedName = ((ComboboxROIName)roiComboBox.getSelectedItem()).getROIName();
+				if (!selectedName.equals(roiName)) {					
+					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,((ComboboxROIName)roiComboBox.getSelectedItem()).getROIName());
+					roiName = selectedName;
+				}
 			}
 		};
 	private class ComboboxROIName {
@@ -146,11 +172,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 		}
 	}
 	
-	public static final double DEFAULT_SCALE_FACTOR = 1.0;
-	public static final double DEFAULT_OFFSET_FACTOR = 0.0;
-	private double originalScaleFactor = DEFAULT_SCALE_FACTOR;
-	private double originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
-	
 	public static final UndoableEdit CLEAR_UNDOABLE_EDIT =
 		new AbstractUndoableEdit(){
 			public boolean canUndo() {
@@ -163,19 +184,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 				super.undo();
 			}
 		};
-	
-	private Hashtable<String, Cursor> cursorsForROIsHash = null;
-	
-	public interface CustomROIImport {
-		public boolean importROI(File importROIFile) throws Exception;
-	};
-
-	private CustomROIImport customROIImport;
-	private JFileChooser openJFileChooser = new JFileChooser();
-	
-	private Range minmaxPixelValues = null;
-	private static final double SHORT_TO_BYTE_FACTOR = 256;
-
 
 	/**
 	 * This is the default constructor
@@ -462,30 +470,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
 		roiAssistButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				//only check when doing roiAssist for bleached, this is actually used by VFRAP. (VCell has Cell ROI only)
-				if(getRoiSouceData().getCurrentlyDisplayedROI().getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
-						getRoiSouceData().getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
-				{
-					DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this,"Cell ROI must be defined before using ROI Assist Tool to create Bleached ROI.");
-					return;
-				}
-				JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(OverlayEditorPanelJAI.this, JFrame.class));
-				roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
-				roiDialog.setModal(true);
-				ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
-				ROI originalROI = null;
-				try{
-					originalROI = new ROI(roi);
-				}catch(Exception ex){
-					ex.printStackTrace();
-					//can't happen
-				}
-				roiAssistPanel.init(roiDialog,originalROI,
-						getRoiSouceData(),OverlayEditorPanelJAI.this);
-				roiDialog.setContentPane(roiAssistPanel);
-				roiDialog.pack();
-				roiDialog.setSize(400,200);
-				ZEnforcer.showModalDialogOnTop(roiDialog, OverlayEditorPanelJAI.this);
+				showAssistDialog();
 			}
 		});
 //		roiAssistButton.setText(ROI_ASSIST_TEXT);
@@ -640,38 +625,36 @@ public class OverlayEditorPanelJAI extends JPanel {
 		BeanUtils.enableComponents(editROIPanel, false);
 	}
 	
+	public void showAssistDialog()
+	{
+		//only check when doing roiAssist for bleached, this is actually used by VFRAP. (VCell has Cell ROI only)
+		if(getRoiSouceData().getCurrentlyDisplayedROI().getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
+				getRoiSouceData().getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+		{
+			DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this,"Cell ROI must be defined before using ROI Assist Tool to create Bleached ROI.");
+			return;
+		}
+		JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(OverlayEditorPanelJAI.this, JFrame.class));
+		roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
+		roiDialog.setModal(true);
+		ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
+		ROI originalROI = null;
+		try{
+			originalROI = new ROI(roi);
+		}catch(Exception ex){
+			ex.printStackTrace();
+			//can't happen
+		}
+		roiAssistPanel.init(roiDialog, originalROI, getRoiSouceData(),OverlayEditorPanelJAI.this);
+		roiDialog.setContentPane(roiAssistPanel);
+		roiDialog.pack();
+		roiDialog.setSize(400,200);
+		ZEnforcer.showModalDialogOnTop(roiDialog, OverlayEditorPanelJAI.this);
+	}
+	
 	public void adjustComponentsForVFRAP(int choice)
 	{
-		if(choice == DISPLAY_WITHOUT_ROIS)
-		{
-			setAllComponentsVisible();
-			roiDrawButtonGroup.remove(paintButton);
-			roiDrawButtonGroup.remove(eraseButton);
-			roiDrawButtonGroup.remove(fillButton);
-			roiDrawButtonGroup.remove(cropButton);
-			
-//			cropButton.setEnabled(false);
-			cropButton.setVisible(false);
-			autoCropButton.setVisible(false);
-//			paintButton.setEnabled(false);
-			paintButton.setVisible(false);
-			paintButton.setSelected(false);
-//			eraseButton.setEnabled(false);
-			eraseButton.setVisible(false);
-//			fillButton.setEnabled(false);
-			fillButton.setVisible(false);
-			importROIMaskButton.setVisible(false);
-			clearROIbutton.setVisible(false);
-			roiTimePlotButton.setVisible(false);
-			roiAssistButton.setVisible(false);
-			
-			//disable ROI comboBox
-//			roiComboBox.setEnabled(false);
-			editRoiLabel.setEnabled(false);
-			addROIButton.setVisible(false);
-			delROIButton.setVisible(false);
-		}
-		else if(choice == DISPLAY_WITH_ROIS)
+		if(choice == DISPLAY_WITH_ROIS)
 		{
 			setAllComponentsVisible();
 			roiDrawButtonGroup.remove(paintButton);
@@ -689,8 +672,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			clearROIbutton.setVisible(false);
 			roiTimePlotButton.setVisible(false);
 			roiAssistButton.setVisible(false);
-			//disable ROI comboBox
-//			roiComboBox.setEnabled(true);
+
 			editRoiLabel.setEnabled(true);
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
@@ -818,26 +800,25 @@ public class OverlayEditorPanelJAI extends JPanel {
 	 * Method setROI.
 	 * @param argROI ROI
 	 */
-	public void setROI(ROI argROI){
-		roi = argROI;
-		refreshROI();
-		if(roi != null){
-			for (int i = 0; i < roiComboBox.getItemCount(); i++) {
-				if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(argROI.getROIName())){
-					roiComboBox.setSelectedIndex(i);
-					break;
+	public void setROI(ROI argROI)
+	{
+		if (argROI != null && roi != argROI) {
+			roi = argROI;
+			roiName = roi.getROIName();
+			
+			refreshROI();
+			if(roi != null){
+				for (int i = 0; i < roiComboBox.getItemCount(); i++) {
+					if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
+						roiComboBox.setSelectedIndex(i);
+						break;
+					}
 				}
 			}
-//			if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())){
-//			}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())){
-//				bleachRadioButton.setSelected(true);
-//			}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
-//				backgroundRadioButton.setSelected(true);
-//			}
+			updateROICursor();
 		}
-		updateROICursor();
 	}
-		
+	
 	public void setTimeIndex(int timeIndex){
 		if(timeSlider.getValue() == timeIndex){
 			forceImage();
@@ -1772,9 +1753,5 @@ public class OverlayEditorPanelJAI extends JPanel {
 		
 		this.roiSourceData = roiSourceData;
 	}
-	
-	public void showROIAssist()
-	{
-		roiAssistButton.doClick();
-	}
+
 }
