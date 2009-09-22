@@ -15,6 +15,7 @@ import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
@@ -30,7 +31,7 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
     
     public static final String IDENTIFIER = "LoadFRAPData_MultipleFiles";
     private LoadFRAPData_MultiFilePanel multiFilePanel = new LoadFRAPData_MultiFilePanel();
-    private PropertyChangeSupport propertyChangeSupport;
+    private FRAPWorkspace frapWorkspace = null;
     private boolean isFileLoaded = false;
     
     public LoadFRAPData_MultiFileDescriptor() {
@@ -39,7 +40,6 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
         setPanelDescriptorIdentifier(IDENTIFIER);
         setProgressPopupShown(true); 
         setTaskProgressKnown(true);
-        propertyChangeSupport = new PropertyChangeSupport(this);
     }
     
     public String getNextPanelDescriptorID() {
@@ -48,18 +48,6 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
     
     public String getBackPanelDescriptorID() {
         return LoadFRAPData_FileTypeDescriptor.IDENTIFIER;
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener p) {
-    	propertyChangeSupport.addPropertyChangeListener(p);
-    }
-  
-    public void removePropertyChangeListener(PropertyChangeListener p) {
-        propertyChangeSupport.removePropertyChangeListener(p);
-    }
-  
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
     
     //load the data before the panel disappears
@@ -97,27 +85,13 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
     				
     					FRAPStudy newFRAPStudy = null;
 //    					SavedFrapModelInfo newSavedFrapModelInfo = null;
-    					String newVFRAPFileName = null;
     					
-    					ImageDataset imageDataset = ImageDatasetReader.readImageDatasetFromMultiFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
-    					FRAPData newFrapData = new FRAPData(imageDataset, new String[] { FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
-//    					frapData.setOriginalGlobalScaleInfo(null);
-    					newFRAPStudy = new FRAPStudy();
-    					newFRAPStudy.setFrapData(newFrapData);
+    					newFRAPStudy = getFrapWorkspace().loadFRAPDataFromMultipleFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
     					isFileLoaded = true;
     					
     					//for all loaded files
-    					newFRAPStudy.setXmlFilename(newVFRAPFileName);
     					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
     					
-//    					try{
-//    						localFrapStudyPanel.setSavedFrapModelInfo(newSavedFrapModelInfo);
-//    						localFrapStudyPanel.applySavedParameters(newFRAPStudy);
-//    					}catch(Exception e){
-//    						throw new RuntimeException(e.getMessage());
-//    					}
-    					//after loading new file, we need to set frapOptData to null.
-    		            
     			}
     		};
     		
@@ -126,11 +100,8 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
     				FRAPStudy newFRAPStudy = (FRAPStudy)hashTable.get(FRAPStudyPanel.NEW_FRAPSTUDY_KEY);
-    				if(!isFileLoaded)
-    				{
-    					newFRAPStudy = new FRAPStudy();
-    				}
-    				firePropertyChange(FRAPStudyPanel.LOADDATA_FRAPSTUDY_CHANGE_PROPERTY, null, newFRAPStudy);
+    				//setFrapStudy fires property change, so we have to put it in Swing thread.
+    				getFrapWorkspace().setFrapStudy(newFRAPStudy, true);
     				
     				VirtualFrapLoader.mf.setMainFrameTitle("");
     				VirtualFrapMainFrame.updateProgress(0);
@@ -161,6 +132,14 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
 		
 		return taskArrayList;
     }
+    
+    public FRAPWorkspace getFrapWorkspace() {
+		return frapWorkspace;
+	}
+    
+	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+		this.frapWorkspace = frapWorkspace;
+	}
 }
 
 

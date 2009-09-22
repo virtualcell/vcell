@@ -23,24 +23,19 @@ import org.vcell.wizard.WizardPanelDescriptor;
 public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
     
     public static final String IDENTIFIER = "DefineROI_backgroundROI";
-    private PropertyChangeSupport propertyChangeSupport;
     private JPanel imgPanel = null;
     public DefineROI_BackgroundROIDescriptor (JPanel imagePanel) {
     	super();
         imgPanel = imagePanel;
         JPanel bgPanel = new JPanel(new BorderLayout());
-//        cropPanel.add(imagePanel);
         setPanelDescriptorIdentifier(IDENTIFIER);
         setPanelComponent(bgPanel);
         setProgressPopupShown(false); 
         setTaskProgressKnown(false);
-        
-        propertyChangeSupport = new PropertyChangeSupport(this);
     }
     
     public String getNextPanelDescriptorID() {
         return DefineROI_SummaryDescriptor.IDENTIFIER;
-//    	return Wizard.FINISH.getPanelDescriptorIdentifier();
     }
     
     public String getBackPanelDescriptorID() {
@@ -66,13 +61,14 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			{
 				//save current ROI and load ROI in the panel it goes next to
 				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr);
-				firePropertyChange(FRAPStudyPanel.DEFINEROI_CHANGE_PROPERTY, null, ((DefineROI_Panel)imgPanel).getCenterPanel().getFrapStudy());
+				FRAPData fData = ((DefineROI_Panel)imgPanel).getFrapWorkspace().getFrapStudy().getFrapData();
+				fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 			}
 		};
 		taskArrayList.add(setCurrentROITask);
 		return taskArrayList;
     } 
-    
+ 
     public ArrayList<AsynchClientTask> preBackProcess()
     {
     	//create AsynchClientTask arraylist
@@ -101,26 +97,14 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
-				   ((DefineROI_Panel)imgPanel).fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
 				{
-					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 				}
 			}
 		};
 		taskArrayList.add(ifNeedROIAssistTask);
 		return taskArrayList;
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener p) {
-    	propertyChangeSupport.addPropertyChangeListener(p);
-    }
-  
-    public void removePropertyChangeListener(PropertyChangeListener p) {
-    	propertyChangeSupport.removePropertyChangeListener(p);
-    }
-    
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-    	propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 }
 

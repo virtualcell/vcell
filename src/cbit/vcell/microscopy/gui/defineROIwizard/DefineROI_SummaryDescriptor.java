@@ -16,33 +16,22 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
 
-public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor implements PropertyChangeListener{
+public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 	public static final String IDENTIFIER = "DefineROI_Summary";
 	private JPanel imgPanel = null;
-	private PropertyChangeSupport propertyChangeSupport;
+	FRAPWorkspace frapWorkspace = null;
 	
     public DefineROI_SummaryDescriptor (JPanel imagePanel) {
         super(IDENTIFIER, new DefineROI_SummaryPanel());
         imgPanel = imagePanel;
         setProgressPopupShown(false); 
         setTaskProgressKnown(false);
-        propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener p) {
-    	propertyChangeSupport.addPropertyChangeListener(p);
-    }
-  
-    public void removePropertyChangeListener(PropertyChangeListener p) {
-    	propertyChangeSupport.removePropertyChangeListener(p);
-    }
-  
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-    	propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
-    }
     
     public String getNextPanelDescriptorID() {
         return Wizard.FINISH.getPanelDescriptorIdentifier();
@@ -52,17 +41,11 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor implement
         return DefineROI_BackgroundROIDescriptor.IDENTIFIER;
     }
 
-	public void propertyChange(PropertyChangeEvent evt) {
-		if(evt.getPropertyName().equals(FRAPStudyPanel.DEFINEROI_CHANGE_PROPERTY))
-		{
-			if(evt.getNewValue() != null && evt.getNewValue() instanceof FRAPStudy)
-			{
-				((DefineROI_SummaryPanel)getPanelComponent()).setLoadInfo((FRAPStudy)evt.getNewValue());
-			}
-		}
-		
-	}
-	
+    public void aboutToDisplayPanel() 
+    {
+    	((DefineROI_SummaryPanel)getPanelComponent()).setLoadInfo(getFrapWorkspace().getFrapStudy());
+	} 
+    
 	public ArrayList<AsynchClientTask> preBackProcess()
     {
     	//create AsynchClientTask arraylist
@@ -95,7 +78,9 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor implement
 				if(msg.equals(""))
 				{
 					int startIndex = ((DefineROI_SummaryPanel)getPanelComponent()).getStartingIndex();
-					firePropertyChange(FRAPStudyPanel.DEFINEROI_VERIFY_INFO_PROPERTY, null, new Integer(startIndex));
+					FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+					fStudy.setStartingIndexForRecovery(startIndex);
+					getFrapWorkspace().setFrapStudy(fStudy, true);
 				}
 				else throw new Exception(msg);
 			}
@@ -105,4 +90,11 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor implement
 		return taskArrayList;
     }
 	
+    public FRAPWorkspace getFrapWorkspace() {
+		return frapWorkspace;
+	}
+    
+	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+		this.frapWorkspace = frapWorkspace;
+	}
 }

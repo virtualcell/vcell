@@ -6,52 +6,36 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.DataVerifyInfo;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
-public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor implements PropertyChangeListener{
+public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor{
     
     public static final String IDENTIFIER = "LoadFRAPData_Summary";
-    private PropertyChangeSupport propertyChangeSupport;
+    private FRAPWorkspace frapWorkspace = null;
     
     public LoadFRAPData_SummaryDescriptor() {
         super(IDENTIFIER, new LoadFRAPData_SummaryPanel());
-        propertyChangeSupport = new PropertyChangeSupport(this);
     }
     //this method is override to make sure the next step is going to finish.
     public String getNextPanelDescriptorID() {
         return Wizard.FINISH.getPanelDescriptorIdentifier();
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener p) {
-    	propertyChangeSupport.addPropertyChangeListener(p);
-    }
-  
-    public void removePropertyChangeListener(PropertyChangeListener p) {
-    	propertyChangeSupport.removePropertyChangeListener(p);
-    }
-  
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-    	propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
-    }
-    
-	public void propertyChange(PropertyChangeEvent evt) {
-		
-		if(evt.getPropertyName().equals(FRAPStudyPanel.LOADDATA_FRAPSTUDY_CHANGE_PROPERTY))
-		{
-			if(evt.getNewValue() != null && evt.getNewValue() instanceof FRAPStudy)
-			{
-				((LoadFRAPData_SummaryPanel)getPanelComponent()).setLoadInfo((FRAPStudy)evt.getNewValue());
-			}
-		}
-		
+	public void aboutToDisplayPanel() {
+		((LoadFRAPData_SummaryPanel)getPanelComponent()).setLoadInfo(getFrapWorkspace().getFrapStudy());
 	}
+	
 	//save the data before the panel disappears
     public ArrayList<AsynchClientTask> preNextProcess()
     {
@@ -68,7 +52,7 @@ public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor implem
 					DataVerifyInfo dataVerifyInfo= ((LoadFRAPData_SummaryPanel)getPanelComponent()).saveDataInfo();
 					if(dataVerifyInfo != null)
 					{
-						firePropertyChange(FRAPStudyPanel.LOADDATA_VERIFY_INFO_PROPERTY, null, dataVerifyInfo);
+						getFrapWorkspace().updateImages(dataVerifyInfo);
 					}
 				}
 				else throw new Exception(msg);
@@ -78,4 +62,12 @@ public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor implem
 		taskArrayList.add(verifyLoadedDataTask);
 		return taskArrayList;
     }
+    
+    public FRAPWorkspace getFrapWorkspace() {
+		return frapWorkspace;
+	}
+    
+	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+		this.frapWorkspace = frapWorkspace;
+	}
 }

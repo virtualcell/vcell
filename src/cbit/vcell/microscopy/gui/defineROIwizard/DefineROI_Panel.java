@@ -25,6 +25,7 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.geometry.gui.ROISourceData;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
@@ -37,7 +38,7 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 {
 	DefineROITopTitlePanel topPanel = null;
 	FRAPDataPanel centerPanel = null;
-	FRAPStudy fStudy = null;
+	FRAPWorkspace frapWorkspace = null;
 	
 	public DefineROI_Panel() {
 		super();
@@ -73,12 +74,15 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 		return topPanel;
 	}
 	
-	public void setFRAPStudy(FRAPStudy argFrapStudy)
+	public void refreshUI()
 	{
-//		FRAPStudy oldFrapStudy = this.fStudy;
-		this.fStudy = argFrapStudy;
-		centerPanel.setFrapStudy(fStudy, true);
-		centerPanel.getOverlayEditorPanelJAI().setROI(fStudy.getFrapData().getCurrentlyDisplayedROI());
+		FRAPData fData = getFrapWorkspace().getFrapStudy().getFrapData();
+		centerPanel.getOverlayEditorPanelJAI().setImages(
+				(fData==null?null:fData.getImageDataset()),true,
+				(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
+				(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+		centerPanel.getOverlayEditorPanelJAI().setRoiSouceData(fData);
+		centerPanel.getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 	}
 	
 	public void adjustComponents(int choice)
@@ -89,13 +93,28 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 	
 	public void setCurrentROI(String roiName)
 	{
-		FRAPData fData = centerPanel.getFrapStudy().getFrapData();
-		fData.setCurrentlyDisplayedROI(fData.getRoi(roiName));
+		if(getFrapWorkspace() != null && getFrapWorkspace().getFrapStudy() != null &&
+		   getFrapWorkspace().getFrapStudy().getFrapData() != null)
+		{
+			FRAPData fData = getFrapWorkspace().getFrapStudy().getFrapData();
+			fData.setCurrentlyDisplayedROI(fData.getRoi(roiName));
+		}
 	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(evt.getSource() == getCenterPanel().getOverlayEditorPanelJAI()){
 			 
 		}
+	}
+	
+	public FRAPWorkspace getFrapWorkspace() {
+		return frapWorkspace;
+	}
+    
+	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+		this.frapWorkspace = frapWorkspace;
+		frapWorkspace.getFrapStudy().getFrapData().removePropertyChangeListener(centerPanel);
+		frapWorkspace.getFrapStudy().getFrapData().addPropertyChangeListener(centerPanel);
+		centerPanel.setFRAPWorkspace(frapWorkspace);
 	}
 }

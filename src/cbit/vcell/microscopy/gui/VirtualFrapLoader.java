@@ -14,6 +14,7 @@ import javax.swing.UIManager;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.resource.ResourceUtil;
 
@@ -103,9 +104,8 @@ public class VirtualFrapLoader {
 			RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager()); 
 
 			SwingUtilities.invokeLater(new Runnable(){public void run(){
-				LocalWorkspace localWorkspcae = new LocalWorkspace(workingDirectory);
-			    FRAPStudy frapStudy = null; 
-			    frapStudy = new FRAPStudy(); 
+				LocalWorkspace localWorkspace = new LocalWorkspace(workingDirectory);
+			    FRAPWorkspace frapWorkspace = new FRAPWorkspace();
 			    
 			    //Check swing availability 
 			    String vers = System.getProperty("java.version"); 
@@ -121,25 +121,25 @@ public class VirtualFrapLoader {
 			    }
 			    //set up file choosers 
 			    openVFRAPFileChooser = new JFileChooser(); 
-			    openVFRAPFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory())); 
+			    openVFRAPFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    openVFRAPFileChooser.addChoosableFileFilter(filter_lsm); 
 			    openVFRAPFileChooser.addChoosableFileFilter(filter_tif); 
 			    openVFRAPFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    loadFRAPImageFileChooser = new JFileChooser(); 
-			    loadFRAPImageFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory())); 
+			    loadFRAPImageFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_tif);
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_lsm); 
 			    saveFileChooser = new JFileChooser();
 			    saveFileChooser.addChoosableFileFilter(filter_vfrap); 
-			    saveFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
+			    saveFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser = new JFileChooser(); 
-			    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
+			    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser.addChoosableFileFilter(filter_tif);
 			    multiOpenFileChooser.setMultiSelectionEnabled(true);
 			    saveMovieFileChooser = new JFileChooser();
 			    saveMovieFileChooser.addChoosableFileFilter(filter_qt);
 			    saveMovieFileChooser.setAcceptAllFileFilterUsed(false);
-			    saveMovieFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
+			    saveMovieFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 	            
 	            // setup component font
 		        UIManager.put ("InternalFrame.titleFont", defaultFont);
@@ -161,15 +161,17 @@ public class VirtualFrapLoader {
 		        UIManager.put ("OptionPane.font",defaultFont);
 		        UIManager.put ("FileChooser.font", defaultFont);
 							
-				mf = new VirtualFrapMainFrame(localWorkspcae);
+				mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace);
 				mf.setMainFrameTitle("");
 				mf.setVisible(true);
-				
+			
+				//initialize FRAPStudy
+				FRAPStudy fStudy = new FRAPStudy();
+				frapWorkspace.setFrapStudy(fStudy, true);
+			
 				try {
 					Thread.sleep(30);
 				}catch (InterruptedException e){}
-				
-				mf.setFrapStudy(frapStudy);
 			}});
 			
 		} catch (Exception e) {
