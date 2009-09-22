@@ -309,12 +309,9 @@ public void chopImages(int startTimeIndex, int endTimeIndex)
 }
 
 public void changeImageExtent(double imageSizeX, double imageSizeY) {
-	UShortImage[] images = getImageDataset().getAllImages();
-	double imageSizeZ = images[0].getExtent().getZ();
-	for(int i = 0; i < images.length; i++)
-	{
-		images[i].setExtent(new Extent(imageSizeX, imageSizeY, imageSizeZ));
-	}
+	Extent extent = getImageDataset().getExtent();
+	double imageSizeZ = extent.getZ();
+	getImageDataset().setExtent(new Extent(imageSizeX, imageSizeY, imageSizeZ));
 }
 
 }

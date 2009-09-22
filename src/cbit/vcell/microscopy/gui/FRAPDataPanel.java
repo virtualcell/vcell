@@ -34,6 +34,7 @@ import cbit.vcell.microscopy.AnnotatedImageDataset;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -45,25 +46,13 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 
 	private static final long serialVersionUID = 1L;
 	private OverlayEditorPanelJAI overlayEditorPanel = null;
-	private FRAPStudy frapStudy = null;  //  @jve:decl-index=0:
+	private FRAPWorkspace frapWorkspace = null;  
 //	private EventHandler eventHandler = new EventHandler();
 	private LocalWorkspace localWorkspace = null;
 	//The frap data panel can be editable or not. e.g. the frapData panel in the main frame is not editable.
 	//However the frap data panel in define ROI wizard is editable
 	private boolean isEditable = true;
 		
-//	private class EventHandler implements PropertyChangeListener {
-//
-//		public void propertyChange(PropertyChangeEvent evt) {
-//			if (frapStudy!=null){
-//				if (evt.getSource()==frapStudy.getFrapData()){
-//					
-//				}
-//			}
-//		}
-//		
-//	}// end of class EventHandler
-	
 	//implementation of propertychange as a propertyChangeListener
 	public void propertyChange(PropertyChangeEvent e) {
 		if (e.getSource() instanceof  ImageLoadingProgress && e.getPropertyName().equals("ImageLoadingProgress"))
@@ -86,7 +75,57 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				getOverlayEditorPanelJAI().saveUserChangesToROI();
 			}
 			//Set new ROI on viewer
-			getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
+			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+		}
+		else if (e.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NEW_PROPERTY) ||
+				e.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NOTNEW_PROPERTY))
+		{
+			if(e.getNewValue() instanceof FRAPStudy)
+			{
+				FRAPStudy fStudy = (FRAPStudy)e.getNewValue();
+				FRAPStudy oldFrapStudy = (FRAPStudy)e.getOldValue();
+				
+				FRAPData fData = ((fStudy!=null)?(fStudy.getFrapData()):(null));
+				FRAPData oldFrapData = (oldFrapStudy!=null)?(oldFrapStudy.getFrapData()):(null);
+				
+				if (oldFrapData!=null){
+					oldFrapData.removePropertyChangeListener(this);
+				}
+				
+				if (fData!=null){
+					fData.addPropertyChangeListener(this);
+				}
+				
+				if(e.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NEW_PROPERTY))
+				{
+					overlayEditorPanel.setImages(
+						(fData==null?null:fData.getImageDataset()),true,
+						(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
+						(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+				}
+				else
+				{
+					overlayEditorPanel.setImages(
+							(fData==null?null:fData.getImageDataset()),false,
+							(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
+							(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+				}
+				if(fData != null && fData.getRois().length > 0)
+				{
+					overlayEditorPanel.setRoiSouceData(fData);
+					fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+				}
+			}
+		}
+		else if (e.getPropertyName().equals(FRAPWorkspace.FRAPDATA_VERIFY_INFO_PROPERTY))
+		{
+			FRAPData fData = (FRAPData)e.getNewValue();
+			overlayEditorPanel.setImages(
+					(fData==null?null:fData.getImageDataset()),true,
+					(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
+					(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+			overlayEditorPanel.setRoiSouceData(fData);
+			fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 		}
 	}
 	//There are two FRAPDataPanel instances, one is in MainFrame and antoher is in DefineROIWizard
@@ -94,19 +133,20 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	//FRAPDataPanel in DefineROIWizard. The newFrapStudy will only be set to FrapdataPanel in Mainframe
 	//when FINISH button is pressed.
 	protected void crop(Rectangle cropRectangle) throws ImageException {
-		if (getFrapStudy() == null || getFrapStudy().getFrapData()==null){
+		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		if (fStudy == null || fStudy.getFrapData()==null){
 			return;
 		}
 		getOverlayEditorPanelJAI().saveUserChangesToROI();
-		FRAPData frapData = getFrapStudy().getFrapData();
+		FRAPData frapData = fStudy.getFrapData();
 		FRAPData newFrapData = frapData.crop(cropRectangle);
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		newFrapStudy.setFrapData(newFrapData);
-		newFrapStudy.setXmlFilename(getFrapStudy().getXmlFilename());
-		newFrapStudy.setFrapDataExternalDataInfo(getFrapStudy().getFrapDataExternalDataInfo());
-		newFrapStudy.setRoiExternalDataInfo(getFrapStudy().getRoiExternalDataInfo());
-		newFrapStudy.setStoredRefData(getFrapStudy().getStoredRefData());
-		setFrapStudy(newFrapStudy,false);
+		newFrapStudy.setXmlFilename(fStudy.getXmlFilename());
+		newFrapStudy.setFrapDataExternalDataInfo(fStudy.getFrapDataExternalDataInfo());
+		newFrapStudy.setRoiExternalDataInfo(fStudy.getRoiExternalDataInfo());
+		newFrapStudy.setStoredRefData(fStudy.getStoredRefData());
+		getFrapWorkspace().setFrapStudy(newFrapStudy,false);
 	}
 	/**
 	 * This is the default constructor
@@ -157,7 +197,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 //							saveROI();
 							if(roiName != null)
 							{
-								getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getRoi(roiName));
+								getFrapWorkspace().getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapWorkspace().getFrapStudy().getFrapData().getRoi(roiName));
 							}
 						} catch (Exception e) {
 							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
@@ -165,7 +205,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
 						try {
 							ROI undoableROI = (ROI)evt.getNewValue();
-							getFrapStudy().getFrapData().addReplaceRoi(undoableROI);
+							getFrapWorkspace().getFrapStudy().getFrapData().addReplaceRoi(undoableROI);
 //							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 						} catch (Exception e) {
 							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
@@ -199,77 +239,23 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		return overlayEditorPanel;
 	}
 
-	public FRAPStudy getFrapStudy() {
-		return frapStudy;
-	}
 
-	public void setFrapStudy(final FRAPStudy argFrapStudy,boolean isNew) {
-		FRAPData oldFrapData = (frapStudy!=null)?(frapStudy.getFrapData()):(null);
-		FRAPStudy oldFrapStudy = this.frapStudy;
-		if (oldFrapStudy!=null){
-			oldFrapStudy.removePropertyChangeListener(this);
-		}
-		if (oldFrapData!=null){
-			oldFrapData.removePropertyChangeListener(this);
-		}
-		this.frapStudy = argFrapStudy;
-		if (frapStudy!=null){
-			frapStudy.addPropertyChangeListener(this);
-		}
-		FRAPData frapData = ((frapStudy!=null)?(frapStudy.getFrapData()):(null));
-		if (frapData!=null){
-			frapData.addPropertyChangeListener(this);
-		}
-		overlayEditorPanel.setImages(
-			(frapData==null?null:frapData.getImageDataset()),isNew,
-			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:frapData.getOriginalGlobalScaleInfo().originalScaleFactor),
-			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:frapData.getOriginalGlobalScaleInfo().originalOffsetFactor));
-		
-		if(frapData != null && frapData.getRois().length > 0 /*&& !frapData.getRois()[0].isAllPixelsZero()*/)
-		{
-			overlayEditorPanel.setRoiSouceData(frapData);
-			frapData.setCurrentlyDisplayedROI(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
-		}
-
-//		overlayEditorPanel.setROI((frapData==null)?null:frapData.getCurrentlyDisplayedROI());
-	}
-
-//	protected void reloadROI(){
-//		if(frapStudy.getFrapData() != null && frapStudy.getFrapData().getCurrentlyDisplayedROI() != null)
-//		{
-//			getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
-//		}
-//	}
-	
-//	protected void clearROI(){
-//		getOverlayEditorPanelJAI().clearROI();
-//	}
-
-	protected void plotROI(){
-		if (getFrapStudy() == null || getFrapStudy().getFrapData() == null){
+	protected void plotROI()
+	{
+		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		if (fStudy == null || fStudy.getFrapData() == null){
 			return;
 		}
 		saveROI();
-//		RoiType roiType = RoiType.ROI_BLEACHED;
-//		if (getFrapStudy().getFrapData().getCurrentlyDisplayedROI()!=null){
-//			roiType = getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIType();
-//		}
 		double[] averageFluor =
-			FRAPDataAnalysis.getAverageROIIntensity(getFrapStudy().getFrapData(),
-				getFrapStudy().getFrapData().getCurrentlyDisplayedROI(),null,null);
-		FRAPDataPanel.showCurve(new String[] { "f" }, getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
+			FRAPDataAnalysis.getAverageROIIntensity(fStudy.getFrapData(),
+					fStudy.getFrapData().getCurrentlyDisplayedROI(),null,null);
+		FRAPDataPanel.showCurve(new String[] { "f" }, fStudy.getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
 	}
 	
 	public void saveROI(){
 		getOverlayEditorPanelJAI().saveUserChangesToROI();
 	}
-
-//	public void refreshDependentROIs_later(){
-//		//Generates Rings
-//		saveROI();
-//		frapStudy.refreshDependentROIs();
-//		reloadROI();
-//	}
 
 	public void adjustComponents(int choice)
 	{
@@ -291,6 +277,21 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	public void setLocalWorkspace(LocalWorkspace localWorkspace) {
 		this.localWorkspace = localWorkspace;
 	}
+	
+	public void setFRAPWorkspace(FRAPWorkspace arg_frapWorkspace) {
+		FRAPWorkspace oldWorkspace = frapWorkspace;
+		if(oldWorkspace != null)
+		{
+			oldWorkspace.removePropertyChangeListener(this);
+		}
+		frapWorkspace = arg_frapWorkspace;
+		frapWorkspace.addPropertyChangeListener(this);
+	}
+	
+	public FRAPWorkspace getFrapWorkspace() {
+		return frapWorkspace;
+	}
+	
 	private static void showCurve(String[] varNames, double[] independent, double[][] dependents){
 		PlotPane plotter = new PlotPane();
 		PlotData[] plotDatas = new PlotData[dependents.length];
@@ -311,5 +312,42 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		plotDialog.setModal(true);
 		plotDialog.setVisible(true);
 	}
+	
+//	public void setFrapStudy(final FRAPStudy argFrapStudy,boolean isNew) {
+//		FRAPStudy oldFrapStudy = getFrapWorkspace().getFrapStudy();
+//		FRAPData oldFrapData = (oldFrapStudy!=null)?(oldFrapStudy.getFrapData()):(null);
+//		
+//		if (oldFrapStudy!=null){
+//			oldFrapStudy.removePropertyChangeListener(this);
+//		}
+//		if (oldFrapData!=null){
+//			oldFrapData.removePropertyChangeListener(this);
+//		}
+//		
+////		this.frapStudy = argFrapStudy;
+//		if (argFrapStudy!=null){
+//			argFrapStudy.addPropertyChangeListener(this);
+//		}
+//		FRAPData frapData = ((argFrapStudy!=null)?(argFrapStudy.getFrapData()):(null));
+//		if (frapData!=null){
+//			frapData.addPropertyChangeListener(this);
+//		}
+//		overlayEditorPanel.setImages(
+//			(frapData==null?null:frapData.getImageDataset()),isNew,
+//			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:frapData.getOriginalGlobalScaleInfo().originalScaleFactor),
+//			(frapData==null || frapData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:frapData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+//		
+//		if(frapData != null && frapData.getRois().length > 0 /*&& !frapData.getRois()[0].isAllPixelsZero()*/)
+//		{
+//			overlayEditorPanel.setRoiSouceData(frapData);
+//			frapData.setCurrentlyDisplayedROI(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+//		}
+//
+////		overlayEditorPanel.setROI((frapData==null)?null:frapData.getCurrentlyDisplayedROI());
+//		
+//		
+//		
+//	}
+	
 	
 } 

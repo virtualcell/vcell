@@ -40,6 +40,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
@@ -55,7 +56,9 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 /** The main frame of the application. */
 public class VirtualFrapMainFrame extends JFrame
 {
-	private LocalWorkspace localWorkspace;
+	//the application has one local workspace and one FRAP workspace
+	private LocalWorkspace localWorkspace = null;
+	private FRAPWorkspace frapWorkspace = null;
 	
 	public static final String ROIErrorString = 
 		"'Cell','Bleach' and 'Background' ROIs are required for FRAP model.  "+
@@ -422,21 +425,25 @@ public class VirtualFrapMainFrame extends JFrame
   
   
   // constructor
-  public VirtualFrapMainFrame(LocalWorkspace localWorkspace)
+  public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPWorkspace frapWorkspace)
   {
     super();
     this.localWorkspace = localWorkspace;
+    this.frapWorkspace = frapWorkspace;
     //showing the splash window for VirtualFrap
     final URL splashImage = getClass().getResource("/images/splash.jpg");
     new SplashWindow(splashImage,this,3500);
     //get image file
     setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
-    //initiate variables
+    //initialize components
     initiateComponents();
     SetupMenus();
     enableSave(false);
     System.out.println("current directory is:"+ localWorkspace.getDefaultWorkspaceDirectory());
-        
+    
+    //set frap workspace to frapstudypanel
+    frapStudyPanel.setFRAPWorkspace(this.frapWorkspace);
+    
     //set window size
     setSize(INIT_WINDOW_SIZE);
     setLocation(
@@ -614,12 +621,6 @@ public class VirtualFrapMainFrame extends JFrame
       {
     	  return false;
       }
-  }
-  
-  //basically set frapstudy to frapStudyPanel.
-  public void setFrapStudy(FRAPStudy fstudy)
-  {
-	  frapStudyPanel.setFrapStudy(fstudy,true);
   }
   
   //setTitle overrides the orginal function in java.awt.Frame

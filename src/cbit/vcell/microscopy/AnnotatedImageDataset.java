@@ -221,14 +221,8 @@ public abstract class AnnotatedImageDataset {
 		if(isCurrentlyDisplayed){
 			setCurrentlyDisplayedROI(roi);
 		}
-		propertyChangeSupport.firePropertyChange("rois", oldROIs, newROIs);
-
-//		if (!rois.contains(roi)){
-//			ROI[] oldROIs = getRois();
-//			rois.add(roi);
-//			ROI[] newROIs = getRois();
-//			propertyChangeSupport.firePropertyChange("rois", oldROIs, newROIs);
-//		}
+		//property is not being listened anywhere, commented on 15 Setp, 2009
+//		propertyChangeSupport.firePropertyChange("rois", oldROIs, newROIs);
 	}
 
 	/**
@@ -238,19 +232,6 @@ public abstract class AnnotatedImageDataset {
 	 * @throws ImageException
 	 */
 	public abstract AnnotatedImageDataset crop(Rectangle rect) throws ImageException;
-
-	/**
-	 * Method removeRoi.
-	 * @param roi ROI
-	 */
-	public void removeRoi(ROI roi) {
-		if (rois.contains(roi)){
-			ROI[] oldROIs = getRois();
-			rois.remove(roi);
-			ROI[] newROIs = getRois();
-			propertyChangeSupport.firePropertyChange("rois", oldROIs, newROIs);
-		}
-	}
 
 	/**
 	 * Method addPropertyChangeListener.

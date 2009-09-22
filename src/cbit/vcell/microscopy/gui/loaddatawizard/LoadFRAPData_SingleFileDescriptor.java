@@ -17,6 +17,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
@@ -29,16 +30,15 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     public static final String IDENTIFIER = "LoadFRAPData_SingleFile";
     //    private FRAPStudy localFrapStudy = null;
     private LoadFRAPData_SingleFilePanel singleFilePanel = new LoadFRAPData_SingleFilePanel();
-    private PropertyChangeSupport propertyChangeSupport;
     private boolean isFileLoaded = false;
+    private FRAPWorkspace frapWorkspace = null;
     
-    public LoadFRAPData_SingleFileDescriptor() {
+	public LoadFRAPData_SingleFileDescriptor() {
     	super();
         setPanelComponent(singleFilePanel);
         setPanelDescriptorIdentifier(IDENTIFIER);
         setProgressPopupShown(true); 
         setTaskProgressKnown(true);
-        propertyChangeSupport = new PropertyChangeSupport(this);
     }
     //This method is override to make fure that it goes to SummaryPanel
     public String getNextPanelDescriptorID() {
@@ -82,7 +82,6 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     				
     					FRAPStudy newFRAPStudy = null;
 //    					SavedFrapModelInfo newSavedFrapModelInfo = null;
-    					String newVFRAPFileName = null;
     					
     					File inFile = new File(fileStr);
     					if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)) //.log (vcell log file) 
@@ -100,46 +99,22 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 									"Select Volume Variable",
 									new String[] {"Volume Variable Name"},
 									rowData, ListSelectionModel.SINGLE_SELECTION);
-							if(selectedIndexArr != null && selectedIndexArr.length > 0){
-//								localFrapStudyPanel.clearCurrentLoadState();
-								FRAPData newFrapData = 
-									FRAPData.importFRAPDataFromVCellSimulationData(inFile,
-										dataIdentifiers[selectedIndexArr[0]].getName(),
-										/*loadFileProgressListener*/this.getClientTaskStatusSupport());
-								newFRAPStudy = new FRAPStudy();
-								newFRAPStudy.setFrapData(newFrapData);
+							if(selectedIndexArr != null && selectedIndexArr.length > 0)
+							{
+								newFRAPStudy = getFrapWorkspace().loadFRAPDataFromVcellLogFile(inFile, dataIdentifiers[selectedIndexArr[0]].getName(), this.getClientTaskStatusSupport());
 								isFileLoaded = true;
 							}else{
 								throw UserCancelException.CANCEL_GENERIC;
 							}
     					}else //.lsm or other image formatss
     					{
-//    							localFrapStudyPanel.clearCurrentLoadState();
-//    							ImageLoadingProgress myImageLoadingProgress =
-//    								new ImageLoadingProgress(){
-//    									public void setSubProgress(double mbprog) {
-//    										loadFileProgressListener.updateProgress(mbprog);
-//    									}
-//    							};
-    	            			ImageDataset imageDataset = ImageDatasetReader.readImageDataset(inFile.getAbsolutePath(), /*myImageLoadingProgress*/this.getClientTaskStatusSupport());
-    	            			FRAPData newFrapData = FRAPData.importFRAPDataFromImageDataSet(imageDataset);
-    							newFRAPStudy = new FRAPStudy();
-    							newFRAPStudy.setFrapData(newFrapData);
+    							newFRAPStudy = getFrapWorkspace().loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
     							isFileLoaded = true;
     					}
     					
-    					//for all loaded files
-    					newFRAPStudy.setXmlFilename(newVFRAPFileName);
+    					//for all loaded file
     					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
     					
-//    					try{
-//    						localFrapStudyPanel.setSavedFrapModelInfo(newSavedFrapModelInfo);
-//    						localFrapStudyPanel.applySavedParameters(newFRAPStudy);
-//    					}catch(Exception e){
-//    						throw new RuntimeException(e.getMessage());
-//    					}
-    					//after loading new file, we need to set frapOptData to null.
-    		            
     			}
     		};
     		
@@ -148,11 +123,8 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
     				FRAPStudy newFRAPStudy = (FRAPStudy)hashTable.get(FRAPStudyPanel.NEW_FRAPSTUDY_KEY);
-    				if(!isFileLoaded)
-    				{
-    					newFRAPStudy = new FRAPStudy();
-    				}
-    				firePropertyChange(FRAPStudyPanel.LOADDATA_FRAPSTUDY_CHANGE_PROPERTY, null, newFRAPStudy);
+    				//setFrapStudy fires property change, so we have to put it in Swing thread.
+    				getFrapWorkspace().setFrapStudy(newFRAPStudy, true);
     				
     				VirtualFrapLoader.mf.setMainFrameTitle("");
     				VirtualFrapMainFrame.updateProgress(0);
@@ -174,17 +146,11 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 		return taskArrayList;
     } 
     
-    public void addPropertyChangeListener(PropertyChangeListener p) {
-//        propertyChangeSupport.addPropertyChangeListener(new PropertyChangeListenerProxyVCell(p));
-    	propertyChangeSupport.addPropertyChangeListener(p);
-    }
+    public FRAPWorkspace getFrapWorkspace() {
+		return frapWorkspace;
+	}
     
-    public void removePropertyChangeListener(PropertyChangeListener p) {
-//    	PropertyChangeListenerProxyVCell.removeProxyListener(propertyChangeSupport, p);
-        propertyChangeSupport.removePropertyChangeListener(p);
-    }
-    
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
-    }
+	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+		this.frapWorkspace = frapWorkspace;
+	}
 }
