@@ -138,6 +138,9 @@ public class FRAPStudy implements Matchable{
 	public ArrayList<String> selectedModels = new ArrayList<String>();
 	public String bestModel = MODEL_ONE_DIFF_COMPONENT;
 	
+	//Selected ROIs for error calculation
+	private String[] selectedROIsForErrCalculation = null; 
+	
 	private FRAPModelParameters frapModelParameters = null;
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	private transient FRAPOptData frapOptData = null;//temporary data structure for reference data used in optimization
@@ -1321,346 +1324,51 @@ public class FRAPStudy implements Matchable{
 		return bioModel;
 	}
 	
-	private KernelJAI createCircularBinaryKernel(int radius){
-		int enclosingBoxSideLength = radius*2+1;
-		float[] kernalData = new float[enclosingBoxSideLength*enclosingBoxSideLength];
-		Point2D kernalPoint = new Point2D.Float(0f,0f);
-		int index = 0;
-		for (int y = -radius; y <= radius; y++) {
-			for (int x = -radius; x <= radius; x++) {
-				if(kernalPoint.distance(x, y) <= radius){
-					kernalData[index] = 1.0f;
-				}
-				index++;
-			}
-		}
-		return new KernelJAI(enclosingBoxSideLength,enclosingBoxSideLength,radius,radius,kernalData);
-	}
-	private PlanarImage binarize(UShortImage source){
-		return binarize(AWTImageTools.makeImage(source.getPixels(), source.getNumX(), source.getNumY(),false));
-	}
-	private PlanarImage binarize(BufferedImage source){
-		PlanarImage planarSource = PlanarImage.wrapRenderedImage(source);
-		double[][] minmaxArr = (double[][])ExtremaDescriptor.create(planarSource, null, 1, 1, false, 1,null).getProperty("extrema");
-		short[] lookupData = new short[(int)0x010000];
-		lookupData[(int)minmaxArr[1][0]] = 1;
-		LookupTableJAI lookupTable = new LookupTableJAI(lookupData,true);
-		planarSource = LookupDescriptor.create(planarSource, lookupTable, null).createInstance();
-		return planarSource;		
-	}
-	private UShortImage convertToUShortImage(PlanarImage source,Origin origin,Extent extent) throws ImageException{
-    	short[] shortData = new short[source.getWidth() * source.getHeight()];
-    	source.getData().getDataElements(0, 0, source.getWidth(),source.getHeight(), shortData);
-    	return new UShortImage(shortData,origin,extent,source.getWidth(),source.getHeight(),1);	
-	}
-	private UShortImage erodeDilate(UShortImage source,KernelJAI dilateErodeKernel,UShortImage mask,boolean bErode) throws ImageException{
-		PlanarImage completedImage = null;
-		PlanarImage operatedImage = null;
-		PlanarImage planarSource = binarize(source);
-		Integer borderPad = dilateErodeKernel.getWidth()/2;
-		planarSource = 
-			BorderDescriptor.create(planarSource,
-				borderPad, borderPad, borderPad, borderPad,
-				BorderExtender.createInstance(BorderExtender.BORDER_ZERO), null).createInstance();
-		if(bErode){
-			planarSource = AddConstDescriptor.create(planarSource, new double[] {1.0}, null).createInstance();
-	    	RenderedOp erodeOP = ErodeDescriptor.create(planarSource, dilateErodeKernel, null);
-	    	operatedImage = erodeOP.createInstance();
-			
-		}else{
-	    	RenderedOp dilationOP = DilateDescriptor.create(planarSource, dilateErodeKernel, null);
-	    	operatedImage = dilationOP.createInstance();
-		}
-		operatedImage =
-    		CropDescriptor.create(operatedImage,
-    			new Float(0), new Float(0),
-    			new Float(source.getNumX()), new Float(source.getNumY()), null);
-    	operatedImage = binarize(operatedImage.getAsBufferedImage());
-		if (mask != null) {
-			RenderedOp andDescriptor = AndDescriptor.create(operatedImage,binarize(mask), null);
-			completedImage = andDescriptor.createInstance();
-		}else{
-			completedImage = operatedImage;
-		}
-		return convertToUShortImage(completedImage, source.getOrigin(),source.getExtent());
-    	
-}
-//	private void writeUShortFile(UShortImage uShortImage,File outFile){
-//		writeBufferedImageFile(
-//			ImageTools.makeImage(uShortImage.getPixels(),uShortImage.getNumX(), uShortImage.getNumY()),outFile);
-//
-//	}
-//	private void writeBufferedImageFile(BufferedImage bufferedImage,File outFile){
-//		try{
-//		ImageIO.write(
-//			FormatDescriptor.create(bufferedImage, DataBuffer.TYPE_BYTE,null).createInstance(),
-//			"bmp", outFile);
-//		}catch(Exception e){
-//			e.printStackTrace();
-//		}
-//		
-//	}
-	private UShortImage fastDilate(UShortImage dilateSource,int radius,UShortImage mask) throws ImageException{
-		short[] sourcePixels = dilateSource.getPixels();
-		short[] targetPixels = dilateSource.getPixels().clone();
-		KernelJAI dilateKernel = createCircularBinaryKernel(radius);
-		float[] kernelData = dilateKernel.getKernelData();
-		BitSet kernelBitSet = new BitSet(kernelData.length);
-		for (int i = 0; i < kernelData.length; i++) {
-			if(kernelData[i] == 1.0f){
-				kernelBitSet.set(i);
-			}
-		}
-		boolean bNeedsFill = false;
-		for (int y = 0; y < dilateSource.getNumY(); y++) {
-			int yOffset = y*dilateSource.getNumX();
-			int yMinus = yOffset-dilateSource.getNumX();
-			int yPlus = yOffset+dilateSource.getNumX();
-			for (int x = 0; x < dilateSource.getNumX(); x++) {
-				bNeedsFill = false;
-				if(sourcePixels[x+yOffset] != 0){
-					if(x-1 >= 0 && sourcePixels[(x-1)+yOffset] == 0){
-						bNeedsFill = true;
-					}else
-					if(y-1 >= 0 && sourcePixels[x+yMinus] == 0){
-						bNeedsFill = true;
-					}else
-					if(x+1 < dilateSource.getNumX() && sourcePixels[(x+1)+yOffset] == 0){
-						bNeedsFill = true;
-					}else
-					if(y+1 < dilateSource.getNumY() && sourcePixels[x+yPlus] == 0){
-						bNeedsFill = true;
-					}
-					if(bNeedsFill){
-						int masterKernelIndex = 0;
-						for (int y2 = y-radius; y2 <= y+radius; y2++) {
-							if(y2>= 0 && y2 <dilateSource.getNumY()){
-								int kernelIndex = masterKernelIndex;
-								int targetYIndex = y2*dilateSource.getNumX();
-								for (int x2 = x-radius; x2 <= x+radius; x2++) {
-									if(kernelBitSet.get(kernelIndex) &&
-										x2>= 0 && x2 <dilateSource.getNumX()){
-										targetPixels[targetYIndex+x2] = 1;
-									}
-									kernelIndex++;
-								}
-							}
-							masterKernelIndex+= dilateKernel.getWidth();
-						}
-					}
-				}
-			}
-		}
-		UShortImage resultImage =
-			new UShortImage(targetPixels,
-					dilateSource.getOrigin(),
-					dilateSource.getExtent(),
-					dilateSource.getNumX(),
-					dilateSource.getNumY(),
-					dilateSource.getNumZ());
-		resultImage.and(mask);
-		return resultImage;
-	}
-	
 	public void refreshDependentROIs(){
-		UShortImage cellROI_2D = null;
-		UShortImage bleachedROI_2D = null;
-		UShortImage dilatedROI_2D_1 = null;
-    	UShortImage dilatedROI_2D_2 = null;
-    	UShortImage dilatedROI_2D_3 = null;
-    	UShortImage dilatedROI_2D_4 = null;
-    	UShortImage dilatedROI_2D_5 = null;
-    	UShortImage erodedROI_2D_0 = null;
-    	UShortImage erodedROI_2D_1 = null;
-    	UShortImage erodedROI_2D_2 = null;
-
-    	try {
-    		cellROI_2D =
-    			convertToUShortImage(binarize(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0]),
-    				getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0].getOrigin(),
-    				getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getRoiImages()[0].getExtent());
-    		bleachedROI_2D =
-    			convertToUShortImage(
-    					AndDescriptor.create(binarize(getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getRoiImages()[0]),
-    						binarize(cellROI_2D), null).createInstance(),
-    					getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getRoiImages()[0].getOrigin(),
-    					getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getRoiImages()[0].getExtent());
-//			writeUShortFile(cellROI_2D, new File("D:\\developer\\eclipse\\workspace\\cellROI_2D.bmp"));
-//			writeUShortFile(bleachedROI_2D, new File("D:\\developer\\eclipse\\workspace\\bleachedROI_2D.bmp"));
-
-    		dilatedROI_2D_1 =
-    			fastDilate(bleachedROI_2D, 4, cellROI_2D);
-//    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(8), cellROI_2D,false);
-
-			dilatedROI_2D_2 = 
-				fastDilate(bleachedROI_2D, 10, cellROI_2D);
-//    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(16), cellROI_2D,false);
-
-	    	dilatedROI_2D_3 = 
-	    		fastDilate(bleachedROI_2D, 18, cellROI_2D);
-//    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(24), cellROI_2D,false);
-
-	    	dilatedROI_2D_4 = 
-	    		fastDilate(bleachedROI_2D, 28, cellROI_2D);
-//    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(32), cellROI_2D,false);
-
-	    	dilatedROI_2D_5 = 
-	    		fastDilate(bleachedROI_2D, 40, cellROI_2D);
-//    			erodeDilate(bleachedROI_2D, createCircularBinaryKernel(40), cellROI_2D,false);
-			
-			erodedROI_2D_0 = new UShortImage(bleachedROI_2D);
-			
-			// The erode always causes problems if eroding without checking the bleached length and hight.
-			// we have to check the min length of the bleahed area to make sure erode within the length.
-			Rectangle bleachRect = bleachedROI_2D.getNonzeroBoundingBox();
-			int minLen = Math.min(bleachRect.height, bleachRect.width);
-			if((minLen/2.0) < 5)
-			{
-				erodedROI_2D_1 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(1), bleachedROI_2D,true);
-				erodedROI_2D_2 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(2), bleachedROI_2D,true);
-			}
-			else
-			{
-				erodedROI_2D_1 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(2), bleachedROI_2D,true);
-				erodedROI_2D_2 = erodeDilate(bleachedROI_2D, createCircularBinaryKernel(5), bleachedROI_2D,true);
-			}			
-			
-			UShortImage reverseErodeROI_2D_1 = new UShortImage(erodedROI_2D_1);
-			reverseErodeROI_2D_1.reverse();
-			erodedROI_2D_0.and(reverseErodeROI_2D_1);
-			
-			UShortImage reverseErodeROI_2D_2 = new UShortImage(erodedROI_2D_2);
-			reverseErodeROI_2D_2.reverse();
-			erodedROI_2D_1.and(reverseErodeROI_2D_2);
-			
-			UShortImage reverseDilateROI_2D_4 = new UShortImage(dilatedROI_2D_4);
-			reverseDilateROI_2D_4.reverse();
-			dilatedROI_2D_5.and(reverseDilateROI_2D_4);
-
-			UShortImage reverseDilateROI_2D_3 = new UShortImage(dilatedROI_2D_3);
-//			writeUShortFile(dilatedROI_2D_3, new File("D:\\developer\\eclipse\\workspace\\dilatedROI_2D_3.bmp"));
-			reverseDilateROI_2D_3.reverse();
-//			writeUShortFile(reverseDilateROI_2D_3, new File("D:\\developer\\eclipse\\workspace\\dilatedROI_2D_3_reverse.bmp"));
-//			writeUShortFile(dilatedROI_2D_4, new File("D:\\developer\\eclipse\\workspace\\dilatedROI_2D_4.bmp"));
-			dilatedROI_2D_4.and(reverseDilateROI_2D_3);
-//			writeUShortFile(dilatedROI_2D_4, new File("D:\\developer\\eclipse\\workspace\\dilatedROI_2D_4_anded.bmp"));
-
-			UShortImage reverseDilateROI_2D_2 = new UShortImage(dilatedROI_2D_2);
-			reverseDilateROI_2D_2.reverse();
-			dilatedROI_2D_3.and(reverseDilateROI_2D_2);
-
-			UShortImage reverseDilateROI_2D_1 = new UShortImage(dilatedROI_2D_1);
-			reverseDilateROI_2D_1.reverse();
-			dilatedROI_2D_2.and(reverseDilateROI_2D_1);
-
-			UShortImage reverseBleach_2D = new UShortImage(bleachedROI_2D);
-			reverseBleach_2D.reverse();
-			dilatedROI_2D_1.and(reverseBleach_2D);
-
-    	}catch (ImageException e){
-    		e.printStackTrace(System.out);
-    	}
-		ROI roiBleachedRing1_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
-		if (roiBleachedRing1_2D==null){
-			roiBleachedRing1_2D = new ROI(erodedROI_2D_2,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
-			getFrapData().addReplaceRoi(roiBleachedRing1_2D);
-		}else{
-			System.arraycopy(erodedROI_2D_2.getPixels(), 0, roiBleachedRing1_2D.getRoiImages()[0].getPixels(), 0, erodedROI_2D_2.getPixels().length);
-		}
-		ROI roiBleachedRing2_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
-		if (roiBleachedRing2_2D==null){
-			roiBleachedRing2_2D = new ROI(erodedROI_2D_1,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
-			getFrapData().addReplaceRoi(roiBleachedRing2_2D);
-		}else{
-			System.arraycopy(erodedROI_2D_1.getPixels(), 0, roiBleachedRing2_2D.getRoiImages()[0].getPixels(), 0, erodedROI_2D_1.getPixels().length);
-		}
-		ROI roiBleachedRing3_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name());
-		if (roiBleachedRing3_2D==null){
-			roiBleachedRing3_2D = new ROI(erodedROI_2D_0,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name());
-			getFrapData().addReplaceRoi(roiBleachedRing3_2D);
-		}else{
-			System.arraycopy(erodedROI_2D_0.getPixels(), 0, roiBleachedRing3_2D.getRoiImages()[0].getPixels(), 0, erodedROI_2D_0.getPixels().length);
-		}
-		ROI roiBleachedRing4_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name());
-		if (roiBleachedRing4_2D==null){
-			roiBleachedRing4_2D = new ROI(dilatedROI_2D_1,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name());
-			getFrapData().addReplaceRoi(roiBleachedRing4_2D);
-		}else{
-			System.arraycopy(dilatedROI_2D_1.getPixels(), 0, roiBleachedRing4_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_1.getPixels().length);
-
-		}
-		ROI roiBleachedRing5_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name());
-		if (roiBleachedRing5_2D==null){
-			roiBleachedRing5_2D = new ROI(dilatedROI_2D_2,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name());
-			getFrapData().addReplaceRoi(roiBleachedRing5_2D);
-		}else{
-			System.arraycopy(dilatedROI_2D_2.getPixels(), 0, roiBleachedRing5_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_2.getPixels().length);
-		}
-		ROI roiBleachedRing6_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name());
-		if (roiBleachedRing6_2D==null){
-			roiBleachedRing6_2D = new ROI(dilatedROI_2D_3,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name());
-			getFrapData().addReplaceRoi(roiBleachedRing6_2D);
-		}else{
-			System.arraycopy(dilatedROI_2D_3.getPixels(), 0, roiBleachedRing6_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_3.getPixels().length);
-		}
-		ROI roiBleachedRing7_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name());
-		if (roiBleachedRing7_2D==null){
-			roiBleachedRing7_2D = new ROI(dilatedROI_2D_4,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name());
-			getFrapData().addReplaceRoi(roiBleachedRing7_2D);
-		}else{
-			System.arraycopy(dilatedROI_2D_4.getPixels(), 0, roiBleachedRing7_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_4.getPixels().length);
-//			writeUShortFile(roiBleachedRing7_2D.getRoiImages()[0], new File("D:\\developer\\eclipse\\workspace\\ROI_BLEACHED_RING7.bmp"));
-		}
-		ROI roiBleachedRing8_2D = getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name());
-		if (roiBleachedRing8_2D==null){
-			roiBleachedRing8_2D = new ROI(dilatedROI_2D_5,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name());
-			getFrapData().addReplaceRoi(roiBleachedRing8_2D);
-		}else{
-			System.arraycopy(dilatedROI_2D_5.getPixels(), 0, roiBleachedRing8_2D.getRoiImages()[0].getPixels(), 0, dilatedROI_2D_5.getPixels().length);
-		}
+		getFrapData().refreshDependentROIs();
 	}
 	
 	public void  saveImageDatasetAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newImageExtDataID,int startingIndexForRecovery) throws Exception{
-			ImageDataset imageDataset = getFrapData().getImageDataset();
-			if (imageDataset.getSizeC()>1){
-				throw new RuntimeException("FRAPStudy.saveImageDatasetAsExternalData(): multiple channels not yet supported");
-			}
-			Extent extent = imageDataset.getExtent();
-			ISize isize = imageDataset.getISize();
-			int numImageToStore = imageDataset.getSizeT()-startingIndexForRecovery; //not include the prebleach 
-	    	double[][][] pixData = new double[numImageToStore][2][]; //original fluor data and back ground average
-	    	double[] timesArray = new double[numImageToStore];
-	    	double[] bgAvg = getFrapData().getAvgBackGroundIntensity();
-	    	
-	    	for (int tIndex = startingIndexForRecovery; tIndex < imageDataset.getSizeT(); tIndex++) {
-	    		short[] originalData = imageDataset.getPixelsZ(0, tIndex);// images according to zIndex at specific time points(tIndex)
-	    		double[] doubleData = new double[originalData.length];
-	    		double[] expandBgAvg = new double[originalData.length];
-	    		for(int i = 0; i < originalData.length; i++)
-	    		{
-	    			doubleData[i] = 0x0000ffff & originalData[i];
-	    			expandBgAvg[i] = bgAvg[tIndex];
-	    		}
-	    		pixData[tIndex-startingIndexForRecovery][0] = doubleData;
-	    		pixData[tIndex-startingIndexForRecovery][1] = expandBgAvg;
-	    		timesArray[tIndex-startingIndexForRecovery] = imageDataset.getImageTimeStamps()[tIndex]-imageDataset.getImageTimeStamps()[startingIndexForRecovery];
-	    	}
-	    	//changed in March 2008. Though biomodel is not created, we still let user save to xml file.
-	    	Origin origin = new Origin(0,0,0);
-	    	CartesianMesh cartesianMesh  = getCartesianMesh();
-	    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-	    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-	    	fdos.cartesianMesh = cartesianMesh;
-	    	fdos.doubleSpecData =  pixData;
-	    	fdos.specEDI = newImageExtDataID;
-	    	fdos.varNames = new String[] {"fluor","bg_average"};
-	    	fdos.owner = LocalWorkspace.getDefaultOwner();
-	    	fdos.times = timesArray;
-	    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME};
-	    	fdos.origin = origin;
-	    	fdos.extent = extent;
-	    	fdos.isize = isize;
-			localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		ImageDataset imageDataset = getFrapData().getImageDataset();
+		if (imageDataset.getSizeC()>1){
+			throw new RuntimeException("FRAPStudy.saveImageDatasetAsExternalData(): multiple channels not yet supported");
+		}
+		Extent extent = imageDataset.getExtent();
+		ISize isize = imageDataset.getISize();
+		int numImageToStore = imageDataset.getSizeT()-startingIndexForRecovery; //not include the prebleach 
+    	double[][][] pixData = new double[numImageToStore][2][]; //original fluor data and back ground average
+    	double[] timesArray = new double[numImageToStore];
+    	double[] bgAvg = getFrapData().getAvgBackGroundIntensity();
+    	
+    	for (int tIndex = startingIndexForRecovery; tIndex < imageDataset.getSizeT(); tIndex++) {
+    		short[] originalData = imageDataset.getPixelsZ(0, tIndex);// images according to zIndex at specific time points(tIndex)
+    		double[] doubleData = new double[originalData.length];
+    		double[] expandBgAvg = new double[originalData.length];
+    		for(int i = 0; i < originalData.length; i++)
+    		{
+    			doubleData[i] = 0x0000ffff & originalData[i];
+    			expandBgAvg[i] = bgAvg[tIndex];
+    		}
+    		pixData[tIndex-startingIndexForRecovery][0] = doubleData;
+    		pixData[tIndex-startingIndexForRecovery][1] = expandBgAvg;
+    		timesArray[tIndex-startingIndexForRecovery] = imageDataset.getImageTimeStamps()[tIndex]-imageDataset.getImageTimeStamps()[startingIndexForRecovery];
+    	}
+    	//changed in March 2008. Though biomodel is not created, we still let user save to xml file.
+    	Origin origin = new Origin(0,0,0);
+    	CartesianMesh cartesianMesh  = getCartesianMesh();
+    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+    	fdos.cartesianMesh = cartesianMesh;
+    	fdos.doubleSpecData =  pixData;
+    	fdos.specEDI = newImageExtDataID;
+    	fdos.varNames = new String[] {"fluor","bg_average"};
+    	fdos.owner = LocalWorkspace.getDefaultOwner();
+    	fdos.times = timesArray;
+    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME};
+    	fdos.origin = origin;
+    	fdos.extent = extent;
+    	fdos.isize = isize;
+		localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
 	}
 	
 	public static File[] getCanonicalExternalDataFiles(LocalWorkspace localWorkspace,ExternalDataIdentifier originalExtDataID){
@@ -2101,4 +1809,8 @@ public class FRAPStudy implements Matchable{
 		this.startingIndexForRecovery = startingIndexForRecovery;
 	}
 	
+	public void setSelectedROIsForErrorCalculation(String[] arg_selectedROIs)
+	{
+		selectedROIsForErrCalculation = arg_selectedROIs;
+	}
 }
