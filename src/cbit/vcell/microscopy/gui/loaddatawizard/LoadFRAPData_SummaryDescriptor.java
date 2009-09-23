@@ -26,6 +26,8 @@ public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor{
     
     public LoadFRAPData_SummaryDescriptor() {
         super(IDENTIFIER, new LoadFRAPData_SummaryPanel());
+        setProgressPopupShown(false); 
+        setTaskProgressKnown(false);
     }
     //this method is override to make sure the next step is going to finish.
     public String getNextPanelDescriptorID() {

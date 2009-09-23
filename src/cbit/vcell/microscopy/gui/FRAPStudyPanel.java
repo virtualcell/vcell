@@ -2849,8 +2849,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        fSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER); //goes back to single file input by default
 	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_SummaryDescriptor.IDENTIFIER, fSummaryDescriptor);
 	        fSummaryDescriptor.setFrapWorkspace(getFrapWorkspace());
-//	        ((LoadFRAPData_MultiFileDescriptor)multiFileDescriptor).addPropertyChangeListener(fSummaryDescriptor);
-//	        ((LoadFRAPData_SingleFileDescriptor)singleFileDescriptor).addPropertyChangeListener(fSummaryDescriptor);
 	        
 	        final WizardPanelDescriptor fileTypeDescriptor =  fTypeDescriptor;
 	        final WizardPanelDescriptor fileSummaryDescriptor = fSummaryDescriptor;
@@ -2924,13 +2922,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        
 	        DefineROI_BackgroundROIDescriptor backgroundROIDescriptor = new DefineROI_BackgroundROIDescriptor(imgPanel);
 	        defineROIWizard.registerWizardPanel(DefineROI_BackgroundROIDescriptor.IDENTIFIER, backgroundROIDescriptor);
-//	        backgroundROIDescriptor.addPropertyChangeListener(this);
 	        
 	        DefineROI_SummaryDescriptor ROISummaryDescriptor = new DefineROI_SummaryDescriptor(imgPanel);
 	        defineROIWizard.registerWizardPanel(DefineROI_SummaryDescriptor.IDENTIFIER, ROISummaryDescriptor);
 	        ROISummaryDescriptor.setFrapWorkspace(getFrapWorkspace());
-//	        backgroundROIDescriptor.addPropertyChangeListener(ROISummaryDescriptor);
-//	        ROISummaryDescriptor.addPropertyChangeListener(this);
 		}
 		//always start from the first page
 		defineROIWizard.setCurrentPanel(DefineROI_CropDescriptor.IDENTIFIER);
@@ -2948,10 +2943,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        
 	        WizardPanelDescriptor modelTypesDescriptor = new ChooseModel_ModelTypesDescriptor();
 	        modelTypeWizard.registerWizardPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER, modelTypesDescriptor);
-	        ((ChooseModel_ModelTypesDescriptor)modelTypesDescriptor).setFrapStudy(getFrapWorkspace().getFrapStudy());
+	        ((ChooseModel_ModelTypesDescriptor)modelTypesDescriptor).setFrapWorkspace(getFrapWorkspace());
 	        
 	        WizardPanelDescriptor roiForErrorDescriptor = new ChooseModel_RoiForErrorDescriptor();
 	        modelTypeWizard.registerWizardPanel(ChooseModel_RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
+	        ((ChooseModel_RoiForErrorDescriptor)roiForErrorDescriptor).setFrapWorkspace(getFrapWorkspace());
 		}
 		//always start from the first page
 		modelTypeWizard.setCurrentPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER);
