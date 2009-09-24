@@ -494,7 +494,6 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 
 	// get the data manager and wire it up
 	try {
-		DataManager mergedDataManager = getRequestManager().getDataManager(mergedDataInfo, false);
 
 		//
 		// get all "Data1.XXX" data identifiers ... and remove those which are functions
@@ -502,8 +501,13 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 		//
 		Simulation sim1 = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(simInfo);
 		Simulation sim2 = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(regrSimInfo);
-		DataManager data1Manager = getRequestManager().getDataManager(vcSimId1, sim1.getIsSpatial());
-		DataManager data2Manager = getRequestManager().getDataManager(vcSimId2, sim2.getIsSpatial());
+		boolean isSpatial = sim1.getIsSpatial();
+		if (sim2.getIsSpatial() != isSpatial) {
+			throw new RuntimeException("Cannot compare spatial and non-spatial data sets : " + simInfo + "& " + regrSimInfo);
+		}
+		DataManager mergedDataManager = getRequestManager().getDataManager(mergedDataInfo, isSpatial);
+		DataManager data1Manager = getRequestManager().getDataManager(vcSimId1, isSpatial);
+		DataManager data2Manager = getRequestManager().getDataManager(vcSimId2, isSpatial);
 		
 		Vector functionList = new Vector();
 		cbit.vcell.math.AnnotatedFunction data1Functions[] = data1Manager.getFunctions();
