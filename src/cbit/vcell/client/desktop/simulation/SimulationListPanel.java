@@ -31,7 +31,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  */
 public class SimulationListPanel extends JPanel {
 	private JPanel buttonsAndSimSummarypanel;
-	private OutputFunctionsPanel observablesPanel;
+	private OutputFunctionsPanel outputFunctionsPanel;
 	private JSplitPane outerSplitPane;
 	private JScrollPane scrollPane;
 	private JSplitPane innerSplitPane;
@@ -286,7 +286,7 @@ private void connEtoC9(javax.swing.event.ListSelectionEvent arg1) {
 private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
 		getSimulationListTableModel1().setSimulationWorkspace(this.getSimulationWorkspace());
-		getObservablesPanel().setOutputFunctionContext(this.getSimulationWorkspace().getSimulationOwner().getOutputFunctionContext());
+		getOutputFunctionsPanel().setSimulationWorkspace(this.getSimulationWorkspace());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -777,17 +777,17 @@ private cbit.vcell.solver.ode.gui.SimulationSummaryPanel getSimulationSummaryPan
 	return ivjSimulationSummaryPanel1;
 }
 
-private OutputFunctionsPanel getObservablesPanel() {
-	if (observablesPanel == null) {
+private OutputFunctionsPanel getOutputFunctionsPanel() {
+	if (outputFunctionsPanel == null) {
 		try {
-			observablesPanel = new OutputFunctionsPanel();
-			observablesPanel.setPreferredSize(new Dimension(750, 150));
-			observablesPanel.setName("ObservablesPanel");
+			outputFunctionsPanel = new OutputFunctionsPanel();
+			outputFunctionsPanel.setPreferredSize(new Dimension(750, 150));
+			outputFunctionsPanel.setName("ObservablesPanel");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return observablesPanel;
+	return outputFunctionsPanel;
 }
 
 /**
@@ -1201,7 +1201,7 @@ private void stopSimulations() {
 		if (outerSplitPane == null) {
 			outerSplitPane = new JSplitPane();
 			outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			outerSplitPane.setLeftComponent(getObservablesPanel());
+			outerSplitPane.setLeftComponent(getOutputFunctionsPanel());
 			JPanel simPanel = new JPanel();
 			simPanel.setLayout(new BoxLayout(simPanel, BoxLayout.Y_AXIS));
 			JLabel simLabel = new JLabel("  Simulations:");

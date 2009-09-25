@@ -38,6 +38,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
@@ -62,6 +63,7 @@ public class OutputFunctionsPanel extends JPanel {
 	private JPanel functionPanel = null;
 	private OutputFunctionsListTableModel outputFnsListTableModel1 = null;
 	private OutputFunctionContext outputFunctionContext = null;
+	private SimulationWorkspace simulationWorkspace = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	
 
@@ -76,11 +78,41 @@ public class OutputFunctionsPanel extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == OutputFunctionsPanel.this && (evt.getPropertyName().equals("outputFunctionContext"))) {
 				// disable add/delete function buttons
-				if (outputFunctionContext != null && 
-					outputFunctionContext.getMathDescription() != null && 
-					(outputFunctionContext.getMathDescription().isSpatial() || outputFunctionContext.getMathDescription().isStoch())) {
-					getAddFnButton().setEnabled(false);
-					getDeleteFnButton().setEnabled(false);
+				if (outputFunctionContext != null && outputFunctionContext.getMathDescription() != null) { 
+					if (outputFunctionContext.getMathDescription().isSpatial() || outputFunctionContext.getMathDescription().isStoch()) {
+						getAddFnButton().setEnabled(false);
+						getDeleteFnButton().setEnabled(false);
+					}
+					getOutputFnsListTableModel1().setOutputFunctionContext(outputFunctionContext);
+				}
+			}
+			if (evt.getSource() == OutputFunctionsPanel.this && (evt.getPropertyName().equals("simulationWorkspace"))) {
+				SimulationWorkspace sw_old = (SimulationWorkspace)evt.getOldValue();
+				SimulationWorkspace sw_new = (SimulationWorkspace)evt.getNewValue();
+				if (sw_old != null) {
+					sw_old.removePropertyChangeListener(this);
+				} 
+				if (sw_new != null) {
+					sw_new.addPropertyChangeListener(this);
+					if (sw_new.getSimulationOwner() != null) {
+						setOutputFunctionContext(sw_new.getSimulationOwner().getOutputFunctionContext());
+					} else {
+						setOutputFunctionContext(null);
+					}
+				} else {
+					setOutputFunctionContext(null);
+				}
+			}
+			if (evt.getSource() == getSimulationWorkspace() && (evt.getPropertyName().equals("simulationOwner"))) {
+				SimulationOwner so_new = (SimulationOwner)evt.getNewValue();
+				if (so_new != null) {
+					if (so_new != null) {
+						setOutputFunctionContext(so_new.getOutputFunctionContext());
+					} else {
+						setOutputFunctionContext(null);
+					}
+				} else {
+					setOutputFunctionContext(null);
 				}
 			}
 		};
@@ -473,11 +505,10 @@ public class OutputFunctionsPanel extends JPanel {
 		enableDeleteFnButton();
 	}
 
-	public void setOutputFunctionContext(OutputFunctionContext argOutputFnContext) {
+	private void setOutputFunctionContext(OutputFunctionContext argOutputFnContext) {
 		OutputFunctionContext oldValue = this.outputFunctionContext; 
 		this.outputFunctionContext = argOutputFnContext;
 		firePropertyChange("outputFunctionContext", oldValue, argOutputFnContext);
-		getOutputFnsListTableModel1().setOutputFunctionContext(argOutputFnContext);
 	}
 
 	private void enableDeleteFnButton() {
@@ -508,6 +539,16 @@ public class OutputFunctionsPanel extends JPanel {
 			System.err.println("Exception occurred in main() of javax.swing.JPanel");
 			exception.printStackTrace(System.out);
 		}
+	}
+
+	public SimulationWorkspace getSimulationWorkspace() {
+		return simulationWorkspace;
+	}
+
+	public void setSimulationWorkspace(SimulationWorkspace argSimulationWorkspace) {
+		SimulationWorkspace oldValue = this.simulationWorkspace; 
+		this.simulationWorkspace = argSimulationWorkspace;
+		firePropertyChange("simulationWorkspace", oldValue, argSimulationWorkspace);
 	}
 
 }
