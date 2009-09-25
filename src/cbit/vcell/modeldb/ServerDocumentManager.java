@@ -9,7 +9,6 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
@@ -17,6 +16,8 @@ import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
 import cbit.image.VCImage;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -248,12 +249,12 @@ private void forceDirtyIfForeign(User user,Versionable versionable) {
 //
 // this returns a BioModel that contains multiple instances of objects.
 // 
-private String getBioModelUnresolved(User user, KeyValue bioModelKey) throws DataAccessException, XmlParseException, java.sql.SQLException {
+private String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioModelKey) throws DataAccessException, XmlParseException, java.sql.SQLException {
 	
 	//
 	// get meta data associated with BioModel
 	//
-	BioModelMetaData bioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(user,bioModelKey);
+	BioModelMetaData bioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(dbc, user,bioModelKey);
 
 	//
 	// get list of appropriate child components
@@ -262,11 +263,11 @@ private String getBioModelUnresolved(User user, KeyValue bioModelKey) throws Dat
 	KeyValue simKeys[] = getKeyArrayFromEnumeration(bioModelMetaData.getSimulationKeys());
 	KeyValue scKeys[] = getKeyArrayFromEnumeration(bioModelMetaData.getSimulationContextKeys());
 
-	Model model = dbServer.getDBTopLevel().getModel(user,modelKey);
+	Model model = dbServer.getDBTopLevel().getModel(dbc, user,modelKey);
 
 	Simulation simArray[] = new Simulation[simKeys.length];
 	for (int i=0;i<simKeys.length;i++){
-		Simulation sim = dbServer.getDBTopLevel().getSimulation(user,simKeys[i]);
+		Simulation sim = dbServer.getDBTopLevel().getSimulation(dbc, user,simKeys[i]);
 		//
 		// clone Simulations so as to isolate different MathModels
 		//
@@ -279,7 +280,7 @@ private String getBioModelUnresolved(User user, KeyValue bioModelKey) throws Dat
 	
 	SimulationContext scArray[] = new SimulationContext[scKeys.length];
 	for (int i=0;i<scKeys.length;i++){
-		SimulationContext sc = dbServer.getDBTopLevel().getSimulationContext(user,scKeys[i]);
+		SimulationContext sc = dbServer.getDBTopLevel().getSimulationContext(dbc, user,scKeys[i]);
 		//
 		// clone SimulationContexts so as to isolate different MathModels
 		//
@@ -358,7 +359,7 @@ private String getBioModelUnresolved(User user, KeyValue bioModelKey) throws Dat
  * @param vType cbit.sql.VersionableType
  * @param vKey cbit.sql.KeyValue
  */
-public String getBioModelXML(User user, KeyValue bioModelKey) throws DataAccessException {
+public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey) throws DataAccessException {
 	String bioModelXML = null;
 	
 	try {
@@ -377,7 +378,7 @@ public String getBioModelXML(User user, KeyValue bioModelKey) throws DataAccessE
 	
 
 	try {
-		bioModelXML = getBioModelUnresolved(user,bioModelKey);
+		bioModelXML = getBioModelUnresolved(dbc, user,bioModelKey);
 
 		dbServer.insertVersionableXML(user,VersionableType.BioModelMetaData,bioModelKey,bioModelXML);
 
@@ -419,7 +420,7 @@ private KeyValue[] getKeyArrayFromEnumeration(Enumeration enum1) {
 //
 // this returns a MathModel that has duplicate instances of the same objects
 //
-public MathModel getMathModelUnresolved(User user, KeyValue mathModelKey) throws DataAccessException, java.sql.SQLException {
+public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue mathModelKey) throws DataAccessException, java.sql.SQLException {
 	
 	//
 	// get meta data associated with MathModel
@@ -432,11 +433,11 @@ public MathModel getMathModelUnresolved(User user, KeyValue mathModelKey) throws
 	KeyValue mathDescriptionKey = mathModelMetaData.getMathKey();
 	KeyValue simKeys[] = getKeyArrayFromEnumeration(mathModelMetaData.getSimulationKeys());
 
-	MathDescription mathDescription = dbServer.getDBTopLevel().getMathDescription(user,mathDescriptionKey);
+	MathDescription mathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,mathDescriptionKey);
 
 	Simulation simArray[] = new Simulation[simKeys.length];
 	for (int i=0;i<simKeys.length;i++){
-		Simulation sim = dbServer.getDBTopLevel().getSimulation(user,simKeys[i]);
+		Simulation sim = dbServer.getDBTopLevel().getSimulation(dbc, user,simKeys[i]);
 		//
 		// clone Simulations so as to isolate different MathModels
 		//
@@ -488,7 +489,7 @@ public MathModel getMathModelUnresolved(User user, KeyValue mathModelKey) throws
  * @param vType cbit.sql.VersionableType
  * @param vKey cbit.sql.KeyValue
  */
-public String getMathModelXML(User user, KeyValue mathModelKey) throws DataAccessException {
+public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelKey) throws DataAccessException {
 	String mathModelXML = null;
 	
 	try {
@@ -507,7 +508,7 @@ public String getMathModelXML(User user, KeyValue mathModelKey) throws DataAcces
 	
 
 	try {
-		MathModel mathModel = getMathModelUnresolved(user,mathModelKey);
+		MathModel mathModel = getMathModelUnresolved(dbc, user,mathModelKey);
 
 		mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
 		dbServer.insertVersionableXML(user,VersionableType.MathModelMetaData,mathModelKey,mathModelXML);
@@ -527,7 +528,7 @@ public String getMathModelXML(User user, KeyValue mathModelKey) throws DataAcces
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-boolean isChanged(User user, cbit.image.VCImage vcImage) throws org.vcell.util.DataAccessException {
+boolean isChanged(QueryHashtable dbc, User user, cbit.image.VCImage vcImage) throws org.vcell.util.DataAccessException {
 	//
 	// identify versionable as it was last loaded from the database
 	//
@@ -542,7 +543,7 @@ boolean isChanged(User user, cbit.image.VCImage vcImage) throws org.vcell.util.D
 	// get versionable from database or from cache (should be in cache)
 	//	
 	try {
-		savedVersionable = dbServer.getDBTopLevel().getVCImage(user,key,true);
+		savedVersionable = dbServer.getDBTopLevel().getVCImage(dbc, user,key,true);
 	}catch (ObjectNotFoundException e){
 		//
 		// loaded version has been deleted
@@ -564,7 +565,7 @@ boolean isChanged(User user, cbit.image.VCImage vcImage) throws org.vcell.util.D
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-boolean isChanged(User user, Geometry geometry) throws DataAccessException {
+boolean isChanged(QueryHashtable dbc, User user, Geometry geometry) throws DataAccessException {
 	//
 	// identify versionable as it was last loaded from the database
 	//
@@ -579,7 +580,7 @@ boolean isChanged(User user, Geometry geometry) throws DataAccessException {
 	// get versionable from database or from cache (should be in cache)
 	//	
 	try {
-		savedVersionable = dbServer.getDBTopLevel().getGeometry(user,key,true);
+		savedVersionable = dbServer.getDBTopLevel().getGeometry(dbc, user,key,true);
 	}catch (ObjectNotFoundException e){
 		//
 		// loaded version has been deleted
@@ -693,7 +694,7 @@ private VersionInfo removeUserFromGroup0(User user, VersionInfo versionInfo, Ver
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveBioModel(User user, String bioModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, MappingException, cbit.vcell.xml.XmlParseException {
+public String saveBioModel(QueryHashtable dbc, User user, String bioModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, MappingException, cbit.vcell.xml.XmlParseException {
 
 long start = System.currentTimeMillis();
 	//
@@ -719,7 +720,7 @@ long start = System.currentTimeMillis();
 
 	BioModel origBioModel = null;
 	if (oldVersion!=null){
-		String origBioModelXML = getBioModelXML(user,oldVersion.getVersionKey());
+		String origBioModelXML = getBioModelXML(dbc, user,oldVersion.getVersionKey());
 		origBioModel = XmlHelper.XMLToBioModel(new XMLSource(origBioModelXML));
 	}
 
@@ -796,14 +797,14 @@ long l2 = 0;
 						// saved image not found in origBioModel (too bad), get from database.
 						//
 l1 = System.currentTimeMillis();
-						databaseImage = dbServer.getDBTopLevel().getVCImage(user,memoryImage.getKey(),false);
+						databaseImage = dbServer.getDBTopLevel().getVCImage(dbc, user,memoryImage.getKey(),false);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 					}
 					if (databaseImage!=null && !databaseImage.compareEqual(memoryImage)){
 						KeyValue updatedImageKey = dbServer.getDBTopLevel().updateVersionable(user,memoryImage,false,true);
 l1 = System.currentTimeMillis();
-						VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(user,updatedImageKey,false);
+						VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 						memoryToDatabaseHash.put(memoryImage,updatedImage);
@@ -827,7 +828,7 @@ roundtripTimer += l2 - l1;
 					}
 					KeyValue updatedImageKey = dbServer.getDBTopLevel().insertVersionable(user,memoryImage,memoryImage.getName(),false,true);
 l1 = System.currentTimeMillis();
-					VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(user,updatedImageKey,false);
+					VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 					memoryToDatabaseHash.put(memoryImage,updatedImage);
@@ -880,7 +881,7 @@ roundtripTimer += l2 - l1;
 						// saved geometry not found in origBioModel (too bad), get from database.
 						//
 l1 = System.currentTimeMillis();
-						databaseGeometry = dbServer.getDBTopLevel().getGeometry(user,memoryGeometry.getKey(),false);
+						databaseGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,memoryGeometry.getKey(),false);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 					}
@@ -890,9 +891,9 @@ roundtripTimer += l2 - l1;
 				}
 				if (bMustSaveGeometry){
 					KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
-					KeyValue updatedGeometryKey = dbServer.getDBTopLevel().updateVersionable(user,memoryGeometry,updatedImageKey,false,true);
+					KeyValue updatedGeometryKey = dbServer.getDBTopLevel().updateVersionable(dbc, user,memoryGeometry,updatedImageKey,false,true);
 l1 = System.currentTimeMillis();
-					Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(user,updatedGeometryKey,false);
+					Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 					memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
@@ -915,9 +916,9 @@ roundtripTimer += l2 - l1;
 					}
 				}
 				KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
-				KeyValue updatedGeometryKey = dbServer.getDBTopLevel().insertVersionable(user,memoryGeometry,updatedImageKey,memoryGeometry.getName(),false,true);
+				KeyValue updatedGeometryKey = dbServer.getDBTopLevel().insertVersionable(dbc, user,memoryGeometry,updatedImageKey,memoryGeometry.getName(),false,true);
 l1 = System.currentTimeMillis();
-				Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(user,updatedGeometryKey,false);
+				Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
@@ -967,7 +968,7 @@ roundtripTimer += l2 - l1;
 					// saved mathDescription not found in origBioModel (too bad), get from database.
 					//
 l1 = System.currentTimeMillis();
-					databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(user,memoryMathDescription.getKey());
+					databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,memoryMathDescription.getKey());
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				}
@@ -1010,7 +1011,7 @@ roundtripTimer += l2 - l1;
 				}
 					
 l1 = System.currentTimeMillis();
-				MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(user,updatedMathDescriptionKey);
+				MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,updatedMathDescriptionKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
@@ -1043,14 +1044,14 @@ roundtripTimer += l2 - l1;
 				// saved model not found in origBioModel (too bad), get from database.
 				//
 l1 = System.currentTimeMillis();
-				databaseModel = dbServer.getDBTopLevel().getModel(user,memoryModel.getKey());
+				databaseModel = dbServer.getDBTopLevel().getModel(dbc, user,memoryModel.getKey());
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 			}
 			if (databaseModel!=null && !databaseModel.compareEqual(memoryModel)){
 				KeyValue updatedModelKey = dbServer.getDBTopLevel().updateVersionable(user,memoryModel,false,true);
 l1 = System.currentTimeMillis();
-				Model updatedModel = dbServer.getDBTopLevel().getModel(user,updatedModelKey);
+				Model updatedModel = dbServer.getDBTopLevel().getModel(dbc, user,updatedModelKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				memoryToDatabaseHash.put(memoryModel,updatedModel);
@@ -1063,7 +1064,7 @@ roundtripTimer += l2 - l1;
 			//
 			KeyValue updatedModelKey = dbServer.getDBTopLevel().insertVersionable(user,memoryModel,memoryModel.getName(),false,true);
 l1 = System.currentTimeMillis();
-			Model updatedModel = dbServer.getDBTopLevel().getModel(user,updatedModelKey);
+			Model updatedModel = dbServer.getDBTopLevel().getModel(dbc, user,updatedModelKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 			memoryToDatabaseHash.put(memoryModel,updatedModel);
@@ -1127,7 +1128,7 @@ roundtripTimer += l2 - l1;
 						// saved geometry not found in origBioModel (too bad), get from database.
 						//
 l1 = System.currentTimeMillis();
-						databaseSimContext = dbServer.getDBTopLevel().getSimulationContext(user,memorySimContext.getKey());
+						databaseSimContext = dbServer.getDBTopLevel().getSimulationContext(dbc, user,memorySimContext.getKey());
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 					}
@@ -1141,7 +1142,7 @@ roundtripTimer += l2 - l1;
 					Model updatedModel = memorySimContext.getModel();
 					KeyValue updatedSimContextKey = dbServer.getDBTopLevel().updateVersionable(user,memorySimContext,updatedMathDescriptionKey,updatedModel,updatedGeometryKey,false,true);
 l1 = System.currentTimeMillis();
-					SimulationContext updatedSimContext = dbServer.getDBTopLevel().getSimulationContext(user,updatedSimContextKey);
+					SimulationContext updatedSimContext = dbServer.getDBTopLevel().getSimulationContext(dbc, user,updatedSimContextKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 					//
@@ -1161,7 +1162,7 @@ roundtripTimer += l2 - l1;
 				Model updatedModel = memorySimContext.getModel();
 				KeyValue updatedSimContextKey = dbServer.getDBTopLevel().insertVersionable(user,memorySimContext,updatedMathDescriptionKey,updatedModel,updatedGeometryKey,memorySimContext.getName(),false,true);
 l1 = System.currentTimeMillis();
-				SimulationContext updatedSimContext = dbServer.getDBTopLevel().getSimulationContext(user,updatedSimContextKey);
+				SimulationContext updatedSimContext = dbServer.getDBTopLevel().getSimulationContext(dbc, user,updatedSimContextKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				//
@@ -1217,7 +1218,7 @@ roundtripTimer += l2 - l1;
 					// saved simulation not found in origBioModel (too bad), get from database.
 					//
 l1 = System.currentTimeMillis();
-					databaseSimulation = dbServer.getDBTopLevel().getSimulation(user,memorySimulation.getKey());
+					databaseSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,memorySimulation.getKey());
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				}
@@ -1273,7 +1274,7 @@ roundtripTimer += l2 - l1;
 					updatedSimulationKey = dbServer.getDBTopLevel().insertVersionable(user,memorySimulation,updatedMathDescriptionKey,memorySimulation.getName(),false,bMathematicallyEquivalent,true);
 				}						
 l1 = System.currentTimeMillis();
-				Simulation updatedSimulation = dbServer.getDBTopLevel().getSimulation(user,updatedSimulationKey);
+				Simulation updatedSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,updatedSimulationKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 				//
@@ -1327,13 +1328,13 @@ roundtripTimer += l2 - l1;
 		if (bioModel.getVersion()==null || !bioModel.getVersion().getName().equals(bioModel.getName())){
 			KeyValue updatedBioModelKey = dbServer.getDBTopLevel().insertVersionable(user,bioModelMetaData,null/*hack*/,bioModel.getName(),false,true);
 l1 = System.currentTimeMillis();
-			updatedBioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(user,updatedBioModelKey);
+			updatedBioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(dbc, user,updatedBioModelKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 		}else{
 			KeyValue updatedBioModelKey = dbServer.getDBTopLevel().updateVersionable(user,bioModelMetaData,null/*hack*/,false,true);
 l1 = System.currentTimeMillis();
-			updatedBioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(user,updatedBioModelKey);
+			updatedBioModelMetaData = dbServer.getDBTopLevel().getBioModelMetaData(dbc, user,updatedBioModelKey);
 l2 = System.currentTimeMillis();
 roundtripTimer += l2 - l1;
 		}
@@ -1371,7 +1372,7 @@ System.out.println("------------------------------> Time spent on roundtrip: " +
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveGeometry(User user,String geometryXML,String newName) throws DataAccessException, cbit.vcell.xml.XmlParseException, java.sql.SQLException {
+public String saveGeometry(QueryHashtable dbc, User user,String geometryXML,String newName) throws DataAccessException, cbit.vcell.xml.XmlParseException, java.sql.SQLException {
 
 	Geometry geometry = XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
 	
@@ -1412,7 +1413,7 @@ public String saveGeometry(User user,String geometryXML,String newName) throws D
 			//
 			// Image has been saved previously, get old image from database
 			//
-			VCImage origImage = dbServer.getDBTopLevel().getVCImage(user,image.getKey(),false);
+			VCImage origImage = dbServer.getDBTopLevel().getVCImage(dbc, user,image.getKey(),false);
 			if (origImage==null || !origImage.compareEqual(image)){
 				updatedImageKey = dbServer.getDBTopLevel().updateVersionable(user,image,false,true);
 			}else{
@@ -1426,9 +1427,9 @@ public String saveGeometry(User user,String geometryXML,String newName) throws D
 	//
 	KeyValue geometryKey = null;
 	if (geometry.getVersion()!=null && geometry.getName().equals(geometry.getVersion().getName())){
-		geometryKey = dbServer.getDBTopLevel().updateVersionable(user,geometry,updatedImageKey,false,true);
+		geometryKey = dbServer.getDBTopLevel().updateVersionable(dbc, user,geometry,updatedImageKey,false,true);
 	}else{
-		geometryKey = dbServer.getDBTopLevel().insertVersionable(user,geometry,updatedImageKey,geometry.getName(),false,true);
+		geometryKey = dbServer.getDBTopLevel().insertVersionable(dbc, user,geometry,updatedImageKey,geometry.getName(),false,true);
 	}
 	
 	return dbServer.getGeometryXML(user,geometryKey).toString();
@@ -1439,7 +1440,7 @@ public String saveGeometry(User user,String geometryXML,String newName) throws D
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveMathModel(User user, String mathModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.vcell.xml.XmlParseException {
+public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.vcell.xml.XmlParseException {
 	//
 	// this invokes "update" on the database layer
 	//
@@ -1463,7 +1464,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 
 	MathModel origMathModel = null;
 	if (oldVersion!=null){
-		String origMathModelXML = getMathModelXML(user,oldVersion.getVersionKey());
+		String origMathModelXML = getMathModelXML(dbc, user,oldVersion.getVersionKey());
 		origMathModel = XmlHelper.XMLToMathModel(new XMLSource(origMathModelXML));
 	}
 
@@ -1505,11 +1506,11 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 					//
 					// saved image not found in origMathModel (too bad), get from database.
 					//
-					databaseImage = dbServer.getDBTopLevel().getVCImage(user,memoryImage.getKey(),false);
+					databaseImage = dbServer.getDBTopLevel().getVCImage(dbc, user,memoryImage.getKey(),false);
 				}
 				if (databaseImage!=null && !databaseImage.compareEqual(memoryImage)){
 					KeyValue updatedImageKey = dbServer.getDBTopLevel().updateVersionable(user,memoryImage,false,true);
-					VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(user,updatedImageKey,false);
+					VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
 					memoryToDatabaseHash.put(memoryImage,updatedImage);
 					bSomethingChanged = true;
 				}
@@ -1530,7 +1531,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 					}
 				}
 				KeyValue updatedImageKey = dbServer.getDBTopLevel().insertVersionable(user,memoryImage,memoryImage.getName(),false,true);
-				VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(user,updatedImageKey,false);
+				VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
 				memoryToDatabaseHash.put(memoryImage,updatedImage);
 				bSomethingChanged = true;
 			}
@@ -1573,7 +1574,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 					//
 					// saved geometry not found in origMathModel (too bad), get from database.
 					//
-					databaseGeometry = dbServer.getDBTopLevel().getGeometry(user,memoryGeometry.getKey(),false);
+					databaseGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,memoryGeometry.getKey(),false);
 				}
 				if (databaseGeometry!=null && !databaseGeometry.compareEqual(memoryGeometry)){
 					bMustSaveGeometry = true;
@@ -1581,8 +1582,8 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 			}
 			if (bMustSaveGeometry){
 				KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
-				KeyValue updatedGeometryKey = dbServer.getDBTopLevel().updateVersionable(user,memoryGeometry,updatedImageKey,false,true);
-				Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(user,updatedGeometryKey,false);
+				KeyValue updatedGeometryKey = dbServer.getDBTopLevel().updateVersionable(dbc, user,memoryGeometry,updatedImageKey,false,true);
+				Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
 				memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
 				bSomethingChanged = true;
 			}
@@ -1603,8 +1604,8 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 				}
 			}
 			KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
-			KeyValue updatedGeometryKey = dbServer.getDBTopLevel().insertVersionable(user,memoryGeometry,updatedImageKey,memoryGeometry.getName(),false,true);
-			Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(user,updatedGeometryKey,false);
+			KeyValue updatedGeometryKey = dbServer.getDBTopLevel().insertVersionable(dbc, user,memoryGeometry,updatedImageKey,memoryGeometry.getName(),false,true);
+			Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
 			memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
 			bSomethingChanged = true;
 		}
@@ -1644,7 +1645,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 				//
 				// saved mathDescription not found in origMathModel (too bad), get from database.
 				//
-				databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(user,memoryMathDescription.getKey());
+				databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,memoryMathDescription.getKey());
 			}
 			if (databaseMathDescription!=null){
 				if (!memoryMathDescription.compareEqual(databaseMathDescription)){
@@ -1684,7 +1685,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
  			}else{
 	 			updatedMathDescriptionKey = dbServer.getDBTopLevel().insertVersionable(user,memoryMathDescription,updatedGeometryKey,memoryMathDescription.getName(),false,true);
  			}
-			MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(user,updatedMathDescriptionKey);
+			MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,updatedMathDescriptionKey);
 			memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
 			bSomethingChanged = true;
 		}else{
@@ -1735,7 +1736,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 					//
 					// saved simulation not found in origBioModel (too bad), get from database.
 					//
-					databaseSimulation = dbServer.getDBTopLevel().getSimulation(user,memorySimulation.getKey());
+					databaseSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,memorySimulation.getKey());
 				}
 				if (databaseSimulation!=null && !databaseSimulation.compareEqual(memorySimulation)){
 					bMustSaveSimulation = true;
@@ -1787,7 +1788,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 					// name changed, insert simulation (but pass in database Simulation to check for parent-equivalence)
 					updatedSimulationKey = dbServer.getDBTopLevel().insertVersionable(user,memorySimulation,updatedMathDescriptionKey,memorySimulation.getName(),false,bSimMathematicallyEquivalent,true);
 				}						
-				Simulation updatedSimulation = dbServer.getDBTopLevel().getSimulation(user,updatedSimulationKey);
+				Simulation updatedSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,updatedSimulationKey);
 				memoryToDatabaseHash.put(memorySimulation,updatedSimulation);
 				bSomethingChanged = true;
 			}
@@ -1820,10 +1821,10 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 		MathModelMetaData updatedMathModelMetaData = null;
 		if (mathModel.getVersion()==null || !mathModel.getVersion().getName().equals(mathModel.getName())){
 			KeyValue updatedMathModelKey = dbServer.getDBTopLevel().insertVersionable(user,mathModelMetaData,null /*hack*/,mathModel.getName(),false,true);
-			updatedMathModelMetaData = dbServer.getDBTopLevel().getMathModelMetaData(user,updatedMathModelKey);
+			updatedMathModelMetaData = dbServer.getDBTopLevel().getMathModelMetaData(dbc, user,updatedMathModelKey);
 		}else{
 			KeyValue updatedMathModelKey = dbServer.getDBTopLevel().updateVersionable(user,mathModelMetaData,null /*hack*/,false,true);
-			updatedMathModelMetaData = dbServer.getDBTopLevel().getMathModelMetaData(user,updatedMathModelKey);
+			updatedMathModelMetaData = dbServer.getDBTopLevel().getMathModelMetaData(dbc, user,updatedMathModelKey);
 		}
 
 		//
@@ -1851,7 +1852,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
  * Creation date: (10/28/00 12:08:30 AM)
  * @deprecated for testing purposes only.
  */
-public String saveSimulation(User user, String simulationXML, boolean bForceIndependent) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.vcell.xml.XmlParseException {
+public String saveSimulation(QueryHashtable dbc, User user, String simulationXML, boolean bForceIndependent) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.vcell.xml.XmlParseException {
 	//
 	// this invokes "update" on the database layer
 	//
@@ -1864,7 +1865,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 	Simulation origSimulation = null;
 	if (oldVersion!=null){
 		try {
-			origSimulation = dbServer.getDBTopLevel().getSimulation(user,oldVersion.getVersionKey());
+			origSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,oldVersion.getVersionKey());
 		}catch (ObjectNotFoundException e){
 		}
 	}
@@ -1905,11 +1906,11 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 					//
 					// saved image not found in origMathModel (too bad), get from database.
 					//
-					databaseImage = dbServer.getDBTopLevel().getVCImage(user,memoryImage.getKey(),false);
+					databaseImage = dbServer.getDBTopLevel().getVCImage(dbc, user,memoryImage.getKey(),false);
 				}
 				if (databaseImage!=null && !databaseImage.compareEqual(memoryImage)){
 					KeyValue updatedImageKey = dbServer.getDBTopLevel().updateVersionable(user,memoryImage,false,true);
-					VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(user,updatedImageKey,false);
+					VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
 					memoryToDatabaseHash.put(memoryImage,updatedImage);
 					bSomethingChanged = true;
 				}
@@ -1930,7 +1931,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 					}
 				}
 				KeyValue updatedImageKey = dbServer.getDBTopLevel().insertVersionable(user,memoryImage,memoryImage.getName(),false,true);
-				VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(user,updatedImageKey,false);
+				VCImage updatedImage = dbServer.getDBTopLevel().getVCImage(dbc, user,updatedImageKey,false);
 				memoryToDatabaseHash.put(memoryImage,updatedImage);
 				bSomethingChanged = true;
 			}
@@ -1973,7 +1974,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 					//
 					// saved geometry not found in origMathModel (too bad), get from database.
 					//
-					databaseGeometry = dbServer.getDBTopLevel().getGeometry(user,memoryGeometry.getKey(),false);
+					databaseGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,memoryGeometry.getKey(),false);
 				}
 				if (databaseGeometry!=null && !databaseGeometry.compareEqual(memoryGeometry)){
 					bMustSaveGeometry = true;
@@ -1981,8 +1982,8 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 			}
 			if (bMustSaveGeometry){
 				KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
-				KeyValue updatedGeometryKey = dbServer.getDBTopLevel().updateVersionable(user,memoryGeometry,updatedImageKey,false,true);
-				Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(user,updatedGeometryKey,false);
+				KeyValue updatedGeometryKey = dbServer.getDBTopLevel().updateVersionable(dbc, user,memoryGeometry,updatedImageKey,false,true);
+				Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
 				memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
 				bSomethingChanged = true;
 			}
@@ -2003,8 +2004,8 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 				}
 			}
 			KeyValue updatedImageKey = (geometryImage!=null)?(geometryImage.getKey()):(null);
-			KeyValue updatedGeometryKey = dbServer.getDBTopLevel().insertVersionable(user,memoryGeometry,updatedImageKey,memoryGeometry.getName(),false,true);
-			Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(user,updatedGeometryKey,false);
+			KeyValue updatedGeometryKey = dbServer.getDBTopLevel().insertVersionable(dbc, user,memoryGeometry,updatedImageKey,memoryGeometry.getName(),false,true);
+			Geometry updatedGeometry = dbServer.getDBTopLevel().getGeometry(dbc, user,updatedGeometryKey,false);
 			memoryToDatabaseHash.put(memoryGeometry,updatedGeometry);
 			bSomethingChanged = true;
 		}
@@ -2045,7 +2046,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 					//
 					// saved mathDescription not found in origMathModel (too bad), get from database.
 					//
-					databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(user,memoryMathDescription.getKey());
+					databaseMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,memoryMathDescription.getKey());
 				}
 				if (databaseMathDescription!=null){
 					StringBuffer reasonBuffer = new StringBuffer();
@@ -2058,7 +2059,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 			if (bMustSaveMathDescription){
 				KeyValue updatedGeometryKey = memoryMathDescription.getGeometry().getKey();
 				KeyValue updatedMathDescriptionKey = dbServer.getDBTopLevel().updateVersionable(user,memoryMathDescription,updatedGeometryKey,false,true);
-				MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(user,updatedMathDescriptionKey);
+				MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,updatedMathDescriptionKey);
 				memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
 				bSomethingChanged = true;
 			}
@@ -2069,7 +2070,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 			//
 			KeyValue updatedGeometryKey = memoryMathDescription.getGeometry().getKey();
 			KeyValue updatedMathDescriptionKey = dbServer.getDBTopLevel().insertVersionable(user,memoryMathDescription,updatedGeometryKey,memoryMathDescription.getName(),false,true);
-			MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(user,updatedMathDescriptionKey);
+			MathDescription updatedMathDescription = dbServer.getDBTopLevel().getMathDescription(dbc, user,updatedMathDescriptionKey);
 			memoryToDatabaseHash.put(memoryMathDescription,updatedMathDescription);
 			bSomethingChanged = true;
 		}
@@ -2130,7 +2131,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
 			// name changed, insert simulation (but pass in database Simulation to check for parent-equivalence)
 			updatedSimulationKey = dbServer.getDBTopLevel().insertVersionable(user,memorySimulation,updatedMathDescriptionKey,memorySimulation.getName(),false,bMathEquivalent,true);
 		}						
-		Simulation updatedSimulation = dbServer.getDBTopLevel().getSimulation(user,updatedSimulationKey);
+		Simulation updatedSimulation = dbServer.getDBTopLevel().getSimulation(dbc, user,updatedSimulationKey);
 		memoryToDatabaseHash.put(memorySimulation,updatedSimulation);
 		bSomethingChanged = true;
 		simulationXML = XmlHelper.simToXML(updatedSimulation);

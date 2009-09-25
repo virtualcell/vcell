@@ -3,18 +3,28 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.*;
 import java.math.BigDecimal;
-import cbit.sql.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 
+import cbit.sql.Field;
+import cbit.sql.QueryHashtable;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContextInfo;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.model.Model;
 /**
  * This type was created in VisualAge.
  */
@@ -46,7 +56,7 @@ private SimContextTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public org.vcell.util.document.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,DataAccessException {
 
 	KeyValue mathRef = null;
 	java.math.BigDecimal mathRefValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());
@@ -61,7 +71,7 @@ public org.vcell.util.document.VersionInfo getInfo(ResultSet rset,Connection con
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 
-	return new cbit.vcell.mapping.SimulationContextInfo(mathRef,geomRef,modelRef,version);
+	return new SimulationContextInfo(mathRef,geomRef,modelRef,version);
 }
 
 
@@ -94,16 +104,16 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  * @param log cbit.vcell.server.SessionLog
  * @deprecated shouldn't do recursive query
  */
-public SimulationContext getSimContext(	Connection con,User user,ResultSet rset,SessionLog log,
+public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User user,ResultSet rset,SessionLog log,
 										GeomDbDriver geomDB,ModelDbDriver modelDB,MathDescriptionDbDriver mathDB) 
-							throws SQLException,org.vcell.util.DataAccessException, java.beans.PropertyVetoException {
+							throws SQLException,DataAccessException, java.beans.PropertyVetoException {
 			
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	KeyValue geomKey = new KeyValue(rset.getBigDecimal(SimContextTable.table.geometryRef.toString()));
-	cbit.vcell.geometry.Geometry geom = (cbit.vcell.geometry.Geometry)geomDB.getVersionable(con,user, VersionableType.Geometry,geomKey,false);
+	Geometry geom = (Geometry)geomDB.getVersionable(dbc, con,user, VersionableType.Geometry,geomKey,false);
 	KeyValue modelKey = new KeyValue(rset.getBigDecimal(SimContextTable.table.modelRef.toString()));
-	cbit.vcell.model.Model model  = (cbit.vcell.model.Model)modelDB.getVersionable(con,user, VersionableType.Model,modelKey);
+	Model model  = (Model)modelDB.getVersionable(dbc, con,user, VersionableType.Model,modelKey);
 
 	//
 	// read characteristic size (may be null)
@@ -121,7 +131,7 @@ public SimulationContext getSimContext(	Connection con,User user,ResultSet rset,
 	BigDecimal mathKeyValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());
 	if (!rset.wasNull()){
 		KeyValue mathKey = new KeyValue(mathKeyValue);
-		mathDesc  = (MathDescription)mathDB.getVersionable(con,user, VersionableType.MathDescription,mathKey);
+		mathDesc  = (MathDescription)mathDB.getVersionable(dbc, con,user, VersionableType.MathDescription,mathKey);
 	}
 	
 	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, mathDesc.isStoch());

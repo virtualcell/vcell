@@ -1,43 +1,40 @@
 package cbit.vcell.modeldb;
-import cbit.vcell.dictionary.*;
-//import cbit.vcell.dictionary.Compound;
-//import cbit.vcell.dictionary.Enzyme;
-//import cbit.vcell.dictionary.Protein;
-//import cbit.vcell.dictionary.DBSpecies;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.sql.Connection;
 import java.sql.SQLException;
-import cbit.sql.*;
-import cbit.vcell.server.*;
-import java.util.Vector;
 
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+
+import cbit.sql.ConnectionFactory;
+import cbit.vcell.dictionary.CompoundInfo;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.EnzymeInfo;
+import cbit.vcell.dictionary.FormalCompound;
+import cbit.vcell.dictionary.FormalEnzyme;
+import cbit.vcell.dictionary.FormalProtein;
+import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.dictionary.ProteinInfo;
+import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.model.ReactionStepInfo;
 /**
  * This type was created in VisualAge.
  */
 public class DictionaryDBTopLevel extends AbstractDBTopLevel{
     private DictionaryDbDriver dictionaryDB = null;
     private ReactStepDbDriver reactStepDB = null;
-    private DBCacheTable dbCacheTable = null;
-
-    private static final int SQL_ERROR_CODE_BADCONNECTION = 1010;
 
     /**
      * DictionaryDBTopLevel constructor.
      * Creates a new DictionaryDBTopLevel object
      */
-    DictionaryDBTopLevel(ConnectionFactory aConFactory, SessionLog newLog, DBCacheTable aDbCacheTable) throws SQLException {
+    DictionaryDBTopLevel(ConnectionFactory aConFactory, SessionLog newLog) throws SQLException {
 	super(aConFactory,newLog);
-	this.dbCacheTable = aDbCacheTable;
-	this.dictionaryDB = new DictionaryDbDriver(log,this.dbCacheTable);
+	this.dictionaryDB = new DictionaryDbDriver(log);
 
-	this.reactStepDB = new ReactStepDbDriver(this.dbCacheTable,null,this.log,this.dictionaryDB);
-		ModelDbDriver modelDB = new ModelDbDriver(this.dbCacheTable,this.reactStepDB,this.log);
+	this.reactStepDB = new ReactStepDbDriver(null,this.log,this.dictionaryDB);
+		ModelDbDriver modelDB = new ModelDbDriver(this.reactStepDB,this.log);
 		this.reactStepDB.init(modelDB);
 
 }
@@ -421,7 +418,7 @@ FormalProtein getProteinFromSwissProtID(String swissProtID, boolean bEnableRetry
  * Insert the method's description here.
  * Creation date: (4/30/2003 10:13:41 PM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(User user, boolean bEnableRetry,KeyValue reactionStepKeys[]) throws SQLException{
+public ReactionStepInfo[] getReactionStepInfos(User user, boolean bEnableRetry,KeyValue reactionStepKeys[]) throws SQLException{
 		
 	Object lock = new Object();
     Connection con = conFactory.getConnection(lock);

@@ -304,7 +304,7 @@ public class DBSpeciesImport {
 			
 			//this.lock = new Object();
 			//this.con = conFactory.getConnection(lock);
-			this.dictDb = new cbit.vcell.modeldb.DictionaryDbDriver(new org.vcell.util.NullSessionLog(),new DBCacheTable(100000,1000000));
+			this.dictDb = new cbit.vcell.modeldb.DictionaryDbDriver(new org.vcell.util.NullSessionLog());
 		}
 		public java.sql.Connection getConnection() throws java.sql.SQLException{
 			if(this.con == null){

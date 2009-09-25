@@ -1,23 +1,21 @@
 package cbit.vcell.modeldb;
-import cbit.vcell.math.AnnotatedFunction;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.AdminDatabaseServer;
-import cbit.sql.DBCacheTable;
-import cbit.sql.ConnectionFactory;
-import java.util.Vector;
 import java.io.File;
-import java.beans.PropertyVetoException;
 import java.sql.SQLException;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
+import cbit.sql.OracleKeyFactory;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solvers.FunctionFileGenerator;
 
 /**
@@ -27,10 +25,7 @@ import cbit.vcell.solvers.FunctionFileGenerator;
  */
 public class FunctionFileCrawler {
 	private AdminDatabaseServer adminDbServer = null;
-	private cbit.sql.ConnectionFactory conFactory = null;
-	private org.vcell.util.SessionLog log = null;
-	private cbit.sql.DBCacheTable dbCacheTable = null;
-	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
+	private SessionLog log = null;
 	private File dataRootDir = null;
 	private String outputDirName = null;
 	private int totalNumOfFilesModified = 0;
@@ -61,20 +56,17 @@ public class FunctionFileCrawler {
 /**
  * ResultSetCrawler constructor comment.
  */
-public FunctionFileCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, DBCacheTable argDbCacheTable) throws SQLException {
-	this(argConFactory, argAdminDbServer, argSessionLog, argDbCacheTable, null);
+public FunctionFileCrawler(AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog) throws SQLException {
+	this(argAdminDbServer, argSessionLog, null);
 }
 
 
 /**
  * ResultSetCrawler constructor comment.
  */
-private FunctionFileCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, DBCacheTable argDbCacheTable, String argOutputDirName) throws SQLException {
-	this.conFactory = argConFactory;
+private FunctionFileCrawler(AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, String argOutputDirName) throws SQLException {
 	this.log = argSessionLog;
 	this.adminDbServer = argAdminDbServer;
-	this.dbCacheTable = argDbCacheTable;
-	this.resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory,log,dbCacheTable);
 	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
 	outputDirName = argOutputDirName;
 }
@@ -132,13 +124,11 @@ public static void main(String[] args) {
 		}
 			
 		PropertyLoader.loadProperties();
-		SessionLog log = new org.vcell.util.StdoutSessionLog("FunctionFileCrawler");		
-		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
-		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
+		SessionLog log = new StdoutSessionLog("FunctionFileCrawler");		
+		KeyFactory keyFactory = new OracleKeyFactory();
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
-		cbit.sql.DBCacheTable dbCacheTable = new DBCacheTable(1000*60*30);		
 			
-		FunctionFileCrawler crawler = new FunctionFileCrawler(conFactory, adminDbServer, log, dbCacheTable, outputdir);
+		FunctionFileCrawler crawler = new FunctionFileCrawler(adminDbServer, log, outputdir);
 		if (SCAN_SINGLE) {
 			crawler.scanAUser(username);
 		} else {
@@ -208,7 +198,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 					if (afn.getName().indexOf(" ") > 0) {
 						// if function name has space, mangle the name and store the function in a different list.
 						bNameHasSpaces = true;
-						String newName = org.vcell.util.TokenMangler.fixTokenStrict(afn.getName());
+						String newName = TokenMangler.fixTokenStrict(afn.getName());
 						annotatedFnsVector.set(j, new AnnotatedFunction(newName, afn.getExpression(), afn.getErrorString(), afn.getFunctionType(), afn.isUserDefined()));
 					} else {
 						annotatedFnsVector.set(j, afn);
@@ -217,7 +207,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 				
 				// If function file had function(s) with space(s), need to rewrite function file
 				if (bNameHasSpaces) {
-					FunctionFileGenerator ffg = new cbit.vcell.solvers.FunctionFileGenerator(fnFile.getPath(), annotatedFnsVector);
+					FunctionFileGenerator ffg = new FunctionFileGenerator(fnFile.getPath(), annotatedFnsVector);
 					ffg.generateFunctionFile();
 					filesWithSpaceInNames++;
 					totalNumOfFilesModified++;
@@ -245,7 +235,7 @@ private void scanAllUsers() throws SQLException, DataAccessException, java.rmi.R
 	File userDirs[] = dataRootDir.listFiles();
 	log.print("Total user directories: " + userDirs.length);
 
-	org.vcell.util.document.UserInfo userInfos[] = adminDbServer.getUserInfos();	
+	UserInfo userInfos[] = adminDbServer.getUserInfos();	
 
 	File userDir = null;
 	File outputDir = getOutputDirectory();

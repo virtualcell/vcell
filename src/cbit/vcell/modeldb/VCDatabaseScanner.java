@@ -1,6 +1,5 @@
 package cbit.vcell.modeldb;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -19,13 +18,11 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VersionableType;
 
 import cbit.sql.ConnectionFactory;
-import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;
 /**
@@ -50,9 +47,8 @@ public static VCDatabaseScanner createDatabaseScanner() throws Exception{
 	cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 	DbDriver.setKeyFactory(keyFactory);
-	DBCacheTable dbCacheTable = new DBCacheTable(10000000);
 
-	VCDatabaseScanner databaseScanner = new VCDatabaseScanner(conFactory, keyFactory, log, dbCacheTable);
+	VCDatabaseScanner databaseScanner = new VCDatabaseScanner(conFactory, keyFactory, log);
 	
 	return databaseScanner;
 }
@@ -61,10 +57,10 @@ public static VCDatabaseScanner createDatabaseScanner() throws Exception{
  * ResultSetCrawler constructor comment.
  * @throws RemoteException 
  */
-private VCDatabaseScanner(ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog, DBCacheTable dbCacheTable) throws DataAccessException, SQLException, RemoteException {
+private VCDatabaseScanner(ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) throws DataAccessException, SQLException, RemoteException {
 	this.log = argSessionLog;
 	this.localAdminDbServer = new LocalAdminDbServer(argConFactory, argKeyFactory, argSessionLog);
-	this.dbServerImpl = new DatabaseServerImpl(argConFactory,argKeyFactory,dbCacheTable,argSessionLog);
+	this.dbServerImpl = new DatabaseServerImpl(argConFactory,argKeyFactory,argSessionLog);
 }
 
 public User[] getAllUsers() throws DataAccessException{

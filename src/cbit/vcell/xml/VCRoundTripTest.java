@@ -4,6 +4,7 @@ import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.mapping.SimulationContext;
@@ -109,9 +110,8 @@ public VCRoundTripTest(String fName, String userName, String testType, String mo
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 		KeyFactory keyFactory = new OracleKeyFactory();
 		DbDriver.setKeyFactory(keyFactory);
-		DBCacheTable dbCacheTable = new cbit.sql.DBCacheTable(-1,0);		
 		adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
-		this.dbImpl = new DatabaseServerImpl(conFactory, keyFactory, dbCacheTable, log);
+		this.dbImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 		// get Array of all users to be crawled
 		UserInfo[] userInfos = adminDbServer.getUserInfos();
 		boolean firstTime = true;
@@ -163,7 +163,7 @@ public VCRoundTripTest(String fName, String userName, String testType, String mo
 		Element root = new Xmlproducer(true).getXML(bm); 
 		String unresolvedXML = XmlUtil.xmlToString(root);
 		//String cachedXML = dbImpl.getServerDocumentManager().getBioModelXMLResolved(user, bmMeta.getVersion().getVersionKey());
-		String cachedXML = dbImpl.getServerDocumentManager().getBioModelXML(user, bmMeta.getVersion().getVersionKey());
+		String cachedXML = dbImpl.getServerDocumentManager().getBioModelXML(new QueryHashtable(), user, bmMeta.getVersion().getVersionKey());
 		if (cachedXML == null) {
 			ps.println("No cached copy yet of model: " + bmMeta);
 		} else {
@@ -382,7 +382,7 @@ private void scanBio(User user, String modelKeyValue, BioModelMetaData bmMeta []
 		//Load the biomodel from DB
 		BioModel bm = null;
 		try {
-			String dbXML = dbImpl.getServerDocumentManager().getBioModelXML(user, bmMeta[i].getVersion().getVersionKey());
+			String dbXML = dbImpl.getServerDocumentManager().getBioModelXML(new QueryHashtable(), user, bmMeta[i].getVersion().getVersionKey());
 			bm = XmlHelper.XMLToBioModel(new XMLSource(dbXML));
 			//compareBioWithCached(bm, user, bmMeta[i]);                                   //temporary?
 		} catch (Exception e) {
@@ -493,7 +493,7 @@ private void scanMath(User user, String modelKeyValue, MathModelMetaData mmMeta 
 		//Load the mathmodel from DB
 		MathModel mm = null;
 		try {
-			mm = dbImpl.getServerDocumentManager().getMathModelUnresolved(user, mmMeta[i].getVersion().getVersionKey());
+			mm = dbImpl.getServerDocumentManager().getMathModelUnresolved(new QueryHashtable(), user, mmMeta[i].getVersion().getVersionKey());
 		} catch (Exception e) {
 			e.printStackTrace(ps);
 			failedToGetFromDatabase++;

@@ -160,9 +160,8 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		org.vcell.util.SessionLog log = new org.vcell.util.NullSessionLog();
 		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
-		DBCacheTable dbCacheTable = new DBCacheTable(-1,10000000);
 		cbit.vcell.messaging.JmsConnectionFactory jmsConnFactory = new cbit.vcell.messaging.JmsConnectionFactoryImpl();
-		vcServerFactory = new cbit.vcell.server.LocalVCellServerFactory(userid,password,"<<local>>",jmsConnFactory,conFactory,keyFactory,dbCacheTable,log);
+		vcServerFactory = new cbit.vcell.server.LocalVCellServerFactory(userid,password,"<<local>>",jmsConnFactory,conFactory,keyFactory,log);
 	}
 	return vcServerFactory;
 }

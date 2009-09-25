@@ -32,11 +32,11 @@ public class ResultSetDBTopLevel extends AbstractDBTopLevel{
 /**
  * DBTopLevel constructor comment.
  */
-ResultSetDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog, DBCacheTable dbCacheTable) throws SQLException{
+ResultSetDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLException{
 	super(aConFactory,newLog);
-	GeomDbDriver geomDBDriver = new GeomDbDriver(dbCacheTable,newLog);
-	MathDescriptionDbDriver mathDBDriver = new MathDescriptionDbDriver(dbCacheTable,geomDBDriver,newLog);
-	this.simDB = new SimulationDbDriver(dbCacheTable,mathDBDriver,newLog);
+	GeomDbDriver geomDBDriver = new GeomDbDriver(newLog);
+	MathDescriptionDbDriver mathDBDriver = new MathDescriptionDbDriver(geomDBDriver,newLog);
+	this.simDB = new SimulationDbDriver(mathDBDriver,newLog);
 }
 
 

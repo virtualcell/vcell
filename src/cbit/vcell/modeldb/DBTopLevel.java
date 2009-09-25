@@ -1,41 +1,49 @@
 package cbit.vcell.modeldb;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.Model;
-import cbit.vcell.solver.Simulation;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.sql.Connection;
 import java.sql.SQLException;
-import cbit.sql.*;
-import cbit.vcell.server.*;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.image.*;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
+import org.vcell.util.Preference;
 import org.vcell.util.ReferenceQueryResult;
 import org.vcell.util.ReferenceQuerySpec;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 
-import cbit.vcell.math.MathDescription;
+import cbit.image.VCImage;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.server.UserRegistrationOP;
+import cbit.vcell.server.UserRegistrationResults;
+import cbit.vcell.solver.Simulation;
 /**
  * This type was created in VisualAge.
  */
@@ -49,26 +57,25 @@ public class DBTopLevel extends AbstractDBTopLevel{
 	private BioModelDbDriver bioModelDB = null;
 	private MathModelDbDriver mathModelDB = null;
 	private UserDbDriver userDB = null;
-	private DBCacheTable dbCacheTable = null;
+//	private DBCacheTable dbCacheTable = null;
 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
 
 /**
  * DBTopLevel constructor comment.
  */
-DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog, DBCacheTable argDBCacheTable) throws SQLException{
+DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog) throws SQLException{
 	super(aConFactory,newLog);
-	this.dbCacheTable = argDBCacheTable;
-	this.geomDB = new GeomDbDriver(this.dbCacheTable,log);
-	this.mathDB = new MathDescriptionDbDriver(this.dbCacheTable,this.geomDB,log);
-	this.reactStepDB = new ReactStepDbDriver(this.dbCacheTable,null,log,new DictionaryDbDriver(newLog,argDBCacheTable));
-	this.modelDB = new ModelDbDriver(this.dbCacheTable,this.reactStepDB,log);
+	this.geomDB = new GeomDbDriver(log);
+	this.mathDB = new MathDescriptionDbDriver(this.geomDB,log);
+	this.reactStepDB = new ReactStepDbDriver(null, log,new DictionaryDbDriver(newLog));
+	this.modelDB = new ModelDbDriver(this.reactStepDB,log);
 	this.reactStepDB.init(modelDB);
-	this.simulationDB = new SimulationDbDriver(this.dbCacheTable,this.mathDB,log);
-	this.simContextDB = new SimulationContextDbDriver(this.dbCacheTable,this.geomDB,this.modelDB,this.mathDB,this.reactStepDB,log);
+	this.simulationDB = new SimulationDbDriver(this.mathDB,log);
+	this.simContextDB = new SimulationContextDbDriver(this.geomDB,this.modelDB,this.mathDB,log);
 	this.userDB = new UserDbDriver(log); 
-	this.bioModelDB = new BioModelDbDriver(this.dbCacheTable,simulationDB,simContextDB,modelDB,log);
-	this.mathModelDB = new MathModelDbDriver(this.dbCacheTable,simulationDB,mathDB,log);
+	this.bioModelDB = new BioModelDbDriver(log);
+	this.mathModelDB = new MathModelDbDriver(log);
 }
 
 
@@ -79,7 +86,7 @@ DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog, DBCacheTable argDBC
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-org.vcell.util.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
+VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
 	return curate0(user,curateSpec,true);
 }
 
@@ -91,12 +98,12 @@ org.vcell.util.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) t
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-private org.vcell.util.document.VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
+private VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		org.vcell.util.document.VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,dbCacheTable);
+		VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user);
 		con.commit();
 		return newVCDocumentInfo;
 	} catch (Throwable e) {
@@ -127,7 +134,7 @@ private org.vcell.util.document.VCDocumentInfo curate0(User user,CurateSpec cura
  * @return cbit.vcell.modeldb.VCInfoContainer
  * @param user cbit.vcell.server.User
  */
-FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec, boolean bEnableRetry) throws SQLException, org.vcell.util.DataAccessException {
+FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec, boolean bEnableRetry) throws SQLException, DataAccessException {
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -260,13 +267,13 @@ throws java.sql.SQLException, DataAccessException, DependencyException, Permissi
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop,User user,boolean bEnableRetry) 
+TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop,User user,boolean bEnableRetry) 
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		cbit.vcell.numericstest.TestSuiteOPResults tsor  = DbDriver.testSuiteOP(tsop,con,user,log);
+		TestSuiteOPResults tsor  = DbDriver.testSuiteOP(tsop,con,user,log);
 		con.commit();
 		return tsor;
 	} catch (Throwable e) {
@@ -330,10 +337,10 @@ ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs2, boolean 
 				VersionableTypeVersion[] vtvArr = vf.getUniqueDependants();
 				for(int i=0;i<vtvArr.length;i+= 1){
 					if(vtvArr[i].getVType().equals(VersionableType.BioModelMetaData)){
-						Vector checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.BioModelMetaData,false,true,true);
+						Vector<VersionInfo> checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.BioModelMetaData,false,true,true);
 						if(checkedVInfos == null || checkedVInfos.size() == 0){throw new DataAccessException("References Not Accessible");}
 					}else if(vtvArr[i].getVType().equals(VersionableType.MathModelMetaData)){
-						Vector checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.MathModelMetaData,false,true,true);
+						Vector<VersionInfo> checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.MathModelMetaData,false,true,true);
 						if(checkedVInfos == null || checkedVInfos.size() == 0){throw new DataAccessException("References Not Accessible");}
 					}
 				}
@@ -407,8 +414,8 @@ VersionableFamily getAllReferences(User user,KeyValue key, VersionableType versi
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-BioModelMetaData getBioModelMetaData(User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (BioModelMetaData)getVersionable(user, key, VersionableType.BioModelMetaData, true, true);
+BioModelMetaData getBioModelMetaData(QueryHashtable dbc, User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (BioModelMetaData)getVersionable(dbc, user, key, VersionableType.BioModelMetaData, true, true);
 }
 
 
@@ -482,7 +489,7 @@ String getBioModelXML(User user, KeyValue key, boolean bEnableRetry)
 		// Child objects (of the requested object) are given permission by reachablity anyway, 
 		// so if the user is allowed permission to the parent, no further checks are necessary.
 		//
-		Vector vInfos = getVersionableInfos(user,key,VersionableType.BioModelMetaData,true,true,false);
+		Vector<VersionInfo> vInfos = getVersionableInfos(user,key,VersionableType.BioModelMetaData,true,true,false);
 		if (vInfos.size()==0){
 			throw new ObjectNotFoundException(VersionableType.BioModelMetaData.getTypeName()+" not found");
 		}
@@ -561,8 +568,8 @@ KeyValue[] getMathDescKeysForExternalData(KeyValue extDataKey, User owner,boolea
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-Geometry getGeometry(User user, KeyValue key, boolean bCheckPermission) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (Geometry)getVersionable(user, key, VersionableType.Geometry, bCheckPermission, true);
+Geometry getGeometry(QueryHashtable dbc, User user, KeyValue key, boolean bCheckPermission) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (Geometry)getVersionable(dbc, user, key, VersionableType.Geometry, bCheckPermission, true);
 }
 
 
@@ -576,8 +583,8 @@ Geometry getGeometry(User user, KeyValue key, boolean bCheckPermission) throws D
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-MathDescription getMathDescription(User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (MathDescription)getVersionable(user, key, VersionableType.MathDescription, false, true);
+MathDescription getMathDescription(QueryHashtable dbc, User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (MathDescription)getVersionable(dbc, user, key, VersionableType.MathDescription, false, true);
 }
 
 
@@ -591,8 +598,8 @@ MathDescription getMathDescription(User user, KeyValue key) throws DataAccessExc
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-MathModelMetaData getMathModelMetaData(User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (MathModelMetaData)getVersionable(user, key, VersionableType.MathModelMetaData, true, true);
+MathModelMetaData getMathModelMetaData(QueryHashtable dbc, User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (MathModelMetaData)getVersionable(dbc, user, key, VersionableType.MathModelMetaData, true, true);
 }
 
 
@@ -667,7 +674,7 @@ String getMathModelXML(User user, KeyValue key, boolean bEnableRetry)
 		// Child objects (of the requested object) are given permission by reachablity anyway, 
 		// so if the user is allowed permission to the parent, no further checks are necessary.
 		//
-		Vector vInfos = getVersionableInfos(user,key,versionableType,true,true,false);
+		Vector<VersionInfo> vInfos = getVersionableInfos(user,key,versionableType,true,true,false);
 		if (vInfos.size()==0){
 			throw new ObjectNotFoundException(versionableType.getTypeName()+" not found");
 		}
@@ -698,20 +705,20 @@ String getMathModelXML(User user, KeyValue key, boolean bEnableRetry)
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-Model getModel(User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (Model)getVersionable(user, key, VersionableType.Model, false, true);
+Model getModel(QueryHashtable dbc, User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (Model)getVersionable(dbc, user, key, VersionableType.Model, false, true);
 }
 
 
 /**
  * publish method comment.
  */
-public org.vcell.util.Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAccessException,SQLException {
+public Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAccessException,SQLException {
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		org.vcell.util.Preference[] preferences = DbDriver.getPreferences(con,user);
+		Preference[] preferences = DbDriver.getPreferences(con,user);
 		return preferences;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -738,16 +745,16 @@ public org.vcell.util.Preference[] getPreferences(User user,boolean bEnableRetry
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:16:48 PM)
  */
-cbit.vcell.model.ReactionStep getReactionStep(User user,org.vcell.util.document.KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+ReactionStep getReactionStep(QueryHashtable dbc, User user,KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return reactStepDB.getReactionStep(con,user,reactionStepKey);
+		return reactStepDB.getReactionStep(dbc, con,user,reactionStepKey);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getReactionStep(user,reactionStepKey,false);
+			return getReactionStep(dbc, user,reactionStepKey,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -768,8 +775,8 @@ cbit.vcell.model.ReactionStep getReactionStep(User user,org.vcell.util.document.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-Simulation getSimulation(User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (Simulation)getVersionable(user, key, VersionableType.Simulation, false, true);
+Simulation getSimulation(QueryHashtable dbc, User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (Simulation)getVersionable(dbc, user, key, VersionableType.Simulation, false, true);
 }
 
 
@@ -783,8 +790,8 @@ Simulation getSimulation(User user, KeyValue key) throws DataAccessException, ja
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-SimulationContext getSimulationContext(User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (SimulationContext)getVersionable(user, key, VersionableType.SimulationContext, false, true);
+SimulationContext getSimulationContext(QueryHashtable dbc, User user, KeyValue key) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (SimulationContext)getVersionable(dbc, user, key, VersionableType.SimulationContext, false, true);
 }
 
 
@@ -798,7 +805,7 @@ SimulationContext getSimulationContext(User user, KeyValue key) throws DataAcces
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS,User user,boolean bEnableRetry) 
+TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS,User user,boolean bEnableRetry) 
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
@@ -830,7 +837,7 @@ cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos(User user,boolean bEnableRetry) 
+TestSuiteInfoNew[] getTestSuiteInfos(User user,boolean bEnableRetry) 
 				throws java.sql.SQLException,DataAccessException {
 
 	Object lock = new Object();
@@ -862,8 +869,8 @@ cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos(User user,boolean b
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-VCImage getVCImage(User user, KeyValue key, boolean bCheckPermission) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
-	return (VCImage)getVersionable(user, key, VersionableType.VCImage, bCheckPermission, true);
+VCImage getVCImage(QueryHashtable dbc, User user, KeyValue key, boolean bCheckPermission) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	return (VCImage)getVersionable(dbc, user, key, VersionableType.VCImage, bCheckPermission, true);
 }
 
 
@@ -904,7 +911,7 @@ VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry) throws DataA
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-private Versionable getVersionable(User user, KeyValue key, VersionableType versionableType, boolean bCheckPermission, boolean bEnableRetry) 
+private Versionable getVersionable(QueryHashtable dbc, User user, KeyValue key, VersionableType versionableType, boolean bCheckPermission, boolean bEnableRetry) 
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
@@ -924,19 +931,19 @@ private Versionable getVersionable(User user, KeyValue key, VersionableType vers
 			//throw new ObjectNotFoundException(versionableType.getTypeName()+" not found");
 		//}
 		if (versionableType.equals(VersionableType.BioModelMetaData)) {
-			return bioModelDB.getVersionable(con, user, versionableType, key);
+			return bioModelDB.getVersionable(dbc, con, user, versionableType, key);
 		} else if (versionableType.equals(VersionableType.Geometry) || versionableType.equals(VersionableType.VCImage)) {
-			return geomDB.getVersionable(con, user, versionableType, key, bCheckPermission);
+			return geomDB.getVersionable(dbc, con, user, versionableType, key, bCheckPermission);
 		} else if (versionableType.equals(VersionableType.MathModelMetaData)) {
-			return mathModelDB.getVersionable(con, user, versionableType, key);
+			return mathModelDB.getVersionable(dbc, con, user, versionableType, key);
 		} else if (versionableType.equals(VersionableType.Simulation)) {
-			return simulationDB.getVersionable(con, user, versionableType, key);
+			return simulationDB.getVersionable(dbc, con, user, versionableType, key);
 		} else if (versionableType.equals(VersionableType.SimulationContext)) {
-			return simContextDB.getVersionable(con, user, versionableType, key);
+			return simContextDB.getVersionable(dbc, con, user, versionableType, key);
 		} else if (versionableType.equals(VersionableType.Model)) {
-			return modelDB.getVersionable(con, user, versionableType, key);
+			return modelDB.getVersionable(dbc, con, user, versionableType, key);
 		} else if (versionableType.equals(VersionableType.MathDescription)) {
-			return mathDB.getVersionable(con, user, versionableType, key);
+			return mathDB.getVersionable(dbc, con, user, versionableType, key);
 		} else {
 			throw new IllegalArgumentException("Wrong VersinableType vType:" + versionableType);
 		}				
@@ -944,7 +951,7 @@ private Versionable getVersionable(User user, KeyValue key, VersionableType vers
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getVersionable(user, key, versionableType, bCheckPermission, false);
+			return getVersionable(dbc, user, key, versionableType, bCheckPermission, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -965,7 +972,7 @@ private Versionable getVersionable(User user, KeyValue key, VersionableType vers
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-Vector getVersionableInfos(User user, KeyValue key, VersionableType versionableType, boolean bAll, boolean bCheckPermission, boolean bEnableRetry) 
+Vector<VersionInfo> getVersionableInfos(User user, KeyValue key, VersionableType versionableType, boolean bAll, boolean bCheckPermission, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 				
 	Object lock = new Object();
@@ -1003,7 +1010,7 @@ void groupAddUser(User user, VersionableType versionableType, KeyValue key, bool
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupAddUser(con, log, user, versionableType, key,dbCacheTable,userAddToGroup,isHidden);
+		DbDriver.groupAddUser(con, log, user, versionableType, key, userAddToGroup,isHidden);
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1042,7 +1049,7 @@ void groupRemoveUser(User user, VersionableType versionableType, KeyValue key, b
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupRemoveUser(con, log, user, versionableType, key,dbCacheTable,userRemoveFromGroup,isHiddenFromOwner);
+		DbDriver.groupRemoveUser(con, log, user, versionableType, key,userRemoveFromGroup,isHiddenFromOwner);
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1081,7 +1088,7 @@ void groupSetPrivate(User user, VersionableType versionableType, KeyValue key, b
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupSetPrivate(con, log, user, versionableType, key,dbCacheTable);
+		DbDriver.groupSetPrivate(con, log, user, versionableType, key);
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1120,7 +1127,7 @@ void groupSetPublic(User user, VersionableType versionableType, KeyValue key, bo
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		DbDriver.groupSetPublic(con, log, user, versionableType, key,dbCacheTable);
+		DbDriver.groupSetPublic(con, log, user, versionableType, key);
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -1194,7 +1201,7 @@ KeyValue insertVersionable(User user, VCImage vcImage, String name, boolean bVer
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,org.vcell.util.document.BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1234,13 +1241,13 @@ KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,org.vcel
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, Geometry geometry, KeyValue updatedImageKey, String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(QueryHashtable dbc, User user, Geometry geometry, KeyValue updatedImageKey, String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		KeyValue versionKey = geomDB.insertVersionable(new InsertHashtable(),con,user,geometry,updatedImageKey,name,bVersion);
+		KeyValue versionKey = geomDB.insertVersionable(new InsertHashtable(), dbc, con,user,geometry,updatedImageKey,name,bVersion);
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
@@ -1253,7 +1260,7 @@ KeyValue insertVersionable(User user, Geometry geometry, KeyValue updatedImageKe
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return insertVersionable(user,geometry,updatedImageKey,name,bVersion,false);
+			return insertVersionable(dbc, user,geometry,updatedImageKey,name,bVersion,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -1354,7 +1361,7 @@ KeyValue insertVersionable(User user, MathDescription mathDescription, KeyValue 
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, org.vcell.util.document.MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1479,9 +1486,8 @@ void insertVersionableChildSummary(User user,VersionableType vType,KeyValue vKey
 			
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
-	DbDriver driver = getDbDriver(vType);
 	try {
-		driver.insertVersionableChildSummary(con,serialDBChildSummary,vType,vKey);
+		DbDriver.insertVersionableChildSummary(con,serialDBChildSummary,vType,vKey);
 		con.commit();
 	} catch (Throwable e) {
 		log.exception(e);
@@ -1518,9 +1524,8 @@ void insertVersionableXML(User user,VersionableType vType,KeyValue vKey,String x
 			
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
-	DbDriver driver = getDbDriver(vType);
 	try {
-		driver.insertVersionableXML(con,xml,vType,vKey);
+		DbDriver.insertVersionableXML(con,xml,vType,vKey);
 		con.commit();
 	} catch (Throwable e) {
 		log.exception(e);
@@ -1581,7 +1586,7 @@ boolean isNameUsed(User owner, VersionableType vType, String vName, boolean bEna
 /**
  * publish method comment.
  */
-public void replacePreferences(User user,org.vcell.util.Preference[] preferences,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException {
+public void replacePreferences(User user,Preference[] preferences,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException {
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -1659,7 +1664,7 @@ KeyValue updateVersionable(User user, VCImage vcImage, boolean bVersion, boolean
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, org.vcell.util.document.BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();
@@ -1699,13 +1704,13 @@ KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, org.vce
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, Geometry geometry, KeyValue updatedImageKey, boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(QueryHashtable dbc, User user, Geometry geometry, KeyValue updatedImageKey, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		KeyValue versionKey = geomDB.updateVersionable(new InsertHashtable(),con,user,geometry,updatedImageKey,bVersion);
+		KeyValue versionKey = geomDB.updateVersionable(new InsertHashtable(), dbc, con,user,geometry,updatedImageKey,bVersion);
 		con.commit();
 		return versionKey;
 	} catch (Throwable e) {
@@ -1718,7 +1723,7 @@ KeyValue updateVersionable(User user, Geometry geometry, KeyValue updatedImageKe
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return updateVersionable(user,geometry,updatedImageKey,bVersion,false);
+			return updateVersionable(dbc, user,geometry,updatedImageKey,bVersion,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -1819,7 +1824,7 @@ KeyValue updateVersionable(User user, MathDescription mathDescription, KeyValue 
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, org.vcell.util.document.MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();

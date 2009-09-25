@@ -4,19 +4,15 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.beans.*;
-
-import cbit.vcell.solver.*;
-import java.math.BigDecimal;
-import cbit.sql.*;
-import cbit.vcell.math.MathDescription;
-import java.sql.SQLException;
-import java.sql.ResultSet;
+import java.beans.PropertyVetoException;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ISize;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -26,11 +22,23 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 
-import cbit.vcell.geometry.Geometry;
+import cbit.sql.Field;
+import cbit.sql.QueryHashtable;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.solver.DataProcessingInstructions;
+import cbit.vcell.solver.MeshSpecification;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationTable extends cbit.sql.VersionTable {
+public class SimulationTable extends VersionTable {
 	private static final String TABLE_NAME = "vc_simulation";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
@@ -61,14 +69,14 @@ private SimulationTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,DataAccessException {
 	
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	SimulationVersion simulationVersion = (SimulationVersion)version;
 	
-	return new cbit.vcell.solver.SimulationInfo(mathRef,simulationVersion);
+	return new SimulationInfo(mathRef,simulationVersion);
 }
 /**
  * This method was created in VisualAge.
@@ -81,8 +89,8 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.mathRef);
+	f = (Field[])BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])BeanUtils.addElement(f,vTable.mathRef);
 
 	Table[] t = {vTable,userTable};
 
@@ -100,13 +108,11 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
+public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,DataAccessException {
 	
-	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	SimulationVersion simulationVersion = (SimulationVersion)getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	
-	SimulationInfo simInfo = new cbit.vcell.solver.SimulationInfo(mathRef, simulationVersion);
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulationVersion.getVersionKey(),simulationVersion.getOwner());
 	VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, rset.getInt(ResultSetMetaDataTable.table.jobIndex.toString()));
 	SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID);
@@ -133,9 +139,9 @@ public String getResultSetInfoSQL(User user,String extraConditions,String specia
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),
 		         //rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.mathRef);
-	f = (Field[])org.vcell.util.BeanUtils.addElements(f,new Field[] {rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate,rsetTable.jobIndex});
+	f = (Field[])BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])BeanUtils.addElement(f,vTable.mathRef);
+	f = (Field[])BeanUtils.addElements(f,new Field[] {rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate,rsetTable.jobIndex});
 	
 	Table[] t = {vTable,userTable,rsetTable};
 	
@@ -153,7 +159,7 @@ public String getResultSetInfoSQL(User user,String extraConditions,String specia
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, User user, MathDescriptionDbDriver mathDB) 
+public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog log, Connection con, User user, MathDescriptionDbDriver mathDB) 
 										throws SQLException,DataAccessException,PropertyVetoException {
 
 	//
@@ -164,8 +170,8 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 	//
 //	System.out.println("taskDescriptionString '"+taskDescriptionString+"'");
 	String taskDescriptionString = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
-	taskDescriptionString = org.vcell.util.TokenMangler.getSQLRestoredString(taskDescriptionString);
-	org.vcell.util.CommentStringTokenizer solverTaskDescTokens = new org.vcell.util.CommentStringTokenizer(taskDescriptionString);
+	taskDescriptionString = TokenMangler.getSQLRestoredString(taskDescriptionString);
+	CommentStringTokenizer solverTaskDescTokens = new CommentStringTokenizer(taskDescriptionString);
 	
 	//
 	// get MathOverride Data (language) (MUST BE READ FIRST)
@@ -191,12 +197,12 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 		buffer.append("\n}\n");
 		mathOverridesString = buffer.toString();
 	}
-	org.vcell.util.CommentStringTokenizer mathOverrideTokens = new org.vcell.util.CommentStringTokenizer(mathOverridesString);
+	CommentStringTokenizer mathOverrideTokens = new CommentStringTokenizer(mathOverridesString);
 
 	String dataProcessingInstructionString = rset.getString(dataProcInstr.getUnqualifiedColName());
 	DataProcessingInstructions dpi = null;
 	if(!rset.wasNull() && dataProcessingInstructionString != null && dataProcessingInstructionString.length() > 0){
-		dataProcessingInstructionString = org.vcell.util.TokenMangler.getSQLRestoredString(dataProcessingInstructionString);
+		dataProcessingInstructionString = TokenMangler.getSQLRestoredString(dataProcessingInstructionString);
 		dpi = DataProcessingInstructions.fromDbXml(dataProcessingInstructionString);
 	}
 	//
@@ -212,9 +218,9 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 	}else{
 		throw new DataAccessException("Error:  MathDescription Reference Cannot be Null for Simulation");
 	}
-	MathDescription mathDesc = (MathDescription)mathDB.getVersionable(con,user,VersionableType.MathDescription,mathKey);
+	MathDescription mathDesc = (MathDescription)mathDB.getVersionable(dbc, con,user,VersionableType.MathDescription,mathKey);
 	
-	Simulation simulation = new cbit.vcell.solver.Simulation(simulationVersion,mathDesc,mathOverrideTokens,solverTaskDescTokens);
+	Simulation simulation = new Simulation(simulationVersion,mathDesc,mathOverrideTokens,solverTaskDescTokens);
 	simulation.setDataProcessingInstructions(dpi);
 	
 	
@@ -223,8 +229,8 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 		int msX = rset.getInt(SimulationTable.table.meshSpecX.getUnqualifiedColName());
 		int msY = rset.getInt(SimulationTable.table.meshSpecY.getUnqualifiedColName());
 		int msZ = rset.getInt(SimulationTable.table.meshSpecZ.getUnqualifiedColName());
-		cbit.vcell.solver.MeshSpecification meshSpec = new cbit.vcell.solver.MeshSpecification(simulation.getMathDescription().getGeometry());
-		meshSpec.setSamplingSize(new org.vcell.util.ISize(msX,msY,msZ));
+		MeshSpecification meshSpec = new MeshSpecification(simulation.getMathDescription().getGeometry());
+		meshSpec.setSamplingSize(new ISize(msX,msY,msZ));
 		simulation.getMeshSpecification().copyFrom(meshSpec);
 	}
 	
@@ -258,11 +264,11 @@ public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version ver
 		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
 	}
 	
-	buffer.append((solverTD != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
+	buffer.append((solverTD != null?"'"+TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
 	if (simulation.getMathDescription() != null &&
 		simulation.getMathDescription().getGeometry() != null &&
 		simulation.getMathDescription().getGeometry().getDimension()>0){
-		cbit.vcell.solver.MeshSpecification	meshSpec = simulation.getMeshSpecification();
+		MeshSpecification	meshSpec = simulation.getMeshSpecification();
 		buffer.append(meshSpec.getSamplingSize().getX()+","+meshSpec.getSamplingSize().getY()+","+meshSpec.getSamplingSize().getZ());
 	}else{
 		buffer.append("null,null,null");

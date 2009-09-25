@@ -224,8 +224,7 @@ public void runSimulations(boolean bNew, String startKey) {
 		}
 		ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory	keyFactory = new cbit.sql.OracleKeyFactory();
-		cbit.sql.DBCacheTable dbCacheTable = new cbit.sql.DBCacheTable(1000*60*30);
-		cbit.vcell.modeldb.DatabaseServerImpl dbServerImpl = new cbit.vcell.modeldb.DatabaseServerImpl(conFactory, keyFactory, dbCacheTable, log);	 
+		cbit.vcell.modeldb.DatabaseServerImpl dbServerImpl = new cbit.vcell.modeldb.DatabaseServerImpl(conFactory, keyFactory, log);	 
 		
 		java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(simlistfile));
 		int count = 0;

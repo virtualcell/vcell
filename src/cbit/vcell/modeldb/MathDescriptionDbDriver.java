@@ -4,12 +4,10 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.*;
-import cbit.vcell.server.*;
-import cbit.vcell.solver.Simulation;
-import cbit.sql.*;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -23,9 +21,16 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 /**
  * This type was created in VisualAge.
  */
@@ -39,8 +44,8 @@ public class MathDescriptionDbDriver extends DbDriver {
  * @param connectionFactory cbit.sql.ConnectionFactory
  * @param sessionLog cbit.vcell.server.SessionLog
  */
-public MathDescriptionDbDriver(DBCacheTable argdbc,GeomDbDriver argGeomDB,SessionLog sessionLog) {
-	super(argdbc,sessionLog);
+public MathDescriptionDbDriver(GeomDbDriver argGeomDB,SessionLog sessionLog) {
+	super(sessionLog);
 	this.geomDB = argGeomDB;
 }
 /**
@@ -74,7 +79,6 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.MathDescription)){
 		deleteMathDescriptionSQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else{
 		throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 	}
@@ -85,7 +89,7 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
  * @param user cbit.vcell.server.User
  * @param mathDescKey cbit.sql.KeyValue
  */
-private MathDescription getMathDescriptionSQL(Connection con,User user, KeyValue mathDescKey) 
+private MathDescription getMathDescriptionSQL(QueryHashtable dbc, Connection con,User user, KeyValue mathDescKey) 
 				throws SQLException,DataAccessException,ObjectNotFoundException {
 
 	String sql;
@@ -115,7 +119,7 @@ private MathDescription getMathDescriptionSQL(Connection con,User user, KeyValue
 			}else{
 				throw new DataAccessException("Error:  Geometry Reference Cannot be Null for MathDescription");
 			}
-			Geometry geom = (Geometry)geomDB.getVersionable(con,user,VersionableType.Geometry,geomRef,false);
+			Geometry geom = (Geometry)geomDB.getVersionable(dbc, con,user,VersionableType.Geometry,geomRef,false);
 			try {
 				mathDescription.setGeometry(geom);
 			}catch (java.beans.PropertyVetoException e){
@@ -124,7 +128,7 @@ private MathDescription getMathDescriptionSQL(Connection con,User user, KeyValue
 			}
 			
 		} else {
-			throw new org.vcell.util.ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
+			throw new ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
@@ -137,7 +141,7 @@ private MathDescription getMathDescriptionSQL(Connection con,User user, KeyValue
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public Versionable getVersionable(Connection con, User user, VersionableType vType, KeyValue vKey)
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey)
 				throws ObjectNotFoundException, SQLException, DataAccessException {
 					
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -145,11 +149,11 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		return versionable;
 	} else {
 		if (vType.equals(VersionableType.MathDescription)){
-			versionable = getMathDescriptionSQL(con, user, vKey);
+			versionable = getMathDescriptionSQL(dbc, con, user, vKey);
 		}else{
 			throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 		}
-		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
+		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 	return versionable;
 }

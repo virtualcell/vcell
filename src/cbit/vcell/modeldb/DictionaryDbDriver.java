@@ -1,25 +1,36 @@
 package cbit.vcell.modeldb;
-import cbit.vcell.dictionary.*;
-import cbit.vcell.model.ReactionStepInfo;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Vector;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 
-import java.sql.*;
-
+import org.vcell.util.BeanUtils;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.sql.*;
-import cbit.vcell.dictionary.CompoundTable;
-import cbit.vcell.dictionary.EnzymeTable;
+import cbit.sql.QueryHashtable;
 import cbit.vcell.dictionary.CompoundAliasTable;
+import cbit.vcell.dictionary.CompoundInfo;
+import cbit.vcell.dictionary.CompoundTable;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.DBSpeciesTable;
 import cbit.vcell.dictionary.EnzymeAliasTable;
-import cbit.vcell.dictionary.ProteinTable;
+import cbit.vcell.dictionary.EnzymeInfo;
+import cbit.vcell.dictionary.EnzymeReactionTable;
+import cbit.vcell.dictionary.EnzymeTable;
+import cbit.vcell.dictionary.FormalCompound;
+import cbit.vcell.dictionary.FormalEnzyme;
+import cbit.vcell.dictionary.FormalProtein;
+import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.ProteinAliasTable;
+import cbit.vcell.dictionary.ProteinInfo;
+import cbit.vcell.dictionary.ProteinTable;
+import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.model.ReactionStepInfo;
 
 
 /**
@@ -33,18 +44,16 @@ public class DictionaryDbDriver {
     public static final EnzymeAliasTable enzymeAliasTable = EnzymeAliasTable.table;
     public static final ProteinAliasTable proteinAliasTable = ProteinAliasTable.table;
     public static final ProteinTable proteinTable = ProteinTable.table;
-	public static final cbit.vcell.dictionary.DBSpeciesTable dbSpeciesTable = cbit.vcell.dictionary.DBSpeciesTable.table;
+	public static final DBSpeciesTable dbSpeciesTable = DBSpeciesTable.table;
 	
     private SessionLog log = null;
-    private DBCacheTable dbc = null;
 
 /**
  * DictionaryDBManager constructor.
  */
-public DictionaryDbDriver(SessionLog sessionLog,DBCacheTable argDBC) {
+public DictionaryDbDriver(SessionLog sessionLog) {
 	super();
 	this.log = sessionLog;
-	this.dbc = argDBC;
 }
 
 
@@ -120,11 +129,11 @@ public DBSpecies getBoundSpecies(Connection con,DBFormalSpecies dbfs) throws SQL
 
 	//Create new binding
 	//Add entry to binding table
-	KeyValue newKey = cbit.vcell.modeldb.DbDriver.getNewKey(con);
+	KeyValue newKey = DbDriver.getNewKey(con);
 	String sql = 	"INSERT INTO " + DBSpeciesTable.table.getTableName() +
 					" VALUES " + DBSpeciesTable.table.getSQLValueList(newKey,dbfs);
 
-	cbit.vcell.modeldb.DbDriver.updateCleanSQL(con,sql);
+	DbDriver.updateCleanSQL(con,sql);
 	
 	//Get new DBSpecies
 	dbfsBound = getDatabaseSpecies(con,null,dbfs.getFormalSpeciesInfo().getFormalID(),true,dbfs.getFormalSpeciesType(),restrictsearch,-1,false);
@@ -169,7 +178,7 @@ public String[] getCompoundAliases(Connection con, String likeString)
             + ")"
             + " LIKE "
             + "'"
-            + org.vcell.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
+            + TokenMangler.getSQLEscapedString(likeString).toUpperCase()
             + "'"
             + " ORDER BY "
             + "UPPER("
@@ -183,7 +192,7 @@ public String[] getCompoundAliases(Connection con, String likeString)
         while (rset.next()) {
 
             String name =
-                org.vcell.util.TokenMangler.getSQLRestoredString(
+                TokenMangler.getSQLRestoredString(
                     rset.getString(compoundAliasTable.name.getUnqualifiedColName()));
             //System.out.println("DictionaryDbDriver.getAliases() name = " + name);
             nameList.add(name);
@@ -249,7 +258,7 @@ public FormalCompound getCompoundFromKeggID(Connection con, String keggID) throw
  * @param user cbit.vcell.server.User
  * @param bOnlyUser boolean
  */
-public DBFormalSpecies[] getDatabaseSpecies(Connection con, org.vcell.util.document.User user, String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws SQLException{
+public DBFormalSpecies[] getDatabaseSpecies(Connection con, User user, String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws SQLException{
 
 	
 	//isBound - 	if true find FormalSpecies(Dictionary) that have binding table entries, if false find any FormalSpecies(Dictionary)
@@ -435,7 +444,7 @@ public DBFormalSpecies[] getDatabaseSpecies(Connection con, org.vcell.util.docum
 }
 
 
-public DBSpecies getDBSpeciesFromKeyValue(Connection con,KeyValue argDBSpeciesRef) throws SQLException {
+public DBSpecies getDBSpeciesFromKeyValue(QueryHashtable dbc, Connection con,KeyValue argDBSpeciesRef) throws SQLException {
 
 	//
 	// try to get SpeciesReference from the object cache
@@ -477,7 +486,7 @@ public DBSpecies getDBSpeciesFromKeyValue(Connection con,KeyValue argDBSpeciesRe
 				dbSpecies = (DBSpecies)getDatabaseSpecies(con,null,proteinBD.toString(),true,FormalSpeciesType.protein,FormalSpeciesType.PROTEIN_ID,-1,false)[0];
 			}
             result = dbSpecies;
-            dbc.putUnprotected(result.getDBSpeciesKey(),result);
+            dbc.put(result.getDBSpeciesKey(),result);
         }
     } finally {
         stmt.close(); // Release resources include resultset
@@ -536,7 +545,7 @@ public String[] getEnzymeAliases(Connection con, String likeString)
             + ")"
             + " LIKE "
             + "'"
-            + org.vcell.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
+            + TokenMangler.getSQLEscapedString(likeString).toUpperCase()
             + "'"
             + " ORDER BY "
             + "UPPER("
@@ -550,7 +559,7 @@ public String[] getEnzymeAliases(Connection con, String likeString)
         while (rset.next()) {
 
             String name =
-                org.vcell.util.TokenMangler.getSQLRestoredString(
+                TokenMangler.getSQLRestoredString(
                     rset.getString(enzymeAliasTable.name.getUnqualifiedColName()));
             //System.out.println("DictionaryDbDriver.getEnzymeAliases() name = " + name);
             nameList.add(name);
@@ -613,7 +622,7 @@ public String[] getProteinAliases(Connection con, String likeString)
             + ")"
             + " LIKE "
             + "'"
-            + org.vcell.util.TokenMangler.getSQLEscapedString(likeString).toUpperCase()
+            + TokenMangler.getSQLEscapedString(likeString).toUpperCase()
             + "'"
             + " ORDER BY"
             + " UPPER("
@@ -627,7 +636,7 @@ public String[] getProteinAliases(Connection con, String likeString)
         while (rset.next()) {
 
             String name =
-                org.vcell.util.TokenMangler.getSQLRestoredString(
+                TokenMangler.getSQLRestoredString(
                     rset.getString(proteinAliasTable.name.getUnqualifiedColName()));
             //System.out.println("DictionaryDbDriver.getProteinAliases() name = " + name);
             nameList.add(name);
@@ -716,7 +725,7 @@ public String[] getProteinKeyWords(Connection con, String likeString) throws SQL
  * Insert the method's description here.
  * Creation date: (4/18/2003 10:23:37 AM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,org.vcell.util.document.User user,KeyValue reactionStepKeys[]) throws SQLException{
+public ReactionStepInfo[] getReactionStepInfos(Connection con,User user,KeyValue reactionStepKeys[]) throws SQLException{
 	String sql = ReactStepTable.table.getSQLReactionStepInfosQuery(reactionStepKeys,user);
 	Statement stmt = con.createStatement();
 	Vector<ReactionStepInfo> reactionStepInfoList = new Vector<ReactionStepInfo>();
@@ -731,7 +740,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,o
 	       String bioModelName = rset.getString(ReactStepTable.RXIDDN_BIOMODEL_NAME_INDEX);
 	       String rxName = rset.getString(ReactStepTable.RXIDDN_REACTSTEP_NAME_INDEX);
 	       java.sql.Date bioModelDate = rset.getDate(BioModelTable.table.versionDate.toString());
-	       ReactionStepInfo reactionStepInfo = new cbit.vcell.model.ReactionStepInfo(rxKey,owner,bioModelName,rxName,bioModelDate);
+	       ReactionStepInfo reactionStepInfo = new ReactionStepInfo(rxKey,owner,bioModelName,rxName,bioModelDate);
 	       reactionStepInfoList.add(reactionStepInfo);
         }
     } finally {
@@ -740,7 +749,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,o
     if(reactionStepInfoList.size() == 0){
 	    return null;
     }
-	return (cbit.vcell.model.ReactionStepInfo[])org.vcell.util.BeanUtils.getArray(reactionStepInfoList,cbit.vcell.model.ReactionStepInfo.class);
+	return (ReactionStepInfo[])BeanUtils.getArray(reactionStepInfoList,ReactionStepInfo.class);
 }
 
 
@@ -748,7 +757,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,o
  * Insert the method's description here.
  * Creation date: (4/18/2003 10:23:37 AM)
  */
-public ReactionDescription[] getUserReactionDescriptions(Connection con,org.vcell.util.document.User user,ReactionQuerySpec reactionQuerySpec) throws SQLException{
+public ReactionDescription[] getUserReactionDescriptions(Connection con,User user,ReactionQuerySpec reactionQuerySpec) throws SQLException{
 
 	String sql = ReactStepTable.table.getSQLUserReactionListQuery(reactionQuerySpec,user);
 
@@ -776,7 +785,7 @@ public KeyValue insertCompound(Connection con, CompoundInfo compound)
     }
     log.print(
         "DictionaryDbDriver.insertCompound(compound=" + compound.getFormalID() + ")");
-    KeyValue key = cbit.vcell.modeldb.DbDriver.getNewKey(con);
+    KeyValue key = DbDriver.getNewKey(con);
     insertCompoundSQL(con, key, compound);
     return key;
 }
@@ -805,14 +814,14 @@ private void insertCompoundSQL(Connection con, KeyValue key, CompoundInfo compou
 
     //System.out.println(sql);
 
-    cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
+    DbDriver.updateCleanSQL(con, sql);
 
     //
     // insert aliases
     //
     String names[] = compound.getNames();
     for (int i = 0; i < names.length; i++) {
-        KeyValue newKey = cbit.vcell.modeldb.DbDriver.getNewKey(con);
+        KeyValue newKey = DbDriver.getNewKey(con);
         sql =
             "INSERT INTO "
                 + compoundAliasTable.getTableName()
@@ -822,10 +831,10 @@ private void insertCompoundSQL(Connection con, KeyValue key, CompoundInfo compou
                 + compoundAliasTable.getSQLValueList(
                     newKey,
                     key,
-                    org.vcell.util.TokenMangler.getSQLEscapedString(names[i]),
+                    TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
         //System.out.println(sql);
-        cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
+        DbDriver.updateCleanSQL(con, sql);
     }
 }
 
@@ -839,7 +848,7 @@ public KeyValue insertEnzyme(Connection con, EnzymeInfo enzyme)
         throw new SQLException("Improper parameters for insertEnzyme");
     }
     log.print("DictionaryDbDriver.insertEnzyme(enzyme=" + enzyme.getFormalID() + ")");
-    KeyValue key = cbit.vcell.modeldb.DbDriver.getNewKey(con);
+    KeyValue key = DbDriver.getNewKey(con);
     insertEnzymeSQL(con, key, enzyme);
     return key;
 }
@@ -868,14 +877,14 @@ private void insertEnzymeSQL(Connection con, KeyValue key, EnzymeInfo enzyme)
 
     //System.out.println(sql);
 
-    cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
+    DbDriver.updateCleanSQL(con, sql);
 
     //
     // insert aliases
     //
     String names[] = enzyme.getNames();
     for (int i = 0; i < names.length; i++) {
-        KeyValue newKey = cbit.vcell.modeldb.DbDriver.getNewKey(con);
+        KeyValue newKey = DbDriver.getNewKey(con);
         sql =
             "INSERT INTO "
                 + enzymeAliasTable.getTableName()
@@ -885,10 +894,10 @@ private void insertEnzymeSQL(Connection con, KeyValue key, EnzymeInfo enzyme)
                 + enzymeAliasTable.getSQLValueList(
                     newKey,
                     key,
-                    org.vcell.util.TokenMangler.getSQLEscapedString(names[i]),
+                    TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
         //System.out.println(sql);
-        cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
+        DbDriver.updateCleanSQL(con, sql);
     }
 }
 
@@ -902,7 +911,7 @@ public KeyValue insertProtein(Connection con, ProteinInfo protein)
         throw new SQLException("Improper parameters for insertProtein");
     }
     //log.print("DictionaryDbDriver.insertProtein(protein=" + protein.getDBID() + ")");
-    KeyValue key = cbit.vcell.modeldb.DbDriver.getNewKey(con);
+    KeyValue key = DbDriver.getNewKey(con);
     insertProteinSQL(con, key, protein);
     return key;
 }
@@ -931,14 +940,14 @@ private void insertProteinSQL(Connection con, KeyValue key, ProteinInfo protein)
 
     //System.out.println(sql);
 
-    cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
+    DbDriver.updateCleanSQL(con, sql);
 
     //
     // insert names and aliases
     //
     String names[] = protein.getNames();
     for (int i = 0; i < names.length; i++) {
-        KeyValue newKey = cbit.vcell.modeldb.DbDriver.getNewKey(con);
+        KeyValue newKey = DbDriver.getNewKey(con);
         sql =
             "INSERT INTO "
                 + proteinAliasTable.getTableName()
@@ -948,10 +957,10 @@ private void insertProteinSQL(Connection con, KeyValue key, ProteinInfo protein)
                 + proteinAliasTable.getSQLValueList(
                     newKey,
                     key,
-                    org.vcell.util.TokenMangler.getSQLEscapedString(names[i]),
+                    TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
         //        System.out.println(sql);
-        cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
+        DbDriver.updateCleanSQL(con, sql);
     }
 
     ////

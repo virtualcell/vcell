@@ -40,8 +40,7 @@ public RpcDbServerImpl(org.vcell.util.SessionLog sessionLog) throws DataAccessEx
 	try {
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 		KeyFactory	keyFactory = new OracleKeyFactory();
-		DBCacheTable dbCacheTable = new DBCacheTable(1000*60*30);
-		dbServerImpl = new DatabaseServerImpl(conFactory, keyFactory, dbCacheTable, sessionLog);	 
+		dbServerImpl = new DatabaseServerImpl(conFactory, keyFactory, sessionLog);	 
 	} catch (Throwable e) {
 		log.exception(e);
 		throw new DataAccessException("Error creating DBTopLevel " + e.getMessage());

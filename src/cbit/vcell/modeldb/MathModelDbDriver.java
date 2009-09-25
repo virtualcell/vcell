@@ -3,15 +3,17 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.biomodel.*;
-import java.beans.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelChildSummary;
@@ -21,9 +23,12 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
-import cbit.sql.*;
-import cbit.vcell.model.*;
-import cbit.vcell.mapping.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
+import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.
  */
@@ -32,16 +37,12 @@ public class MathModelDbDriver extends DbDriver {
 	public static final UserTable userTable = UserTable.table;
 	public static final MathModelSimulationLinkTable mathModelSimLinkTable = MathModelSimulationLinkTable.table;
 	public static final SimulationTable simTable = SimulationTable.table;
-	private SimulationDbDriver simDB = null;
-	private MathDescriptionDbDriver mathDescDB = null;
 
 /**
  * LocalDBManager constructor comment.
  */
-public MathModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, MathDescriptionDbDriver argMathDescDB, SessionLog sessionLog) {
-	super(argdbc,sessionLog);
-	this.simDB = argSimDB;
-	this.mathDescDB = argMathDescDB;
+public MathModelDbDriver(SessionLog sessionLog) {
+	super(sessionLog);
 }
 
 
@@ -49,7 +50,7 @@ public MathModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, MathDe
  * only the owner can delete a Model
  */
 private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue mathModelKey) 
-				throws SQLException,org.vcell.util.DependencyException,DataAccessException,org.vcell.util.PermissionException,ObjectNotFoundException {
+				throws SQLException,DependencyException,DataAccessException,PermissionException,ObjectNotFoundException {
 
 
 	//
@@ -106,13 +107,12 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws org.vcell.util.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,org.vcell.util.PermissionException {
+				throws DependencyException, ObjectNotFoundException,
+						SQLException,DataAccessException,PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.MathModelMetaData)){
 		deleteMathModelMetaDataSQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else{
 		throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 	}
@@ -134,7 +134,7 @@ KeyValue[] getDeletableSimulationEntriesFromMathModel(Connection con,User user,K
 			" AND " + simTable.ownerRef.getQualifiedColName() + " = " + user.getID();
 			
 	Statement stmt = con.createStatement();
-	java.util.Vector keyList = new Vector();
+	java.util.Vector<KeyValue> keyList = new Vector<KeyValue>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -157,39 +157,6 @@ KeyValue[] getDeletableSimulationEntriesFromMathModel(Connection con,User user,K
 	keyList.copyInto(keyArray);
 	return keyArray;
 }
-
-
-/**
- * getModels method comment.
- */
-private KeyValue getMathKeyFromMathModel(Connection con,KeyValue mathModelKey) throws SQLException, DataAccessException {
-
-	KeyValue mathKey = null;
-	String sql;
-	
-	sql = 	" SELECT " + MathModelTable.table.mathRef  +
-			" FROM " + MathModelTable.table.getTableName() + 
-			" WHERE " + MathModelTable.table.id + " = " + mathModelKey;
-			
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		
-		//showMetaData(rset);
-
-		//
-		// get all keys
-		//
-		if (rset.next()) {
-			mathKey = new KeyValue(rset.getBigDecimal(MathModelTable.table.mathRef.getUnqualifiedColName()));
-		}
-	} finally {
-		stmt.close(); // Release resources include resultset
-	}
-
-	return mathKey;
-}
-
 
 /**
  * getModel method comment.
@@ -233,7 +200,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 		if (rset.next()) {
 			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,log,simKeys);
 		} else {
-			throw new org.vcell.util.ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
+			throw new ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
@@ -275,7 +242,7 @@ MathModelMetaData[] getMathModelMetaDatas(Connection con,User user, boolean bAll
 	sql = newSQL.toString();
 	//
 	Statement stmt = con.createStatement();
-	Vector mathModelMetaDataList = new Vector();
+	Vector<MathModelMetaData> mathModelMetaDataList = new Vector<MathModelMetaData>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
@@ -307,7 +274,7 @@ KeyValue[] getSimulationEntriesFromMathModel(Connection con,KeyValue mathModelKe
 			" ORDER BY " + mathModelSimLinkTable.id;
 			
 	Statement stmt = con.createStatement();
-	java.util.Vector keyList = new Vector();
+	java.util.Vector<KeyValue> keyList = new Vector<KeyValue>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -338,7 +305,7 @@ KeyValue[] getSimulationEntriesFromMathModel(Connection con,KeyValue mathModelKe
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public Versionable getVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -350,7 +317,7 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		}else{
 			throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 		}
-		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
+		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 	return versionable;
 }
@@ -372,7 +339,7 @@ private void insertMathModelMetaData(Connection con,User user ,MathModelMetaData
 	//
 	// insert Simulation Links
 	//
-	Enumeration simEnum = mathModel.getSimulationKeys();
+	Enumeration<KeyValue> simEnum = mathModel.getSimulationKeys();
 	while (simEnum.hasMoreElements()){
 		KeyValue simKey = (KeyValue)simEnum.nextElement();
 		insertSimulationEntryLinkSQL(con, getNewKey(con), mathModelKey, simKey);

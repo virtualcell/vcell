@@ -3,14 +3,17 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.biomodel.*;
-import java.beans.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
@@ -20,9 +23,13 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
-import cbit.sql.*;
-import cbit.vcell.model.*;
-import cbit.vcell.mapping.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.StarField;
+import cbit.sql.Table;
+import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * This type was created in VisualAge.
  */
@@ -33,18 +40,12 @@ public class BioModelDbDriver extends DbDriver {
 	public static final BioModelSimContextLinkTable bioModelSimContextLinkTable = BioModelSimContextLinkTable.table;
 	public static final SimulationTable simTable = SimulationTable.table;
 	public static final SimContextTable simContextTable = SimContextTable.table;
-	private SimulationDbDriver simDB = null;
-	private SimulationContextDbDriver simContextDB = null;
-	private ModelDbDriver modelDB = null;
 
 /**
  * LocalDBManager constructor comment.
  */
-public BioModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, SimulationContextDbDriver argSimContextDB, ModelDbDriver argModelDB, SessionLog sessionLog) {
-	super(argdbc,sessionLog);
-	this.simDB = argSimDB;
-	this.simContextDB = argSimContextDB;
-	this.modelDB = argModelDB;
+public BioModelDbDriver(SessionLog sessionLog) {
+	super(sessionLog);
 }
 
 
@@ -52,7 +53,7 @@ public BioModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, Simulat
  * only the owner can delete a Model
  */
 private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioModelKey) 
-				throws SQLException,org.vcell.util.DependencyException,org.vcell.util.PermissionException,DataAccessException,ObjectNotFoundException {
+				throws SQLException,DependencyException,PermissionException,DataAccessException,ObjectNotFoundException {
 
 	//
 	// get key values of simulations and simulationContexts belonging to this version of BioModel
@@ -123,13 +124,12 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws org.vcell.util.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,org.vcell.util.PermissionException {
+				throws DependencyException, ObjectNotFoundException,
+						SQLException,DataAccessException,PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.BioModelMetaData)){
 		deleteBioModelMetaDataSQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else{
 		throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 	}
@@ -168,7 +168,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 	// get BioModelMetaData object for bioModelKey
 	//
 	String sql;
-	Field[] f = {new cbit.sql.StarField(bioModelTable),userTable.userid};
+	Field[] f = {new StarField(bioModelTable),userTable.userid};
 	Table[] t = {bioModelTable,userTable};
 	String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey + 
 					" AND " + 
@@ -185,7 +185,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 		if (rset.next()) {
 			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys,metadataKey);
 		} else {
-			throw new org.vcell.util.ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
+			throw new ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
@@ -227,7 +227,7 @@ BioModelMetaData[] getBioModelMetaDatas(Connection con,User user, boolean bAll)
 	sql = newSQL.toString();
 	//
 	Statement stmt = con.createStatement();
-	Vector bioModelMetaDataList = new Vector();
+	Vector<BioModelMetaData> bioModelMetaDataList = new Vector<BioModelMetaData>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
@@ -261,7 +261,7 @@ KeyValue[] getDeletableSimContextEntriesFromBioModel(Connection con,User user,Ke
 			" AND " + simContextTable.ownerRef.getQualifiedColName() + " = " + user.getID();
 			
 	Statement stmt = con.createStatement();
-	java.util.Vector keyList = new Vector();
+	Vector<KeyValue> keyList = new Vector<KeyValue>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -301,7 +301,7 @@ KeyValue[] getDeletableSimulationEntriesFromBioModel(Connection con,User user,Ke
 			" AND " + simTable.ownerRef.getQualifiedColName() + " = " + user.getID();
 
 	Statement stmt = con.createStatement();
-	java.util.Vector keyList = new Vector();
+	Vector<KeyValue> keyList = new Vector<KeyValue>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -325,39 +325,6 @@ KeyValue[] getDeletableSimulationEntriesFromBioModel(Connection con,User user,Ke
 	return keyArray;
 }
 
-
-/**
- * getModels method comment.
- */
-private KeyValue getModelKeyFromBioModel(Connection con,KeyValue bioModelKey) throws SQLException, DataAccessException {
-
-	KeyValue modelKey = null;
-	String sql;
-	
-	sql = 	" SELECT " + BioModelTable.table.modelRef  +
-			" FROM " + BioModelTable.table.getTableName() + 
-			" WHERE " + BioModelTable.table.id + " = " + bioModelKey;
-			
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		
-		//showMetaData(rset);
-
-		//
-		// get all keys
-		//
-		if (rset.next()) {
-			modelKey = new KeyValue(rset.getBigDecimal(BioModelTable.table.modelRef.getUnqualifiedColName()));
-		}
-	} finally {
-		stmt.close(); // Release resources include resultset
-	}
-
-	return modelKey;
-}
-
-
 /**
  * getModels method comment.
  */
@@ -371,7 +338,7 @@ KeyValue[] getSimContextEntriesFromBioModel(Connection con,KeyValue bioModelKey)
 			" ORDER BY " + bioModelSimContextLinkTable.id;
 			
 	Statement stmt = con.createStatement();
-	java.util.Vector keyList = new Vector();
+	Vector<KeyValue> keyList = new Vector<KeyValue>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -409,7 +376,7 @@ KeyValue[] getSimulationEntriesFromBioModel(Connection con,KeyValue bioModelKey)
 			" ORDER BY " + bioModelSimLinkTable.id;
 			
 	Statement stmt = con.createStatement();
-	java.util.Vector keyList = new Vector();
+	Vector<KeyValue> keyList = new Vector<KeyValue>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -440,7 +407,7 @@ KeyValue[] getSimulationEntriesFromBioModel(Connection con,KeyValue bioModelKey)
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public Versionable getVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -452,7 +419,7 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		}else{
 			throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 		}
-		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
+		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 //	MIRIAMTable.table.setMIRIAMAnnotation(con, (BioModelMetaData)versionable, versionable.getVersion().getVersionKey());
 	return versionable;
@@ -475,7 +442,7 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 	//
 	// insert Simulation Links
 	//
-	Enumeration simEnum = bioModel.getSimulationKeys();
+	Enumeration<KeyValue> simEnum = bioModel.getSimulationKeys();
 	while (simEnum.hasMoreElements()){
 		KeyValue simKey = (KeyValue)simEnum.nextElement();
 		insertSimulationEntryLinkSQL(con, getNewKey(con), bioModelKey, simKey);
@@ -483,7 +450,7 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 	//
 	// insert SimulationContext Links
 	//
-	Enumeration scEnum = bioModel.getSimulationContextKeys();
+	Enumeration<KeyValue> scEnum = bioModel.getSimulationContextKeys();
 	while (scEnum.hasMoreElements()){
 		KeyValue scKey = (KeyValue)scEnum.nextElement();
 		insertSimContextEntryLinkSQL(con, getNewKey(con), bioModelKey, scKey);
