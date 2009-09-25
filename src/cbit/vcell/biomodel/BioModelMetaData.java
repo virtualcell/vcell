@@ -1,14 +1,6 @@
 package cbit.vcell.biomodel;
-import cbit.vcell.export.server.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.sql.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
@@ -31,8 +23,8 @@ public class BioModelMetaData implements Versionable, java.io.Serializable{
 	// this list must be generated via the database or the client document manager
 	//
 	private KeyValue modelKey = null;
-	private Vector simulationContextKeyList = new Vector();
-	private Vector simulationKeyList = new Vector();
+	private Vector<KeyValue> simulationContextKeyList = new Vector<KeyValue>();
+	private Vector<KeyValue> simulationKeyList = new Vector<KeyValue>();
 	private KeyValue metadataKey = null;
 	
 	private java.lang.String fieldName = new String("NoName");
@@ -183,7 +175,7 @@ public int getNumSimulations() {
  * Creation date: (11/13/00 4:21:49 PM)
  * @return java.util.Collection
  */
-public Enumeration getSimulationContextKeys() {
+public Enumeration<KeyValue> getSimulationContextKeys() {
 	return simulationContextKeyList.elements();
 }
 
@@ -193,7 +185,7 @@ public Enumeration getSimulationContextKeys() {
  * Creation date: (11/13/00 4:21:49 PM)
  * @return java.util.Collection
  */
-public Enumeration getSimulationKeys() {
+public Enumeration<KeyValue> getSimulationKeys() {
 	return simulationKeyList.elements();
 }
 

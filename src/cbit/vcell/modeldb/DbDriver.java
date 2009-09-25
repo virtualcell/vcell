@@ -97,7 +97,7 @@ public abstract class DbDriver {
 
 	private static KeyFactory keyFactory = null;
 	
-	protected DBCacheTable dbc = null;
+//	protected DBCacheTable dbc = null;
 	private static Hashtable<BigDecimal, GroupAccess> groupAccessHash = new Hashtable<BigDecimal, GroupAccess>();
 
 	//private static Hashtable testSuiteHash = new Hashtable();
@@ -105,9 +105,8 @@ public abstract class DbDriver {
 /**
  * DBService constructor comment.
  */
-public DbDriver(DBCacheTable dbc,SessionLog sessionLog) {
+public DbDriver(SessionLog sessionLog) {
 	this.log = sessionLog;
-	this.dbc = dbc;
 }
 
 
@@ -381,7 +380,7 @@ public static void cleanupDeletedReferences(Connection con,User user,ExternalDat
  * Insert the method's description here.
  * Creation date: (5/23/2006 10:44:52 AM)
  */
-public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
+public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user) throws DataAccessException,SQLException{
 
 	VersionableType vType = null;
 	if(curateSpec.getVCDocumentInfo() instanceof BioModelInfo){
@@ -427,7 +426,6 @@ public static VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User us
 	String sql = DatabasePolicySQL.enforceOwnershipUpdate(user,vTable,set,cond);
 	int numRowsProcessed = updateCleanSQL(con, sql);
 
-	currentCache.remove(vKey);
 	//Clear XML
 	if(vType.equals(VersionableType.BioModelMetaData)){
 		updateCleanSQL(con,"DELETE FROM "+BioModelXMLTable.table.getTableName()+" WHERE "+BioModelXMLTable.table.bioModelRef.getQualifiedColName()+" = "+vKey.toString());
@@ -533,7 +531,7 @@ protected void deleteVersionableInit(Connection con, User user, VersionableType 
  */
 public static void failOnExternalRefs(
     java.sql.Connection con,
-    cbit.sql.Field refFromField,
+    Field refFromField,
     Table refFromTable,
     KeyValue refToKeyValue,
 	Table refToTable)
@@ -1488,7 +1486,7 @@ private static Version getVersionFromKeyValue(Connection con,VersionableType vTy
  */
 public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 										VersionableType vType, KeyValue vKey,
-										DBCacheTable currentCache,String userAddToGroupString,boolean isHiddenFromOwner) 
+										String userAddToGroupString,boolean isHiddenFromOwner) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
 
@@ -1497,7 +1495,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 		throw new IllegalArgumentException("User name "+userAddToGroupString+" not found");
 	}
 	//
-	if ((con == null)||(newLog == null)||(vType == null)||(currentCache == null)||(owner == null) || (vKey == null)||(userAddToGroup==null)) {
+	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)||(userAddToGroup==null)) {
 		throw new IllegalArgumentException("Improper parameters for groupAddUser userAddToGroupString="+(userAddToGroupString == null?"NULL":userAddToGroupString));
 	}
 	//
@@ -1628,7 +1626,6 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
 		}
 	}
 	
-	currentCache.remove(vKey);
 }
 
 
@@ -1640,7 +1637,7 @@ public static void groupAddUser(Connection con,SessionLog newLog, User owner,
  */
 public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 										VersionableType vType, KeyValue vKey,
-										DBCacheTable currentCache,String userRemoveFromGroupString,boolean isHiddenFromOwner) 
+										String userRemoveFromGroupString,boolean isHiddenFromOwner) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
 
@@ -1649,7 +1646,7 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 		throw new IllegalArgumentException("User name "+userRemoveFromGroupString+" not found");
 	}
 	//
-	if ((con == null)||(newLog == null)||(vType == null)||(currentCache == null)||(owner == null) || (vKey == null)||(userRemoveFromGroup==null)) {
+	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)||(userRemoveFromGroup==null)) {
 		throw new IllegalArgumentException("Improper parameters for groupRemoveUser userRemoveFromGroupString="+(userRemoveFromGroupString == null?"NULL":userRemoveFromGroupString));
 	}
 	//
@@ -1764,7 +1761,6 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
 		}
 	}
 	
-	currentCache.remove(vKey);
 }
 
 
@@ -1775,11 +1771,11 @@ public static void groupRemoveUser(Connection con,SessionLog newLog, User owner,
  * @param versionable cbit.sql.Versionable
  */
 public static void groupSetPrivate(Connection con,SessionLog newLog,User owner, 
-										VersionableType vType, KeyValue vKey,DBCacheTable currentCache) 
+										VersionableType vType, KeyValue vKey) 
 							throws SQLException,ObjectNotFoundException, DataAccessException/*, DependencyException*/ {
 
 
-	if ((con == null)||(newLog == null)||(vType == null)||(currentCache == null)||(owner == null) || (vKey == null)) {
+	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)) {
 		throw new IllegalArgumentException("Improper parameters for groupAccessSetPrivate");
 	}
 	//
@@ -1805,7 +1801,6 @@ public static void groupSetPrivate(Connection con,SessionLog newLog,User owner,
 			throw new DataAccessException("groupSetPrivate failed "+vType.getTypeName()+"("+vKey+")");
 		}
 	}
-	currentCache.remove(vKey);
 	
 }
 
@@ -1817,11 +1812,11 @@ public static void groupSetPrivate(Connection con,SessionLog newLog,User owner,
  * @param versionable cbit.sql.Versionable
  */
 public static void groupSetPublic(Connection con,SessionLog newLog,User owner, 
-										VersionableType vType, KeyValue vKey,DBCacheTable currentCache) 
+										VersionableType vType, KeyValue vKey) 
 							throws SQLException,ObjectNotFoundException, DataAccessException {
 
 
-	if ((con == null)||(newLog == null)||(vType == null)||(currentCache == null)||(owner == null) || (vKey == null)) {
+	if ((con == null)||(newLog == null)||(vType == null)||(owner == null) || (vKey == null)) {
 		throw new IllegalArgumentException("Improper parameters for groupAccessSetPublic");
 	}
 	//
@@ -1848,7 +1843,6 @@ public static void groupSetPublic(Connection con,SessionLog newLog,User owner,
 			throw new DataAccessException("groupSetPublic failed "+vType.getTypeName()+"("+vKey+")");
 		}
 	}
-	currentCache.remove(vKey);
 }
 
 /**
@@ -2183,7 +2177,6 @@ protected void setVersioned(Connection con, User user,Versionable versionable) t
 		if (updateCleanSQL(con,sql)!=1){
 			throw new DataAccessException("setVersioned failed for :"+versionable.getVersion());
 		}
-		dbc.remove(versionable.getVersion().getVersionKey());
 	}
 }
 
@@ -3831,38 +3824,6 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 	}
 	return new TestSuiteOPResults(null);
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public static void updateAnnotation(Connection con,SessionLog newLog,User user, 
-									VersionableType vType, KeyValue vKey, String annot,DBCacheTable currentCache) 
-							throws SQLException,ObjectNotFoundException, DataAccessException {
-	if ((user == null) || (vKey == null)) {
-		throw new IllegalArgumentException("Improper parameters for updateAnnotation");
-	}
-	Version version = getVersionFromKeyValue(con,vType,vKey);
-	if (!version.getOwner().compareEqual(user)){
-		throw new PermissionException("Cannot unpublish "+vType.getTypeName()+" \""+version.getName()+"\" ("+vKey+"), not owned by "+user.getName());
-	}
-	annot = TokenMangler.getSQLEscapedString(annot);
-	newLog.print("GeomDbDriver.updateAnnotation(user=" + user + ", key=" + vKey + "Annot="+annot+")");
-	VersionTable vTable = VersionTable.getVersionTable(vType);
-	String set = vTable.versionAnnot.getQualifiedColName() + " = " + "'" + annot + "'";
-	String cond = vTable.id.getQualifiedColName() + " = " + vKey + 
-				" AND " + vTable.ownerRef.getQualifiedColName() + " = " + user.getID();
-	String sql = DatabasePolicySQL.enforceOwnershipUpdate(user,vTable,set,cond);
-//System.out.println(sql);
-	if (updateCleanSQL(con, sql)!=1){
-		throw new DataAccessException("updateAnnotation failed versionable with key = "+vKey);
-	}
-	currentCache.remove(vKey);
-}
-
 
 /**
  * This method was created in VisualAge.

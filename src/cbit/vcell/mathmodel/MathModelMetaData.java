@@ -3,8 +3,8 @@ package cbit.vcell.mathmodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
@@ -25,7 +25,7 @@ public class MathModelMetaData implements Versionable, java.io.Serializable {
 	// this list must be generated via the database or the client document manager
 	//
 	private KeyValue mathKey = null;
-	private Vector simulationKeyList = new Vector();
+	private Vector<KeyValue> simulationKeyList = new Vector<KeyValue>();
 
 	private java.lang.String fieldName = new String("NoName");
 	private java.lang.String fieldDescription = new String();
@@ -148,7 +148,7 @@ public int getNumSimulations() {
  * Creation date: (11/13/00 4:21:49 PM)
  * @return java.util.Collection
  */
-public Enumeration getSimulationKeys() {
+public Enumeration<KeyValue> getSimulationKeys() {
 	return simulationKeyList.elements();
 }
 

@@ -3,11 +3,12 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.beans.*;
-import java.sql.*;
-import java.util.*;
-import cbit.sql.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -18,7 +19,20 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
-import cbit.vcell.model.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.vcell.model.Diagram;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */
@@ -33,8 +47,8 @@ public class ModelDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public ModelDbDriver(DBCacheTable argdbc,ReactStepDbDriver argReactStepDB,SessionLog sessionLog) {
-	super(argdbc,sessionLog);
+public ModelDbDriver(ReactStepDbDriver argReactStepDB,SessionLog sessionLog) {
+	super(sessionLog);
 	this.reactStepDB = argReactStepDB;
 }
 
@@ -83,7 +97,6 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.Model)){
 		deleteModelSQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else{
 		throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 	}
@@ -95,11 +108,11 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
  * @return cbit.vcell.model.Diagram
  * @param rset java.sql.ResultSet
  */
-private Diagram getDiagram(Connection con,ResultSet rset) throws SQLException, DataAccessException {
+private Diagram getDiagram(QueryHashtable dbc, Connection con,ResultSet rset) throws SQLException, DataAccessException {
 
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(diagramTable.structRef.toString()));
 	Diagram diagram = diagramTable.getDiagram(rset,log);
-	diagram.setStructure(reactStepDB.getStructureHeirarchy(con,structKey));
+	diagram.setStructure(reactStepDB.getStructureHeirarchy(dbc, con,structKey));
 	
 	return diagram;
 }
@@ -108,7 +121,7 @@ private Diagram getDiagram(Connection con,ResultSet rset) throws SQLException, D
 /**
  * getModels method comment.
  */
-private cbit.vcell.model.Diagram[] getDiagramsFromModel(Connection con,KeyValue modelKey) throws SQLException, DataAccessException {
+private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey) throws SQLException, DataAccessException {
 	//log.print("ModelDbDriver.getDiagramsFromModel(modelKey=" + modelKey + ")");
 	String sql;
 	
@@ -127,7 +140,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(Connection con,KeyValue 
 		// get all objects
 		//
 		while (rset.next()) {
-			Diagram diagram = getDiagram(con,rset);
+			Diagram diagram = getDiagram(dbc, con,rset);
 			diagramList.addElement(diagram);
 		}
 	} finally {
@@ -145,7 +158,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(Connection con,KeyValue 
 /**
  * getModel method comment.
  */
-private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue modelKey) 
+private cbit.vcell.model.Model getModel(QueryHashtable dbc, Connection con,User user, KeyValue modelKey) 
 					throws SQLException, DataAccessException, ObjectNotFoundException {
 	if (user == null || modelKey == null) {
 		throw new IllegalArgumentException("Improper parameters for getModel");
@@ -167,7 +180,7 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			model = getModel(rset,con,user);
+			model = getModel(dbc, rset,con,user);
 		} else {
 			throw new org.vcell.util.ObjectNotFoundException("Model id=" + modelKey + " not found for user '" + user + "'");
 		}
@@ -185,7 +198,7 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
  * @return cbit.vcell.model.Model
  * @param rset java.sql.ResultSet
  */
-private Model getModel(ResultSet rset,Connection con,User user) throws SQLException, DataAccessException {
+private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User user) throws SQLException, DataAccessException {
 	//String ownerName = rset.getString(userTable.userid.toString()).trim();
 	//KeyValue ownerRef = new KeyValue(rset.getBigDecimal(ModelTable.ownerRef.toString(), 0));
 	//User owner = new User(ownerName, ownerRef);
@@ -197,7 +210,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 		//
 		// set structures for this model
 		//
-		Structure structures[] = reactStepDB.getStructuresFromModel(con,modelKey);
+		Structure structures[] = reactStepDB.getStructuresFromModel(dbc, con,modelKey);
 		if (structures!=null && structures.length>0){
 			model.setStructures(structures);
 		}
@@ -205,7 +218,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 		//
 		// set species for this model
 		//
-		SpeciesContext speciesContexts[] = getSpeciesContextFromModel(con,user,modelKey);
+		SpeciesContext speciesContexts[] = getSpeciesContextFromModel(dbc, con,user,modelKey);
 		if (speciesContexts!=null){
 			Vector<Species> speciesList = new Vector<Species>();
 			for (int i=0;i<speciesContexts.length;i++){
@@ -233,7 +246,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 		//
 		// add reactionSteps for this model
 		//
-		ReactionStep reactSteps[] = reactStepDB.getReactionStepsFromModel(con,modelKey);
+		ReactionStep reactSteps[] = reactStepDB.getReactionStepsFromModel(dbc, con,modelKey);
 		if (reactSteps != null) {
 			model.setReactionSteps(reactSteps);
 			for (int i=0; i < reactSteps.length; i ++){
@@ -283,7 +296,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 		//
 		// add diagrams for this model
 		//
-		Diagram diagrams[] = getDiagramsFromModel(con,modelKey);
+		Diagram diagrams[] = getDiagramsFromModel(dbc, con,modelKey);
 		model.setDiagrams(diagrams);
 		
 		return model;
@@ -299,7 +312,7 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
  * @return cbit.vcell.model.SpeciesContext
  * @param speciesContextID cbit.sql.KeyValue
  */
-public SpeciesContext getSpeciesContext(Connection con, KeyValue speciesContextID) throws SQLException, DataAccessException {
+public SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, KeyValue speciesContextID) throws SQLException, DataAccessException {
 	//
 	// try to get Model from object cache
 	//
@@ -326,7 +339,7 @@ public SpeciesContext getSpeciesContext(Connection con, KeyValue speciesContextI
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			speciesContext = getSpeciesContext(con,rset);
+			speciesContext = getSpeciesContext(dbc, con,rset);
 		} else {
 			throw new org.vcell.util.ObjectNotFoundException("SpeciesContext id=" + speciesContextID + " not found");
 		}
@@ -342,7 +355,7 @@ public SpeciesContext getSpeciesContext(Connection con, KeyValue speciesContextI
  * @return cbit.vcell.model.SpeciesContext
  * @param rset java.sql.ResultSet
  */
-private SpeciesContext getSpeciesContext(Connection con, ResultSet rset) throws SQLException, DataAccessException {
+private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, ResultSet rset) throws SQLException, DataAccessException {
 
 	//
 	// if in object cache, no need to create it
@@ -365,14 +378,14 @@ private SpeciesContext getSpeciesContext(Connection con, ResultSet rset) throws 
 	//
 	// add objects corresponding to foreign keys
 	//
-	Structure structure = reactStepDB.getStructureHeirarchy(con,structKey);
-	Species species = reactStepDB.getSpecies(con,speciesKey);
+	Structure structure = reactStepDB.getStructureHeirarchy(dbc, con,structKey);
+	Species species = reactStepDB.getSpecies(dbc, con,speciesKey);
 	speciesContext = new SpeciesContext(scKey,speciesContext.getName(),species,structure,speciesContext.getHasOverride());
 
 	//
 	// put SpeciesContext into object cache
 	//
-	dbc.putUnprotected(scKey,speciesContext);
+	dbc.put(scKey,speciesContext);
 	
 	return speciesContext;
 }
@@ -383,7 +396,7 @@ private SpeciesContext getSpeciesContext(Connection con, ResultSet rset) throws 
  * @return cbit.vcell.model.SpeciesContext
  * @param speciesContextID cbit.sql.KeyValue
  */
-private SpeciesContext[] getSpeciesContextFromModel(Connection con,User user, KeyValue modelKey) throws SQLException, DataAccessException {
+private SpeciesContext[] getSpeciesContextFromModel(QueryHashtable dbc, Connection con,User user, KeyValue modelKey) throws SQLException, DataAccessException {
 	if (user == null || modelKey == null) {
 		throw new IllegalArgumentException("Improper parameters for getSpeciesContextFromModel");
 	}
@@ -405,7 +418,7 @@ private SpeciesContext[] getSpeciesContextFromModel(Connection con,User user, Ke
 
 		SpeciesContext speciesContext = null;
 		while (rset.next()) {
-			speciesContext = getSpeciesContext(con,rset);
+			speciesContext = getSpeciesContext(dbc, con,rset);
 			speciesContextList.addElement(speciesContext);
 		}
 	} finally {
@@ -427,7 +440,7 @@ private SpeciesContext[] getSpeciesContextFromModel(Connection con,User user, Ke
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public Versionable getVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -435,11 +448,11 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		return versionable;
 	} else {
 		if (vType.equals(VersionableType.Model)){
-			versionable = getModel(con, user, vKey);
+			versionable = getModel(dbc, con, user, vKey);
 		}else{
 			throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 		}
-		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
+		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 	return versionable;
 }

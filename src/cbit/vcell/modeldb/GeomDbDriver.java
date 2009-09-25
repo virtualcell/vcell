@@ -3,13 +3,14 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.sql.*;
-import java.util.*;
-import java.beans.*;
-
-import cbit.sql.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -21,15 +22,28 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
-import cbit.vcell.geometry.*;
-import cbit.image.*;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.image.BrowseImage;
+import cbit.image.GifParsingException;
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.image.VCPixelClass;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.StarField;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.Filament;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-//import cbit.util.VersionFlag;
-//import cbit.util.Version;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  */
@@ -50,8 +64,8 @@ public class GeomDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public GeomDbDriver(DBCacheTable argdbc,SessionLog sessionLog) {
-	super(argdbc,sessionLog);
+public GeomDbDriver(SessionLog sessionLog) {
+	super(sessionLog);
 }
 
 
@@ -90,7 +104,7 @@ private void deleteGeometrySQL(Connection con, User user,KeyValue geomKey) throw
 /**
  * only the owner can delete a Model
  */
-private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) throws SQLException, DataAccessException,org.vcell.util.DependencyException {
+private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) throws SQLException, DataAccessException,DependencyException {
 	String sql;
 
 	//Check if any geometries use this image, if so Do Not delete image and return error
@@ -126,10 +140,8 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 
 	if (vType.equals(VersionableType.VCImage)){
 		deleteVCImageSQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else if (vType.equals(VersionableType.Geometry)){
 		deleteGeometrySQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else{
 		throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 	}
@@ -162,7 +174,7 @@ private KeyValue getExtentRefKeyFromGeometry(Connection con, KeyValue geomKey) t
 		if (rset.next()) {
 			return new KeyValue(rset.getBigDecimal(geomTable.extentRef.toString()));
 		}else{
-			throw new org.vcell.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
+			throw new ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -196,7 +208,7 @@ private KeyValue getExtentRefKeyFromImage(Connection con, KeyValue imageKey) thr
 		if (rset.next()) {
 			return new KeyValue(rset.getBigDecimal(imageTable.extentRef.toString()));
 		}else{
-			throw new org.vcell.util.ObjectNotFoundException("getSizeKeyFromImage for Image id="+imageKey+" not found");
+			throw new ObjectNotFoundException("getSizeKeyFromImage for Image id="+imageKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -243,13 +255,13 @@ private void getFilaments(Connection con, Geometry geom) throws SQLException, Da
 /**
  * getModel method comment.
  */
-private cbit.vcell.geometry.Geometry getGeometry(Connection con, User user, KeyValue geomKey, boolean bCheckPermission) throws SQLException, DataAccessException, ObjectNotFoundException {
+private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, KeyValue geomKey, boolean bCheckPermission) throws SQLException, DataAccessException, ObjectNotFoundException {
 	if (user == null || geomKey == null){
 		throw new IllegalArgumentException("Improper parameters for getGeometry");
 	}
 	//log.print("GeomDbDriver.getGeometry(user="+user+", id="+geomKey+")");
 	String sql;
-	Field[] f = {new cbit.sql.StarField(geomTable),userTable.userid,extentTable.extentX,extentTable.extentY,extentTable.extentZ};
+	Field[] f = {new StarField(geomTable),userTable.userid,extentTable.extentX,extentTable.extentY,extentTable.extentZ};
 	Table[] t = {geomTable,userTable,extentTable};
 	String condition = geomTable.id.getQualifiedColName() + " = " + geomKey +
 					" AND " + userTable.id.getQualifiedColName() + " = " + geomTable.ownerRef.getQualifiedColName() +
@@ -264,9 +276,9 @@ private cbit.vcell.geometry.Geometry getGeometry(Connection con, User user, KeyV
 		ResultSet rset = stmt.executeQuery(sql);
 
 		if (rset.next()) {
-			geom = getGeometry(con, user,rset);
+			geom = getGeometry(dbc, con, user,rset);
 		}else{
-			throw new org.vcell.util.ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
+			throw new ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
 		}
   	}finally{
 		stmt.close(); // Release resources include resultset
@@ -281,7 +293,7 @@ private cbit.vcell.geometry.Geometry getGeometry(Connection con, User user, KeyV
  * @return cbit.vcell.model.Model
  * @param rset java.sql.ResultSet
  */
-private Geometry getGeometry(Connection con, User user, ResultSet rset) throws SQLException, DataAccessException {
+private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, ResultSet rset) throws SQLException, DataAccessException {
 	//
 	// get Image reference
 	//
@@ -306,7 +318,7 @@ private Geometry getGeometry(Connection con, User user, ResultSet rset) throws S
 	VCImage vcImage = null;
 	if(imageRef != null){
 		// permission checking for the image is disabled because it is a child of this geometry
-		vcImage = getVCImage(con, user,imageRef,false);
+		vcImage = getVCImage(dbc, con, user,imageRef,false);
 	}
 	if (vcImage!=null){
 		geom = new Geometry(tempGeometry,vcImage);
@@ -316,7 +328,7 @@ private Geometry getGeometry(Connection con, User user, ResultSet rset) throws S
 	//
 	// get SubVolumes for this geometry
 	//
-	SubVolume subVolumes[] = getSubVolumesFromGeometry(con, geom.getVersion().getVersionKey());
+	SubVolume subVolumes[] = getSubVolumesFromGeometry(dbc, con, geom.getVersion().getVersionKey());
 	if (subVolumes!=null){
 		try {
 			geom.getGeometrySpec().setSubVolumes(subVolumes);
@@ -372,7 +384,7 @@ private KeyValue getImageRefKeyFromGeometry(Connection con, KeyValue geomKey) th
 			}
 			return new KeyValue(iR);
 		}else{
-			throw new org.vcell.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
+			throw new ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -384,7 +396,7 @@ private KeyValue getImageRefKeyFromGeometry(Connection con, KeyValue geomKey) th
  * This method was created in VisualAge.
  * @param vcImage cbit.image.VCImage
  */
-private void getImageRegionsForVCImage(Connection con, VCImage vcImage) throws SQLException, DataAccessException {
+private void getImageRegionsForVCImage(QueryHashtable dbc, Connection con, VCImage vcImage) throws SQLException, DataAccessException {
 	String sql;
 	sql = " SELECT *" +
 	//
@@ -417,11 +429,11 @@ private void getImageRegionsForVCImage(Connection con, VCImage vcImage) throws S
 				//
 				// put the ImageRegion in the object cache
 				//
-				dbc.putUnprotected(vcpcKey,vcpc);
+				dbc.put(vcpcKey,vcpc);
 			}
 			vcpcVector.addElement(vcpc);
 		}
-		VCPixelClass vcPixelClasses[] = (VCPixelClass[])org.vcell.util.BeanUtils.getArray(vcpcVector,VCPixelClass.class);
+		VCPixelClass vcPixelClasses[] = (VCPixelClass[])BeanUtils.getArray(vcpcVector,VCPixelClass.class);
 		vcImage.setPixelClasses(vcPixelClasses);
 		
 	} catch (PropertyVetoException e) {
@@ -436,7 +448,7 @@ private void getImageRegionsForVCImage(Connection con, VCImage vcImage) throws S
  * This method was created in VisualAge.
  * @param vcImage cbit.image.VCImage
  */
-private VCPixelClass getPixelClass(Connection con, KeyValue imageRegionKey) throws SQLException, DataAccessException {
+private VCPixelClass getPixelClass(QueryHashtable dbc, Connection con, KeyValue imageRegionKey) throws SQLException, DataAccessException {
 
 	//
 	// check object cache first
@@ -466,7 +478,7 @@ private VCPixelClass getPixelClass(Connection con, KeyValue imageRegionKey) thro
 			String rName = rset.getString(imageRegionTable.regionName.toString()).trim();
 			int pixValue = rset.getInt(imageRegionTable.pixelValue.toString());
 			vcPixelClass = new VCPixelClass(vcpcKey,rName,pixValue);
-			dbc.putUnprotected(vcpcKey,vcPixelClass);
+			dbc.put(vcpcKey,vcPixelClass);
 		}else{
 			throw new ObjectNotFoundException("ImageRegion("+imageRegionKey+") not found");
 		}
@@ -481,7 +493,7 @@ private VCPixelClass getPixelClass(Connection con, KeyValue imageRegionKey) thro
 /**
  * getModel method comment.
  */
-public cbit.vcell.geometry.SubVolume getSubVolume(Connection con, KeyValue svKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+public SubVolume getSubVolume(QueryHashtable dbc, Connection con, KeyValue svKey) throws SQLException, DataAccessException, ObjectNotFoundException {
 	//
 	// try to get the subvolume from the object cache
 	//
@@ -507,7 +519,7 @@ public cbit.vcell.geometry.SubVolume getSubVolume(Connection con, KeyValue svKey
 //showMetaData(rset);
 		SubVolume subVolume = null;
 		if (rset.next()) {			
-			subVolume = getSubVolume(con,rset);
+			subVolume = getSubVolume(dbc, con,rset);
 		}
 		return subVolume;
 	}catch (ExpressionException e){
@@ -521,7 +533,7 @@ public cbit.vcell.geometry.SubVolume getSubVolume(Connection con, KeyValue svKey
 /**
  * getModel method comment.
  */
-private cbit.vcell.geometry.SubVolume getSubVolume(Connection con, ResultSet rset) throws SQLException, DataAccessException, ExpressionException {
+private SubVolume getSubVolume(QueryHashtable dbc, Connection con, ResultSet rset) throws SQLException, DataAccessException, ExpressionException {
 
 	//showMetaData(rset);
 
@@ -543,13 +555,13 @@ private cbit.vcell.geometry.SubVolume getSubVolume(Connection con, ResultSet rse
 	if (imageRegionKey == null) {
 		subVolume = subVolumeTable.getAnalyticOrCompartmentSubVolume(svKey, rset, log);
 	} else {
-		VCPixelClass vcPixelClass = getPixelClass(con, imageRegionKey);
+		VCPixelClass vcPixelClass = getPixelClass(dbc, con, imageRegionKey);
 		subVolume = subVolumeTable.getImageSubVolume(svKey, rset, log, vcPixelClass);
 	}
 	//
 	// put newly read SumVolume into object cache
 	//
-	dbc.putUnprotected(svKey,subVolume);
+	dbc.put(svKey,subVolume);
 	return subVolume;
 }
 
@@ -557,7 +569,7 @@ private cbit.vcell.geometry.SubVolume getSubVolume(Connection con, ResultSet rse
 /**
  * getModel method comment.
  */
-private cbit.vcell.geometry.SubVolume[] getSubVolumesFromGeometry(Connection con, KeyValue geomKey) throws SQLException, DataAccessException {
+private SubVolume[] getSubVolumesFromGeometry(QueryHashtable dbc, Connection con, KeyValue geomKey) throws SQLException, DataAccessException {
 	//log.print("GeomDbDriver.getSubVolumesFromGeometry(geometryKey="+geomKey+")");
 	String sql;
 	
@@ -577,7 +589,7 @@ private cbit.vcell.geometry.SubVolume[] getSubVolumesFromGeometry(Connection con
 		SubVolume subVolume = null;
 		while (rset.next()) {
 			
-			subVolume = getSubVolume(con,rset);
+			subVolume = getSubVolume(dbc, con,rset);
 
 			subVolumeList.addElement(subVolume);
 			
@@ -643,7 +655,7 @@ System.out.println(sql);
 			VolumeGeometricRegion volumeRegion = geoRegionTable.getVolumeRegion(rset,geom,log);
 			regionList.add(volumeRegion);
 		}
-		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
+		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
 		
 		//
 		// read surface regions from GeometricRegionTable
@@ -670,7 +682,7 @@ System.out.println(sql);
 		//
 		// set regions onto the geometrySurfaceDescription
 		//
-		GeometricRegion regions[] = (GeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
+		GeometricRegion regions[] = (GeometricRegion[])BeanUtils.getArray(regionList,GeometricRegion.class);
 		geom.getGeometrySurfaceDescription().setGeometricRegions(regions);
 		
 		
@@ -687,12 +699,12 @@ System.out.println(sql);
 /**
  * getModel method comment.
  */
-private cbit.image.VCImage getVCImage(Connection con, User user, KeyValue imageKey, boolean bCheckPermission) 
+private VCImage getVCImage(QueryHashtable dbc, Connection con, User user, KeyValue imageKey, boolean bCheckPermission) 
 			throws SQLException, DataAccessException, ObjectNotFoundException {
 
 	//log.print("GeomDbDriver.getImage(user="+user+", id="+imageKey+")");
 	String sql;
-	Field[] f = {new cbit.sql.StarField(imageTable),userTable.userid,imageDataTable.data,new cbit.sql.StarField(extentTable)};
+	Field[] f = {new StarField(imageTable),userTable.userid,imageDataTable.data,new StarField(extentTable)};
 	Table[] t = {imageTable,userTable,imageDataTable,extentTable};
 	String condition =	imageTable.id.getQualifiedColName() + " = " + imageKey +
 					" AND " + imageTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName() +
@@ -710,9 +722,9 @@ private cbit.image.VCImage getVCImage(Connection con, User user, KeyValue imageK
 	
 		if (rset.next()) {
 			vcImage = imageTable.getImage(rset,con,log,imageDataTable);
-			getImageRegionsForVCImage(con, vcImage);
+			getImageRegionsForVCImage(dbc, con, vcImage);
 		}else{
-			throw new org.vcell.util.ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
+			throw new ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -728,7 +740,7 @@ private cbit.image.VCImage getVCImage(Connection con, User user, KeyValue imageK
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public Versionable getVersionable(Connection con, User user, VersionableType vType, KeyValue vKey, boolean bCheckPermission) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey, boolean bCheckPermission) 
 					throws ObjectNotFoundException, SQLException, DataAccessException {
 						
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -736,13 +748,13 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		return versionable;
 	} else {
 		if (vType.equals(VersionableType.VCImage)){
-			versionable = getVCImage(con, user, vKey,bCheckPermission);
+			versionable = getVCImage(dbc, con, user, vKey,bCheckPermission);
 		}else if (vType.equals(VersionableType.Geometry)){
-			versionable = getGeometry(con, user, vKey,bCheckPermission);
+			versionable = getGeometry(dbc, con, user, vKey,bCheckPermission);
 		}else{
 			throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 		}
-		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
+		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 	return versionable;
 }
@@ -755,7 +767,7 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
  * @exception java.rmi.RemoteException The exception description.
  */
 private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue imageKey, VCImage image) 
-				throws SQLException, DataAccessException,ImageException,cbit.image.GifParsingException{
+				throws SQLException, DataAccessException,ImageException,GifParsingException{
 
 	String sql;
 	sql = "INSERT INTO " + browseImageDataTable.getTableName() + " " + 
@@ -806,20 +818,20 @@ private void insertExtentSQL(Connection con, KeyValue key, double extentX, doubl
  */
 private void insertFilamentsSQL(Connection con, Geometry geom, KeyValue geomKey) throws SQLException, DataAccessException {
 	String sql;
-	cbit.vcell.geometry.Filament[] filaments = geom.getGeometrySpec().getFilamentGroup().getFilaments();
+	Filament[] filaments = geom.getGeometrySpec().getFilamentGroup().getFilaments();
 	for (int i = 0; i < filaments.length; i++) { //Iterate through Filaments
 		KeyValue newFilamentKey = getNewKey(con);
 		//
 		//Insert Filament
 		//
-		cbit.vcell.geometry.Filament currentFilament = filaments[i];
+		Filament currentFilament = filaments[i];
 		sql = 	"INSERT INTO " + filamentTable.getTableName() + " " + filamentTable.getSQLColumnList() + 
 				" VALUES " + filamentTable.getSQLValueList(newFilamentKey, currentFilament.getName(), geomKey);
 		updateCleanSQL(con, sql);
 		//
 		//Insert all Curves for this filament
 		//
-		cbit.vcell.geometry.Curve[] curves = currentFilament.getCurves();
+		Curve[] curves = currentFilament.getCurves();
 		for (int j = 0; j < curves.length; j += 1) {
 			KeyValue newCurveKey = getNewKey(con);
 			sql = 	"INSERT INTO " + curveTable.getTableName() + " " + curveTable.getSQLColumnList() + 
@@ -847,7 +859,7 @@ private void insertFilamentsSQL(Connection con, Geometry geom, KeyValue geomKey)
 /**
  * This method was created in VisualAge.
  */
-private void insertGeometry(InsertHashtable hash, Connection con, User user, Geometry geom, KeyValue updatedImageKey, Version newVersion, boolean bVersionChildren) 
+private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection con, User user, Geometry geom, KeyValue updatedImageKey, Version newVersion, boolean bVersionChildren) 
 					throws ImageException, SQLException, DataAccessException,RecordChangedException {
 	//log.print("GeomDbDriver.insertGeometry(" + geom + ")");
 
@@ -890,7 +902,7 @@ private void insertGeometry(InsertHashtable hash, Connection con, User user, Geo
 	insertGeometrySQL(con, geom, updatedImageKey, extentKey, newVersion,user);
 	hash.put(geom,newVersion.getVersionKey());
 	if (updatedImageKey != null && !updatedImageKey.equals(geom.getGeometrySpec().getImage().getKey())){
-		VCImage resavedImage = getVCImage(con, user, updatedImageKey, true);
+		VCImage resavedImage = getVCImage(dbc, con, user, updatedImageKey, true);
 		try {
 			geom.getGeometrySpec().setImage(resavedImage);
 		} catch (PropertyVetoException e) {
@@ -1146,12 +1158,12 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
  * @param pRef cbit.sql.KeyValue
  * @param bCommit boolean
  */
-public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, Geometry geometry, KeyValue updatedImageKey, String name, boolean bVersion) 
+public KeyValue insertVersionable(InsertHashtable hash, QueryHashtable dbc, Connection con, User user, Geometry geometry, KeyValue updatedImageKey, String name, boolean bVersion) 
 					throws DataAccessException, SQLException, RecordChangedException {
 						
 	Version newVersion = insertVersionableInit(hash, con, user, geometry, name, geometry.getDescription(), bVersion);
 	try {
-		insertGeometry(hash, con, user, geometry, updatedImageKey, newVersion,bVersion);
+		insertGeometry(hash, dbc, con, user, geometry, updatedImageKey, newVersion,bVersion);
 		return newVersion.getVersionKey();
 	} catch (ImageException e) {
 		log.exception(e);
@@ -1187,13 +1199,13 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
  * @param user cbit.vcell.server.User
  * @param image cbit.image.VCImage
  */
-public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, Geometry geometry, KeyValue updatedImageKey, boolean bVersion) 
+public KeyValue updateVersionable(InsertHashtable hash, QueryHashtable dbc, Connection con, User user, Geometry geometry, KeyValue updatedImageKey, boolean bVersion) 
 			throws DataAccessException, SQLException, RecordChangedException{
 				
 	Version newVersion = null;
 	try {
 		newVersion = updateVersionableInit(hash, con, user, geometry, bVersion);
-		insertGeometry(hash, con, user, geometry, updatedImageKey, newVersion, bVersion);
+		insertGeometry(hash, dbc, con, user, geometry, updatedImageKey, newVersion, bVersion);
 	} catch (ImageException e) {
 		log.exception(e);
 		throw new DataAccessException("ImageException: " + e.getMessage());

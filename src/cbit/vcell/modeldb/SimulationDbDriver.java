@@ -3,13 +3,12 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import java.beans.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.server.*;
-import cbit.sql.*;
-import java.sql.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -23,6 +22,15 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
+
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SolverResultSetInfo;
 /**
  * This type was created in VisualAge.
  */
@@ -38,8 +46,8 @@ public class SimulationDbDriver extends DbDriver {
  * @param connectionFactory cbit.sql.ConnectionFactory
  * @param sessionLog cbit.vcell.server.SessionLog
  */
-public SimulationDbDriver(DBCacheTable argdbc,MathDescriptionDbDriver argMathDB,SessionLog sessionLog) {
-	super(argdbc,sessionLog);
+public SimulationDbDriver(MathDescriptionDbDriver argMathDB,SessionLog sessionLog) {
+	super(sessionLog);
 	this.mathDB = argMathDB;
 }
 
@@ -149,7 +157,6 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.Simulation)){
 		deleteSimulationSQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else{
 		throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 	}
@@ -368,7 +375,7 @@ SolverResultSetInfo[] getResultSetInfos(Connection con, User user, KeyValue simK
  * @param user cbit.vcell.server.User
  * @param mathDescKey cbit.sql.KeyValue
  */
-private Simulation getSimulationSQL(Connection con,User user, KeyValue simKey) 
+private Simulation getSimulationSQL(QueryHashtable dbc, Connection con,User user, KeyValue simKey) 
 				throws SQLException,DataAccessException,ObjectNotFoundException {
 
 	String sql;
@@ -388,7 +395,7 @@ private Simulation getSimulationSQL(Connection con,User user, KeyValue simKey)
 			// note: must call simulationTable.getSimulation() first (rset.getBytes(language) must be called first)
 			//
 			try {
-				simulation = simTable.getSimulation(rset,log,con,user,mathDB);
+				simulation = simTable.getSimulation(dbc, rset,log,con,user,mathDB);
 			}catch (PropertyVetoException e){
 				log.exception(e);
 				throw new DataAccessException(e.getMessage());
@@ -409,7 +416,7 @@ private Simulation getSimulationSQL(Connection con,User user, KeyValue simKey)
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public Versionable getVersionable(Connection con, User user, VersionableType vType, KeyValue vKey)
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey)
 				throws ObjectNotFoundException, SQLException, DataAccessException {
 					
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -417,11 +424,11 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		return versionable;
 	} else {
 		if (vType.equals(VersionableType.Simulation)){
-			versionable = getSimulationSQL(con, user, vKey);
+			versionable = getSimulationSQL(dbc, con, user, vKey);
 		}else{
 			throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 		}
-		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
+		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 	return versionable;
 }

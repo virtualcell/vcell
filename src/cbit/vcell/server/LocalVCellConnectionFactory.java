@@ -56,14 +56,13 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 			connectionFactory = new cbit.sql.OraclePoolingConnectionFactory(sessionLog);
 		}
 		KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
-		DBCacheTable dbCacheTable = new cbit.sql.DBCacheTable(1000*60*30);
-		LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory, dbCacheTable);
+		LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
 		cbit.vcell.messaging.JmsConnectionFactory jmsConnFactory = null;
 		
 		if (!bLocal) {
 			jmsConnFactory = new cbit.vcell.messaging.JmsConnectionFactoryImpl();
 		}
-		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",jmsConnFactory,connectionFactory, keyFactory, dbCacheTable, sessionLog)).getVCellServer();
+		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",jmsConnFactory,connectionFactory, keyFactory, sessionLog)).getVCellServer();
 		return vcServer.getVCellConnection(userID, password);
 	} catch (AuthenticationException exc) {
 		sessionLog.exception(exc);

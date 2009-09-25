@@ -37,7 +37,6 @@ public class LocalVCellConnection extends UnicastRemoteObject implements VCellCo
 	//
 	private static cbit.sql.ConnectionFactory conFactory = null;
 	private static cbit.sql.KeyFactory keyFactory = null;
-	private static cbit.sql.DBCacheTable dbCacheTable = null;
 
 	
 	private SessionLog fieldSessionLog = null;
@@ -286,7 +285,7 @@ public User getUser() {
 public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUser() + ")");
 	if (userMetaDbServer == null) {
-		userMetaDbServer = new cbit.vcell.modeldb.LocalUserMetaDbServer(conFactory, keyFactory, dbCacheTable, getUser(), getSessionLog());
+		userMetaDbServer = new cbit.vcell.modeldb.LocalUserMetaDbServer(conFactory, keyFactory, getUser(), getSessionLog());
 	}
 	return userMetaDbServer;
 }
@@ -296,10 +295,9 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
  * This method was created in VisualAge.
  * @param conFactory cbit.sql.ConnectionFactory
  */
-static void setDatabaseResources(cbit.sql.ConnectionFactory argConFactory, KeyFactory argKeyFactory, DBCacheTable argDBCacheTable) {
+static void setDatabaseResources(cbit.sql.ConnectionFactory argConFactory, KeyFactory argKeyFactory) {
 	conFactory = argConFactory;
 	keyFactory = argKeyFactory;
-	dbCacheTable = argDBCacheTable;
 }
 
 

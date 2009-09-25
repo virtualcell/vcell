@@ -4,20 +4,13 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.beans.*;
-
-import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
-import cbit.vcell.model.Membrane.MembraneVoltage;
-import cbit.vcell.model.Structure.StructureSize;
-import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
-
-import java.io.*;
-import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
@@ -27,6 +20,23 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+
+import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for
@@ -145,8 +155,6 @@ public void addReactionParticipant(ReactionParticipant reactionParticipant) thro
 		try{
 			ReactionParticipant newReactionParticipants[] = (ReactionParticipant[])BeanUtils.addElement(fieldReactionParticipants, reactionParticipant);
 			setReactionParticipants(newReactionParticipants);
-			reactionParticipant.removePropertyChangeListener(this);
-			reactionParticipant.addPropertyChangeListener(this);
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 			System.out.println("exception: error adding reactionParticipant to reactionStep ..."+e.getMessage());
@@ -743,6 +751,7 @@ public void setReactionParticipants(ReactionParticipant[] reactionParticipants) 
 	
 	if (oldValue!=null){
 		for (int i = 0; i < oldValue.length; i++){
+			oldValue[i].removePropertyChangeListener(this);
 			oldValue[i].removeVetoableChangeListener(this);
 		}
 
@@ -752,6 +761,7 @@ public void setReactionParticipants(ReactionParticipant[] reactionParticipants) 
 	
 	if (reactionParticipants!=null){
 		for (int i = 0; i < reactionParticipants.length; i++){
+			reactionParticipants[i].addPropertyChangeListener(this);
 			reactionParticipants[i].addVetoableChangeListener(this);
 		}
 

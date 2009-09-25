@@ -1,45 +1,28 @@
 package cbit.vcell.modeldb;
 import java.sql.ResultSet;
-import java.sql.Statement;
-import cbit.vcell.math.MathDescription;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.rmi.RemoteException;
 import java.sql.SQLException;
-import cbit.vcell.server.AdminDatabaseServer;
-import cbit.sql.DBCacheTable;
-import cbit.sql.ConnectionFactory;
-import java.beans.*;
-import cbit.vcell.solver.SolverResultSetInfo;
-import java.util.Vector;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.biomodel.BioModelMetaData;
-import java.io.File;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.VersionableType;
 
-import cbit.vcell.math.MathException;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
+import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
  * Creation date: (2/2/01 2:57:33 PM)
@@ -59,7 +42,6 @@ public class MathVerifier {
 	private cbit.sql.ConnectionFactory conFactory = null;
 	private DatabaseServerImpl dbServerImpl = null;
 	private cbit.sql.KeyFactory keyFactory = null;
-	private DBCacheTable cacheTable = null;
 	private org.vcell.util.SessionLog log = null;
 	private cbit.vcell.modeldb.MathDescriptionDbDriver mathDescDbDriver = null;
 	private java.util.HashSet skipHash = new java.util.HashSet(); // holds KeyValues of BioModels to skip
@@ -67,15 +49,14 @@ public class MathVerifier {
 /**
  * ResultSetCrawler constructor comment.
  */
-public MathVerifier(ConnectionFactory argConFactory, KeyFactory argKeyFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, DBCacheTable dbCacheTable) throws DataAccessException, SQLException {
+public MathVerifier(ConnectionFactory argConFactory, KeyFactory argKeyFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog) throws DataAccessException, SQLException {
 	this.conFactory = argConFactory;
 	this.keyFactory = argKeyFactory;
 	this.log = argSessionLog;
 	this.adminDbServer = argAdminDbServer;
-	this.cacheTable = dbCacheTable;
-	GeomDbDriver geomDB = new GeomDbDriver(dbCacheTable,argSessionLog);
-	this.mathDescDbDriver = new MathDescriptionDbDriver(dbCacheTable,geomDB,argSessionLog);
-	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,dbCacheTable,argSessionLog);
+	GeomDbDriver geomDB = new GeomDbDriver(argSessionLog);
+	this.mathDescDbDriver = new MathDescriptionDbDriver(geomDB,argSessionLog);
+	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
 }
 
 

@@ -3,26 +3,13 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.server.AdminDatabaseServer;
-import cbit.sql.DBCacheTable;
-import cbit.sql.ConnectionFactory;
-import cbit.vcell.solver.SolverResultSetInfo;
-
-import java.util.List;
-import java.util.Vector;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.Simulation;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.PrintWriter;
-
-import java.util.LinkedList;
-import java.beans.PropertyVetoException;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
-
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
@@ -31,6 +18,15 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+
+import cbit.sql.ConnectionFactory;
+import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 
 
 /**
@@ -42,7 +38,6 @@ public class ResultSetCrawler {
 	private AdminDatabaseServer adminDbServer = null;
 	private cbit.sql.ConnectionFactory conFactory = null;
 	private org.vcell.util.SessionLog log = null;
-	private cbit.sql.DBCacheTable dbCacheTable = null;
 	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
 	private File dataRootDir = null;
 	private String outputDirName = null;
@@ -73,20 +68,19 @@ public class ResultSetCrawler {
 /**
  * ResultSetCrawler constructor comment.
  */
-public ResultSetCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, DBCacheTable argDbCacheTable) throws SQLException {
-	this(argConFactory, argAdminDbServer, argSessionLog, argDbCacheTable, null);
+public ResultSetCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog) throws SQLException {
+	this(argConFactory, argAdminDbServer, argSessionLog, null);
 }
 
 
 /**
  * ResultSetCrawler constructor comment.
  */
-private ResultSetCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, DBCacheTable argDbCacheTable, String argOutputDirName) throws SQLException {
+private ResultSetCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, String argOutputDirName) throws SQLException {
 	this.conFactory = argConFactory;
 	this.log = argSessionLog;
 	this.adminDbServer = argAdminDbServer;
-	this.dbCacheTable = argDbCacheTable;
-	this.resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory,log,dbCacheTable);
+	this.resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory,log);
 	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
 	outputDirName = argOutputDirName;
 }
@@ -298,9 +292,8 @@ public static void main(String[] args) {
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
-		cbit.sql.DBCacheTable dbCacheTable = new DBCacheTable(1000*60*30);		
 			
-		ResultSetCrawler crawler = new ResultSetCrawler(conFactory, adminDbServer, log, dbCacheTable, outputdir);
+		ResultSetCrawler crawler = new ResultSetCrawler(conFactory, adminDbServer, log, outputdir);
 		if (SCAN_SINGLE) {
 			crawler.scanAUser(username, SCAN_ONLY);
 		} else {
@@ -470,7 +463,7 @@ private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLExcepti
 	log.print("Total user directories: " + userDirs.length);
 
 	org.vcell.util.document.UserInfo userInfos[] = adminDbServer.getUserInfos();	
-	DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log,dbCacheTable);
+	DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log);
 
 	File userDir = null;
 	File outputDir = getOutputDirectory();
@@ -540,7 +533,7 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
 			return;
 		}
 		
-		DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log,dbCacheTable);
+		DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log);
 		
 		// find all the user simulations
 		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,org.vcell.util.document.VersionableType.Simulation,false,false, true);

@@ -183,11 +183,10 @@ public static void main(java.lang.String[] args) {
 		//
 		// don't timeout entries, and use vcell.properties for cacheSize
 		//
-		DBCacheTable dbCacheTable = new cbit.sql.DBCacheTable(-1,0);
-		LocalVCellConnection.setDatabaseResources(conFactory,keyFactory,dbCacheTable);
+		LocalVCellConnection.setDatabaseResources(conFactory,keyFactory);
 		
 		AdminDatabaseServer adminDbServer = new cbit.vcell.modeldb.LocalAdminDbServer(conFactory,keyFactory,log);
-		ResultSetCrawler rsCrawler = new ResultSetCrawler(conFactory,adminDbServer,log,dbCacheTable);
+		ResultSetCrawler rsCrawler = new ResultSetCrawler(conFactory,adminDbServer,log);
 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(bPrimary,host+":"+rmiPort,adminDbServer,rsCrawler,jmsConnFactory,bRemoteMode);
 		
 		//

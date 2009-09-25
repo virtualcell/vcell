@@ -13,7 +13,7 @@ import org.vcell.util.document.KeyValue;
  * Versionable objects themselves are not stored here
  */
 public class InsertHashtable {
-	private Hashtable hash = new Hashtable();
+	private Hashtable<Object, KeyValue> hash = new Hashtable<Object, KeyValue>();
 /**
  * InsertHashtable constructor comment.
  */

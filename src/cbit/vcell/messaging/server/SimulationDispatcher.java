@@ -84,7 +84,7 @@ public SimulationDispatcher(int serviceOrdinal, String logdir) throws Exception 
 	conFactory = new OraclePoolingConnectionFactory(log);
 	keyFactory = new OracleKeyFactory();		
 	adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
-	rsCrawler = new ResultSetCrawler(conFactory, adminDbServer, log, new DBCacheTable(1000*60*30));	
+	rsCrawler = new ResultSetCrawler(conFactory, adminDbServer, log);	
 
 	dispatcherMessaging = new SimulationDispatcherMessaging(this, conFactory, keyFactory, log);	
 }

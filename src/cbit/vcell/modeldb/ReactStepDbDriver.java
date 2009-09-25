@@ -1,14 +1,12 @@
 package cbit.vcell.modeldb;
-import cbit.vcell.dictionary.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.beans.*;
-import java.sql.*;
-import java.util.*;
-import cbit.sql.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -20,8 +18,22 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
-import cbit.vcell.model.*;
-import cbit.vcell.mapping.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.StarField;
+import cbit.sql.Table;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Flux;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */
@@ -39,8 +51,8 @@ public class ReactStepDbDriver extends DbDriver {
 /**
  * LocalDBManager constructor comment.
  */
-public ReactStepDbDriver(DBCacheTable argdbc,ModelDbDriver modelDB, SessionLog sessionLog,DictionaryDbDriver argDictDB) {
-	super(argdbc,sessionLog);
+public ReactStepDbDriver(ModelDbDriver modelDB, SessionLog sessionLog,DictionaryDbDriver argDictDB) {
+	super(sessionLog);
 	this.modelDB = modelDB;
 	this.dictDB = argDictDB;
 }
@@ -83,7 +95,7 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
  * @param rset java.sql.ResultSet
  * @exception java.sql.SQLException The exception description.
  */
-private ReactionParticipant getReactionParticipant(Connection con, ResultSet rset, ReactionStep rs) throws SQLException, DataAccessException {
+private ReactionParticipant getReactionParticipant(QueryHashtable dbc, Connection con, ResultSet rset, ReactionStep rs) throws SQLException, DataAccessException {
 	//
 	// try to get ReactionParticipant from object cache
 	//
@@ -105,7 +117,7 @@ private ReactionParticipant getReactionParticipant(Connection con, ResultSet rse
 	//
 	// get referenced Objects (Species and Structure)
 	//
-	SpeciesContext speciesContext = modelDB.getSpeciesContext(con,speciesContextKey);
+	SpeciesContext speciesContext = modelDB.getSpeciesContext(dbc, con,speciesContextKey);
 	try {
 		rp.setSpeciesContext(speciesContext);
 	}catch (PropertyVetoException e){
@@ -128,7 +140,7 @@ private ReactionParticipant getReactionParticipant(Connection con, ResultSet rse
 	//
 	// stick ReactionParticipant in object cache
 	//
-	dbc.putUnprotected(rpKey,rp);
+	dbc.put(rpKey,rp);
 	
 	return rp;
 }
@@ -137,7 +149,7 @@ private ReactionParticipant getReactionParticipant(Connection con, ResultSet rse
 /**
  * getModel method comment.
  */
-private ReactionParticipant[] getReactionParticipants(Connection con, KeyValue reactStepID, ReactionStep rs) throws SQLException, DataAccessException, ObjectNotFoundException {
+private ReactionParticipant[] getReactionParticipants(QueryHashtable dbc, Connection con, KeyValue reactStepID, ReactionStep rs) throws SQLException, DataAccessException, ObjectNotFoundException {
 	if (reactStepID == null) {
 		throw new IllegalArgumentException("Improper parameters for getReactionParticipants");
 	}
@@ -158,7 +170,7 @@ private ReactionParticipant[] getReactionParticipants(Connection con, KeyValue r
 		// get the ReactionParticipants
 		//
 		while (rset.next()) {
-			ReactionParticipant rp = getReactionParticipant(con, rset, rs);
+			ReactionParticipant rp = getReactionParticipant(dbc, con, rset, rs);
 			rpList.addElement(rp);
 		}
 
@@ -181,7 +193,7 @@ private ReactionParticipant[] getReactionParticipants(Connection con, KeyValue r
 /**
  * getModels method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,KeyValue reactionStepKey) throws SQLException, DataAccessException, PropertyVetoException {
+public cbit.vcell.model.ReactionStep getReactionStep(QueryHashtable dbc, Connection con, User user,KeyValue reactionStepKey) throws SQLException, DataAccessException, PropertyVetoException {
 
 	Field[] f =
 	{
@@ -201,7 +213,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,K
 		
 	String sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
 	
-	ReactionStep[] rsArr = getReactionStepArray(con,sql);
+	ReactionStep[] rsArr = getReactionStepArray(dbc, con,sql);
 	if(rsArr != null && rsArr.length > 0){
 		return rsArr[0];
 	}
@@ -215,7 +227,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(Connection con, User user,K
  * @param rset java.sql.ResultSet
  * @exception java.sql.SQLException The exception description.
  */
-private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLException, DataAccessException, PropertyVetoException {
+private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultSet rset) throws SQLException, DataAccessException, PropertyVetoException {
 
 	//
 	// try to get ReactionStep from the object cache
@@ -231,16 +243,14 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 	//
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(ReactStepTable.table.structRef.toString()));
 	
-	Structure structure = getStructureHeirarchy(con, structKey);
+	Structure structure = getStructureHeirarchy(dbc, con, structKey);
 	rs = reactStepTable.getReactionStep(structure, rsKey, rset, log);
 
 	//
 	// add reaction participants for this reactionStep
-	//
-	ReactionParticipant rp_Array[] = getReactionParticipants(con,rsKey,rs);
-	for (int i = 0; i < rp_Array.length; i++) {
-		rs.addReactionParticipant(rp_Array[i]);
-	}
+	//	
+	ReactionParticipant rp_Array[] = getReactionParticipants(dbc, con,rsKey,rs);
+	rs.setReactionParticipants(rp_Array);
 
 	try {
 		rs.getKinetics().bind(rs);
@@ -249,7 +259,7 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 		throw new DataAccessException("ExpressionException: "+e.getMessage());
 	}
 
-	dbc.putUnprotected(rsKey,rs);
+	dbc.put(rsKey,rs);
 	
 //	MIRIAMTable.table.setMIRIAMAnnotation(con, rs, rs.getKey());
 	return rs;
@@ -259,7 +269,7 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 /**
  * getModels method comment.
  */
-private cbit.vcell.model.ReactionStep[] getReactionStepArray(Connection con,String sql) throws SQLException, DataAccessException, PropertyVetoException {
+private ReactionStep[] getReactionStepArray(QueryHashtable dbc, Connection con,String sql) throws SQLException, DataAccessException, PropertyVetoException {
 
 	java.util.Vector reactStepList = new java.util.Vector();
 	Statement stmt = con.createStatement();
@@ -271,7 +281,7 @@ private cbit.vcell.model.ReactionStep[] getReactionStepArray(Connection con,Stri
 		// get all objects
 		//
 		while (rset.next()) {
-			ReactionStep reactionStep = getReactionStep(con, rset);
+			ReactionStep reactionStep = getReactionStep(dbc, con, rset);
 			reactStepList.addElement(reactionStep);
 		}
 	} finally {
@@ -308,21 +318,21 @@ private cbit.vcell.model.ReactionStep[] getReactionStepArray(Connection con,Stri
 /**
  * getModels method comment.
  */
-cbit.vcell.model.ReactionStep[] getReactionStepsFromModel(Connection con,KeyValue modelKey) throws SQLException, DataAccessException, PropertyVetoException {
+ReactionStep[] getReactionStepsFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey) throws SQLException, DataAccessException, PropertyVetoException {
 	//log.print("ModelDbDriver.getReactionSteps(modelKey=" + modelKey + ")");
 	String sql;
 	sql = 	" SELECT " + reactStepTable.getTableName()+".*" + 
 			" FROM " + reactStepTable.getTableName() + 
 			" WHERE " + reactStepTable.getTableName() + "." + reactStepTable.modelRef + " = " + modelKey;
 			
-	return getReactionStepArray(con,sql);
+	return getReactionStepArray(dbc, con,sql);
 }
 
 
 /**
  * getModel method comment.
  */
-public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) throws SQLException, DataAccessException, ObjectNotFoundException {
+public Species getSpecies(QueryHashtable dbc, Connection con, KeyValue speciesID) throws SQLException, DataAccessException, ObjectNotFoundException {
 	//
 	// try to get Species from the object cache
 	//
@@ -349,7 +359,7 @@ public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) t
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			species = getSpecies(rset,con);
+			species = getSpecies(dbc, rset,con);
 		} else {
 			throw new org.vcell.util.ObjectNotFoundException("Species id=" + speciesID + " not found");
 		}
@@ -365,7 +375,7 @@ public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) t
 /**
  * getModel method comment.
  */
-public Species[] getSpecies(Connection con,User user) throws SQLException, DataAccessException {
+public Species[] getSpecies(QueryHashtable dbc, Connection con,User user) throws SQLException, DataAccessException {
 	//log.print("ReactStepDbDriver.getSpecies()");
 	
 	String sql;
@@ -390,7 +400,7 @@ public Species[] getSpecies(Connection con,User user) throws SQLException, DataA
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			Species s = getSpecies(rset,con);
+			Species s = getSpecies(dbc, rset,con);
 			speciesList.addElement(s);
 		}
 	} finally {
@@ -416,7 +426,7 @@ public Species[] getSpecies(Connection con,User user) throws SQLException, DataA
  * @param rset java.sql.ResultSet
  * @exception java.sql.SQLException The exception description.
  */
-private Species getSpecies(ResultSet rset,Connection con) throws SQLException, DataAccessException {
+private Species getSpecies(QueryHashtable dbc, ResultSet rset,Connection con) throws SQLException, DataAccessException {
 	//
 	// look in object cache (don't instantiate a new one if possible)
 	//
@@ -434,7 +444,7 @@ private Species getSpecies(ResultSet rset,Connection con) throws SQLException, D
 		if(dbSpeciesKey != null){
 			dbSpeciesRef = (DBSpecies)dbc.get(dbSpeciesKey);
 			if(dbSpeciesRef == null){
-				dbSpeciesRef = dictDB.getDBSpeciesFromKeyValue(con,dbSpeciesKey);
+				dbSpeciesRef = dictDB.getDBSpeciesFromKeyValue(dbc, con,dbSpeciesKey);
 			}
 		}
 		
@@ -442,7 +452,7 @@ private Species getSpecies(ResultSet rset,Connection con) throws SQLException, D
 		//
 		// stick new one in cache
 		//
-		dbc.putUnprotected(speciesKey,species);
+		dbc.put(speciesKey,species);
 		return species;
 	}
 }
@@ -451,7 +461,7 @@ private Species getSpecies(ResultSet rset,Connection con) throws SQLException, D
 /**
  * Selects all structures that are topologically neighboring (according to the parentRef field)
  */
-public cbit.vcell.model.Structure getStructureHeirarchy(Connection con,KeyValue structKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+public Structure getStructureHeirarchy(QueryHashtable dbc, Connection con,KeyValue structKey) throws SQLException, DataAccessException, ObjectNotFoundException {
 	String sql;
 
 	//
@@ -538,7 +548,7 @@ public cbit.vcell.model.Structure getStructureHeirarchy(Connection con,KeyValue 
 	enum1 = tempHash.elements();
 	while (enum1.hasMoreElements()){
 		Structure struct = (Structure)enum1.nextElement();
-		dbc.putUnprotected(struct.getKey(),struct);
+		dbc.put(struct.getKey(),struct);
 	}
 
 	//
@@ -584,7 +594,7 @@ private void getStructureHeirarchy(Connection con, ResultSet rset, Hashtable tem
 /**
  * getModel method comment.
  */
-public Structure[] getStructures0(Connection con) throws SQLException, DataAccessException, ObjectNotFoundException {
+public Structure[] getStructures0(QueryHashtable dbc, Connection con) throws SQLException, DataAccessException, ObjectNotFoundException {
 	//log.print("ReactStepDbDriver.getStructures()");
 	String sql;
 	sql =	" SELECT id " + 
@@ -602,7 +612,7 @@ public Structure[] getStructures0(Connection con) throws SQLException, DataAcces
 		while (rset.next()) {
 			Structure structure = null;
 			KeyValue structKey = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
-			structure = getStructureHeirarchy(con, structKey);
+			structure = getStructureHeirarchy(dbc, con, structKey);
 			structList.addElement(structure);
 		}
 	} finally {
@@ -621,7 +631,7 @@ public Structure[] getStructures0(Connection con) throws SQLException, DataAcces
 /**
  * getModel method comment.
  */
-public Structure[] getStructuresFromModel(Connection con,KeyValue modelKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+public Structure[] getStructuresFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey) throws SQLException, DataAccessException, ObjectNotFoundException {
 	//log.print("ReactStepDbDriver.getStructures()");
 	String sql;
 	sql =	" SELECT " + modelStructLinkTable.structRef + 
@@ -645,7 +655,7 @@ public Structure[] getStructuresFromModel(Connection con,KeyValue modelKey) thro
 		while (rset.next()) {
 			Structure structure = null;
 			KeyValue structKey = new KeyValue(rset.getBigDecimal(modelStructLinkTable.structRef.toString()));
-			structure = getStructureHeirarchy(con, structKey);
+			structure = getStructureHeirarchy(dbc, con, structKey);
 			structList.addElement(structure);
 		}
 	} finally {

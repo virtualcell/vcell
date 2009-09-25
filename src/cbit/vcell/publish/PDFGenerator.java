@@ -26,18 +26,16 @@ public class PDFGenerator {
 	private ConnectionFactory conFactory = null;
 	private DatabaseServerImpl dbServerImpl = null;
 	private KeyFactory keyFactory = null;
-	private DBCacheTable cacheTable = null;
 	private SessionLog log = null;
 
 /**
  * PDFGenerator constructor comment.
  */
-public PDFGenerator(ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog, DBCacheTable dbCacheTable) throws DataAccessException {
+public PDFGenerator(ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) throws DataAccessException {
 	this.conFactory = argConFactory;
 	this.keyFactory = argKeyFactory;
 	this.log = argSessionLog;
-	this.cacheTable = dbCacheTable;
-	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,dbCacheTable,argSessionLog);
+	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
 }
 
 

@@ -1,19 +1,8 @@
 package cbit.vcell.modeldb;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.model.Feature;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.model.Structure;
-import java.beans.*;
-
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.OutputFunctionContext;
-
-import java.sql.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
@@ -30,12 +19,33 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
-import cbit.sql.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.server.*;
-import cbit.vcell.mapping.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.QueryHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.Electrode;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.IllegalMappingException;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  */
@@ -48,7 +58,6 @@ public class SimulationContextDbDriver extends DbDriver {
 	public static final StimulusTable stimulusTable = StimulusTable.table;
 	private GeomDbDriver geomDB = null;
 	private ModelDbDriver modelDB = null;
-	private ReactStepDbDriver reactStepDB = null;
 	private MathDescriptionDbDriver mathDescDB = null;
 
 /**
@@ -56,13 +65,12 @@ public class SimulationContextDbDriver extends DbDriver {
  * @param connectionFactory cbit.sql.ConnectionFactory
  * @param sessionLog cbit.vcell.server.SessionLog
  */
-public SimulationContextDbDriver(DBCacheTable argdbc,GeomDbDriver argGeomDB,ModelDbDriver argModelDB,
-		MathDescriptionDbDriver argMathDescDB,ReactStepDbDriver argReactStepDB, SessionLog sessionLog) {
-	super(argdbc,sessionLog);
+public SimulationContextDbDriver(GeomDbDriver argGeomDB,ModelDbDriver argModelDB,
+		MathDescriptionDbDriver argMathDescDB,SessionLog sessionLog) {
+	super(sessionLog);
 	this.geomDB = argGeomDB;
 	this.modelDB = argModelDB;
 	this.mathDescDB = argMathDescDB;
-	this.reactStepDB = argReactStepDB;
 }
 
 
@@ -403,7 +411,7 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
  * This method was created in VisualAge.
  * @param simContext cbit.vcell.mapping.SimulationContext
  */
-private void assignStructureMappingsSQL(Connection con,KeyValue simContextKey, SimulationContext simContext) throws SQLException, DataAccessException {
+private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyValue simContextKey, SimulationContext simContext) throws SQLException, DataAccessException {
 	String sql;
 	sql = 	" SELECT " + "*" + 
 			" FROM " + structureMappingTable.getTableName() + 
@@ -446,7 +454,7 @@ private void assignStructureMappingsSQL(Connection con,KeyValue simContextKey, S
 			
 			if (theSubVolume == null) {
 				log.alert("Can't match structure and subvolume, inserting Kludge and let reference resolver fix it later ...<<<<<<BAD>>>>>");
-				theSubVolume = geomDB.getSubVolume(con,subVolumeRef);
+				theSubVolume = geomDB.getSubVolume(dbc, con,subVolumeRef);
 				if (theSubVolume == null){
 					throw new DataAccessException("Can't match structure and subvolume, 'even with subvolume fix'");
 				}
@@ -614,7 +622,6 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.SimulationContext)){
 		deleteSimContextSQL(con, user, vKey);
-		dbc.remove(vKey);
 	}else{
 		throw new IllegalArgumentException("vType "+vType+" not supported by "+this.getClass());
 	}
@@ -659,7 +666,7 @@ private KeyValue getDeletableMathKeyFromSimContext(Connection con,User user,KeyV
 /**
  * getModel method comment.
  */
-private SimulationContext getSimulationContextSQL(Connection con,User user, KeyValue simContextKey/*, ReactStepDbDriver reactStepDB*/) 
+private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection con,User user, KeyValue simContextKey/*, ReactStepDbDriver reactStepDB*/) 
 						throws SQLException, DataAccessException, IllegalMappingException, PropertyVetoException {
 							
 	SimulationContext simContext = null;
@@ -677,7 +684,7 @@ private SimulationContext getSimulationContextSQL(Connection con,User user, KeyV
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			simContext = simContextTable.getSimContext(con,user,rset, log, geomDB,modelDB,mathDescDB);
+			simContext = simContextTable.getSimContext(dbc, con,user,rset, log, geomDB,modelDB,mathDescDB);
 		} else {
 			throw new ObjectNotFoundException("SimulationContext id=" + simContextKey + " not found for user '" + user + "'");
 		}
@@ -685,7 +692,7 @@ private SimulationContext getSimulationContextSQL(Connection con,User user, KeyV
 		stmt.close();
 	}
 	assignStimuliSQL(con,simContextKey, simContext);
-	assignStructureMappingsSQL(con,simContextKey, simContext);
+	assignStructureMappingsSQL(dbc, con,simContextKey, simContext);
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	assignAnalysisTasksSQL(con,simContextKey, simContext);
@@ -711,7 +718,7 @@ private SimulationContext getSimulationContextSQL(Connection con,User user, KeyV
  * @param user cbit.vcell.server.User
  * @param versionable cbit.sql.Versionable
  */
-public Versionable getVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -720,7 +727,7 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 	} else {
 		try {
 			if (vType.equals(VersionableType.SimulationContext)){
-				versionable = getSimulationContextSQL(con, user, vKey);
+				versionable = getSimulationContextSQL(dbc, con, user, vKey);
 			}else{
 				throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 			}
@@ -729,7 +736,7 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		} catch (PropertyVetoException e) {
 			throw new DataAccessException(e.getMessage());
 		}
-		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
+		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 	return versionable;
 }
