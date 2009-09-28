@@ -289,7 +289,8 @@ public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingExce
 	if (reservedSTE != null){
 		ReservedSymbol rs = (ReservedSymbol)reservedSTE;
 		if (rs.isX() || rs.isY() || rs.isZ()){
-			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
+			throw new ExpressionBindingException("x, y or z can not be used in the Reaction Editor. " 
+					+ "They are reserved as spatial variables and Physiological Models must be spatially independent.");
 		}
 		return getKinetics().addProxyParameter(reservedSTE);
 	}
