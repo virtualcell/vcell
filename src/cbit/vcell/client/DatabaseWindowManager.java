@@ -1,24 +1,19 @@
 package cbit.vcell.client;
-import cbit.xml.merge.*;
-import java.util.*;
-import java.io.*;
-import cbit.image.VCImage;
-import cbit.image.VCImageInfo;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.client.server.*;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.clientdb.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
-import javax.swing.Timer;
+import java.io.File;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import cbit.vcell.desktop.*;
-import cbit.vcell.client.desktop.geometry.ImageBrowser;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
 import org.vcell.util.BeanUtils;
@@ -41,6 +36,21 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
+
+import cbit.image.VCImage;
+import cbit.image.VCImageInfo;
+import cbit.vcell.client.desktop.ACLEditor;
+import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.desktop.geometry.ImageBrowser;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelDbTreePanel;
+import cbit.vcell.desktop.GeometryTreePanel;
+import cbit.vcell.desktop.MathModelDbTreePanel;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.xml.merge.XmlTreeDiff;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 5:06:46 PM)
@@ -999,7 +1009,7 @@ public void setLatestOnly(boolean latestOnly) {
  */
 private Object showAccessPermissionDialog(final JComponent aclEditor,final Component requester) {
 	JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-	aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
+	aclEditor.setPreferredSize(new java.awt.Dimension(300, 350));
 	accessPermissionDialog.setMessage("");
 	accessPermissionDialog.setMessage(aclEditor);
 	accessPermissionDialog.setValue(null);
@@ -1079,6 +1089,7 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
 	openDialog.setMessage(tree);
 	final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select document:");
 	theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	theJDialog.setResizable(true);
 	
 	DoubleClickListener doubleClickListener = new DoubleClickListener(theJDialog);
 	
