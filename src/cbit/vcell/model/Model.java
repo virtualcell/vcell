@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -240,6 +239,9 @@ public Model(String argName) {
  * @param parent cbit.vcell.model.Feature
  */
 public void addFeature(String featureName, Feature parent, String membraneName) throws Exception {
+	if (featureName.equals(membraneName)) {
+		throw new Exception("Feature and Membrane can not have the same name.");
+	}
 	
 	Structure structure = getStructure(featureName);
 	

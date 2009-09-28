@@ -544,14 +544,15 @@ private void updateInterface() {
 	}
 	
 	private void updateDependentText(){
-		if (!getOverrideSizeNameCheckBox().isSelected()){
-			getFeatureSizeNameJTextField().setEditable(false);
-			if (getNameJTextField().getText().length()>0 && !getFeatureSizeNameJTextField().getText().equals(Structure.getDefaultStructureSizeName(getNameJTextField().getText()))){
-				getFeatureSizeNameJTextField().setText(Structure.getDefaultStructureSizeName(getNameJTextField().getText()));
+		if (getOverrideSizeNameCheckBox().isVisible()) {
+			if (!getOverrideSizeNameCheckBox().isSelected()){
+				getFeatureSizeNameJTextField().setEditable(false);
+				if (getNameJTextField().getText().length()>0 && !getFeatureSizeNameJTextField().getText().equals(Structure.getDefaultStructureSizeName(getNameJTextField().getText()))){
+					getFeatureSizeNameJTextField().setText(Structure.getDefaultStructureSizeName(getNameJTextField().getText()));
+				}
+			}else{
+				getFeatureSizeNameJTextField().setEditable(true);
 			}
-		}else{
-			getFeatureSizeNameJTextField().setEditable(true);
 		}
 	}
-	
 }
