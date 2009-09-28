@@ -2264,6 +2264,22 @@ public cbit.vcell.mathmodel.MathModel getMathModel(Element param) throws XmlPars
 		throw new XmlParseException("It needs to be a Geometry within a MathModel!");
 	}
 		
+	// set output functions (outputfunctionContext)
+	Element outputFunctionsElement = param.getChild(XMLTags.OutputFunctionsTag, vcNamespace);
+	if (outputFunctionsElement != null) {
+		ArrayList<AnnotatedFunction> outputFunctions = getOutputFunctions(outputFunctionsElement); 
+		try {
+			// construct OutputFnContext from mathmodel and add output functions that were read in from XML.
+			OutputFunctionContext outputFnContext = mathmodel.getOutputFunctionContext();
+			for (AnnotatedFunction outputFunction : outputFunctions) {
+				outputFnContext.addOutputFunction(outputFunction);
+			}
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());		
+		}
+	}
+
 	//Set simulations contexts (if any)
 	List childList = param.getChildren(XMLTags.SimulationTag, vcNamespace);
 	cbit.vcell.solver.Simulation[] simList = new cbit.vcell.solver.Simulation[childList.size()];
@@ -3705,7 +3721,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
 	getSpeciesContextSpecs(children, newsimcontext.getReactionContext());
 
-	// Add observable functions
+	// Retrieve output functions
 	Element outputFunctionsElement = param.getChild(XMLTags.OutputFunctionsTag, vcNamespace);
 	if (outputFunctionsElement != null) {
 		ArrayList<AnnotatedFunction> outputFunctions = getOutputFunctions(outputFunctionsElement); 
