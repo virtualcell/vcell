@@ -1124,7 +1124,7 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	if (param.getOutputFunctionContext() != null) {
 		ArrayList<AnnotatedFunction> outputFunctions = param.getOutputFunctionContext().getOutputFunctionsList();
 		if(outputFunctions != null) {
-			// get observable functions
+			// get output functions
 			simulationcontext.addContent(getXML(outputFunctions));
 		}
 	}
@@ -2211,6 +2211,16 @@ public org.jdom.Element getXML(cbit.vcell.mathmodel.MathModel param) throws XmlP
 	}
 	//Add Mathdescription
 	mathmodel.addContent( getXML(param.getMathDescription()) );
+	
+	// Add output functions
+	if (param.getOutputFunctionContext() != null) {
+		ArrayList<AnnotatedFunction> outputFunctions = param.getOutputFunctionContext().getOutputFunctionsList();
+		if(outputFunctions != null) {
+			// get output functions
+			mathmodel.addContent(getXML(outputFunctions));
+		}
+	}
+	
 	//Add Simulations
 	cbit.vcell.solver.Simulation[] arraysim = param.getSimulations();
 	if (arraysim != null) {
