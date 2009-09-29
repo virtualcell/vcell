@@ -15,6 +15,10 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochSimOptions;
 
 import javax.swing.*;
+
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.gui.EmptyBorderBean;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2001 12:17:49 PM)
@@ -29,7 +33,6 @@ public class SimulationSummaryPanel extends JPanel {
 	private JLabel ivjJLabel12 = null;
 	private JLabel ivjJLabel2 = null;
 	private JLabel ivjJLabel3 = null;
-	private JLabel ivjJLabel4 = null;
 	private JLabel ivjJLabel5 = null;
 	private JLabel ivjJLabel6 = null;
 	private JLabel ivjJLabel7 = null;
@@ -44,7 +47,6 @@ public class SimulationSummaryPanel extends JPanel {
 	private JLabel ivjJLabelStartTime = null;
 	private JLabel ivjJLabelTimestep = null;
 	private JTextArea ivjJTextAreaDescription = null;
-	private JLabel ivjJLabelSpatial = null;
 	private JLabel ivjJLabel10 = null;
 	private JLabel ivjJLabel9 = null;
 	private JLabel ivjJLabelSensitivity = null;
@@ -219,9 +221,11 @@ private void displayAnnotation() {
  */
 private void displayMesh() {
     try {
+    	boolean isSpatial = getSimulation().getIsSpatial();
+    	getJLabel11().setVisible(isSpatial);
+    	getJLabelMesh().setVisible(isSpatial);
         if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
-            org.vcell.util.ISize samplingSize =
-                getSimulation().getMeshSpecification().getSamplingSize();
+            ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
             String labelText = "";
             switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
                 case 0 :
@@ -252,8 +256,6 @@ private void displayMesh() {
                     }
             }
             getJLabelMesh().setText(labelText);
-        } else {
-            getJLabelMesh().setText("");
         }
     } catch (Exception exc) {
         exc.printStackTrace(System.out);
@@ -266,14 +268,12 @@ private void displayMesh() {
  * Comment
  */
 private void displayOther() {
+	boolean isSpatial = getSimulation().getIsSpatial();
+
 	try {
-		getJLabelSpatial().setText(getSimulation().getIsSpatial() ? "yes" : "no");
-	} catch (Exception exc) {
-		exc.printStackTrace(System.out);
-		getJLabelSpatial().setText("");
-	}
-	try {
-		org.vcell.util.Extent extent = getSimulation().getMathDescription().getGeometry().getExtent();
+		getJLabel8().setVisible(isSpatial);
+		getJLabelGeometrySize().setVisible(isSpatial);
+		Extent extent = getSimulation().getMathDescription().getGeometry().getExtent();
 		String labelText = "";
 		switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
 			case 0: {
@@ -318,14 +318,15 @@ private void displayOverrides() {
  */
 private void displayTask() {
 	SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
+	TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 	try {
-		getJLabelStartTime().setText(Double.toString(solverTaskDescription.getTimeBounds().getStartingTime()));
+		getJLabelStartTime().setText(Double.toString(timeBounds.getStartingTime()));
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelStartTime().setText("");
 	}
 	try {
-		getJLabelEndTime().setText(Double.toString(solverTaskDescription.getTimeBounds().getEndingTime()));
+		getJLabelEndTime().setText(Double.toString(timeBounds.getEndingTime()));
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelEndTime().setText("");
@@ -344,22 +345,36 @@ private void displayTask() {
 		exc.printStackTrace(System.out);
 		getJLabelOutput().setText("");
 	}
+	SolverDescription solverDescription = solverTaskDescription.getSolverDescription();
 	try {
-		if (solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
+		ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
+		TimeStep timeStep = solverTaskDescription.getTimeStep();
+		if (solverDescription.equals(SolverDescription.StochGibson)) {
+			getJLabel12().setEnabled(false);
+			getJLabelTimestep().setText("");
+		} else if (solverDescription.isSTOCHSolver()) {
+			getJLabel12().setEnabled(true);
+			getJLabel12().setText("timestep");		
+			getJLabelTimestep().setText(timeStep.getDefaultTimeStep()+ "");
+		} else if (solverDescription.hasVariableTimestep()) {
 			getJLabel12().setEnabled(true);
 			getJLabel12().setText("max timestep");
-			getJLabelTimestep().setText(solverTaskDescription.getTimeStep().getMaximumTimeStep()+ "");
+			getJLabelTimestep().setText(timeStep.getMaximumTimeStep()+ "");
 			getJLabelRelTol().setEnabled(true);
+			getJLabelRelTolValue().setText("" + errorTolerance.getRelativeErrorTolerance());
 			getJLabelAbsTol().setEnabled(true);
-			getJLabelRelTolValue().setText("" + solverTaskDescription.getErrorTolerance().getRelativeErrorTolerance());
-			getJLabelAbsTolValue().setText("" + solverTaskDescription.getErrorTolerance().getAbsoluteErrorTolerance());
+			getJLabelAbsTolValue().setText("" + errorTolerance.getAbsoluteErrorTolerance());
 		} else {
 			getJLabel12().setEnabled(true);
 			getJLabel12().setText("timestep");
-			getJLabelTimestep().setText(Double.toString(solverTaskDescription.getTimeStep().getDefaultTimeStep()));
-			getJLabelRelTol().setEnabled(false);
+			getJLabelTimestep().setText(Double.toString(timeStep.getDefaultTimeStep()));
+			if (solverDescription.isSemiImplicitPdeSolver()) {
+				getJLabelRelTolValue().setText("" + errorTolerance.getRelativeErrorTolerance());
+			} else {
+				getJLabelRelTol().setEnabled(false);
+				getJLabelRelTolValue().setText("");
+			}
 			getJLabelAbsTol().setEnabled(false);
-			getJLabelRelTolValue().setText("");
 			getJLabelAbsTolValue().setText("");			
 		}			
 	} catch (Exception exc) {
@@ -369,23 +384,28 @@ private void displayTask() {
 		getJLabelAbsTolValue().setText("");
 	}
 	try {
-		Constant param = solverTaskDescription.getSensitivityParameter();
-		if (param == null) {
-			getJLabelSensitivity().setText("no analysis");
+		if (getSimulation().getIsSpatial() || solverDescription.isSTOCHSolver()) {
+			getJLabelSensitivity().setVisible(false);
+			getJLabel10().setVisible(false);
 		} else {
-			getJLabelSensitivity().setText("analyse for parameter: " + param.getName());
+			Constant param = solverTaskDescription.getSensitivityParameter();
+			if (param == null) {
+				getJLabelSensitivity().setText("no analysis");
+			} else {
+				getJLabelSensitivity().setText("analysis for parameter: " + param.getName());
+			}
 		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelSensitivity().setText("");
 	}
 	try {
-		getJLabelSolver().setText(solverTaskDescription.getSolverDescription().getDisplayLabel());
+		getJLabelSolver().setText(solverDescription.getDisplayLabel());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelSolver().setText("");
 	}
-	if (solverTaskDescription.getSolverDescription().isSTOCHSolver()) {
+	if (solverDescription.isSTOCHSolver()) {
 		getJLabelRelTol().setVisible(false);
 		getJLabelAbsTol().setVisible(false);
 		getJLabelRelTolValue().setText("");
@@ -453,11 +473,7 @@ private javax.swing.JLabel getJLabel1() {
 						}
 					}
 			);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -533,6 +549,7 @@ private javax.swing.JLabel getJLabel11() {
 			ivjJLabel11 = new javax.swing.JLabel();
 			ivjJLabel11.setName("JLabel11");
 			ivjJLabel11.setText("Mesh:");
+			ivjJLabel11.setVisible(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -549,23 +566,15 @@ private javax.swing.JLabel getJLabel11() {
  * Return the JLabel12 property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getJLabel12() {
 	if (ivjJLabel12 == null) {
 		try {
 			ivjJLabel12 = new javax.swing.JLabel();
 			ivjJLabel12.setName("JLabel12");
 			ivjJLabel12.setText("timestep");
-			ivjJLabel12.setMaximumSize(new java.awt.Dimension(61, 14));
 			ivjJLabel12.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjJLabel12.setPreferredSize(new java.awt.Dimension(61, 14));
-			ivjJLabel12.setMinimumSize(new java.awt.Dimension(61, 14));
 			ivjJLabel12.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -607,7 +616,7 @@ private javax.swing.JLabel getJLabel2() {
 		try {
 			ivjJLabel2 = new javax.swing.JLabel();
 			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Comments:");
+			ivjJLabel2.setText("Annotation:");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -641,30 +650,6 @@ private javax.swing.JLabel getJLabel3() {
 	}
 	return ivjJLabel3;
 }
-
-
-/**
- * Return the JLabel4 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel4() {
-	if (ivjJLabel4 == null) {
-		try {
-			ivjJLabel4 = new javax.swing.JLabel();
-			ivjJLabel4.setName("JLabel4");
-			ivjJLabel4.setText("Spatial:");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel4;
-}
-
 
 /**
  * Return the JLabel5 property value.
@@ -700,15 +685,8 @@ private javax.swing.JLabel getJLabel6() {
 			ivjJLabel6 = new javax.swing.JLabel();
 			ivjJLabel6.setName("JLabel6");
 			ivjJLabel6.setText("start");
-			ivjJLabel6.setMaximumSize(new java.awt.Dimension(61, 14));
-			ivjJLabel6.setPreferredSize(new java.awt.Dimension(61, 14));
-			ivjJLabel6.setMinimumSize(new java.awt.Dimension(61, 14));
 			ivjJLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -720,23 +698,15 @@ private javax.swing.JLabel getJLabel6() {
  * Return the JLabel7 property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getJLabel7() {
 	if (ivjJLabel7 == null) {
 		try {
 			ivjJLabel7 = new javax.swing.JLabel();
 			ivjJLabel7.setName("JLabel7");
 			ivjJLabel7.setText("end");
-			ivjJLabel7.setMaximumSize(new java.awt.Dimension(61, 14));
 			ivjJLabel7.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjJLabel7.setPreferredSize(new java.awt.Dimension(61, 14));
-			ivjJLabel7.setMinimumSize(new java.awt.Dimension(61, 14));
 			ivjJLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -755,6 +725,7 @@ private javax.swing.JLabel getJLabel8() {
 			ivjJLabel8 = new javax.swing.JLabel();
 			ivjJLabel8.setName("JLabel8");
 			ivjJLabel8.setText("Geometry size:");
+			ivjJLabel8.setVisible(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -777,7 +748,7 @@ private javax.swing.JLabel getJLabel9() {
 		try {
 			ivjJLabel9 = new javax.swing.JLabel();
 			ivjJLabel9.setName("JLabel9");
-			ivjJLabel9.setText("Parameters with values changed from defaults:");
+			ivjJLabel9.setText("<html><b><u>Parameters with values changed from defaults</u></b></html>");
 			ivjJLabel9.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}
 			// user code end
@@ -795,7 +766,6 @@ private javax.swing.JLabel getJLabel9() {
  * Return the JLabel10 property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getJLabelEndTime() {
 	if (ivjJLabelEndTime == null) {
 		try {
@@ -804,13 +774,8 @@ private javax.swing.JLabel getJLabelEndTime() {
 			ivjJLabelEndTime.setText(" ");
 			ivjJLabelEndTime.setForeground(java.awt.Color.blue);
 			ivjJLabelEndTime.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjJLabelEndTime.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJLabelEndTime.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -823,13 +788,8 @@ private javax.swing.JLabel getJLabelRelTolValue() {
 			labelRelTolValue = new javax.swing.JLabel("");
 			labelRelTolValue.setForeground(java.awt.Color.blue);
 			labelRelTolValue.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			labelRelTolValue.setFont(new java.awt.Font("dialog", 0, 12));
 			labelRelTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -842,13 +802,8 @@ private javax.swing.JLabel getJLabelAbsTolValue() {
 			labelAbsTolValue = new javax.swing.JLabel("");
 			labelAbsTolValue.setForeground(java.awt.Color.blue);
 			labelAbsTolValue.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			labelAbsTolValue.setFont(new java.awt.Font("dialog", 0, 12));
 			labelAbsTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -864,14 +819,10 @@ private javax.swing.JLabel getJLabelGeometrySize() {
 		try {
 			ivjJLabelGeometrySize = new javax.swing.JLabel();
 			ivjJLabelGeometrySize.setName("JLabelGeometrySize");
-			ivjJLabelGeometrySize.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJLabelGeometrySize.setText(" ");
 			ivjJLabelGeometrySize.setForeground(java.awt.Color.blue);
-			// user code begin {1}
-			// user code end
+			ivjJLabelGeometrySize.setVisible(false);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -883,20 +834,15 @@ private javax.swing.JLabel getJLabelGeometrySize() {
  * Return the JLabelMesh property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getJLabelMesh() {
 	if (ivjJLabelMesh == null) {
 		try {
 			ivjJLabelMesh = new javax.swing.JLabel();
 			ivjJLabelMesh.setName("JLabelMesh");
-			ivjJLabelMesh.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJLabelMesh.setText(" ");
 			ivjJLabelMesh.setForeground(java.awt.Color.blue);
-			// user code begin {1}
-			// user code end
+			ivjJLabelMesh.setVisible(false);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -933,20 +879,14 @@ private javax.swing.JLabel getJLabelOutput() {
  * Return the JLabelSensitivity property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getJLabelSensitivity() {
 	if (ivjJLabelSensitivity == null) {
 		try {
 			ivjJLabelSensitivity = new javax.swing.JLabel();
 			ivjJLabelSensitivity.setName("JLabelSensitivity");
-			ivjJLabelSensitivity.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJLabelSensitivity.setText(" ");
 			ivjJLabelSensitivity.setForeground(java.awt.Color.blue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -964,45 +904,14 @@ private javax.swing.JLabel getJLabelSolver() {
 		try {
 			ivjJLabelSolver = new javax.swing.JLabel();
 			ivjJLabelSolver.setName("JLabelSolver");
-			ivjJLabelSolver.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJLabelSolver.setText(" ");
 			ivjJLabelSolver.setForeground(java.awt.Color.blue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjJLabelSolver;
 }
-
-
-/**
- * Return the JLabelSpatial property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabelSpatial() {
-	if (ivjJLabelSpatial == null) {
-		try {
-			ivjJLabelSpatial = new javax.swing.JLabel();
-			ivjJLabelSpatial.setName("JLabelSpatial");
-			ivjJLabelSpatial.setFont(new java.awt.Font("dialog", 0, 12));
-			ivjJLabelSpatial.setText(" ");
-			ivjJLabelSpatial.setForeground(java.awt.Color.blue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabelSpatial;
-}
-
 
 /**
  * Return the JLabel9 property value.
@@ -1017,13 +926,8 @@ private javax.swing.JLabel getJLabelStartTime() {
 			ivjJLabelStartTime.setText(" ");
 			ivjJLabelStartTime.setForeground(java.awt.Color.blue);
 			ivjJLabelStartTime.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjJLabelStartTime.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJLabelStartTime.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1044,13 +948,8 @@ private javax.swing.JLabel getJLabelTimestep() {
 			ivjJLabelTimestep.setText(" ");
 			ivjJLabelTimestep.setForeground(java.awt.Color.blue);
 			ivjJLabelTimestep.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjJLabelTimestep.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJLabelTimestep.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1114,17 +1013,13 @@ private javax.swing.JTextArea getJTextAreaDescription() {
 		try {
 			ivjJTextAreaDescription = new javax.swing.JTextArea();
 			ivjJTextAreaDescription.setName("JTextAreaDescription");
-			ivjJTextAreaDescription.setBorder(new org.vcell.util.gui.EmptyBorderBean());
+			ivjJTextAreaDescription.setBorder(new EmptyBorderBean());
 			ivjJTextAreaDescription.setForeground(java.awt.Color.blue);
-			ivjJTextAreaDescription.setFont(new java.awt.Font("dialog", 0, 12));
-			ivjJTextAreaDescription.setBounds(0, 0, 160, 120);
+			ivjJTextAreaDescription.setLineWrap(true);
+			ivjJTextAreaDescription.setWrapStyleWord(true);
 			ivjJTextAreaDescription.setEditable(false);
 			ivjJTextAreaDescription.setEnabled(true);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1140,7 +1035,7 @@ private javax.swing.JTextArea getJTextAreaDescription() {
 private MathOverridesPanel getMathOverridesPanel1() {
 	if (ivjMathOverridesPanel1 == null) {
 		try {
-			ivjMathOverridesPanel1 = new cbit.vcell.solver.ode.gui.MathOverridesPanel();
+			ivjMathOverridesPanel1 = new MathOverridesPanel();
 			ivjMathOverridesPanel1.setName("MathOverridesPanel1");
 			ivjMathOverridesPanel1.setEditable(false);
 			// user code begin {1}
@@ -1160,7 +1055,7 @@ private MathOverridesPanel getMathOverridesPanel1() {
  * @return The simulation property value.
  * @see #setSimulation
  */
-public cbit.vcell.solver.Simulation getSimulation() {
+public Simulation getSimulation() {
 	return fieldSimulation;
 }
 
@@ -1196,38 +1091,24 @@ private void initConnections() throws java.lang.Exception {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("SimulationSummaryPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(439, 411);
 
+		
+		// 0
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
-		constraintsJLabel1.gridwidth = 6;
+		constraintsJLabel1.gridwidth = 8;
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel1(), constraintsJLabel1);
 
+		// 1
 		java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 		constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 1;
-		constraintsJLabel2.anchor = java.awt.GridBagConstraints.EAST;
+		constraintsJLabel2.anchor = java.awt.GridBagConstraints.NORTHEAST;
 		constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel2(), constraintsJLabel2);
-
-		java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
-		constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 3;
-		constraintsJLabel3.gridheight = 2;
-		constraintsJLabel3.fill = java.awt.GridBagConstraints.VERTICAL;
-		constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel3(), constraintsJLabel3);
-
-		java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
-		constraintsJLabel4.gridx = 0; constraintsJLabel4.gridy = 2;
-		constraintsJLabel4.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel4.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel4(), constraintsJLabel4);
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = 1;
@@ -1238,26 +1119,64 @@ private void initialize() {
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJScrollPane1(), constraintsJScrollPane1);
 
-		java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
-		constraintsJLabel5.gridx = 0; constraintsJLabel5.gridy = 6;
-		constraintsJLabel5.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel5.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel5(), constraintsJLabel5);
+		// 3
+		java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
+		constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 3;
+		constraintsJLabel3.gridheight = 2;
+		constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
+		constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel3(), constraintsJLabel3); // Time:
 
 		java.awt.GridBagConstraints constraintsJLabel6 = new java.awt.GridBagConstraints();
 		constraintsJLabel6.gridx = 1; constraintsJLabel6.gridy = 3;
 		constraintsJLabel6.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabel6.weightx = 1.0;
 		constraintsJLabel6.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel6(), constraintsJLabel6);
+		add(getJLabel6(), constraintsJLabel6); // start
 
 		java.awt.GridBagConstraints constraintsJLabel7 = new java.awt.GridBagConstraints();
 		constraintsJLabel7.gridx = 2; constraintsJLabel7.gridy = 3;
 		constraintsJLabel7.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabel7.weightx = 1.0;
 		constraintsJLabel7.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel7(), constraintsJLabel7);
+		add(getJLabel7(), constraintsJLabel7); // end
+		
+		java.awt.GridBagConstraints constraintsJLabel12 = new java.awt.GridBagConstraints();
+		constraintsJLabel12.gridx = 3; constraintsJLabel12.gridy = 3;
+		constraintsJLabel12.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabel12.weightx = 1.0;
+		constraintsJLabel12.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel12(), constraintsJLabel12); // timestep
+		
+		java.awt.GridBagConstraints constraintsJLabel13 = new java.awt.GridBagConstraints();
+		constraintsJLabel13.gridx = 4; constraintsJLabel13.gridy = 3;
+		constraintsJLabel13.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabel13.weightx = 1.0;
+		constraintsJLabel13.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel13(), constraintsJLabel13); // output
+		
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 5; gbc.gridy = 3;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelRelTol(), gbc); // rel tol
 
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 6; gbc.gridy = 3;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelAbsTol(), gbc); // abs tol
+		
+		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+		constraintsJPanel1.gridx = 7; constraintsJPanel1.gridy = 3;
+		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJPanel1.weightx = 8.0;
+		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJPanel1(), constraintsJPanel1); // empty panel to make things closer
+	
+		// 4
 		java.awt.GridBagConstraints constraintsJLabelStartTime = new java.awt.GridBagConstraints();
 		constraintsJLabelStartTime.gridx = 1; constraintsJLabelStartTime.gridy = 4;
 		constraintsJLabelStartTime.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -1269,116 +1188,13 @@ private void initialize() {
 		constraintsJLabelEndTime.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelEndTime.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelEndTime(), constraintsJLabelEndTime);
-
-		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
-		constraintsMathOverridesPanel1.gridx = 0; constraintsMathOverridesPanel1.gridy = 10;
-		constraintsMathOverridesPanel1.gridwidth = 8;
-		constraintsMathOverridesPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsMathOverridesPanel1.weightx = 1.0;
-		constraintsMathOverridesPanel1.weighty = 1.0;
-		constraintsMathOverridesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getMathOverridesPanel1(), constraintsMathOverridesPanel1);
-
-		java.awt.GridBagConstraints constraintsJLabel12 = new java.awt.GridBagConstraints();
-		constraintsJLabel12.gridx = 3; constraintsJLabel12.gridy = 3;
-		constraintsJLabel12.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel12.weightx = 1.0;
-		constraintsJLabel12.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel12(), constraintsJLabel12);
-
+		
 		java.awt.GridBagConstraints constraintsJLabelTimestep = new java.awt.GridBagConstraints();
 		constraintsJLabelTimestep.gridx = 3; constraintsJLabelTimestep.gridy = 4;
 		constraintsJLabelTimestep.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelTimestep.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelTimestep(), constraintsJLabelTimestep);
 
-		java.awt.GridBagConstraints constraintsJLabelSolver = new java.awt.GridBagConstraints();
-		constraintsJLabelSolver.gridx = 1; constraintsJLabelSolver.gridy = 6;
-		constraintsJLabelSolver.gridwidth = 5;
-		constraintsJLabelSolver.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelSolver.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelSolver(), constraintsJLabelSolver);
-
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 7; constraintsJPanel1.gridy = 3;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 8.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel1(), constraintsJPanel1);
-
-		java.awt.GridBagConstraints constraintsJLabel8 = new java.awt.GridBagConstraints();
-		constraintsJLabel8.gridx = 0; constraintsJLabel8.gridy = 7;
-		constraintsJLabel8.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel8.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel8(), constraintsJLabel8);
-
-		java.awt.GridBagConstraints constraintsJLabel11 = new java.awt.GridBagConstraints();
-		constraintsJLabel11.gridx = 0; constraintsJLabel11.gridy = 8;
-		constraintsJLabel11.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel11.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel11(), constraintsJLabel11);
-
-		java.awt.GridBagConstraints constraintsJLabelGeometrySize = new java.awt.GridBagConstraints();
-		constraintsJLabelGeometrySize.gridx = 1; constraintsJLabelGeometrySize.gridy = 7;
-		constraintsJLabelGeometrySize.gridwidth = 5;
-		constraintsJLabelGeometrySize.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelGeometrySize.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelGeometrySize(), constraintsJLabelGeometrySize);
-
-		java.awt.GridBagConstraints constraintsJLabelMesh = new java.awt.GridBagConstraints();
-		constraintsJLabelMesh.gridx = 1; constraintsJLabelMesh.gridy = 8;
-		constraintsJLabelMesh.gridwidth = 5;
-		constraintsJLabelMesh.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelMesh.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelMesh(), constraintsJLabelMesh);
-
-		java.awt.GridBagConstraints constraintsJLabelSpatial = new java.awt.GridBagConstraints();
-		constraintsJLabelSpatial.gridx = 1; constraintsJLabelSpatial.gridy = 2;
-		constraintsJLabelSpatial.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelSpatial(), constraintsJLabelSpatial);
-
-		java.awt.GridBagConstraints constraintsJLabel9 = new java.awt.GridBagConstraints();
-		constraintsJLabel9.gridx = 0; constraintsJLabel9.gridy = 9;
-		constraintsJLabel9.gridwidth = 6;
-		constraintsJLabel9.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel9.anchor = java.awt.GridBagConstraints.NORTHEAST;
-		constraintsJLabel9.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel9(), constraintsJLabel9);
-
-		java.awt.GridBagConstraints constraintsJLabel10 = new java.awt.GridBagConstraints();
-		constraintsJLabel10.gridx = 0; constraintsJLabel10.gridy = 5;
-		constraintsJLabel10.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel10.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel10(), constraintsJLabel10);
-
-		java.awt.GridBagConstraints constraintsJLabelSensitivity = new java.awt.GridBagConstraints();
-		constraintsJLabelSensitivity.gridx = 1; constraintsJLabelSensitivity.gridy = 5;
-		constraintsJLabelSensitivity.gridwidth = 5;
-		constraintsJLabelSensitivity.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelSensitivity.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelSensitivity(), constraintsJLabelSensitivity);
-
-		java.awt.GridBagConstraints constraintsJLabel13 = new java.awt.GridBagConstraints();
-		constraintsJLabel13.gridx = 4; constraintsJLabel13.gridy = 3;
-		constraintsJLabel13.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel13.weightx = 1.0;
-		constraintsJLabel13.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel13(), constraintsJLabel13);
-
-		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 5; gbc.gridy = 3;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelRelTol(), gbc);
-
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 6; gbc.gridy = 3;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelAbsTol(), gbc);
-		
 		java.awt.GridBagConstraints constraintsJLabelOutput = new java.awt.GridBagConstraints();
 		constraintsJLabelOutput.gridx = 4; constraintsJLabelOutput.gridy = 4;
 		constraintsJLabelOutput.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -1398,14 +1214,84 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelAbsTolValue(), gbc);
+		
+		// 5
+		java.awt.GridBagConstraints constraintsJLabel10 = new java.awt.GridBagConstraints();
+		constraintsJLabel10.gridx = 0; constraintsJLabel10.gridy = 5;
+		constraintsJLabel10.anchor = java.awt.GridBagConstraints.EAST;
+		constraintsJLabel10.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel10(), constraintsJLabel10);
+
+		java.awt.GridBagConstraints constraintsJLabelSensitivity = new java.awt.GridBagConstraints();
+		constraintsJLabelSensitivity.gridx = 1; constraintsJLabelSensitivity.gridy = 5;
+		constraintsJLabelSensitivity.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabelSensitivity.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelSensitivity(), constraintsJLabelSensitivity);
+
+		//6
+		java.awt.GridBagConstraints constraintsJLabel11 = new java.awt.GridBagConstraints();
+		constraintsJLabel11.gridx = 0; constraintsJLabel11.gridy = 6;
+		constraintsJLabel11.anchor = java.awt.GridBagConstraints.EAST;
+		constraintsJLabel11.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel11(), constraintsJLabel11);
+
+		java.awt.GridBagConstraints constraintsJLabelMesh = new java.awt.GridBagConstraints();
+		constraintsJLabelMesh.gridx = 1; constraintsJLabelMesh.gridy = 6;
+		constraintsJLabelMesh.gridwidth = 5;
+		constraintsJLabelMesh.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabelMesh.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelMesh(), constraintsJLabelMesh);
+
+		java.awt.GridBagConstraints constraintsJLabel8 = new java.awt.GridBagConstraints();
+		constraintsJLabel8.gridx = 4; constraintsJLabel8.gridy = 6;
+		constraintsJLabel8.anchor = java.awt.GridBagConstraints.EAST;
+		constraintsJLabel8.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel8(), constraintsJLabel8);
+
+		java.awt.GridBagConstraints constraintsJLabelGeometrySize = new java.awt.GridBagConstraints();
+		constraintsJLabelGeometrySize.gridx = 5; constraintsJLabelGeometrySize.gridy = 6;
+		constraintsJLabelGeometrySize.gridwidth = 5;
+		constraintsJLabelGeometrySize.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabelGeometrySize.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelGeometrySize(), constraintsJLabelGeometrySize);
+		
+		// 7
+		java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
+		constraintsJLabel5.gridx = 0; constraintsJLabel5.gridy = 7;
+		constraintsJLabel5.anchor = java.awt.GridBagConstraints.EAST;
+		constraintsJLabel5.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel5(), constraintsJLabel5);
+		
+		java.awt.GridBagConstraints constraintsJLabelSolver = new java.awt.GridBagConstraints();
+		constraintsJLabelSolver.gridx = 1; constraintsJLabelSolver.gridy = 7;
+		constraintsJLabelSolver.gridwidth = 5;
+		constraintsJLabelSolver.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabelSolver.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelSolver(), constraintsJLabelSolver);		
+
+		// 8
+		java.awt.GridBagConstraints constraintsJLabel9 = new java.awt.GridBagConstraints();
+		constraintsJLabel9.gridx = 0; constraintsJLabel9.gridy = 8;
+		constraintsJLabel9.gridwidth = 8;
+		constraintsJLabel9.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabel9.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel9(), constraintsJLabel9);
+
+		// 9
+		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
+		constraintsMathOverridesPanel1.gridx = 0; constraintsMathOverridesPanel1.gridy = 9;
+		constraintsMathOverridesPanel1.gridwidth = 8;
+		constraintsMathOverridesPanel1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsMathOverridesPanel1.weightx = 1.0;
+		constraintsMathOverridesPanel1.weighty = 1.0;
+		constraintsMathOverridesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getMathOverridesPanel1(), constraintsMathOverridesPanel1);
 
 		initConnections();
 		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -1424,7 +1310,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1438,7 +1323,7 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-public void newSimulation(cbit.vcell.solver.Simulation simulation) {
+public void newSimulation(Simulation simulation) {
 	refreshDisplay();
 	if (simulation==null){
 		getJTextAreaDescription().setBackground(getBackground());
@@ -1448,14 +1333,9 @@ public void newSimulation(cbit.vcell.solver.Simulation simulation) {
 	}else{
 		getJTextAreaDescription().setBackground(java.awt.Color.white);
 		getJTextAreaDescription().setEditable(true);
-		getJLabel1().setText(
-			SIM_SUMMARY_LABEL+
-			"(SimID="+(simulation.getKey() == null?"unknown":simulation.getKey())+
-			(simulation.getSimulationVersion() != null &&
-				simulation.getSimulationVersion().getParentSimulationReference() != null
-				?", parentSimRef="+simulation.getSimulationVersion().getParentSimulationReference()
-				:"")+
-			")");
+		getJLabel1().setText(SIM_SUMMARY_LABEL + (simulation.getKey() == null ? "" : " (SimID=" + simulation.getKey()+
+			(simulation.getSimulationVersion() != null && simulation.getSimulationVersion().getParentSimulationReference() != null 
+					? ", parentSimRef="+simulation.getSimulationVersion().getParentSimulationReference() : "" ) + ")"));
 	}
 	// also set up a listener that will refresh when simulation is edited in place
 	PropertyChangeListener listener = new PropertyChangeListener() {
@@ -1489,7 +1369,6 @@ public void newSimulation(cbit.vcell.solver.Simulation simulation) {
 private void refreshDisplay() {
 	if (getSimulation() == null){
 		getJTextAreaDescription().setText("");
-		getJLabelSpatial().setText("");
 		getJLabelStartTime().setText("");
 		getJLabelEndTime().setText("");
 		getJLabelTimestep().setText("");
@@ -1547,8 +1426,8 @@ private void setdocument1(javax.swing.text.Document newValue) {
  * @param simulation The new value for the property.
  * @see #getSimulation
  */
-public void setSimulation(cbit.vcell.solver.Simulation simulation) {
-	cbit.vcell.solver.Simulation oldValue = fieldSimulation;
+public void setSimulation(Simulation simulation) {
+	Simulation oldValue = fieldSimulation;
 	fieldSimulation = simulation;
 	firePropertyChange("simulation", oldValue, simulation);
 }

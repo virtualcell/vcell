@@ -300,6 +300,12 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 					+ solverDescription.getDisplayLabel() + ".";
 				warningMessage = warningMessage == null? msg : warningMessage + "\n\n" + msg;
 			}
+		} else if (solverDescription.isSemiImplicitPdeSolver()) {
+			if (solverTaskDescription.getErrorTolerance().getRelativeErrorTolerance() > 1e-8) {
+				String msg = "Warning : it is not reccomended to use a relative tolerance that is greater than \n1e-8 for " 
+					+ solverDescription.getDisplayLabel() + ".";
+				warningMessage = warningMessage == null? msg : warningMessage + "\n\n" + msg;
+			}
 		}
 		if (warningMessage != null)
 		{

@@ -515,15 +515,17 @@ public void showApplicationFrame(final SimulationContext simContext, final int t
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			simContext.getGeometry().precomputeAll();
-			Simulation[] simulations = simContext.getSimulations();
-			if (simulations != null) {	
-				// preload simulation status
-				VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
-				for (int i = 0; i < simulations.length; i++){
-					simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+			if (!getApplicationsHash().containsKey(simContext)) {
+				simContext.getGeometry().precomputeAll();
+				Simulation[] simulations = simContext.getSimulations();
+				if (simulations != null) {
+					// preload simulation status
+					VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+					for (int i = 0; i < simulations.length; i++){
+						simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+					}
+					getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
 				}
-				getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
 			}
 		}
 	};

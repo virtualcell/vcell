@@ -736,7 +736,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 			printWriter.println();
 		}
 	} else { 
-		printWriter.println("SOLVER FV_SOLVER");
+		printWriter.println("SOLVER FV_SOLVER " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
 	printWriter.println("BASE_FILE_NAME " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
     printWriter.println("ENDING_TIME " + solverTaskDesc.getTimeBounds().getEndingTime());    
