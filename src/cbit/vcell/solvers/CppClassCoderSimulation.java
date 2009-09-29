@@ -61,7 +61,8 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println("\tint *solveRegions = 0;");
 	out.println("\tint numVolumeRegions = mesh->getNumVolumeRegions();");
 	out.println("\tstring varname, units;");
-	out.println("");
+	out.println("\tdouble pcgRelTol = SimTool::getInstance()->getPCGRelativeErrorTolerance();");
+	out.println();
 
 	Simulation simulation = simulationJob.getWorkingSim();
 	Variable variables[] = simulation.getVariables();
@@ -134,7 +135,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  			} else {
 		  				out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
 		  			}
-	  				out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
+	  				out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,pcgRelTol,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
 	  				out.println("\taddSolver(slSolver);");
 		  		}else{
 		  			out.println("\todeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
@@ -153,7 +154,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		out.println("\tmembraneVar = new MembraneVariable(mesh->getNumMembraneElements(),varname, units);");
 		  	if (simulation.getMathDescription().isPDE(memVar)) {
 		  		out.println("\tsmbuilder = new MembraneEqnBuilderDiffusion(membraneVar,mesh);");
-	  			out.println("\tslSolver = new SparseLinearSolver(membraneVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(memVar)+");");	  			
+	  			out.println("\tslSolver = new SparseLinearSolver(membraneVar,smbuilder,pcgRelTol,"+simulation.hasTimeVaryingDiffusionOrAdvection(memVar)+");");	  			
 	  			out.println("\taddSolver(slSolver);");
 		  		out.println("\taddVariable(membraneVar);");
 		  	} else {		  		
@@ -266,6 +267,7 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	out.println("\tSimTool::getInstance()->setBaseFilename(tempString);");
 	
 	double defaultTimeStep = taskDesc.getTimeStep().getDefaultTimeStep();
+	out.println("\tSimTool::getInstance()->setPCGRelativeErrorTolerance("+taskDesc.getErrorTolerance().getRelativeErrorTolerance()+");");
 	out.println("\tSimTool::getInstance()->setTimeStep("+defaultTimeStep+");");
 	out.println("\tSimTool::getInstance()->setEndTimeSec("+taskDesc.getTimeBounds().getEndingTime()+");");
 	int keepEvery = 1;

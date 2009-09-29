@@ -4,13 +4,6 @@
 ©*/
 
 package cbit.vcell.solver.ode.gui;
-import cbit.vcell.math.Constant;
-import cbit.vcell.solver.*;
-import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.vcell.solver.stoch.StochSimOptions;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -20,6 +13,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
+
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -37,6 +31,21 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.math.Constant;
+import cbit.vcell.solver.DataProcessingInstructions;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.stoch.StochHybridOptions;
+import cbit.vcell.solver.stoch.StochSimOptions;
+
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:25 PM)
@@ -45,7 +54,6 @@ import org.vcell.util.gui.DialogUtils;
 public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 	private javax.swing.JPanel ivjPanel2 = null;
 	private javax.swing.JLabel ivjIntegratorLabel = null;
-	private javax.swing.JLabel ivjKeepEveryLabel = null;
 	private javax.swing.JTextField ivjKeepEveryTextField = null;
 	private javax.swing.JLabel ivjPointsLabel = null;
 	Constant fieldSensitivityParameter = null;
@@ -68,8 +76,6 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JLabel ivjTimeStepUnitsLabel = null;
 	private javax.swing.ButtonGroup ivjbuttonGroup1 = null;
-	private javax.swing.JLabel ivjOpIntervalLabel = null;
-	private javax.swing.JLabel ivjJLabel2 = null;
 	private javax.swing.JLabel ivjJLabel3 = null;
 	private javax.swing.JTextField ivjOutputTimesTextField = null;
 	private javax.swing.JRadioButton ivjDefaultOutputRadioButton = null;
@@ -107,9 +113,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private JCheckBox dataProcessorCheckBox = null;
 	private JButton editDataProcessorButton = null;
 	
-/**
- * ODEAdvancedPanel constructor comment.
- */
+
 public SolverTaskDescriptionAdvancedPanel() {
 	super();
 	initialize();
@@ -154,10 +158,7 @@ private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) t
  * Method to handle events for the ActionListener interface.
  * @param e java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void actionPerformed(java.awt.event.ActionEvent e) {
-	// user code begin {1}
-	// user code end
 	if (e.getSource() == getCustomizedSeed()){
 		connEtoC23(e);
 	}
@@ -181,7 +182,6 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				BeanUtils.enableComponents(getErrorTolerancePanel(), true);
 				getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 			} catch (PropertyVetoException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		} else {
@@ -298,17 +298,10 @@ public void checkTimeBounds(cbit.vcell.solver.TimeBounds arg1) {
  * connEtoC1:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.enableTimeStep()V)
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC1(SolverTaskDescription value) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.enableVariableTimeStepOptions();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -317,17 +310,10 @@ private void connEtoC1(cbit.vcell.solver.SolverTaskDescription value) {
  * connEtoC10:  (TimeStepTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.outputTimeIntervalForTimeStep(Ljava.awt.event.FocusEvent;)V)
  * @param arg1 java.awt.event.FocusEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC10(java.awt.event.FocusEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.setNewOutputOption(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -336,7 +322,6 @@ private void connEtoC10(java.awt.event.FocusEvent arg1) {
  * connEtoC11:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.enableErrorTolerance()V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC11(java.beans.PropertyChangeEvent arg1) {
 	try {
 		this.enableVariableTimeStepOptions();
@@ -348,8 +333,6 @@ private void connEtoC11(java.beans.PropertyChangeEvent arg1) {
 			}
 		}
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -358,17 +341,10 @@ private void connEtoC11(java.beans.PropertyChangeEvent arg1) {
  * connEtoC12:  (TornOffSolverTaskDescription.outputTimeSpec --> SolverTaskDescriptionAdvancedPanel.setOutputOptionFields(Lcbit.vcell.solver.OutputTimeSpec;)V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC12(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.setOutputOptionFields(getTornOffSolverTaskDescription().getOutputTimeSpec());
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -378,17 +354,10 @@ private void connEtoC12(java.beans.PropertyChangeEvent arg1) {
  * connEtoC13:  (ExplicitOutputRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> SolverTaskDescriptionAdvancedPanel.actionTimeIntervalButtonState(Ljava.awt.event.ItemEvent;)V)
  * @param arg1 java.awt.event.ItemEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC13(java.awt.event.ItemEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.actionOutputOptionButtonState(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -397,17 +366,10 @@ private void connEtoC13(java.awt.event.ItemEvent arg1) {
  * connEtoC14:  (KeepEveryTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.setNewOutputOption(Ljava.awt.event.FocusEvent;)V)
  * @param arg1 java.awt.event.FocusEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC14(java.awt.event.FocusEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.setNewOutputOption(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -417,17 +379,10 @@ private void connEtoC14(java.awt.event.FocusEvent arg1) {
  * connEtoC15:  (KeepAtMostTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.setNewOutputOption(Ljava.awt.event.FocusEvent;)V)
  * @param arg1 java.awt.event.FocusEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC15(java.awt.event.FocusEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.setNewOutputOption(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -437,17 +392,10 @@ private void connEtoC15(java.awt.event.FocusEvent arg1) {
  * connEtoC16:  (TornOffSolverTaskDescription.outputTimeSpec --> SolverTaskDescriptionAdvancedPanel.enableOutputOptionPanel()V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC16(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.enableOutputOptionPanel();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -457,17 +405,10 @@ private void connEtoC16(java.beans.PropertyChangeEvent arg1) {
  * connEtoC17:  (OutputTimesTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.setNewOutputOption(Ljava.awt.event.FocusEvent;)V)
  * @param arg1 java.awt.event.FocusEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC17(java.awt.event.FocusEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.setNewOutputOption(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -477,19 +418,12 @@ private void connEtoC17(java.awt.event.FocusEvent arg1) {
  * connEtoC18:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.setOutputOptionFields(Lcbit.vcell.solver.OutputTimeSpec;)V)
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC18(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC18(SolverTaskDescription value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getTornOffSolverTaskDescription() != null)) {
 			this.setOutputOptionFields(getTornOffSolverTaskDescription().getOutputTimeSpec());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -499,19 +433,12 @@ private void connEtoC18(cbit.vcell.solver.SolverTaskDescription value) {
  * connEtoC19:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.setOutputOptionFields(Lcbit.vcell.solver.OutputTimeSpec;)V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC19(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getTornOffSolverTaskDescription() != null)) {
 			this.setOutputOptionFields(getTornOffSolverTaskDescription().getOutputTimeSpec());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -521,17 +448,10 @@ private void connEtoC19(java.beans.PropertyChangeEvent arg1) {
  * connEtoC2:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.enableTimeStep()V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.enableVariableTimeStepOptions();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -540,17 +460,10 @@ private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
  * connEtoC20:  (TornOffSolverTaskDescription.timeBounds --> SolverTaskDescriptionAdvancedPanel.tornOffSolverTaskDescription_TimeBounds()V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC20(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.tornOffSolverTaskDescription_TimeBounds();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -559,17 +472,10 @@ private void connEtoC20(java.beans.PropertyChangeEvent arg1) {
 /**
  * connEtoC21:  (SolverTaskDescriptionAdvancedPanel.initialize() --> SolverTaskDescriptionAdvancedPanel.makeBold()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC21() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.makeBold();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -578,17 +484,10 @@ private void connEtoC21() {
 /**
  * connEtoC22:  (SolverTaskDescriptionAdvancedPanel.initialize() --> SolverTaskDescriptionAdvancedPanel.solverTaskDescriptionAdvancedPanel_Initialize()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC22() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.solverTaskDescriptionAdvancedPanel_Initialize();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -598,17 +497,10 @@ private void connEtoC22() {
  * connEtoC23:  (CustomizedSeed.action.actionPerformed(java.awt.event.ActionEvent) --> SolverTaskDescriptionAdvancedPanel.customizedSeed_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC23(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.customizedSeed_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -618,17 +510,10 @@ private void connEtoC23(java.awt.event.ActionEvent arg1) {
  * connEtoC24:  (RandomSeed.action.actionPerformed(java.awt.event.ActionEvent) --> SolverTaskDescriptionAdvancedPanel.randomSeed_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC24(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.randomSeed_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -638,17 +523,10 @@ private void connEtoC24(java.awt.event.ActionEvent arg1) {
  * connEtoC25:  (SolverTaskDescriptionAdvancedPanel.solverTaskDescription --> SolverTaskDescriptionAdvancedPanel.solverTaskDescriptionAdvancedPanel_SolverTaskDescription(Lcbit.vcell.solver.SolverTaskDescription;)V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC25(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.solverTaskDescriptionAdvancedPanel_SolverTaskDescription();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -658,17 +536,10 @@ private void connEtoC25(java.beans.PropertyChangeEvent arg1) {
  * connEtoC3:  (JRadioButton1.item.itemStateChanged(java.awt.event.ItemEvent) --> SolverTaskDescriptionAdvancedPanel.actionTimeIntervalButtonState(Ljava.awt.event.ItemEvent;)V)
  * @param arg1 java.awt.event.ItemEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC3(java.awt.event.ItemEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.actionOutputOptionButtonState(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -677,17 +548,10 @@ private void connEtoC3(java.awt.event.ItemEvent arg1) {
  * connEtoC4:  (JRadioButton2.item.itemStateChanged(java.awt.event.ItemEvent) --> SolverTaskDescriptionAdvancedPanel.actionTimeIntervalButtonState(Ljava.awt.event.ItemEvent;)V)
  * @param arg1 java.awt.event.ItemEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC4(java.awt.event.ItemEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.actionOutputOptionButtonState(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -696,17 +560,10 @@ private void connEtoC4(java.awt.event.ItemEvent arg1) {
  * connEtoC5:  (TornOffSolverTaskDescription.solver --> SolverTaskDescriptionAdvancedPanel.updateSolverNameDisplay(Ljava.lang.String;)V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.updateSolverNameDisplay(getTornOffSolverTaskDescription().getSolverDescription());
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -715,19 +572,12 @@ private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
  * connEtoC6:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.updateSolverNameDisplay(Ljava.lang.String;)V)
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC6(cbit.vcell.solver.SolverTaskDescription value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getTornOffSolverTaskDescription() != null)) {
 			this.updateSolverNameDisplay(getTornOffSolverTaskDescription().getSolverDescription());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -736,17 +586,10 @@ private void connEtoC6(cbit.vcell.solver.SolverTaskDescription value) {
  * connEtoC7:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.enableOutputIntevalPanel(Lcbit.vcell.solver.SolverTaskDescription;)V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.enableOutputOptionPanel();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -755,17 +598,10 @@ private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
  * connEtoC8:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.enableOutputIntevalPanel(Lcbit.vcell.solver.SolverDescription;)V)
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC8(cbit.vcell.solver.SolverTaskDescription value) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.enableOutputOptionPanel();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -773,17 +609,10 @@ private void connEtoC8(cbit.vcell.solver.SolverTaskDescription value) {
 /**
  * connEtoC9:  (SolverTaskDescriptionAdvancedPanel.initialize() --> SolverTaskDescriptionAdvancedPanel.buttonGroup_Initialize()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC9() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.buttonGroup_Initialize();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -793,17 +622,10 @@ private void connEtoC9() {
  * connEtoM13:  (TornOffSolverTaskDescription.this --> SolverComboBoxModel.this)
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM13(cbit.vcell.solver.SolverTaskDescription value) {
 	try {
-		// user code begin {1}
-		// user code end
 		setSolverComboBoxModel(this.createSolverComboBoxModel(getTornOffSolverTaskDescription()));
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -812,17 +634,10 @@ private void connEtoM13(cbit.vcell.solver.SolverTaskDescription value) {
  * connEtoM6:  (SolverComboBox.item.itemStateChanged(java.awt.event.ItemEvent) --> TornOffSolverTaskDescription.solverDescription)
  * @param arg1 java.awt.event.ItemEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM6(java.awt.event.ItemEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		getTornOffSolverTaskDescription().setSolverDescription(this.getSolverDescriptionFromDisplayLabel((String)getSolverComboBox().getSelectedItem()));
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -831,25 +646,17 @@ private void connEtoM6(java.awt.event.ItemEvent arg1) {
 /**
  * connPtoP1SetSource:  (SolverTaskDescriptionAdvancedPanel.solverTaskDescription <--> TornOffSolverTaskDescription.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetSource() {
-	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP1Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
 				this.setSolverTaskDescription(getTornOffSolverTaskDescription());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -858,23 +665,16 @@ private void connPtoP1SetSource() {
 /**
  * connPtoP1SetTarget:  (SolverTaskDescriptionAdvancedPanel.solverTaskDescription <--> TornOffSolverTaskDescription.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP1Aligning = true;
 			setTornOffSolverTaskDescription(this.getSolverTaskDescription());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -883,25 +683,18 @@ private void connPtoP1SetTarget() {
 /**
  * connPtoP2SetSource:  (TornOffSolverTaskDescription.timeBounds <--> TimeBoundsPanel.timeBounds)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
 				getTornOffSolverTaskDescription().setTimeBounds(getTimeBoundsPanel().getTimeBounds());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -910,25 +703,18 @@ private void connPtoP2SetSource() {
 /**
  * connPtoP2SetTarget:  (TornOffSolverTaskDescription.timeBounds <--> TimeBoundsPanel.timeBounds)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
 				getTimeBoundsPanel().setTimeBounds(getTornOffSolverTaskDescription().getTimeBounds());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -937,25 +723,18 @@ private void connPtoP2SetTarget() {
 /**
  * connPtoP3SetSource:  (TornOffSolverTaskDescription.timeStep <--> TimeStepPanel.timeStep)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP3SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP3Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
 				getTornOffSolverTaskDescription().setTimeStep(getTimeStepPanel().getTimeStep());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP3Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -964,25 +743,18 @@ private void connPtoP3SetSource() {
 /**
  * connPtoP3SetTarget:  (TornOffSolverTaskDescription.timeStep <--> TimeStepPanel.timeStep)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP3SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP3Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
 				getTimeStepPanel().setTimeStep(getTornOffSolverTaskDescription().getTimeStep());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP3Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -991,25 +763,18 @@ private void connPtoP3SetTarget() {
 /**
  * connPtoP4SetSource:  (TornOffSolverTaskDescription.errorTolerance <--> ErrorTolerancePanel.errorTolerance)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP4SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP4Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
 				getTornOffSolverTaskDescription().setErrorTolerance(getErrorTolerancePanel().getErrorTolerance());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP4Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -1018,25 +783,18 @@ private void connPtoP4SetSource() {
 /**
  * connPtoP4SetTarget:  (TornOffSolverTaskDescription.errorTolerance <--> ErrorTolerancePanel.errorTolerance)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP4SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP4Aligning = true;
 			if ((getTornOffSolverTaskDescription() != null)) {
 				getErrorTolerancePanel().setErrorTolerance(getTornOffSolverTaskDescription().getErrorTolerance());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP4Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -1045,23 +803,16 @@ private void connPtoP4SetTarget() {
 /**
  * connPtoP7SetSource:  (SolverComboBox.model <--> model1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP7SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP7Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP7Aligning = true;
 			setSolverComboBoxModel(getSolverComboBox().getModel());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP7Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP7Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -1069,25 +820,18 @@ private void connPtoP7SetSource() {
 /**
  * connPtoP7SetTarget:  (SolverComboBox.model <--> model1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP7SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP7Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP7Aligning = true;
 			if ((getSolverComboBoxModel() != null)) {
 				getSolverComboBox().setModel((javax.swing.ComboBoxModel)getSolverComboBoxModel());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP7Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP7Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -1272,7 +1016,11 @@ private void enableVariableTimeStepOptions() {
 	SolverDescription solverDescription = getSolverTaskDescription().getSolverDescription(); 
 	bHasVariableTS = solverDescription.hasVariableTimestep();
 	
-	BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance() || getSolverTaskDescription().isStopAtSpatiallyUniform());
+	if (solverDescription.isSemiImplicitPdeSolver()) {
+		getErrorTolerancePanel().setupForSemiImplicitSolver();
+	} else {
+		BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance() || getSolverTaskDescription().isStopAtSpatiallyUniform());
+	}
 	//Hybrid solvers should show default time step
 	if (solverDescription.compareEqual(SolverDescription.HybridEuler)||
 		solverDescription.compareEqual(SolverDescription.HybridMilstein)||
@@ -1298,12 +1046,7 @@ private void enableVariableTimeStepOptions() {
  * Method to handle events for the FocusListener interface.
  * @param e java.awt.event.FocusEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void focusGained(java.awt.event.FocusEvent e) {
-	// user code begin {1}
-	// user code end
-	// user code begin {2}
-	// user code end
 }
 
 
@@ -1311,10 +1054,7 @@ public void focusGained(java.awt.event.FocusEvent e) {
  * Method to handle events for the FocusListener interface.
  * @param e java.awt.event.FocusEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void focusLost(java.awt.event.FocusEvent e) {
-	// user code begin {1}
-	// user code end
 	if (e.getSource() == getOutputTimeStepTextField()) 
 		connEtoC10(e);
 	if (e.getSource() == getKeepEveryTextField()) 
@@ -1344,16 +1084,11 @@ public void focusLost(java.awt.event.FocusEvent e) {
  * Return the buttonGroup1 property value.
  * @return javax.swing.ButtonGroup
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.ButtonGroup getbuttonGroup1() {
 	if (ivjbuttonGroup1 == null) {
 		try {
 			ivjbuttonGroup1 = new javax.swing.ButtonGroup();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1364,16 +1099,11 @@ private javax.swing.ButtonGroup getbuttonGroup1() {
  * Return the ButtonGroupSeed property value.
  * @return javax.swing.ButtonGroup
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.ButtonGroup getButtonGroupTrials() {
 	if (buttonGroupTrials == null) {
 		try {
 			buttonGroupTrials = new javax.swing.ButtonGroup();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1384,18 +1114,13 @@ private javax.swing.ButtonGroup getButtonGroupTrials() {
  * Return the CustomizedSeed property value.
  * @return javax.swing.JRadioButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JRadioButton getTrajectoryButton() {
 	if (trajectoryRadioButton == null) {
 		try {
 			trajectoryRadioButton = new javax.swing.JRadioButton();
 			trajectoryRadioButton.setName("Trajectory");
 			trajectoryRadioButton.setText("Single Trajectory");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1406,18 +1131,13 @@ private javax.swing.JRadioButton getTrajectoryButton() {
  * Return the CustomizedSeed property value.
  * @return javax.swing.JRadioButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JRadioButton getHistogramButton() {
 	if (histogramRadioButton == null) {
 		try {
 			histogramRadioButton = new javax.swing.JRadioButton();
 			histogramRadioButton.setName("Histogram");
 			histogramRadioButton.setText("Histogram (last time point only)");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1429,16 +1149,11 @@ private javax.swing.JRadioButton getHistogramButton() {
  * Return the ButtonGroupSeed property value.
  * @return javax.swing.ButtonGroup
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.ButtonGroup getButtonGroupSeed() {
 	if (ivjButtonGroupSeed == null) {
 		try {
 			ivjButtonGroupSeed = new javax.swing.ButtonGroup();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1450,18 +1165,13 @@ private javax.swing.ButtonGroup getButtonGroupSeed() {
  * Return the CustomizedSeed property value.
  * @return javax.swing.JRadioButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JRadioButton getCustomizedSeed() {
 	if (ivjCustomizedSeed == null) {
 		try {
 			ivjCustomizedSeed = new javax.swing.JRadioButton();
 			ivjCustomizedSeed.setName("CustomizedSeed");
 			ivjCustomizedSeed.setText("Customized Seed");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1473,7 +1183,6 @@ private javax.swing.JRadioButton getCustomizedSeed() {
  * Return the Panel3 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getDefaultOutputPanel() {
 	if (ivjDefaultOutputPanel == null) {
 		try {
@@ -1483,44 +1192,35 @@ private javax.swing.JPanel getDefaultOutputPanel() {
 			ivjDefaultOutputPanel.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsKeepAtMostLabel = new java.awt.GridBagConstraints();
-			constraintsKeepAtMostLabel.gridx = 3; constraintsKeepAtMostLabel.gridy = 0;
+			constraintsKeepAtMostLabel.gridx = 2; constraintsKeepAtMostLabel.gridy = 0;
 			constraintsKeepAtMostLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getDefaultOutputPanel().add(getKeepAtMostLabel(), constraintsKeepAtMostLabel);
 
 			java.awt.GridBagConstraints constraintsKeepEveryTextField = new java.awt.GridBagConstraints();
-			constraintsKeepEveryTextField.gridx = 1; constraintsKeepEveryTextField.gridy = 0;
+			constraintsKeepEveryTextField.gridx = 0; constraintsKeepEveryTextField.gridy = 0;
 			constraintsKeepEveryTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsKeepEveryTextField.insets = new java.awt.Insets(4, 4, 4, 4);
 			getDefaultOutputPanel().add(getKeepEveryTextField(), constraintsKeepEveryTextField);
 
-			java.awt.GridBagConstraints constraintsKeepEveryLabel = new java.awt.GridBagConstraints();
-			constraintsKeepEveryLabel.gridx = 0; constraintsKeepEveryLabel.gridy = 0;
-			constraintsKeepEveryLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsKeepEveryLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getDefaultOutputPanel().add(getKeepEveryLabel(), constraintsKeepEveryLabel);
 
 			java.awt.GridBagConstraints constraintsKeepAtMostTextField = new java.awt.GridBagConstraints();
-			constraintsKeepAtMostTextField.gridx = 4; constraintsKeepAtMostTextField.gridy = 0;
+			constraintsKeepAtMostTextField.gridx = 3; constraintsKeepAtMostTextField.gridy = 0;
 			constraintsKeepAtMostTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsKeepAtMostTextField.insets = new java.awt.Insets(4, 4, 4, 4);
 			getDefaultOutputPanel().add(getKeepAtMostTextField(), constraintsKeepAtMostTextField);
 
 			java.awt.GridBagConstraints constraintsPointsLabel = new java.awt.GridBagConstraints();
-			constraintsPointsLabel.gridx = 5; constraintsPointsLabel.gridy = 0;
+			constraintsPointsLabel.gridx = 4; constraintsPointsLabel.gridy = 0;
 			constraintsPointsLabel.anchor = java.awt.GridBagConstraints.WEST;
 			constraintsPointsLabel.weightx = 1.0;
 			constraintsPointsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getDefaultOutputPanel().add(getPointsLabel(), constraintsPointsLabel);
 
 			java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
-			constraintsJLabel4.gridx = 2; constraintsJLabel4.gridy = 0;
+			constraintsJLabel4.gridx = 1; constraintsJLabel4.gridy = 0;
 			constraintsJLabel4.insets = new java.awt.Insets(4, 4, 4, 4);
 			getDefaultOutputPanel().add(getJLabel4(), constraintsJLabel4);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1531,19 +1231,13 @@ private javax.swing.JPanel getDefaultOutputPanel() {
  * Return the JRadioButton1 property value.
  * @return javax.swing.JRadioButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JRadioButton getDefaultOutputRadioButton() {
 	if (ivjDefaultOutputRadioButton == null) {
 		try {
 			ivjDefaultOutputRadioButton = new javax.swing.JRadioButton();
 			ivjDefaultOutputRadioButton.setName("DefaultOutputRadioButton");
-//			ivjDefaultOutputRadioButton.setSelected(true);
-			ivjDefaultOutputRadioButton.setText("");
-			// user code begin {1}
-			// user code end
+			ivjDefaultOutputRadioButton.setText("Keep Every");
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1554,17 +1248,12 @@ private javax.swing.JRadioButton getDefaultOutputRadioButton() {
  * Return the ErrorTolerancePanel property value.
  * @return cbit.vcell.solver.ode.gui.ErrorTolerancePanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private ErrorTolerancePanel getErrorTolerancePanel() {
 	if (ivjErrorTolerancePanel == null) {
 		try {
-			ivjErrorTolerancePanel = new cbit.vcell.solver.ode.gui.ErrorTolerancePanel();
+			ivjErrorTolerancePanel = new ErrorTolerancePanel();
 			ivjErrorTolerancePanel.setName("ErrorTolerancePanel");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1576,7 +1265,6 @@ private ErrorTolerancePanel getErrorTolerancePanel() {
  * Return the JPanel2 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getExplicitOutputPanel() {
 	if (ivjExplicitOutputPanel == null) {
 		try {
@@ -1584,13 +1272,8 @@ private javax.swing.JPanel getExplicitOutputPanel() {
 			ivjExplicitOutputPanel.setName("ExplicitOutputPanel");
 			ivjExplicitOutputPanel.setLayout(new java.awt.GridBagLayout());
 
-			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
-			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getExplicitOutputPanel().add(getJLabel2(), constraintsJLabel2);
-
 			java.awt.GridBagConstraints constraintsOutputTimesTextField = new java.awt.GridBagConstraints();
-			constraintsOutputTimesTextField.gridx = 1; constraintsOutputTimesTextField.gridy = 0;
+			constraintsOutputTimesTextField.gridx = 0; constraintsOutputTimesTextField.gridy = 0;
 			constraintsOutputTimesTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsOutputTimesTextField.weightx = 1.0;
 			constraintsOutputTimesTextField.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -1601,11 +1284,7 @@ private javax.swing.JPanel getExplicitOutputPanel() {
 			constraintsJLabel3.gridwidth = 2;
 			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
 			getExplicitOutputPanel().add(getJLabel3(), constraintsJLabel3);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1616,18 +1295,13 @@ private javax.swing.JPanel getExplicitOutputPanel() {
  * Return the JRadioButton3 property value.
  * @return javax.swing.JRadioButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JRadioButton getExplicitOutputRadioButton() {
 	if (ivjExplicitOutputRadioButton == null) {
 		try {
 			ivjExplicitOutputRadioButton = new javax.swing.JRadioButton();
 			ivjExplicitOutputRadioButton.setName("ExplicitOutputRadioButton");
-			ivjExplicitOutputRadioButton.setText("");
-			// user code begin {1}
-			// user code end
+			ivjExplicitOutputRadioButton.setText("Output Times");
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1638,18 +1312,13 @@ private javax.swing.JRadioButton getExplicitOutputRadioButton() {
  * Return the Label4 property value.
  * @return java.awt.Label
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getIntegratorLabel() {
 	if (ivjIntegratorLabel == null) {
 		try {
 			ivjIntegratorLabel = new javax.swing.JLabel();
 			ivjIntegratorLabel.setName("IntegratorLabel");
 			ivjIntegratorLabel.setText("Integrator");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1657,44 +1326,16 @@ private javax.swing.JLabel getIntegratorLabel() {
 }
 
 /**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Output Times");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
-}
-
-
-/**
  * Return the JLabel3 property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getJLabel3() {
 	if (ivjJLabel3 == null) {
 		try {
 			ivjJLabel3 = new javax.swing.JLabel();
 			ivjJLabel3.setName("JLabel3");
 			ivjJLabel3.setText("(Comma or space separated numbers, e.g. 0.5, 0.8, 1.2, 1.7)");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1705,18 +1346,13 @@ private javax.swing.JLabel getJLabel3() {
  * Return the JLabel4 property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getJLabel4() {
 	if (ivjJLabel4 == null) {
 		try {
 			ivjJLabel4 = new javax.swing.JLabel();
 			ivjJLabel4.setName("JLabel4");
 			ivjJLabel4.setText("time samples");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1755,7 +1391,6 @@ private javax.swing.JLabel getJLabelTitle() {
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
@@ -1765,20 +1400,20 @@ private javax.swing.JPanel getJPanel1() {
 
 			java.awt.GridBagConstraints constraintsDefaultOutputRadioButton = new java.awt.GridBagConstraints();
 			constraintsDefaultOutputRadioButton.gridx = 0; constraintsDefaultOutputRadioButton.gridy = 0;
-			constraintsDefaultOutputRadioButton.anchor = java.awt.GridBagConstraints.NORTH;
 			constraintsDefaultOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsDefaultOutputRadioButton.anchor = GridBagConstraints.LINE_START;
 			getJPanel1().add(getDefaultOutputRadioButton(), constraintsDefaultOutputRadioButton);
 
 			java.awt.GridBagConstraints constraintsUniformOutputRadioButton = new java.awt.GridBagConstraints();
 			constraintsUniformOutputRadioButton.gridx = 0; constraintsUniformOutputRadioButton.gridy = 1;
-			constraintsUniformOutputRadioButton.anchor = java.awt.GridBagConstraints.NORTH;
 			constraintsUniformOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsUniformOutputRadioButton.anchor = GridBagConstraints.LINE_START;
 			getJPanel1().add(getUniformOutputRadioButton(), constraintsUniformOutputRadioButton);
 
 			java.awt.GridBagConstraints constraintsExplicitOutputRadioButton = new java.awt.GridBagConstraints();
 			constraintsExplicitOutputRadioButton.gridx = 0; constraintsExplicitOutputRadioButton.gridy = 2;
-			constraintsExplicitOutputRadioButton.anchor = java.awt.GridBagConstraints.NORTH;
 			constraintsExplicitOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsExplicitOutputRadioButton.anchor = GridBagConstraints.FIRST_LINE_START;
 			getJPanel1().add(getExplicitOutputRadioButton(), constraintsExplicitOutputRadioButton);
 
 			java.awt.GridBagConstraints constraintsDefaultOutputPanel = new java.awt.GridBagConstraints();
@@ -1800,9 +1435,10 @@ private javax.swing.JPanel getJPanel1() {
 			java.awt.GridBagConstraints constraintsExplicitOutputPanel = new java.awt.GridBagConstraints();
 			constraintsExplicitOutputPanel.gridx = 1; constraintsExplicitOutputPanel.gridy = 2;
 			constraintsExplicitOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsExplicitOutputPanel.anchor = GridBagConstraints.PAGE_START;
 			constraintsExplicitOutputPanel.weightx = 1.0;
 			constraintsExplicitOutputPanel.weighty = 1.0;
-			constraintsExplicitOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 4, 4);
 			getJPanel1().add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
 			
 			stopSpatiallyUniformPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));		
@@ -1831,8 +1467,6 @@ private javax.swing.JPanel getJPanel1() {
 			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
      	    getJPanel1().setBorder(tb);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1843,7 +1477,6 @@ private javax.swing.JPanel getJPanel1() {
  * Return the JPanel4 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getJPanelStoch() {
 	if (ivjJPanelStoch == null) {
 		try {
@@ -1901,12 +1534,7 @@ private javax.swing.JPanel getJPanelStoch() {
 		
 			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Stochastic Options", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
 		    getJPanelStoch().setBorder(tb);
-						
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1917,7 +1545,6 @@ private javax.swing.JPanel getJPanelStoch() {
  * Return the JTextField1 property value.
  * @return javax.swing.JTextField
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextField getJTextFieldCustomSeed() {
 	if (ivjJTextFieldCustomSeed == null) {
 		try {
@@ -1927,8 +1554,6 @@ private javax.swing.JTextField getJTextFieldCustomSeed() {
 			ivjJTextFieldCustomSeed.setColumns(9);
 			
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1939,18 +1564,13 @@ private javax.swing.JTextField getJTextFieldCustomSeed() {
  * Return the JTextField2 property value.
  * @return javax.swing.JTextField
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextField getJTextFieldNumOfTrials() {
 	if (ivjJTextFieldNumOfTrials == null) {
 		try {
 			ivjJTextFieldNumOfTrials = new javax.swing.JTextField();
 			ivjJTextFieldNumOfTrials.setName("JTextFieldNumOfTrials");
 			ivjJTextFieldNumOfTrials.setColumns(9);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1961,18 +1581,13 @@ private javax.swing.JTextField getJTextFieldNumOfTrials() {
  * Return the PointsLabel property value.
  * @return java.awt.Label
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getKeepAtMostLabel() {
 	if (ivjKeepAtMostLabel == null) {
 		try {
 			ivjKeepAtMostLabel = new javax.swing.JLabel();
 			ivjKeepAtMostLabel.setName("KeepAtMostLabel");
 			ivjKeepAtMostLabel.setText("and at most");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1983,7 +1598,6 @@ private javax.swing.JLabel getKeepAtMostLabel() {
  * Return the JTextField property value.
  * @return javax.swing.JTextField
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextField getKeepAtMostTextField() {
 	if (ivjKeepAtMostTextField == null) {
 		try {
@@ -1992,37 +1606,11 @@ private javax.swing.JTextField getKeepAtMostTextField() {
 			ivjKeepAtMostTextField.setText("");
 			ivjKeepAtMostTextField.setMinimumSize(new java.awt.Dimension(66, 21));
 			ivjKeepAtMostTextField.setColumns(6);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjKeepAtMostTextField;
-}
-
-/**
- * Return the KeepEveryLabel property value.
- * @return java.awt.Label
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getKeepEveryLabel() {
-	if (ivjKeepEveryLabel == null) {
-		try {
-			ivjKeepEveryLabel = new javax.swing.JLabel();
-			ivjKeepEveryLabel.setName("KeepEveryLabel");
-			ivjKeepEveryLabel.setText("Keep every");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjKeepEveryLabel;
 }
 
 /**
@@ -2038,11 +1626,7 @@ private javax.swing.JTextField getKeepEveryTextField() {
 			ivjKeepEveryTextField.setText("");
 			ivjKeepEveryTextField.setMinimumSize(new java.awt.Dimension(21, 22));
 			ivjKeepEveryTextField.setColumns(6);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2053,18 +1637,13 @@ private javax.swing.JTextField getKeepEveryTextField() {
  * Return the NumOfTrials property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getNumOfTrialsLabel() {
 	if (numOfTrialsLabel == null) {
 		try {
 			numOfTrialsLabel = new javax.swing.JLabel();
 			numOfTrialsLabel.setName("NumOfTrials");
 			numOfTrialsLabel.setText("Num. Of Trials");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2073,32 +1652,9 @@ private javax.swing.JLabel getNumOfTrialsLabel() {
 
 
 /**
- * Return the TimeStepLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getOpIntervalLabel() {
-	if (ivjOpIntervalLabel == null) {
-		try {
-			ivjOpIntervalLabel = new javax.swing.JLabel();
-			ivjOpIntervalLabel.setName("OpIntervalLabel");
-			ivjOpIntervalLabel.setText("Output Interval");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjOpIntervalLabel;
-}
-
-/**
  * Return the TimeStepTextField property value.
  * @return javax.swing.JTextField
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextField getOutputTimeStepTextField() {
 	if (ivjOutputTimeStepTextField == null) {
 		try {
@@ -2106,11 +1662,7 @@ private javax.swing.JTextField getOutputTimeStepTextField() {
 			ivjOutputTimeStepTextField.setName("OutputTimeStepTextField");
 			ivjOutputTimeStepTextField.setMinimumSize(new java.awt.Dimension(60, 20));
 			ivjOutputTimeStepTextField.setColumns(10);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2121,18 +1673,13 @@ private javax.swing.JTextField getOutputTimeStepTextField() {
  * Return the JTextField1 property value.
  * @return javax.swing.JTextField
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextField getOutputTimesTextField() {
 	if (ivjOutputTimesTextField == null) {
 		try {
 			ivjOutputTimesTextField = new javax.swing.JTextField();
 			ivjOutputTimesTextField.setName("OutputTimesTextField");
 			ivjOutputTimesTextField.setColumns(20);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2143,7 +1690,6 @@ private javax.swing.JTextField getOutputTimesTextField() {
  * Return the Panel2 property value.
  * @return java.awt.Panel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getPanel2() {
 	if (ivjPanel2 == null) {
 		try {
@@ -2184,18 +1730,13 @@ private javax.swing.JPanel getPanel2() {
  * Return the PointsLabel property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getPointsLabel() {
 	if (ivjPointsLabel == null) {
 		try {
 			ivjPointsLabel = new javax.swing.JLabel();
 			ivjPointsLabel.setName("PointsLabel");
 			ivjPointsLabel.setText("time samples");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2206,7 +1747,6 @@ private javax.swing.JLabel getPointsLabel() {
  * Return the RandomSeed property value.
  * @return javax.swing.JRadioButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JRadioButton getRandomSeed() {
 	if (ivjRandomSeed == null) {
 		try {
@@ -2214,11 +1754,7 @@ private javax.swing.JRadioButton getRandomSeed() {
 			ivjRandomSeed.setName("RandomSeed");
 			ivjRandomSeed.setSelected(true);
 			ivjRandomSeed.setText("Random Seed");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2229,17 +1765,12 @@ private javax.swing.JRadioButton getRandomSeed() {
  * Return the Choice1 property value.
  * @return java.awt.Choice
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JComboBox getSolverComboBox() {
 	if (ivjSolverComboBox == null) {
 		try {
 			ivjSolverComboBox = new javax.swing.JComboBox();
 			ivjSolverComboBox.setName("SolverComboBox");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2250,10 +1781,7 @@ private javax.swing.JComboBox getSolverComboBox() {
  * Return the model1 property value.
  * @return javax.swing.ComboBoxModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private java.lang.Object getSolverComboBoxModel() {
-	// user code begin {1}
-	// user code end
 	return ivjSolverComboBoxModel;
 }
 
@@ -2279,17 +1807,12 @@ private SolverTaskDescription getSolverTaskDescription() {
  * Return the TimeBoundsPanel property value.
  * @return cbit.vcell.solver.ode.gui.TimeBoundsPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private TimeBoundsPanel getTimeBoundsPanel() {
 	if (ivjTimeBoundsPanel == null) {
 		try {
-			ivjTimeBoundsPanel = new cbit.vcell.solver.ode.gui.TimeBoundsPanel();
+			ivjTimeBoundsPanel = new TimeBoundsPanel();
 			ivjTimeBoundsPanel.setName("TimeBoundsPanel");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2301,17 +1824,12 @@ private TimeBoundsPanel getTimeBoundsPanel() {
  * Return the TimeStepPanel property value.
  * @return cbit.vcell.solver.ode.gui.TimeStepPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private TimeStepPanel getTimeStepPanel() {
 	if (ivjTimeStepPanel == null) {
 		try {
 			ivjTimeStepPanel = new TimeStepPanel();
 			ivjTimeStepPanel.setName("TimeStepPanel");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2323,7 +1841,6 @@ private TimeStepPanel getTimeStepPanel() {
  * Return the TimeStepUnitsLabel property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getTimeStepUnitsLabel() {
 	if (ivjTimeStepUnitsLabel == null) {
 		try {
@@ -2332,11 +1849,7 @@ private javax.swing.JLabel getTimeStepUnitsLabel() {
 			ivjTimeStepUnitsLabel.setPreferredSize(new java.awt.Dimension(28, 14));
 			ivjTimeStepUnitsLabel.setText("secs");
 			ivjTimeStepUnitsLabel.setMaximumSize(new java.awt.Dimension(200, 14));
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2348,8 +1861,7 @@ private javax.swing.JLabel getTimeStepUnitsLabel() {
  * Return the TornOffSolverTaskDescription property value.
  * @return cbit.vcell.solver.SolverTaskDescription
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.SolverTaskDescription getTornOffSolverTaskDescription() {
+private SolverTaskDescription getTornOffSolverTaskDescription() {
 	return ivjTornOffSolverTaskDescription;
 }
 
@@ -2358,39 +1870,25 @@ private cbit.vcell.solver.SolverTaskDescription getTornOffSolverTaskDescription(
  * Return the Panel4 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getUniformOutputPanel() {
 	if (ivjUniformOutputPanel == null) {
 		try {
 			ivjUniformOutputPanel = new javax.swing.JPanel();
 			ivjUniformOutputPanel.setName("UniformOutputPanel");
-			ivjUniformOutputPanel.setOpaque(false);
-			ivjUniformOutputPanel.setPreferredSize(new java.awt.Dimension(426, 28));
 			ivjUniformOutputPanel.setLayout(new java.awt.GridBagLayout());
-			ivjUniformOutputPanel.setMinimumSize(new java.awt.Dimension(414, 30));
-
-			java.awt.GridBagConstraints constraintsOpIntervalLabel = new java.awt.GridBagConstraints();
-			constraintsOpIntervalLabel.gridx = 0; constraintsOpIntervalLabel.gridy = 0;
-			constraintsOpIntervalLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getUniformOutputPanel().add(getOpIntervalLabel(), constraintsOpIntervalLabel);
 
 			java.awt.GridBagConstraints constraintsTimeStepUnitsLabel = new java.awt.GridBagConstraints();
-			constraintsTimeStepUnitsLabel.gridx = 2; constraintsTimeStepUnitsLabel.gridy = 0;
-			constraintsTimeStepUnitsLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsTimeStepUnitsLabel.gridx = 1; constraintsTimeStepUnitsLabel.gridy = 0;
 			constraintsTimeStepUnitsLabel.anchor = java.awt.GridBagConstraints.WEST;
 			constraintsTimeStepUnitsLabel.weightx = 1.0;
 			constraintsTimeStepUnitsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getUniformOutputPanel().add(getTimeStepUnitsLabel(), constraintsTimeStepUnitsLabel);
 
 			java.awt.GridBagConstraints constraintsOutputTimeStepTextField = new java.awt.GridBagConstraints();
-			constraintsOutputTimeStepTextField.gridx = 1; constraintsOutputTimeStepTextField.gridy = 0;
+			constraintsOutputTimeStepTextField.gridx = 0; constraintsOutputTimeStepTextField.gridy = 0;
 			constraintsOutputTimeStepTextField.insets = new java.awt.Insets(4, 4, 4, 4);
 			getUniformOutputPanel().add(getOutputTimeStepTextField(), constraintsOutputTimeStepTextField);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2401,18 +1899,13 @@ private javax.swing.JPanel getUniformOutputPanel() {
  * Return the JRadioButton2 property value.
  * @return javax.swing.JRadioButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JRadioButton getUniformOutputRadioButton() {
 	if (ivjUniformOutputRadioButton == null) {
 		try {
 			ivjUniformOutputRadioButton = new javax.swing.JRadioButton();
 			ivjUniformOutputRadioButton.setName("UniformOutputRadioButton");
-			ivjUniformOutputRadioButton.setText("");
-			// user code begin {1}
-			// user code end
+			ivjUniformOutputRadioButton.setText("Output Interval");
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2452,10 +1945,7 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(this);
 	getTimeStepPanel().addPropertyChangeListener(this);
 	getErrorTolerancePanel().addPropertyChangeListener(this);
@@ -2493,11 +1983,8 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("ODEAdvancedPanel");
 		setLayout(new java.awt.GridBagLayout());
 		setSize(607, 419);
@@ -2566,8 +2053,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -2576,8 +2061,6 @@ private void initialize() {
  *
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void itemStateChanged(java.awt.event.ItemEvent e) {
-	// user code begin {1}
-	// user code end
 	if (e.getSource() == getSolverComboBox()) 
 		connEtoM6(e);
 	if (e.getSource() == getDefaultOutputRadioButton()) 
@@ -2586,8 +2069,6 @@ public void itemStateChanged(java.awt.event.ItemEvent e) {
 		connEtoC4(e);
 	if (e.getSource() == getExplicitOutputRadioButton()) 
 		connEtoC13(e);
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -2629,10 +2110,7 @@ private void makeBold() {
  * Method to handle events for the PropertyChangeListener interface.
  * @param evt java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	// user code begin {1}
-	// user code end
 	if (evt.getSource() == this && (evt.getPropertyName().equals("solverTaskDescription"))) 
 		connPtoP1SetTarget();
 	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("timeStep"))) 

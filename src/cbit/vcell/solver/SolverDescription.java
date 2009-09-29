@@ -120,8 +120,9 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	     "Parameters to be set for the method are,\n"+
          "STARTING TIME: the time when simulation starts.\n"+
 		 "ENDING TIME: the time when simulation ends.\n"+
-	     "Default TIME STEP: the time step to numerically solve PDEs.\n\n"+
-	     "Output options: use keep every number of samples.",
+	     "Default TIME STEP: the time step to numerically solve PDEs.\n"+
+	     "Linear Solver Tolerance: the tolerance used to test for convergence of the iteration. The iteration is considered to have converged when the size of residual is less than or equal to the tolerance.\n\n" +
+	     "Output options: use output time interval.",
 	     // Gibson (Next Reaction Stochastic Method)
 	     "Gibson-Bruck is an improved exact stochastic method based on Gllespie's SSA. It uses only a single random number per simulation event and takes time proportional to the logarithm of the number of reactions. Better performance is also acheived by utilizing a dependency graph and an indexed priority queue.\n\n"+
          "Parameters to be set for the method are,\n"+
@@ -198,8 +199,9 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	     "Parameters to be set for the method are,\n"+
          "STARTING TIME: the time when simulation starts.\n"+
 		 "ENDING TIME: the time when simulation ends.\n"+
-	     "Default TIME STEP: the time step to numerically solve PDEs.\n\n"+
-	     "Output options: use keep every number of samples.",
+	     "Default TIME STEP: the time step to numerically solve PDEs.\n"+
+	     "Linear Solver Tolerance: the tolerance used to test for convergence of the iteration. The iteration is considered to have converged when the size of residual is less than or equal to the tolerance.\n\n" +
+	     "Output options: use output time interval.",
 	     // Combined Stiff Solver (IDA/CVODE)
 	     "This chooses between IDA and CVODE depending on the problem to be solved. \n" 
 	     + "CVODE is used for ordinary differential equation (ODE) systems;\n" 
@@ -633,6 +635,10 @@ public boolean supportsUniformExplicitOutput() {
 
 public boolean isSundialsSolver() {
 	return type == TYPE_CVODE || type == TYPE_IDA || type == TYPE_COMBINED_IDA_CVODE || type == TYPE_SUNDIALS_PDE;
+}
+
+public boolean isSemiImplicitPdeSolver() {
+	return type == TYPE_FINITE_VOLUME || type == TYPE_FINITE_VOLUME_STANDALONE;
 }
 
 public static String getFullDescription(SolverDescription sd) {

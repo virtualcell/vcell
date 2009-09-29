@@ -582,18 +582,20 @@ private boolean isAllowableSolverDescription(SolverDescription argSolverDescript
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && (evt.getPropertyName().equals("solverDescription"))) {
 		try {
-			if (getSolverDescription().equals(SolverDescription.SundialsPDE) 
-				|| getSolverDescription().equals(SolverDescription.FiniteVolume)
-				|| getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
+			SolverDescription solverDescription = getSolverDescription();
+			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
 				TimeBounds timeBounds = getTimeBounds();
 				double outputTime = timeBounds.getEndingTime()/10;
 				setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
-			} else if (!getSolverDescription().supports(getOutputTimeSpec())){
-				setOutputTimeSpec(getSolverDescription().createOutputTimeSpec(this));
-			}
-			if (getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-				setErrorTolerance(ErrorTolerance.getDefaultSundialsErrorTolerance());
-				setTimeStep(TimeStep.getDefaultSundialsTimeStep());
+				
+				if (solverDescription.equals(SolverDescription.SundialsPDE)) {
+					setErrorTolerance(ErrorTolerance.getDefaultSundialsErrorTolerance());
+					setTimeStep(TimeStep.getDefaultSundialsTimeStep());
+				} else {
+					setErrorTolerance(ErrorTolerance.getDefaultSemiImplicitErrorTolerance());
+				}
+			} else if (!solverDescription.supports(getOutputTimeSpec())){
+				setOutputTimeSpec(solverDescription.createOutputTimeSpec(this));
 			}
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();

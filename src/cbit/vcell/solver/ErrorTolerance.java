@@ -31,6 +31,10 @@ public static ErrorTolerance getDefaultSundialsErrorTolerance() {
 	return new ErrorTolerance(1e-9, 1e-7);
 }
 
+public static ErrorTolerance getDefaultSemiImplicitErrorTolerance() {
+	return new ErrorTolerance(1e-9, 1e-8);
+}
+
 /**
  * ErrorTolerance constructor comment.
  */
