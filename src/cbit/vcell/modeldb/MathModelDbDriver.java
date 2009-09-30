@@ -344,6 +344,8 @@ private void insertMathModelMetaData(Connection con,User user ,MathModelMetaData
 		KeyValue simKey = (KeyValue)simEnum.nextElement();
 		insertSimulationEntryLinkSQL(con, getNewKey(con), mathModelKey, simKey);
 	}
+	
+	ApplicationMathTable.table.saveOutputFunctionsMathModel(con, mathModelKey, mathModel.getOutputFunctions());
 }
 
 

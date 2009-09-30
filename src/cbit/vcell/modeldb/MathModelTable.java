@@ -11,6 +11,7 @@ import cbit.sql.*;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
+import java.util.ArrayList;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -21,6 +22,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.
@@ -113,7 +115,8 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, SessionLog log, Ma
 	//
 	KeyValue simKeys[] = mathModelDbDriver.getSimulationEntriesFromMathModel(con, mathModelKey);
 
-	MathModelMetaData mathModelMetaData = new MathModelMetaData(version,mathRef,simKeys);
+//	MathModelMetaData mathModelMetaData = new MathModelMetaData(version,mathRef,simKeys);
+	MathModelMetaData mathModelMetaData = populateOutputFunctions(con, mathRef, version, simKeys);
 
 	return mathModelMetaData;
 }
@@ -132,16 +135,20 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con,Ses
 	// Get Version
 	//
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
+	Version mathModelVersion = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 
-	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
+	KeyValue mathDescrRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
 	
-	MathModelMetaData mathModelMetaData = new MathModelMetaData(version,mathRef,simulationKeys);
+//	MathModelMetaData mathModelMetaData = new MathModelMetaData(version,mathRef,simulationKeys);
+	MathModelMetaData mathModelMetaData = populateOutputFunctions(con,mathDescrRef,mathModelVersion,simulationKeys);
 
 	return mathModelMetaData;
 }
 
-
+private MathModelMetaData populateOutputFunctions(Connection con,KeyValue mathDescrRef,Version mathModelVersion,KeyValue[] simulationKeys) throws SQLException,DataAccessException{
+	ArrayList<AnnotatedFunction> outputFunctions = ApplicationMathTable.table.getOutputFunctionsMathModel(con, mathModelVersion.getVersionKey());
+	return new MathModelMetaData(mathModelVersion,mathDescrRef,simulationKeys,outputFunctions);
+}
 /**
  * This method was created in VisualAge.
  * @return java.lang.String

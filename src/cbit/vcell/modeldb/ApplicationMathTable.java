@@ -31,25 +31,42 @@ public class ApplicationMathTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_applicationmath";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field simContextRef	= new Field("simContextRef",	"integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+    private static final String[] appMathTableConstraint =
+		new String[] {
+		"math_or_app CHECK(DECODE(simContextRef,NULL,0,simContextRef,1)+DECODE(mathModelRef,NULL,0,mathModelRef,1) = 1)"};
+
+	public final Field simContextRef	= new Field("simContextRef",	"integer",SimContextTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field outputFuncLarge	= new Field("outputFuncLRG",	"CLOB",				"");
 	public final Field outputFuncSmall	= new Field("outputFuncSML",	"VARCHAR2(4000)",	"");
-	
-	private final Field fields[] = {simContextRef,outputFuncLarge,outputFuncSmall};
+	public final Field mathModelRef		= new Field("mathModelRef",		"integer",MathModelTable.REF_TYPE+" ON DELETE CASCADE");
+
+	private final Field fields[] = {simContextRef,outputFuncLarge,outputFuncSmall,mathModelRef};
 	
 	public static final ApplicationMathTable table = new ApplicationMathTable();
 /**
  * ModelTable constructor comment.
  */
 private ApplicationMathTable() {
-	super(TABLE_NAME);
+	super(TABLE_NAME,appMathTableConstraint);
 	addFields(fields);
 }
 
-public void saveOutputFunctions(Connection con,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
+public void saveOutputFunctionsSimContext(Connection con,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
+	saveOutputFunctions(con, null, simContextRef, outputFunctionsList);
+}
+public void saveOutputFunctionsMathModel(Connection con,KeyValue mathModelRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
+	saveOutputFunctions(con, mathModelRef, null, outputFunctionsList);
+}
+private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef,ArrayList<AnnotatedFunction> outputFunctionsList) throws SQLException,DataAccessException{
 	
 	if(outputFunctionsList == null || outputFunctionsList.size() == 0){
 		return;
+	}
+	if(mathModelRef == null && simContextRef == null){
+		throw new DataAccessException("must have either mathmodel or simcontext reference for saving OutputFunctions");
+	}
+	if(mathModelRef != null && simContextRef != null){
+		throw new DataAccessException("OutputFunctions can be saved to either a mathmodel or simcontext, not both");
 	}
 	String outputFunctionsXML =
 		XmlUtil.xmlToString((new Xmlproducer(false)).getXML(outputFunctionsList));
@@ -65,8 +82,9 @@ public void saveOutputFunctions(Connection con,KeyValue simContextRef,ArrayList<
 		"INSERT INTO "+ApplicationMathTable.table.getTableName()+
 		" VALUES ("+
 		DbDriver.getNewKey(con).toString()+","+
-		simContextRef.toString()+","+
-		tableValues+")";
+		(simContextRef != null?simContextRef.toString():"NULL")+","+
+		tableValues+","+
+		(mathModelRef != null?mathModelRef.toString():"NULL")+")";
 	
 	DbDriver.varchar2_CLOB_update(con,
 		sql,
@@ -77,14 +95,23 @@ public void saveOutputFunctions(Connection con,KeyValue simContextRef,ArrayList<
 		ApplicationMathTable.table.outputFuncSmall);
 }
 
-public ArrayList<AnnotatedFunction> getOutputFunctions(Connection con,KeyValue simContextRef) throws SQLException,DataAccessException{
+public ArrayList<AnnotatedFunction> getOutputFunctionsSimcontext(Connection con,KeyValue simContextRef) throws SQLException,DataAccessException{
+	return getOutputFunctions(con, null, simContextRef);
+}
+public ArrayList<AnnotatedFunction> getOutputFunctionsMathModel(Connection con,KeyValue mathModelRef) throws SQLException,DataAccessException{
+	return getOutputFunctions(con, mathModelRef, null);
+}
+private ArrayList<AnnotatedFunction> getOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef) throws SQLException,DataAccessException{
 	Statement stmt = null;
 	try{
 		stmt = con.createStatement();
 		ResultSet rset =
 			stmt.executeQuery(
 				"SELECT * FROM "+ApplicationMathTable.table.getTableName()+
-				" WHERE "+ApplicationMathTable.table.simContextRef.getUnqualifiedColName()+" = "+simContextRef.toString());
+				" WHERE "+
+				(simContextRef != null?ApplicationMathTable.table.simContextRef.getUnqualifiedColName()+" = "+simContextRef.toString():"")+
+				(mathModelRef != null?ApplicationMathTable.table.mathModelRef.getUnqualifiedColName()+" = "+mathModelRef.toString():"")
+				);
 		if(!rset.next()){
 			return null;
 		}

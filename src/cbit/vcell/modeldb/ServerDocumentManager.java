@@ -1,4 +1,5 @@
 package cbit.vcell.modeldb;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -24,6 +25,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelMetaData;
@@ -459,6 +461,7 @@ public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue 
 	try {
 		newMathModel.setMathDescription(mathDescription);
 		newMathModel.setSimulations(simArray);
+		newMathModel.getOutputFunctionContext().setOutputFunctionsList(mathModelMetaData.getOutputFunctions());
 	}catch (java.beans.PropertyVetoException e){
 		throw new DataAccessException("PropertyVetoException caught "+e.getMessage());
 	}
@@ -1445,7 +1448,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 	// this invokes "update" on the database layer
 	//
 	MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
-
+	
 	forceDeepDirtyIfForeign(user,mathModel);
 	
 	//
@@ -1806,9 +1809,9 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		}
 		MathModelMetaData mathModelMetaData = null;
 		if (oldVersion==null){
-			mathModelMetaData = new MathModelMetaData(mathDescriptionKey, simKeys, mathModel.getName(), mathModel.getDescription());
+			mathModelMetaData = new MathModelMetaData(mathDescriptionKey, simKeys, mathModel.getName(), mathModel.getDescription(),mathModel.getOutputFunctionContext().getOutputFunctionsList());
 		}else{
-			mathModelMetaData = new MathModelMetaData(oldVersion, mathDescriptionKey, simKeys);
+			mathModelMetaData = new MathModelMetaData(oldVersion, mathDescriptionKey, simKeys,mathModel.getOutputFunctionContext().getOutputFunctionsList());
 			if (!mathModel.getDescription().equals(oldVersion.getAnnot())) {
 				try {
 					mathModelMetaData.setDescription(mathModel.getDescription());
