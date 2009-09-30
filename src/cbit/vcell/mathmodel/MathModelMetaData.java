@@ -3,12 +3,15 @@ package cbit.vcell.mathmodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
+
+import cbit.vcell.math.AnnotatedFunction;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 3:26:20 PM)
@@ -29,11 +32,13 @@ public class MathModelMetaData implements Versionable, java.io.Serializable {
 
 	private java.lang.String fieldName = new String("NoName");
 	private java.lang.String fieldDescription = new String();
+	
+	private ArrayList<AnnotatedFunction> outputFunctions;
 
 /**
  * BioModelMetaData constructor comment.
  */
-public MathModelMetaData(KeyValue argMathKey, KeyValue simulationKeys[], String argName, String argDescription) {
+public MathModelMetaData(KeyValue argMathKey, KeyValue simulationKeys[], String argName, String argDescription,ArrayList<AnnotatedFunction> outputFunctions) {
 	this.version = null;
 	this.fieldName = argName;
 	this.fieldDescription = argDescription;
@@ -43,13 +48,14 @@ public MathModelMetaData(KeyValue argMathKey, KeyValue simulationKeys[], String 
 			this.simulationKeyList.addElement(simulationKeys[i]);
 		}
 	}
+	this.outputFunctions = outputFunctions;
 }
 
 
 /**
  * BioModelMetaData constructor comment.
  */
-public MathModelMetaData(Version argVersion, KeyValue argMathKey, KeyValue simulationKeys[]) {
+public MathModelMetaData(Version argVersion, KeyValue argMathKey, KeyValue simulationKeys[],ArrayList<AnnotatedFunction> outputFunctions) {
 	this.version = argVersion;
 	if (version!=null){
 		this.fieldName = version.getName();
@@ -61,8 +67,13 @@ public MathModelMetaData(Version argVersion, KeyValue argMathKey, KeyValue simul
 			this.simulationKeyList.addElement(simulationKeys[i]);
 		}
 	}
+	this.outputFunctions = outputFunctions;
+
 }
 
+public ArrayList<AnnotatedFunction> getOutputFunctions(){
+	return outputFunctions;
+}
 
 /**
  * Insert the method's description here.

@@ -191,6 +191,9 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
 		if (evt.getSource() == this && evt.getPropertyName().equals("outputFunctions")){
 			ArrayList<AnnotatedFunction> newOutputFnsList = (ArrayList<AnnotatedFunction>)evt.getNewValue();
+			if(newOutputFnsList == null){
+				return;
+			}
 			//
 			// while adding a function: check that names are not duplicated and that no common names are mathSymbols
 			//
