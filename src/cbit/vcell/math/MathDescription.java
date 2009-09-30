@@ -2460,15 +2460,19 @@ public boolean isValid() {
 		for (int i=0;i<variableList.size();i++){
 			Variable var = variableList.elementAt(i);
 			if (var instanceof VolumeRegionVariable){
+				int count = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof CompartmentSubDomain){
 						Equation equ = subDomain.getEquation(var);
-						if (!(equ instanceof VolumeRegionEquation)){
-							setWarning("There should be a "+VCML.VolumeRegionEquation+" defined for variable "+var.getName()+" for "+VCML.CompartmentSubDomain+" "+subDomain.getName());
-							return false;
+						if (equ instanceof VolumeRegionEquation){
+							count ++;
 						}
 					}
+				}
+				if (count == 0) {
+					setWarning("There should be at least one "+VCML.VolumeRegionEquation+" defined for variable "+var.getName());
+					return false;
 				}
 			}
 		}
@@ -2478,15 +2482,19 @@ public boolean isValid() {
 		for (int i=0;i<variableList.size();i++){
 			Variable var = variableList.elementAt(i);
 			if (var instanceof MembraneRegionVariable){
+				int count = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof MembraneSubDomain){
 						Equation equ = subDomain.getEquation(var);
-						if (!(equ instanceof MembraneRegionEquation)){
-							setWarning("There should be a "+VCML.MembraneRegionEquation+" defined for variable "+var.getName()+" for "+VCML.MembraneSubDomain+" "+subDomain.getName());
-							return false;
+						if (equ instanceof MembraneRegionEquation){
+							count ++;
 						}
 					}
+				}
+				if (count == 0) {
+					setWarning("There should be at least one "+VCML.MembraneRegionEquation+" defined for variable "+var.getName());
+					return false;
 				}
 			}
 		}
