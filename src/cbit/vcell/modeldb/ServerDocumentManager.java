@@ -1831,7 +1831,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		}
 
 		//
-		// (THIS IS THE REALLY SCAREY PART...NOT GETTING A FRESH VIEW OF EVERYTING FROM THE DATABASE FOR CREATING THE XML)
+		// (THIS IS THE REALLY SCARY PART...NOT GETTING A FRESH VIEW OF EVERYTING FROM THE DATABASE FOR CREATING THE XML)
 		//
 		//mathModelXML = getMathModelXML(user,updatedMathModelMetaData.getVersion().getVersionKey());
 		MathModel updatedMathModel = new MathModel(updatedMathModelMetaData.getVersion());
@@ -1839,6 +1839,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		for (int i = 0; i < mathModel.getNumSimulations(); i++){
 			updatedMathModel.addSimulation((Simulation)memoryToDatabaseHash.get(mathModel.getSimulations(i)));
 		}
+		updatedMathModel.getOutputFunctionContext().setOutputFunctionsList(mathModel.getOutputFunctionContext().getOutputFunctionsList());
 		mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(updatedMathModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),
 				updatedMathModel.createMathModelChildSummary().toDatabaseSerialization());
