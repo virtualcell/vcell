@@ -2640,7 +2640,7 @@ private javax.swing.JButton getQuestionButton() {
 
 private void displayHelpInfo()
 {
-	DialogUtils.showInfoDialog(this, SolverDescription.getFullDescription(getTornOffSolverTaskDescription().getSolverDescription()));
+	DialogUtils.showInfoDialog(this, getTornOffSolverTaskDescription().getSolverDescription().getFullDescription());
 }
 
 private void setHybridOptions(boolean b)

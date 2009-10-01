@@ -339,7 +339,12 @@ private void displayTask() {
 		}
 		else
 		{
-			getJLabelOutput().setText(String.valueOf(solverTaskDescription.getOutputTimeSpec().getShortDescription()));
+			String text = solverTaskDescription.getOutputTimeSpec().getShortDescription();
+			if (solverTaskDescription.getOutputTimeSpec().isDefault() && !solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver() 
+					&& !solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson)) {
+				text += ", at most " + ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec()).getKeepAtMost();
+			}
+			getJLabelOutput().setText(text);
 		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
