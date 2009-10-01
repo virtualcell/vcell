@@ -11,6 +11,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
@@ -223,46 +224,33 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 			errorMessage = null;
 		}
 	}	
-	else if(getSimulationOwner() != null)
-	{ //to gurantee stochastic model uses stochastic methods and deterministic model uses ODE/PDE methods. 
-		if (getSimulationOwner() instanceof SimulationContext)
-		{
-			if(((SimulationContext)getSimulationOwner()).isStoch())
-			{
-				if(! (solverDescription.isSTOCHSolver()))
-					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
-			               			solverDescription.getDisplayLabel()+" is not a stochastic solver!";
-			}
-			else
-			{
-				if((solverDescription.isSTOCHSolver()))
-					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
-					               solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";
-				
+	else if (solverDescription.equals(SolverDescription.SundialsPDE)) {			
+		if (solverTaskDescription.getOutputTimeSpec().isDefault()) {
+			DefaultOutputTimeSpec dot = (DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
+			int maxNumberOfSteps = dot.getKeepEvery() * dot.getKeepAtMost();
+			double maximumTimeStep = solverTaskDescription.getTimeStep().getMaximumTimeStep();
+			double maxSimTime = maxNumberOfSteps * maximumTimeStep;
+			double endingTime = solverTaskDescription.getTimeBounds().getEndingTime();
+			if (maxSimTime < endingTime) {
+				errorMessage = "The maximum possible simulation time (keepEvery * maxTimestep * keepAtMost = " + maxSimTime 
+					+ ") is less than simulation end time (" + endingTime + ").\n\n"
+					+ "You have chosen a variable time step solver and specified a maximum number of time steps of "+maxNumberOfSteps+" (keepEvery*keepAtMost).  "
+					+ "Actual time steps are often small, but even if all steps were at the maximum time step of "+maximumTimeStep+", the simulation end time of "+endingTime+" would not be reached. \n\n"
+					+ "Either adjust the parameters or choose the \"Output Interval\" option.";				
 			}
 		}
-		else if(getSimulationOwner() instanceof MathModel)
-		{
-			if(((MathModel)getSimulationOwner()).getMathDescription().isStoch())
-			{
-				if(! (solverDescription.isSTOCHSolver()))
-					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
-			               			solverDescription.getDisplayLabel()+" is not a stochastic solver!";	
-			}
-			else
-			{
-				if((solverDescription.isSTOCHSolver()))
-					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
-					               solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";
-			}
-		}
-	} 
-	
-	else {
+	} else if(simulation.getMathDescription().isStoch() && !(solverDescription.isSTOCHSolver())) {
+		//to gurantee stochastic model uses stochastic methods and deterministic model uses ODE/PDE methods.
+		errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
+		            solverDescription.getDisplayLabel()+" is not a stochastic solver!";
+	} else if(!simulation.getMathDescription().isStoch() && (solverDescription.isSTOCHSolver())) {
+		errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" + 
+					solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";		
+	} else {		
 		errorMessage = null;
 	}
 	if (errorMessage != null) {
-		JOptionPane.showMessageDialog(parent, errorMessage, "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(parent, errorMessage);
 		return false;
 	}else{
 		String warningMessage = null;
@@ -405,7 +393,7 @@ void editSimulation(JComponent parent, Simulation simulation) {
 			throw new Exception("Some or all of the changes could not be applied:" + errors);
 		}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(simEditor, e.getMessage());
+		PopupGenerator.showErrorDialog(parent, e.getMessage());
 	}
 }
 

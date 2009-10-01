@@ -235,24 +235,25 @@ private static void browserLauncherError(Component requester, Throwable e, Strin
  */
 
 private static JPanel createMessagePanel(final String message) {
-	JTextArea textArea = new JTextArea(message);
+	JTextPane textArea = new JTextPane();
+	if (message.contains("<html>")) {
+		textArea.setContentType("text/html");
+	}
+	textArea.setText(message);
+	textArea.setCaretPosition(0);
 	textArea.setEditable(false);
-	textArea.setWrapStyleWord(true);
 	textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
 	textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
 	//
 	// determine "natural" TextArea prefered size (what it would like if it didn't wrap lines)
-	// and try to set size accordingly (within limits ... e.g. 200<=X<=500 and 100<=Y<=400).
+	// and try to set size accordingly (within limits ... e.g. 400<=X<=500 and 100<=Y<=400).
 	//
-	textArea.setLineWrap(false);
 	Dimension textAreaPreferredSize = textArea.getPreferredSize();
-	textArea.setLineWrap(true);
-	Dimension preferredSize = new Dimension((int)Math.min(500,Math.max(200,textAreaPreferredSize.getWidth()+20)),
-											(int)Math.min(400,Math.max(100,textAreaPreferredSize.getHeight()+20)));
-
+	Dimension preferredSize = new Dimension((int)Math.min(500,Math.max(400,textAreaPreferredSize.getWidth()+20)),
+			(int)Math.min(400,Math.max(100,textAreaPreferredSize.getHeight()+20)));
 	
-	JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	JScrollPane scroller = new JScrollPane();
 	JPanel panel = new JPanel(new BorderLayout());
 	scroller.setViewportView(textArea);
 	scroller.getViewport().setPreferredSize(preferredSize);
@@ -527,7 +528,7 @@ private static String showDialog(final Component requester, final SimpleUserMess
 public static void showErrorDialog(final Component requester,final  String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareErrorDialog(null, message);
+			final JDialog dialog = prepareErrorDialog(requester, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog,requester);
 			}finally{
@@ -561,7 +562,7 @@ public static void showWarningDialog(final Component requester, final String mes
 public static void showInfoDialog(final Component requester, final String message) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareInfoDialog(null, message);
+			final JDialog dialog = prepareInfoDialog(requester, message);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog, requester);
 			}finally{
