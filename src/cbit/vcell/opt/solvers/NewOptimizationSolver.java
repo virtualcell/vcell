@@ -7,6 +7,7 @@ import java.io.StringWriter;
 
 import org.jdom.CDATA;
 import org.jdom.Element;
+import org.vcell.optimization.NativeOptSolver;
 import org.vcell.optimization.OptXmlReader;
 import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.BeanUtils;
@@ -17,7 +18,9 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
@@ -29,6 +32,7 @@ import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.PdeObjectiveFunction;
 import cbit.vcell.opt.ReferenceData;
@@ -48,6 +52,7 @@ import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.NativeCVODESolver;
 import cbit.vcell.solvers.NativeIDASolver;
@@ -56,8 +61,8 @@ import cbit.vcell.util.RowColumnResultSet;
 
 public class NewOptimizationSolver implements OptimizationSolver {
 
-public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec optSolverSpec, final cbit.vcell.opt.solvers.OptSolverCallbacks optSolverCallbacks) 
-	throws IOException, ExpressionException, cbit.vcell.opt.OptimizationException {
+public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec optSolverSpec, final OptSolverCallbacks optSolverCallbacks) 
+						throws IOException, ExpressionException, OptimizationException {
 	Element optProblemXML = getOptProblemDescriptionXML(os);
 	org.vcell.optimization.OptSolverCallbacks callbacks = new org.vcell.optimization.OptSolverCallbacks(){
 		
@@ -82,7 +87,7 @@ public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec o
 		}
 		
 	};
-	org.vcell.optimization.NativeOptSolver newNativeOptSolver = new org.vcell.optimization.NativeOptSolver();
+	NativeOptSolver newNativeOptSolver = new NativeOptSolver();
 	try {		
 		String inputXML = XmlUtil.xmlToString(optProblemXML);
 //		PrintWriter pw = new PrintWriter("c:\\test11.xml");
@@ -91,7 +96,7 @@ public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec o
 		String optResultsXML = newNativeOptSolver.nativeSolve_CFSQP(inputXML, callbacks);		
 		OptXmlReader optXMLReader = new OptXmlReader();
 		org.vcell.optimization.OptimizationResultSet newOptResultSet = optXMLReader.getOptimizationResultSet(optResultsXML);
-		cbit.vcell.opt.OptimizationStatus optimizationStatus = new cbit.vcell.opt.OptimizationStatus(
+		OptimizationStatus optimizationStatus = new OptimizationStatus(
 				newOptResultSet.getOptimizationStatus().getStatusCode(),
 				newOptResultSet.getOptimizationStatus().getStatusString());
 		ODESolverResultSet odeSolverResultSet = null;
@@ -119,7 +124,7 @@ public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec o
 			}
 			odeSolverResultSet = getOdeSolverResultSet(rcResultSet, sim, parameterNames, parameterValues);
 		}
-		cbit.vcell.opt.OptimizationResultSet optResultSet = new cbit.vcell.opt.OptimizationResultSet(
+		OptimizationResultSet optResultSet = new OptimizationResultSet(
 				newOptResultSet.getParameterNames(),
 				newOptResultSet.getParameterValues(),
 				new Double(newOptResultSet.getObjectiveFunctionValue()),
@@ -139,9 +144,9 @@ public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResu
 	// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
 	//
 	
-	cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
 	for (int i = 0; i < rcResultSet.getDataColumnCount(); i++){
-		odeSolverResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
+		odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
 	}
 	for (int i = 0; i < rcResultSet.getRowCount(); i++){
 		odeSolverResultSet.addRow(rcResultSet.getRow(i));
@@ -149,7 +154,7 @@ public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResu
 	//
 	// add appropriate Function columns to result set
 	//
-	cbit.vcell.math.Function functions[] = sim.getFunctions();
+	Function functions[] = sim.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
@@ -161,10 +166,10 @@ public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResu
 				for (int j = 0; parameterNames!=null && j < parameterNames.length; j++) {
 					exp1.substituteInPlace(new Expression(parameterNames[j]), new Expression(parameterValues[j]));
 				}
-			} catch (cbit.vcell.math.MathException e) {
+			} catch (MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
+			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}
@@ -172,7 +177,7 @@ public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResu
 			try {
 				FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 				odeSolverResultSet.addFunctionColumn(cd);
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 			}
 		}

@@ -1,4 +1,7 @@
 package cbit.vcell.opt.solvers;
+
+import cbit.vcell.solver.ode.ODESolverResultSet;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/1/2005 12:40:31 PM)
@@ -10,9 +13,10 @@ public class OptSolverCallbacks {
 	private Double percentDone = null;
 	private Double penaltyMu = null;
 
-	private java.util.Vector evaluations = new java.util.Vector();
+	private java.util.Vector<EvaluationHolder> evaluations = new java.util.Vector<EvaluationHolder>();
 	private EvaluationHolder bestEvaluation = null;
-	
+	private ODESolverResultSet bestResultSet = null;
+
 	public static class EvaluationHolder {
 		public double[] parameterVector = null;
 		public double objFunctionValue = 0;
@@ -40,7 +44,7 @@ public OptSolverCallbacks() {
  * @param newAtBestParameters double
  */
 public void addEvaluation(double[] paramValues, double objectiveFuncValue) {
-	addEvaluation(new EvaluationHolder(paramValues, objectiveFuncValue));
+	addEvaluation(new EvaluationHolder(paramValues, objectiveFuncValue), null);
 }
 
 
@@ -49,10 +53,11 @@ public void addEvaluation(double[] paramValues, double objectiveFuncValue) {
  * Creation date: (12/20/2005 4:11:12 PM)
  * @param newAtBestParameters double
  */
-public void addEvaluation(OptSolverCallbacks.EvaluationHolder evaluation) {
+public void addEvaluation(OptSolverCallbacks.EvaluationHolder evaluation, ODESolverResultSet resultSet) {
 	evaluations.add(evaluation);
 	if (bestEvaluation==null || bestEvaluation.objFunctionValue > evaluation.objFunctionValue){
 		bestEvaluation = evaluation;
+		bestResultSet = resultSet;
 	}
 }
 
@@ -178,5 +183,9 @@ public void setStopRequested(boolean stopRequested) {
 	boolean oldValue = fieldStopRequested;
 	fieldStopRequested = stopRequested;
 	firePropertyChange("stopRequested", new Boolean(oldValue), new Boolean(stopRequested));
+}
+
+public final ODESolverResultSet getBestResultSet() {
+	return bestResultSet;
 }
 }

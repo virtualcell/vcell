@@ -1,12 +1,7 @@
 package cbit.vcell.modelopt.gui;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.util.Vector;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.solvers.OptimizationService;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 5:21:08 PM)
@@ -1869,7 +1864,7 @@ private cbit.vcell.modelopt.ParameterEstimationTask getparameterEstimationTask1(
 private ParameterMappingPanel getparameterMappingPanel() {
 	if (ivjparameterMappingPanel == null) {
 		try {
-			ivjparameterMappingPanel = new cbit.vcell.modelopt.gui.ParameterMappingPanel();
+			ivjparameterMappingPanel = new ParameterMappingPanel();
 			ivjparameterMappingPanel.setName("parameterMappingPanel");
 			// user code begin {1}
 			// user code end

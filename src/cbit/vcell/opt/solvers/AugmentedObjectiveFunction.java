@@ -1,5 +1,6 @@
 package cbit.vcell.opt.solvers;
 import cbit.function.*;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 
 
 /**
@@ -38,9 +39,9 @@ public double f(double[] x) {
 	try {
 		optSolverCallbacks.setPenaltyMu(new Double(mu));
 		penalty = getPenalty(x);
-		for (int i = 0; i < x.length; i++) {
-			System.out.print("x[" + i + "]=" + x[i] + " ");
-		}
+//		for (int i = 0; i < x.length; i++) {
+//			System.out.print("x[" + i + "]=" + x[i] + " ");
+//		}
 		if (penalty > 1000){
 			System.out.println("aborting point, penalty = "+penalty);
 			return penalty;
@@ -53,7 +54,12 @@ public double f(double[] x) {
 		OptSolverCallbacks.EvaluationHolder evaluationHolder = new OptSolverCallbacks.EvaluationHolder();
 		evaluationHolder.objFunctionValue = penalty + objFunValue;
 		evaluationHolder.parameterVector = (double[]) x.clone();
-		optSolverCallbacks.addEvaluation(evaluationHolder);
+		
+		ODESolverResultSet resultSet = null;
+		if (fobj instanceof OdeLSFunction) {
+			resultSet = ((OdeLSFunction) fobj).getOdeSolverResultSet();
+		}
+		optSolverCallbacks.addEvaluation(evaluationHolder, resultSet);
 		
 
 		return penalty + objFunValue;
