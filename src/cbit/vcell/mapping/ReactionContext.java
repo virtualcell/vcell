@@ -883,10 +883,10 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 					if (i < referencedSCSVector.size()-1) {
 						msg = msg + ", "; 
 					} else {
-						msg = msg + ". ";
+						msg = msg + " ";
 					}
 				}
-				msg = msg + "\n\nCannot delete '" + modelParam.getName() + "'.";
+				msg = msg + " in application '" + getSimulationContext().getName() + "'. \n\nCannot delete '" + modelParam.getName() + "'.";
 				throw new PropertyVetoException(msg,evt);
 			}
 		}

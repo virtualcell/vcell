@@ -15,6 +15,7 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.DivideByZeroException;
 /**
  * Insert the type's description here.
@@ -352,7 +353,9 @@ public Object getValueAt(int row, int col) {
 				return "unresolved";
 			}else if (parameterMappingSpec.getModelParameter().getNameScope()==null){
 				return "null";
-			}else{
+			} if (parameterMappingSpec.getModelParameter() instanceof ModelParameter) {
+				return "Model";
+			} else{
 				return parameterMappingSpec.getModelParameter().getNameScope().getName();
 			}
 		}

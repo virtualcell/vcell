@@ -3,6 +3,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.util.graph.Node;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
@@ -234,6 +235,16 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
 private cbit.vcell.model.Parameter[] getModelParameters() {
 	java.util.Vector modelParameterList = new java.util.Vector();
 	cbit.vcell.model.Model model = getSimulationContext().getModel();
+	//
+	// get Model (global) parameters
+	//
+	ModelParameter[] globalParams = model.getModelParameters();
+	for (int i = 0; i < globalParams.length; i++) {
+		if (globalParams[i] != null && globalParams[i].getExpression().isNumeric()){
+			modelParameterList.add(globalParams[i]);
+		}
+	}
+	
 	//
 	// get kinetic parameters that are numbers
 	//
