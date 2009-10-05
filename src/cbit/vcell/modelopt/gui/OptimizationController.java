@@ -2,12 +2,23 @@ package cbit.vcell.modelopt.gui;
 
 import javax.swing.SwingUtilities;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Issue;
+import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.Variable;
 import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 /**
  * Insert the type's description here.
  * Creation date: (5/4/2006 9:19:47 AM)
@@ -17,7 +28,7 @@ public class OptimizationController {
 	private OptTestPanel optTestPanel = null;
 	private ParameterEstimationTask parameterEstimationTask = null;
 
-	public class OptSolverUpdater extends org.vcell.util.gui.AsynchGuiUpdater {
+	public class OptSolverUpdater extends AsynchGuiUpdater {
 		private int progressRunner = 0;
 		private OptSolverCallbacks optSolverCallbacks = null;
 
@@ -46,7 +57,7 @@ public class OptimizationController {
 				optTestPanel.getSolverTypeComboBox().setEnabled(true);
 			}else if (params instanceof Exception){
 				parameterEstimationTask.appendSolverMessageText("\n"+((Exception)params).getMessage());
-				org.vcell.util.gui.DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
+				DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
 				parameterEstimationTask.setOptimizationResultSet(null);
 				this.stop();
 				optTestPanel.getSolveButton().setEnabled(true);
@@ -72,7 +83,7 @@ public OptimizationController(OptTestPanel arg_optTestPanel) {
  * Creation date: (5/4/2006 10:46:32 AM)
  * @return cbit.vcell.modelopt.ParameterEstimationTask
  */
-public cbit.vcell.modelopt.ParameterEstimationTask getParameterEstimationTask() {
+public ParameterEstimationTask getParameterEstimationTask() {
 	return parameterEstimationTask;
 }
 
@@ -93,10 +104,10 @@ public boolean isRunning() {
  */
 public void plot() {
 	try {
-		java.util.Vector dataSourceList = new java.util.Vector();
-		java.util.Vector nameVector = new java.util.Vector();
+		java.util.Vector<DataSource> dataSourceList = new java.util.Vector<DataSource>();
+		java.util.Vector<String> nameVector = new java.util.Vector<String>();
 		
-		cbit.vcell.opt.ReferenceData referenceData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
+		ReferenceData referenceData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
 		if (referenceData!=null) {
 			dataSourceList.add(new DataSource(referenceData,"refData"));
 			String[] refColumnNames = referenceData.getColumnNames();
@@ -108,30 +119,30 @@ public void plot() {
 			}
 		}
 		
-		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
+		ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
 		if (odeSolverResultSet!=null){
 			dataSourceList.add(new DataSource(odeSolverResultSet,"odeData"));
-			cbit.vcell.modelopt.ReferenceDataMappingSpec[] mappingSpecs = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpecs();
+			ReferenceDataMappingSpec[] mappingSpecs = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpecs();
 			if (mappingSpecs != null) {
 				for (int i = 0; i < mappingSpecs.length; i ++) {
 					if (mappingSpecs[i].getReferenceDataColumnName().equals("t")) {
 						continue;
 					}
-					cbit.vcell.math.Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(mappingSpecs[i].getModelObject());
+					Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(mappingSpecs[i].getModelObject());
 					nameVector.add(var.getName());
 				}
 			}
 		}
-		DataSource[] dataSources = (DataSource[])org.vcell.util.BeanUtils.getArray(dataSourceList,DataSource.class);
+		DataSource[] dataSources = (DataSource[])BeanUtils.getArray(dataSourceList,DataSource.class);
 		MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
 		multisourcePlotPane.setDataSources(dataSources);	
 
 		String[] nameArray = new String[nameVector.size()];
-		nameArray = (String[])org.vcell.util.BeanUtils.getArray(nameVector, String.class);
+		nameArray = (String[])BeanUtils.getArray(nameVector, String.class);
 		multisourcePlotPane.select(nameArray);
 		
-		org.vcell.util.gui.DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
-	}catch (cbit.vcell.parser.ExpressionException e){
+		DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
+	}catch (ExpressionException e){
 		e.printStackTrace(System.out);
 	}
 }
@@ -167,13 +178,12 @@ public void saveSolutionAsNewSimulation() {
 		if (optSpec == null){
 			throw new RuntimeException("optimization not yet performed");
 		}
-		if (optSpec.getObjectiveFunction() instanceof cbit.vcell.opt.OdeObjectiveFunction){
-			cbit.vcell.opt.OdeObjectiveFunction odeObjFunction = (cbit.vcell.opt.OdeObjectiveFunction)optSpec.getObjectiveFunction();
+		if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){
 			//
 			// add new simulation to the Application (other bookkeeping required?)
 			//
-			cbit.vcell.mapping.SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
-			cbit.vcell.solver.Simulation newSim = simContext.addNewSimulation();
+			SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
+			Simulation newSim = simContext.addNewSimulation();
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
 			DialogUtils.showInfoDialog(optTestPanel, "created simulation \""+newSim.getName()+"\"");
 		}
@@ -218,14 +228,13 @@ public void solve() {
 		optTestPanel.getSaveSolutionAsNewSimButton().setEnabled(false);
 		parameterEstimationTask.appendSolverMessageText("generating optimization specification...\n");
 		
-		cbit.vcell.modelopt.ModelOptimizationMapping modelOptMapping = null;
 		parameterEstimationTask.refreshMappings();
-		java.util.Vector issueList = new java.util.Vector();
+		java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
 		parameterEstimationTask.gatherIssues(issueList);
 		boolean bFailed = false;
 		for (int i = 0; i < issueList.size(); i++){
-			org.vcell.util.Issue issue = (org.vcell.util.Issue)issueList.elementAt(i);
-			if (issue.getSeverity() == org.vcell.util.Issue.SEVERITY_ERROR){
+			org.vcell.util.Issue issue = (Issue)issueList.elementAt(i);
+			if (issue.getSeverity() == Issue.SEVERITY_ERROR){
 				bFailed = true;
 			}
 			parameterEstimationTask.appendSolverMessageText(issue.getMessage()+"\n");
@@ -248,25 +257,22 @@ public void solve() {
 		
 		Thread t = new Thread() {
 			public void run() {
+				OptimizationResultSet optResultSet = null;
 				try {
 					optSolverUpdater.setDelay(100);
 					optSolverUpdater.start();
 					setRunning(true);
-					final OptimizationResultSet optResultSet = optTestPanel.getOptimizationService().solve(optSpec,optSolverSpec,optSolverCallbacks);
+					optResultSet = optTestPanel.getOptimizationService().solve(optSpec,optSolverSpec,optSolverCallbacks);
+				}catch (final Exception e){
+					e.printStackTrace(System.out);
+				}finally{
+					final OptimizationResultSet finalResultSet = optResultSet;
 					SwingUtilities.invokeLater(new Runnable(){
-						public void run() {							
-							optSolverUpdater.guiToDo(optResultSet);
+						public void run() {	
+							optSolverUpdater.guiToDo(finalResultSet);
 							optTestPanel.getJProgressBar1().setValue(100);
 						}
 					});
-				}catch (final Exception e){
-					e.printStackTrace(System.out);
-					SwingUtilities.invokeLater(new Runnable(){
-						public void run() {	
-							optSolverUpdater.guiToDo(e);
-						}
-					});
-				}finally{
 					optSolverUpdater.stop();
 					setRunning(false);
 				}

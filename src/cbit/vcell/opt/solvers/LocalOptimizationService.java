@@ -12,7 +12,7 @@ import java.io.*;
  * @author: 
  */
 public class LocalOptimizationService implements OptimizationService {
-	OptimizationSolver optSolver = null;	
+	
 
 /**
  * OptimizationServiceImpl constructor comment.
@@ -25,7 +25,8 @@ public LocalOptimizationService() {
 /**
  * solve method comment.
  */
-public OptimizationResultSet solve(OptimizationSpec optSpec, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws OptimizationException {
+public OptimizationResultSet solve(OptimizationSpec optSpec, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) {
+	OptimizationSolver optSolver = null;
 	if (optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_POWELL)){
 		optSolver = new PowellOptimizationSolver();
 	//}else if (optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_CONJUGATE_GRADIENT)){
@@ -35,7 +36,7 @@ public OptimizationResultSet solve(OptimizationSpec optSpec, OptimizationSolverS
 	} else {
 		throw new RuntimeException("unsupported solver type '"+optSolverSpec.getSolverType()+"'");
 	}
-	cbit.vcell.opt.OptimizationResultSet optResultSet = null;
+	OptimizationResultSet optResultSet = null;
 	try {
 		optResultSet = optSolver.solve(optSpec,optSolverSpec,optSolverCallbacks);
 	}catch (IOException e){
@@ -47,9 +48,7 @@ public OptimizationResultSet solve(OptimizationSpec optSpec, OptimizationSolverS
 	}catch(OptimizationException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
-	}finally{
-		optSolver = null;
-	}
+	}	
 	return optResultSet;
 }
 }

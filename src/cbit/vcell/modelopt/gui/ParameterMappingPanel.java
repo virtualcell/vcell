@@ -1,8 +1,20 @@
 package cbit.vcell.modelopt.gui;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.sorttable.JSortTable;
+
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.ParameterMappingSpec;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SymbolTableEntry;
 
 /**
  * Insert the type's description here.
@@ -91,17 +103,10 @@ public ParameterMappingPanel(boolean isDoubleBuffered) {
  * connEtoC1:  (this12.mouse.mousePressed(java.awt.event.MouseEvent) --> ParameterMappingPanel.popupCopyPaste(Ljava.awt.event.MouseEvent;)V)
  * @param arg1 java.awt.event.MouseEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC1(java.awt.event.MouseEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.popupCopyPaste(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -111,17 +116,10 @@ private void connEtoC1(java.awt.event.MouseEvent arg1) {
  * connEtoC2:  (this12.mouse.mouseReleased(java.awt.event.MouseEvent) --> ParameterMappingPanel.popupCopyPaste(Ljava.awt.event.MouseEvent;)V)
  * @param arg1 java.awt.event.MouseEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC2(java.awt.event.MouseEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.popupCopyPaste(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -131,17 +129,10 @@ private void connEtoC2(java.awt.event.MouseEvent arg1) {
  * connEtoC3:  (JMenuItemCopy.action.actionPerformed(java.awt.event.ActionEvent) --> ParameterMappingPanel.jMenuItemCopy_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC3(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.jMenuItemCopy_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -151,17 +142,10 @@ private void connEtoC3(java.awt.event.ActionEvent arg1) {
  * connEtoC4:  (JMenuItemCopyAll.action.actionPerformed(java.awt.event.ActionEvent) --> ParameterMappingPanel.jMenuItemCopy_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC4(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.jMenuItemCopy_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -171,17 +155,10 @@ private void connEtoC4(java.awt.event.ActionEvent arg1) {
  * connEtoC5:  (JMenuItemPaste.action.actionPerformed(java.awt.event.ActionEvent) --> ParameterMappingPanel.jMenuItemPaste_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC5(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.jMenuItemPaste_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -191,17 +168,10 @@ private void connEtoC5(java.awt.event.ActionEvent arg1) {
  * connEtoC6:  (JMenuItemPasteAll.action.actionPerformed(java.awt.event.ActionEvent) --> ParameterMappingPanel.jMenuItemPaste_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC6(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.jMenuItemPaste_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -210,17 +180,10 @@ private void connEtoC6(java.awt.event.ActionEvent arg1) {
 /**
  * connEtoC7:  (ParameterMappingPanel.initialize() --> ParameterMappingPanel.parameterMappingPanel_Initialize()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC7() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.parameterMappingPanel_Initialize();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -230,17 +193,10 @@ private void connEtoC7() {
  * connEtoM1:  (ParameterMappingPanel.parameterEstimationTask --> parameterMappingTableModel.parameterEstimationTask)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		getparameterMappingTableModel().setParameterEstimationTask(this.getParameterEstimationTask());
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -249,17 +205,10 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 /**
  * connEtoM2:  (ParameterMappingPanel.initialize() --> ScrollPaneTable.setDefaultRenderer(Ljava.lang.Class;Ljavax.swing.table.TableCellRenderer;)V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2() {
 	try {
-		// user code begin {1}
-		// user code end
 		getScrollPaneTable().setDefaultRenderer(Double.class, getParameterMappingTableCellRenderer1());
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -267,17 +216,12 @@ private void connEtoM2() {
 /**
  * connPtoP1SetTarget:  (modelParameterTableModel.this <--> ScrollPaneTable.model)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		getScrollPaneTable().setModel(getparameterMappingTableModel());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {1}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -285,16 +229,11 @@ private void connPtoP1SetTarget() {
 /**
  * connPtoP2SetTarget:  (ScrollPaneTable.this <--> this12.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		setJSortTableThis(getScrollPaneTable());
-		// user code begin {1}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -303,18 +242,13 @@ private void connPtoP2SetTarget() {
  * Return the JMenuItemCopy property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemCopy() {
 	if (ivjJMenuItemCopy == null) {
 		try {
 			ivjJMenuItemCopy = new javax.swing.JMenuItem();
 			ivjJMenuItemCopy.setName("JMenuItemCopy");
 			ivjJMenuItemCopy.setText("Copy");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -326,18 +260,13 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
  * Return the JMenuItemCopyAll property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemCopyAll() {
 	if (ivjJMenuItemCopyAll == null) {
 		try {
 			ivjJMenuItemCopyAll = new javax.swing.JMenuItem();
 			ivjJMenuItemCopyAll.setName("JMenuItemCopyAll");
 			ivjJMenuItemCopyAll.setText("Copy All");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -349,18 +278,13 @@ private javax.swing.JMenuItem getJMenuItemCopyAll() {
  * Return the JMenuItemPaste property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemPaste() {
 	if (ivjJMenuItemPaste == null) {
 		try {
 			ivjJMenuItemPaste = new javax.swing.JMenuItem();
 			ivjJMenuItemPaste.setName("JMenuItemPaste");
 			ivjJMenuItemPaste.setText("Paste");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -372,18 +296,13 @@ private javax.swing.JMenuItem getJMenuItemPaste() {
  * Return the JMenuItemPasteAll property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemPasteAll() {
 	if (ivjJMenuItemPasteAll == null) {
 		try {
 			ivjJMenuItemPasteAll = new javax.swing.JMenuItem();
 			ivjJMenuItemPasteAll.setName("JMenuItemPasteAll");
 			ivjJMenuItemPasteAll.setText("Paste All");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -395,7 +314,6 @@ private javax.swing.JMenuItem getJMenuItemPasteAll() {
  * Return the JPopupMenuCopyPaste property value.
  * @return javax.swing.JPopupMenu
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPopupMenu getJPopupMenuCopyPaste() {
 	if (ivjJPopupMenuCopyPaste == null) {
 		try {
@@ -405,11 +323,7 @@ private javax.swing.JPopupMenu getJPopupMenuCopyPaste() {
 			ivjJPopupMenuCopyPaste.add(getJMenuItemCopyAll());
 			ivjJPopupMenuCopyPaste.add(getJMenuItemPaste());
 			ivjJPopupMenuCopyPaste.add(getJMenuItemPasteAll());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -421,7 +335,6 @@ private javax.swing.JPopupMenu getJPopupMenuCopyPaste() {
  * Return the JScrollPane1 property value.
  * @return javax.swing.JScrollPane
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JScrollPane getJScrollPane1() {
 	if (ivjJScrollPane1 == null) {
 		try {
@@ -430,11 +343,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -446,10 +355,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * Return the this12 property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.sorttable.JSortTable getJSortTableThis() {
-	// user code begin {1}
-	// user code end
+private JSortTable getJSortTableThis() {
 	return ivjJSortTableThis;
 }
 
@@ -458,7 +364,7 @@ private org.vcell.util.gui.sorttable.JSortTable getJSortTableThis() {
  * @return The parameterEstimationTask property value.
  * @see #setParameterEstimationTask
  */
-public cbit.vcell.modelopt.ParameterEstimationTask getParameterEstimationTask() {
+public ParameterEstimationTask getParameterEstimationTask() {
 	return fieldParameterEstimationTask;
 }
 
@@ -467,19 +373,14 @@ public cbit.vcell.modelopt.ParameterEstimationTask getParameterEstimationTask() 
  * Return the ParameterMappingTableCellRenderer1 property value.
  * @return cbit.vcell.modelopt.gui.ParameterMappingTableCellRenderer
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private ParameterMappingTableCellRenderer getParameterMappingTableCellRenderer1() {
 	if (ivjParameterMappingTableCellRenderer1 == null) {
 		try {
-			ivjParameterMappingTableCellRenderer1 = new cbit.vcell.modelopt.gui.ParameterMappingTableCellRenderer();
+			ivjParameterMappingTableCellRenderer1 = new ParameterMappingTableCellRenderer();
 			ivjParameterMappingTableCellRenderer1.setName("ParameterMappingTableCellRenderer1");
 			ivjParameterMappingTableCellRenderer1.setText("ParameterMappingTableCellRenderer1");
 			ivjParameterMappingTableCellRenderer1.setBounds(78, 491, 225, 16);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -490,16 +391,11 @@ private ParameterMappingTableCellRenderer getParameterMappingTableCellRenderer1(
  * Return the parameterMappingTableModel property value.
  * @return cbit.vcell.modelopt.gui.ParameterMappingTableModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private ParameterMappingTableModel getparameterMappingTableModel() {
 	if (ivjparameterMappingTableModel == null) {
 		try {
-			ivjparameterMappingTableModel = new cbit.vcell.modelopt.gui.ParameterMappingTableModel();
-			// user code begin {1}
-			// user code end
+			ivjparameterMappingTableModel = new ParameterMappingTableModel();
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -511,20 +407,14 @@ private ParameterMappingTableModel getparameterMappingTableModel() {
  * Return the ScrollPaneTable property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
+private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
+			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -547,10 +437,7 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
@@ -563,11 +450,8 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("ModelParameterPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(655, 226);
@@ -578,8 +462,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -601,15 +483,15 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 					rows = getScrollPaneTable().getSelectedRows();
 				}
 
-			cbit.vcell.mapping.SimulationContext sc = getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext();
-			cbit.vcell.mapping.MathMapping mm = new cbit.vcell.mapping.MathMapping(sc);
-			cbit.vcell.mapping.MathSymbolMapping msm = mm.getMathSymbolMapping();
+			SimulationContext sc = getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext();
+			MathMapping mm = new cbit.vcell.mapping.MathMapping(sc);
+			MathSymbolMapping msm = mm.getMathSymbolMapping();
 			
 			boolean bInitialGuess = (getScrollPaneTable().getSelectedColumn() == ParameterMappingTableModel.COLUMN_CURRENTVALUE);
 			cbit.vcell.modelopt.ParameterMappingSpec[] parameterMappingSpecs = new cbit.vcell.modelopt.ParameterMappingSpec[rows.length];
-			java.util.Vector primarySymbolTableEntriesV = new java.util.Vector();
-			java.util.Vector alternateSymbolTableEntriesV = new java.util.Vector();
-			java.util.Vector resolvedValuesV = new java.util.Vector();
+			java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
+			java.util.Vector<SymbolTableEntry> alternateSymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
+			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
 
 			//
 			//Create formatted string for text/spreadsheet pasting.
@@ -621,7 +503,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			);
 			sb.append("\"Parameter Name\"\t\""+(bInitialGuess?"Initial Guess":"Solution")+"\"\n");
 			for(int i=0;i<rows.length;i+= 1){
-				cbit.vcell.modelopt.ParameterMappingSpec pms = (cbit.vcell.modelopt.ParameterMappingSpec)getparameterMappingTableModel().getData().get(rows[i]);
+				ParameterMappingSpec pms = (ParameterMappingSpec)getparameterMappingTableModel().getData().get(rows[i]);
 				parameterMappingSpecs[i] = pms;
 				primarySymbolTableEntriesV.add(pms.getModelParameter());
 				if(msm != null){
@@ -638,7 +520,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 				}else{
 					resolvedValue = (Double)getparameterMappingTableModel().getValueAt(rows[i],ParameterMappingTableModel.COLUMN_CURRENTVALUE);
 				}
-				resolvedValuesV.add(new cbit.vcell.parser.Expression(resolvedValue.doubleValue()));
+				resolvedValuesV.add(new Expression(resolvedValue.doubleValue()));
 				sb.append(
 					"\""+parameterMappingSpecs[i].getModelParameter().getName()+"\"\t"+resolvedValue+"\n"
 				);
@@ -649,9 +531,9 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			VCellTransferable.ResolvedValuesSelection rvs =
 				new VCellTransferable.ResolvedValuesSelection(
-					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
-					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
-					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
+					(SymbolTableEntry[])BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
+					(SymbolTableEntry[])BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
+					(Expression[])BeanUtils.getArray(resolvedValuesV,Expression.class),
 					sb.toString());
 
 			VCellTransferable.sendToClipboard(rvs);
@@ -667,16 +549,16 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
  */
 private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	
-	java.util.Vector pasteDescriptionsV = new java.util.Vector();
-	java.util.Vector newExpressionsV = new java.util.Vector();
-	java.util.Vector changedParametersV = new java.util.Vector();
+	java.util.Vector<String> pasteDescriptionsV = new java.util.Vector<String>();
+	java.util.Vector<Expression> newExpressionsV = new java.util.Vector<Expression>();
+	java.util.Vector<ParameterMappingSpec> changedParametersV = new java.util.Vector<ParameterMappingSpec>();
 	try{
 		if(actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()){
-			Object pasteThis = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
+			Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 
-			cbit.vcell.mapping.SimulationContext sc = getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext();
-			cbit.vcell.mapping.MathMapping mm = new cbit.vcell.mapping.MathMapping(sc);
-			cbit.vcell.mapping.MathSymbolMapping msm = mm.getMathSymbolMapping();
+			SimulationContext sc = getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext();
+			MathMapping mm = new MathMapping(sc);
+			MathSymbolMapping msm = mm.getMathSymbolMapping();
 			//if(msm == null){
 				//try{
 					//getParameterEstimationTask().refreshMappings();
@@ -702,33 +584,32 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			//
 			StringBuffer errors = null;
 			for(int i=0;i<rows.length;i+= 1){
-				cbit.vcell.modelopt.ParameterMappingSpec pms =
-					(cbit.vcell.modelopt.ParameterMappingSpec)getparameterMappingTableModel().getData().get(rows[i]);
+				ParameterMappingSpec pms = (ParameterMappingSpec)getparameterMappingTableModel().getData().get(rows[i]);
 				try{
 					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 						VCellTransferable.ResolvedValuesSelection rvs =
 							(VCellTransferable.ResolvedValuesSelection)pasteThis;
 						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
-							cbit.vcell.modelopt.ParameterMappingSpec pasteDestination = null;
-							cbit.vcell.model.Parameter clipboardBiologicalParameter = null;
-							if(rvs.getPrimarySymbolTableEntries()[j] instanceof cbit.vcell.model.Parameter){
-								clipboardBiologicalParameter = (cbit.vcell.model.Parameter)rvs.getPrimarySymbolTableEntries()[j];
+							ParameterMappingSpec pasteDestination = null;
+							Parameter clipboardBiologicalParameter = null;
+							if(rvs.getPrimarySymbolTableEntries()[j] instanceof Parameter){
+								clipboardBiologicalParameter = (Parameter)rvs.getPrimarySymbolTableEntries()[j];
 							}else if(rvs.getAlternateSymbolTableEntries() != null &&
-									rvs.getAlternateSymbolTableEntries()[j] instanceof cbit.vcell.model.Parameter){
-								clipboardBiologicalParameter = (cbit.vcell.model.Parameter)rvs.getAlternateSymbolTableEntries()[j];
+									rvs.getAlternateSymbolTableEntries()[j] instanceof Parameter){
+								clipboardBiologicalParameter = (Parameter)rvs.getAlternateSymbolTableEntries()[j];
 							}
 							if(clipboardBiologicalParameter == null){
-								cbit.vcell.math.Variable pastedMathVariable = null;
-								if(rvs.getPrimarySymbolTableEntries()[j] instanceof cbit.vcell.math.Variable){
-									pastedMathVariable = (cbit.vcell.math.Variable)rvs.getPrimarySymbolTableEntries()[j];
+								Variable pastedMathVariable = null;
+								if(rvs.getPrimarySymbolTableEntries()[j] instanceof Variable){
+									pastedMathVariable = (Variable)rvs.getPrimarySymbolTableEntries()[j];
 								}else if(rvs.getAlternateSymbolTableEntries() != null &&
-										rvs.getAlternateSymbolTableEntries()[j] instanceof cbit.vcell.math.Variable){
-									pastedMathVariable = (cbit.vcell.math.Variable)rvs.getAlternateSymbolTableEntries()[j];
+										rvs.getAlternateSymbolTableEntries()[j] instanceof Variable){
+									pastedMathVariable = (Variable)rvs.getAlternateSymbolTableEntries()[j];
 								}
 								if(pastedMathVariable != null){
-									cbit.vcell.math.Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
+									Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
 									if(localMathVariable != null){
-										cbit.vcell.parser.SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);
+										SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);
 										for(int k=0;k<localBiologicalSymbolArr.length;k+= 1){
 											if(localBiologicalSymbolArr[k] == pms.getModelParameter()){
 												pasteDestination = pms;
@@ -749,7 +630,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 								changedParametersV.add(pasteDestination);
 								newExpressionsV.add(rvs.getExpressionValues()[j]);
 								pasteDescriptionsV.add(
-									cbit.vcell.desktop.VCellCopyPasteHelper.formatPasteList(
+									VCellCopyPasteHelper.formatPasteList(
 										pms.getModelParameter().getNameScope().getName(),
 										pms.getModelParameter().getName(),
 										pasteDestination.getCurrent()+"",
@@ -778,10 +659,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 		if(pasteDescriptionsV.size() > 0){
 			String[] pasteDescriptionArr = new String[pasteDescriptionsV.size()];
 			pasteDescriptionsV.copyInto(pasteDescriptionArr);
-			cbit.vcell.modelopt.ParameterMappingSpec[] changedParametersArr =
-				new cbit.vcell.modelopt.ParameterMappingSpec[changedParametersV.size()];
+			ParameterMappingSpec[] changedParametersArr = new ParameterMappingSpec[changedParametersV.size()];
 			changedParametersV.copyInto(changedParametersArr);
-			cbit.vcell.parser.Expression[] newExpressionsArr = new cbit.vcell.parser.Expression[newExpressionsV.size()];
+			Expression[] newExpressionsArr = new Expression[newExpressionsV.size()];
 			newExpressionsV.copyInto(newExpressionsArr);
 			VCellCopyPasteHelper.chooseApplyPaste(this, pasteDescriptionArr,changedParametersArr,newExpressionsArr);
 		}else{
@@ -841,10 +721,6 @@ private void parameterMappingPanel_Initialize() {
  * Comment
  */
 private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
-
-	//if(mouseEvent.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED){
-		//int selectRow = getScrollPaneTable().rowAtPoint(mouseEvent.getPoint());
-	//}
 	if(mouseEvent.isPopupTrigger()){
 		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
 		boolean bPastable =
@@ -889,7 +765,6 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
  * Set the this12 to a new value.
  * @param newValue cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setJSortTableThis(org.vcell.util.gui.sorttable.JSortTable newValue) {
 	if (ivjJSortTableThis != newValue) {
 		try {
@@ -903,16 +778,10 @@ private void setJSortTableThis(org.vcell.util.gui.sorttable.JSortTable newValue)
 			if (ivjJSortTableThis != null) {
 				ivjJSortTableThis.addMouseListener(ivjEventHandler);
 			}
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**
@@ -920,8 +789,8 @@ private void setJSortTableThis(org.vcell.util.gui.sorttable.JSortTable newValue)
  * @param parameterEstimationTask The new value for the property.
  * @see #getParameterEstimationTask
  */
-public void setParameterEstimationTask(cbit.vcell.modelopt.ParameterEstimationTask parameterEstimationTask) {
-	cbit.vcell.modelopt.ParameterEstimationTask oldValue = fieldParameterEstimationTask;
+public void setParameterEstimationTask(ParameterEstimationTask parameterEstimationTask) {
+	ParameterEstimationTask oldValue = fieldParameterEstimationTask;
 	fieldParameterEstimationTask = parameterEstimationTask;
 	firePropertyChange("parameterEstimationTask", oldValue, parameterEstimationTask);
 }
