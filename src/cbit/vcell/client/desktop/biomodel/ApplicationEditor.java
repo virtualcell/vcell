@@ -2029,10 +2029,26 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 			if (newParameterEstimationName.length() == 0) {
 				PopupGenerator.showErrorDialog(this,"Error:\n name for new parameter estimation can't be empty" );
 			} else {
-				ParameterEstimationTask newParameterEstimationTask = new ParameterEstimationTask(getsimulationContext());
-				newParameterEstimationTask.setName(newParameterEstimationName);
-				getsimulationContext().addAnalysisTask(newParameterEstimationTask);
-				getAnalysisTaskComboBoxModel().setSelectedItem(newParameterEstimationTask);
+				final String finalname = newParameterEstimationName;
+				AsynchClientTask task1 = new AsynchClientTask("init task", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						ParameterEstimationTask newParameterEstimationTask = new ParameterEstimationTask(getsimulationContext());
+						newParameterEstimationTask.setName(finalname);
+						hashTable.put("newParameterEstimationTask", newParameterEstimationTask);
+					}
+				};
+				AsynchClientTask task2 = new AsynchClientTask("add task", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						ParameterEstimationTask newParameterEstimationTask = (ParameterEstimationTask)hashTable.get("newParameterEstimationTask");
+						getsimulationContext().addAnalysisTask(newParameterEstimationTask);
+						getAnalysisTaskComboBoxModel().setSelectedItem(newParameterEstimationTask);
+					}
+				};
+				
+				ClientTaskDispatcher.dispatch(ApplicationEditor.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 			}
 		}
 		refreshAnalysisTaskEnables();

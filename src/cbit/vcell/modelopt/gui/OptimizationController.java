@@ -1,5 +1,7 @@
 package cbit.vcell.modelopt.gui;
 
+import java.util.Hashtable;
+
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
@@ -7,18 +9,21 @@ import org.vcell.util.Issue;
 import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.opt.OdeObjectiveFunction;
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.opt.solvers.OptSolverCallbacks;
-import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Variable;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
+import cbit.vcell.opt.OdeObjectiveFunction;
+import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.opt.OptimizationSolverSpec;
+import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.solvers.OptSolverCallbacks;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (5/4/2006 9:19:47 AM)
@@ -36,7 +41,7 @@ public class OptimizationController {
 			optSolverCallbacks = argOptSolverCallbacks;
 		}
 		private void animationDuringInit() {
-			optTestPanel.getJProgressBar1().setValue(progressRunner % 100);
+			optTestPanel.setProgress(progressRunner % 100);
 			progressRunner += 5;
 		}
 		protected void guiToDo() {
@@ -44,27 +49,19 @@ public class OptimizationController {
 			if (optSolverCallbacks.getPercentDone()==null){
 				animationDuringInit();
 			}else{
-				optTestPanel.getJProgressBar1().setValue(optSolverCallbacks.getPercentDone().intValue());
+				optTestPanel.setProgress(optSolverCallbacks.getPercentDone().intValue());
 			}
 		}
 		protected void guiToDo(java.lang.Object params) {
 			if (params instanceof OptimizationResultSet){
 				parameterEstimationTask.setOptimizationResultSet((OptimizationResultSet)params);
-				this.stop();
-				optTestPanel.getSolveButton().setEnabled(true);
-				optTestPanel.getStopButton().setEnabled(false);
-				optTestPanel.getJProgressBar1().setValue(0);
-				optTestPanel.getSolverTypeComboBox().setEnabled(true);
 			}else if (params instanceof Exception){
 				parameterEstimationTask.appendSolverMessageText("\n"+((Exception)params).getMessage());
 				DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
 				parameterEstimationTask.setOptimizationResultSet(null);
-				this.stop();
-				optTestPanel.getSolveButton().setEnabled(true);
-				optTestPanel.getStopButton().setEnabled(false);
-				optTestPanel.getJProgressBar1().setValue(0);
-				optTestPanel.getSolverTypeComboBox().setEnabled(true);
 			}
+			this.stop();
+			optTestPanel.updateInterface(false);
 		}
 	}
 	private boolean bRunning = false;
@@ -153,18 +150,17 @@ public void plot() {
  * Creation date: (5/4/2006 10:01:41 AM)
  */
 private void refreshSolutionStatusDisplay(OptSolverCallbacks optSolverCallbacks) {
+	String numEvals = "";
+	String objVal = "";
 	if (optSolverCallbacks!=null){
-		optTestPanel.getNumEvaluationsValueLabel().setText(""+optSolverCallbacks.getEvaluationCount());
+		numEvals = optSolverCallbacks.getEvaluationCount() + "";
 		OptSolverCallbacks.EvaluationHolder bestEvaluation = optSolverCallbacks.getBestEvaluation();
 		if (bestEvaluation!=null){
-			optTestPanel.getObjectiveFunctionValueLabel().setText(""+bestEvaluation.objFunctionValue);
-		}else{
-			optTestPanel.getObjectiveFunctionValueLabel().setText("");
+			objVal = bestEvaluation.objFunctionValue + "";
 		}
-	}else{
-		optTestPanel.getNumEvaluationsValueLabel().setText("");
-		optTestPanel.getObjectiveFunctionValueLabel().setText("");
 	}
+	optTestPanel.setNumEvaluations(numEvals);
+	optTestPanel.setObjectFunctionValue(objVal);	
 }
 
 
@@ -222,74 +218,74 @@ private void setRunning(boolean newRunning) {
  * Creation date: (5/4/2006 9:27:42 AM)
  */
 public void solve() {
-	try {
-		parameterEstimationTask.setOptimizationResultSet(null);
-		parameterEstimationTask.setSolverMessageText("");
-		optTestPanel.getSaveSolutionAsNewSimButton().setEnabled(false);
-		parameterEstimationTask.appendSolverMessageText("generating optimization specification...\n");
-		
-		parameterEstimationTask.refreshMappings();
-		java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
-		parameterEstimationTask.gatherIssues(issueList);
-		boolean bFailed = false;
-		for (int i = 0; i < issueList.size(); i++){
-			org.vcell.util.Issue issue = (Issue)issueList.elementAt(i);
-			if (issue.getSeverity() == Issue.SEVERITY_ERROR){
-				bFailed = true;
-			}
-			parameterEstimationTask.appendSolverMessageText(issue.getMessage()+"\n");
+	AsynchClientTask task1 = new AsynchClientTask("update gui", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			optTestPanel.updateInterface(true);
 		}
-		if (bFailed){
-			parameterEstimationTask.appendSolverMessageText("fatal error, stopped.\n");
-		}
-		//appendOptimizationText("\n\n--------Optimization Specification------------\n\n");
-		//appendOptimizationText(optSpec.getVCML()+"\n");
-		parameterEstimationTask.appendSolverMessageText("working...\n");
+	};
+	
+	AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		
-		final OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
-		final cbit.vcell.opt.solvers.OptSolverCallbacks optSolverCallbacks = new cbit.vcell.opt.solvers.OptSolverCallbacks();
-		final cbit.vcell.opt.OptimizationSolverSpec optSolverSpec = parameterEstimationTask.getOptimizationSolverSpec();
-		parameterEstimationTask.setOptSolverCallbacks(optSolverCallbacks);
-		final OptSolverUpdater optSolverUpdater = new OptSolverUpdater(optSolverCallbacks);
-		optTestPanel.getJProgressBar1().setValue(0);
-		optTestPanel.getSolverTypeComboBox().setEnabled(false);
-
-		
-		Thread t = new Thread() {
-			public void run() {
-				OptimizationResultSet optResultSet = null;
-				try {
-					optSolverUpdater.setDelay(100);
-					optSolverUpdater.start();
-					setRunning(true);
-					optResultSet = optTestPanel.getOptimizationService().solve(optSpec,optSolverSpec,optSolverCallbacks);
-				}catch (final Exception e){
-					e.printStackTrace(System.out);
-				}finally{
-					final OptimizationResultSet finalResultSet = optResultSet;
-					SwingUtilities.invokeLater(new Runnable(){
-						public void run() {	
-							optSolverUpdater.guiToDo(finalResultSet);
-							optTestPanel.getJProgressBar1().setValue(100);
-						}
-					});
-					optSolverUpdater.stop();
-					setRunning(false);
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			parameterEstimationTask.setOptimizationResultSet(null);
+			parameterEstimationTask.setSolverMessageText("");			
+			parameterEstimationTask.appendSolverMessageText("generating optimization specification...\n");
+			
+			parameterEstimationTask.refreshMappings();
+			java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
+			parameterEstimationTask.gatherIssues(issueList);
+			boolean bFailed = false;
+			for (int i = 0; i < issueList.size(); i++){
+				org.vcell.util.Issue issue = (Issue)issueList.elementAt(i);
+				if (issue.getSeverity() == Issue.SEVERITY_ERROR){
+					bFailed = true;
 				}
+				parameterEstimationTask.appendSolverMessageText(issue.getMessage()+"\n");
 			}
-		};
-		t.setPriority(Thread.NORM_PRIORITY-1);
-		t.start();
+			if (bFailed){
+				parameterEstimationTask.appendSolverMessageText("fatal error, stopped.\n");
+			}
+			//appendOptimizationText("\n\n--------Optimization Specification------------\n\n");
+			//appendOptimizationText(optSpec.getVCML()+"\n");
+			parameterEstimationTask.appendSolverMessageText("working...\n");
+			
+			final OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
+			final OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
+			final OptimizationSolverSpec optSolverSpec = parameterEstimationTask.getOptimizationSolverSpec();
+			parameterEstimationTask.setOptSolverCallbacks(optSolverCallbacks);
+			final OptSolverUpdater optSolverUpdater = new OptSolverUpdater(optSolverCallbacks);
+			
 		
-		
-
-		optTestPanel.getSolveButton().setEnabled(false);
-		optTestPanel.getStopButton().setEnabled(true);
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		getParameterEstimationTask().appendSolverMessageText("\n"+e.getMessage()+"\n");
-		org.vcell.util.gui.DialogUtils.showErrorDialog(optTestPanel,e.getMessage());
-	}
+			
+			Thread t = new Thread() {
+				public void run() {
+					OptimizationResultSet optResultSet = null;
+					try {
+						optSolverUpdater.setDelay(100);
+						optSolverUpdater.start();
+						setRunning(true);
+						optResultSet = optTestPanel.getOptimizationService().solve(optSpec,optSolverSpec,optSolverCallbacks);
+					}catch (final Exception e){
+						e.printStackTrace(System.out);
+					}finally{
+						final OptimizationResultSet finalResultSet = optResultSet;
+						SwingUtilities.invokeLater(new Runnable(){
+							public void run() {	
+								optSolverUpdater.guiToDo(finalResultSet);
+							}
+						});
+						optSolverUpdater.stop();
+						setRunning(false);
+					}
+				}
+			};
+			t.setPriority(Thread.NORM_PRIORITY-1);
+			t.start();		
+		}
+	};
+	ClientTaskDispatcher.dispatch(optTestPanel, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 }
 
 
