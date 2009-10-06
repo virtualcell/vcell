@@ -218,46 +218,67 @@ private void setRunning(boolean newRunning) {
  * Creation date: (5/4/2006 9:27:42 AM)
  */
 public void solve() {
-	AsynchClientTask task1 = new AsynchClientTask("update gui", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task1 = new AsynchClientTask("update gui", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			optTestPanel.updateInterface(true);
+			parameterEstimationTask.setOptimizationResultSet(null);
+			parameterEstimationTask.setSolverMessageText("");
+			parameterEstimationTask.appendSolverMessageText("generating optimization specification...\n");
 		}
 	};
 	
-	AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		
+	AsynchClientTask task2 = new AsynchClientTask("refresh mapping", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			parameterEstimationTask.setOptimizationResultSet(null);
-			parameterEstimationTask.setSolverMessageText("");			
-			parameterEstimationTask.appendSolverMessageText("generating optimization specification...\n");
-			
+			StringBuffer issueText = new StringBuffer();
 			parameterEstimationTask.refreshMappings();
 			java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
 			parameterEstimationTask.gatherIssues(issueList);
 			boolean bFailed = false;
 			for (int i = 0; i < issueList.size(); i++){
-				org.vcell.util.Issue issue = (Issue)issueList.elementAt(i);
+				Issue issue = (Issue)issueList.elementAt(i);
+				issueText.append(issue.getMessage()+"\n");
 				if (issue.getSeverity() == Issue.SEVERITY_ERROR){
 					bFailed = true;
+					break;
 				}
-				parameterEstimationTask.appendSolverMessageText(issue.getMessage()+"\n");
 			}
 			if (bFailed){
-				parameterEstimationTask.appendSolverMessageText("fatal error, stopped.\n");
+				issueText.append("fatal error, stopped.\n");
 			}
-			//appendOptimizationText("\n\n--------Optimization Specification------------\n\n");
-			//appendOptimizationText(optSpec.getVCML()+"\n");
+			hashTable.put("issueText", issueText.toString());
+			hashTable.put("bFailed", bFailed);
+		}
+	};
+	
+	AsynchClientTask task3 = new AsynchClientTask("set message", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			String issueText = (String)hashTable.get("issueText");
+			parameterEstimationTask.appendSolverMessageText(issueText);
+			boolean bFailed = (Boolean)hashTable.get("bFailed");
+			if (bFailed) {
+				return;
+			}
 			parameterEstimationTask.appendSolverMessageText("working...\n");
-			
-			final OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();
-			final OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
-			final OptimizationSolverSpec optSolverSpec = parameterEstimationTask.getOptimizationSolverSpec();
+			OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
 			parameterEstimationTask.setOptSolverCallbacks(optSolverCallbacks);
+		}
+	};
+	
+	AsynchClientTask task4 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean bFailed = (Boolean)hashTable.get("bFailed");
+			if (bFailed) {
+				return;
+			}
+
+			final OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
+			final OptimizationSolverSpec optSolverSpec = parameterEstimationTask.getOptimizationSolverSpec();
+			final OptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
 			final OptSolverUpdater optSolverUpdater = new OptSolverUpdater(optSolverCallbacks);
-			
-		
 			
 			Thread t = new Thread() {
 				public void run() {
@@ -285,7 +306,7 @@ public void solve() {
 			t.start();		
 		}
 	};
-	ClientTaskDispatcher.dispatch(optTestPanel, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
+	ClientTaskDispatcher.dispatch(optTestPanel, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3, task4});
 }
 
 
