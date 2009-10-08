@@ -1,12 +1,16 @@
 package cbit.vcell.modelopt.gui;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultListModelCivilized;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:07:05 PM)
  * @author: Jim Schaff
  */
-public class MultisourcePlotListModel extends org.vcell.util.gui.DefaultListModelCivilized implements java.beans.PropertyChangeListener {
+public class MultisourcePlotListModel extends DefaultListModelCivilized implements java.beans.PropertyChangeListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.modelopt.gui.DataSource[] fieldDataSources = null;
+	private DataSource[] fieldDataSources = null;
 
 /**
  * MultisourcePlotListModel constructor comment.
@@ -70,7 +74,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The dataSources property value.
  * @see #setDataSources
  */
-public cbit.vcell.modelopt.gui.DataSource[] getDataSources() {
+public DataSource[] getDataSources() {
 	return fieldDataSources;
 }
 
@@ -129,28 +133,17 @@ private void refreshAll() {
 	java.util.Vector<DataReference> dataReferenceList = new java.util.Vector<DataReference>();
 	for (int i = 0; getDataSources()!=null && i < getDataSources().length; i++){
 		DataSource dataSource = getDataSources(i);
-		if (dataSource.getSource() instanceof cbit.vcell.solver.ode.ODESolverResultSet){
-			cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = (cbit.vcell.solver.ode.ODESolverResultSet)dataSource.getSource();
-			int numColumns = odeSolverResultSet.getColumnDescriptionsCount();
-			for (int j = 0; j < numColumns; j++){
-				if (odeSolverResultSet.getColumnDescriptions(j).getName().equals("t")){
-					continue;
-				}
-				dataReferenceList.add(new DataReference(dataSource,odeSolverResultSet.getColumnDescriptions()[j].getName()));
+		String[] columnNames = dataSource.getColumnNames();
+		int timeIndex = dataSource.getTimeColumnIndex();
+		
+		for (int j = 0; j < columnNames.length; j++){
+			if (j == timeIndex){
+				continue;
 			}
-		}
-		if (dataSource.getSource() instanceof cbit.vcell.opt.ReferenceData){
-			cbit.vcell.opt.ReferenceData referenceData = (cbit.vcell.opt.ReferenceData)dataSource.getSource();
-			int numColumns = referenceData.getColumnNames().length;
-			for (int j = 0; j < numColumns; j++){
-				if (referenceData.getColumnNames()[j].equals("t")){
-					continue;
-				}
-				dataReferenceList.add(new DataReference(dataSource,referenceData.getColumnNames()[j]));
-			}
+			dataReferenceList.add(new DataReference(dataSource, columnNames[j]));
 		}
 	}
-	setContents((dataReferenceList.size() > 0?org.vcell.util.BeanUtils.getArray(dataReferenceList,DataReference.class):null));
+	setContents((dataReferenceList.size() > 0? BeanUtils.getArray(dataReferenceList,DataReference.class):null));
 }
 
 
@@ -175,8 +168,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param dataSources The new value for the property.
  * @see #getDataSources
  */
-public void setDataSources(cbit.vcell.modelopt.gui.DataSource[] dataSources) {
-	cbit.vcell.modelopt.gui.DataSource[] oldValue = fieldDataSources;
+public void setDataSources(DataSource[] dataSources) {
+	DataSource[] oldValue = fieldDataSources;
 	fieldDataSources = dataSources;
 	firePropertyChange("dataSources", oldValue, dataSources);
 }

@@ -2,12 +2,15 @@ package cbit.vcell.modelopt.gui;
 import java.awt.Color;
 import java.util.Vector;
 
+import org.vcell.util.Range;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;
 
+import cbit.plot.Plot2D;
 import cbit.plot.Plot2DPanel;
 import cbit.plot.PlotData;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.plot.PlotPane;
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:03:04 PM)
@@ -17,9 +20,9 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JList ivjJList1 = null;
 	private MultisourcePlotListModel ivjmultisourcePlotListModel = null;
-	private cbit.plot.PlotPane ivjplotPane = null;
-	private cbit.vcell.modelopt.gui.DataSource[] fieldDataSources = null;
-	private org.vcell.util.gui.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
+	private PlotPane ivjplotPane = null;
+	private DataSource[] fieldDataSources = null;
+	private DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 	
 	private String refDataLabelPrefix = "refData_";
@@ -150,7 +153,7 @@ private void connPtoP3SetTarget() {
  * @return The dataSources property value.
  * @see #setDataSources
  */
-public cbit.vcell.modelopt.gui.DataSource[] getDataSources() {
+public DataSource[] getDataSources() {
 	return fieldDataSources;
 }
 
@@ -171,10 +174,10 @@ public DataSource getDataSources(int index) {
  * @return cbit.util.DefaultListSelectionModelFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
+private DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
 	if (ivjdefaultListSelectionModelFixed == null) {
 		try {
-			ivjdefaultListSelectionModelFixed = new org.vcell.util.gui.DefaultListSelectionModelFixed();
+			ivjdefaultListSelectionModelFixed = new DefaultListSelectionModelFixed();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -226,7 +229,7 @@ public boolean getListVisible() {
 private MultisourcePlotListModel getmultisourcePlotListModel() {
 	if (ivjmultisourcePlotListModel == null) {
 		try {
-			ivjmultisourcePlotListModel = new cbit.vcell.modelopt.gui.MultisourcePlotListModel();
+			ivjmultisourcePlotListModel = new MultisourcePlotListModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -244,10 +247,10 @@ private MultisourcePlotListModel getmultisourcePlotListModel() {
  * @return cbit.plot.PlotPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.plot.PlotPane getplotPane() {
+private PlotPane getplotPane() {
 	if (ivjplotPane == null) {
 		try {
-			ivjplotPane = new cbit.plot.PlotPane();
+			ivjplotPane = new PlotPane();
 			ivjplotPane.setName("plotPane");
 			ivjplotPane.setPreferredSize(new java.awt.Dimension(700, 700));
 			// user code begin {1}
@@ -350,7 +353,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -402,7 +404,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	int firstIndex = listSelectionEvent.getFirstIndex();
 	int lastIndex = listSelectionEvent.getLastIndex();
 	if (firstIndex<0 || lastIndex<0){
-		getplotPane().setPlot2D(new cbit.plot.Plot2D(null,new String[0],new cbit.plot.PlotData[0]));
+		getplotPane().setPlot2D(new Plot2D(null,new String[0],new PlotData[0]));
 	}
 
 	//
@@ -417,44 +419,27 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	for (int selectedIndex = 0; selectedIndex < getmultisourcePlotListModel().getSize(); selectedIndex++){
 		if (((DefaultListSelectionModelFixed)listSelectionEvent.getSource()).isSelectedIndex(selectedIndex)){
 			DataReference dataReference = (DataReference)getmultisourcePlotListModel().getElementAt(selectedIndex);
-			if (dataReference.getDataSource().getSource() instanceof cbit.vcell.opt.ReferenceData){
-				cbit.vcell.opt.ReferenceData referenceData = (cbit.vcell.opt.ReferenceData)dataReference.getDataSource().getSource();
-				int timeIndex = referenceData.findColumn("t");
-				if (timeIndex==-1){
-					throw new RuntimeException("no time variable specified");
+			DataSource dataSource = dataReference.getDataSource();
+			String prefix = dataSource instanceof DataSource.DataSourceReferenceData ? refDataLabelPrefix : modelDataLabelPrefix;
+			
+			String[] columnNames = dataSource.getColumnNames();
+			int timeIndex = dataSource.getTimeColumnIndex();
+			if (timeIndex==-1){
+				throw new RuntimeException("no time variable specified");
+			}
+			for (int i = 0; i < columnNames.length; i++){
+				if (i == timeIndex){
+					continue;
 				}
-				for (int i = 0; i < referenceData.getColumnNames().length; i++){
-					if (i == timeIndex){
-						continue;
-					}
-					if (referenceData.getColumnNames()[i].equals(dataReference.getIdentifier())){
-						double[] independentValues = referenceData.getColumnData(timeIndex);
-						double[] dependentValues = referenceData.getColumnData(i);
-						PlotData plotData = new cbit.plot.PlotData(independentValues, dependentValues);
-						plotDataList.add(plotData);
-						colorV.add(autoContrastColors[selectedIndex]);
-						nameList.add(refDataLabelPrefix+referenceData.getColumnNames()[i]);
-						renderHintList.add(new Integer(cbit.plot.Plot2D.RENDERHINT_DRAWPOINT));
-						break;
-					}
-				}
-			}else if (dataReference.getDataSource().getSource() instanceof cbit.vcell.solver.ode.ODESolverResultSet){
-				cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = (cbit.vcell.solver.ode.ODESolverResultSet)dataReference.getDataSource().getSource();
-				int t_index = odeSolverResultSet.findColumn("t");
-				for (int i = 0; i < odeSolverResultSet.getColumnDescriptions().length; i++){
-					if (i == t_index){
-						continue;
-					}
-					if (odeSolverResultSet.getColumnDescriptions(i).getName().equals(dataReference.getIdentifier())){
-						nameList.add(modelDataLabelPrefix+odeSolverResultSet.getColumnDescriptions(i).getName());
-						double[] independentValues = odeSolverResultSet.extractColumn(t_index);
-						double[] dependentValues = odeSolverResultSet.extractColumn(i);
-						cbit.plot.PlotData plotData = new cbit.plot.PlotData(independentValues, dependentValues);
-						plotDataList.add(plotData);
-						colorV.add(autoContrastColors[selectedIndex]);
-						renderHintList.add(new Integer(cbit.plot.Plot2D.RENDERHINT_DRAWLINE));
-						break;
-					}
+				if (columnNames[i].equals(dataReference.getIdentifier())){
+					double[] independentValues = dataSource.getColumnData(timeIndex);
+					double[] dependentValues = dataSource.getColumnData(i);
+					PlotData plotData = new PlotData(independentValues, dependentValues);
+					plotDataList.add(plotData);
+					colorV.add(autoContrastColors[selectedIndex]);
+					nameList.add(prefix+columnNames[i]);
+					renderHintList.add(dataSource.getRenderHints());
+					break;
 				}
 			}
 		}
@@ -462,8 +447,8 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	
 	
 	String[] labels = {"", "t", ""};	
-	String[] names = (String[])org.vcell.util.BeanUtils.getArray(nameList,String.class);	
-	cbit.plot.PlotData[] plotDatas = (cbit.plot.PlotData[])org.vcell.util.BeanUtils.getArray(plotDataList,cbit.plot.PlotData.class);
+	String[] names = (String[])BeanUtils.getArray(nameList,String.class);	
+	PlotData[] plotDatas = (PlotData[])BeanUtils.getArray(plotDataList,PlotData.class);
 	boolean visibleFlags[] = new boolean[plotDatas.length];
 	for (int i = 0; i < visibleFlags.length; i++){
 		visibleFlags[i] = true;
@@ -473,7 +458,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 		renderHints[i] = ((Integer)renderHintList.elementAt(i)).intValue();
 	}
 
-	cbit.plot.Plot2D plot2D = new cbit.plot.Plot2D(null,names,plotDatas,labels,visibleFlags,renderHints);
+	Plot2D plot2D = new Plot2D(null,names,plotDatas,labels,visibleFlags,renderHints);
 	Color[] colorArr = colorV.toArray(new Color[0]);
 //	if(colorV.size() == plot2D.getNumberOfPlots()){
 //		colorArr = colorV.toArray(new Color[0]);
@@ -489,8 +474,8 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
  * @param dataSources The new value for the property.
  * @see #getDataSources
  */
-public void setDataSources(cbit.vcell.modelopt.gui.DataSource[] dataSources) {
-	cbit.vcell.modelopt.gui.DataSource[] oldValue = fieldDataSources;
+public void setDataSources(DataSource[] dataSources) {
+	DataSource[] oldValue = fieldDataSources;
 	fieldDataSources = dataSources;
 	firePropertyChange("dataSources", oldValue, dataSources);
 }
@@ -534,7 +519,7 @@ public String getModelDataLabelPrefix() {
 public void setModelDataLabelPrefix(String modelDataLabelPrefix) {
 	this.modelDataLabelPrefix = modelDataLabelPrefix;
 }
-public void forceXYRange(org.vcell.util.Range xRange,org.vcell.util.Range yRange) {
+public void forceXYRange(Range xRange,Range yRange) {
 	getplotPane().forceXYRange(xRange, yRange);
 }
 }

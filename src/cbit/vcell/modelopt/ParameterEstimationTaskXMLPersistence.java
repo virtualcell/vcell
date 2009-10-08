@@ -4,6 +4,20 @@ import java.util.Vector;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.util.CommentStringTokenizer;
+
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathException;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.opt.OptimizationSolverSpec;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.xml.XMLTags;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2006 9:00:56 AM)
@@ -11,8 +25,8 @@ import org.jdom.Namespace;
  */
 public class ParameterEstimationTaskXMLPersistence {
 	
-	public final static String NameAttribute = cbit.vcell.xml.XMLTags.NameAttrTag;
-	public final static String AnnotationTag = cbit.vcell.xml.XMLTags.AnnotationTag;
+	public final static String NameAttribute = XMLTags.NameAttrTag;
+	public final static String AnnotationTag = XMLTags.AnnotationTag;
 	public final static String ParameterMappingSpecListTag = "parameterMappingSpecList";
 	public final static String ParameterMappingSpecTag = "parameterMappingSpec";
 	public final static String ParameterReferenceAttribute = "parameterReferenceAttribute";
@@ -43,8 +57,8 @@ public class ParameterEstimationTaskXMLPersistence {
  * @param element org.jdom.Element
  * @param simContext cbit.vcell.mapping.SimulationContext
  */
-public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, cbit.vcell.mapping.SimulationContext simContext) 
-throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingException, cbit.vcell.math.MathException, java.beans.PropertyVetoException {
+public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, SimulationContext simContext) 
+throws ExpressionException, MappingException, MathException, java.beans.PropertyVetoException {
 		
 	Namespace ns = parameterEstimationTaskElement.getNamespace();
 	ParameterEstimationTask parameterEstimationTask = new ParameterEstimationTask(simContext);
@@ -64,10 +78,10 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	for (int i = 0; i < parameterMappingSpecElementList.size(); i++){
 		Element parameterMappingSpecElement = parameterMappingSpecElementList.get(i);
 		String parameterName = parameterMappingSpecElement.getAttributeValue(ParameterReferenceAttribute);
-		cbit.vcell.parser.SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
+		SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
 	
-		if (ste instanceof cbit.vcell.model.Parameter){
-			cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)ste;
+		if (ste instanceof Parameter){
+			Parameter parameter = (Parameter)ste;
 			ParameterMappingSpec parameterMappingSpec = parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpec(parameter);
 			
 			if  (parameterMappingSpec != null) {
@@ -126,7 +140,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 		for (int i = 0; i < dataRowList.size(); i++){
 			Element dataRowElement = dataRowList.get(i);
 			String rowText = dataRowElement.getText();
-			org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(rowText);
+			CommentStringTokenizer tokens = new CommentStringTokenizer(rowText);
 			double[] rowData = new double[numCols];
 			for (int j = 0; j < numCols; j++){
 				if (tokens.hasMoreTokens()){
@@ -139,7 +153,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 			rowDataVector.add(rowData);
 		}
 		
-		cbit.vcell.opt.ReferenceData referenceData = new cbit.vcell.opt.SimpleReferenceData(columnNames, columnWeights, rowDataVector);
+		ReferenceData referenceData = new SimpleReferenceData(columnNames, columnWeights, rowDataVector);
 		
 		parameterEstimationTask.getModelOptimizationSpec().setReferenceData(referenceData);
 	}
@@ -157,7 +171,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 			String referenceDataModelSymbolName = referenceDataMappingSpecElement.getAttributeValue(ReferenceDataModelSymbolAttribute);
 
 			ReferenceDataMappingSpec referenceDataMappingSpec = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpec(referenceDataColumnName);
-			cbit.vcell.parser.SymbolTableEntry modelSymbolTableEntry = null;
+			SymbolTableEntry modelSymbolTableEntry = null;
 			if (referenceDataModelSymbolName!=null){
 				modelSymbolTableEntry = getSymbolTableEntry(simContext,referenceDataModelSymbolName);
 				if (referenceDataMappingSpec!=null && modelSymbolTableEntry!=null){
@@ -173,7 +187,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	Element optimizationSolverSpecElement = parameterEstimationTaskElement.getChild(OptimizationSolverSpecTag, ns);
 	if (optimizationSolverSpecElement!=null){
 		String optimizationSolverType = optimizationSolverSpecElement.getAttributeValue(OptimizationSolverTypeAttribute);
-		cbit.vcell.opt.OptimizationSolverSpec optSolverSpec = new cbit.vcell.opt.OptimizationSolverSpec(optimizationSolverType);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(optimizationSolverType);
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
 	}
 
@@ -189,26 +203,26 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
  * @param simContext cbit.vcell.mapping.SimulationContext
  * @param symbol java.lang.String
  */
-private static cbit.vcell.parser.SymbolTableEntry getSymbolTableEntry(cbit.vcell.mapping.SimulationContext simContext, String parameterName) {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+private static SymbolTableEntry getSymbolTableEntry(SimulationContext simContext, String parameterName) {
+	SymbolTableEntry ste = null;
 
 	try {
 		if (parameterName.startsWith("ReservedSymbols.")){
 			String symbol = parameterName.substring(parameterName.indexOf("."));
-			ste = cbit.vcell.model.ReservedSymbol.fromString(symbol);
+			ste = ReservedSymbol.fromString(symbol);
 		}
 	}catch (Exception e){
 	}
 	if (ste==null){
 		try {
 			ste = simContext.getModel().getEntry(parameterName);
-		}catch(cbit.vcell.parser.ExpressionBindingException e){
+		}catch(ExpressionBindingException e){
 		}
 	}
 	if (ste==null){
 		try {
 			ste = simContext.getEntry(parameterName);
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (ExpressionBindingException e){
 		}
 	}
 	return ste;
@@ -224,7 +238,7 @@ private static cbit.vcell.parser.SymbolTableEntry getSymbolTableEntry(cbit.vcell
 public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 
 	
-	Element parameterEstimationTaskElement = new Element(cbit.vcell.xml.XMLTags.ParameterEstimationTaskTag);
+	Element parameterEstimationTaskElement = new Element(XMLTags.ParameterEstimationTaskTag);
 	// name attribute
 	parameterEstimationTaskElement.setAttribute(NameAttribute,mangle(parameterEstimationTask.getName()));
 	// annotation content (optional)
@@ -244,7 +258,7 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 		for (int i = 0; i < parameterMappingSpecs.length; i++){
 			Element parameterMappingSpecElement = new Element(ParameterMappingSpecTag);
 			
-			cbit.vcell.model.Parameter parameter = parameterMappingSpecs[i].getModelParameter();
+			Parameter parameter = parameterMappingSpecs[i].getModelParameter();
 			parameterMappingSpecElement.setAttribute(ParameterReferenceAttribute, parameter.getNameScope().getAbsoluteScopePrefix()+parameter.getName());
 			parameterMappingSpecElement.setAttribute(LowLimitAttribute, Double.toString(parameterMappingSpecs[i].getLow()));
 			parameterMappingSpecElement.setAttribute(HighLimitAttribute, Double.toString(parameterMappingSpecs[i].getHigh()));
@@ -260,7 +274,7 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 	//
 	// add ReferenceData
 	//
-	cbit.vcell.opt.ReferenceData referenceData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
+	ReferenceData referenceData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
 	if (referenceData!=null && referenceData.getNumColumns()>0){
 		Element referenceDataElement = new Element(ReferenceDataTag);
 		referenceDataElement.setAttribute(NumRowsAttribute,Integer.toString(referenceData.getNumRows()));
@@ -301,11 +315,11 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 	if (referenceDataMappingSpecs!=null && referenceDataMappingSpecs.length>0){
 		Element referenceDataMappingSpecListElement = new Element(ReferenceDataMappingSpecListTag);
 		for (int i = 0; i < referenceDataMappingSpecs.length; i++){
-			cbit.vcell.parser.SymbolTableEntry modelSymbol = referenceDataMappingSpecs[i].getModelObject();
+			SymbolTableEntry modelSymbol = referenceDataMappingSpecs[i].getModelObject();
 			Element referenceDataMappingSpecElement = new Element(ReferenceDataMappingSpecTag);
 			referenceDataMappingSpecElement.setAttribute(ReferenceDataColumnNameAttribute,referenceDataMappingSpecs[i].getReferenceDataColumnName());
 			if (modelSymbol!=null){
-				referenceDataMappingSpecElement.setAttribute(ReferenceDataModelSymbolAttribute, modelSymbol.getNameScope().getAbsoluteScopePrefix()+modelSymbol.getName());
+				referenceDataMappingSpecElement.setAttribute(ReferenceDataModelSymbolAttribute, modelSymbol.getName());
 			}
 			referenceDataMappingSpecListElement.addContent(referenceDataMappingSpecElement);
 		}

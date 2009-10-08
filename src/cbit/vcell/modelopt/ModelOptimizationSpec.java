@@ -1,30 +1,60 @@
 package cbit.vcell.modelopt;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SymbolTableEntry;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.Matchable;
+
+import cbit.util.graph.Edge;
+import cbit.util.graph.Graph;
+import cbit.util.graph.Node;
+import cbit.util.graph.Tree;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathSystemHash;
+import cbit.vcell.mapping.MathSystemTest;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.math.FilamentRegionVariable;
+import cbit.vcell.math.FilamentVariable;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.util.graph.Node;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.math.*;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:21:42 AM)
  * @author: Jim Schaff
  */
-public class ModelOptimizationSpec implements java.io.Serializable, org.vcell.util.Matchable {
+public class ModelOptimizationSpec implements java.io.Serializable, Matchable {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private SimulationContext fieldSimulationContext = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	private cbit.vcell.modelopt.ParameterMappingSpec[] fieldParameterMappingSpecs = null;
-	private cbit.vcell.opt.ReferenceData fieldReferenceData = null;
-	private cbit.vcell.modelopt.ReferenceDataMappingSpec[] fieldReferenceDataMappingSpecs = null;
+	private ParameterMappingSpec[] fieldParameterMappingSpecs = null;
+	private ReferenceData fieldReferenceData = null;
+	private ReferenceDataMappingSpec[] fieldReferenceDataMappingSpecs = null;
 
 /**
  * ModelOptimizationSpec constructor comment.
  */
-public ModelOptimizationSpec(SimulationContext argSimulationContext) throws cbit.vcell.parser.ExpressionException {
+public ModelOptimizationSpec(SimulationContext argSimulationContext) throws ExpressionException {
 	super();
 	this.fieldSimulationContext = argSimulationContext;
 	initializeParameterMappingSpecs();
@@ -34,7 +64,7 @@ public ModelOptimizationSpec(SimulationContext argSimulationContext) throws cbit
 /**
  * ModelOptimizationSpec constructor comment.
  */
-public ModelOptimizationSpec(ModelOptimizationSpec modelOptimizationSpecToCopy) throws cbit.vcell.parser.ExpressionException {
+public ModelOptimizationSpec(ModelOptimizationSpec modelOptimizationSpecToCopy) throws ExpressionException {
 	super();
 	this.fieldSimulationContext = modelOptimizationSpecToCopy.fieldSimulationContext;
 	fieldParameterMappingSpecs = new ParameterMappingSpec[modelOptimizationSpecToCopy.fieldParameterMappingSpecs.length];
@@ -42,7 +72,7 @@ public ModelOptimizationSpec(ModelOptimizationSpec modelOptimizationSpecToCopy) 
 		fieldParameterMappingSpecs[i] = new ParameterMappingSpec(modelOptimizationSpecToCopy.fieldParameterMappingSpecs[i]);
 	}
 	if (modelOptimizationSpecToCopy.fieldReferenceData!=null){
-		fieldReferenceData = new cbit.vcell.opt.SimpleReferenceData(modelOptimizationSpecToCopy.fieldReferenceData);
+		fieldReferenceData = new SimpleReferenceData(modelOptimizationSpecToCopy.fieldReferenceData);
 	}
 	if (modelOptimizationSpecToCopy.fieldReferenceDataMappingSpecs!=null){
 		fieldReferenceDataMappingSpecs = new ReferenceDataMappingSpec[modelOptimizationSpecToCopy.fieldReferenceDataMappingSpecs.length];
@@ -82,28 +112,28 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * Creation date: (11/29/2005 5:10:51 PM)
  * @return cbit.vcell.parser.SymbolTableEntry[]
  */
-public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects() {
+public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 
-	cbit.util.graph.Graph digraph = new cbit.util.graph.Graph();
+	Graph digraph = new Graph();
 
 	//
 	// add time
 	//
-	Node timeNode = new cbit.util.graph.Node("t",cbit.vcell.model.ReservedSymbol.TIME);
+	Node timeNode = new Node("t",ReservedSymbol.TIME);
 	digraph.addNode(timeNode);
 	
 	//
 	// add all species concentrations (that are not fixed with a constant initial condition).
 	//
-	cbit.vcell.mapping.SpeciesContextSpec scs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+	SpeciesContextSpec scs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0;scs!=null && i < scs.length; i++){
 		SpeciesContextSpecParameter initParam = scs[i].getInitialConditionParameter();
 		Expression iniExp = initParam == null? null : initParam.getExpression();
 		if (!scs[i].isConstant() || (iniExp != null && !iniExp.isNumeric())){
 			String speciesContextScopedName = scs[i].getSpeciesContext().getNameScope().getAbsoluteScopePrefix()+scs[i].getSpeciesContext().getName();
-			Node speciesContextNode = new cbit.util.graph.Node(speciesContextScopedName,scs[i].getSpeciesContext());
+			Node speciesContextNode = new Node(speciesContextScopedName,scs[i].getSpeciesContext());
 			digraph.addNode(speciesContextNode);
-			digraph.addEdge(new cbit.util.graph.Edge(speciesContextNode,timeNode));
+			digraph.addEdge(new Edge(speciesContextNode,timeNode));
 		}
 	}
 
@@ -114,7 +144,7 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
 	for (int i = 0; reactionSteps!=null && i < reactionSteps.length; i++){
 		Parameter[] parameters = reactionSteps[i].getKinetics().getKineticsParameters();
 		for (int j = 0; parameters!=null && j < parameters.length; j++){
-			cbit.vcell.parser.Expression exp = parameters[j].getExpression();
+			Expression exp = parameters[j].getExpression();
 			if (exp!=null){
 				String symbols[] = exp.getSymbols();
 				if (symbols!=null && symbols.length>0){
@@ -131,7 +161,7 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
 					// add all dependencies to graph also (if not already there).
 					//
 					for (int k = 0; symbols!=null && k < symbols.length; k++){
-						cbit.vcell.parser.SymbolTableEntry ste = exp.getSymbolBinding(symbols[k]);
+						SymbolTableEntry ste = exp.getSymbolBinding(symbols[k]);
 						if (ste==null){
 							throw new RuntimeException("Error, symbol '"+symbols[k]+"' not bound in parameter '"+parameters[j]+"'");
 						}
@@ -141,7 +171,7 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
 							symbolNode = new Node(symbolScopedName,ste);
 							digraph.addNode(symbolNode);
 						}
-						digraph.addEdge(new cbit.util.graph.Edge(parameterNode,symbolNode));
+						digraph.addEdge(new Edge(parameterNode,symbolNode));
 					}
 				}
 			}
@@ -164,19 +194,19 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (obj instanceof ModelOptimizationSpec){
 		ModelOptimizationSpec mos = (ModelOptimizationSpec)obj;
 
-		if (!org.vcell.util.Compare.isEqual(fieldParameterMappingSpecs,mos.fieldParameterMappingSpecs)){
+		if (!Compare.isEqual(fieldParameterMappingSpecs,mos.fieldParameterMappingSpecs)){
 			return false;
 		}
 
-		if (!org.vcell.util.Compare.isEqualOrNull(fieldReferenceData,mos.fieldReferenceData)){
+		if (!Compare.isEqualOrNull(fieldReferenceData,mos.fieldReferenceData)){
 			return false;
 		}
 
-		if (!org.vcell.util.Compare.isEqualOrNull(fieldReferenceDataMappingSpecs,mos.fieldReferenceDataMappingSpecs)){
+		if (!Compare.isEqualOrNull(fieldReferenceDataMappingSpecs,mos.fieldReferenceDataMappingSpecs)){
 			return false;
 		}
 
@@ -232,9 +262,9 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (8/22/2005 10:38:04 AM)
  * @return cbit.vcell.model.Parameter[]
  */
-private cbit.vcell.model.Parameter[] getModelParameters() {
-	java.util.Vector modelParameterList = new java.util.Vector();
-	cbit.vcell.model.Model model = getSimulationContext().getModel();
+private Parameter[] getModelParameters() {
+	java.util.Vector<Parameter> modelParameterList = new java.util.Vector<Parameter>();
+	Model model = getSimulationContext().getModel();
 	//
 	// get Model (global) parameters
 	//
@@ -248,24 +278,24 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 	//
 	// get kinetic parameters that are numbers
 	//
-	cbit.vcell.model.ReactionStep[] reactionSteps = model.getReactionSteps();
+	ReactionStep[] reactionSteps = model.getReactionSteps();
 	for (int i = 0; i < reactionSteps.length; i++){
 		//
 		// make sure ReactionSteps are "enabled"
 		//
-		cbit.vcell.mapping.ReactionSpec reactionSpec = getSimulationContext().getReactionContext().getReactionSpec(reactionSteps[i]);
+		ReactionSpec reactionSpec = getSimulationContext().getReactionContext().getReactionSpec(reactionSteps[i]);
 		if (reactionSpec.isExcluded()){
 			continue;
 		}
-		cbit.vcell.model.Kinetics.KineticsParameter[] kineticsParameters = reactionSteps[i].getKinetics().getKineticsParameters();
+		Kinetics.KineticsParameter[] kineticsParameters = reactionSteps[i].getKinetics().getKineticsParameters();
 		for (int j = 0; j < kineticsParameters.length; j++){
 			if (kineticsParameters[j].getExpression()!=null && kineticsParameters[j].getExpression().isNumeric()){
-				if (((kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_CurrentDensity)||(kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_LumpedCurrent)) && 
-					reactionSteps[i].getPhysicsOptions() == cbit.vcell.model.ReactionStep.PHYSICS_MOLECULAR_ONLY){
+				if (((kineticsParameters[j].getRole() == Kinetics.ROLE_CurrentDensity)||(kineticsParameters[j].getRole() == Kinetics.ROLE_LumpedCurrent)) && 
+					reactionSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_ONLY){
 					continue;
 				}
-				if (((kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_ReactionRate)||(kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_LumpedReactionRate)) && 
-					reactionSteps[i].getPhysicsOptions() == cbit.vcell.model.ReactionStep.PHYSICS_ELECTRICAL_ONLY){
+				if (((kineticsParameters[j].getRole() == Kinetics.ROLE_ReactionRate)||(kineticsParameters[j].getRole() == Kinetics.ROLE_LumpedReactionRate)) && 
+					reactionSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY){
 					continue;
 				}
 				modelParameterList.add(kineticsParameters[j]);
@@ -275,9 +305,9 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 	//
 	// get initial conditions that are numbers
 	//
-	cbit.vcell.mapping.SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+	SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter initParam = speciesContextSpecs[i].getInitialConditionParameter();
+		SpeciesContextSpec.SpeciesContextSpecParameter initParam = speciesContextSpecs[i].getInitialConditionParameter();
 		if (initParam != null && initParam.getExpression().isNumeric()){
 			modelParameterList.add(initParam);
 		}
@@ -286,33 +316,33 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 	//
 	// get structure parameters
 	//
-	cbit.vcell.mapping.StructureMapping[] structureMappings = getSimulationContext().getGeometryContext().getStructureMappings();
+	StructureMapping[] structureMappings = getSimulationContext().getGeometryContext().getStructureMappings();
 	for (int i = 0; i < structureMappings.length; i++){
-		cbit.vcell.mapping.StructureMapping.StructureMappingParameter[] parameters = structureMappings[i].getParameters();
+		StructureMapping.StructureMappingParameter[] parameters = structureMappings[i].getParameters();
 		for (int j = 0; j < parameters.length; j++){
-			if (parameters[j].getRole() == cbit.vcell.mapping.StructureMapping.ROLE_SpecificCapacitance &&
-				structureMappings[i] instanceof cbit.vcell.mapping.MembraneMapping &&
-				!((cbit.vcell.mapping.MembraneMapping)structureMappings[i]).getCalculateVoltage()){
+			if (parameters[j].getRole() == StructureMapping.ROLE_SpecificCapacitance &&
+				structureMappings[i] instanceof MembraneMapping &&
+				!((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
 				continue;
 			}
 			modelParameterList.add(parameters[j]);
 		}
 	}
 	try {
-		cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(getSimulationContext());
-		cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
-		cbit.vcell.mapping.MathSystemHash mathSystemHash = cbit.vcell.mapping.MathSystemTest.fromMath(mathDesc);
-		cbit.util.graph.Graph graph = mathSystemHash.getDependencyGraph(mathSystemHash.getSymbols());
-		cbit.util.graph.Tree[] spanningTrees = graph.getSpanningForest();
+		MathMapping mathMapping = new MathMapping(getSimulationContext());
+		MathDescription mathDesc = mathMapping.getMathDescription();
+		MathSystemHash mathSystemHash = MathSystemTest.fromMath(mathDesc);
+		Graph graph = mathSystemHash.getDependencyGraph(mathSystemHash.getSymbols());
+		Tree[] spanningTrees = graph.getSpanningForest();
 		//
 		// remove trees without any State Variables
 		//
 		for (int i = 0; i < spanningTrees.length; i++){
-			cbit.util.graph.Node[] treeNodes = spanningTrees[i].getNodes();
+			Node[] treeNodes = spanningTrees[i].getNodes();
 			boolean bHasStateVariables = false;
 			for (int j = 0; j < treeNodes.length; j++){
-				cbit.util.graph.Node node = treeNodes[j];
-				cbit.vcell.math.Variable var = mathDesc.getVariable(node.getName());
+				Node node = treeNodes[j];
+				Variable var = mathDesc.getVariable(node.getName());
 				if (var instanceof VolVariable || var instanceof MemVariable || var instanceof FilamentVariable ||
 					var instanceof VolumeRegionVariable || var instanceof MembraneRegionVariable || var instanceof FilamentRegionVariable){
 					bHasStateVariables = true;
@@ -320,7 +350,7 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 				}
 			}
 			if (!bHasStateVariables){
-				spanningTrees = (cbit.util.graph.Tree[])org.vcell.util.BeanUtils.removeElement(spanningTrees,spanningTrees[i]);
+				spanningTrees = (Tree[])BeanUtils.removeElement(spanningTrees,spanningTrees[i]);
 				i--;
 			}
 		}
@@ -329,11 +359,11 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 		// remove parameters not mapped to a surviving tree (not coupled to any state variables
 		//
 		for (int i = 0; i < modelParameterList.size(); i++){
-			cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)modelParameterList.elementAt(i);
+			Parameter parameter = modelParameterList.elementAt(i);
 			String mathName = mathMapping.getMathSymbol(parameter,null);
 			boolean bFoundInTree = false;
 			for (int j = 0; j < spanningTrees.length; j++){
-				cbit.util.graph.Node node = spanningTrees[j].getNode(mathName);
+				Node node = spanningTrees[j].getNode(mathName);
 				if (node != null){
 					bFoundInTree = true;
 				}
@@ -348,7 +378,7 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 		throw new RuntimeException(e.getMessage());
 	}
 	
-	cbit.vcell.model.Parameter[] modelParameters = (cbit.vcell.model.Parameter[])org.vcell.util.BeanUtils.getArray(modelParameterList,cbit.vcell.model.Parameter.class);
+	Parameter[] modelParameters = (Parameter[])BeanUtils.getArray(modelParameterList,Parameter.class);
 	return modelParameters;
 }
 
@@ -374,7 +404,7 @@ public ParameterMappingSpec getParameterMappingSpec(Parameter parameter) {
  * @return The parameterMapping property value.
  * @see #setParameterMapping
  */
-public cbit.vcell.modelopt.ParameterMappingSpec[] getParameterMappingSpecs() {
+public ParameterMappingSpec[] getParameterMappingSpecs() {
 	return fieldParameterMappingSpecs;
 }
 
@@ -395,7 +425,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The constraintData property value.
  * @see #setConstraintData
  */
-public cbit.vcell.opt.ReferenceData getReferenceData() {
+public ReferenceData getReferenceData() {
 	return fieldReferenceData;
 }
 
@@ -405,7 +435,7 @@ public cbit.vcell.opt.ReferenceData getReferenceData() {
  * @return The referenceDataMappingSpecs property value.
  * @see #setReferenceDataMappingSpecs
  */
-public cbit.vcell.modelopt.ReferenceDataMappingSpec getReferenceDataMappingSpec(String dataColumnName) {
+public ReferenceDataMappingSpec getReferenceDataMappingSpec(String dataColumnName) {
 	for (int i = 0; fieldReferenceDataMappingSpecs!=null && i < fieldReferenceDataMappingSpecs.length; i++){
 		if (fieldReferenceDataMappingSpecs[i].getReferenceDataColumnName().equals(dataColumnName)){
 			return fieldReferenceDataMappingSpecs[i];
@@ -420,7 +450,7 @@ public cbit.vcell.modelopt.ReferenceDataMappingSpec getReferenceDataMappingSpec(
  * @return The referenceDataMappingSpecs property value.
  * @see #setReferenceDataMappingSpecs
  */
-public cbit.vcell.modelopt.ReferenceDataMappingSpec[] getReferenceDataMappingSpecs() {
+public ReferenceDataMappingSpec[] getReferenceDataMappingSpecs() {
 	return fieldReferenceDataMappingSpecs;
 }
 
@@ -430,7 +460,7 @@ public cbit.vcell.modelopt.ReferenceDataMappingSpec[] getReferenceDataMappingSpe
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -458,22 +488,22 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Insert the method's description here.
  * Creation date: (8/22/2005 10:35:28 AM)
  */
-private void initializeParameterMappingSpecs() throws cbit.vcell.parser.ExpressionException {
-	cbit.vcell.model.Parameter modelParameters[] = getModelParameters();
+private void initializeParameterMappingSpecs() throws ExpressionException {
+	Parameter modelParameters[] = getModelParameters();
 
 	ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
 	
-	java.util.Vector issueList = new java.util.Vector();
+	java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
-	org.vcell.util.Issue[] issues = (org.vcell.util.Issue[])org.vcell.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
+	Issue[] issues = (Issue[])BeanUtils.getArray(issueList,Issue.class);
 	
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		parameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);
 		for (int j = 0; j < issues.length; j++){
 			if (issues[j].getSource() == modelParameters[i]){
-				if (issues[j] instanceof cbit.vcell.model.SimpleBoundsIssue){
-					cbit.vcell.model.SimpleBoundsIssue simpleBoundsIssue = (cbit.vcell.model.SimpleBoundsIssue)issues[j];
+				if (issues[j] instanceof SimpleBoundsIssue){
+					SimpleBoundsIssue simpleBoundsIssue = (SimpleBoundsIssue)issues[j];
 					net.sourceforge.interval.ia_math.RealInterval bounds = simpleBoundsIssue.getBounds();
 					parameterMappingSpecs[i].setLow(bounds.lo());
 					parameterMappingSpecs[i].setHigh(bounds.hi());
@@ -584,8 +614,8 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getParameterMapping
  */
-public void setParameterMappingSpecs(cbit.vcell.modelopt.ParameterMappingSpec[] parameterMappingSpecs) throws java.beans.PropertyVetoException {
-	cbit.vcell.modelopt.ParameterMappingSpec[] oldValue = fieldParameterMappingSpecs;
+public void setParameterMappingSpecs(ParameterMappingSpec[] parameterMappingSpecs) throws java.beans.PropertyVetoException {
+	ParameterMappingSpec[] oldValue = fieldParameterMappingSpecs;
 	fireVetoableChange("parameterMappingSpecs", oldValue, parameterMappingSpecs);
 	fieldParameterMappingSpecs = parameterMappingSpecs;
 	firePropertyChange("parameterMappingSpecs", oldValue, parameterMappingSpecs);
@@ -597,8 +627,8 @@ public void setParameterMappingSpecs(cbit.vcell.modelopt.ParameterMappingSpec[] 
  * @param constraintData The new value for the property.
  * @see #getConstraintData
  */
-public void setReferenceData(cbit.vcell.opt.ReferenceData referenceData) {
-	cbit.vcell.opt.ReferenceData oldValue = fieldReferenceData;
+public void setReferenceData(ReferenceData referenceData) {
+	ReferenceData oldValue = fieldReferenceData;
 	fieldReferenceData = referenceData;
 
 	refreshReferenceDataMappingSpecs();
@@ -612,9 +642,24 @@ public void setReferenceData(cbit.vcell.opt.ReferenceData referenceData) {
  * @param referenceDataMappingSpecs The new value for the property.
  * @see #getReferenceDataMappingSpecs
  */
-private void setReferenceDataMappingSpecs(cbit.vcell.modelopt.ReferenceDataMappingSpec[] referenceDataMappingSpecs) {
-	cbit.vcell.modelopt.ReferenceDataMappingSpec[] oldValue = fieldReferenceDataMappingSpecs;
+private void setReferenceDataMappingSpecs(ReferenceDataMappingSpec[] referenceDataMappingSpecs) {
+	ReferenceDataMappingSpec[] oldValue = fieldReferenceDataMappingSpecs;
 	fieldReferenceDataMappingSpecs = referenceDataMappingSpecs;
 	firePropertyChange("referenceDataMappingSpecs", oldValue, referenceDataMappingSpecs);
+}
+
+public int getReferenceDataTimeColumnIndex() {
+	int timeIndex = -1;
+	ReferenceDataMappingSpec[] mappingSpecs = getReferenceDataMappingSpecs();
+	if (mappingSpecs != null) {
+		for (int i = 0; i < mappingSpecs.length; i ++) {
+			SymbolTableEntry modelObject = mappingSpecs[i].getModelObject();
+			if (modelObject != null && (modelObject.equals(ReservedVariable.TIME) || modelObject.equals(ReservedSymbol.TIME))) {
+				timeIndex = i;
+				break;
+			}
+		}
+	}
+	return timeIndex;
 }
 }
