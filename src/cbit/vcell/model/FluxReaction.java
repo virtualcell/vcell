@@ -253,36 +253,4 @@ public String toString() {
 
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
-public void writeTokens(java.io.PrintWriter pw) {
-
-	String versionName = (getName()!=null)?getName():"unnamed_fluxReaction";
-	pw.println("\t"+VCMODL.FluxStep+" "+getStructure().getName()+" "+getFluxCarrier().getCommonName()+" "+versionName+" "+VCMODL.BeginBlock+" ");
-	pw.println("\t\t"+VCMODL.Valence+" "+getChargeCarrierValence()+"; ");
-	pw.println("\t\t"+VCMODL.PhysicsOptions+" "+getPhysicsOptions()+"; ");
-	
-	//
-	// write Catalysts
-	//
-
-	ReactionParticipant rp_Array[] = getReactionParticipants();
-
-	for (int i = 0; i < rp_Array.length; i++) {
-		if (rp_Array[i] instanceof Catalyst){
-			rp_Array[i].writeTokens(pw);
-		}else if (rp_Array[i] instanceof Flux){
-		}else{
-			throw new Error("expecting catalyst, found type "+rp_Array[i].getClass());
-		}
-	}
-			
-	getKinetics().writeTokens(pw);
-		
-	pw.println("\t"+VCMODL.EndBlock+" ");
-}
 }

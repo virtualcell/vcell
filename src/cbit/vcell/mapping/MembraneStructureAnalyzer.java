@@ -4,9 +4,22 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.*;
-import java.util.*;
+import java.util.Vector;
+
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
@@ -70,6 +83,7 @@ public void refresh() {
 		refreshResolvedFluxes();
 	}catch (Exception e){
 		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
 	}
 }
 /**
@@ -104,6 +118,9 @@ private void refreshResolvedFluxes() throws Exception {
 	//
 	for (int i=0;i<fluxList.size();i++){
 		FluxReaction fr = (FluxReaction)fluxList.elementAt(i);
+		if (fr.getFluxCarrier() == null) {
+			continue;
+		}
 		ResolvedFlux rf = null;
 		for (int j=0;j<resolvedFluxList.size();j++){
 			ResolvedFlux rf_tmp = (ResolvedFlux)resolvedFluxList.elementAt(j);
