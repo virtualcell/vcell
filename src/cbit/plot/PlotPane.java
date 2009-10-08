@@ -3,15 +3,27 @@ package cbit.plot;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import javax.swing.*;
+import java.awt.BasicStroke;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+
+import javax.swing.ButtonModel;
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.EmptyBorderBean;
 import org.vcell.util.gui.EnhancedJLabel;
 import org.vcell.util.gui.JToolBarToggleButton;
-
-import java.awt.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2001 4:26:59 AM)
@@ -37,8 +49,8 @@ class LineIcon implements Icon {
 	private Plot2DPanel ivjPlot2DPanel1 = null;
 	private JLabel ivjJLabel5 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private org.vcell.util.gui.EnhancedJLabel ivjJLabelLeft = null;
-	private org.vcell.util.gui.EnhancedJLabel ivjJLabelRight = null;
+	private EnhancedJLabel ivjJLabelLeft = null;
+	private EnhancedJLabel ivjJLabelRight = null;
 	private JLabel ivjJLabelBottom = null;
 	private JLabel ivjJLabelTitle = null;
 	private Plot2D fieldPlot2D = new Plot2D(null,null, null);
@@ -46,10 +58,10 @@ class LineIcon implements Icon {
 	private JPanel ivjJPanelData = null;
 	private JPanel ivjJPanelPlot = null;
 	private Plot2DDataPanel ivjPlot2DDataPanel1 = null;
-	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private CardLayout ivjCardLayout1 = null;
-	private org.vcell.util.gui.JToolBarToggleButton ivjDataButton = null;
-	private org.vcell.util.gui.JToolBarToggleButton ivjPlotButton = null;
+	private JToolBarToggleButton ivjDataButton = null;
+	private JToolBarToggleButton ivjPlotButton = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private ButtonModel ivjselection1 = null;
 	private boolean fieldBCompact = false;
@@ -82,8 +94,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP4SetTarget();
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == PlotPane.this.getplot2D1()) 
+			if (e.getSource() == PlotPane.this.getplot2D1()) { 
 				connEtoC2(e);
+			} 
+			if (e.getSource() == PlotPane.this.getJCheckBox_stepLike()) {
+				jCheckBox_stepLike_ActionPerformed();
+			}
+			
 		};
 	};
 
@@ -175,17 +192,10 @@ private void connEtoC4(javax.swing.ButtonModel value) {
  * connEtoC5:  (JCheckBox_stepLike.action.actionPerformed(java.awt.event.ActionEvent) --> PlotPane.jCheckBox_stepLike_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC5(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
-		this.jCheckBox_stepLike_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
+		this.jCheckBox_stepLike_ActionPerformed();
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -518,7 +528,7 @@ private javax.swing.JLabel getBlankLabel() {
 private ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -581,7 +591,7 @@ private javax.swing.JCheckBox getJCheckBox_stepLike() {
 			ivjJCheckBox_stepLike = new javax.swing.JCheckBox();
 			ivjJCheckBox_stepLike.setName("JCheckBox_stepLike");
 			ivjJCheckBox_stepLike.setText("Step View");
-			ivjJCheckBox_stepLike.setSelected(true);
+			ivjJCheckBox_stepLike.setVisible(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -966,7 +976,7 @@ private Plot2D getplot2D1() {
 private Plot2DDataPanel getPlot2DDataPanel1() {
 	if (ivjPlot2DDataPanel1 == null) {
 		try {
-			ivjPlot2DDataPanel1 = new cbit.plot.Plot2DDataPanel();
+			ivjPlot2DDataPanel1 = new Plot2DDataPanel();
 			ivjPlot2DDataPanel1.setName("Plot2DDataPanel1");
 			// user code begin {1}
 			// user code end
@@ -988,7 +998,7 @@ private Plot2DDataPanel getPlot2DDataPanel1() {
 private Plot2DPanel getPlot2DPanel1() {
 	if (ivjPlot2DPanel1 == null) {
 		try {
-			ivjPlot2DPanel1 = new cbit.plot.Plot2DPanel();
+			ivjPlot2DPanel1 = new Plot2DPanel();
 			ivjPlot2DPanel1.setName("Plot2DPanel1");
 			// user code begin {1}
 			// user code end
@@ -1006,10 +1016,10 @@ private Plot2DPanel getPlot2DPanel1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JToolBarToggleButton getPlotButton() {
+private JToolBarToggleButton getPlotButton() {
 	if (ivjPlotButton == null) {
 		try {
-			ivjPlotButton = new org.vcell.util.gui.JToolBarToggleButton();
+			ivjPlotButton = new JToolBarToggleButton();
 			ivjPlotButton.setName("PlotButton");
 			ivjPlotButton.setToolTipText("Show plot(s)");
 			ivjPlotButton.setText("");
@@ -1041,7 +1051,7 @@ private javax.swing.JScrollPane getPlotLegendsScrollPane() {
 			ivjPlotLegendsScrollPane = new javax.swing.JScrollPane();
 			ivjPlotLegendsScrollPane.setName("PlotLegendsScrollPane");
 			ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			ivjPlotLegendsScrollPane.setBorder(new org.vcell.util.gui.EmptyBorderBean());
+			ivjPlotLegendsScrollPane.setBorder(new EmptyBorderBean());
 			getPlotLegendsScrollPane().setViewportView(getJPanelPlotLegends());
 			// user code begin {1}
 			// user code end
@@ -1089,6 +1099,7 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getButtonGroupCivilized1().addPropertyChangeListener(ivjEventHandler);
 	getJCheckBox_stepLike().addActionListener(ivjEventHandler);
+	getJCheckBox_stepLike().addChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
@@ -1098,11 +1109,8 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("PlotPane");
 		setPreferredSize(new java.awt.Dimension(420, 400));
 		setLayout(new java.awt.BorderLayout());
@@ -1117,14 +1125,12 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
  * Comment
  */
-private void jCheckBox_stepLike_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+private void jCheckBox_stepLike_ActionPerformed() {
 	getPlot2DPanel1().setBStepMode(getJCheckBox_stepLike().isSelected());
 	getPlot2DPanel1().repaint();
 }
@@ -1146,7 +1152,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1192,22 +1197,15 @@ public void setBCompact(boolean bCompact) {
  * Set the CardLayout1 to a new value.
  * @param newValue java.awt.CardLayout
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setCardLayout1(java.awt.CardLayout newValue) {
 	if (ivjCardLayout1 != newValue) {
 		try {
 			ivjCardLayout1 = newValue;
 			connPtoP2SetSource();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 
@@ -1232,11 +1230,10 @@ public void setPlot2D(Plot2D plot2D,Color[] userDefinedColors) {
  * Set the plot2D1 to a new value.
  * @param newValue cbit.plot.Plot2D
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setplot2D1(Plot2D newValue) {
 	if (ivjplot2D1 != newValue) {
 		try {
-			cbit.plot.Plot2D oldValue = getplot2D1();
+			Plot2D oldValue = getplot2D1();
 			/* Stop listening for events from the current object */
 			if (ivjplot2D1 != null) {
 				ivjplot2D1.removeChangeListener(ivjEventHandler);
@@ -1249,16 +1246,10 @@ private void setplot2D1(Plot2D newValue) {
 			}
 			connPtoP4SetSource();
 			firePropertyChange("plot2D", oldValue, newValue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 
@@ -1266,7 +1257,6 @@ private void setplot2D1(Plot2D newValue) {
  * Set the selection1 to a new value.
  * @param newValue javax.swing.ButtonModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setselection1(javax.swing.ButtonModel newValue) {
 	if (ivjselection1 != newValue) {
 		try {
@@ -1274,16 +1264,10 @@ private void setselection1(javax.swing.ButtonModel newValue) {
 			connEtoM5(ivjselection1);
 			connPtoP3SetSource();
 			connEtoC4(ivjselection1);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**
@@ -1319,8 +1303,8 @@ private void updateLegend() {
 	for (int i = 0; i < plotIndices.length - legends.length / 2; i++){
 		JLabel line = new JLabel();
 		JLabel text = new JLabel();
-		line.setBorder(new org.vcell.util.gui.EmptyBorderBean(6,0,0,0));
-		text.setBorder(new org.vcell.util.gui.EmptyBorderBean(0,8,6,0));
+		line.setBorder(new EmptyBorderBean(6,0,0,0));
+		text.setBorder(new EmptyBorderBean(0,8,6,0));
 		getJPanelPlotLegends().add(line);
 		getJPanelPlotLegends().add(text);
 		text.addMouseListener(ml);
@@ -1346,19 +1330,13 @@ private void updateLegend() {
 	}
 }
 
-public boolean getIsHistogram() {
-	return getPlot2DPanel1().getIsHistogram();
-}
-
-public void setIsHistogram(boolean isHistogram) {
-	getPlot2DPanel1().setIsHistogram(isHistogram);
-	getPlot2DPanel1().updateAutoRanges();
-}
-
 public void selectStepView(boolean bStoch, boolean bMultiTrialData) {
-	setIsHistogram(bMultiTrialData);
+	getPlot2DPanel1().setIsHistogram(bMultiTrialData);
+	getPlot2DPanel1().updateAutoRanges();
+	
 	if(!bMultiTrialData && bStoch) {
 		getJCheckBox_stepLike().setVisible(true);
+		getJCheckBox_stepLike().setSelected(true);
 	} else {
 		getJCheckBox_stepLike().setVisible(false);
 	}
