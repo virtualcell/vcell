@@ -1,62 +1,40 @@
 package cbit.vcell.microscopy;
 
-import java.awt.Rectangle;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileFilter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.KernelJAI;
-import javax.media.jai.LookupTableJAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.AddConstDescriptor;
-import javax.media.jai.operator.AndDescriptor;
-import javax.media.jai.operator.BorderDescriptor;
-import javax.media.jai.operator.CropDescriptor;
-import javax.media.jai.operator.DilateDescriptor;
-import javax.media.jai.operator.ErodeDescriptor;
-import javax.media.jai.operator.ExtremaDescriptor;
-import javax.media.jai.operator.LookupDescriptor;
-
-import loci.formats.AWTImageTools;
-import loci.formats.ImageTools;
-import cbit.image.ImageException;
-import cbit.image.VCImage;
-import cbit.image.VCImageUncompressed;
-
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.GroupAccessNone;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SimulationVersion;
-import org.vcell.util.document.VersionFlag;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
+import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.GroupAccessNone;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VersionFlag;
 
-import org.vcell.util.Matchable;
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -84,7 +62,6 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
-import org.vcell.util.document.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
@@ -450,14 +427,14 @@ public class FRAPStudy implements Matchable{
 				AnalysisParameters currentAnalysisParameters = analysisParameters[analysisParametersRow];
 				
 				DataSource[] newDataSourceArr = new DataSource[2];
-				final DataSource expDataSource = new DataSource(referenceData,"exp"); // rows for time points and cols for t + roibleached + ring1--8 (10 cols)
+				final DataSource expDataSource = new DataSource.DataSourceReferenceData("exp", referenceData); // rows for time points and cols for t + roibleached + ring1--8 (10 cols)
 				newDataSourceArr[ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
 				DataSource simDataSource = null;
 				if(hasSimData)
 				{
 					ODESolverResultSet odeSolverResultSet =
 						createODESolverResultSet(currentAnalysisParameters,null,"");
-					simDataSource = new DataSource(odeSolverResultSet, "sim"); //rows for time points and cols for t + roibleached + ring1--8 (10 cols)
+					simDataSource = new DataSource.DataSourceOdeSolverResultSet("sim", odeSolverResultSet); //rows for time points and cols for t + roibleached + ring1--8 (10 cols)
 				}
 				newDataSourceArr[ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
 				allDataHash.put(currentAnalysisParameters,newDataSourceArr);

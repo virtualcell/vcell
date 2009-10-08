@@ -263,17 +263,19 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 				DataSource[] selectedRowDataSourceArr = allDataHash.get(anaParams[0]);//anaParams[0] is the key in allDataHash to get the dataSource[]:exp & sim
 				if(selectedRowDataSourceArr != null)
 				{   //referenceData is the exp data
-					ReferenceData referenceData = (ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
-					final DataSource expDataSource = new DataSource(referenceData,"exp");
+//					ReferenceData referenceData = (ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
+//					final DataSource expDataSource = new DataSource(referenceData,"exp");
+					final DataSource expDataSource = selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE];
 					DataSource tempSimSource  = null;
 					if(isSimData && hasSimData)//from simulation
 					{
-						ODESolverResultSet simDataResultSet = (ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
-						tempSimSource = new DataSource(simDataResultSet, "sim");
+//						ODESolverResultSet simDataResultSet = (ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
+//						tempSimSource = new DataSource.DataSourceOdeSolverResultSet("sim", simDataResultSet);
+						tempSimSource = selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE];
 					}
 					else //from opt
 					{
-						tempSimSource = new DataSource(fitOdeSolverResultSet, "opt");
+						tempSimSource = new DataSource.DataSourceOdeSolverResultSet( "opt", fitOdeSolverResultSet);
 					}
 					final DataSource simDataSource = tempSimSource;
 					DataSource[] newDataSourceArr = new DataSource[2];
