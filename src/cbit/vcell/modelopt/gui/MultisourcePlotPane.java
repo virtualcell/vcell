@@ -416,35 +416,34 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 
 	Vector<Color> colorV = new Vector<Color>();
 	
-	for (int selectedIndex = 0; selectedIndex < getmultisourcePlotListModel().getSize(); selectedIndex++){
-		if (((DefaultListSelectionModelFixed)listSelectionEvent.getSource()).isSelectedIndex(selectedIndex)){
-			DataReference dataReference = (DataReference)getmultisourcePlotListModel().getElementAt(selectedIndex);
-			DataSource dataSource = dataReference.getDataSource();
-			String prefix = dataSource instanceof DataSource.DataSourceReferenceData ? refDataLabelPrefix : modelDataLabelPrefix;
-			
-			String[] columnNames = dataSource.getColumnNames();
-			int timeIndex = dataSource.getTimeColumnIndex();
-			if (timeIndex==-1){
-				throw new RuntimeException("no time variable specified");
+	int[] selectedIndices = getJList1().getSelectedIndices();
+	for (int ii = 0; ii < selectedIndices.length; ii++){
+		int selectedIndex = selectedIndices[ii];
+		DataReference dataReference = (DataReference)getmultisourcePlotListModel().getElementAt(selectedIndex);
+		DataSource dataSource = dataReference.getDataSource();
+		String prefix = dataSource instanceof DataSource.DataSourceReferenceData ? refDataLabelPrefix : modelDataLabelPrefix;
+		
+		String[] columnNames = dataSource.getColumnNames();
+		int timeIndex = dataSource.getTimeColumnIndex();
+		if (timeIndex==-1){
+			throw new RuntimeException("no time variable specified");
+		}
+		for (int i = 0; i < columnNames.length; i++){
+			if (i == timeIndex){
+				continue;
 			}
-			for (int i = 0; i < columnNames.length; i++){
-				if (i == timeIndex){
-					continue;
-				}
-				if (columnNames[i].equals(dataReference.getIdentifier())){
-					double[] independentValues = dataSource.getColumnData(timeIndex);
-					double[] dependentValues = dataSource.getColumnData(i);
-					PlotData plotData = new PlotData(independentValues, dependentValues);
-					plotDataList.add(plotData);
-					colorV.add(autoContrastColors[selectedIndex]);
-					nameList.add(prefix+columnNames[i]);
-					renderHintList.add(dataSource.getRenderHints());
-					break;
-				}
+			if (columnNames[i].equals(dataReference.getIdentifier())){
+				double[] independentValues = dataSource.getColumnData(timeIndex);
+				double[] dependentValues = dataSource.getColumnData(i);
+				PlotData plotData = new PlotData(independentValues, dependentValues);
+				plotDataList.add(plotData);
+				colorV.add(autoContrastColors[selectedIndex]);
+				nameList.add(prefix+columnNames[i]);
+				renderHintList.add(dataSource.getRenderHints());
+				break;
 			}
 		}
 	}
-	
 	
 	String[] labels = {"", "t", ""};	
 	String[] names = (String[])BeanUtils.getArray(nameList,String.class);	
