@@ -11,7 +11,6 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -518,7 +517,7 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getreferenceDataPanel().setReferenceData(getmodelOptimizationSpec().getReferenceData());
+		getreferenceDataPanel().setParameterEstimationTask(getParameterEstimationTask());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -574,7 +573,7 @@ private void connEtoM22(ParameterEstimationTask value) {
  */
 private void connEtoM3(ModelOptimizationSpec value) {
 	try {
-		getreferenceDataPanel().setReferenceData(this.getReferenceData());
+		getreferenceDataPanel().setParameterEstimationTask(getParameterEstimationTask());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -587,7 +586,7 @@ private void connEtoM3(ModelOptimizationSpec value) {
  */
 private void connEtoM4(ParameterEstimationTask value) {
 	try {
-		getreferenceDataPanel().setReferenceData(this.getReferenceData());
+		getreferenceDataPanel().setParameterEstimationTask(getParameterEstimationTask());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1796,19 +1795,6 @@ private javax.swing.JButton getPlotButton() {
 	}
 	return ivjPlotButton;
 }
-
-
-/**
- * Comment
- */
-private ReferenceData getReferenceData() {
-	if (getParameterEstimationTask()==null){
-		return null;
-	}else{
-		return getParameterEstimationTask().getModelOptimizationSpec().getReferenceData();
-	}
-}
-
 
 /**
  * Return the referenceDataMappingSpecTableModel property value.

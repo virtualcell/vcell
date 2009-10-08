@@ -83,10 +83,10 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 	ODESolverResultSet odeSolverResultSet = null;
 	if (optSolverCallbacks.getStopRequested()) {
 		optStatus = new OptimizationStatus(OptimizationStatus.STOPPED_BY_USER, "Stopped by user");
-		parameterValues = optSolverCallbacks.getBestEvaluation().parameterVector;
-		fret = optSolverCallbacks.getBestEvaluation().objFunctionValue;
-		odeSolverResultSet = optSolverCallbacks.getBestResultSet();
 	}
+	parameterValues = optSolverCallbacks.getBestEvaluation().parameterVector;
+	fret = optSolverCallbacks.getBestEvaluation().objFunctionValue;
+	odeSolverResultSet = optSolverCallbacks.getBestResultSet();
 	for (int i = 0; i < parameters.length; i++){
 		System.out.println("final "+parameters[i].getName()+" = "+parameterValues[i]);
 	}

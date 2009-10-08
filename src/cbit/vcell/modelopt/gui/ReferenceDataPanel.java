@@ -1,16 +1,22 @@
 package cbit.vcell.modelopt.gui;
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.export.CSV;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.util.RowColumnResultSet;
-
 import java.io.File;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.TitledBorderBean;
+import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
+
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.export.CSV;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.ReferenceDataMappingSpec;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/23/2005 4:26:30 PM)
@@ -32,6 +38,8 @@ public class ReferenceDataPanel extends javax.swing.JPanel {
 	private javax.swing.JButton ivjhelpButton = null;
 	private javax.swing.JTextArea ivjeditorTextArea = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
+	private ParameterEstimationTask fieldParameterEstimationTask = null;
+	private int timeIndex = -1;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -47,6 +55,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ReferenceDataPanel.this && (evt.getPropertyName().equals("referenceData"))) 
 				connPtoP1SetTarget();
+			if (evt.getPropertyName().equals("modelObject")) {
+				updatePlot();
+			}
 		};
 	};
 
@@ -59,39 +70,11 @@ public ReferenceDataPanel() {
 }
 
 /**
- * ReferenceDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public ReferenceDataPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * ReferenceDataPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public ReferenceDataPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * ReferenceDataPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public ReferenceDataPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
-
-/**
  * connEtoC1:  (referenceData1.this --> ReferenceDataPanel.updatePlot()V)
  * @param value cbit.vcell.opt.ReferenceData
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.opt.ReferenceData value) {
+private void connEtoC1(ReferenceData value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -182,17 +165,6 @@ private void connEtoM3(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * Comment
- */
-public cbit.vcell.modelopt.gui.DataSource [] connEtoM4_Value() {
-	DataSource[] dataSources = new DataSource[1];
-	dataSources[0] = new DataSource(getReferenceData(),"data");
-	return dataSources;
-}
-
 
 /**
  * connPtoP1SetSource:  (ReferenceDataPanel.referenceData <--> referenceData1.this)
@@ -455,11 +427,10 @@ private javax.swing.JPanel getJPanel1() {
 private MultisourcePlotPane getmultisourcePlotPane() {
 	if (ivjmultisourcePlotPane == null) {
 		try {
-			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
+			TitledBorderBean ivjLocalBorder = new TitledBorderBean();
 			ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
 			ivjLocalBorder.setTitle("Time Series Data");
-			ivjmultisourcePlotPane = new cbit.vcell.modelopt.gui.MultisourcePlotPane();
+			ivjmultisourcePlotPane = new MultisourcePlotPane();
 			ivjmultisourcePlotPane.setName("multisourcePlotPane");
 			ivjmultisourcePlotPane.setBorder(ivjLocalBorder);
 			ivjmultisourcePlotPane.setListVisible(false);
@@ -479,7 +450,7 @@ private MultisourcePlotPane getmultisourcePlotPane() {
  * @return The referenceData property value.
  * @see #setReferenceData
  */
-public cbit.vcell.opt.ReferenceData getReferenceData() {
+public ReferenceData getReferenceData() {
 	return fieldReferenceData;
 }
 
@@ -489,7 +460,7 @@ public cbit.vcell.opt.ReferenceData getReferenceData() {
  * @return cbit.vcell.opt.ReferenceData
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.opt.ReferenceData getreferenceData1() {
+private ReferenceData getreferenceData1() {
 	// user code begin {1}
 	// user code end
 	return ivjreferenceData1;
@@ -523,7 +494,7 @@ private javax.swing.JButton getSubsampleButton() {
  * @return The userPreferences property value.
  * @see #setUserPreferences
  */
-public cbit.vcell.client.server.UserPreferences getUserPreferences() {
+private UserPreferences getUserPreferences() {
 	return fieldUserPreferences;
 }
 
@@ -543,7 +514,7 @@ private void handleException(java.lang.Throwable exception) {
 /**
  * Comment
  */
-private cbit.vcell.opt.ReferenceData importDataFromFile() throws UserCancelException, Exception {
+private ReferenceData importDataFromFile() throws UserCancelException, Exception {
 	VCFileChooser fileChooser = new VCFileChooser();
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
@@ -617,7 +588,7 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsmultisourcePlotPane = new java.awt.GridBagConstraints();
 		constraintsmultisourcePlotPane.gridx = 0; constraintsmultisourcePlotPane.gridy = 0;
-constraintsmultisourcePlotPane.gridheight = 4;
+		constraintsmultisourcePlotPane.gridheight = 4;
 		constraintsmultisourcePlotPane.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsmultisourcePlotPane.weightx = 1.0;
 		constraintsmultisourcePlotPane.weighty = 1.0;
@@ -656,6 +627,17 @@ public static void main(java.lang.String[] args) {
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
+		
+		String dataString = "SimpleReferenceData { 3 2 t Ca_er 1 1 0 0.0 0.1 1 0.2 3 }";
+		cbit.vcell.opt.SimpleReferenceData refData = cbit.vcell.opt.SimpleReferenceData.fromVCML(new org.vcell.util.CommentStringTokenizer(dataString));
+		aReferenceDataPanel.setReferenceData(refData);
+		System.out.println("setting 1");
+		Thread.sleep(3000);
+		aReferenceDataPanel.setReferenceData(null);
+		System.out.println("setting 2");
+		Thread.sleep(3000);
+		aReferenceDataPanel.setReferenceData(refData);
+		System.out.println("setting 3");
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
 		exception.printStackTrace(System.out);
@@ -668,8 +650,8 @@ public static void main(java.lang.String[] args) {
  * @param referenceData The new value for the property.
  * @see #getReferenceData
  */
-public void setReferenceData(cbit.vcell.opt.ReferenceData referenceData) {
-	cbit.vcell.opt.ReferenceData oldValue = fieldReferenceData;
+private void setReferenceData(ReferenceData referenceData) {
+	ReferenceData oldValue = fieldReferenceData;
 	fieldReferenceData = referenceData;
 	firePropertyChange("referenceData", oldValue, referenceData);
 }
@@ -680,10 +662,10 @@ public void setReferenceData(cbit.vcell.opt.ReferenceData referenceData) {
  * @param newValue cbit.vcell.opt.ReferenceData
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setreferenceData1(cbit.vcell.opt.ReferenceData newValue) {
+private void setreferenceData1(ReferenceData newValue) {
 	if (ivjreferenceData1 != newValue) {
 		try {
-			cbit.vcell.opt.ReferenceData oldValue = getreferenceData1();
+			ReferenceData oldValue = getreferenceData1();
 			ivjreferenceData1 = newValue;
 			connPtoP1SetSource();
 			connEtoC1(ivjreferenceData1);
@@ -705,8 +687,8 @@ private void setreferenceData1(cbit.vcell.opt.ReferenceData newValue) {
  * @param userPreferences The new value for the property.
  * @see #getUserPreferences
  */
-public void setUserPreferences(cbit.vcell.client.server.UserPreferences userPreferences) {
-	cbit.vcell.client.server.UserPreferences oldValue = fieldUserPreferences;
+public void setUserPreferences(UserPreferences userPreferences) {
+	UserPreferences oldValue = fieldUserPreferences;
 	fieldUserPreferences = userPreferences;
 	firePropertyChange("userPreferences", oldValue, userPreferences);
 }
@@ -719,25 +701,25 @@ private void showEditor() {
 	//char[] newlines = new char[100];
 	//java.util.Arrays.fill(newlines,'\n');
 	if (getReferenceData()!=null){
-		geteditorTextArea().setText(((cbit.vcell.opt.SimpleReferenceData)getReferenceData()).getCSV());
+		geteditorTextArea().setText(((SimpleReferenceData)getReferenceData()).getCSV());
 	}else{
 		geteditorTextArea().setText("t, data1, data2\n0.0, 0.1, 0.21\n0.1, 0.15, 0.31\n0.2, 0.16, 0.44");
 	}
 	geteditorPanel().setPreferredSize(new java.awt.Dimension(600,600));
 	geteditorPanel().setMinimumSize(new java.awt.Dimension(600,600));
 	try {
-		int retVal = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this,geteditorPanel(),"time series data editor");
+		int retVal = DialogUtils.showComponentOKCancelDialog(this,geteditorPanel(),"time series data editor");
 		if (retVal == javax.swing.JOptionPane.OK_OPTION){
-			cbit.vcell.util.RowColumnResultSet rc = (new cbit.vcell.export.CSV()).importFrom(new java.io.StringReader(geteditorTextArea().getText()));
+			RowColumnResultSet rc = (new CSV()).importFrom(new java.io.StringReader(geteditorTextArea().getText()));
 			double weights[] = new double[rc.getDataColumnCount()];
 			java.util.Arrays.fill(weights,1.0);
-			cbit.vcell.opt.SimpleReferenceData simpleRefData = new cbit.vcell.opt.SimpleReferenceData(rc,weights);
+			SimpleReferenceData simpleRefData = new SimpleReferenceData(rc,weights);
 			setReferenceData(simpleRefData);
 		}
-	}catch (org.vcell.util.gui.UtilCancelException e){
+	}catch (UtilCancelException e){
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		DialogUtils.showErrorDialog(this,e.getMessage());
 	}
 	return;
 }
@@ -766,10 +748,10 @@ private ReferenceData subsample() {
 		return refData;
 	}
 	
-	cbit.vcell.util.RowColumnResultSet rc = new cbit.vcell.util.RowColumnResultSet();
-	String[] columnNames = refData.getColumnNames();
+	RowColumnResultSet rc = new RowColumnResultSet();
+	String[] columnNames = refData.getColumnNames(); 
 	for (int i = 0; i < columnNames.length; i++){
-		rc.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(columnNames[i]));
+		rc.addDataColumn(new ODESolverResultSetColumnDescription(i == timeIndex ?  ReservedSymbol.TIME.getName() : columnNames[i]));		
 	}
 	for (int i = 0; i < refData.getNumRows(); i++){
 		rc.addRow((double[])refData.getRowData(i).clone());
@@ -803,17 +785,43 @@ private ReferenceData subsample() {
  * Comment
  */
 private void updatePlot() {
-	if (getReferenceData()==null){
+	if (getReferenceData()==null || timeIndex < 0){
 		getmultisourcePlotPane().setDataSources(null);
 		return;
 	}
 	
 	DataSource[] dataSources = new DataSource[1];
-	dataSources[0] = new DataSource(getReferenceData(),"refData");
+	dataSources[0] = new DataSource.DataSourceReferenceData("refData", timeIndex, getReferenceData());
 	getmultisourcePlotPane().setDataSources(dataSources);
 
 	getmultisourcePlotPane().selectAll();
 
 }
+
+public void setParameterEstimationTask(ParameterEstimationTask parameterEstimationTask) {
+	ParameterEstimationTask oldValue = fieldParameterEstimationTask;
+	fieldParameterEstimationTask = parameterEstimationTask;
+	
+	if (oldValue!=null){
+		ReferenceDataMappingSpec[] refDataMappingSpecs = oldValue.getModelOptimizationSpec().getReferenceDataMappingSpecs();
+		if (refDataMappingSpecs != null) {
+			for (ReferenceDataMappingSpec refDataMappingSpec : refDataMappingSpecs){
+				refDataMappingSpec.removePropertyChangeListener(ivjEventHandler);
+			}
+		}
+	}
+	if (fieldParameterEstimationTask!=null){
+		ReferenceDataMappingSpec[] refDataMappingSpecs = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpecs();
+		if (refDataMappingSpecs != null) {
+			for (ReferenceDataMappingSpec refDataMappingSpec : refDataMappingSpecs){
+				refDataMappingSpec.addPropertyChangeListener(ivjEventHandler);
+			}
+		}
+	}
+	
+	timeIndex = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceDataTimeColumnIndex();
+	setReferenceData(fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData());
+}
+
 
 }

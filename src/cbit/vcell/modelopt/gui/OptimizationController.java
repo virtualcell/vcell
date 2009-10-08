@@ -13,6 +13,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Variable;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.OdeObjectiveFunction;
@@ -104,12 +105,16 @@ public void plot() {
 		java.util.Vector<DataSource> dataSourceList = new java.util.Vector<DataSource>();
 		java.util.Vector<String> nameVector = new java.util.Vector<String>();
 		
-		ReferenceData referenceData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
+		ModelOptimizationSpec modelOptimizationSpec = parameterEstimationTask.getModelOptimizationSpec();
+		ReferenceDataMappingSpec[] mappingSpecs = modelOptimizationSpec.getReferenceDataMappingSpecs();
+		int timeIndex = modelOptimizationSpec.getReferenceDataTimeColumnIndex();
+		
+		ReferenceData referenceData = modelOptimizationSpec.getReferenceData();
 		if (referenceData!=null) {
-			dataSourceList.add(new DataSource(referenceData,"refData"));
+			dataSourceList.add(new DataSource.DataSourceReferenceData("refData", timeIndex, referenceData));
 			String[] refColumnNames = referenceData.getColumnNames();
 			for (int i = 0; i < refColumnNames.length; i ++) {
-				if (refColumnNames[i].equals("t")) {
+				if (i == timeIndex) {
 					continue;
 				}
 				nameVector.add(refColumnNames[i]);			
@@ -118,11 +123,10 @@ public void plot() {
 		
 		ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
 		if (odeSolverResultSet!=null){
-			dataSourceList.add(new DataSource(odeSolverResultSet,"odeData"));
-			ReferenceDataMappingSpec[] mappingSpecs = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpecs();
+			dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("odeData", odeSolverResultSet));
 			if (mappingSpecs != null) {
 				for (int i = 0; i < mappingSpecs.length; i ++) {
-					if (mappingSpecs[i].getReferenceDataColumnName().equals("t")) {
+					if (i == timeIndex) {
 						continue;
 					}
 					Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(mappingSpecs[i].getModelObject());

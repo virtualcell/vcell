@@ -13,9 +13,9 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.xml.sbml_transform.BnglSbmlTransformer;
 import cbit.vcell.xml.sbml_transform.SbmlTransformException;
@@ -874,10 +874,10 @@ private javax.swing.JTextArea getConsoleTextArea() {
 /**
  * Comment
  */
-private DataSource getDataSource(String fileContent) {
+private ODESolverResultSet getOdeSolverResultSet(String fileContent) {
 	java.util.StringTokenizer tokenizer1 = new java.util.StringTokenizer(fileContent, "\n");
 
-	cbit.vcell.solver.ode.ODESolverResultSet odeResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+	ODESolverResultSet odeResultSet = new ODESolverResultSet();
 	double[] values = null;
 	boolean bcolNamesRead = false;
 	while (tokenizer1.hasMoreTokens()) {	
@@ -903,10 +903,8 @@ private DataSource getDataSource(String fileContent) {
 			odeResultSet.addRow(values);
 		}
 	}
-
-	DataSource dataSource = new DataSource(odeResultSet, "");
 		
-	return dataSource;
+	return odeResultSet;
 }
 
 
@@ -2274,8 +2272,8 @@ private void setTextArea(javax.swing.event.ListSelectionEvent listSelectionEvent
 		String fileContentStr = getbngOutput1().getBNGFileContent(listSelectionIndex);
 
 		// Read the data from the cdat/gdat file contents to create a data source for the bngDataPlotPane
-		DataSource dataSource = getDataSource(fileContentStr);
-		getbngDataPlotPanel().setDataSource(dataSource);
+		ODESolverResultSet odeSolverResultSet = getOdeSolverResultSet(fileContentStr);
+		getbngDataPlotPanel().setOdeSolverResultSet(odeSolverResultSet);
 		getbngDataPlotPanel().selectAll();
 	} else {
 		((java.awt.CardLayout)getOutputsTextPanel().getLayout()).show(getOutputsTextPanel(), getOutputTextScrollPane().getName());
