@@ -811,7 +811,9 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcel
 		// Element for flux reaction. Write out the structure and flux carrier name.
 		rxnElement = new Element(XMLTags.FluxStepTag, sbml_vcml_ns);
 		rxnElement.setAttribute(XMLTags.StructureAttrTag, fluxRxn.getStructure().getName());
-		rxnElement.setAttribute(XMLTags.FluxCarrierAttrTag, TokenMangler.mangleToSName(fluxRxn.getFluxCarrier().getCommonName()));
+		if (fluxRxn.getFluxCarrier() != null) {
+			rxnElement.setAttribute(XMLTags.FluxCarrierAttrTag, TokenMangler.mangleToSName(fluxRxn.getFluxCarrier().getCommonName()));
+		}
 
 		// Get the charge carrier valence (if its expression has constant value).
 		Expression tempExp = null;

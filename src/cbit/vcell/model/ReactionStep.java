@@ -524,18 +524,7 @@ public Structure getStructure() {
  * @return java.lang.String
  */
 public abstract String getTerm();
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public String getVCML() {
-	java.io.StringWriter stringWriter = new java.io.StringWriter();
-	java.io.PrintWriter pw = new java.io.PrintWriter(stringWriter);
-	writeTokens(pw);
-	pw.flush();
-	pw.close();
-	return stringWriter.getBuffer().toString();
-}
+
 /**
  * Accessor for the vetoPropertyChange field.
  */
@@ -837,7 +826,6 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
  * @param ps java.io.PrintStream
  * @exception java.lang.Exception The exception description.
  */
-public abstract void writeTokens(java.io.PrintWriter pw);
 public String getAnnotation() {
 	return annotation;
 }

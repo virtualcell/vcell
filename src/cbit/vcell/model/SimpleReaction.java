@@ -223,29 +223,5 @@ public boolean isMembrane() {
 public String toString() {
 	return "SimpleReaction@"+Integer.toHexString(hashCode())+"("+getKey()+", "+getName()+", "+getReactionParticipants().length+" reactParticipants, valence="+getChargeCarrierValence()+", physicsOption="+getPhysicsOptions()+")";
 }
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
-public void writeTokens(java.io.PrintWriter pw) {
 
-	String nameStr = (getName()!=null)?(getName()):"unnamed_SimpleReaction";
-	pw.println("\t"+VCMODL.SimpleReaction+" "+getStructure().getName()+" "+nameStr+" "+VCMODL.BeginBlock+" ");
-	pw.println("\t\t"+VCMODL.Valence+" "+getChargeCarrierValence()+"; ");
-	pw.println("\t\t"+VCMODL.PhysicsOptions+" "+getPhysicsOptions()+"; ");
-	
-	//
-	// write Reactants/Products/Catalysts
-	//
-	ReactionParticipant rp_Array[] = getReactionParticipants();
-
-	for (int i = 0; i < rp_Array.length; i++) {
-		rp_Array[i].writeTokens(pw);
-	}
-			
-	getKinetics().writeTokens(pw);
-				
-	pw.println("\t"+VCMODL.EndBlock+" ");
-}
 }

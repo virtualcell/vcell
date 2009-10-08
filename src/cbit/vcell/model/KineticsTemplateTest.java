@@ -85,7 +85,7 @@ private static void testReactionStep(ReactionStep reactionStep) throws Expressio
 	for (int i = 0; i < params.length; i++) {
 		System.out.println(params[i].getDescription()+" = "+params[i].toString());
 	}
-	System.out.println(reactionStep.getVCML());
+//	System.out.println(reactionStep.getVCML());
 	org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(k.getVCML());
 	tokens.nextToken();
 	String kineticType = tokens.nextToken();
