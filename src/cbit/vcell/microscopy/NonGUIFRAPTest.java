@@ -24,7 +24,6 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -482,35 +481,44 @@ public class NonGUIFRAPTest {
 		ODESolverResultSet[] odeSolverResultSetArr =
 			spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
 		for (int i = 0; i < spatialAnalysisResults.analysisParameters.length; i++) {
-			DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
-			DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
+			DataSource expDataSource = new DataSource.DataSourceReferenceData("experiment", referenceDataArr[i]);
+			DataSource fitDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", odeSolverResultSetArr[i]);
 			MultisourcePlotListModel multisourcePlotListModel =
 				new MultisourcePlotListModel();
 			multisourcePlotListModel.setDataSources(new DataSource[] {expDataSource,fitDataSource});
 			System.out.println("AnalysisParameters = "+spatialAnalysisResults.analysisParameters[i]);
 			for (int j = 0; j < multisourcePlotListModel.getSize(); j++) {
 				DataReference dataReference = (DataReference)multisourcePlotListModel.getElementAt(j);
-				if(dataReference.getDataSource().getSource() instanceof ReferenceData){
-					ReferenceData refData = (ReferenceData)dataReference.getDataSource().getSource();
-					for (int k = 0; k < refData.getNumRows(); k++) {
-						for (int k2 = 0; k2 < refData.getNumColumns(); k2++) {
-							System.out.print(refData.getRowData(k)[k2]+" ");
-							fw.write(refData.getRowData(k)[k2]+" ");
-						}
-						System.out.println();
-						fw.write("\n");
+				DataSource dataSource = dataReference.getDataSource();
+				for (int k = 0; k < dataSource.getNumRows(); k++) {
+					for (int k2 = 0; k2 < dataSource.getNumColumns(); k2++) {
+						System.out.print(dataSource.getRowData(k)[k2]+" ");
+						fw.write(dataSource.getRowData(k)[k2]+" ");
 					}
-				}else{
-					ODESolverResultSet odeRS = (ODESolverResultSet)dataReference.getDataSource().getSource();
-					for (int k = 0; k < odeRS.getRowCount(); k++) {
-						for (int k2 = 0; k2 < odeRS.getDataColumnCount(); k2++) {
-							System.out.print(odeRS.getRow(k)[k2]+" ");
-							fw.write(odeRS.getRow(k)[k2]+" ");
-						}
-						System.out.println();
-						fw.write("\n");
-					}
+					System.out.println();
+					fw.write("\n");
 				}
+//				if(dataReference.getDataSource().getSource() instanceof ReferenceData){
+//					ReferenceData refData = (ReferenceData)dataReference.getDataSource().getSource();
+//					for (int k = 0; k < refData.getNumRows(); k++) {
+//						for (int k2 = 0; k2 < refData.getNumColumns(); k2++) {
+//							System.out.print(refData.getRowData(k)[k2]+" ");
+//							fw.write(refData.getRowData(k)[k2]+" ");
+//						}
+//						System.out.println();
+//						fw.write("\n");
+//					}
+//				}else{
+//					ODESolverResultSet odeRS = (ODESolverResultSet)dataReference.getDataSource().getSource();
+//					for (int k = 0; k < odeRS.getRowCount(); k++) {
+//						for (int k2 = 0; k2 < odeRS.getDataColumnCount(); k2++) {
+//							System.out.print(odeRS.getRow(k)[k2]+" ");
+//							fw.write(odeRS.getRow(k)[k2]+" ");
+//						}
+//						System.out.println();
+//						fw.write("\n");
+//					}
+//				}
 			}
 		}
 		fw.close();

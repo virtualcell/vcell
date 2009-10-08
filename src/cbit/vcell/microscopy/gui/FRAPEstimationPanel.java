@@ -443,7 +443,7 @@ public class FRAPEstimationPanel extends JPanel {
 			Expression bleachWhileMonitorCurve = frapDataAnalysisResults.getFitBleachWhileMonitorExpression();
 			ReferenceData expCellAvgData =
 				new SimpleReferenceData(new String[] { "t", "CellROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, cellRegionData });
-			DataSource expCellAvgDataSource = new DataSource(expCellAvgData,"expCellAvg");
+			DataSource expCellAvgDataSource = new DataSource.DataSourceReferenceData("expCellAvg", expCellAvgData);
 			//
 			//Analytic - Cell ROI Average with Bleach while monitor
 			//
@@ -472,13 +472,13 @@ public class FRAPEstimationPanel extends JPanel {
 				T += deltaT;
 			}
 			}
-			DataSource bleachWhileMonitorDataSource = new DataSource(bleachWhileMonitorOdeSolverResultSet, "bleachwm");
+			DataSource bleachWhileMonitorDataSource = new DataSource.DataSourceOdeSolverResultSet("bleachwm", bleachWhileMonitorOdeSolverResultSet);
 
 			//Recovery curve
 			double[] bleachRegionData = frapDataAnalysisResults.getBleachRegionData();
 			Expression fittedCurve = frapDataAnalysisResults.getFitExpression();
 			ReferenceData expRefData = new SimpleReferenceData(new String[] { "t", "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
-			DataSource expDataSource = new DataSource(expRefData,"experiment");
+			DataSource expDataSource = new DataSource.DataSourceReferenceData("experiment", expRefData);
 			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
 			fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
 			try {
@@ -503,7 +503,7 @@ public class FRAPEstimationPanel extends JPanel {
 				fitOdeSolverResultSet.addRow(new double[] { T } );
 				T += deltaT;
 			}
-			DataSource fitDataSource = new DataSource(fitOdeSolverResultSet, "fit");
+			DataSource fitDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", fitOdeSolverResultSet);
 			multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource , expCellAvgDataSource , bleachWhileMonitorDataSource} );
 			multisourcePlotPane.selectAll();		
 		}

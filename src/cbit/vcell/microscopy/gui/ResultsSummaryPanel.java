@@ -478,17 +478,19 @@ public class ResultsSummaryPanel extends JPanel {
 				DataSource[] selectedRowDataSourceArr = allDataHash.get(anaParams[0]);//anaParams[0] is the key in allDataHash to get the dataSource[]:exp & sim
 				if(selectedRowDataSourceArr != null)
 				{   //referenceData is the exp data
-					ReferenceData referenceData = (ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
-					final DataSource expDataSource = new DataSource(referenceData,"exp");
+//					ReferenceData referenceData = (ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
+//					final DataSource expDataSource = new DataSource(referenceData,"exp");
+					final DataSource expDataSource = selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE];
 					DataSource tempSimSource  = null;
 					if(isSimData && hasSimData)//from simulation
 					{
-						ODESolverResultSet simDataResultSet = (ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
-						tempSimSource = new DataSource(simDataResultSet, "sim");
+//						ODESolverResultSet simDataResultSet = (ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
+//						tempSimSource = new DataSource(simDataResultSet, "sim");
+						tempSimSource = selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE];
 					}
 					else //from opt
 					{
-						tempSimSource = new DataSource(fitOdeSolverResultSet, "opt");
+						tempSimSource = new DataSource.DataSourceOdeSolverResultSet("opt", fitOdeSolverResultSet);
 					}
 					final DataSource simDataSource = tempSimSource;
 					DataSource[] newDataSourceArr = new DataSource[2];
@@ -768,12 +770,14 @@ public class ResultsSummaryPanel extends JPanel {
 					if(allDataHash != null && allDataHash.get(spatialAnalysisResults.getAnalysisParameters()[0])!= null )
 					{
 						DataSource[] selectedRowDataSourceArr = allDataHash.get(spatialAnalysisResults.getAnalysisParameters()[0]);
-						ODESolverResultSet simDataResultSet = null;
-						if(selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] != null)
-						{
-							simDataResultSet = (ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
-						}
-						if(simDataResultSet != null)
+//						ODESolverResultSet simDataResultSet = null;
+//						if(selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] != null)
+//						{
+//							simDataResultSet = (ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
+//						}
+//						if(simDataResultSet != null)
+						if(selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] != null 
+							&& !selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].isSourceNull())
 						{
 							plotDerivedSimulationResults(true, spatialAnalysisResults.getAnalysisParameters());
 						}
