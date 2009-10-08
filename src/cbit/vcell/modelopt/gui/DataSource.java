@@ -17,16 +17,21 @@ public abstract class DataSource {
 	public static class DataSourceReferenceData extends DataSource {
 		private ReferenceData referenceData = null;
 		private int timeIndex = 0;
+		private final static int DEFAULT_TIME_COLUMN_INDEX = 0;
 		
-		public DataSourceReferenceData(String argName, int arg_timeIndex, ReferenceData arg_referenceData) {
+		public DataSourceReferenceData(String argName, ReferenceData arg_referenceData) {
+			this(argName, DEFAULT_TIME_COLUMN_INDEX, arg_referenceData);
+		}
+		
+		public DataSourceReferenceData(String argName, int arg_timeColumnIndex, ReferenceData arg_referenceData) {
 			super(argName);
-			timeIndex = arg_timeIndex;
+			timeIndex = arg_timeColumnIndex;
 			referenceData = arg_referenceData;
 		}
 		
 		@Override
 		public int getRenderHints() {
-			return (Plot2D.RENDERHINT_DRAWLINE);
+			return (Plot2D.RENDERHINT_DRAWPOINT);
 		}
 
 		@Override
@@ -60,24 +65,26 @@ public abstract class DataSource {
 //			// TODO Auto-generated method stub
 //			return 0;
 //		}
-//
-//		@Override
-//		public int getNumColumns() {
-//			// TODO Auto-generated method stub
-//			return 0;
-//		}
-//
-//		@Override
-//		public int getNumRows() {
-//			// TODO Auto-generated method stub
-//			return 0;
-//		}
-//
-//		@Override
-//		public double[] getRowData(int rowIndex) {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
+
+		@Override
+		public int getNumColumns() {
+			return referenceData.getNumColumns();
+		}
+
+		@Override
+		public int getNumRows() {
+			return referenceData.getNumRows();
+		}
+
+		@Override
+		public double[] getRowData(int rowIndex) {
+			return referenceData.getRowData(rowIndex);
+		}
+
+		@Override
+		public boolean isSourceNull() {
+			return referenceData == null;
+		}
 		
 	}
 	
@@ -135,25 +142,26 @@ public abstract class DataSource {
 //			// TODO Auto-generated method stub
 //			return 0;
 //		}
-//
-//		@Override
-//		public int getNumColumns() {
-//			// TODO Auto-generated method stub
-//			return 0;
-//		}
-//
-//		@Override
-//		public int getNumRows() {
-//			// TODO Auto-generated method stub
-//			return 0;
-//		}
-//
-//		@Override
-//		public double[] getRowData(int rowIndex) {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
-		
+
+		@Override
+		public int getNumColumns() {
+			return odeSolverResultSet.getColumnDescriptionsCount();
+		}
+
+		@Override
+		public int getNumRows() {
+			return odeSolverResultSet.getRowCount();
+		}
+
+		@Override
+		public double[] getRowData(int rowIndex) {
+			return odeSolverResultSet.getRow(rowIndex);
+		}
+
+		@Override
+		public boolean isSourceNull() {
+			return odeSolverResultSet == null;
+		}		
 	}
 /**
  * DataSource constructor comment.
@@ -188,8 +196,9 @@ public abstract double[] getColumnData(int columnIndex);
 public abstract String[] getColumnNames();
 public abstract int getTimeColumnIndex();
 //public abstract double[] getColumnWeights();
-//public abstract int getNumColumns();
-//public abstract int getNumRows();
+public abstract int getNumColumns();
+public abstract int getNumRows();
 //public abstract int getDataSize();
-//public abstract double[] getRowData(int rowIndex);
+public abstract double[] getRowData(int rowIndex);
+public abstract boolean isSourceNull();
 }
