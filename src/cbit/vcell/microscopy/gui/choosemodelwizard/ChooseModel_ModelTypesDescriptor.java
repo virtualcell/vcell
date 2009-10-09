@@ -2,6 +2,7 @@ package cbit.vcell.microscopy.gui.choosemodelwizard;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -45,19 +46,20 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 				FRAPStudy fStudy = frapWorkspace.getFrapStudy();
 				if(fStudy != null)
 		    	{
-					if( modelTypesPanel.getModelTypes()!=null)
+					boolean[] models = modelTypesPanel.getModelTypes();
+					boolean isOneSelected = false;
+					for(int i = 0; i<models.length; i++)
+					{
+						if(models[i])
+						{
+							isOneSelected = true;
+							break;
+						}
+					}
+					if(isOneSelected)
 					{
 			    		//update selected models in FrapStudy
-			    		String[] models = new String[modelTypesPanel.getModelTypes().size()];
-			    		models = modelTypesPanel.getModelTypes().toArray(models);
-			    		if(models.length >0)
-			    		{
-			    			fStudy.addAllSelectedModel(models);
-			    		}
-			    		else
-			    		{
-			    			fStudy.clearSelectedModel();
-			    		}
+			    		fStudy.refreshModels(models);
 					}
 					else
 					{

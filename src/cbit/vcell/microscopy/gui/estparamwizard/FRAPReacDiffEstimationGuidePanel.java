@@ -199,7 +199,9 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 					koffTextField.setEnabled(false);
 					bsTextField.setText("0");
 					bsTextField.setEnabled(false);
+					fRadiusTextField.setText("0");
 					fRadiusTextField.setEnabled(false);
+					bsRadiusTextField.setText("0");
 					bsRadiusTextField.setEnabled(false);
 				}
 			}
@@ -415,194 +417,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		estButton.setMargin(new Insets(0, 14, 0, 14));
 		estButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				if(diffRate != null && mFraction !=  null) // parameters have been set
-				{	
-					// Second diffusion applied
-					if(isSecDiffusionApplied != null && isSecDiffusionApplied.booleanValue())
-					{
-						double df = diffRate.doubleValue();
-						double ff = mFraction.doubleValue();
-						double cf = RELATIVE_TOTAL_CONCENTRATION * ff;
-						double dc = secDiffRate.doubleValue();
-						double fc = secMFraction.doubleValue();
-						double cc = RELATIVE_TOTAL_CONCENTRATION * fc;
-						double kon;
-						double immFrac = 1-ff-fc;
-						double fRadius;
-						double bsRadius;
-						double dbs = 0; //binding site diff rate set to 0
-						//check if required inputs are available
-						if(bsButton.isSelected() && !bsTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
-						{
-							double bs;
-							try{
-								bs = Double.parseDouble(bsTextField.getText());
-								fRadius = Double.parseDouble(fRadiusTextField.getText());
-								bsRadius = Double.parseDouble(bsRadiusTextField.getText());
-							}catch(NumberFormatException ex)
-							{
-								ex.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Parameter input error:" + ex.getMessage());
-								return;
-							}
-							//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
-							kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
- 							double koff = (bs*kon*cf)/cc;
-							//update textfield and table
-							koffTextField.setText(koff+"");
-
-							try{
-								updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), secDiffRate.doubleValue(), secMFraction.doubleValue(), bwmRate.doubleValue(),
-									              RELATIVE_TOTAL_CONCENTRATION, df, new Expression(paramExpStr[IDX_FreePartDiffRate]), ff,
-									              cf, dc, new Expression(paramExpStr[IDX_ComplexDiffRate]), fc, new Expression(paramExpStr[IDX_ComplexFraction]), cc, immFrac,
-									              0, bs, null, kon, koff, new Expression(paramExpStr[IDX_ReacOffRate]));
-							}catch(ExpressionException ee)
-							{
-								ee.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Error creating expression when trying to update table: " + ee.getMessage());
-							}
-						}
-						else if(koffButton.isSelected() && !koffTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
-						{
-							double koff;
-							try{
-								koff = Double.parseDouble(koffTextField.getText());
-								fRadius = Double.parseDouble(fRadiusTextField.getText());
-								bsRadius = Double.parseDouble(bsRadiusTextField.getText());
-							}catch(NumberFormatException ex)
-							{
-								ex.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Parameter input error:" + ex.getMessage());
-								return;
-							}
-							//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
-							kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
-							double bs = (koff*cc)/(kon*cf);
-							//update textfield and table
-							bsTextField.setText(bs+"");
-							try{
-								updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), secDiffRate.doubleValue(), secMFraction.doubleValue(), bwmRate.doubleValue(),
-										RELATIVE_TOTAL_CONCENTRATION, df, new Expression(paramExpStr[IDX_FreePartDiffRate]), ff,
-									              cf, dc, new Expression(paramExpStr[IDX_ComplexDiffRate]),fc, new Expression(paramExpStr[IDX_ComplexFraction]), cc, immFrac,
-									              0, bs, new Expression(paramExpStr[IDX_BSConc]), kon, koff, null);
-							}catch(ExpressionException ee)
-							{
-								ee.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
-							}
-						}
-						else
-						{
-							DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Estimation cannot be performed. Please input requied parameters.");
-						}
-					}//
-					else //One diffusion (second diffusion is NOT applied) 
-					{
-						double ff = mFraction.doubleValue(); //fraction of free particle
-						double cf = RELATIVE_TOTAL_CONCENTRATION * ff; //concentration of free particle
-						double dc = 0; //diffusion rate of complex
-						double fc = 1-ff; //fraction of complex
-						double cc = RELATIVE_TOTAL_CONCENTRATION * fc; //concentration of complex
-						double dbs = 0; //binding site diff rate set to 0 for now???
-						String diffExpStr = ""; 
-						double df;
-						double kon;
-						double fRadius;
-						double bsRadius;
-						double immFrac;
-						if(pureDiff.isSelected()) //pure diffusion 
-						{
-							diffExpStr = paramExpStr[IDX_FreePartDiffRate];
-							df = diffRate.doubleValue();
-							fc = 0;
-							cc = 0;
-							kon = 0;
-							immFrac = 1-ff-fc;
-							double koff = 0;
-							double bs = 0;
-							try{
-								updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), -1, -1, bwmRate.doubleValue(),
-										RELATIVE_TOTAL_CONCENTRATION, df, new Expression(diffExpStr), ff,
-									              cf, dc, null, fc, null, cc, immFrac,
-									              0, bs, null, kon, koff, null);
-							}catch(ExpressionException ee)
-							{
-								ee.printStackTrace(System.out);
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
-							}
-						}
-						else //effective diffusion
-						{
-							diffExpStr = freeDiffRateStr_eff;
-							df = diffRate.doubleValue()*(1+cc/cf);
-							fc = 1-ff;	
-							immFrac = 1-ff-fc;
-							//check if required inputs are available
-							if(bsButton.isSelected() && !bsTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
-							{
-								double bs;
-								try{
-									bs = Double.parseDouble(bsTextField.getText());
-									fRadius = Double.parseDouble(fRadiusTextField.getText());
-									bsRadius = Double.parseDouble(bsRadiusTextField.getText());
-								}catch(NumberFormatException ex)
-								{
-									ex.printStackTrace(System.out);
-									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
-									return;
-								}
-								//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
-								kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
-	 							double koff = (bs*kon*cf)/cc;
-								//update textfield and table
-								koffTextField.setText(koff+"");
-								try{
-									updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), -1, -1, bwmRate.doubleValue(),
-											RELATIVE_TOTAL_CONCENTRATION, df, new Expression(diffExpStr), ff,
-										              cf, dc, null, fc, new Expression(complexFracStr_oneDiffComponent), cc, immFrac,
-										              0, bs, null, kon, koff, new Expression(paramExpStr[IDX_ReacOffRate]));
-								}catch(ExpressionException ee)
-								{
-									ee.printStackTrace(System.out);
-									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
-								}
-							}
-							else if(koffButton.isSelected() && !koffTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
-							{
-								double koff;
-								try{
-									koff = Double.parseDouble(koffTextField.getText());
-									fRadius = Double.parseDouble(fRadiusTextField.getText());
-									bsRadius = Double.parseDouble(bsRadiusTextField.getText());
-								}catch(NumberFormatException ex)
-								{
-									ex.printStackTrace(System.out);
-									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
-									return;
-								}
-								//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
-								kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
-								double bs = (koff*cc)/(kon*cf);
-								//update textfield and table
-								bsTextField.setText(bs+"");
-								try{
-									updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), -1, -1, bwmRate.doubleValue(),
-											RELATIVE_TOTAL_CONCENTRATION, df, new Expression(diffExpStr), ff,
-										              cf, dc, null, fc, new Expression(complexFracStr_oneDiffComponent), cc, immFrac,
-										              0, bs, new Expression(paramExpStr[IDX_BSConc]), kon, koff, null);
-								}catch(ExpressionException ee)
-								{
-									ee.printStackTrace(System.out);
-									DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
-								}
-							}
-							else
-							{
-								DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Estimation cannot be performed. Please input requied parameters.");
-							}
-						}
-					}
-				}
+				autoEstimateReactionBindingParameters();
 			}
 		});
 		
@@ -616,6 +431,197 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		add(tableScroll, gridBagConstraints3);
 	}
 
+	public void autoEstimateReactionBindingParameters()
+	{
+		if(diffRate != null && mFraction !=  null) // parameters have been set
+		{	
+			// Second diffusion applied
+			if(isSecDiffusionApplied != null && isSecDiffusionApplied.booleanValue())
+			{
+				double df = diffRate.doubleValue();
+				double ff = mFraction.doubleValue();
+				double cf = RELATIVE_TOTAL_CONCENTRATION * ff;
+				double dc = secDiffRate.doubleValue();
+				double fc = secMFraction.doubleValue();
+				double cc = RELATIVE_TOTAL_CONCENTRATION * fc;
+				double kon;
+				double immFrac = 1-ff-fc;
+				double fRadius;
+				double bsRadius;
+				double dbs = 0; //binding site diff rate set to 0
+				//check if required inputs are available
+				if(bsButton.isSelected() && !bsTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
+				{
+					double bs;
+					try{
+						bs = Double.parseDouble(bsTextField.getText());
+						fRadius = Double.parseDouble(fRadiusTextField.getText());
+						bsRadius = Double.parseDouble(bsRadiusTextField.getText());
+					}catch(NumberFormatException ex)
+					{
+						ex.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Parameter input error:" + ex.getMessage());
+						return;
+					}
+					//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
+					kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
+						double koff = (bs*kon*cf)/cc;
+					//update textfield and table
+					koffTextField.setText(koff+"");
+
+					try{
+						updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), secDiffRate.doubleValue(), secMFraction.doubleValue(), bwmRate.doubleValue(),
+							              RELATIVE_TOTAL_CONCENTRATION, df, new Expression(paramExpStr[IDX_FreePartDiffRate]), ff,
+							              cf, dc, new Expression(paramExpStr[IDX_ComplexDiffRate]), fc, new Expression(paramExpStr[IDX_ComplexFraction]), cc, immFrac,
+							              0, bs, null, kon, koff, new Expression(paramExpStr[IDX_ReacOffRate]));
+					}catch(ExpressionException ee)
+					{
+						ee.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Error creating expression when trying to update table: " + ee.getMessage());
+					}
+				}
+				else if(koffButton.isSelected() && !koffTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
+				{
+					double koff;
+					try{
+						koff = Double.parseDouble(koffTextField.getText());
+						fRadius = Double.parseDouble(fRadiusTextField.getText());
+						bsRadius = Double.parseDouble(bsRadiusTextField.getText());
+					}catch(NumberFormatException ex)
+					{
+						ex.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this,"Parameter input error:" + ex.getMessage());
+						return;
+					}
+					//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
+					kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
+					double bs = (koff*cc)/(kon*cf);
+					//update textfield and table
+					bsTextField.setText(bs+"");
+					try{
+						updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), secDiffRate.doubleValue(), secMFraction.doubleValue(), bwmRate.doubleValue(),
+								RELATIVE_TOTAL_CONCENTRATION, df, new Expression(paramExpStr[IDX_FreePartDiffRate]), ff,
+							              cf, dc, new Expression(paramExpStr[IDX_ComplexDiffRate]),fc, new Expression(paramExpStr[IDX_ComplexFraction]), cc, immFrac,
+							              0, bs, new Expression(paramExpStr[IDX_BSConc]), kon, koff, null);
+					}catch(ExpressionException ee)
+					{
+						ee.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
+					}
+				}
+				else
+				{
+					DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Estimation cannot be performed. Please input requied parameters.");
+				}
+			}//
+			else //One diffusion (second diffusion is NOT applied) 
+			{
+				double ff = mFraction.doubleValue(); //fraction of free particle
+				double cf = RELATIVE_TOTAL_CONCENTRATION * ff; //concentration of free particle
+				double dc = 0; //diffusion rate of complex
+				double fc = 1-ff; //fraction of complex
+				double cc = RELATIVE_TOTAL_CONCENTRATION * fc; //concentration of complex
+				double dbs = 0; //binding site diff rate set to 0 for now???
+				String diffExpStr = ""; 
+				double df;
+				double kon;
+				double fRadius;
+				double bsRadius;
+				double immFrac;
+				if(pureDiff.isSelected()) //pure diffusion 
+				{
+					diffExpStr = paramExpStr[IDX_FreePartDiffRate];
+					df = diffRate.doubleValue();
+					fc = 0;
+					cc = 0;
+					kon = 0;
+					immFrac = 1-ff-fc;
+					double koff = 0;
+					double bs = 0;
+					try{
+						updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), -1, -1, bwmRate.doubleValue(),
+								RELATIVE_TOTAL_CONCENTRATION, df, new Expression(diffExpStr), ff,
+							              cf, dc, null, fc, null, cc, immFrac,
+							              0, bs, null, kon, koff, null);
+					}catch(ExpressionException ee)
+					{
+						ee.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
+					}
+				}
+				else //effective diffusion
+				{
+					diffExpStr = freeDiffRateStr_eff;
+					df = diffRate.doubleValue()*(1+cc/cf); //estimation at equilibrium
+					fc = 1-ff;	
+					immFrac = 1-ff-fc;
+					//check if required inputs are available
+					if(bsButton.isSelected() && !bsTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
+					{
+						double bs;
+						try{
+							bs = Double.parseDouble(bsTextField.getText());
+							fRadius = Double.parseDouble(fRadiusTextField.getText());
+							bsRadius = Double.parseDouble(bsRadiusTextField.getText());
+						}catch(NumberFormatException ex)
+						{
+							ex.printStackTrace(System.out);
+							DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
+							return;
+						}
+						//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
+						kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
+							double koff = (bs*kon*cf)/cc;
+						//update textfield and table
+						koffTextField.setText(koff+"");
+						try{
+							updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), -1, -1, bwmRate.doubleValue(),
+									RELATIVE_TOTAL_CONCENTRATION, df, new Expression(diffExpStr), ff,
+								              cf, dc, null, fc, new Expression(complexFracStr_oneDiffComponent), cc, immFrac,
+								              0, bs, null, kon, koff, new Expression(paramExpStr[IDX_ReacOffRate]));
+						}catch(ExpressionException ee)
+						{
+							ee.printStackTrace(System.out);
+							DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
+						}
+					}
+					else if(koffButton.isSelected() && !koffTextField.getText().equals("") && !fRadiusTextField.getText().equals("") && !bsRadiusTextField.getText().equals(""))
+					{
+						double koff;
+						try{
+							koff = Double.parseDouble(koffTextField.getText());
+							fRadius = Double.parseDouble(fRadiusTextField.getText());
+							bsRadius = Double.parseDouble(bsRadiusTextField.getText());
+						}catch(NumberFormatException ex)
+						{
+							ex.printStackTrace(System.out);
+							DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Parameter input error:" + ex.getMessage());
+							return;
+						}
+						//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
+						kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
+						double bs = (koff*cc)/(kon*cf);
+						//update textfield and table
+						bsTextField.setText(bs+"");
+						try{
+							updateTableParameters(diffRate.doubleValue(), mFraction.doubleValue(), -1, -1, bwmRate.doubleValue(),
+									RELATIVE_TOTAL_CONCENTRATION, df, new Expression(diffExpStr), ff,
+								              cf, dc, null, fc, new Expression(complexFracStr_oneDiffComponent), cc, immFrac,
+								              0, bs, new Expression(paramExpStr[IDX_BSConc]), kon, koff, null);
+						}catch(ExpressionException ee)
+						{
+							ee.printStackTrace(System.out);
+							DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
+						}
+					}
+					else
+					{
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Estimation cannot be performed. Please input requied parameters.");
+					}
+				}
+			}
+		}
+	}
 	public void setIniParamFromPureDiffusion(String diffusionRateStr, String mobileFractionStr, boolean isSecondDiffusionApplied, String secondDiffStr, String secondMobileFracStr, String bleachWhileMonitorRateStr)
 	{
 		if(diffusionRateStr != null)

@@ -11,6 +11,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 
 public class ChooseModel_ModelTypesPanel extends JPanel
@@ -93,20 +94,20 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(diffBindingCheckBox, gridBagConstraints_7);
 	}
 	
-	public Vector<String> getModelTypes()
+	public boolean[] getModelTypes()
 	{
-		Vector<String> result = new Vector<String>();
+		boolean[] result = new boolean[FRAPModel.NUM_MODEL_TYPES];
 		if(diffOneCheckBox.isSelected())
 		{
-			result.add(FRAPStudy.MODEL_ONE_DIFF_COMPONENT);
+			result[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] = true;
 		}
 		if(diffTwoCheckBox.isSelected())
 		{
-			result.add(FRAPStudy.MODEL_TWO_DIFF_COMPONENTS);
+			result[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = true;
 		}
 		if(diffBindingCheckBox.isSelected())
 		{
-			result.add(FRAPStudy.MODEL_DIFF_BINDING);
+			result[FRAPModel.IDX_MODEL_DIFF_BINDING] = true;
 		}
 		return result;
 	}

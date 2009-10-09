@@ -110,7 +110,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 							(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
 							(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
 				}
-				if(fData != null && fData.getRois().length > 0)
+				if(fData != null && fData.getROILength() > 0)
 				{
 					overlayEditorPanel.setRoiSouceData(fData);
 					fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
@@ -146,6 +146,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		newFrapStudy.setFrapDataExternalDataInfo(fStudy.getFrapDataExternalDataInfo());
 		newFrapStudy.setRoiExternalDataInfo(fStudy.getRoiExternalDataInfo());
 		newFrapStudy.setStoredRefData(fStudy.getStoredRefData());
+		newFrapStudy.setModels(fStudy.getModels());
 		getFrapWorkspace().setFrapStudy(newFrapStudy,false);
 	}
 	/**
@@ -301,7 +302,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		Plot2D plot2D = new Plot2D(null, varNames, plotDatas);
 		
 		plotter.setPlot2D(plot2D);
-		plotter.selectStepView(false, false);
+		plotter.setStepViewVisible(false, false);
 
 		
 		JDialog plotDialog = new JDialog();

@@ -482,15 +482,7 @@ public class FRAPParametersPanel extends JPanel {
 							 getUserMonitorBleachRateString(),
 			   				 getUserStartIndexForRecoveryString());
 
-			if(frapStudy.getFrapModelParameters() == null)
-			{
-				FRAPStudy.FRAPModelParameters modelParams = new FRAPStudy.FRAPModelParameters(iniParameters, null, null);
-				frapStudy.setFrapModelParameters(modelParams);
-			}
-			else //modelParameters is not null
-			{
-				frapStudy.getFrapModelParameters().setIniModelParameters(iniParameters);
-			}
+
 			
 		}
 	}

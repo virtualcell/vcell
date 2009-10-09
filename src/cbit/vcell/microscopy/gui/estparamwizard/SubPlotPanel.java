@@ -1,53 +1,55 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
-import javax.swing.*;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.*;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.TransformerException;
+import javax.swing.border.EtchedBorder;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import cbit.vcell.microscopy.FRAPWorkspace;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
+import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
-import java.awt.*;
-import java.awt.event.*;
-
-public class MSETablePanel extends JPanel
+public class SubPlotPanel extends JPanel
 {
-
-	private StyleTable table;
-
-    private MSEPanel parent;
+    private SummaryPlotPanel parent;
 
     private JLabel lessLable;
 
     private HyperLinkLabel hypDetail;
 
-    private JScrollPane scrTable;
-    MSETableModel mseTableModel;
+    private MultisourcePlotPane plotPane;
+    
+    private FRAPWorkspace frapWorkspace;
 
-    JPopupMenu popupMenu;
-
-    float[] prefColumnWidth = new float[]{0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f};
-
-    TableColumn[] columns = new TableColumn[MSETableModel.NUM_COLUMNS];
-
-    public MSETablePanel(MSEPanel arg_parent/*may need to pass in frapstudy as parameter*/) 
+    public SubPlotPanel(SummaryPlotPanel arg_parent) 
     {
     	this.parent = arg_parent;
         final GridBagLayout gridBagLayout = new GridBagLayout();
-//        gridBagLayout.columnWidths = new int[] {0,0};
         setLayout(gridBagLayout);
-//        setBackground(Color.white);
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
-        JLabel headingLabel = new JLabel("Models under Selected ROIs");
-        headingLabel.setFont(/*((Font)VirtualFrapLoader.loadProperty("report.table.subheading.font"))*/new Font("Tahoma", Font.BOLD, 11));
+        JLabel headingLabel = new JLabel("Plots under Selected ROIs");
+        headingLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
         hypDetail = new HyperLinkLabel("Detail", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
-//
+
         lessLable = new JLabel("3 Models");
         lessLable.setOpaque(true);
-        lessLable.setBackground(/*((Color)VirtualFrapLoader.loadProperty("report.table.color"))*/new Color(166, 166, 255));
+        lessLable.setBackground(new Color(166, 166, 255));
         lessLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
@@ -73,8 +75,12 @@ public class MSETablePanel extends JPanel
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
         add(lessLable, gc3);
-        //create table model
-        mseTableModel = new MSETableModel();
+        
+        plotPane = new MultisourcePlotPane();
+        plotPane.setMaximumSize(new Dimension(660,500));
+        plotPane.setMinimumSize(new Dimension(660,500));
+        plotPane.setPreferredSize(new Dimension(660,460));
+        plotPane.setBorder(new EtchedBorder(EtchedBorder.RAISED));
    }
 
 
@@ -90,30 +96,25 @@ public class MSETablePanel extends JPanel
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            if (table == null) setupTable();
             remove(lessLable);
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridy = 1;
             gc.gridwidth = 2;
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
-            add(table.getTableHeader(), gc); // absurd to put head and body seperately
+
             gc.weighty = 1.0;
             gc.gridy = 2;
             gc.fill = GridBagConstraints.BOTH;
-            if (table.getModel().getRowCount() > 20) {
-                add(scrTable, gc);
-            }
-            else {
-                add(table, gc);
-            }
+            add(plotPane, gc);
+
         }
         else {
-            if (table != null) {
-                remove(table.getTableHeader());
-                remove(scrTable);
-                remove(table);
-            }
+
+        	if(plotPane != null)
+        	{
+        		remove(plotPane);
+        	}
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridy = 1;
             gc.gridwidth = 2;
@@ -124,33 +125,9 @@ public class MSETablePanel extends JPanel
         parent.repaint();
     }
 
-    private void setupTable() {
-        table = new StyleTable();
-        table.setAutoCreateColumnsFromModel(false);
-        table.setModel(mseTableModel);
-
-        DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
-        TableCellRenderer mseRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
-        for (int i = 0; i < mseTableModel.getColumnCount(); i++) {
-
-            int w = (int) (prefColumnWidth[i]);
-            columns[i] = new TableColumn(i, w, mseRenderer, mseEditor);
-
-            table.addColumn(columns[i]);
-
-        }
-//        table.getTableHeader().addMouseListener(new TableMouseListener());
-
-        scrTable = new JScrollPane(table);
-        scrTable.setAutoscrolls(true);
-    }
-
     public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
 	{
-		mseTableModel.setFrapWorkspace(frapWorkspace);
+		this.frapWorkspace = frapWorkspace;
 		lessLable.setText(frapWorkspace.getFrapStudy().getSelectedModels().size() + " Models");
 	}
 }
-
-
-    

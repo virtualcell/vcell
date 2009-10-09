@@ -8,10 +8,15 @@ import javax.swing.table.*;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
+import cbit.vcell.opt.Parameter;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
 
 import java.awt.*;
-import java.awt.GridBagConstraints;
 import java.awt.event.*;
 
 /**
@@ -20,7 +25,7 @@ import java.awt.event.*;
 public class AnalysisResultsTablePanel extends JPanel /*implements ActionListener*/ 
 {
     private StyleTable table;
-
+    private AnalysisTableModel anaTableModel;
     private AnalysisResultsPanel parent;
 
     private JLabel lessLable;
@@ -31,19 +36,10 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
 
     JPopupMenu popupMenu;
 
-    final String[] columnTitle = {"Parameter",  "Diff_1", "Diff_2", "DB"};
     float[] prefColumnWidth = new float[]{0.25f, 0.5f, 0.5f, 0.15f};
 
-    TableColumn[] columns = new TableColumn[columnTitle.length];
-    String[][] fakeTable = new String[][]{{"Primary Diff. Rate", "5.149", "5.387", "5.386"},
-    		                            {"Primary Fraction","0.952","0.92","0.925"},
-    		                            {"Secondary Diff. Rate","0","0.75","0.755"},
-    		                            {"Secondary Fraction","0","0.04","0.04"},
-    		                            {"Bleach Monitor Rate","5.8e-4","6.2e-4","6.1e-4"},
-    		                            {"Reaction on Rate","0","0","4.49e-4"},
-    		                            {"Reaction off Rate","0","0","0.0103"},
-    		                            {"Immobile Fraction","0.048","0.034","0.0335"},
-    		                            {"Description","Diffusion with one diffusing component","Diffusion with two diffusing components","Diffusion plus binding reaction"}};
+    TableColumn[] columns = new TableColumn[AnalysisTableModel.NUM_COLUMNS];
+
 
     public AnalysisResultsTablePanel(AnalysisResultsPanel arg_parent/*may need to pass in frapstudy as parameter*/) 
     {
@@ -87,6 +83,8 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
         add(lessLable, gc3);
+        //create table model
+        anaTableModel = new AnalysisTableModel();
         //by default, expend this table
         setDetail(true);
    }
@@ -141,111 +139,27 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
     private void setupTable() {
         table = new StyleTable();
         table.setAutoCreateColumnsFromModel(false);
-        AnalysisTable anaTable = new AnalysisTable();
-        table.setModel(anaTable);
+        table.setModel(anaTableModel);
 //        StyleTableEditor errEditor = new StyleTableEditor();
 //        errEditor.setErrorListener(this);
 //        DefaultCellEditor  txtEditor = new DefaultCellEditor(errEditor);
-        DefaultCellEditor  txtEditor = new DefaultCellEditor(new JTextField());
-        TableCellRenderer txtRenderer =
-                new  PlainTableCellRenderer(new Font("Arial", Font.PLAIN, 11));
-        for (int i = 0; i < anaTable.getColumnCount(); i++) {
-            TableCellRenderer renderer = null;
-            DefaultCellEditor editor;
-            renderer = txtRenderer;
-            editor = txtEditor;
-            
+        DefaultCellEditor  anaEditor = new DefaultCellEditor(new JTextField());
+        TableCellRenderer anaRenderer = new  AnalysisTableRenderer(8); //double precision 8 digits
+        for (int i = 0; i < anaTableModel.getColumnCount(); i++) {
             int w = (int) (prefColumnWidth[i]);
-            columns[i] = new TableColumn(i, w, renderer, editor);
+            columns[i] = new TableColumn(i, w, anaRenderer, anaEditor);
             table.addColumn(columns[i]);
             if (i > 4) table.removeColumn(columns[i]);
         }
-//        table.getTableHeader().addMouseListener(new TableMouseListener());
 
         scrTable = new JScrollPane(table);
     }
 
-
-
-    private class AnalysisTable extends AbstractTableModel {
-
-
-        public AnalysisTable() {
-
-        }
-
-        public int getColumnCount() {
-            return columnTitle.length;
-        }
-
-        public int getRowCount() {
-           return 9;
-        }
-
-        public int getAligment(int columnIndex) {
-           return JLabel.CENTER;
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) 
-        {
-        	if (fakeTable != null) 
-        	{
-        		return fakeTable[rowIndex][columnIndex];
-        	}
-        	return null;
-        }
-
-        public Class getColumnClass(int c) {
-            return fakeTable[0][c].getClass();
-        }
-
-        public String getColumnName(int column) {
-            return columnTitle[column];
-        }
-
-        public boolean isCellEditable(int rowIndex,int columnIndex) 
-        {
-            return false;
-        }
-
-         public void setValueAt(Object aValue,int rowIndex, int columnIndex) 
-         {
-         }
-    }
-
-    /*private class TableMouseListener extends MouseAdapter {
-        public void mousePressed(MouseEvent e) {
-            if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON3) {
-                popupMenu.show(e.getComponent(),
-                           e.getX(), e.getY());
-            }
-
-        }
-
-    }
-
-    public void modelChanged() {
-        lessLable.setText("3 Models");
-    }
-
-	public void error(TransformerException exception)
-			throws TransformerException {
-		// TODO Auto-generated method stub
-		
+    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+	{
+		anaTableModel.setFrapWorkspace(frapWorkspace);
+		lessLable.setText(frapWorkspace.getFrapStudy().getSelectedModels().size() + " Models");
 	}
-
-	public void fatalError(TransformerException exception)
-			throws TransformerException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void warning(TransformerException exception)
-			throws TransformerException {
-		// TODO Auto-generated method stub
-		
-	}*/
-
 }
 
 	

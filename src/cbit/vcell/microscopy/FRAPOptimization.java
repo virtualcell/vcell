@@ -5,6 +5,7 @@ import org.vcell.util.DataAccessException;
 import cbit.function.DefaultScalarFunction;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.server.VCDataManager;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
@@ -50,23 +51,38 @@ public class FRAPOptimization {
 	//This function generates average intensity under different ROIs according to each time points for REFERENCE data.
 	//the results returns double[roi length][time points].
 	public static double[][] dataReduction(
-			VCDataManager vcDataManager,VCSimulationDataIdentifier vcSimdataID,int argStartRecoveryIndex,
-			ROI[] expRois,DataSetControllerImpl.ProgressListener progressListener) throws Exception{ 
+			VCDataManager vcDataManager,VCSimulationDataIdentifier vcSimdataID, double[] rawSimTimePoints, int argStartRecoveryIndex,
+			ROI[] expRois, ClientTaskStatusSupport progressListener, boolean isRefSim) throws Exception{ 
 
 		if(progressListener != null){
-			progressListener.updateMessage("Reading Reference data, generating ROI averages");
+			progressListener.setMessage("Reading Reference data, generating ROI averages");
 		}
 		int roiLen = expRois.length;
-		double[] simTimes = vcDataManager.getDataSetTimes(vcSimdataID);
+		double[] simTimes = rawSimTimePoints;
 		double[][] newData = new double[roiLen][simTimes.length];
 		double[] simData = null;
-		for (int j = 0; j < simTimes.length; j++) {
-			simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,simTimes[j]).getData();
-			for(int i = 0; i < roiLen; i++){
-				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
+		if(isRefSim)
+		{
+			for (int j = 0; j < simTimes.length; j++) {
+				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,simTimes[j]).getData();
+				for(int i = 0; i < roiLen; i++){
+					newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
+				}
+				if(progressListener != null){
+					progressListener.setProgress((int)(((double)(j+1))/((double)simTimes.length) *100));
+				}
 			}
-			if(progressListener != null){
-				progressListener.updateProgress(((double)(j+1))/(double)simTimes.length);
+		}
+		else
+		{
+			for (int j = 0; j < simTimes.length; j++) {
+				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,simTimes[j]).getData();
+				for(int i = 0; i < roiLen; i++){
+					newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
+				}
+				if(progressListener != null){
+					progressListener.setProgress((int)(((double)(j+1))/((double)simTimes.length) *100));
+				}
 			}
 		}
 		return newData;
@@ -109,9 +125,9 @@ public class FRAPOptimization {
 		double bleachWhileMonitoringRate = 0;
 		if(newParams != null && newParams.length > 0)
 		{
-			diffRate = newParams[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX];
-			mobileFrac = Math.min(newParams[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 1);
-			bleachWhileMonitoringRate = newParams[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX];
+			diffRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+			mobileFrac = Math.min(newParams[FRAPModel.INDEX_PRIMARY_FRACTION], 1);
+			bleachWhileMonitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
 						
 			diffData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffRate,
@@ -119,8 +135,7 @@ public class FRAPOptimization {
                     expData,
                     refTimePoints,
                     expTimePoints,
-                    roiLen
-                    /*refTimeInterval*/);
+                    roiLen);
 			//get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];
 			if(diffData != null)
@@ -158,27 +173,25 @@ public class FRAPOptimization {
 	{
 		double error = 0;
 		// trying 5 parameters
-		double diffFastRate = newParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX];
-		double mFracFast = newParams[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX];
-		double diffSlowRate = newParams[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX];
-		double mFracSlow = newParams[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX];
-		double monitoringRate = newParams[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX];
+		double diffFastRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+		double mFracFast = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+		double monitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+		double diffSlowRate = newParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
+		double mFracSlow = newParams[FRAPModel.INDEX_SECONDARY_FRACTION];
+		
 		
 		double[][] fastData = null;
 		double[][] slowData = null;
 				
 		if(newParams != null && newParams.length > 0)
 		{
-//			double diffFastRate = diffSlowRate + diffFastOffset;
-									
 			fastData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffFastRate,
                     refData,
                     expData,
                     refTimePoints,
                     expTimePoints,
-                    roiLen
-                    /*refTimeInterval*/);
+                    roiLen);
 			
 			slowData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffSlowRate,
@@ -186,8 +199,7 @@ public class FRAPOptimization {
                     expData,
                     refTimePoints,
                     expTimePoints,
-                    roiLen
-                    /*refTimeInterval*/);
+                    roiLen);
 			
 			//get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];

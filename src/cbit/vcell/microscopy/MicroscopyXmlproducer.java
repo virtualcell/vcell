@@ -384,9 +384,7 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 	}
 	
 	//Get model parameters
-	if ( param.getFrapModelParameters()!=null ){
-		frapStudyNode.addContent( getXML(param.getFrapModelParameters()) );
-	}
+
 	//Get ExternalDataIdentifier (for timeseries)
 	if (param.getFrapDataExternalDataInfo()!=null){
 		Element imageDatasetEDINode = new Element(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);

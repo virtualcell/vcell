@@ -9,7 +9,7 @@ import java.io.Serializable;
 /**
  *
  */
-public class HyperLinkLabel extends JLabel implements Serializable, MouseListener {
+public class HyperLinkLabel extends JLabel implements MouseListener {
     private Color color = Color.blue;
     private ActionListener listener;
     private int id;

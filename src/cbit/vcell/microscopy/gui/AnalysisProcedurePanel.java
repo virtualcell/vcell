@@ -41,7 +41,7 @@ public class AnalysisProcedurePanel extends JPanel
 	private static final String[] buttonActionCommands = new String[]{VirtualFrapMainFrame.LOAD_IMAGE_COMMAND,
 																	  VirtualFrapMainFrame.DEFINE_ROI_COMMAND,
 																	  VirtualFrapMainFrame.CHOOSE_MODEL_COMMAND,
-																	  VirtualFrapMainFrame.EXTIMATE_PARAM_COMMAND};
+																	  VirtualFrapMainFrame.ESTIMATE_PARAM_COMMAND};
 	private ImageIcon[] icons = new ImageIcon[iconFiles.length];
     private JButton[] buttons = new JButton[NUM_BUTTON_IMAGES];
     private JLabel[] labels = new JLabel[NUM_LABEL_IMAGES];

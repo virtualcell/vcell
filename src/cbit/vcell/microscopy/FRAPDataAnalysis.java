@@ -39,6 +39,8 @@ public class FRAPDataAnalysis {
 	public final static String halfCell_DiffFunc = symbol_r+"^2/("+symbol_tau+"*"+symbol_Pi+"^2)";
 	public final static String halfCell_mobileFracFunc = "(If-Io)/(("+symbol_preBlchAvg+"-Io)*(1-"+symbol_fB+"))";
 	
+	public final static double THRESHOLD_BLEACH_TYPE = 0.4;
+	
 	public static double[] getAverageROIIntensity(FRAPData frapData, ROI roi, double[] normFactor,double[] preNormalizeOffset) {
 		if(frapData == null)
 		{
@@ -117,7 +119,7 @@ public class FRAPDataAnalysis {
 	 * @return FrapDataAnalysisResults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults fitRecovery2(FRAPData frapData, int arg_bleachType) throws ExpressionException{
+	public static FrapDataAnalysisResults fitRecovery(FRAPData frapData, int arg_bleachType) throws ExpressionException{
 		
 		int startIndexForRecovery = getRecoveryIndex(frapData);
 		//
@@ -344,7 +346,7 @@ public class FRAPDataAnalysis {
 	/*
 	 * Added to try the new function
 	 */
-	private static double getCellAreaBleachedFraction(FRAPData fdata)
+	public static double getCellAreaBleachedFraction(FRAPData fdata)
 	{
 		ROI bleachedROI = fdata.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		ROI cellROI = fdata.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());

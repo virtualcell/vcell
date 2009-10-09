@@ -5,16 +5,31 @@ import java.awt.Dimension;
 
 import javax.swing.BoxLayout;
 
+import cbit.vcell.microscopy.FRAPWorkspace;
+
 public class AnalysisResultsPanel extends BoxPanel
 {
 	private AnalysisResultsTablePanel anaResultsTablePanel;
+	FRAPWorkspace frapWorkspace = null; 
+	
 	public AnalysisResultsPanel() 
 	{
-		super("Analysis Results among Models");
+		super("Analysis Parameters among Models");
 		setName("");
 		anaResultsTablePanel = new AnalysisResultsTablePanel(this);
         contentPane.setLayout(/*new BorderLayout()*/new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         contentPane.add(anaResultsTablePanel/*, BorderLayout.CENTER*/);
+	}
+	
+	public FRAPWorkspace getFrapWorkspace()
+    {
+    	return frapWorkspace;
+    }
+    
+    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+	{
+		this.frapWorkspace = frapWorkspace;
+		anaResultsTablePanel.setFrapWorkspace(frapWorkspace);
 	}
 	
 	public static void main(java.lang.String[] args) {

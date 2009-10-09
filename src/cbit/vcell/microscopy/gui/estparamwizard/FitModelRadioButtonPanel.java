@@ -9,6 +9,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import cbit.vcell.microscopy.FRAPModel;
+
 public class FitModelRadioButtonPanel extends JPanel
 {
 	private JRadioButton diffOneRadioButton = null;
@@ -59,4 +61,37 @@ public class FitModelRadioButtonPanel extends JPanel
 		
 	}
 
+	public void setBestModelRadioButton(int bestModel)
+	{
+		if(bestModel == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+		{
+			diffOneRadioButton.setSelected(true);
+		}
+		else if(bestModel == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+		{
+			diffTwoRadioButton.setSelected(true);
+		}
+		else if(bestModel == FRAPModel.IDX_MODEL_DIFF_BINDING)
+		{
+			diffBindingRadioButton.setSelected(true);
+		}
+			
+	}
+	
+	public int getBestModelIndex()
+	{
+		if(diffOneRadioButton.isSelected())
+		{
+			return FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
+		}
+		else if(diffTwoRadioButton.isSelected())
+		{
+			return FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS;
+		}
+		else 
+		{
+			return FRAPModel.IDX_MODEL_DIFF_BINDING;
+		}
+	}
+	
 }

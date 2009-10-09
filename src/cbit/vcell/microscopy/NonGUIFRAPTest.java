@@ -228,12 +228,12 @@ public class NonGUIFRAPTest {
 		
 		String[] args =
 			new String[]{
-				frapStudy.getFrapModelParameters().getIniModelParameters().startingIndexForRecovery,
-				frapStudy.getFrapModelParameters().getIniModelParameters().diffusionRate,
-				frapStudy.getFrapModelParameters().getIniModelParameters().monitorBleachRate,
-				frapStudy.getFrapModelParameters().getIniModelParameters().mobileFraction,
-				frapStudy.getFrapModelParameters().getPureDiffModelParameters().secondaryDiffusionRate,
-				frapStudy.getFrapModelParameters().getPureDiffModelParameters().secondaryMobileFraction,
+//				frapStudy.getFrapModelParameters().getIniModelParameters().startingIndexForRecovery,
+//				frapStudy.getFrapModelParameters().getIniModelParameters().diffusionRate,
+//				frapStudy.getFrapModelParameters().getIniModelParameters().monitorBleachRate,
+//				frapStudy.getFrapModelParameters().getIniModelParameters().mobileFraction,
+//				frapStudy.getFrapModelParameters().getPureDiffModelParameters().secondaryDiffusionRate,
+//				frapStudy.getFrapModelParameters().getPureDiffModelParameters().secondaryMobileFraction,
 				testDirectoryPath,
 				imageDataSetZipFile.getAbsolutePath(),
 				cellROIFile.getAbsolutePath(),
@@ -337,7 +337,7 @@ public class NonGUIFRAPTest {
 				  null,
 				  null);
 		
-		frapStudy.setFrapModelParameters(frapModelParameters);
+//		frapStudy.setFrapModelParameters(frapModelParameters);
 		frapStudy.refreshDependentROIs();
 		
 		ExternalDataInfo imageDatasetExternalDataInfo = FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME);
@@ -402,7 +402,7 @@ public class NonGUIFRAPTest {
 			bioModel.getSimulations(0),
 			imageDatasetExternalDataInfo.getExternalDataIdentifier(),
 			roiExternalDataInfo.getExternalDataIdentifier(),
-			progressListener);
+			null);
 		
 		VCSimulationDataIdentifier vcSimulationDataIdentifier =
 			new VCSimulationDataIdentifier(
@@ -415,24 +415,16 @@ public class NonGUIFRAPTest {
 		VCDataManager testVCDataManager = localWorkspace.getVCDataManager();
 		double[] prebleachAverage = testVCDataManager.getSimDataBlock(
 				frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
-		//
-
-		FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
+		//TODO: need to create parameters here.
+		Parameter[] parameters = null;
+		SpatialAnalysisResults spatialAnalysisResults =
 			FRAPStudy.spatialAnalysis(
 				simulationDataManager,
 				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery),
 				frapDataTimeStamps[new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery)],
-				freeDiffusionRateStr,
-				freeMobileFractionStr,
-				complexDiffusionRateStr,
-				complexMobileFractionStr,
-				bleachWhileMonitoringRateString,
-				bindingSiteConcentrationStr,
-				reacOnRateStr,
-				reacOffRateStr,
+				parameters,
 				frapData,
-				prebleachAverage,
-				progressListener);
+				prebleachAverage);
 		dumpSummaryReport(spatialAnalysisResults, frapDataTimeStamps,
 				new Integer(startingIndexForRecovery).intValue(),
 				new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
@@ -440,7 +432,7 @@ public class NonGUIFRAPTest {
 		
 	}
 	public static void dumpSummaryReport(
-			FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
+			SpatialAnalysisResults spatialAnalysisResults,
 			double[] frapDataTimeStamps,
 			int startingIndexForRecovery,
 			File outputFile) throws Exception{
@@ -456,9 +448,7 @@ public class NonGUIFRAPTest {
 					}
 				}
 		);
-		String summaryReportS =
-			FRAPStudy.SpatialAnalysisResults.createCSVSummaryReport(
-					FRAPStudy.SpatialAnalysisResults.getSummaryReportColumnNames(), summaryData);
+		String summaryReportS = SpatialAnalysisResults.createCSVSummaryReport(SpatialAnalysisResults.getSummaryReportColumnNames(), summaryData);
 		FileWriter fw = null;
 		try{
 			fw = new FileWriter(outputFile);
@@ -469,7 +459,7 @@ public class NonGUIFRAPTest {
 		
 	}
 	public static void dumpSpatialResults(
-			FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
+			SpatialAnalysisResults spatialAnalysisResults,
 			double[] frapDataTimeStamps,
 			File outputFile) throws Exception{
 		

@@ -60,10 +60,6 @@ public class VirtualFrapMainFrame extends JFrame
 	private LocalWorkspace localWorkspace = null;
 	private FRAPWorkspace frapWorkspace = null;
 	
-	public static final String ROIErrorString = 
-		"'Cell','Bleach' and 'Background' ROIs are required for FRAP model.  "+
-		"Create all ROIs under '"+FRAPStudyPanel.FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab";
-
 	public static final boolean SAVE_COMPRESSED = true;
 	
 	public static Dimension INIT_WINDOW_SIZE = new Dimension(1024, 768);
@@ -88,7 +84,7 @@ public class VirtualFrapMainFrame extends JFrame
 	public static final String LOAD_IMAGE_COMMAND = "Load FRAP images";
 	public static final String DEFINE_ROI_COMMAND = "Define ROIs";
 	public static final String CHOOSE_MODEL_COMMAND = "Choose model types";
-	public static final String EXTIMATE_PARAM_COMMAND = "Estimate model parameters";
+	public static final String ESTIMATE_PARAM_COMMAND = "Estimate model parameters";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
@@ -207,9 +203,9 @@ public class VirtualFrapMainFrame extends JFrame
 
 		    	  try {
 		    		  if(bSaveAs){
-		    			  frapStudyPanel.saveAs(null);
+		    			  frapStudyPanel.saveAs();
 		    		  }else{
-		    			  frapStudyPanel.save(null);
+		    			  frapStudyPanel.save();
 		    		  }
 				  }catch(UserCancelException e1){
 					  //ignore

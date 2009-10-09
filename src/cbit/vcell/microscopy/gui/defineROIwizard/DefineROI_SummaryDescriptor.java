@@ -1,6 +1,7 @@
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
 import java.awt.BorderLayout;
+import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -12,6 +13,7 @@ import javax.swing.JPanel;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
@@ -79,6 +81,23 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 				{
 					int startIndex = ((DefineROI_SummaryPanel)getPanelComponent()).getStartingIndex();
 					FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+					
+					//check ROI void/discontinuous location
+					Point internalVoidLocation = ROI.findInternalVoid(fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+					if(internalVoidLocation != null){
+						throw new Exception("CELL ROI has unfilled internal void area at image location "+
+								"x="+internalVoidLocation.x+",y="+internalVoidLocation.y+"\n"+
+								"Use ROI editing tools to completely define the CELL ROI");
+					}
+					Point[] distinctCellAreaLocations = ROI.checkContinuity(fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+					if(distinctCellAreaLocations != null){
+						throw new Exception("CELL ROI has at least 2 discontinuous areas at image locations \n"+
+								"x="+distinctCellAreaLocations[0].x+",y="+distinctCellAreaLocations[0].y+
+								" and "+
+								"x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
+						"Use ROI editing tools to define a single continuous CELL ROI");				
+					}
+					
 					fStudy.setStartingIndexForRecovery(startIndex);
 					getFrapWorkspace().setFrapStudy(fStudy, true);
 				}
