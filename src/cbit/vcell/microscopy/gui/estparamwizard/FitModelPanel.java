@@ -33,5 +33,13 @@ public class FitModelPanel extends BoxPanel
 		}
 	}
 	
-
+	public void setBestModelRadioButton(int bestModel)
+	{
+		radioPanel.setBestModelRadioButton(bestModel);
+	}
+	
+	public int getBestModelIndex()
+	{
+		return radioPanel.getBestModelIndex();
+	}
 }

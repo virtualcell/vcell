@@ -49,6 +49,11 @@ public class EstimatedParameterTableRenderer extends DefaultTableCellRenderer
 		{
 			setText(format.format(value));
 		}
+		//show tool tip text if the table cell is too small to see everything
+		if(value != null)
+		{
+			setToolTipText(value.toString());
+		}
 		return this;
 	}
 }

@@ -26,9 +26,11 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.opt.Parameter;
 
 public class FRAPDiffTwoParamPanel extends JPanel {
@@ -56,6 +58,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 //	private final JCheckBox secondDiffRateCheckBox = new JCheckBox();
 	
 	private FRAPOptData frapOptData;
+	private FRAPWorkspace frapWorkspace;
 
 	private boolean B_HOLD_FIRE = false;
 	private boolean isExecuting = false;//for control whether a paragraph should execute in OPTIMIZER_SLIDER_CHANGE_LISTENER or not, when getValueIsAdjusting() is false.
@@ -396,110 +399,49 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		gridBagLayout.rowHeights = new int[] {7,7,7,7};
 		setLayout(gridBagLayout);
 
-		final JButton createOptimalButton = new JButton();
+		final JButton getOptimalButton = new JButton();
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_8.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_8.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_8.gridy = 0;
 		gridBagConstraints_8.gridx = 0;
-		add(createOptimalButton, gridBagConstraints_8);
-		createOptimalButton.addActionListener(new ActionListener() {
+		add(getOptimalButton, gridBagConstraints_8);
+		getOptimalButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(checkParameters())
 				{
-//					final AsynchProgressPopup pp =
-//						new AsynchProgressPopup(
-//							FRAPPureDiffusionParamPanel.this,
-//							"Finding Best Fit Parameters...",
-//							"Working...",true,false);
-//					pp.start();
-//					new Thread(new Runnable(){public void run(){
 					AsynchClientTask optTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 					{
 						public void run(Hashtable<String, Object> hashTable) throws Exception
 						{
 							try{
 								frapOptData.setNumEstimatedParams(getCurrentParameters().length);
-								final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), FRAPDiffTwoParamPanel.getErrorOfInterest());
-								if(bestParameters.length == 3)
+								final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+								if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
 								{
-									SwingUtilities.invokeLater(new Runnable(){public void run(){
-										setParameterValues(
-											new Double(bestParameters[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess()),
-											new Double(bestParameters[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess()),
-											null,
-											null,
-											new Double(bestParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess())
-											);
-										firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
-									}});
-								}
-								else
-								{
-									SwingUtilities.invokeLater(new Runnable(){public void run(){ ////{diff, mobileFrac, secDiffRate, secMobileFrac, monitorRate}
-										setParameterValues(
-											new Double(bestParameters[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX].getInitialGuess()),
-											new Double(bestParameters[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX].getInitialGuess()),
-											new Double(bestParameters[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX].getInitialGuess()),
-											new Double(bestParameters[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX].getInitialGuess()),
-											new Double(bestParameters[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()));
-										firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
-									}});
+									setParameterValues(
+										new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
+										new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
+										new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
+										new Double(bestParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()),
+										new Double(bestParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()));
+									firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
 								}
 								
 							}catch(final Exception e2){
-	//							pp.stop();
 								e2.printStackTrace();
-								SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-									DialogUtils.showErrorDialog(FRAPDiffTwoParamPanel.this,"Error setting Best Fit Parameters\n"+e2.getMessage());
-
-								}});
-							}finally{
-	//							pp.stop();
+								DialogUtils.showErrorDialog(FRAPDiffTwoParamPanel.this,"Error setting Best Fit Parameters\n"+e2.getMessage());
 							}
 						}
 					};
-//					}}).start();
 					//dispatch
 					ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask}, false);
 				}
 			}
 		});
-		createOptimalButton.setText("Get Best Fit Parameters");
-		createOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
-//		final JButton runSimbutton = new JButton();
-//		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
-//		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
-//		gridBagConstraints_13.gridwidth = 2;
-//		gridBagConstraints_13.ipadx = 10;
-//		gridBagConstraints_13.insets = new Insets(2, 2, 2, 0);
-//		gridBagConstraints_13.gridy = 0;
-//		gridBagConstraints_13.gridx = 1;
-//		add(runSimbutton, gridBagConstraints_13);
-////		runSimbutton.setFont(new Font("", Font.BOLD, 14));
-//		runSimbutton.addActionListener(new ActionListener() {
-//			public void actionPerformed(final ActionEvent e) {
-//				if(checkParameters())
-//				{
-//					firePropertyChange(PROPERTY_CHANGE_RUNSIM, null,null);
-//				}
-//			}
-//		});
-//		runSimbutton.setText("Simulate with Parameters");
-//		runSimbutton.setToolTipText("Create new FRAP simulation using current parameter settings");
-//		secondDiffRateCheckBox.addActionListener(new ActionListener() {
-//			public void actionPerformed(final ActionEvent arg0) {
-//				if(secondDiffRateCheckBox.isSelected())
-//				{
-//					enableSecondDiffComponents();
-//				}
-//				else
-//				{
-//					disableSecondDiffComponents();
-//				}
-//			}
-//		});
+		getOptimalButton.setText("Get Best Fit Parameters");
+		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setText("Primary  Diff.  Rate(um2/s):");
@@ -811,89 +753,25 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		Parameter[] params = getCurrentParameters();
 		if (params == null)
 		{
-			DialogUtils.showErrorDialog(this, "Some of the editable parameters are empty or in illegal forms!");
+			DialogUtils.showErrorDialog(FRAPDiffTwoParamPanel.this, "Some of the editable parameters are empty or in illegal forms!");
 			throw new RuntimeException("Some of the editable parameters are empty or in illegal forms!");
-		}
-		if(params.length ==5)
-		{
-			double fastRate = params[frapOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX].getInitialGuess();
-			double fastMobileFrac = params[frapOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX].getInitialGuess();
-			double slowRate = params[frapOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX].getInitialGuess();
-			double slowMobileFrac = params[frapOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX].getInitialGuess();
-			String msg = "";
-			if(slowRate > fastRate)
-			{
-				msg = msg + "* Secondary (slower) diffusion rate is already greater than the primary diffusion rate.\n";
-			}
-			else if((fastRate * 0.9) <= slowRate)
-			{
-				msg = msg + "* Secondary diffusion rate and primary diffusion rate have less then 10% difference, please consider estimating one(primary) diffusion rate only.\n";
-			}
-			if((fastMobileFrac + slowMobileFrac) > 1)
-			{
-				msg = msg + "* The sum up of primary mobile fraction, secondary mobile fraction and immobile fraction exceeds 1.\n";
-			}
-			if(!msg.equals(""))
-			{
-				msg = msg + "\nContinue?";
-				String choice = DialogUtils.showWarningDialog(this, msg, new String[]{"Yes", "No"}, "Yes");
-				if(choice.equals("No"))
-				{
-					return false;
-				}
-			}
 		}
 		return true;
 	}
 	
-	public void init(FRAPOptData frapOptData) throws Exception{
-		
-//		initialize();
-		
+	public void setData(FRAPOptData frapOptData, Parameter[] modelParameters) throws Exception
+	{
 		this.frapOptData = frapOptData;
 
-		String secondRate = INI_SECOND_DIFF_RATE;
-		String secondFraction = INI_SECOND_MOBILE_FRAC;
-//		String secondRate = null;
-//		String secondFraction = null;
-		if(frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters() != null &&
-		   frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().arePureDiffParametesAllNotNull())
-		{
-//				enableSecondDiffComponents();
-				if(!frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().secondaryDiffusionRate.equals("") &&
-				   !frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().secondaryMobileFraction.equals(""))
-				{
-					secondRate = frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().secondaryDiffusionRate;
-					secondFraction = frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().secondaryMobileFraction;
-				}
-//			}
-//			else
-//			{
-//				secondDiffRateCheckBox.setSelected(false);
-//				disableSecondDiffComponents();
-//				
-//			}
-			setParameterValues(
-					new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().primaryDiffusionRate),
-					new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().primaryMobileFraction),
-					new Double(secondRate),
-					new Double(secondFraction),
-					new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().getPureDiffModelParameters().monitorBleachRate));
-		}
-		else // pure diffusion params are not filled yet. take initial model parameters
-		{
-			setParameterValues(
-					new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().getIniModelParameters().diffusionRate),
-					new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().getIniModelParameters().mobileFraction),
-					new Double(secondRate),
-					new Double(secondFraction),
-					new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().getIniModelParameters().monitorBleachRate));
-//			secondDiffRateCheckBox.setSelected(false);
-//			disableSecondDiffComponents();
-		}
+		setParameterValues(
+				new Double(modelParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
+				new Double(modelParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
+				new Double(modelParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
+				new Double(modelParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()),
+				new Double(modelParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()));
 	}
 	//set text fields, update slider values and plot.
-	private void setParameterValues(Double diffusionRate,Double mobileFraction,Double secondDiffRate,Double secondMobileFrac,Double monitorBleachRate){
+	private void setParameterValues(Double diffusionRate,Double mobileFraction, Double monitorBleachRate, Double secondDiffRate,Double secondMobileFrac){
 		diffusionRateTextField.setText(diffusionRate.doubleValue()+"");
 		mobileFractionTextField.setText((mobileFraction != null
 				?mobileFraction.doubleValue()+""
@@ -919,102 +797,65 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		B_HOLD_FIRE = true;
 		//one click is enough, The set action listener goes through the whole textfields and sliders
 		diffusionRateSetButton.doClick();
-//		mobileFractionSetButton.doClick();
-//		bleachWhileMonitorSetButton.doClick();
-//		secondDiffSetButton.doClick();
-//		secondMobileFracSetButton.doClick();
 		B_HOLD_FIRE = false;
 	}
-	private static Parameter[] createParameterArray(Double diffusionRate,Double mobileFraction,Double monitorBleachRate, Double secondDiffRate, Double secondMobileFrac)
+	private static Parameter[] createParameterArray(double diffusionRate,double mobileFraction,double monitorBleachRate, double secondDiffRate, double secondMobileFrac)
 	{
 		Parameter[] params = null;
 		
-		if(secondDiffRate == null && secondMobileFrac == null)
-		{
-			Parameter diff =
-				new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX],
-						                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-						                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-						                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),diffusionRate.doubleValue());
-			Parameter mobileFrac =
-				new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX],
-						                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-						                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-						                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),mobileFraction.doubleValue());
-			Parameter bleachWhileMonitoringRate =
-				new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX],
-						                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-						                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-						                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),monitorBleachRate.doubleValue());
-			
-			params = new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate};
-		}
-		else
-		{
-			Parameter diff = new Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX], 
+		
+		Parameter diff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
 					                       FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
 					                       FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-					                       FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), diffusionRate.doubleValue());
-			Parameter mobileFrac = new Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX],
-					                                                                      FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-					                                                                      FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-					                                                                      FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), mobileFraction.doubleValue());
-			Parameter secDiffRate = new Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX],
-					                                                                       FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-					                                                                       FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-					                                                                       FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), secondDiffRate.doubleValue());
-			Parameter secMobileFrac = new Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX],
-					                                                                         FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-					                                                                         FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-					                                                                         FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(), secondMobileFrac.doubleValue());
-			Parameter monitorRate = new Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX], 
-					                                                                       FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-					                                                                       FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-					                                                                       FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), monitorBleachRate.doubleValue());
-			
-			params = new Parameter[]{diff, mobileFrac, monitorRate, secDiffRate, secMobileFrac};
-		}
+					                       FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), diffusionRate);
+		Parameter mobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
+                                           FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+                                           FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+                                           FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), mobileFraction);
+		Parameter monitorRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
+							               FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+							               FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+							               FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), monitorBleachRate);
+		Parameter secDiffRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
+                                           FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+                                           FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+                                           FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), secondDiffRate);
+		Parameter secMobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
+                                           FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+                                           FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+                                           FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(), secondMobileFrac);
+		
+		
+		params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
+		params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = diff;
+		params[FRAPModel.INDEX_PRIMARY_FRACTION] = mobileFrac;
+		params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = monitorRate;
+		params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secDiffRate;
+		params[FRAPModel.INDEX_SECONDARY_FRACTION] = secMobileFrac;
 		return params;
 	}
+	
 	public Parameter[] getCurrentParameters(){
 		if(diffusionRateTextField == null || diffusionRateTextField.getText().equals("")||
 		   mobileFractionTextField == null || mobileFractionTextField.getText().equals("")||
-		   bleachWhileMonitorRateTextField == null || bleachWhileMonitorRateTextField.equals(""))
+		   bleachWhileMonitorRateTextField == null || bleachWhileMonitorRateTextField.equals("")||
+		   secondDiffTextField == null || secondDiffTextField.getText().equals("") ||
+		   secondMobileFracTextField == null || secondMobileFracTextField.getText().equals(""))
 		{
 			return null;
 		}
+		double diffusionRate, mobileFraction, bleachWhileMonitorRate, secondDiffRate, secondMobileFrac;
 		try
 		{
-			double dr = Double.parseDouble(diffusionRateTextField.getText());
-			double mf = Double.parseDouble(mobileFractionTextField.getText());
-			double bwmr = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
+			diffusionRate = Double.parseDouble(diffusionRateTextField.getText());
+			mobileFraction = Double.parseDouble(mobileFractionTextField.getText());
+			bleachWhileMonitorRate = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
+			secondDiffRate = Double.parseDouble(secondDiffTextField.getText());
+			secondMobileFrac = Double.parseDouble(secondMobileFracTextField.getText());
 		}catch(NumberFormatException e)
 		{
 			return null;
 		}
-		Double diffusionRate = new Double(diffusionRateTextField.getText());
-		Double mobileFraction = new Double(mobileFractionTextField.getText());
-		Double bleachWhileMonitorRate = new Double(bleachWhileMonitorRateTextField.getText());
-		Double secondDiffRate = null;
-		Double secondMobileFrac = null;
-//		if(secondDiffRateCheckBox.isSelected())
-//		{
-			if(secondDiffTextField == null || secondDiffTextField.getText().equals("") ||
-			   secondMobileFracTextField == null || secondMobileFracTextField.getText().equals(""))
-			{
-				return null;
-			}
-			try
-			{
-				double sdr = Double.parseDouble(secondDiffTextField.getText());
-				double smf = Double.parseDouble(secondMobileFracTextField.getText());
-			}catch(NumberFormatException e)
-			{
-				return null;
-			}
-			secondDiffRate = new Double(secondDiffTextField.getText());
-			secondMobileFrac = new Double(secondMobileFracTextField.getText());
-//		}
 		return
 			createParameterArray(diffusionRate, mobileFraction, bleachWhileMonitorRate, secondDiffRate, secondMobileFrac);
 	}
@@ -1024,7 +865,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 			return null;
 		}
 		frapOptData.setNumEstimatedParams(userParams.length);
-		double[][] fitData = frapOptData.getFitData(userParams, FRAPDiffTwoParamPanel.getErrorOfInterest()); 
+		double[][] fitData = frapOptData.getFitData(userParams); 
 
 		return fitData;
 	}
@@ -1060,31 +901,6 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		return getFitData(getCurrentParameters());
 	}
 	
-//	private void enableSecondDiffComponents()
-//	{
-//		mobileFractionSlider.setEnabled(true);
-//		mobileFractionTextField.setEnabled(true);
-//		secondDiffTextField.setEnabled(true);
-//		secondDiffSlider.setEnabled(true);
-//		secondMobileFracTextField.setEnabled(true);
-//		secondMobileFracSlider.setEnabled(true);
-//	}
-	
-//	private void disableSecondDiffComponents()
-//	{
-//		secondDiffTextField.setText(INI_SECOND_DIFF_RATE);
-//		secondDiffTextField.setEnabled(false);
-//		secondDiffSlider.setEnabled(false);
-//		secondMobileFracTextField.setText(INI_SECOND_MOBILE_FRAC);
-//		secondMobileFracTextField.setEnabled(false);
-//		secondMobileFracSlider.setEnabled(false);
-//		secondDiffSetButton.setEnabled(false);
-//		secondMobileFracSetButton.setEnabled(false);
-//		isExecuting = true; //control not to execute the paragraph when sliderBar is not changing.
-//		secondDiffSlider.setValue(Integer.parseInt(INI_SECOND_DIFF_RATE));
-//		isExecuting = false; 
-//		secondMobileFracSlider.setValue(Integer.parseInt(INI_SECOND_MOBILE_FRAC));
-//	}
 	
 	public void insertPureDiffusionParametersIntoFRAPStudy(FRAPStudy fStudy) throws Exception
 	{
@@ -1170,27 +986,8 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 						    		secondMobileFracTextField.getText(),
 						    		bleachWhileMonitorRateTextField.getText(),
 						    		new Boolean(true));
-//				}
-//				else
-//				{
-//					pureDiffParameters = 
-//					    new FRAPStudy.PureDiffusionModelParameters(
-//					    		diffusionRateTextField.getText(), 
-//					    		mobileFractionTextField.getText(),
-//					    		null,
-//					    		null,
-//					    		bleachWhileMonitorRateTextField.getText(),
-//					    		new Boolean(false));
-//				}
-				if(fStudy.getFrapModelParameters() == null)
-				{
-					FRAPStudy.FRAPModelParameters modelParams = new FRAPStudy.FRAPModelParameters(null, pureDiffParameters, null);
-					fStudy.setFrapModelParameters(modelParams);
-				}
-				else //modelParameters is not null
-				{
-					fStudy.getFrapModelParameters().setPureDiffModelParameters(pureDiffParameters);
-				}
+
+
 			}//all textfields are filled in legal forms
 		}
 	}
@@ -1260,20 +1057,10 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 	public String getBleachWhileMonitorRateString() {
 		return bleachWhileMonitorRateTextField.getText();
 	}
-//	public boolean getIsSecondDiffusionApplied()
-//	{
-//		return secondDiffRateCheckBox.isSelected();
-//	}
-//	public void setSecondDiffComponentEnabled(boolean enable)
-//	{
-////		secondDiffRateCheckBox.setVisible(false);
-//		secondDiffusionRateLabel.setVisible(enable);
-//		secondDiffTextField.setVisible(enable);
-//		secondDiffSlider.setVisible(enable);
-//		secondDiffSetButton.setVisible(enable);
-//		secondMobileFractionLabel.setVisible(enable);
-//		secondMobileFracTextField.setVisible(enable);
-//		secondMobileFracSlider.setVisible(enable);
-//		secondMobileFracSetButton.setVisible(enable);
-//	}
+
+
+	public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+	{
+		this.frapWorkspace = frapWorkspace;
+	}
 }

@@ -18,6 +18,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.task.RunSims;
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -40,21 +41,11 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	
 	private FRAPOptData frapOptData;
 
-	public static final String PROPERTY_EST_FROM_PURE_DIFFUSION = "PROPERTY_EST_FROM_PURE_DIFFUSION";
-	public static final String PROPERTY_CHANGE_RUNSIM = "PROPERTY_CHANGE_RUNSIM";
+	public static final String PROPERTY_EST_BINDING_PARAMETERS = "PROPERTY_EST_BINDING_PARAMETERS";
+	public static final String PROPERTY_RUN_BINDING_SIMULATION = "PROPERTY_RUN_BINDING_SIMULATION";
 	public static final String PROPERTY_EST_BS_CONCENTRATION = "PROPERTY_CHANGE_EST_BS_CONCENTRATION";
 	public static final String PROPERTY_EST_ON_RATE = "PROPERTY_EST_ON_RATE";
 	public static final String PROPERTY_EST_OFF_RATE = "PROPERTY_EST_OFF_RATE";
-	
-	public static int INDEX_FREE_DIFF_RATE = 0;
-	public static int INDEX_FREE_FRACTION = 1;
-	public static int INDEX_BLEACH_MONITOR_RATE = 2;
-	public static int INDEX_COMPLEX_DIFF_RATE = 3;
-	public static int INDEX_COMPLEX_FRACTION = 4;
-	public static int INDEX_IMMOBILE_FRACTION = 5;
-	public static int INDEX_BINDING_SITE_CONCENTRATION = 6;
-	public static int INDEX_ON_RATE = 7;
-	public static int INDEX_OFF_RATE = 8;
 	
 	public static String STR_FREE_DIFF_RATE = "Free particle diffusion rate";
 	public static String STR_FREE_FRACTION = "Free particle fraction";
@@ -88,7 +79,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			public void actionPerformed(final ActionEvent e) {
 				if(checkParameters())
 				{
-					firePropertyChange(PROPERTY_CHANGE_RUNSIM, null,null);
+					firePropertyChange(PROPERTY_RUN_BINDING_SIMULATION, null,null);
 				}
 			}
 		});
@@ -96,7 +87,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		runSimbutton.setToolTipText("Create new FRAP simulation using current parameter settings");
 
 		estFromDiffParamButton = new JButton();
-		estFromDiffParamButton.setText("Est. from Pure Diffusion Params");
+		estFromDiffParamButton.setText("Help on Setting Params");
 		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
 		gridBagConstraints_20.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_20.gridwidth = 5;
@@ -105,7 +96,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		add(estFromDiffParamButton, gridBagConstraints_20);
 		estFromDiffParamButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
-				firePropertyChange(PROPERTY_EST_FROM_PURE_DIFFUSION, null, null);				
+				firePropertyChange(PROPERTY_EST_BINDING_PARAMETERS, null, null);				
 			}
 		});
 
@@ -200,7 +191,16 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		freeFractionTextField.setMinimumSize(new Dimension(125, 20));
 		freeFractionTextField.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				updateFractions(true, freeFractionTextField.getText(), complexFractionTextField.getText());
+				try{
+					double freeFraction = Double.parseDouble(freeFractionTextField.getText());
+					double complexFraction = Double.parseDouble(complexFractionTextField.getText());
+					updateFractions(true, freeFraction, complexFraction);
+				}catch(NumberFormatException ex)
+				{
+					immobileValueLabel.setText("");
+					DialogUtils.showErrorDialog(FRAPReactionDiffusionParamPanel.this, "Free particle/complex fraction is empty or in illegal form, please correct it.");
+				}
+				
 			}
 		});
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
@@ -223,7 +223,15 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		complexFractionTextField.setMinimumSize(new Dimension(125, 20));
 		complexFractionTextField.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				updateFractions(false, freeFractionTextField.getText(), complexFractionTextField.getText());
+				try{
+					double freeFraction = Double.parseDouble(freeFractionTextField.getText());
+					double complexFraction = Double.parseDouble(complexFractionTextField.getText());
+					updateFractions(false, freeFraction, complexFraction);
+				}catch(NumberFormatException ex)
+				{
+					immobileValueLabel.setText("");
+					DialogUtils.showErrorDialog(FRAPReactionDiffusionParamPanel.this, "Free particle/complex fraction is empty or in illegal form, please correct it.");
+				}
 			}
 		});
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
@@ -408,117 +416,66 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		
 		initialize();
 		
-//		this.frapOptData = frapOptData;
-
-//		String secondRate = INI_SECOND_DIFF_RATE;
-//		String secondFraction = INI_SECOND_MOBILE_FRAC;
-//		if(frapOptData.getExpFrapStudy().getFrapModelParameters().secondRate != null &&
-//		   frapOptData.getExpFrapStudy().getFrapModelParameters().secondFraction != null)
-//		{
-//			enableSecondDiffComponents();
-//			if(!frapOptData.getExpFrapStudy().getFrapModelParameters().secondRate.equals("") &&
-//			   !frapOptData.getExpFrapStudy().getFrapModelParameters().secondFraction.equals(""))
-//			{
-//				secondRate = frapOptData.getExpFrapStudy().getFrapModelParameters().secondRate;
-//				secondFraction = frapOptData.getExpFrapStudy().getFrapModelParameters().secondFraction;
-//			}
-//		}
-//		else
-//		{
-//			secondDiffRateCheckBox.setSelected(false);
-//			disableSecondDiffComponents();
-//			
-//		}
-//		setParameterValues(
-//				new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().diffusionRate),
-//				new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().mobileFraction),
-//				new Double(secondRate),
-//				new Double(secondFraction),
-//				new Double(frapOptData.getExpFrapStudy().getFrapModelParameters().monitorBleachRate));
-
 	}
-//	private void setParameterValues(Double diffusionRate,Double mobileFraction,Double secondDiffRate,Double secondMobileFrac,Double monitorBleachRate){
-//		freeDiffRateTextField.setText(diffusionRate.doubleValue());
-//		freeMobileFractionTextField.setText((mobileFraction != null
-//				?mobileFraction.doubleValue()
-//				:"1.0"));
-//		complexMobileFractionTextField.setText(secondDiffRate != null? secondDiffRate.doubleValue():INI_SECOND_DIFF_RATE);
-//		assoRateTextField.setText(secondMobileFrac != null? secondMobileFrac.doubleValue():INI_SECOND_MOBILE_FRAC);
-//		bleachWhileMonitorRateTextField.setText((monitorBleachRate != null
-//				?monitorBleachRate.doubleValue()
-//				:"0"));
-//		String immFrac = "";
-//		if(mobileFraction != null)
-//		{
-//			if(secondMobileFrac != null)
-//			{
-//				immFrac = (1 - mobileFraction.doubleValue() - secondMobileFrac.doubleValue())+"";
-//			}
-//			else
-//			{
-//				immFrac = (1 - mobileFraction.doubleValue())+"";
-//			}
-//		}
-//		B_HOLD_FIRE = true;
-//		B_HOLD_FIRE = false;
-//	}
-	private static Parameter[] createParameterArray(double freeDiffRate, double freeFraction, double monitorBleachRate, double complexDifffRate, double complexFraction, double immFraction, double bsConc, double onRate, double offRate)
+
+	private static Parameter[] createParameterArray(double freeDiffRate, double freeFraction, double monitorBleachRate, double complexDifffRate, double complexFraction, double bsConc, double onRate, double offRate)
 	{
 		Parameter[] params = null;
 		
-		Parameter freeDiff =
-			new cbit.vcell.opt.Parameter(STR_FREE_DIFF_RATE,
+		Parameter primaryDiff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE],
 					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
 					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
 					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
 					                     freeDiffRate);
-		Parameter freeFrac =
-			new cbit.vcell.opt.Parameter(STR_FREE_FRACTION,
+		Parameter primaryFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
 					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
 					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
 					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
 					                     freeFraction);
-		Parameter bleachWhileMonitoringRate =
-			new cbit.vcell.opt.Parameter(STR_BLEACH_MONITOR_RATE,
+		Parameter bleachWhileMonitoringRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
 					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
 					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 					                     monitorBleachRate);
-		Parameter complexdiff = new Parameter(STR_COMPLEX_DIFF_RATE, 
+		Parameter secondaryDiff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 
       			                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
 				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
 				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
 				                         complexDifffRate);
-		Parameter complexFrac = new Parameter(STR_COMPLEX_FRACTION,
+		Parameter secondaryFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
 				   						 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
                                          FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
                                          FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
                                          complexFraction);
-		Parameter immFrac = new Parameter(STR_IMMOBILE_FRACTION,
-						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
-						                 immFraction);
-		Parameter bsConcentration = new Parameter(STR_BINDING_SITE_CONCENTRATION,
+		Parameter bsConcentration = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION],
                                          0,
                                          1,
                                          1, 
                                          bsConc);
-		Parameter onReacRate = new Parameter(STR_ON_RATE, 
+		Parameter onReacRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_ON_RATE], 
                                          0,
                                          1e6,
                                          1, 
                                          onRate);
-		Parameter offReacRate = new Parameter(STR_OFF_RATE, 
+		Parameter offReacRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE], 
 						                 0,
 						                 1e6,
 						                 1, 
 						                 offRate);
 
-		params = new Parameter[]{freeDiff, freeFrac,bleachWhileMonitoringRate, complexdiff, complexFrac, immFrac, bsConcentration, onReacRate, offReacRate};
+		params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_BINDING];
+		params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = primaryDiff;
+		params[FRAPModel.INDEX_PRIMARY_FRACTION] = primaryFrac;
+		params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = bleachWhileMonitoringRate;
+		params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secondaryDiff;
+		params[FRAPModel.INDEX_SECONDARY_FRACTION] = secondaryFrac;
+		params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION] = bsConcentration;
+		params[FRAPModel.INDEX_ON_RATE] = onReacRate;
+		params[FRAPModel.INDEX_OFF_RATE] = offReacRate;
 		
 		return params;
 	}
+	
 	public Parameter[] getCurrentParameters(){
 		if(freeDiffRateTextField == null || freeDiffRateTextField.getText().equals("")||
 		   freeFractionTextField == null || freeFractionTextField.getText().equals("")||
@@ -540,7 +497,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			bwmr = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
 			cr = Double.parseDouble(complexDiffRateTextField.getText());
 			cf = Double.parseDouble(complexFractionTextField.getText());
-			imf = Double.parseDouble(immobileValueLabel.getText());
 			bs = Double.parseDouble(bsConcentrationTextField.getText());
 			on = Double.parseDouble(onRateTextField.getText());
 			off = Double.parseDouble(offRateTextField.getText());
@@ -551,7 +507,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		}
 		
 		return
-			createParameterArray(fr, ff, bwmr, cr, cf, imf, bs, on, off);
+			createParameterArray(fr, ff, bwmr, cr, cf, bs, on, off);
 	}
 	
 		
@@ -562,15 +518,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		onRateTextField.setEnabled(true);
 	}
 	
-//	private void disableSecondDiffComponents()
-//	{
-//		bsConcentrationTextField.setText("");
-//		bsConcentrationTextField.setEnabled(false);
-//		onRateTextField.setText("");
-//		onRateTextField.setEnabled(false);
-//		isExecuting = true; //control not to execute the paragraph when sliderBar is not changing.
-//		isExecuting = false; 
-//	}
+
 	public boolean isAllTextFieldEmpty()
 	{
 		if(freeDiffRateTextField != null && !freeDiffRateTextField.getText().equals(""))
@@ -608,104 +556,63 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		return true;
 	}
 
-//	public void setEstimatesFromPureDiffusionParameters(String diffRate, String primaryMFraction, String secondDiffRate, String secondMFraction, String bwmRate)
-//	{
-//		onRateTextField.setText("1e3");
-//		//in the following cases, we assume that the complex is not moving.
-//		if(secondDiffRate==null || secondDiffRate.equals("") || secondDiffRate.equals("0") ||
-//		   secondMFraction==null || secondMFraction.equals("") || secondMFraction.equals("0"))
-//		{
-//			freeDiffRateTextField.setText(diffRate);
-//			freeFractionTextField.setText(primaryMFraction);
-//			complexDiffRateTextField.setText("0");
-//			double primaryFrac = Double.parseDouble(primaryMFraction);
-//			complexFractionTextField.setText(1-primaryFrac);
-//			updateFractions(true, primaryFrac, (1-primaryFrac));
-//			bleachWhileMonitorRateTextField.setText(bwmRate);
-//		}
-//		else //we have complex moving too.
-//		{
-//			freeDiffRateTextField.setText(diffRate);
-//			freeFractionTextField.setText(primaryMFraction);
-//			complexDiffRateTextField.setText(secondDiffRate);
-//			complexFractionTextField.setText(secondMFraction);
-//			double primaryFrac = Double.parseDouble(primaryMFraction);
-//			double secondFrac = Double.parseDouble(secondMFraction);
-//			updateFractions(true, primaryFrac, secondFrac);
-//			bleachWhileMonitorRateTextField.setText(bwmRate);
-//		}
-//	}
-	public void updateFractions(boolean isSetFreeFraction, String freeFractionStr, String complexFractionStr)
+
+	public void updateFractions(boolean isSetFreeFraction, double freeFraction, double complexFraction)
 	{
-		if(freeFractionStr == null || freeFractionStr.length() < 1 ||
-		   complexFractionStr == null || complexFractionStr.length() <1)
+		if(isSetFreeFraction)
 		{
-			immobileValueLabel.setText("");
-		}
-		else
-		{
-			try{
-				double freeFraction = Double.parseDouble(freeFractionStr);
-				double complexFraction = Double.parseDouble(complexFractionStr);
-				if(isSetFreeFraction)
+			if((freeFraction + complexFraction) >= 1)
+			{
+				if(freeFraction < 1)
 				{
-					if((freeFraction+complexFraction)>=1)
-					{
-						if(freeFraction < 1)
-						{
-							complexFractionTextField.setText((1-freeFraction)+"");
-						}
-						else
-						{
-							freeFractionTextField.setText(1+"");
-							complexFractionTextField.setText(0+"");
-						}
-						immobileValueLabel.setText("0");
-					}
-					else
-					{
-						double immobileFrac = 1-freeFraction-complexFraction;
-						if(immobileFrac > (1-FRAPOptimization.epsilon) && immobileFrac < (1+FRAPOptimization.epsilon))
-						{
-							immobileValueLabel.setText("0");
-						}
-						else
-						{
-							immobileValueLabel.setText(immobileFrac+"");
-						}
-					}
+					complexFractionTextField.setText((1-freeFraction)+"");
 				}
 				else
 				{
-					if((complexFraction+freeFraction)>=1)
-					{
-						if(complexFraction < 1)
-						{
-							freeFractionTextField.setText((1-complexFraction)+"");
-						}
-						else
-						{
-							complexFractionTextField.setText(1+"");
-							freeFractionTextField.setText(0+"");
-						}
-						immobileValueLabel.setText("0");
-					}
-					else
-					{
-						double immobileFrac = 1-freeFraction-complexFraction;
-						if(immobileFrac > (1-FRAPOptimization.epsilon) && immobileFrac < (1+FRAPOptimization.epsilon))
-						{
-							immobileValueLabel.setText("0");
-						}
-						else
-						{
-							immobileValueLabel.setText(immobileFrac+"");
-						}
-					}
+					freeFractionTextField.setText(1+"");
+					complexFractionTextField.setText(0+"");
 				}
-			}catch(NumberFormatException e)
+				immobileValueLabel.setText("0");
+			}
+			else
 			{
-				DialogUtils.showErrorDialog(this, "Free particle/complex fraction is empty or in illegal form, please correct it.");
+				double immobileFrac = 1 - freeFraction - complexFraction;
+				if(immobileFrac > (1-FRAPOptimization.epsilon) && immobileFrac < (1+FRAPOptimization.epsilon))
+				{
+					immobileValueLabel.setText("0");
+				}
+				else
+				{
+					immobileValueLabel.setText(immobileFrac+"");
+				}
+			}
+		}
+		else
+		{
+			if((complexFraction + freeFraction) >= 1)
+			{
+				if(complexFraction < 1)
+				{
+					freeFractionTextField.setText((1-complexFraction)+"");
+				}
+				else
+				{
+					complexFractionTextField.setText(1+"");
+					freeFractionTextField.setText(0+"");
+				}
+				immobileValueLabel.setText("0");
+			}
+			else
+			{
+				double immobileFrac = 1 - freeFraction - complexFraction;
+				if(immobileFrac > (1-FRAPOptimization.epsilon) && immobileFrac < (1+FRAPOptimization.epsilon))
+				{
+					immobileValueLabel.setText("0");
+				}
+				else
+				{
+					immobileValueLabel.setText(immobileFrac+"");
+				}
 			}
 		}
 	}
@@ -1002,15 +909,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 										bsConcentrationTextField.getText(),
 										onRateTextField.getText(),
 										offRateTextField.getText());
-				if(fStudy.getFrapModelParameters() == null)
-				{
-					FRAPStudy.FRAPModelParameters modelParams = new FRAPStudy.FRAPModelParameters(null, null, reacDiffParameters);
-					fStudy.setFrapModelParameters(modelParams);
-				}
-				else //modelParameters is not null
-				{
-					fStudy.getFrapModelParameters().setReacDiffModelParameters(reacDiffParameters);
-				}
+
 			}//all text fields are filled and are valid
 		}
 	}
@@ -1021,29 +920,29 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		Parameter[] params = getCurrentParameters();
 		if(params != null)
 		{
-			des = des + "Free Particle Diffusion Rate: " +params[FRAPReactionDiffusionParamPanel.INDEX_FREE_DIFF_RATE].getInitialGuess() + ", Free Particle Fraction: " + params[FRAPReactionDiffusionParamPanel.INDEX_FREE_FRACTION].getInitialGuess() +"\n";
-			des = des + "Complex Diffusion Rate: " +params[FRAPReactionDiffusionParamPanel.INDEX_COMPLEX_DIFF_RATE].getInitialGuess() + ", Complex Fraction: " + params[FRAPReactionDiffusionParamPanel.INDEX_COMPLEX_FRACTION].getInitialGuess() +"\n";
-			des = des + "Bleach While Monitoring Rate: " +params[FRAPReactionDiffusionParamPanel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + ", Binding site concentration: " + params[FRAPReactionDiffusionParamPanel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() +"\n";
-			des = des + "Reaction On Rate: " +params[FRAPReactionDiffusionParamPanel.INDEX_ON_RATE].getInitialGuess() + ", Reaction Off Rate: " + params[FRAPReactionDiffusionParamPanel.INDEX_OFF_RATE].getInitialGuess() +".";
+			des = des + "Primary Diffusion Rate: " +params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + ", Primary Fraction: " + params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() +"\n";
+			des = des + "Complex Diffusion Rate: " +params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + ", Complex Fraction: " + params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() +"\n";
+			des = des + "Bleach While Monitoring Rate: " +params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + ", Binding site concentration: " + params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() +"\n";
+			des = des + "Reaction On Rate: " +params[FRAPModel.INDEX_ON_RATE].getInitialGuess() + ", Reaction Off Rate: " + params[FRAPModel.INDEX_OFF_RATE].getInitialGuess() +".";
 		}
 		return des;
 	}
 	
-	public void updateSavedParameters(FRAPStudy.ReactionDiffusionModelParameters savedReacDiffParameters)
+	public void setParameters(Parameter[] displayParameters)
 	{
-		if(savedReacDiffParameters != null)
+		if(displayParameters != null)
 		{
-			freeDiffRateTextField.setText(savedReacDiffParameters.freeDiffusionRate == null?"":savedReacDiffParameters.freeDiffusionRate);
-			freeFractionTextField.setText(savedReacDiffParameters.freeMobileFraction == null?"":savedReacDiffParameters.freeMobileFraction);
-			bleachWhileMonitorRateTextField.setText(savedReacDiffParameters.monitorBleachRate == null?"":savedReacDiffParameters.monitorBleachRate);
+			freeDiffRateTextField.setText(displayParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + "");
+			freeFractionTextField.setText(displayParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() + "");
+			bleachWhileMonitorRateTextField.setText(displayParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
 			
-			complexDiffRateTextField.setText(savedReacDiffParameters.complexDiffusionRate == null?"":savedReacDiffParameters.complexDiffusionRate);
-			complexFractionTextField.setText(savedReacDiffParameters.complexMobileFraction == null?"":savedReacDiffParameters.complexMobileFraction);
+			complexDiffRateTextField.setText(displayParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + "");
+			complexFractionTextField.setText(displayParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() + "");
 			
-			bsConcentrationTextField.setText(savedReacDiffParameters.bsConcentration == null?"":savedReacDiffParameters.bsConcentration);
-			onRateTextField.setText(savedReacDiffParameters.reacOnRate == null?"":savedReacDiffParameters.reacOnRate);
-			offRateTextField.setText(savedReacDiffParameters.reacOffRate == null?"":savedReacDiffParameters.reacOffRate);
-			updateFractions(true, savedReacDiffParameters.freeMobileFraction, savedReacDiffParameters.complexMobileFraction);
+			bsConcentrationTextField.setText(displayParameters[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() + "");
+			onRateTextField.setText(displayParameters[FRAPModel.INDEX_ON_RATE].getInitialGuess() + "");
+			offRateTextField.setText(displayParameters[FRAPModel.INDEX_OFF_RATE].getInitialGuess() + "");
+			updateFractions(true, displayParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess(), displayParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess());
 		}
 		else
 		{
@@ -1144,12 +1043,5 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 				?null:offRateTextField.getText());
 	}
 	
-	public void setButtonsEnabled(boolean enable)
-	{
-		runSimbutton.setVisible(enable);
-		estFromDiffParamButton.setVisible(enable);
-		estBSButton.setVisible(enable);
-		estOnRateButton.setVisible(enable);
-		estOffRateButton.setVisible(enable);
-	}
+
 }

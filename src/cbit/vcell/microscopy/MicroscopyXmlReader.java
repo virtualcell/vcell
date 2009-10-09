@@ -418,9 +418,7 @@ public FRAPStudy getFrapStudy(Element param,DataSetControllerImpl.ProgressListen
 		frapStudy.setFrapData(getFrapData(frapDataElement,progressListener));
 	}
 	Element frapModelParametersElement = param.getChild(MicroscopyXMLTags.FRAPModelParametersTag);
-	if (frapModelParametersElement!=null){
-		frapStudy.setFrapModelParameters(getFRAPModelParameters(frapModelParametersElement));
-	}
+
 	Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
 	if (timeSeriesExternalDataElement!=null){
 		frapStudy.setFrapDataExternalDataInfo(getExternalDataInfo(timeSeriesExternalDataElement));

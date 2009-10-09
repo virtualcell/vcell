@@ -4,14 +4,28 @@ import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
 
+import cbit.vcell.microscopy.FRAPWorkspace;
+
 public class MSEPanel extends BoxPanel
 {
 	private MSETablePanel mseTablePanel;
+	private FRAPWorkspace frapWorkspace = null;
 	public MSEPanel() {
 		super("Mean Square Error among Available Models under Selected ROIs");
 			mseTablePanel = new MSETablePanel(this);
 	        contentPane.setLayout(/*new BorderLayout()*/new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 	        contentPane.add(mseTablePanel/*, BorderLayout.CENTER*/);
+	}
+	
+	public FRAPWorkspace getFrapWorkspace()
+    {
+    	return frapWorkspace;
+    }
+    
+    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+	{
+		this.frapWorkspace = frapWorkspace;
+		mseTablePanel.setFrapWorkspace(frapWorkspace);
 	}
 	
 	public static void main(java.lang.String[] args) {

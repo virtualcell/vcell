@@ -524,7 +524,7 @@ public class FRAPEstimationPanel extends JPanel {
 			}
 			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 			frapDataAnalysisResults =
-				FRAPDataAnalysis.fitRecovery2(frapData,
+				FRAPDataAnalysis.fitRecovery(frapData,
 					FrapDataAnalysisResults.getBleachTypeFromBleachTypeName(bleachEstimationComboBox.getSelectedItem().toString()));
 			FRAPParameterEstimateEnum.START_TIME_RECOVERY.value = frapDataTimeStamps[frapDataAnalysisResults.getStartingIndexForRecovery()];
 			bleachEstimationComboBox.setEnabled(true);

@@ -66,7 +66,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	
 	ROI[] allROIs = null;
 	Color[] allROIColors = null;
-	String[] selectedROIs = null;
+	boolean[] selectedROIs = null;
 	
 	
 	public ChooseModel_RoiForErrorPanel() {
@@ -288,8 +288,9 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	
 	public ROI[] getAllROIs()
 	{
-		if(allROIs == null)
-		{
+//		if(allROIs == null)
+//		{ 
+			//have to keep refreshing ROIs from new frapData
 			allROIs = new ROI[NUM_SELECTED_ROIS];
 			FRAPData frapData = frapWorkspace.getFrapStudy().getFrapData();
 			allROIs[IDX_ROI_BLEACHED] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
@@ -301,7 +302,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 			allROIs[IDX_ROI_BLEACHED_RING6] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name());
 			allROIs[IDX_ROI_BLEACHED_RING7] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name());
 			allROIs[IDX_ROI_BLEACHED_RING8] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name());
-		}
+//		}
 		return allROIs;
 	}
 	
@@ -389,14 +390,28 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		}
 		
 		//save selected ROI names
-		selectedROIs = new String[tempSelectedROIs.size()];
-		selectedROIs = tempSelectedROIs.toArray(selectedROIs);
+		refreshSelectedROIs(tempSelectedROIs);
 		//show ROI image
 		ROI[] plottedROIArray = new ROI[plottedROIs.size()];
 		plottedROIArray = plottedROIs.toArray(plottedROIArray);
 		Color[] plottedColorArray = new Color[plottedColors.size()];
 		plottedColorArray = plottedColors.toArray(plottedColorArray);
 		roiImagePanel.refreshROIImage(plottedROIArray, plottedColorArray, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()), Color.white);
+	}
+	
+	private void refreshSelectedROIs(ArrayList<String> arg_selectedROIs)
+	{
+		selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		{
+			for(int j=0; j<arg_selectedROIs.size(); j++)
+			{
+				if(FRAPData.VFRAP_ROI_ENUM.values()[i].name().equals(arg_selectedROIs.get(j)))
+				{
+					selectedROIs[i] = true;
+				}
+			}
+		}
 	}
 	
 	public void refreshCheckboxes()
@@ -475,7 +490,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		return new ImageIcon(colorSpot);
 	}
 	
-	public String[] getSelectedROIs()
+	public boolean[] getSelectedROIs()
 	{
 		return selectedROIs;
 	}

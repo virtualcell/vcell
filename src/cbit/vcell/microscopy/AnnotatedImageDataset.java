@@ -217,7 +217,6 @@ public abstract class AnnotatedImageDataset {
 			}
 		}
 		rois.add(roi);
-		ROI[] newROIs = getRois();
 		if(isCurrentlyDisplayed){
 			setCurrentlyDisplayedROI(roi);
 		}
@@ -265,14 +264,34 @@ public abstract class AnnotatedImageDataset {
 	}
 
 	/**
-	 * Insert the method's description here.
-	 * Creation date: (1/24/2007 4:40:44 PM)
-	 * @return java.lang.Float
+	 * This method returns a ROI array of rois.
+	 * Please note use arraylist.toArray will mix the roi order. 
+	 * Therefore, we loop through rois to put rois according to FRAPData.VFRAP_ROI_ENUM
+	 * Use getROILength method if simply need the length of rois.
+	 * Create a local variable if need to use getRois() multiple times.
+	 * Above comments writen in Oct, 2009 
 	 */
 	public ROI[] getRois() {
-		return rois.toArray(new ROI[rois.size()]);
+		
+		ROI[] resultROIs = new ROI[rois.size()];
+		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		{
+			for(int j=0; j<rois.size(); j++)
+			{
+				if(FRAPData.VFRAP_ROI_ENUM.values()[i].name().equals(rois.get(j).getROIName()))
+				{
+					resultROIs[i] = rois.get(j);
+					break;
+				}
+			}
+		}
+		return resultROIs;
 	}
 
+	public int getROILength()
+	{
+		return rois.size();
+	}
 	/**
 	 * Method getCurrentlyDisplayedROI.
 	 * @return ROI
