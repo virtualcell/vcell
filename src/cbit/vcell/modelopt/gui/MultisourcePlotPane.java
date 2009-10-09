@@ -521,4 +521,17 @@ public void setModelDataLabelPrefix(String modelDataLabelPrefix) {
 public void forceXYRange(Range xRange,Range yRange) {
 	getplotPane().forceXYRange(xRange, yRange);
 }
+
+public void setStepViewVisible(boolean bVisible)
+{
+	if(!bVisible)
+	{
+		getplotPane().setStepViewVisible(false, false);
+	}
+	else
+	{
+		getplotPane().setStepViewVisible(true, false);
+	}
+}
+
 }

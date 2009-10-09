@@ -1330,7 +1330,7 @@ private void updateLegend() {
 	}
 }
 
-public void selectStepView(boolean bStoch, boolean bMultiTrialData) {
+public void setStepViewVisible(boolean bStoch, boolean bMultiTrialData) {
 	getPlot2DPanel1().setIsHistogram(bMultiTrialData);
 	getPlot2DPanel1().updateAutoRanges();
 	

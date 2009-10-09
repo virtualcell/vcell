@@ -203,7 +203,7 @@ public class PdeTimePlotPanel extends JPanel {
 		Plot2D plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
 				new String[] {null, "t", ""});				
 		plotPane.setPlot2D(plot2D);
-		plotPane.selectStepView(false, false);
+		plotPane.setStepViewVisible(false, false);
 		
 		DefaultListModel dlm = new DefaultListModel();
 		DataIdentifier[] dis = pdeDataContext.getDataIdentifiers();

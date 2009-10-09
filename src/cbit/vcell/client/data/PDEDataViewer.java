@@ -2267,7 +2267,7 @@ private void showSpatialPlot() {
 					if (getSimulationModelInfo()!=null){
 						title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
 					}
-					plotPane.selectStepView(false, false);
+					plotPane.setStepViewVisible(false, false);
 					showComponentInFrame(plotPane, title);
 				}
 			}
