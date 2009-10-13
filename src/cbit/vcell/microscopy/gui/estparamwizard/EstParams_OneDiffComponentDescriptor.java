@@ -53,7 +53,7 @@ public class EstParams_OneDiffComponentDescriptor extends WizardPanelDescriptor
 				Parameter[] params = ((EstParams_OneDiffComponentPanel)getPanelComponent()).getCurrentParameters();
 				FRAPModel  frapModel = getFrapWorkspace().getFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT);
 				frapModel.setModelParameters(params);
-				frapModel.setResult(((EstParams_OneDiffComponentPanel)getPanelComponent()).getCurrentEstimationResults());
+				frapModel.setData(((EstParams_OneDiffComponentPanel)getPanelComponent()).getCurrentEstimationResults());
 			}
 		};
 		

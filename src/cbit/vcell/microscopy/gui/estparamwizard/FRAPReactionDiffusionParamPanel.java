@@ -101,7 +101,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		});
 
 		final JLabel inputBindingSiteLabel = new JLabel();
-		inputBindingSiteLabel.setText("(Free BS concentration as a ratio of total fluor.)");
+		inputBindingSiteLabel.setText("(Free BS concentration(uM) as a ratio of total fluor.)");
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.ipady = 5;
 		gridBagConstraints_10.anchor = GridBagConstraints.WEST;

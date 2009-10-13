@@ -4,6 +4,7 @@ import javax.swing.JLabel;
 import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 
@@ -61,7 +62,7 @@ public class MSETableModel extends AbstractTableModel {
     	else
     	{
     		//in mseSummaryData there is not model name col, therefore we use col-1 here.
-    		if(mseSummaryData[row][col-1] != -1)
+    		if(mseSummaryData[row][col-1] != FRAPOptimization.largeNumber)
     		{
     			return mseSummaryData[row][col-1];
     		}

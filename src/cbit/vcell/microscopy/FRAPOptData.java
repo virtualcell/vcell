@@ -192,15 +192,7 @@ public class FRAPOptData {
 	
 	public double[][] getDimensionReducedExpData() throws Exception
 	{
-		if(dimensionReducedExpData == null){
-			//normalize the experimental data, because the reference data is normalized
-//			VCDataManager vcManager = getLocalWorkspace().getVCDataManager();
-//			double[] prebleachAvg = vcManager.getSimDataBlock(getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
-			int startRecoveryIndex = getExpFrapStudy().getStartingIndexForRecovery();
-			double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(getExpFrapStudy().getFrapData(), startRecoveryIndex);
-			dimensionReducedExpData = FRAPOptimization.dataReduction(getExpFrapStudy().getFrapData(),startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(), prebleachAvg);
-		}
-		return dimensionReducedExpData;
+		return expFrapStudy.getDimensionReducedExpData();
 	}
 	
 	public double[] getReducedExpTimePoints() {

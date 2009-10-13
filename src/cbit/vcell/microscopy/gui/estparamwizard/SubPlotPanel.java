@@ -21,6 +21,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
 public class SubPlotPanel extends JPanel
@@ -125,6 +126,12 @@ public class SubPlotPanel extends JPanel
         parent.repaint();
     }
 
+    public void setPlotData(DataSource[] argDataSources)
+    {
+    	plotPane.setDataSources(argDataSources);
+    	plotPane.selectAll();
+    }
+    
     public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;

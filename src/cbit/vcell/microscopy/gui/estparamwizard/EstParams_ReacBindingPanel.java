@@ -751,6 +751,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					VCSimulationDataIdentifier vcSimDataID =
 						new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
 					double[] rawSimTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
+					//to store time points in frap model (simulation time points may be slightly different with exp time points)
 					setCurrentRawSimTimePoints(rawSimTimePoints);
 			//		refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
 	//				System.out.println("simulation done...");
@@ -773,6 +774,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					double[][] results =
 						FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,rawSimTimePoints,
 								startRecoveryIndex, fStudy.getFrapData().getRois(),this.getClientTaskStatusSupport(), false);
+					//to store data in frap model.
 					setCurrentSimResults(results);
 					System.out.println("generating dimension reduced ref data, done ....");
 					

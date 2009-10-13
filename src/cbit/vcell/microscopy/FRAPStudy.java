@@ -108,10 +108,13 @@ public class FRAPStudy implements Matchable{
 	private boolean[] selectedROIsForErrCalculation = null; 
 	
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-	private transient FRAPOptData frapOptData = null;//temporary data structure for reference data used in optimization
+	//temporary data structure for reference data used in optimization
+	private transient FRAPOptData frapOptData = null;
 	//temporary data structure to store MSE for different models under different ROIs. (may not be all the models with all ROIs)
-	//first dimentsion: 3 models, second dimension: bleahed + 8 Rings + sum of MSE, any element that is not applicable should fill with -1.
+	//first dimentsion: 3 models, second dimension: bleahed + 8 Rings + sum of MSE, any element that is not applicable should fill with 1e8.
 	private transient double[][] analysisMSESummaryData = null; 
+	//temporary data structure to store dimension reduced experimental data (all ROIs)
+	private transient double[][] dimensionReducedExpData = null;
 	
 	public static class InitialModelParameters 
 	{
@@ -1430,47 +1433,48 @@ public class FRAPStudy implements Matchable{
 	public void setAnalysisMSESummaryData(double[][] analysisMSESummaryData) {
 		this.analysisMSESummaryData = analysisMSESummaryData;
 	}
+	
+	//returns the dimension reduced exp data. If it is null, create one.
+	public double[][] getDimensionReducedExpData() {
+		if(dimensionReducedExpData == null)
+		{
+			int startRecoveryIndex = getStartingIndexForRecovery();
+			double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(getFrapData(), startRecoveryIndex);
+			dimensionReducedExpData = FRAPOptimization.dataReduction(getFrapData(),startRecoveryIndex, getFrapData().getRois(), prebleachAvg);
+		}
+		return dimensionReducedExpData;
+	}
 
+	public void setDimensionReducedExpData(double[][] dimensionReducedExpData) {
+		this.dimensionReducedExpData = dimensionReducedExpData;
+	}
+	
 	public void createAnalysisMSESummaryData()
 	{
 		double[][] sumData = new double[FRAPModel.NUM_MODEL_TYPES][getFrapData().getROILength()-2+1];
 		
 		//get dimension reduced exp data
-		double[][] expData = null;
-		if(getFrapOptData() != null)//try to get from frapOptData
-		{
-			try {
-				expData = getFrapOptData().getDimensionReducedExpData();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		if(expData == null)//if can not get from frapOptData, have to create here.
-		{
-			int startRecoveryIndex = getStartingIndexForRecovery();
-			double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(getFrapData(), startRecoveryIndex);
-			expData = FRAPOptimization.dataReduction(getFrapData(),startRecoveryIndex, getFrapData().getRois(), prebleachAvg);
-		}
+		double[][] expData = getDimensionReducedExpData();
 		//calculate summary data
 		for(int i=0; i < FRAPModel.NUM_MODEL_TYPES; i++)
 		{
-			//fill all elements with -1 first
-			Arrays.fill(sumData[i], -1);
+			//fill all elements with 1e8 first
+			Arrays.fill(sumData[i], FRAPOptimization.largeNumber);
 			
-			if(getFrapModel(i) != null && getFrapModel(i).getResult() != null)
+			if(getFrapModel(i) != null && getFrapModel(i).getData() != null)
 			{
-				sumData[i]=calculateMSEForEachModel(expData, getFrapModel(i).getResult());
+				sumData[i]=calculateMSEForEachModel(expData, getFrapModel(i).getData());
 			}
 		}
 		setAnalysisMSESummaryData(sumData);
 	}
 	
+	//called by createAnalysisMSESummaryData, calculate MSE for one frap model
 	private double[] calculateMSEForEachModel(double[][] expData, double[][] simData)
 	{
 		double[] result = new double[getFrapData().getROILength()-2+1];//len: all ROIS except cellROI and bkgroundROI, plus a sum of error field
-		//fill all elements with -1 first
-		Arrays.fill(result, -1);
+		//fill all elements with 1e8 first
+		Arrays.fill(result, FRAPOptimization.largeNumber);
 		
 		boolean[] selectedROIS = getSelectedROIsForErrorCalculation();
 		double sumError = 0;
@@ -1506,6 +1510,7 @@ public class FRAPStudy implements Matchable{
 		return result;
 	}
 	
+	//called by calculateMSEForEachModel, calculate MSE for each model under certain ROI
 	private double calculateMSEForEachROI(double[] expData, double[] simData)
 	{
 		int len = Math.min(expData.length, simData.length);

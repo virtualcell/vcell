@@ -214,17 +214,17 @@ public class SpatialAnalysisResults{
 	}
 	public ReferenceData createReferenceData(double[] frapDataTimeStamps,int startTimeIndex,String description, boolean[] selectedROIs){
 		
-		int numROITypes = 0;
+		int numSelectedROITypes = 0;
 		for(int i=0; i<selectedROIs.length; i++)
 		{
 			if(selectedROIs[i])
 			{
-				numROITypes ++;
+				numSelectedROITypes ++;
 			}
 		}
-		String[] expRefDataLabels = new String[numROITypes+1];
-		double[] expRefDataWeights = new double[numROITypes+1];
-		double[][] expRefDataColumns = new double[numROITypes+1][];//store exp data, first column t, then columns for data according to selected ROItype
+		String[] expRefDataLabels = new String[numSelectedROITypes+1];
+		double[] expRefDataWeights = new double[numSelectedROITypes+1];
+		double[][] expRefDataColumns = new double[numSelectedROITypes+1][];//store exp data, first column t, then columns for data according to selected ROItype
 		expRefDataLabels[0] = "t";
 		expRefDataWeights[0] = 1.0;
 		double[] truncatedTimes = new double[frapDataTimeStamps.length-startTimeIndex];
