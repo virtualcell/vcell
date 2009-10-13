@@ -70,7 +70,8 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 				Parameter[] params = ((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentParameters();
 				FRAPModel  frapModel = getFrapWorkspace().getFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_BINDING);
 				frapModel.setModelParameters(params);
-				frapModel.setResult(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentSimResults());
+				frapModel.setData(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentSimResults());
+				frapModel.setTimepoints(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentRawSimTimePoints());
 			}
 		};
 		

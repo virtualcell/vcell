@@ -79,6 +79,7 @@ import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
+import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -191,7 +192,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private Wizard defineROIWizard = null;
 	private Wizard modelTypeWizard = null;
 	private Wizard estimateParamWizard = null;
+	//some wizard panels that need to be declare here.
 	private DefineROI_Panel imgPanel = null;
+	private EstParams_OneDiffComponentDescriptor diffOneDescriptor = null;
+	private EstParams_TwoDiffComponentDescriptor diffTwoDescriptor = null;
+	private EstParams_ReacBindingDescriptor bindingDescriptor = null;
+	private EstParams_CompareResultsDescriptor compareResultsDescriptor = null;
 	
 	public class WorkFlowButtonHandler implements ActionListener
 	{
@@ -2592,128 +2598,122 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		else
 		{
-//			if(estimateParamWizard == null) //if model types have been changed since last time, the wizard should be regenerated using propertyChange, commented for testing
-//			{
+			if(estimateParamWizard == null) 
+			{
 				estimateParamWizard = new Wizard(JOptionPane.getFrameForComponent(this));
 				estimateParamWizard.getDialog().setTitle("Estimate Parameters");
-				EstParams_OneDiffComponentDescriptor diffOneDescriptor = new EstParams_OneDiffComponentDescriptor();
+				//initialize the wizard panels
+				diffOneDescriptor = new EstParams_OneDiffComponentDescriptor();
 				diffOneDescriptor.setFrapWorkspace(getFrapWorkspace());
-				EstParams_TwoDiffComponentDescriptor diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
+				diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
 				diffTwoDescriptor.setFrapWorkspace(getFrapWorkspace());
-//				EstParams_ReacBindingInputDescriptor bindingInputDescriptor = new EstParams_ReacBindingInputDescriptor();
-//				bindingInputDescriptor.setFrapWorkspace(getFrapWorkspace());
-				EstParams_ReacBindingDescriptor bindingDescriptor = new EstParams_ReacBindingDescriptor();
+				
+				bindingDescriptor = new EstParams_ReacBindingDescriptor();
 				bindingDescriptor.setFrapWorkspace(getFrapWorkspace());
 				bindingDescriptor.setLocalWorkspace(getLocalWorkspace());
-				EstParams_CompareResultsDescriptor compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
+				compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
 				compareResultsDescriptor.setFrapWorkspace(getFrapWorkspace());
-				//Dynamicly link the wizard pages according to the selected models.
-				if(fStudy.getSelectedModels().size() == 1)
+			}
+				
+			//Dynamicly link the wizard pages according to the selected models.
+			estimateParamWizard.clearAllPanels(); //clear all first
+			if(fStudy.getSelectedModels().size() == 1)
+			{
+				if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
 				{
-					if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
-					{
-				        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
-				        diffOneDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-				        diffOneDescriptor.setBackPanelDescriptorID(null);
-				        
-				        //the last one should always be the compare page	        
-				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-					}
-					else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
-					{
-				        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
-				        diffTwoDescriptor.setBackPanelDescriptorID(null);
-				        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-				        
-				        //the last one should always be the compare page	        
-				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-					}
-					else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-					{
-//				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
-//				        bindingInputDescriptor.setBackPanelDescriptorID(null);
-				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-				        bindingDescriptor.setBackPanelDescriptorID(null);
-				        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-				       
-				        //the last one should always be the compare page	        
-				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-					}
+			        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+			        diffOneDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+			        diffOneDescriptor.setBackPanelDescriptorID(null);
+			        
+			        //the last one should always be the compare page	        
+			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
 				}
-				else if(fStudy.getSelectedModels().size() == 2)
+				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
 				{
-					if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
-					   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
-					{
-				        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
-				        diffOneDescriptor.setBackPanelDescriptorID(null);
-				        diffOneDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-				        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
-				        diffTwoDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-				        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-				        
-      			        //the last one should always be the compare page	        
-				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-					}
-					else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
-							fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-					{
-				        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
-				        diffOneDescriptor.setBackPanelDescriptorID(null);
-				        diffOneDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-//				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
-//				        bindingInputDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-				        bindingDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-				        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-				        
-				        //the last one should always be the compare page	        
-				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-					}
-					else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
-							fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-					{
-				        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
-				        diffTwoDescriptor.setBackPanelDescriptorID(null);
-				        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-//				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
-//				        bindingInputDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-				        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-				        bindingDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-				        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-				       
-				        //the last one should always be the compare page	        
-				        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-				        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-					}
+			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
+			        diffTwoDescriptor.setBackPanelDescriptorID(null);
+			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+			        
+			        //the last one should always be the compare page	        
+			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
 				}
-				else if(fStudy.getSelectedModels().size() == 3)
+				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+				{
+			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
+			        bindingDescriptor.setBackPanelDescriptorID(null);
+			        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+			       
+			        //the last one should always be the compare page	        
+			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+				}
+			}
+			else if(fStudy.getSelectedModels().size() == 2)
+			{
+				if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
+				   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
 				{
 			        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
 			        diffOneDescriptor.setBackPanelDescriptorID(null);
 			        diffOneDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-			        
 			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
 			        diffTwoDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
 			        
-//			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingInputDescriptor.IDENTIFIER, bindingInputDescriptor);
-//			        bindingInputDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-			        
+  			        //the last one should always be the compare page	        
+			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+				}
+				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
+						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+				{
+			        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+			        diffOneDescriptor.setBackPanelDescriptorID(null);
+			        diffOneDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
 			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-			        bindingDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+			        bindingDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
 			        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
 			        
 			        //the last one should always be the compare page	        
 			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
 			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
 				}
-//			}
+				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
+						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+				{
+			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
+			        diffTwoDescriptor.setBackPanelDescriptorID(null);
+			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
+			        bindingDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+			        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+			       
+			        //the last one should always be the compare page	        
+			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+				}
+			}
+			else if(fStudy.getSelectedModels().size() == 3)
+			{
+		        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+		        diffOneDescriptor.setBackPanelDescriptorID(null);
+		        diffOneDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+		        
+		        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
+		        diffTwoDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+		        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+		        
+		        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
+		        bindingDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+		        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+		        
+		        //the last one should always be the compare page	        
+		        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+		        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+			}
+			
 			//each time when load the wizard, it should start from the first possible page.
 			if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
 			{

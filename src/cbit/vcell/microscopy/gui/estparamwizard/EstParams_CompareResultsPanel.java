@@ -6,6 +6,7 @@ import javax.swing.*;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.modelopt.gui.DataSource;
 
 import java.awt.*;
 import java.awt.List;
@@ -85,6 +86,11 @@ public class EstParams_CompareResultsPanel extends JPanel {
     		msePanel = new MSEPanel();
     	}
     	return msePanel;
+    }
+    
+    public void setPlotData(DataSource[] argDataSources)
+    {
+		sumPlotPanel.setPlotData(argDataSources);
     }
     
     public FRAPWorkspace getFrapWorkspace()

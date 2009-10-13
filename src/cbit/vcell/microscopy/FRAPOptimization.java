@@ -11,16 +11,20 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
 public class FRAPOptimization {
 	
 	static double FTOL = 1.0e-6;
 	public static double epsilon = 1e-8;
 	static double penalty = 1E4;
+	public static double largeNumber = 1E8; 
 		
 	//This function generates average intensity under different ROIs according to each time points for EXPERIMENTAL data.
 	//the results returns double[roi length][time points with prebleach removed]. 
@@ -452,6 +456,94 @@ public class FRAPOptimization {
     		   																	   bwmRate.getScale(),
     		   																	   newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX]);
  		return result;
+	}
+	//for exp data mainly, can be used for sim and opt data as well
+	public static SimpleReferenceData doubleArrayToSimpleRefData(double[][] origData, double[] timePoints, int startingIndex, boolean[] selectedROIs) /*throws Exception*/
+	{
+		if(origData != null && timePoints != null && selectedROIs != null)
+		{
+			int numSelectedROITypes = 0;
+			for(int i=0; i<selectedROIs.length; i++)
+			{
+				if(selectedROIs[i])
+				{
+					numSelectedROITypes ++;
+				}
+			}
+			
+			String[] columnNames = new String[numSelectedROITypes+1];
+			double[] weights = new double[numSelectedROITypes+1];
+			double[][] data = new double[numSelectedROITypes+1][];
+			//set time
+			columnNames[0] = "t";
+			weights[0] = 1.0;
+			double[] truncatedTimes = new double[timePoints.length-startingIndex];
+			System.arraycopy(timePoints, startingIndex, truncatedTimes, 0, truncatedTimes.length);
+			data[0] = truncatedTimes;
+			//set data
+			int colCounter =  0;//already take "t" colume into account, "t" column is at the column index 0.
+			for (int j = 0; j < FRAPData.VFRAP_ROI_ENUM.values().length; j++) {
+				if(!selectedROIs[j])//skip unselected ROIs
+				{
+					continue;
+				}
+				colCounter ++; 
+				columnNames[colCounter] = FRAPData.VFRAP_ROI_ENUM.values()[j].name();
+				weights[colCounter] = 1.0;
+//				double[] allTimesData = origData[j];
+//				double[] truncatedTimesData = new double[truncatedTimes.length];
+//				System.arraycopy(allTimesData, startingIndex, truncatedTimesData, 0, truncatedTimes.length);
+				data[colCounter] = origData[j]; //original data has been truncated from dimension reduced exp data function.
+			}
+			return new SimpleReferenceData(columnNames, weights, data);
+			
+		}
+		return null;
+	}
+	
+	//used by opt or sim data, no truncation of time/data. @param startingIndex is used to shift opt/sim times to compare with exp times
+	public static ODESolverResultSet doubleArrayToSolverResultSet(double[][] origData, double[] timePoints, double timePointOffset, boolean[] selectedROIs) /*throws Exception*/
+	{
+		if(origData != null && timePoints != null && selectedROIs != null)
+		{
+			int numSelectedROITypes = 0;
+			for(int i=0; i<selectedROIs.length; i++)
+			{
+				if(selectedROIs[i])
+				{
+					numSelectedROITypes ++;
+				}
+			}
+			
+			ODESolverResultSet newOdeSolverResultSet = new ODESolverResultSet();
+			newOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
+			for (int j = 0; j < selectedROIs.length; j++) {
+				if(!selectedROIs[j]){continue;}
+				String currentROIName = FRAPData.VFRAP_ROI_ENUM.values()[j].name();
+				String name = currentROIName;
+				newOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
+			}
+			
+			//set time
+			for (int j = 0; j < timePoints.length; j++) {
+				double[] row = new double[numSelectedROITypes+1];
+				row[0] = timePoints[j] + timePointOffset;
+				newOdeSolverResultSet.addRow(row);
+			}
+			//set data
+			int columncounter = 0;
+			for (int j = 0; j < selectedROIs.length; j++) {
+				if(!selectedROIs[j]){continue;}
+					double[] values = origData[j];
+					for (int k = 0; k < values.length; k++) {
+						newOdeSolverResultSet.setValue(k, columncounter+1, values[k]);
+					}
+				columncounter++;
+			}
+			
+			return newOdeSolverResultSet;
+		}
+		return null;
 	}
 	
 }

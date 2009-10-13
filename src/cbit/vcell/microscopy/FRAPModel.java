@@ -3,6 +3,7 @@ package cbit.vcell.microscopy;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitDefinition;
 
 public class FRAPModel 
 {
@@ -24,7 +25,16 @@ public class FRAPModel
 																"Binding_site_concentration",
 																"Reaction_on_rate",
 																"Reaction_off_rate"};
-	
+	//intended to use VCUnitDefinition, however couldn't find units for BWMR(intensity/s), and units for fractions (no unit)
+	//have to use String at the time being.
+	public static VCUnitDefinition[] MODEL_PARAMETER_UNITS = new VCUnitDefinition[]{VCUnitDefinition.UNIT_um2_per_s,
+																VCUnitDefinition.UNIT_DIMENSIONLESS,
+																VCUnitDefinition.UNIT_intensity_per_s,//intensity unit?
+																VCUnitDefinition.UNIT_um2_per_s,
+																VCUnitDefinition.UNIT_DIMENSIONLESS,
+																VCUnitDefinition.UNIT_DIMENSIONLESS,//ratio of total fluorescence?
+																VCUnitDefinition.UNIT_per_um_per_s,
+																VCUnitDefinition.UNIT_per_s};
 	public static int NUM_MODEL_PARAMETERS_ONE_DIFF = 3;
 	public static int NUM_MODEL_PARAMETERS_TWO_DIFF = 5;
 	public static int NUM_MODEL_PARAMETERS_BINDING = 8;
@@ -39,14 +49,17 @@ public class FRAPModel
 	public static int INDEX_OFF_RATE = 7;
 	
 	private String modelIdentifer = null;
-	private double[][] result = null;
+	private double[][] data = null;
+	private double[] timepoints = null;
+	
+
 	private Parameter[] modelParameters = null;
 	
 	public FRAPModel(String arg_id, Parameter[] arg_parameters, double[][] arg_result)
 	{
 		modelIdentifer = arg_id;
 		modelParameters = arg_parameters;
-		result = arg_result;
+		data = arg_result;
 	}
 
 	public String getModelIdentifer() {
@@ -57,14 +70,22 @@ public class FRAPModel
 		this.modelIdentifer = modelIdentifer;
 	}
 
-	public double[][] getResult() {
-		return result;
+	public double[][] getData() {
+		return data;
 	}
 
-	public void setResult(double[][] result) {
-		this.result = result;
+	public void setData(double[][] result) {
+		this.data = result;
 	}
 
+	public double[] getTimepoints() {
+		return timepoints;
+	}
+
+	public void setTimepoints(double[] timepoints) {
+		this.timepoints = timepoints;
+	}
+	
 	public Parameter[] getModelParameters() {
 		return modelParameters;
 	}

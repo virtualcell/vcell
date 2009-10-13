@@ -50,7 +50,7 @@ public class EstParams_TwoDiffComponentDescriptor extends WizardPanelDescriptor
 				Parameter[] params = ((EstParams_TwoDiffComponentPanel)getPanelComponent()).getCurrentParameters();
 				FRAPModel  frapModel = getFrapWorkspace().getFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS);
 				frapModel.setModelParameters(params);
-				frapModel.setResult(((EstParams_TwoDiffComponentPanel)getPanelComponent()).getCurrentEstimationResults());
+				frapModel.setData(((EstParams_TwoDiffComponentPanel)getPanelComponent()).getCurrentEstimationResults());
 			}
 		};
 		

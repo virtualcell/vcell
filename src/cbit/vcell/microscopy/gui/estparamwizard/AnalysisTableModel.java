@@ -61,7 +61,7 @@ public class AnalysisTableModel extends AbstractTableModel
     	}
     	else if(col == COLUMN_DIFF_ONE)
     	{
-    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
+    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] == null || frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
     		{
     			return null;
     		}
@@ -94,7 +94,7 @@ public class AnalysisTableModel extends AbstractTableModel
     	}
     	else if(col == COLUMN_DIFF_TWO)
     	{
-    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
+    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] == null || frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
     		{
     			return null;
     		}
@@ -128,7 +128,7 @@ public class AnalysisTableModel extends AbstractTableModel
     	}
     	else if(col == COLUMN_REAC_BINDING)
     	{
-    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters() == null)
+    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING] == null || frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters() == null)
     		{
     			return null;
     		}
