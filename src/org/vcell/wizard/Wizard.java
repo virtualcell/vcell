@@ -183,6 +183,22 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
     }  
     
     /**
+     * Clear all the panels in the wizard 
+     */  
+    public void clearAllPanels()
+    {
+    	if(cardPanel != null)
+    	{
+    		cardPanel.removeAll();
+    	}
+    	if(wizardModel != null)
+    	{
+    		wizardModel.clearAllPanels();
+    	}
+    }
+    
+    
+    /**
      * Displays the panel identified by the identifier passed in. This is the same 
      * identifier used when registering the panel.
      */    

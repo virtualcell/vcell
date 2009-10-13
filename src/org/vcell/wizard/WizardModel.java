@@ -69,6 +69,17 @@ public class WizardModel {
     }  
     
     /**
+     * Clear all the panels from the registered list.
+     */  
+    public void clearAllPanels()
+    {
+    	if(panelHashmap != null)
+    	{
+    		panelHashmap.clear();
+    	}
+    }
+    
+    /**
      * Sets the current panel to the Object that is passed in.
      */    
     public boolean setCurrentPanel(String id) throws WizardPanelNotFoundException {
