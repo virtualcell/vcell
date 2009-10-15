@@ -17,7 +17,7 @@ public class AnalysisTableModel extends AbstractTableModel
 	public final static int COLUMN_DIFF_ONE = 1;
 	public final static int COLUMN_DIFF_TWO = 2;
 	public final static int COLUMN_REAC_BINDING = 3;
-	public final static String COL_LABELS[] = { "Parameter Name", "Diffusion with 1 Diff. component", "Diffusiton with 2 Diff. components", "Diffusion with binding reaction"};
+	public final static String COL_LABELS[] = { "Parameter Name", "Diffusion with 1 component (DF1)", "Diffusion with 2 components (DF2)", "Diffusion with binding reaction (DB)"};
 	
 	private FRAPWorkspace frapWorkspace = null;
 	private FRAPModel[] frapModels = null;

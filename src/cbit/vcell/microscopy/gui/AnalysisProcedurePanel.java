@@ -25,7 +25,6 @@ public class AnalysisProcedurePanel extends JPanel
 	public final static int STAGE_DEFINE_ROIS = 1;
 	public final static int STAGE_MODEL_TYPE = 2;
 	public final static int STAGE_EST_PARAMS = 3;
-	public final static int STAGE_RESTART = 4;
 	
 	public final static int NUM_BUTTON_IMAGES = 4;
 	public final static int NUM_LABEL_IMAGES = 3;
@@ -138,15 +137,6 @@ public class AnalysisProcedurePanel extends JPanel
 			buttons[STAGE_LOAD_FRAP].setEnabled(true);
 			buttons[STAGE_DEFINE_ROIS].setEnabled(true);
 			buttons[STAGE_MODEL_TYPE].setEnabled(true);
-			buttons[STAGE_EST_PARAMS].setEnabled(true);
-		}
-		else if(stage == STAGE_RESTART)
-		{
-//			disableAllButtons();
-			buttons[STAGE_LOAD_FRAP].setEnabled(true);
-			buttons[STAGE_DEFINE_ROIS].setEnabled(true);
-			buttons[STAGE_MODEL_TYPE].setEnabled(true);
-			buttons[STAGE_RESTART].setEnabled(true);
 			buttons[STAGE_EST_PARAMS].setEnabled(true);
 		}
 	}

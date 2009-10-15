@@ -45,7 +45,6 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 	private static final int IDX_REACTION_DIFFUSION = 1;
 	private static final int IDX_PURE_DIFFUSION = 0;	
 	
-	private FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters; //will be initialized in setData
 	private SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
 	private final JPanel paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
 	private JLabel simulationParametersLabel;

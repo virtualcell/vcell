@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.Toolkit;
@@ -20,6 +21,7 @@ import javax.media.Manager;
 import javax.media.Player;
 import javax.media.RealizeCompleteEvent;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -42,7 +44,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
   /** Our contentpane */
   Container cp;
 
-  JFrame parentFrame=null;
+  JDialog parentFrame=null;
   
   /** The visual component (if any) */
   Component visualComponent = null;
@@ -58,7 +60,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 
   JButton saveButton2 = null;
   /** Construct the player object and the GUI. */
-  public JMFPlayer(JFrame pf, String media) {
+  public JMFPlayer(JDialog pf, String media) {
 	super();
     parentFrame = pf;
 	mediaName = media;
@@ -85,6 +87,9 @@ public class JMFPlayer extends JPanel implements ControllerListener {
     thePlayer.start(); // start playing
   }
 
+  
+  
+  
   /** Called to stop the audio, as from a Stop button or menuitem */
   public void stop() {
     if (thePlayer == null)
@@ -123,10 +128,10 @@ public class JMFPlayer extends JPanel implements ControllerListener {
     }
   }
 
-  public static void showMovieInFrame(final String urlStr, final String fileStr)
+  public static void showMovieInDialog(final Dialog parent, final String urlStr, final String fileStr)
   {
-	  JFrame frame = new JFrame("VFRAP Movie");
-	  frame.setLayout(new BorderLayout());
+	  JDialog dialog = new JDialog(parent, "VFRAP Movie");
+	  dialog.setLayout(new BorderLayout());
 	  //add info. panel
 	  JPanel infoPanel = new JPanel(new GridLayout(0,1));
 	  final File movieFile = new File(fileStr);
@@ -145,21 +150,21 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	  infoPanel.add(new Label("Top: Experimental Data.  Value range [0.01,1.1]"));
 	  infoPanel.add(new Label("Bottom: Simulation Data.  Value range [0.01,1.1]"));
 	  infoPanel.setBackground(new Color(184,184,190));
-	  frame.getContentPane().add(infoPanel,BorderLayout.NORTH);
+	  dialog.getContentPane().add(infoPanel,BorderLayout.NORTH);
 	  //add movie player in the center
-	  JMFPlayer jp = new JMFPlayer(frame, urlStr);
-	  frame.getContentPane().add(jp,BorderLayout.CENTER);
-	  frame.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width-200)/2,
+	  JMFPlayer jp = new JMFPlayer(dialog, urlStr);
+	  dialog.getContentPane().add(jp,BorderLayout.CENTER);
+	  dialog.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width-200)/2,
 		    			(Toolkit.getDefaultToolkit().getScreenSize().height-220)/2);
-	  frame.setVisible(true);
-	  frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	  dialog.setVisible(true);
+	  dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 //	  frame.addWindowListener(new WindowAdapter(){
 //		  public void windowClosing(WindowEvent e)
 //	      {
 //		  	 new File(fileStr).deleteOnExit();
 //		  }
 //	  });
-	  final JFrame frameCopy = frame;
+	  final JDialog frameCopy = dialog;
 	  saveButton2.addActionListener(new ActionListener(){
 		public void actionPerformed(ActionEvent arg0) {
 			int choice = VirtualFrapLoader.saveMovieFileChooser.showSaveDialog(frameCopy);
@@ -204,6 +209,8 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	  VirtualFrapLoader.saveMovieFileChooser.addChoosableFileFilter(VirtualFrapLoader.filter_qt);
 	  VirtualFrapLoader.saveMovieFileChooser.setAcceptAllFileFilterUsed(false);
 //	  VirtualFrapLoader.saveMovieFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
-	  showMovieInFrame("file:///C:/VirtualMicroscopy/test.mov", "C:/VirtualMicroscopy/test.mov");
+	  JDialog dialog = new JDialog();
+	  dialog.setTitle("VFRAP Movie");
+	  showMovieInDialog(dialog, "file:///C:/VirtualMicroscopy/test.mov", "C:/VirtualMicroscopy/test.mov");
   }
 }

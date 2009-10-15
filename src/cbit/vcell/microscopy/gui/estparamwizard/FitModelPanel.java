@@ -42,4 +42,15 @@ public class FitModelPanel extends BoxPanel
 	{
 		return radioPanel.getBestModelIndex();
 	}
+	
+	public void disableAllRadioButtons()
+	{
+		radioPanel.disableAllRadioButtons();
+	}
+	
+	public void enableRadioButton(int modelIdx)
+	{
+		radioPanel.enableRadioButton(modelIdx);
+	}
+	
 }

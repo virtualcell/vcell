@@ -94,4 +94,26 @@ public class FitModelRadioButtonPanel extends JPanel
 		}
 	}
 	
+	public void disableAllRadioButtons()
+	{
+		diffOneRadioButton.setEnabled(false);
+		diffTwoRadioButton.setEnabled(false);
+		diffBindingRadioButton.setEnabled(false);
+	}
+	
+	public void enableRadioButton(int modelIdx)
+	{
+		if(modelIdx == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+		{
+			diffOneRadioButton.setEnabled(true);
+		}
+		else if(modelIdx == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+		{
+			diffTwoRadioButton.setEnabled(true);
+		}
+		else if(modelIdx == FRAPModel.IDX_MODEL_DIFF_BINDING)
+		{
+			diffBindingRadioButton.setEnabled(true);
+		}
+	}
 }

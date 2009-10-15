@@ -1,0 +1,175 @@
+package cbit.vcell.microscopy.gui;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.table.AbstractTableModel;
+
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.opt.Parameter;
+
+public class BestParameterTableModel extends AbstractTableModel implements PropertyChangeListener
+{
+//	public final static int NUM_COLUMNS = 4;
+	public final static int NUM_COLUMNS = 3;
+	public final static int COLUMN_NAME = 0;
+//	public final static int COLUMN_DESCRIPTION = 1;//remove description since the name and the description are the same
+	public final static int COLUMN_VALUE = 1;
+	public final static int COLUMN_UNITS = 2;
+	public final static String COL_LABELS[] = {"Parameter Name",/* "Description",*/ "Expression", "Unit"};
+	
+	private FRAPWorkspace frapWorkspace = null;
+	Integer bestModelIndex = null;
+	Parameter[] parameters = null;
+	
+	public BestParameterTableModel() {
+    	super();
+    }
+
+    public int getColumnCount() {
+        return NUM_COLUMNS;
+    }
+
+    public int getRowCount() 
+    {
+    	if(getBestModelParameters() != null)
+    	{
+    		return getBestModelParameters().length;
+    	}
+    	else
+    	{
+    		return 0;
+    	}
+    }
+
+    public Object getValueAt(int row, int col) 
+    {
+    	if (col<0 || col>=NUM_COLUMNS){
+    		throw new RuntimeException("AnalysisTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+    	}
+    	if (row<0 || row>=getRowCount()){
+    		throw new RuntimeException("AnalysisTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
+    	}
+    	
+    	Parameter param = getParameter(row);
+        
+    	if (param == null)
+    	{
+    		return null;
+    	}
+    	if(col == COLUMN_NAME)
+    	{
+    		return param.getName();
+    	}
+//    	else if(col == COLUMN_DESCRIPTION)
+//    	{
+//    		return FRAPModel.MODEL_PARAMETER_NAMES[row];
+//    	}
+    	else if(col == COLUMN_VALUE)
+    	{
+    		return param.getInitialGuess();
+    	}
+    	else if(col == COLUMN_UNITS)
+    	{
+    		return FRAPModel.MODEL_PARAMETER_UNITS[row].getSymbol();
+    	}
+    	
+    	return null;
+    }
+
+    public Class<?> getColumnClass(int column) {
+    	switch (column){
+    		case COLUMN_NAME:{
+    			return String.class;
+    		}
+//    		case COLUMN_DESCRIPTION:{
+//    			return String.class;
+//    		}
+    		case COLUMN_VALUE: {
+    			return Double.class;
+    		}
+    		case COLUMN_UNITS: {
+    			return String.class;
+    		}
+    		default:{
+    			return Object.class;
+    		}
+    	}
+    }
+
+    public String getColumnName(int column) {
+    	if (column<0 || column>=NUM_COLUMNS){
+    		throw new RuntimeException("AnalysisTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+    	}
+        return COL_LABELS[column];
+    }
+
+    public boolean isCellEditable(int rowIndex,int columnIndex) 
+    {
+        return false;
+    }
+
+    public void setValueAt(Object aValue,int rowIndex, int columnIndex) 
+    {
+    }
+    
+    public Integer getBestModelIndex() {
+		return bestModelIndex;
+	}
+
+	public void setBestModelIndex(Integer bestModelIndex) {
+		this.bestModelIndex = bestModelIndex;
+		fireTableDataChanged();
+	}
+
+    
+    public Parameter[] getBestModelParameters()
+    {
+    	if( bestModelIndex != null && -1 < bestModelIndex.intValue() && bestModelIndex.intValue() < FRAPModel.NUM_MODEL_TYPES)
+    	{
+	    	FRAPModel bestModel = getFrapWorkspace().getFrapStudy().getModels()[bestModelIndex.intValue()];
+	    	parameters = bestModel.getModelParameters();
+	        return parameters;
+    	}
+    	else
+    	{
+    		return null;
+    	}
+    }
+    
+    public Parameter getParameter(int paramIndex)
+    {
+    	if(parameters != null)
+    	{
+    		return parameters[paramIndex];
+    	}
+    	else
+    	{
+    		return null;
+    	}
+    }
+    
+    public FRAPWorkspace getFrapWorkspace()
+    {
+        return frapWorkspace;
+    }
+   
+    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    {
+    	this.frapWorkspace = frapWorkspace;
+    }
+
+	public void propertyChange(PropertyChangeEvent evt) {
+		if(evt.getPropertyName().equals(FRAPStudy.PROPERTY_CHANGE_BEST_MODEL))
+		{
+			if(evt.getNewValue() instanceof Integer)
+			{
+				setBestModelIndex(((Integer)evt.getNewValue()));
+			}
+		}
+		
+	}
+}

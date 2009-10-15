@@ -8,6 +8,10 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -18,9 +22,18 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import cbit.vcell.mapping.gui.StructureMappingTableRenderer;
 import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel.ResultPanelButtonHandler;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
+import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
 
 
 public class ResultDisplayPanel extends JPanel
@@ -35,6 +48,10 @@ public class ResultDisplayPanel extends JPanel
 	private JPanel buttonPanel = null;
 	private JButton show2DResultButton = null;
 	private JButton runSimButton = null;
+	
+	private FRAPWorkspace frapWorkspace = null;
+	BestParameterTableModel tableModel = null;
+	
 	ResultDisplayPanel()
 	{
 		initial();
@@ -140,7 +157,7 @@ public class ResultDisplayPanel extends JPanel
 	{
 		if(oneDiffComponentLabel == null)
 		{
-			oneDiffComponentLabel = new JLabel("Pure Diffusion (1 Component)");
+			oneDiffComponentLabel = new JLabel("Diffusion (1 Component)");
 			oneDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
 		}
 		return oneDiffComponentLabel;
@@ -150,7 +167,7 @@ public class ResultDisplayPanel extends JPanel
 	{
 		if(twoDiffComponentLabel == null)
 		{
-			twoDiffComponentLabel = new JLabel("Pure Diffusion (2 Components)");
+			twoDiffComponentLabel = new JLabel("Diffusion (2 Components)");
 			twoDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
 		}
 		return twoDiffComponentLabel;
@@ -166,19 +183,26 @@ public class ResultDisplayPanel extends JPanel
 		return reacBindingLabel;
 	}
 	
-	public void highLightOneDiffLabel()
+	private void highLightOneDiffLabel()
 	{
 		oneDiffComponentLabel.setBorder(new LineBorder(Color.black, 2));
 	}
 	
-	public void highLightTwoDiffLabel()
+	private void highLightTwoDiffLabel()
 	{
 		twoDiffComponentLabel.setBorder(new LineBorder(Color.black, 2));
 	}
 	
-	public void highLightReacBindingLabel()
+	private void highLightReacBindingLabel()
 	{
 		reacBindingLabel.setBorder(new LineBorder(Color.black, 2));
+	}
+	
+	private void clearHighlightLabel()
+	{
+		oneDiffComponentLabel.setBorder(null);
+		twoDiffComponentLabel.setBorder(null);
+		reacBindingLabel.setBorder(null);
 	}
 	
 	private JPanel getTablePanel()
@@ -214,6 +238,7 @@ public class ResultDisplayPanel extends JPanel
 		{
 			buttonPanel = new JPanel(new BorderLayout());
 			buttonPanel.add(getShowResultButton(), BorderLayout.EAST);
+			setRunSimButtonEnable(false); //enable it when best model is choosen and parameters are not null.
 			setResultsButtonEnabled(false); //enable it after loading frap data/doc(if sim data exists).
 			buttonPanel.add(getRunSimButton(), BorderLayout.WEST);
 			buttonPanel.add(new JLabel("             "), BorderLayout.CENTER); //used to nicely arrange buttons
@@ -226,6 +251,7 @@ public class ResultDisplayPanel extends JPanel
 		if(show2DResultButton == null)
 		{
 			show2DResultButton = new JButton("View Spatial Results");
+			show2DResultButton.setActionCommand(VirtualFrapMainFrame.SHOW_SIM_RESULT_COMMAND);
 		}
 		return show2DResultButton;
 	}
@@ -235,6 +261,7 @@ public class ResultDisplayPanel extends JPanel
 		if(runSimButton == null)
 		{
 			runSimButton = new JButton("Run Spatial Simulation");
+			runSimButton.setActionCommand(VirtualFrapMainFrame.RUN_SIM_COMMAND);
 		}
 		return runSimButton;
 	}
@@ -244,13 +271,73 @@ public class ResultDisplayPanel extends JPanel
 		if(resultTable == null)
 		{
 			resultTable = new JTable();
-//			resultTable.setModel();//set table model
+			//set table model
+			tableModel = new BestParameterTableModel(); 
+			resultTable.setModel(tableModel);//set table model
+			
+			//set table renderer
+			TableCellRenderer tableRenderer = new  BestParameterTableRenderer(8); //double precision 8 digits
+			for(int i=0; i<tableModel.getColumnCount(); i++)
+			{
+				TableColumn column=resultTable.getColumnModel().getColumn(i);
+				column.setCellRenderer(tableRenderer);			
+			}
+
 		}
 		return resultTable;
+	}
+	
+	public void setRunSimButtonEnable(boolean enabled)
+	{
+		getRunSimButton().setEnabled(enabled);
 	}
 	
 	public void setResultsButtonEnabled(boolean enabled)
 	{
 		getShowResultButton().setEnabled(enabled);
 	}
+	
+	public void setBestModel(int bestModelIndex)
+	{
+		clearHighlightLabel();
+		if(bestModelIndex == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+		{
+			highLightOneDiffLabel();
+		}
+		else if(bestModelIndex == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+		{
+			highLightTwoDiffLabel();
+		}
+		else
+		{
+			highLightReacBindingLabel();
+		}
+		//refresh run simulation button
+		if(getFRAPWorkspace().getFrapStudy().getModels()[bestModelIndex].getModelParameters() != null)
+		{
+			setRunSimButtonEnable(true);
+		}
+	}
+	
+	public FRAPWorkspace getFRAPWorkspace() {
+		return frapWorkspace;
+	}
+	public void setFRAPWorkspace(FRAPWorkspace frapWorkspace) {
+		FRAPWorkspace oldFrapWorkspace = this.frapWorkspace;
+		if(oldFrapWorkspace != null)
+		{
+			oldFrapWorkspace.removePropertyChangeListener(tableModel);
+		}
+		this.frapWorkspace = frapWorkspace;
+		tableModel.setFrapWorkspace(frapWorkspace);
+		this.frapWorkspace.addPropertyChangeListener(tableModel);
+		
+	}
+	
+	public void addButtonHandler(ResultPanelButtonHandler handler)
+	{
+		getRunSimButton().addActionListener(handler);
+		getShowResultButton().addActionListener(handler);
+	}
+	
 }
