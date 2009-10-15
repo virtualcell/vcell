@@ -43,7 +43,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	{
     		fStudy.createAnalysisMSESummaryData();
     	}
-    	//auto find best model for user if best model is not selected.
+    	//auto find best model for user if best model is not selected. 
     	double[][] mseSummaryData = fStudy.getAnalysisMSESummaryData();
     	
     	int bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
@@ -78,6 +78,8 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	final DataSource expDataSource = new DataSource.DataSourceReferenceData("exp", expReferenceData); 
     	comparableDataSource[0] = expDataSource;
     	//add opt/sim data
+    	//using the same loop, disable the radio button if the model is not included
+    	((EstParams_CompareResultsPanel)this.getPanelComponent()).disableAllRadioButtons();//adjust radio buttons
     	ArrayList<Integer> selectedModelIndexes = fStudy.getSelectedModels();
     	double[] expTimePoints = fStudy.getFrapData().getImageDataset().getImageTimeStamps();
     	
@@ -87,6 +89,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     		DataSource newDataSource = null;
     		if(selectedModelIndexes.get(i).equals(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT))
     		{
+    			((EstParams_CompareResultsPanel)this.getPanelComponent()).enableRadioButton(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT);//adjust radio button
     			FRAPModel temModel = fStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT);
     			double[] timePoints = fStudy.getFrapData().getImageDataset().getImageTimeStamps();
     			int startingIndex = fStudy.getStartingIndexForRecovery();
@@ -100,6 +103,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     		}
     		else if(selectedModelIndexes.get(i).equals(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS))
     		{
+    			((EstParams_CompareResultsPanel)this.getPanelComponent()).enableRadioButton(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS);//adjust radio button
     			FRAPModel temModel = fStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS);
     			double[] timePoints = fStudy.getFrapData().getImageDataset().getImageTimeStamps();
     			int startingIndex = fStudy.getStartingIndexForRecovery();
@@ -113,13 +117,14 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     		}
     		else if(selectedModelIndexes.get(i).equals(FRAPModel.IDX_MODEL_DIFF_BINDING))
     		{
+    			((EstParams_CompareResultsPanel)this.getPanelComponent()).enableRadioButton(FRAPModel.IDX_MODEL_DIFF_BINDING);//adjust radio button
     			FRAPModel temModel = fStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_BINDING);
     			double startTimePoint = expTimePoints[fStudy.getStartingIndexForRecovery()];
     			ODESolverResultSet temSolverResultSet = FRAPOptimization.doubleArrayToSolverResultSet(temModel.getData(), 
     					             temModel.getTimepoints(),
     					             startTimePoint,
     					             fStudy.getSelectedROIsForErrorCalculation());
-    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("opt_DB", temSolverResultSet);
+    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("sim_DB", temSolverResultSet);
     		}
     		
     		comparableDataSource[i+1] = newDataSource;
@@ -133,12 +138,12 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	//create AsynchClientTask arraylist
 		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
 		
-		AsynchClientTask saveBestModelTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		AsynchClientTask saveBestModelTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				int bestModelIndex = getBestModelIndex();
-				getFrapWorkspace().getFrapStudy().setBestModelIndex(bestModelIndex);
+				getFrapWorkspace().getFrapStudy().setBestModelIndex(new Integer(bestModelIndex));
 			}
 		};
 		

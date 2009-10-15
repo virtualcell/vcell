@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -16,7 +17,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 
-public class FRAPWorkspace {
+public class FRAPWorkspace implements PropertyChangeListener{
 	
 	//property names
 	public static final String FRAPSTUDY_CHANGE_NEW_PROPERTY = "FRAPSTUDY_CHANGE_NEW_PROPERTY";
@@ -37,6 +38,11 @@ public class FRAPWorkspace {
 	
 	public void setFrapStudy(FRAPStudy arg_frapStudy, boolean bNew) {
 		FRAPStudy oldFrapStudy = getFrapStudy();
+		if(oldFrapStudy != null)
+		{
+			oldFrapStudy.removePropertyChangeListener(this);
+		}
+		arg_frapStudy.addPropertyChangeListener(this);
 		this.frapStudy = arg_frapStudy;
 		if(bNew)
 		{
@@ -157,4 +163,13 @@ public class FRAPWorkspace {
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
     	propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
+
+	public void propertyChange(PropertyChangeEvent evt) 
+	{
+		if(evt.getPropertyName().equals(FRAPStudy.PROPERTY_CHANGE_BEST_MODEL))
+		{
+			firePropertyChange(FRAPStudy.PROPERTY_CHANGE_BEST_MODEL, evt.getOldValue(), evt.getNewValue());
+		}
+		
+	}
 }

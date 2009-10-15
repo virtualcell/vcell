@@ -2,35 +2,24 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
 
-import javax.swing.DefaultSingleSelectionModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
+import javax.swing.JRadioButton;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Range;
@@ -38,31 +27,23 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.ROIImagePanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -70,42 +51,24 @@ import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
 public class EstParams_ReacBindingPanel extends JPanel {
 	
-	public static final String STR_REACTION_DIFFUSION = "Reaction Diffusion Model";
-	public static final String STR_PURE_DIFFUSION = "Pure Diffusion Model";
-	private static final int IDX_REACTION_DIFFUSION = 1;
-	private static final int IDX_PURE_DIFFUSION = 0;	
-	
-	private FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters; //will be initialized in setData
 	private SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
 	private final JPanel paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
-//	private final JLabel standardErrorseLabel;
-	
-//	private final JRadioButton reactionDiffusionRadioButton; 
-//	private final JRadioButton pureDiffusionRadioButton;
-//	private ButtonGroup plotButtonGroup = new ButtonGroup();
-	
-//	private FRAPPureDiffusionParamPanel pureDiffusionPanel;
 	private FRAPReactionDiffusionParamPanel reactionDiffusionPanel;
 	private FRAPReacDiffEstimationGuidePanel estGuidePanel;
 	
-	private ROIImagePanel roiImagePanel;
 	private FRAPWorkspace frapWorkspace;
 	private LocalWorkspace localWorkspace;
 	
-//	private final JScrollPane scrollPane;
-//	private final JTable table;
 	private FRAPStudy fStudy = null;
 	private MultisourcePlotPane multisourcePlotPane;
 	private Hashtable<FRAPStudy.AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentSimResults = null; //a data structure used to store results according to the current params.
 	private double[] currentSimTimePoints = null; //used to store simulation time points according to the current params.
 	
-	private boolean B_TABLE_DISABLED = false;
-	private boolean do_once = true;
+	private JRadioButton diffOneRadioButton = null;
+	private JRadioButton diffTwoRadioButton = null;
+	private JPanel questionPanel = null;
 	
-	private static String[] summaryReportColumnNames = SpatialAnalysisResults.getSummaryReportColumnNames();
-	
-
 	public EstParams_ReacBindingPanel() {
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowHeights = new int[] {7,7,7,0,7};
@@ -149,21 +112,20 @@ public class EstParams_ReacBindingPanel extends JPanel {
 							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_BS_CONCENTRATION)){
 								if(frapStudy != null && frapStudy.getFrapData() != null)
 								{
-									reactionDiffusionPanel.calBSConcentration(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), FRAPDataAnalysis.getRecoveryIndex(frapStudy.getFrapData())));
+									reactionDiffusionPanel.calBSConcentration(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getFrapStudy().getStartingIndexForRecovery()));
 								}
 							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_ON_RATE)){
 								if(frapStudy != null && frapStudy.getFrapData() != null)
 								{
-									reactionDiffusionPanel.calOnRate(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), FRAPDataAnalysis.getRecoveryIndex(frapStudy.getFrapData())));
+									reactionDiffusionPanel.calOnRate(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getFrapStudy().getStartingIndexForRecovery()));
 								}
 							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_OFF_RATE)){
 								if(frapStudy != null && frapStudy.getFrapData() != null)
 								{
-									reactionDiffusionPanel.calOffRate(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), FRAPDataAnalysis.getRecoveryIndex(frapStudy.getFrapData())));
+									reactionDiffusionPanel.calOffRate(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getFrapStudy().getStartingIndexForRecovery()));
 								}
 							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_RUN_BINDING_SIMULATION)){
-//								newFRAPFromParameters.create(reactionDiffusionPanel.getCurrentParameters(), STR_REACTION_DIFFUSION);
-								simulationWithCurrentParameters();
+								simulateWithCurrentParameters();
 							}
 						}
 					}
@@ -490,12 +452,53 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		getReactionDiffusionPanel().setParameters(parameters);
 	}
 	
+	public JPanel getQuestionPanel()
+	{
+		if(questionPanel == null)
+		{
+			questionPanel = new JPanel();
+			questionPanel.setLayout(new BoxLayout(questionPanel, BoxLayout.Y_AXIS));
+			questionPanel.add(new JLabel("Choose a model that the estimation is based on."));
+			ButtonGroup bg = new ButtonGroup();
+			diffOneRadioButton = new JRadioButton("Diffusion with one diffusing component");
+			diffTwoRadioButton = new JRadioButton("Diffusion with two diffusing components");
+			bg.add(diffOneRadioButton);
+			bg.add(diffTwoRadioButton);
+			diffTwoRadioButton.setSelected(true);
+			questionPanel.add(diffOneRadioButton);
+			questionPanel.add(diffTwoRadioButton);
+		}
+		return questionPanel;
+	}
+	
 	public void activateReacDiffEstPanel()
 	{
 		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
 		//check if we can do auto estimation on reaction binding papameters
 		Parameter[] params = null;
 		if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
+		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
+		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
+		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null)
+		{
+			int choice = DialogUtils.showComponentOKCancelDialog(this, getQuestionPanel(), "Choose diffusion model used for estimation");
+			if(choice == JOptionPane.OK_OPTION)
+			{
+				if(diffOneRadioButton.isSelected())
+				{
+					params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();
+				}
+				else
+				{
+					params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
+				}
+			}
+			else
+			{
+				return;
+			}
+		}
+		else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
 		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null)
 		{
 			params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
@@ -637,7 +640,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		this.currentSimTimePoints = currentSimTimePoints;
 	}
 	
-	private void simulationWithCurrentParameters() 
+	private void simulateWithCurrentParameters() 
 	{
 		fStudy = getFrapWorkspace().getFrapStudy();
 		//save external files if needed

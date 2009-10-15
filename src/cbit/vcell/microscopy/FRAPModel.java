@@ -29,7 +29,7 @@ public class FRAPModel
 	//have to use String at the time being.
 	public static VCUnitDefinition[] MODEL_PARAMETER_UNITS = new VCUnitDefinition[]{VCUnitDefinition.UNIT_um2_per_s,
 																VCUnitDefinition.UNIT_DIMENSIONLESS,
-																VCUnitDefinition.UNIT_intensity_per_s,//intensity unit?
+																VCUnitDefinition.UNIT_per_s,//bwm = Kon for single molecule reaction
 																VCUnitDefinition.UNIT_um2_per_s,
 																VCUnitDefinition.UNIT_DIMENSIONLESS,
 																VCUnitDefinition.UNIT_DIMENSIONLESS,//ratio of total fluorescence?

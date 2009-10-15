@@ -68,7 +68,7 @@ public class VirtualFrapMainFrame extends JFrame
 //	  	       (Toolkit.getDefaultToolkit().getScreenSize().height > 768)? ((int)(Toolkit.getDefaultToolkit().getScreenSize().height*0.85)): 768);
 
 	private MenuHandler menuHandler = new MenuHandler();
-	private static final String VERSION_NUMBER = "VFrap 0.9";
+	private static final String VERSION_NUMBER = "VFrap 1.0";
 	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
@@ -85,6 +85,9 @@ public class VirtualFrapMainFrame extends JFrame
 	public static final String DEFINE_ROI_COMMAND = "Define ROIs";
 	public static final String CHOOSE_MODEL_COMMAND = "Choose model types";
 	public static final String ESTIMATE_PARAM_COMMAND = "Estimate model parameters";
+	//for 'run sim' and 'show result' buttons
+	public static final String RUN_SIM_COMMAND = "Run Simulation";
+	public static final String SHOW_SIM_RESULT_COMMAND = "Show sim result";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
@@ -437,9 +440,6 @@ public class VirtualFrapMainFrame extends JFrame
     enableSave(false);
     System.out.println("current directory is:"+ localWorkspace.getDefaultWorkspaceDirectory());
     
-    //set frap workspace to frapstudypanel
-    frapStudyPanel.setFRAPWorkspace(this.frapWorkspace);
-    
     //set window size
     setSize(INIT_WINDOW_SIZE);
     setLocation(
@@ -499,6 +499,7 @@ public class VirtualFrapMainFrame extends JFrame
       System.setProperty(PropertyLoader.exportBaseURLProperty, "file://"+localWorkspace.getDefaultSimDataDirectory());
 
 	  frapStudyPanel.setLocalWorkspace(localWorkspace);
+      frapStudyPanel.setFRAPWorkspace(frapWorkspace);
 
       //add components to the main frame
       getContentPane().setLayout(new BorderLayout());
@@ -546,16 +547,16 @@ public class VirtualFrapMainFrame extends JFrame
     fileMenu.add(menuExit);
 
     //Edit menu
-    JMenu editMenu =new JMenu("Edit");
-    editMenu.setMnemonic('E');
-    mb.add(editMenu);
-   
-    mUndo.setActionCommand(UNDO_ACTION_COMMAND);
-    mUndo.addActionListener(menuHandler);
-    mUndo.setAccelerator(KeyStroke.getKeyStroke(
-            KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
-    mUndo.setEnabled(false);
-    editMenu.add(mUndo);
+//    JMenu editMenu =new JMenu("Edit");
+//    editMenu.setMnemonic('E');
+//    mb.add(editMenu);
+//   
+//    mUndo.setActionCommand(UNDO_ACTION_COMMAND);
+//    mUndo.addActionListener(menuHandler);
+//    mUndo.setAccelerator(KeyStroke.getKeyStroke(
+//            KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+//    mUndo.setEnabled(false);
+//    editMenu.add(mUndo);
 
     //Tools Menu
     JMenu toolsMenu =new JMenu("Tools");

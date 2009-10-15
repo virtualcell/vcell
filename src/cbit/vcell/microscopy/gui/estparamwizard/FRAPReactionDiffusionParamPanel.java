@@ -101,11 +101,11 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		});
 
 		final JLabel inputBindingSiteLabel = new JLabel();
-		inputBindingSiteLabel.setText("(Free BS concentration(uM) as a ratio of total fluor.)");
+		inputBindingSiteLabel.setText("(Free BS concentration(uM) as a ratio of total fluorescence)");
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.ipady = 5;
 		gridBagConstraints_10.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_10.gridwidth = 3;
+		gridBagConstraints_10.gridwidth = 4;
 		gridBagConstraints_10.gridy = 1;
 		gridBagConstraints_10.gridx = 10;
 		add(inputBindingSiteLabel, gridBagConstraints_10);
@@ -271,7 +271,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		});
 		
 		final JLabel bleachWhileMonitorLabel = new JLabel();
-		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate(i/s): ");
+		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate(1/s): ");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
 		gridBagConstraints_12.insets = new Insets(2, 2, 0, 2);
 		gridBagConstraints_12.anchor = GridBagConstraints.EAST;
@@ -641,13 +641,28 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			DialogUtils.showErrorDialog(this, "Reaction off rate is required to calculate Binding Site's concentration!");
 			return;
 		}
-		double freeFrac = Double.parseDouble(freeFractionTextField.getText());
-		double complexFrac = Double.parseDouble(complexFractionTextField.getText());
-		double fi = prebleachAvg * freeFrac;
-		double ci = prebleachAvg * complexFrac;
-		double kon = Double.parseDouble(onRateTextField.getText());
-		double koff = Double.parseDouble(offRateTextField.getText());
-		double BS_conc = ((koff*ci)/(kon*fi))/prebleachAvg;
+		double freeFrac, complexFrac, fi, ci, kon, koff, BS_conc;
+		try
+		{
+			freeFrac = Double.parseDouble(freeFractionTextField.getText());
+			complexFrac = Double.parseDouble(complexFractionTextField.getText());
+			fi = prebleachAvg * freeFrac;
+			ci = prebleachAvg * complexFrac;
+			kon = Double.parseDouble(onRateTextField.getText());
+			koff = Double.parseDouble(offRateTextField.getText());
+			if(kon == 0 || fi == 0)
+			{
+				DialogUtils.showErrorDialog(this, "Divided by 0 error! Kon and Free particle concentration should not be 0. !");
+				return;
+			}
+			BS_conc = ((koff*ci)/(kon*fi))/prebleachAvg;
+		}catch(Exception e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Required numbers are in illegal forms!");
+			return;
+		}
+		
 		bsConcentrationTextField.setText(BS_conc+"");
 	}
 
@@ -675,13 +690,27 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			DialogUtils.showErrorDialog(this, "Reaction off rate is required to calculate Binding Site's concentration!");
 			return;
 		}
-		double freeFrac = Double.parseDouble(freeFractionTextField.getText());
-		double complexFrac = Double.parseDouble(complexFractionTextField.getText());
-		double fi = prebleachAvg * freeFrac;
-		double ci = prebleachAvg * complexFrac;
-		double bs = Double.parseDouble(bsConcentrationTextField.getText())*prebleachAvg;
-		double koff = Double.parseDouble(offRateTextField.getText());
-		double kon = (koff*ci)/(fi*bs);
+		double freeFrac, complexFrac, fi, ci, kon, koff, bs;
+		try{
+			freeFrac = Double.parseDouble(freeFractionTextField.getText());
+			complexFrac = Double.parseDouble(complexFractionTextField.getText());
+			fi = prebleachAvg * freeFrac;
+			ci = prebleachAvg * complexFrac;
+			bs = Double.parseDouble(bsConcentrationTextField.getText())*prebleachAvg;
+			koff = Double.parseDouble(offRateTextField.getText());
+			if(bs == 0 || fi == 0)
+			{
+				DialogUtils.showErrorDialog(this, "Divided by 0 error! Free particle and binding site concentration should not be 0. !");
+				return;
+			}
+			kon = (koff*ci)/(fi*bs);
+		}catch(Exception e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Required numbers are in illegal forms!");
+			return;
+		}
+		
 		onRateTextField.setText(kon+"");
 	}
 
@@ -709,13 +738,26 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			DialogUtils.showErrorDialog(this, "Reaction on rate is required to calculate Binding Site's concentration!");
 			return;
 		}
-		double freeFrac = Double.parseDouble(freeFractionTextField.getText());
-		double complexFrac = Double.parseDouble(complexFractionTextField.getText());
-		double fi = prebleachAvg * freeFrac;
-		double ci = prebleachAvg * complexFrac;
-		double bs = Double.parseDouble(bsConcentrationTextField.getText())*prebleachAvg;
-		double kon = Double.parseDouble(onRateTextField.getText());
-		double koff = (fi*kon*bs)/ci;
+		double freeFrac, complexFrac, fi, ci, kon, koff, bs;
+		try{
+			freeFrac = Double.parseDouble(freeFractionTextField.getText());
+			complexFrac = Double.parseDouble(complexFractionTextField.getText());
+			fi = prebleachAvg * freeFrac;
+			ci = prebleachAvg * complexFrac;
+			bs = Double.parseDouble(bsConcentrationTextField.getText())*prebleachAvg;
+			kon = Double.parseDouble(onRateTextField.getText());
+			if(ci == 0)
+			{
+				DialogUtils.showErrorDialog(this, "Divided by 0 error! Binding complex concentration should not be 0. !");
+				return;
+			}
+			koff = (fi*kon*bs)/ci;
+		}catch(Exception e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Required numbers are in illegal forms!");
+			return;
+		}
 		offRateTextField.setText(koff+"");
 	}
 	

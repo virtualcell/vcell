@@ -103,12 +103,23 @@ public class EstParams_CompareResultsPanel extends JPanel {
 		this.frapWorkspace = frapWorkspace;
 		getAnalysisResultsPanel().setFrapWorkspace(frapWorkspace);
 		getMSEPanel().setFrapWorkspace(frapWorkspace);
+		getSummaryPlotPanel().setFrapWorkspace(frapWorkspace);
 	}
     
     public void setBestModelRadioButton(int bestModel)
     {
     	getRadioButtonPanel().setBestModelRadioButton(bestModel);
     }
+    
+    public void disableAllRadioButtons()
+    {
+    	getRadioButtonPanel().disableAllRadioButtons();
+    }
+    
+    public void enableRadioButton(int modelIdx)
+	{
+    	getRadioButtonPanel().enableRadioButton(modelIdx);
+	}
     
     public static void main(java.lang.String[] args) {
 		try {

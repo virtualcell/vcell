@@ -46,7 +46,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	private JTextField bsRadiusTextField;
 	private JTextField fRadiusTextField;
-	private JRadioButton pureDiff = new JRadioButton("Pure Diffusion ");
+	private JRadioButton pureDiff = new JRadioButton("Diffusion Dominant");
 	private JRadioButton effectiveDiff = new JRadioButton("Effective Diffusion");
 	
 	private JPanel diffTypePanel = null;
@@ -464,8 +464,9 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 						return;
 					}
 					//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
+					//602 is a conversion factor from unit (um)^3/s of Kobs to unit 1/(uM.s) of Kon
 					kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
-						double koff = (bs*kon*cf)/cc;
+					double koff = (bs*kon*cf)/cc;
 					//update textfield and table
 					koffTextField.setText(koff+"");
 

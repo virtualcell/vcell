@@ -84,6 +84,13 @@ public class FRAPStudy implements Matchable{
 	public static final String SPECIES_NAME_PREFIX_BINDING_SITE = "binding_site";
 	public static final String SPECIES_NAME_PREFIX_IMMOBILE = "fluor_immobile"; 
 	public static final String SPECIES_NAME_PREFIX_COMBINED = "fluor_combined"; 
+	
+	public static final String IMAGE_EXTDATA_NAME = "timeData";
+	public static final String ROI_EXTDATA_NAME = "roiData";
+	public static final String REF_EXTDATA_NAME = "refData";
+	
+	public static final String PROPERTY_CHANGE_BEST_MODEL = "PROPERTY_BEST_MODEL_CHANGE";
+	
 	private String name = null; 
 	private String description = null;
 	private String originalImageFilePath = null;
@@ -96,9 +103,6 @@ public class FRAPStudy implements Matchable{
 	//Added in Feb 2009, we want to store reference data together with the model in .vfrap file. 
 	private SimpleReferenceData storedRefData = null;
 	
-	public static final String IMAGE_EXTDATA_NAME = "timeData";
-	public static final String ROI_EXTDATA_NAME = "roiData";
-	public static final String REF_EXTDATA_NAME = "refData";
 	
 	//models
 	private FRAPModel[] models = new FRAPModel[FRAPModel.NUM_MODEL_TYPES];
@@ -518,8 +522,11 @@ public class FRAPStudy implements Matchable{
 	}
 
 
-	public void setBestModelIndex(Integer bestModel) {
-		this.bestModelIndex = bestModel;
+	public void setBestModelIndex(Integer bestModelIdx) 
+	{
+		Integer oldModelIndex  = this.bestModelIndex;
+		this.bestModelIndex = bestModelIdx;
+		propertyChangeSupport.firePropertyChange(PROPERTY_CHANGE_BEST_MODEL, oldModelIndex, bestModelIdx);
 	}
 	
 	
@@ -751,9 +758,25 @@ public class FRAPStudy implements Matchable{
 		double df = params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
 		double ff = params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
 		double bwmRate = params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
-		double dc = params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
-		double fc =params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
-//		double fimm = params[FRAPModel.INDEX_IMMOBILE_FRACTION].getInitialGuess();
+		double dc = 0;
+		double fc = 0; 
+		double bs = 0;
+		double onRate = 0;
+		double offRate = 0;
+		if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
+		{
+			dc = params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
+			fc =params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
+		}
+		else if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_BINDING)
+		{
+			dc = params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
+			fc =params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
+			bs = params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess();
+			onRate = params[FRAPModel.INDEX_ON_RATE].getInitialGuess();
+			offRate = params[FRAPModel.INDEX_OFF_RATE].getInitialGuess();
+		} 
+		//immobile fraction
 		double fimm = 1-ff-fc;
 		if(fimm < FRAPOptimization.epsilon && fimm > (0 - FRAPOptimization.epsilon))
 		{
@@ -763,10 +786,7 @@ public class FRAPStudy implements Matchable{
 		{
 			fimm = 1;
 		}
-		double bs = params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess();
-		double onRate = params[FRAPModel.INDEX_ON_RATE].getInitialGuess();
-		double offRate = params[FRAPModel.INDEX_OFF_RATE].getInitialGuess();
-		
+
 		Extent extent = sourceFrapStudy.getFrapData().getImageDataset().getExtent();
 
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
