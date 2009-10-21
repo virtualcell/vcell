@@ -15,7 +15,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
@@ -31,6 +33,7 @@ import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.model.gui.ParameterPanel;
 import cbit.vcell.opt.Parameter;
 
 public class FRAPDiffTwoParamPanel extends JPanel {
@@ -395,72 +398,35 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 	public FRAPDiffTwoParamPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {7,7,7,0,7,7};
-		gridBagLayout.rowHeights = new int[] {7,7,7,7};
+		gridBagLayout.columnWidths = new int[] {0,0,0,0,7,7,0,0};
+//		gridBagLayout.columnWidths = new int[] {7,7,7,0};
+//		gridBagLayout.rowHeights = new int[] {7,7,7};
 		setLayout(gridBagLayout);
 
-		final JButton getOptimalButton = new JButton();
-		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_8.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_8.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_8.gridy = 0;
-		gridBagConstraints_8.gridx = 0;
-		add(getOptimalButton, gridBagConstraints_8);
-		getOptimalButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				if(checkParameters())
-				{
-					AsynchClientTask optTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
-					{
-						public void run(Hashtable<String, Object> hashTable) throws Exception
-						{
-							try{
-								frapOptData.setNumEstimatedParams(getCurrentParameters().length);
-								final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
-								if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
-								{
-									setParameterValues(
-										new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
-										new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
-										new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
-										new Double(bestParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()),
-										new Double(bestParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()));
-									firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
-								}
-								
-							}catch(final Exception e2){
-								e2.printStackTrace();
-								DialogUtils.showErrorDialog(FRAPDiffTwoParamPanel.this,"Error setting Best Fit Parameters\n"+e2.getMessage());
-							}
-						}
-					};
-					//dispatch
-					ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask}, false);
-				}
-			}
-		});
-		getOptimalButton.setText("Get Best Fit Parameters");
-		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
-
 		final JLabel diffusionRateLabel = new JLabel();
+		diffusionRateLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
+		diffusionRateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		diffusionRateLabel.setText("Primary  Diff.  Rate(um2/s):");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_9.gridy = 1;
+		gridBagConstraints_9.weightx = 0;
+		gridBagConstraints_9.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_9.gridy = 0;
 		gridBagConstraints_9.gridx = 0;
 		add(diffusionRateLabel, gridBagConstraints_9);
 
 		diffusionRateTextField = new JTextField();
+		diffusionRateTextField.setColumns(10);
 		diffusionRateTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
-		diffusionRateTextField.setPreferredSize(new Dimension(125, 20));
+//		diffusionRateTextField.setPreferredSize(new Dimension(125, 20));
 		diffusionRateTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
-		diffusionRateTextField.setMinimumSize(new Dimension(125, 20));
+//		diffusionRateTextField.setMinimumSize(new Dimension(125, 20));
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.weightx = 0;
 		gridBagConstraints.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
 		add(diffusionRateTextField, gridBagConstraints);
 
@@ -469,8 +435,9 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		diffusionRateSetButton.addActionListener(SET_ACTION_LISTENER);
 		diffusionRateSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.weightx = 0;
 		gridBagConstraints_1.insets = new Insets(2, 0, 2, 2);
-		gridBagConstraints_1.gridy = 1;
+		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 2;
 		add(diffusionRateSetButton, gridBagConstraints_1);
 
@@ -478,33 +445,41 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		diffusionRateSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		diffusionRateSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_4.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_4.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_4.weightx = 1;
-		gridBagConstraints_4.gridy = 1;
+		gridBagConstraints_4.gridy = 0;
 		gridBagConstraints_4.gridx = 3;
 		add(diffusionRateSlider, gridBagConstraints_4);
-
+		
 		secondDiffusionRateLabel = new JLabel();
+		secondDiffusionRateLabel.setInheritsPopupMenu(true);
+		secondDiffusionRateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		secondDiffusionRateLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
 		secondDiffusionRateLabel.setText("Secondary  Diff. Rate(um2/s):");
 		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
+		gridBagConstraints_14.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_14.weightx = 0;
 		gridBagConstraints_14.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_14.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_14.gridy = 1;
-		gridBagConstraints_14.gridx = 7;
+		gridBagConstraints_14.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_14.gridy = 0;
+		gridBagConstraints_14.gridx = 6;
 		add(secondDiffusionRateLabel, gridBagConstraints_14);
 
 		secondDiffTextField = new JTextField();
+		secondDiffTextField.setColumns(10);
 //		secondDiffTextField.setEnabled(false);
 		secondDiffTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
-		secondDiffTextField.setMinimumSize(new Dimension(125, 20));
+//		secondDiffTextField.setMinimumSize(new Dimension(125, 20));
 		secondDiffTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
-		secondDiffTextField.setPreferredSize(new Dimension(125, 20));
+//		secondDiffTextField.setPreferredSize(new Dimension(125, 20));
 		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
+		gridBagConstraints_17.weightx = 0;
 		gridBagConstraints_17.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_17.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_17.gridy = 1;
-		gridBagConstraints_17.gridx = 8;
+		gridBagConstraints_17.gridy = 0;
+		gridBagConstraints_17.gridx = 7;
 		add(secondDiffTextField, gridBagConstraints_17);
 
 		secondDiffSetButton = new JButton();
@@ -513,9 +488,10 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondDiffSetButton.setMargin(new Insets(2, 1, 2, 1));
 		secondDiffSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
+		gridBagConstraints_20.weightx = 0;
 		gridBagConstraints_20.insets = new Insets(2, 0, 2, 2);
-		gridBagConstraints_20.gridy = 1;
-		gridBagConstraints_20.gridx = 9;
+		gridBagConstraints_20.gridy = 0;
+		gridBagConstraints_20.gridx = 8;
 		add(secondDiffSetButton, gridBagConstraints_20);
 
 		secondDiffSlider = new JSlider();
@@ -523,30 +499,37 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondDiffSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		secondDiffSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_22 = new GridBagConstraints();
+		gridBagConstraints_22.weightx = 1;
 		gridBagConstraints_22.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_22.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_22.gridy = 1;
-		gridBagConstraints_22.gridx = 10;
+		gridBagConstraints_22.gridy = 0;
+		gridBagConstraints_22.gridx = 9;
 		add(secondDiffSlider, gridBagConstraints_22);
 
 		final JLabel mobileFractionLabel = new JLabel();
+		mobileFractionLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
+		mobileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		mobileFractionLabel.setText("Primary  Mobile Fraction:");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
-		gridBagConstraints_11.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_11.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_11.weightx = 0;
+		gridBagConstraints_11.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_11.gridy = 2;
+		gridBagConstraints_11.gridy = 1;
 		gridBagConstraints_11.gridx = 0;
 		add(mobileFractionLabel, gridBagConstraints_11);
 
 		mobileFractionTextField = new JTextField();
+		mobileFractionTextField.setColumns(10);
 		mobileFractionTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
-		mobileFractionTextField.setPreferredSize(new Dimension(125, 20));
-		mobileFractionTextField.setMinimumSize(new Dimension(125, 20));
+//		mobileFractionTextField.setPreferredSize(new Dimension(125, 20));
+//		mobileFractionTextField.setMinimumSize(new Dimension(125, 20));
 		mobileFractionTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
+		gridBagConstraints_2.weightx = 0;
 		gridBagConstraints_2.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_2.gridy = 2;
+		gridBagConstraints_2.gridy = 1;
 		gridBagConstraints_2.gridx = 1;
 		add(mobileFractionTextField, gridBagConstraints_2);
 
@@ -555,8 +538,9 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		mobileFractionSetButton.setMargin(new Insets(2, 1, 2, 1));
 		mobileFractionSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
+		gridBagConstraints_5.weightx = 0;
 		gridBagConstraints_5.insets = new Insets(2, 0, 2, 2);
-		gridBagConstraints_5.gridy = 2;
+		gridBagConstraints_5.gridy = 1;
 		gridBagConstraints_5.gridx = 2;
 		add(mobileFractionSetButton, gridBagConstraints_5);
 
@@ -567,28 +551,33 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		gridBagConstraints_6.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_6.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_6.weightx = 1;
-		gridBagConstraints_6.gridy = 2;
+		gridBagConstraints_6.gridy = 1;
 		gridBagConstraints_6.gridx = 3;
 		add(mobileFractionSlider, gridBagConstraints_6);
 
 		secondMobileFractionLabel = new JLabel();
+		secondMobileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		secondMobileFractionLabel.setText("Secondary Mobile Fraction:");
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
+		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_15.weightx = 0;
 		gridBagConstraints_15.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_15.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_15.gridy = 2;
-		gridBagConstraints_15.gridx = 7;
+		gridBagConstraints_15.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_15.gridy = 1;
+		gridBagConstraints_15.gridx = 6;
 		add(secondMobileFractionLabel, gridBagConstraints_15);
 
 		secondMobileFracTextField = new JTextField();
+		secondMobileFracTextField.setColumns(10);
 //		secondMobileFracTextField.setEnabled(false);
 		secondMobileFracTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
 		secondMobileFracTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
+		gridBagConstraints_18.weightx = 0;
 		gridBagConstraints_18.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_18.gridy = 2;
-		gridBagConstraints_18.gridx = 8;
+		gridBagConstraints_18.gridy = 1;
+		gridBagConstraints_18.gridx = 7;
 		add(secondMobileFracTextField, gridBagConstraints_18);
 
 		secondMobileFracSetButton = new JButton();
@@ -597,13 +586,14 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondMobileFracSetButton.setMargin(new Insets(2, 1, 2, 1));
 		secondMobileFracSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_21 = new GridBagConstraints();
+		gridBagConstraints_21.weightx = 0;
 		gridBagConstraints_21.insets = new Insets(0, 0, 2, 2);
-		gridBagConstraints_21.gridy = 2;
-		gridBagConstraints_21.gridx = 9;
+		gridBagConstraints_21.gridy = 1;
+		gridBagConstraints_21.gridx = 8;
 		add(secondMobileFracSetButton, gridBagConstraints_21);
 
 		secondMobileFracSlider = new JSlider();
-		secondMobileFracSlider.setPreferredSize(new Dimension(0, 0));
+//		secondMobileFracSlider.setPreferredSize(new Dimension(0, 0));
 //		secondMobileFracSlider.setEnabled(false);
 		secondMobileFracSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		secondMobileFracSlider.setPaintLabels(true);
@@ -611,30 +601,36 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		gridBagConstraints_23.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_23.weightx = 1;
 		gridBagConstraints_23.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_23.gridy = 2;
-		gridBagConstraints_23.gridx = 10;
+		gridBagConstraints_23.gridy = 1;
+		gridBagConstraints_23.gridx = 9;
 		add(secondMobileFracSlider, gridBagConstraints_23);
 
 		final JLabel bleachWhileMonitorLabel = new JLabel();
+		bleachWhileMonitorLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
+		bleachWhileMonitorLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 //		bleachWhileMonitorLabel.setFont(new Font("", Font.BOLD, 14));
 		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
-		gridBagConstraints_12.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_12.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_12.weightx = 0;
+		gridBagConstraints_12.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_12.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_12.gridy = 3;
+		gridBagConstraints_12.gridy = 2;
 		gridBagConstraints_12.gridx = 0;
 		add(bleachWhileMonitorLabel, gridBagConstraints_12);
 
 		bleachWhileMonitorRateTextField = new JTextField();
+		bleachWhileMonitorRateTextField.setColumns(10);
 		bleachWhileMonitorRateTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
-		bleachWhileMonitorRateTextField.setPreferredSize(new Dimension(125, 20));
-		bleachWhileMonitorRateTextField.setMinimumSize(new Dimension(125, 20));
+//		bleachWhileMonitorRateTextField.setPreferredSize(new Dimension(125, 20));
+//		bleachWhileMonitorRateTextField.setMinimumSize(new Dimension(125, 20));
 		bleachWhileMonitorRateTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 //		bleachWhileMonitorRateTextField.setText("bleachWhileMonitorRate");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
+		gridBagConstraints_3.weightx = 0;
 		gridBagConstraints_3.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_3.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_3.gridy = 3;
+		gridBagConstraints_3.gridy = 2;
 		gridBagConstraints_3.gridx = 1;
 		add(bleachWhileMonitorRateTextField, gridBagConstraints_3);
 
@@ -643,8 +639,9 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		bleachWhileMonitorSetButton.setMargin(new Insets(2, 1, 2, 1));
 		bleachWhileMonitorSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
+		gridBagConstraints_10.weightx = 0;
 		gridBagConstraints_10.insets = new Insets(2, 0, 2, 2);
-		gridBagConstraints_10.gridy = 3;
+		gridBagConstraints_10.gridy = 2;
 		gridBagConstraints_10.gridx = 2;
 		add(bleachWhileMonitorSetButton, gridBagConstraints_10);
 
@@ -655,29 +652,50 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		gridBagConstraints_7.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_7.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_7.weightx = 1;
-		gridBagConstraints_7.gridy = 3;
+		gridBagConstraints_7.gridy = 2;
 		gridBagConstraints_7.gridx = 3;
 		add(bleachWhileMonitorSlider, gridBagConstraints_7);		
 
 		final JLabel immboileFractionLabel = new JLabel();
+		immboileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 //		immboileFractionLabel.setFont(new Font("", Font.BOLD, 14));
 		immboileFractionLabel.setText("Model    Immobile    Fraction:");
 		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
-		gridBagConstraints_16.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_16.gridy = 3;
-		gridBagConstraints_16.gridx = 7;
+		gridBagConstraints_16.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_16.weightx = 0;
+		gridBagConstraints_16.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_16.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_16.gridy = 2;
+		gridBagConstraints_16.gridx = 6;
 		add(immboileFractionLabel, gridBagConstraints_16);
 
 		immoFracValueLabel = new JLabel();
 		immoFracValueLabel.setIconTextGap(0);
 		immoFracValueLabel.setText("       ");
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
+		gridBagConstraints_19.gridwidth = 2;
+		gridBagConstraints_19.weightx = 0;
 		gridBagConstraints_19.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_19.gridy = 3;
-		gridBagConstraints_19.gridx = 8;
+		gridBagConstraints_19.gridy = 2;
+		gridBagConstraints_19.gridx = 7;
 		add(immoFracValueLabel, gridBagConstraints_19);
 		
 		initialize();
+
+		final JButton getOptimalButton = new JButton();
+		getOptimalButton.setMargin(new Insets(2, 6, 2, 6));
+		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
+		gridBagConstraints_8.insets = new Insets(0, 0, 0, 0);
+		gridBagConstraints_8.gridy = 2;
+		gridBagConstraints_8.gridx = 9;
+		add(getOptimalButton, gridBagConstraints_8);
+		getOptimalButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				runAndSetBestParameters();
+			}
+		});
+		getOptimalButton.setText("Get Best Parameters");
+		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 	}
 
 	private void initialize(){
@@ -757,6 +775,42 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 			throw new RuntimeException("Some of the editable parameters are empty or in illegal forms!");
 		}
 		return true;
+	}
+	
+	public void runAndSetBestParameters()
+	{
+		if(checkParameters())
+		{
+			AsynchClientTask optTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+			{
+				public void run(Hashtable<String, Object> hashTable) throws Exception
+				{
+					frapOptData.setNumEstimatedParams(getCurrentParameters().length);
+					final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					hashTable.put("bestParameters", bestParameters);
+				}
+			};
+			
+			AsynchClientTask showResultTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+			{
+				public void run(Hashtable<String, Object> hashTable) throws Exception
+				{
+					final Parameter[] bestParameters = (Parameter[])hashTable.get("bestParameters");
+					if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
+					{
+						setParameterValues(
+							new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
+							new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
+							new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
+							new Double(bestParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()),
+							new Double(bestParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()));
+						firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
+					}
+				}
+			};
+			//dispatch
+			ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask, showResultTask}, false);
+		}
 	}
 	
 	public void setData(FRAPOptData frapOptData, Parameter[] modelParameters) throws Exception
@@ -1062,5 +1116,29 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 	public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
+	}
+	
+	public static void main(java.lang.String[] args) {
+		try {
+			try{
+		    	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		    }catch(Exception e){
+		    	throw new RuntimeException(e.getMessage(),e);
+		    }
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			FRAPDiffTwoParamPanel aParameterPanel;
+			aParameterPanel = new FRAPDiffTwoParamPanel();
+			frame.add(aParameterPanel);
+			frame.pack();
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			frame.setVisible(true);
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
 	}
 }

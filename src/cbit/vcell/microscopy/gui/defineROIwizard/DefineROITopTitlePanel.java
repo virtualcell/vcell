@@ -35,7 +35,7 @@ public class DefineROITopTitlePanel extends JPanel
 		cropLabel = new JLabel();
 		cropLabel.setForeground(new Color(0, 0, 128));
 		cropLabel.setFont(new Font("", Font.BOLD, 14));
-		cropLabel.setText("Crop");
+		cropLabel.setText("Crop Image");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;

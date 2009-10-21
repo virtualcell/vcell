@@ -67,13 +67,17 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+ex.getMessage());
 			}
 		}
-		else if (e.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI)){
+		else if (e.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITH_SAVE)){
 			//Save user changes from viewer to ROI
 			//To save only when the image is editable in this panel
 			if(isEditable)
 			{
 				getOverlayEditorPanelJAI().saveUserChangesToROI();
 			}
+			//Set new ROI on viewer
+			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+		}
+		else if (e.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE)){
 			//Set new ROI on viewer
 			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 		}
@@ -198,7 +202,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 //							saveROI();
 							if(roiName != null)
 							{
-								getFrapWorkspace().getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapWorkspace().getFrapStudy().getFrapData().getRoi(roiName));
+								getFrapWorkspace().getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapWorkspace().getFrapStudy().getFrapData().getRoi(roiName), false);
 							}
 						} catch (Exception e) {
 							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());

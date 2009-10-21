@@ -70,7 +70,7 @@ public class ResultDisplayPanel extends JPanel
 		gridBagConstraints1.anchor = GridBagConstraints.WEST;
 		
 		GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-		gridBagConstraints2.ipadx = 18;
+		gridBagConstraints2.ipadx = 45;
 		gridBagConstraints2.gridx = 0;
 		gridBagConstraints2.gridy = 2;
 		gridBagConstraints2.gridheight = 3;
@@ -120,19 +120,19 @@ public class ResultDisplayPanel extends JPanel
 			modelPanel = new JPanel();
 			final GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.rowHeights = new int[] {0,7,0,7};
-			gridBagLayout.columnWidths = new int[] {7,0,0,0,0,0,7,0,7,0,7,7};
+			gridBagLayout.columnWidths = new int[] {0,0,7,0,0,7,7,0,0,0,0,0,0,0,0,0,0,0,0,0};
 			modelPanel = new JPanel(gridBagLayout);
 			modelPanel.setBorder(new TitledBorder(new LineBorder(new Color(153, 186,243),1), "Best Model")); 
 			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 			gridBagConstraints1.insets = new Insets(0, 0, 0, 0);
-			gridBagConstraints1.gridx = 2;
+			gridBagConstraints1.gridx = 1;
 			gridBagConstraints1.gridy = 0;
 //			gridBagConstraints1.ipady = 0;
 //			gridBagConstraints1.ipadx = 0;
 			gridBagConstraints1.anchor = GridBagConstraints.WEST;
 			
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-			gridBagConstraints2.gridx = 2;
+			gridBagConstraints2.gridx = 1;
 			gridBagConstraints2.gridy = 2;
 //			gridBagConstraints2.ipady = 0;
 //			gridBagConstraints2.ipadx = 0;
@@ -140,7 +140,7 @@ public class ResultDisplayPanel extends JPanel
 					
 			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
 			gridBagConstraints3.gridwidth = 2;
-			gridBagConstraints3.gridx = 9;
+			gridBagConstraints3.gridx = 19;
 			gridBagConstraints3.gridy = 0;
 //			gridBagConstraints3.ipady = 0;
 //			gridBagConstraints3.ipadx = 0;
@@ -177,7 +177,7 @@ public class ResultDisplayPanel extends JPanel
 	{
 		if(reacBindingLabel == null)
 		{
-			reacBindingLabel = new JLabel("Reaction plus Binding");
+			reacBindingLabel = new JLabel("Diffusion  plus  Binding");
 			reacBindingLabel.setFont(new Font("arial", Font.PLAIN, 12));
 		}
 		return reacBindingLabel;

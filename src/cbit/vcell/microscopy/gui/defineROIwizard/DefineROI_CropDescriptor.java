@@ -7,6 +7,7 @@ import java.util.Hashtable;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
@@ -43,6 +44,7 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
     	((DefineROI_Panel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_CROP);
+    	((DefineROI_Panel)imgPanel).setCurrentROI(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), false);
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()
@@ -56,7 +58,7 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it goes next to
-				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr, true);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);

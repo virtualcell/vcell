@@ -56,7 +56,7 @@ public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it goes next to
-				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr, true);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);
@@ -94,7 +94,7 @@ public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it backs to 
-				((DefineROI_Panel)imgPanel).setCurrentROI(backROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(backROIStr, true);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);															
