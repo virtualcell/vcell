@@ -23,6 +23,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
@@ -1557,6 +1558,43 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		};
 		
+		AsynchClientTask runOptTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+				if(fStudy.hasOptModel())
+				{
+					ArrayList<Integer> models = fStudy.getSelectedModels();
+					for(int i = 0; i<models.size(); i++)
+					{
+						if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+						{
+							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
+							{
+								fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);
+								Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
+								Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
+								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
+							}
+							
+							
+						}
+						else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+						{
+							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
+							{
+								fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
+								Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
+								Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
+								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
+							}
+						}
+					}
+				}
+			}
+		
+		};
 
 		AsynchClientTask showDialogTask = new AsynchClientTask("Checking simulation directory ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 		{
@@ -1568,7 +1606,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		};
 		
 		//dispatch
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask1, showDialogTask}, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask1, runOptTask, showDialogTask}, false);
 	}
 	
 	private void showMovie()

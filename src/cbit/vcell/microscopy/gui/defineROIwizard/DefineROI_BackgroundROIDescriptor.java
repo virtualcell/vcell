@@ -60,9 +60,9 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it goes next to
-				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr, true);
 				FRAPData fData = ((DefineROI_Panel)imgPanel).getFrapWorkspace().getFrapStudy().getFrapData();
-				fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+				fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()), true);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);
@@ -80,7 +80,7 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//save current ROI and load ROI in the panel it backs to 
-				((DefineROI_Panel)imgPanel).setCurrentROI(backROIStr);
+				((DefineROI_Panel)imgPanel).setCurrentROI(backROIStr, true);
 			}
 		};
 		taskArrayList.add(setCurrentROITask);															

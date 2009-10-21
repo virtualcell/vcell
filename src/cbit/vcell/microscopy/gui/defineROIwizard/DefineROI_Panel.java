@@ -91,13 +91,13 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 		centerPanel.adjustComponents(choice);
 	}
 	
-	public void setCurrentROI(String roiName)
+	public void setCurrentROI(String roiName, boolean bSave)
 	{
 		if(getFrapWorkspace() != null && getFrapWorkspace().getFrapStudy() != null &&
 		   getFrapWorkspace().getFrapStudy().getFrapData() != null)
 		{
 			FRAPData fData = getFrapWorkspace().getFrapStudy().getFrapData();
-			fData.setCurrentlyDisplayedROI(fData.getRoi(roiName));
+			fData.setCurrentlyDisplayedROI(fData.getRoi(roiName), bSave);
 		}
 	}
 	

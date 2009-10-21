@@ -74,13 +74,13 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 		{
 			final GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.rowHeights = new int[] {0,7,7};
-			gridBagLayout.columnWidths = new int[] {7,7,7,0,0,7,0,7,7,0,0,0,7};
+			gridBagLayout.columnWidths = new int[] {7,7,7,0,0,7,0,7,7,7,0,0,7};
 			timePanel = new JPanel(gridBagLayout);
 			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 			gridBagConstraints1.anchor = GridBagConstraints.WEST;
 			gridBagConstraints1.gridy = 0;
 			gridBagConstraints1.gridx = 1;
-			timePanel.add(new JLabel("Starting time"), gridBagConstraints1);
+			timePanel.add(new JLabel("Image starts at:"), gridBagConstraints1);
 
 			sTimeCombo = new JComboBox();
 			final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
@@ -101,7 +101,7 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			timePanel.add(sLabel1, gridBagConstraints_7);
 
 			final JLabel eTimeLabel = new JLabel();
-			eTimeLabel.setText("Ending time ");
+			eTimeLabel.setText("Image ends at:");
 			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
 			gridBagConstraints3.anchor = GridBagConstraints.EAST;
 			gridBagConstraints3.gridy = 0;
@@ -112,7 +112,7 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			eTimeCombo = new JComboBox();
 			final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 			gridBagConstraints_6.gridy = 0;
-			gridBagConstraints_6.gridx = 9;
+			gridBagConstraints_6.gridx = 10;
 			timePanel.add(eTimeCombo, gridBagConstraints_6);
 			eTimeCombo.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
@@ -124,11 +124,11 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			sLabel2.setText(" s");
 			final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 			gridBagConstraints_8.gridy = 0;
-			gridBagConstraints_8.gridx = 11;
+			gridBagConstraints_8.gridx = 12;
 			timePanel.add(sLabel2, gridBagConstraints_8);
 
 			final JLabel tolTimeLabel = new JLabel();
-			tolTimeLabel.setText("Total Time");
+			tolTimeLabel.setText("Image duration:");
 			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.anchor = GridBagConstraints.WEST;
 			gridBagConstraints.gridy = 1;

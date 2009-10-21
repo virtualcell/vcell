@@ -293,9 +293,6 @@ public class FRAPEstimationPanel extends JPanel {
 		add(plotOfAverageLabel, gridBagConstraints_29);
 
 		multisourcePlotPane = new MultisourcePlotPane();
-		multisourcePlotPane.setModelDataLabelPrefix("Estimated_");
-		multisourcePlotPane.setRefDataLabelPrefix("Experiment_");
-//		multisourcePlotPane.setBorder(new LineBorder(Color.black, 1, false));
 		multisourcePlotPane.setBorder(new EtchedBorder());
 		multisourcePlotPane.setListVisible(false);
 		final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();

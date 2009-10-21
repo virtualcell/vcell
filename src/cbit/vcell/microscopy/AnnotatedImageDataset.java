@@ -24,7 +24,8 @@ public abstract class AnnotatedImageDataset {
 	private transient ROI currentlyDisplayedROI = null;
 	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-	public static final String PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI = "currentlyDisplayedROI";
+	public static final String PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITH_SAVE = "currentlyDisplayedROI_withsave";
+	public static final String PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE = "currentlyDisplayedROI_withoutsave";
 	/**
 	 * Constructor for AnnotatedImageDataset.
 	 * @param argImageDataset ImageDataset
@@ -305,11 +306,23 @@ public abstract class AnnotatedImageDataset {
 	 * @param argCurrentlyDisplayedROI ROI
 	 */
 	public void setCurrentlyDisplayedROI(ROI argCurrentlyDisplayedROI) {
-		ROI oldDisplayedROI = this.currentlyDisplayedROI;
-		this.currentlyDisplayedROI = argCurrentlyDisplayedROI;
-		propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI, oldDisplayedROI, currentlyDisplayedROI);
+		setCurrentlyDisplayedROI(argCurrentlyDisplayedROI, true);
 	}
 
+	public void setCurrentlyDisplayedROI(ROI argCurrentlyDisplayedROI, boolean bSave) {
+		ROI oldDisplayedROI = this.currentlyDisplayedROI;
+		this.currentlyDisplayedROI = argCurrentlyDisplayedROI;
+		if(bSave)
+		{
+			propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITH_SAVE, oldDisplayedROI, currentlyDisplayedROI);
+		}
+		else
+		{
+			propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE, oldDisplayedROI, currentlyDisplayedROI);
+		}
+	}
+
+	
 	public void setImageDataset(ImageDataset newImgDataset)
 	{
 		imageDataset = newImgDataset;

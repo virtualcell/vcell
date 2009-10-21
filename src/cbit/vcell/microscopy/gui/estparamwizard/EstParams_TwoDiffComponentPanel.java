@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
@@ -73,10 +74,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		gridBagLayout.rowHeights = new int[] {7,7,7,0,7};
 		gridBagLayout.columnWidths = new int[] {7};
 		setLayout(gridBagLayout);
-		
-		JPanel topPanel = new JPanel(new BorderLayout());
-		JPanel buttonPanel = new JPanel(new FlowLayout());
-				
+			
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel(new GridBagLayout());
 		paramPanel.setForeground(new Color(0,0,244));
@@ -114,13 +112,13 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 				}
 		);
 
-		topPanel.add(paramPanel, BorderLayout.CENTER);
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
+		gridBagConstraints_9.weightx = 1;
 		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_9.gridy = 0;
 		gridBagConstraints_9.gridx = 0;
-		add(topPanel, gridBagConstraints_9);
+		add(paramPanel, gridBagConstraints_9);
 		
 		
 		final JPanel panel_3 = new JPanel();
@@ -128,6 +126,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		gridBagLayout_1.columnWidths = new int[] {0,7};
 		panel_3.setLayout(gridBagLayout_1);
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
+		gridBagConstraints_11.weightx = 1;
 		gridBagConstraints_11.gridy = 1;
 		gridBagConstraints_11.gridx = 0;
 		add(panel_3, gridBagConstraints_11);
@@ -155,9 +154,6 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		add(panel, gridBagConstraints_1);
 
 		multisourcePlotPane = new MultisourcePlotPane();
-		multisourcePlotPane.setRefDataLabelPrefix("exp:");
-		multisourcePlotPane.setModelDataLabelPrefix("sim:");
-		multisourcePlotPane.setStepViewVisible(false);
 		
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.gridy = 0;
@@ -322,4 +318,30 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 	{
 		getPureDiffusionPanel().insertPureDiffusionParametersIntoFRAPStudy(arg_FRAPStudy);
 	}
+	
+	public static void main(java.lang.String[] args) {
+		try {
+			try{
+		    	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		    }catch(Exception e){
+		    	throw new RuntimeException(e.getMessage(),e);
+		    }
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			EstParams_TwoDiffComponentPanel aParameterPanel;
+			aParameterPanel = new EstParams_TwoDiffComponentPanel();
+			frame.add(aParameterPanel);
+			frame.pack();
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			frame.setVisible(true);
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
+	}
+	
+	
 }

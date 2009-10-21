@@ -572,7 +572,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 						}
 						//calculate diffusion-limited Kon (Kobs=4*PI*D'*R, D'=Df+Dbs   R=Rf+Rbs)
 						kon = 4*PI*(df+dbs)*(fRadius+bsRadius)/602.0;
-							double koff = (bs*kon*cf)/cc;
+						double koff = (bs*kon*cf)/cc;
 						//update textfield and table
 						koffTextField.setText(koff+"");
 						try{

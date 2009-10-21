@@ -149,9 +149,6 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		add(panel, gridBagConstraints_1);
 
 		multisourcePlotPane = new MultisourcePlotPane();
-		multisourcePlotPane.setRefDataLabelPrefix("exp:");
-		multisourcePlotPane.setModelDataLabelPrefix("sim:");
-		multisourcePlotPane.setStepViewVisible(false);
 		
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.gridy = 0;

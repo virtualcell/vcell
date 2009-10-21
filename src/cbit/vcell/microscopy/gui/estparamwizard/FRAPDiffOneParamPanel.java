@@ -304,7 +304,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 				runAndSetBestParameters();
 			}
 		});
-		getOptimalButton.setText("Get Best Fit Parameters");
+		getOptimalButton.setText("Get Best Parameters");
 		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 //		gridBagConstraints_13.gridwidth = 2;
 //		gridBagConstraints_13.ipadx = 10;
@@ -569,26 +569,30 @@ public class FRAPDiffOneParamPanel extends JPanel
 			{
 				public void run(Hashtable<String, Object> hashTable) throws Exception
 				{
-					try{
-						frapOptData.setNumEstimatedParams(getCurrentParameters().length);
-						final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
-						if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
-						{
-							setParameterValues(
+					frapOptData.setNumEstimatedParams(getCurrentParameters().length);
+					final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					hashTable.put("bestParameters", bestParameters);
+				}
+			};
+			
+			AsynchClientTask showResultTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+			{
+				public void run(Hashtable<String, Object> hashTable) throws Exception
+				{
+					final Parameter[] bestParameters = (Parameter[])hashTable.get("bestParameters");
+					if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
+					{
+						setParameterValues(
 								new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
 								new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
 								new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess())
 								);
-							firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
-						}
-					}catch(final Exception e2){
-						e2.printStackTrace();
-						DialogUtils.showErrorDialog(FRAPDiffOneParamPanel.this, "Error setting Best Fit Parameters\n"+e2.getMessage());
+						firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
 					}
 				}
 			};
 			//dispatch
-			ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask}, false);
+			ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask, showResultTask}, false);
 		}
 	}
 	
