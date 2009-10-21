@@ -46,6 +46,6 @@ public String toString() {
 	if (dataSource.getName() == null || dataSource.getName().length() == 0) {
 		return identifier;
 	}
-	return dataSource.getName()+":"+identifier;
+	return dataSource.getName()+": "+identifier;
 }
 }

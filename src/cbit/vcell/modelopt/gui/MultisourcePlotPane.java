@@ -25,9 +25,6 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	private DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 	
-	private String refDataLabelPrefix = "refData_";
-	private String modelDataLabelPrefix = "model_";
-
 	private Color[] autoContrastColors;
 	
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
@@ -421,7 +418,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 		int selectedIndex = selectedIndices[ii];
 		DataReference dataReference = (DataReference)getmultisourcePlotListModel().getElementAt(selectedIndex);
 		DataSource dataSource = dataReference.getDataSource();
-		String prefix = dataSource instanceof DataSource.DataSourceReferenceData ? refDataLabelPrefix : modelDataLabelPrefix;
+		String prefix = dataSource.getName() + ": ";// instanceof DataSource.DataSourceReferenceData ? refDataLabelPrefix : modelDataLabelPrefix;
 		
 		String[] columnNames = dataSource.getColumnNames();
 		int timeIndex = dataSource.getTimeColumnIndex();
@@ -503,35 +500,8 @@ public void setListVisible(boolean arg1) {
 	getReferenceDataListScrollPane().setVisible(arg1);
 }
 
-public String getRefDataLabelPrefix() {
-	return refDataLabelPrefix;
-}
-
-public void setRefDataLabelPrefix(String refDataLabelPrefix) {
-	this.refDataLabelPrefix = refDataLabelPrefix;
-}
-
-public String getModelDataLabelPrefix() {
-	return modelDataLabelPrefix;
-}
-
-public void setModelDataLabelPrefix(String modelDataLabelPrefix) {
-	this.modelDataLabelPrefix = modelDataLabelPrefix;
-}
 public void forceXYRange(Range xRange,Range yRange) {
 	getplotPane().forceXYRange(xRange, yRange);
-}
-
-public void setStepViewVisible(boolean bVisible)
-{
-	if(!bVisible)
-	{
-		getplotPane().setStepViewVisible(false, false);
-	}
-	else
-	{
-		getplotPane().setStepViewVisible(true, false);
-	}
 }
 
 }
