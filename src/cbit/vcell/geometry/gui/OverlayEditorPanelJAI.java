@@ -802,7 +802,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 */
 	public void setROI(ROI argROI)
 	{
-		if (argROI != null && roi != argROI) {
+		if (argROI != null /*&& roi != argROI*/) {
 			roi = argROI;
 			roiName = roi.getROIName();
 			
@@ -1074,7 +1074,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		if(roi == null){
 			return;
 		}
-		saveUserChangesToROI();
+//		saveUserChangesToROI();
 		try{
 			undoableROI = new ROI(roi);
 		}catch(Exception e2){
