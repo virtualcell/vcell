@@ -123,7 +123,7 @@ public void plot() {
 		
 		ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
 		if (odeSolverResultSet!=null){
-			dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("odeData", odeSolverResultSet));
+			dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("estData", odeSolverResultSet));
 			if (mappingSpecs != null) {
 				for (int i = 0; i < mappingSpecs.length; i ++) {
 					if (i == timeIndex) {
