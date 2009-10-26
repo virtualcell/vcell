@@ -349,6 +349,7 @@ private void initialize() {
 private void initSurfaceButton() {
 	boolean bSpatial = (getGeometry() != null) && (getGeometry().getDimension() > 0);
 	getJButtonViewSurfaces().setEnabled(bSpatial);
+	getJButtonOpenGeometry().setEnabled(bSpatial);
 }
 
 

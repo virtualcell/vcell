@@ -14,6 +14,9 @@ public interface ExportConstants {
 	public static final int FORMAT_GIF = 2;
 	public static final int FORMAT_ANIMATED_GIF = 3;
 	public static final int FORMAT_NRRD = 4;
+	public static final int FORMAT_UCD = 5;
+	public static final int FORMAT_VTK_UNSTRUCT = 6;
+	public static final int FORMAT_VTK_IMAGE = 7;
 
 	// image mirroring types
 	public final static int NO_MIRRORING = 0;

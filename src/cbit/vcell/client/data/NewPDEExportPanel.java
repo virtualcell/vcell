@@ -75,6 +75,10 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private static final String EXPORT_QT_MOVIE = "QuickTime movie files (*.mov)";
 	private static final String EXPORT_GIF_IMAGES = "GIF89a image files (*.gif)";
 	private static final String EXPORT_GIF_ANIM = "Animated GIF files (*.gif)";
+	private static final String EXPORT_NRRD = "Nearly raw raster data (*.nrrd)";
+	private static final String EXPORT_UCD = "UCD (*.ucd)";
+	private static final String EXPORT_VTK_IMAGE = "VTK Image (*.vtk)";
+	private static final String EXPORT_VTK_UNSTRUCT = "VTK Unstructured (*.vtk)";
 
 
 
@@ -93,16 +97,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 //			if (e.getSource() == NewPDEExportPanel.this.getJButtonRemove()) 
 //				connEtoM5(e);
 			if (e.getSource() == NewPDEExportPanel.this.getVolVarRadioButton()){
-				updateChoiceVariableType(getPdeDataContext());
-				updateChoiceROI();
+				vol_memb_both_change();
 			}
 			if (e.getSource() == NewPDEExportPanel.this.getMembVarRadioButton()){
-				updateChoiceVariableType(getPdeDataContext());
-				updateChoiceROI();
+				vol_memb_both_change();
 			}
 			if (e.getSource() == NewPDEExportPanel.this.getBothVarRadioButton()){
-				updateChoiceVariableType(getPdeDataContext());
-				updateChoiceROI();
+				vol_memb_both_change();
 			}
 
 		};
@@ -176,7 +177,12 @@ public NewPDEExportPanel() {
 	initialize();
 }
 
+private void vol_memb_both_change(){
+	updateChoiceVariableType(getPdeDataContext());
+	updateChoiceROI();
+	updateInterface();
 
+}
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  * @param listener java.beans.PropertyChangeListener
@@ -412,7 +418,7 @@ private void connEtoC2() {
 	try {
 		// user code begin {1}
 		// user code end
-		this.initFormatChoices();
+		this.initFormatChoices_new(/*false*/);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1865,16 +1871,51 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP3SetTarget();
 }
 
-/**
- * Comment
- */
-private void initFormatChoices() {
-	if (getJComboBox1().getItemCount() > 0) getJComboBox1().removeAllItems();
+
+private void initFormatChoices_0(/*boolean bMembrane*/){
+	try{
+	getJComboBox1().removeItemListener(ivjEventHandler);
+	Object currentSelection = getJComboBox1().getSelectedItem();
+	getJComboBox1().removeAllItems();
 	getJComboBox1().addItem("Comma delimited ASCII files (*.csv)");
 	getJComboBox1().addItem(EXPORT_QT_MOVIE);
 	getJComboBox1().addItem(EXPORT_GIF_IMAGES);
 	getJComboBox1().addItem(EXPORT_GIF_ANIM);
-	getJComboBox1().addItem("Nearly raw raster data (*.nrrd)");
+	getJComboBox1().addItem(EXPORT_NRRD);
+	
+	getJComboBox1().addItem(EXPORT_UCD);
+	
+	getJComboBox1().addItem(EXPORT_VTK_UNSTRUCT);
+
+	if(getVolVarRadioButton().isSelected()){
+		getJComboBox1().addItem(EXPORT_VTK_IMAGE);
+	}
+	if(currentSelection != null){
+		getJComboBox1().setSelectedItem(currentSelection);
+	}else{
+		getJComboBox1().setSelectedIndex(0);
+	}
+}finally{
+	getJComboBox1().addItemListener(ivjEventHandler);
+}
+
+}
+/**
+ * Comment
+ */
+private void initFormatChoices_new(/*final boolean bMembrane*/){
+	if(SwingUtilities.isEventDispatchThread()){
+		initFormatChoices_0(/*bMembrane*/);
+	}else{
+	try{
+		SwingUtilities.invokeAndWait(new Runnable(){
+			public void run() {
+				initFormatChoices_0(/*bMembrane*/);
+			}});
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	}
 }
 
 
@@ -2221,6 +2262,7 @@ private void startExport() {
 					return;
 				}
 			}
+			break;
 		}
 	};
 	if (getJRadioButtonSelection().isSelected() && getJListSelections().getSelectedIndex() == -1) {
@@ -2298,6 +2340,7 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
  * Comment
  */
 private void updateExportFormat(int exportFormat) {
+	getJRadioButtonSlice().setEnabled(true);
 	switch (exportFormat) {
 		case ExportConstants.FORMAT_CSV: {
 			BeanUtils.enableComponents(getJPanelSelections(), true);
@@ -2319,6 +2362,18 @@ private void updateExportFormat(int exportFormat) {
 			getJRadioButtonFull().setEnabled(true);			
 			break;
 		}
+		case ExportConstants.FORMAT_UCD:
+		case ExportConstants.FORMAT_VTK_UNSTRUCT:
+		case ExportConstants.FORMAT_VTK_IMAGE: {
+			BeanUtils.enableComponents(getJPanelSelections(), false);
+			getJRadioButtonSlice().setSelected(false);
+			getJRadioButtonSlice().setEnabled(false);
+			getJRadioButtonFull().setSelected(true);
+			getJRadioButtonFull().setEnabled(true);			
+			break;
+		}
+
+
 	};
 }
 
@@ -2327,6 +2382,7 @@ private void updateExportFormat(int exportFormat) {
  * Comment
  */
 private void updateInterface() {
+	initFormatChoices_new(/*getMembVarRadioButton().isSelected()*/);
 	//
 	if(!getJRadioButtonSelection().isSelected()){
 		getJListSelections().clearSelection();
@@ -2386,11 +2442,18 @@ private void updateInterface() {
 		}
 		getVolVarRadioButton().setEnabled(false);
 		getMembVarRadioButton().setEnabled(false);
-	}else {
+	}else if(getJComboBox1().getSelectedItem().equals(EXPORT_NRRD)){
 		if(getBothVarRadioButton().isSelected()){
 			getVolVarRadioButton().doClick();
 		}
 		getBothVarRadioButton().setEnabled(false);
+	}
+	else if(getJComboBox1().getSelectedItem().equals(EXPORT_VTK_IMAGE)){
+		if(!getVolVarRadioButton().isSelected()){
+			getVolVarRadioButton().doClick();
+		}
+		getBothVarRadioButton().setEnabled(false);
+		getMembVarRadioButton().setEnabled(false);
 	}
 }
 

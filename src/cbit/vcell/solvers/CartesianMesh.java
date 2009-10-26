@@ -21,6 +21,8 @@ import org.vcell.util.Origin;
 
 import cbit.util.*;
 import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.Quadrilateral;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
@@ -55,6 +57,198 @@ public class CartesianMesh implements Serializable, Matchable {
 	public final static String VERSION_1_1 = "1.1";		// added: membrane connectivity 8/30/2000
 	public final static String VERSION_1_2 = "1.2";		// added: Regions 07/02/2001
 	
+
+	public class UCDInfo{
+		private Coordinate[][][] ucdGridNodes;
+		private int[][] ucdMembraneQuads;
+		
+		private static final String UCD_QUAD_CELL_TYPE = "quad"; //quadrilateral (box, 4 edges, 4 corners)
+		private static final String UCD_HEX_CELL_TYPE = "hex"; // hexahedron (cube, 12 edges, 6 faces, 8 corners)
+
+		public UCDInfo(Coordinate[][][] ucdGridNodes,int[][] ucdMembraneQuads){
+			 this.ucdGridNodes = ucdGridNodes;
+			 this.ucdMembraneQuads = ucdMembraneQuads;
+		}
+
+		public String getHeaderString(int numCellVolumeData,int numCellMembraneData){
+			//Nodes of Hexahedral mesh volume elements (must be calculated using mesh info)
+			int numNodeData = 0;
+			
+			int numCells =
+				(numCellVolumeData == 0?0:CartesianMesh.this.getNumVolumeElements())+
+				(numCellMembraneData == 0?0:CartesianMesh.this.getNumMembraneElements());
+			
+			int numCellData = numCellVolumeData+numCellMembraneData;
+			
+			int numModelData = 0;//never used, always set to 0
+			
+			//UCD Header
+			return getNumVolumeNodesXYZ()+" "+numCells+" "+numNodeData+" "+numCellData+" "+numModelData+"\n";
+
+		}
+		public String getMeshGridNodesString(boolean bVTK){
+			//UCD Node Coordinates (used for Volume cells and unsmoothed Membrane cells)
+			StringBuffer volGridNodeSB = new StringBuffer();
+			int nodeCountStart = 0;
+			for (int z = 0; z < getNumVolumeNodesZ(); z++) {
+				for (int y = 0;y < getNumVolumeNodesY(); y++) {
+					for (int x = 0; x < getNumVolumeNodesX(); x++) {
+						volGridNodeSB.append(
+							(bVTK?"":nodeCountStart+" ")+
+							ucdGridNodes[z][y][x].getX()+" "+
+							ucdGridNodes[z][y][x].getY()+" "+
+							ucdGridNodes[z][y][x].getZ()+
+							"\n");
+						nodeCountStart++;
+					}
+				}
+			}
+			return volGridNodeSB.toString();
+		}
+		public String getVolumeCellsString(boolean bVTK){
+			StringBuffer volCellsSB = new StringBuffer();
+			//UCD Cells (Volume)
+			int volCellID = 0;
+			for (int z = 0; z < (getNumVolumeNodesZ() == 1?1:getNumVolumeNodesZ()-1); z++) {
+				int hexCornerZ = z*getNumVolumeNodesXY();
+				for (int y = 0; y < (getNumVolumeNodesY() == 1?1:getNumVolumeNodesY()-1); y++) {
+					int hexCornerY = hexCornerZ+(y*getNumVolumeNodesX());
+					for (int x = 0; x < (getNumVolumeNodesX()-1); x++) {
+						int hexCornerX = hexCornerY+x;
+						volCellsSB.append(
+								(bVTK?"8":volCellID+" "+getVolumeRegionIndex(getVolumeIndex(x, y, z))+" "+UCD_HEX_CELL_TYPE)+" "+
+								(hexCornerX)+" "+
+								(hexCornerX+1)+" "+
+								(hexCornerX+1+getNumVolumeNodesX())+" "+
+								(hexCornerX+getNumVolumeNodesX())+" "+
+								(hexCornerX+getNumVolumeNodesXY())+" "+
+								(hexCornerX+1+getNumVolumeNodesXY())+" "+
+								(hexCornerX+1+getNumVolumeNodesX()+getNumVolumeNodesXY())+" "+
+								(hexCornerX+getNumVolumeNodesX()+getNumVolumeNodesXY())+
+								"\n");
+						volCellID++;
+					}
+				}
+			}
+			return volCellsSB.toString();
+		}
+		public String getMembraneCellsString(int cellIDStart,boolean bVTK){
+			StringBuffer membrCellsString = new StringBuffer();
+			int MembCellID = 0;
+			for (int i = 0; i < ucdMembraneQuads.length; i++) {
+				membrCellsString.append(
+						(bVTK?"4":(MembCellID+cellIDStart)+" "+(getMembraneRegionIndex(i)+1)+" "+UCD_QUAD_CELL_TYPE)+" "+
+					ucdMembraneQuads[i][0]+" "+ucdMembraneQuads[i][1]+" "+ucdMembraneQuads[i][2]+" "+ucdMembraneQuads[i][3]+"\n");
+				MembCellID++;
+			}
+			return membrCellsString.toString();
+		}
+		public void writeCellData(boolean bFill,
+				String[] volumeVariableNames,String[] volumeVariableUnits,double[][] volumeData,
+				String[] membraneVariableNames,String[] membraneVariableUnits,double[][] membraneData,
+				java.io.Writer writer) throws Exception{
+			
+			if(volumeData != null && volumeData.length == 0){
+				volumeData = null;
+			}
+			if(membraneData != null && membraneData.length == 0){
+				membraneData = null;
+			}
+			if(volumeData != null && volumeData[0].length != getNumVolumeElements()){
+				throw new Exception("Volume data length does not match mesh info.");
+			}
+			if(membraneData != null && membraneData[0].length != getNumMembraneElements()){
+				throw new Exception("Membrane data length does not match mesh info.");
+			}
+
+			int numCellData = (volumeData != null?volumeData.length:0) +(membraneData != null?membraneData.length:0);
+			
+			String cellDataS = numCellData+"";
+			for (int i = 0; i < numCellData; i++) {
+				cellDataS = cellDataS+" 1";
+			}
+			writer.write(cellDataS+"\n");
+			for (int i = 0; volumeVariableNames != null && i < volumeVariableNames.length; i++) {
+				writer.write(volumeVariableNames[i]+","+volumeVariableUnits[i]+"\n");
+			}
+			for (int i = 0; membraneVariableNames != null && i < membraneVariableNames.length; i++) {
+				writer.write(membraneVariableNames[i]+","+membraneVariableUnits[i]+"\n");
+			}
+			
+			String membDataFiller = "";
+			for (int i = 0; membraneData != null && i < membraneData.length; i++) {
+				membDataFiller+= " 0";
+			}
+			String volDataFiller = "";
+			for (int i = 0; volumeData != null && i < volumeData.length; i++) {
+				volDataFiller+= "0 ";
+			}
+
+			if(volumeData != null || bFill){
+				for (int i = 0; i < getNumVolumeElements(); i++) {
+					writer.write(i+" ");
+					if(volumeData != null){
+						for (int j = 0; j < volumeData.length; j++) {
+							writer.write((j!= 0?" ":"")+volumeData[j][i]);			
+						}
+					}else if(bFill){
+						writer.write(volDataFiller);
+					}
+					writer.write(membDataFiller+"\n");
+				}
+			}
+			
+			if(membraneData != null || bFill){
+				for (int i = 0; i < getNumMembraneElements(); i++) {
+					writer.write(((bFill?getNumVolumeCells():0)+i)+" ");
+					writer.write(volDataFiller);
+					if(membraneData != null){
+						for (int j = 0; j < membraneData.length; j++) {
+							writer.write((j!= 0?" ":"")+membraneData[j][i]);
+						}
+					}else if(bFill){
+						writer.write(membDataFiller);
+					}
+					writer.write("\n");
+				}
+			}
+
+		}
+		public Coordinate[][][] getUCDGridNodes() {
+			return ucdGridNodes;
+		}
+
+		public int[][] getUCDMembraneQuads() {
+			return ucdMembraneQuads;
+		}
+		
+		public int getNumVolumeNodesX(){
+			return ucdGridNodes[0][0].length;
+		}
+		public int getNumVolumeNodesY(){
+			return ucdGridNodes[0].length;
+		}
+		public int getNumVolumeNodesZ(){
+			return ucdGridNodes.length;
+		}
+		public int getNumVolumeNodesXYZ(){
+			return
+				getNumVolumeNodesX()*
+				getNumVolumeNodesY()*
+				getNumVolumeNodesZ();
+		}
+		public int getNumVolumeNodesXY(){
+			return
+				getNumVolumeNodesX()*
+				getNumVolumeNodesY();
+		}
+		public int getNumVolumeCells(){
+			return getNumVolumeElements();
+		}
+		public int getNumMembraneCells(){
+			return getNumMembraneElements();
+		}
+	};
 
 /**
  * This method was created by a SmartGuide.
@@ -314,7 +508,12 @@ public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent
 	return mesh;
 }
 
-
+public static CartesianMesh createSimpleCartesianMesh(Geometry geometry) throws IOException{
+	GeometrySurfaceDescription geometrySurfaceDescription = geometry.getGeometrySurfaceDescription();
+	RegionImage regionImage = geometrySurfaceDescription.getRegionImage();
+	ISize iSize = new ISize(regionImage.getNumX(),regionImage.getNumY(),regionImage.getNumZ());
+	return createSimpleCartesianMesh(geometry.getOrigin(), geometry.getExtent(), iSize, regionImage);
+}
 public static boolean isSpatialDomainSame(CartesianMesh mesh1,CartesianMesh mesh2){
 	if(mesh1.getGeometryDimension() < 1 || mesh1.getGeometryDimension() > 3 ||
 		mesh2.getGeometryDimension() < 1 || mesh2.getGeometryDimension() > 3){
@@ -373,6 +572,103 @@ public int getContourRegionIndex(int contourIndex) {
 }
 
 
+public UCDInfo getUCDInfo(){
+	return new UCDInfo(getUCDGridNodes(),getUCDMembraneQuads());
+}
+private int[][] getUCDMembraneQuads(){
+	int[][] membrQuadNodes = new int[getMembraneElements().length][4];
+	final int xNodeCount = getSizeX()+1;
+	final int yNodeCount = (getSizeY() == 1?1:getSizeY()+1);
+	final int xyNodeCount = xNodeCount*yNodeCount;
+	for (int i = 0; i < getMembraneElements().length; i++) {
+		CoordinateIndex coordIndex0 = getCoordinateIndexFromVolumeIndex(getMembraneElements()[i].getInsideVolumeIndex());
+		CoordinateIndex coordIndex1 = getCoordinateIndexFromVolumeIndex(getMembraneElements()[i].getOutsideVolumeIndex());
+		if(coordIndex0.y == coordIndex1.y && coordIndex0.z == coordIndex1.z){//perpendicular x-axis
+			int xBase = Math.max(coordIndex0.x, coordIndex1.x);
+			membrQuadNodes[i][0] = xBase +(coordIndex0.y*xNodeCount) +(coordIndex0.z*xyNodeCount);
+			membrQuadNodes[i][1] = xBase +((coordIndex0.y+1)*xNodeCount) +(coordIndex0.z*xyNodeCount);
+			membrQuadNodes[i][2] = xBase +((coordIndex0.y+1)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+			membrQuadNodes[i][3] = xBase +((coordIndex0.y)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+
+		}else if(coordIndex0.x == coordIndex1.x && coordIndex0.z == coordIndex1.z){//perpendicular y-axis
+			int yBase = Math.max(coordIndex0.y, coordIndex1.y);
+			membrQuadNodes[i][0] = coordIndex0.x +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
+			membrQuadNodes[i][1] = coordIndex0.x+1 +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
+			membrQuadNodes[i][2] = coordIndex0.x+1 +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+			membrQuadNodes[i][3] = coordIndex0.x +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+
+		}else if(coordIndex0.x == coordIndex1.x && coordIndex0.y == coordIndex1.y){//perpendicular z-axis
+			int zBase = Math.max(coordIndex0.z, coordIndex1.z);
+			membrQuadNodes[i][0] = coordIndex0.x +(coordIndex0.y*xNodeCount) +(zBase*xyNodeCount);
+			membrQuadNodes[i][1] = coordIndex0.x +((coordIndex0.y+1)*xNodeCount) +(zBase*xyNodeCount);
+			membrQuadNodes[i][2] = coordIndex0.x+1 +((coordIndex0.y+1)*xNodeCount) +(zBase*xyNodeCount);
+			membrQuadNodes[i][3] = coordIndex0.x+1 +((coordIndex0.y)*xNodeCount) +(zBase*xyNodeCount);
+
+		}else{
+			throw new RuntimeException("No boundary found for MembraneElement "+i+" in="+coordIndex0+" out="+coordIndex1);
+		}
+	}
+	return membrQuadNodes;
+}
+
+private Coordinate[][][] getUCDGridNodes(){
+	Coordinate[][][] ucdMeshNodes =
+		new Coordinate[1+(getGeometryDimension() > 2?getSizeZ():0)]
+		              [1+(getGeometryDimension() > 1?getSizeY():0)]
+		              [1+getSizeX()];
+	double dx = getExtent().getX()/(getSizeX()-1);
+	double dy = (getGeometryDimension() > 1?getExtent().getY()/(getSizeY()-1):0);
+	double dz = (getGeometryDimension() > 2?getExtent().getZ()/(getSizeZ()-1):0);
+	CoordinateIndex coordIndex = new CoordinateIndex(0,0,0);
+	for (int z = 0; z < getSizeZ(); z++) {
+		coordIndex.z = z;
+		boolean bZEnd = z+1 == getSizeZ();
+		for (int y = 0; y < getSizeY(); y++) {
+			coordIndex.y = y;
+			boolean bYEnd = y+1 == getSizeY();
+			for (int x = 0; x < getSizeX(); x++) {
+				coordIndex.x = x;
+				boolean bXEnd = x+1 == getSizeX();
+				
+				//Get mesh volume element center coordinate.
+				Coordinate volCenterCoord = getCoordinate(coordIndex);
+				
+				//convert volume center coord to UCD grid "cell" node
+				double nodeX = volCenterCoord.getX()-(x==0?0:dx/2);
+				double nodeY = volCenterCoord.getY()-(y==0?0:dy/2);
+				double nodeZ = volCenterCoord.getZ()-(z==0?0:dz/2);
+				ucdMeshNodes[z][y][x] = new Coordinate(nodeX,nodeY,nodeZ);
+				
+				//Add "end" nodes when necessary
+				if(bXEnd){
+					ucdMeshNodes[z][y][x+1] = new Coordinate(volCenterCoord.getX(),nodeY,nodeZ);
+				}
+				if(bYEnd){
+					ucdMeshNodes[z][y+1][x] = new Coordinate(nodeX,volCenterCoord.getY(),nodeZ);
+				}
+				if(bZEnd){
+					ucdMeshNodes[z+1][y][x] = new Coordinate(nodeX,nodeY,volCenterCoord.getZ());
+				}
+				
+				if(bXEnd && bYEnd){
+					ucdMeshNodes[z][y+1][x+1] = new Coordinate(volCenterCoord.getX(),volCenterCoord.getY(),nodeZ);
+				}
+				if(bYEnd && bZEnd){
+					ucdMeshNodes[z+1][y+1][x] = new Coordinate(nodeX,volCenterCoord.getY(),volCenterCoord.getZ());
+				}
+				if(bZEnd && bXEnd){
+					ucdMeshNodes[z+1][y][x+1] = new Coordinate(volCenterCoord.getX(),nodeY,volCenterCoord.getZ());
+				}
+
+				if(bXEnd && bYEnd && bZEnd){
+					ucdMeshNodes[z+1][y+1][x+1] = new Coordinate(volCenterCoord.getX(),volCenterCoord.getY(),volCenterCoord.getZ());
+				}				
+			}
+		}
+	}
+	
+	return ucdMeshNodes;
+}
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.geometry.Coordinate

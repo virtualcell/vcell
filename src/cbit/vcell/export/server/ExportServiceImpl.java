@@ -262,6 +262,15 @@ public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, Expo
 			case FORMAT_NRRD:
 				NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob);
+			case FORMAT_UCD:
+				exportOutputs = rrExporter.makeUCDData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
+			case FORMAT_VTK_IMAGE:
+				exportOutputs = rrExporter.makeVTKImageData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
+			case FORMAT_VTK_UNSTRUCT:
+				exportOutputs = rrExporter.makeVTKUnstructuredData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			default:
 				throw new DataAccessException("Unknown export format requested");
 		}

@@ -157,7 +157,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			resultString = XmlHelper.geometryToXML(geom);
 		}else if (fileFilter.equals(FileFilters.FILE_FILTER_AVS)) {
 			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			cbit.vcell.geometry.surface.AVS_UCD_Exporter.writeUCD(geom.getGeometrySurfaceDescription(),stringWriter);
+			cbit.vcell.geometry.surface.AVS_UCD_Exporter.writeUCDGeometryOnly(geom.getGeometrySurfaceDescription(),stringWriter);
 			stringWriter.flush();
 			stringWriter.close();
 			resultString = stringWriter.getBuffer().toString();
