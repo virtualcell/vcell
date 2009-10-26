@@ -3,6 +3,7 @@ package cbit.vcell.simdata.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.image.ImageException;
 import cbit.vcell.solvers.ContourElement;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.geometry.*;
@@ -267,13 +268,7 @@ private ParamHolder doCheck(MembraneElement currentMembraneElement,int normalAxi
 	return paramHolder;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/18/2005 10:42:24 AM)
- */
-public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageException{
-
+public RegionImage generateRegionImage() throws ImageException{
 	int[] subVolumeIDField = new int[getMesh().getNumVolumeElements()];
 	for(int i=0;i< subVolumeIDField.length;i+= 1){
 		subVolumeIDField[i] = getMesh().getSubVolumeFromVolumeIndex(i);
@@ -289,6 +284,16 @@ public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageEx
 			),
 			getMesh().getGeometryDimension(),getMesh().getExtent(),getMesh().getOrigin(),RegionImage.NO_SMOOTHING
 	);
+
+	return meshRegionImage;
+}
+/**
+ * Insert the method's description here.
+ * Creation date: (9/18/2005 10:42:24 AM)
+ */
+public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageException{
+
+	RegionImage meshRegionImage = generateRegionImage();
 
 	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = meshRegionImage.getSurfacecollection();
 	

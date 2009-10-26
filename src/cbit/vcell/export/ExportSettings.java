@@ -1,4 +1,5 @@
 package cbit.vcell.export;
+import javax.naming.event.EventDirContext;
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
@@ -7,6 +8,8 @@ import org.vcell.util.BeanUtils;
  * All rights reserved.
 ©*/
 import java.awt.*;
+
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.export.server.*;
 import cbit.util.*;
 /**
@@ -1111,6 +1114,22 @@ public boolean showFormatSpecificDialog(Component reference) {
 		case FORMAT_NRRD:
 			dialogToShow = getJDialogRasterSettings();
 			break;
+		case FORMAT_UCD:
+			int result = PopupGenerator.showComponentOKCancelDialog(new JDialog(), new JTextField("Continue UCD Export?"), "UCD Export");
+			if(result == JOptionPane.OK_OPTION){
+				return true;
+			}
+			return false;
+		case FORMAT_VTK_UNSTRUCT:
+		case FORMAT_VTK_IMAGE:
+			int result2 = PopupGenerator.showComponentOKCancelDialog(new JDialog(), new JTextField("Continue VTK Export?"), "VTK Export");
+			if(result2 == JOptionPane.OK_OPTION){
+				return true;
+			}
+			return false;
+
+//			dialogToShow = getJDialogRasterSettings();
+//			break;
 	}
 	dialogToShow.pack();
 	BeanUtils.centerOnComponent(dialogToShow, reference);
