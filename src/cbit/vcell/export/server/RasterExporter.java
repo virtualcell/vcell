@@ -255,6 +255,7 @@ public ExportOutput[] makeUCDData(JobRequest jobRequest, User user, DataServerIm
 	TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user,vcdID );
 	CartesianMesh.UCDInfo ucdInfo = mesh.getUCDInfo();
+	CartesianMesh.UCDInfo ucdInfoReduced = ucdInfo.removeNonMembraneGridNodes();
 	
 	Vector<ExportOutput> exportOutV = new Vector<ExportOutput>();
 //	MeshDisplayAdapter meshDisplayAdapter = new MeshDisplayAdapter(mesh);
@@ -304,7 +305,7 @@ public ExportOutput[] makeUCDData(JobRequest jobRequest, User user, DataServerIm
 			if(membraneDataV.size() > 0){
 				StringWriter stringWriter = new StringWriter();
 				AVS_UCD_Exporter.writeUCDMembGeomAndData(
-						ucdInfo,
+						ucdInfoReduced/*ucdInfo*/,
 					membraneDataNameV.toArray(new String[0]),
 					membraneDataUnitV.toArray(new String[0]),
 					membraneDataV.toArray(new double[0][]),
@@ -432,6 +433,7 @@ public ExportOutput[] makeVTKUnstructuredData(JobRequest jobRequest, User user,
 	TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user,vcdID );
 	CartesianMesh.UCDInfo ucdInfo = mesh.getUCDInfo();
+	CartesianMesh.UCDInfo ucdInfoReduced = ucdInfo.removeNonMembraneGridNodes();
 	
 	Vector<ExportOutput> exportOutV = new Vector<ExportOutput>();
 	//MeshDisplayAdapter meshDisplayAdapter = new MeshDisplayAdapter(mesh);
@@ -495,10 +497,10 @@ public ExportOutput[] makeVTKUnstructuredData(JobRequest jobRequest, User user,
 			regionIDs[i] = mesh.getMembraneRegionIndex(i);
 		}
 		StringWriter stringWriter = new StringWriter();
-		writeVTKUnstructuredHeader(ucdInfo,vcdID,stringWriter);
-		stringWriter.write("CELLS "+ucdInfo.getNumMembraneCells()+" "+(ucdInfo.getNumMembraneCells()*5)+"\n");
-		stringWriter.write(ucdInfo.getMembraneCellsString(0,true));
-		writeVTKCellTypes(ucdInfo,ucdInfo.getNumMembraneCells(),VTK_QUAD,stringWriter);
+		writeVTKUnstructuredHeader(ucdInfoReduced/*ucdInfo*/,vcdID,stringWriter);
+		stringWriter.write("CELLS "+ucdInfoReduced/*ucdInfo*/.getNumMembraneCells()+" "+(ucdInfoReduced/*ucdInfo*/.getNumMembraneCells()*5)+"\n");
+		stringWriter.write(ucdInfoReduced/*ucdInfo*/.getMembraneCellsString(0,true));
+		writeVTKCellTypes(ucdInfoReduced/*ucdInfo*/,ucdInfoReduced/*ucdInfo*/.getNumMembraneCells(),VTK_QUAD,stringWriter);
 		writeVTKCellData(membraneDataV.toArray(new double[0][]), regionIDs,membraneDataNameV.toArray(new String[0]), stringWriter);
 
 //	AVS_UCD_Exporter.writeUCDMembrane(
@@ -587,7 +589,7 @@ private void writeVTKUnstructuredHeader(CartesianMesh.UCDInfo ucdInfo,VCDataIden
 	stringWriter.write("Simulation "+vcdID.toString()+"\n");
 	stringWriter.write("ASCII"+"\n");
 	stringWriter.write("DATASET UNSTRUCTURED_GRID"+"\n");
-	stringWriter.write("POINTS "+ucdInfo.getNumVolumeNodesXYZ()+" double"+"\n");
+	stringWriter.write("POINTS "+ucdInfo.getNumPointsXYZ()+" double"+"\n");
 	stringWriter.write(ucdInfo.getMeshGridNodesString(true));
 
 }

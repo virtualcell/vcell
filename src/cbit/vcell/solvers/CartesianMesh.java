@@ -61,15 +61,46 @@ public class CartesianMesh implements Serializable, Matchable {
 	public class UCDInfo{
 		private Coordinate[][][] ucdGridNodes;
 		private int[][] ucdMembraneQuads;
+		private Vector<Coordinate> reducedUCDGridNodesV;
 		
 		private static final String UCD_QUAD_CELL_TYPE = "quad"; //quadrilateral (box, 4 edges, 4 corners)
 		private static final String UCD_HEX_CELL_TYPE = "hex"; // hexahedron (cube, 12 edges, 6 faces, 8 corners)
 
-		public UCDInfo(Coordinate[][][] ucdGridNodes,int[][] ucdMembraneQuads){
-			 this.ucdGridNodes = ucdGridNodes;
-			 this.ucdMembraneQuads = ucdMembraneQuads;
+		public UCDInfo(){
+			 this.ucdGridNodes = calcUCDGridNodes();
+			 this.ucdMembraneQuads = calcUCDMembraneQuads();
 		}
-
+		private UCDInfo(Vector<Coordinate> reducedUCDGridNodesV,int[][] ucdMembraneQuads){
+			 this.reducedUCDGridNodesV = reducedUCDGridNodesV;
+			 this.ucdMembraneQuads = ucdMembraneQuads;			
+		}
+		public UCDInfo removeNonMembraneGridNodes(){
+			int maxGridNodes =
+				calcNodeCount(Coordinate.X_AXIS)*
+				calcNodeCount(Coordinate.Y_AXIS)*
+				calcNodeCount(Coordinate.Z_AXIS);
+			int[] mapOrigNodeIndexToNewNodeIndex = new int[maxGridNodes];
+			Arrays.fill(mapOrigNodeIndexToNewNodeIndex,-1);
+			Vector<Coordinate> newGridNodes = new Vector<Coordinate>();
+			int[][] newMembraneQuads = new int[this.getUCDMembraneQuads().length][4];
+			final int xNodeCount = calcNodeCount(Coordinate.X_AXIS);
+			final int yNodeCount = calcNodeCount(Coordinate.Y_AXIS);
+			final int xyNodeCount = xNodeCount*yNodeCount;
+			for (int i = 0; i < this.getUCDMembraneQuads().length; i++) {
+				for (int j = 0; j < this.getUCDMembraneQuads()[i].length; j++) {
+					int gridNodeIndex = this.getUCDMembraneQuads()[i][j];
+					if(mapOrigNodeIndexToNewNodeIndex[gridNodeIndex] == -1){
+						mapOrigNodeIndexToNewNodeIndex[gridNodeIndex] = newGridNodes.size();
+						int origGridX = gridNodeIndex%xNodeCount;
+						int origGridY = (gridNodeIndex%xyNodeCount)/xNodeCount;
+						int origGridZ = gridNodeIndex/xyNodeCount;
+						newGridNodes.add(this.getUCDGridNodes()[origGridZ][origGridY][origGridX]);
+					}
+					newMembraneQuads[i][j] = mapOrigNodeIndexToNewNodeIndex[gridNodeIndex];
+				}
+			}
+			return new UCDInfo(newGridNodes,newMembraneQuads);
+		}
 		public String getHeaderString(int numCellVolumeData,int numCellMembraneData){
 			//Nodes of Hexahedral mesh volume elements (must be calculated using mesh info)
 			int numNodeData = 0;
@@ -83,24 +114,36 @@ public class CartesianMesh implements Serializable, Matchable {
 			int numModelData = 0;//never used, always set to 0
 			
 			//UCD Header
-			return getNumVolumeNodesXYZ()+" "+numCells+" "+numNodeData+" "+numCellData+" "+numModelData+"\n";
+			return getNumPointsXYZ()+" "+numCells+" "+numNodeData+" "+numCellData+" "+numModelData+"\n";
 
 		}
 		public String getMeshGridNodesString(boolean bVTK){
 			//UCD Node Coordinates (used for Volume cells and unsmoothed Membrane cells)
 			StringBuffer volGridNodeSB = new StringBuffer();
 			int nodeCountStart = 0;
-			for (int z = 0; z < getNumVolumeNodesZ(); z++) {
-				for (int y = 0;y < getNumVolumeNodesY(); y++) {
-					for (int x = 0; x < getNumVolumeNodesX(); x++) {
-						volGridNodeSB.append(
-							(bVTK?"":nodeCountStart+" ")+
-							ucdGridNodes[z][y][x].getX()+" "+
-							ucdGridNodes[z][y][x].getY()+" "+
-							ucdGridNodes[z][y][x].getZ()+
-							"\n");
-						nodeCountStart++;
+			if(ucdGridNodes != null){//Full Grid Nodes
+				for (int z = 0; z < getNumVolumeNodesZ(); z++) {
+					for (int y = 0;y < getNumVolumeNodesY(); y++) {
+						for (int x = 0; x < getNumVolumeNodesX(); x++) {
+							volGridNodeSB.append(
+								(bVTK?"":nodeCountStart+" ")+
+								ucdGridNodes[z][y][x].getX()+" "+
+								ucdGridNodes[z][y][x].getY()+" "+
+								ucdGridNodes[z][y][x].getZ()+
+								"\n");
+							nodeCountStart++;
+						}
 					}
+				}
+			}else{//Reduced Grid Nodes (Only include thos needed for membranes)
+				for (int i = 0; i < reducedUCDGridNodesV.size(); i++) {
+					volGridNodeSB.append(
+							(bVTK?"":nodeCountStart+" ")+
+							reducedUCDGridNodesV.get(i).getX()+" "+
+							reducedUCDGridNodesV.get(i).getY()+" "+
+							reducedUCDGridNodesV.get(i).getZ()+
+							"\n");
+						nodeCountStart++;					
 				}
 			}
 			return volGridNodeSB.toString();
@@ -223,19 +266,22 @@ public class CartesianMesh implements Serializable, Matchable {
 		}
 		
 		public int getNumVolumeNodesX(){
-			return ucdGridNodes[0][0].length;
+			return calcNodeCount(Coordinate.X_AXIS);
 		}
 		public int getNumVolumeNodesY(){
-			return ucdGridNodes[0].length;
+			return calcNodeCount(Coordinate.Y_AXIS);
 		}
 		public int getNumVolumeNodesZ(){
-			return ucdGridNodes.length;
+			return calcNodeCount(Coordinate.Z_AXIS);
 		}
-		public int getNumVolumeNodesXYZ(){
-			return
-				getNumVolumeNodesX()*
-				getNumVolumeNodesY()*
-				getNumVolumeNodesZ();
+		public int getNumPointsXYZ(){
+			if(ucdGridNodes != null){
+				return
+					getNumVolumeNodesX()*
+					getNumVolumeNodesY()*
+					getNumVolumeNodesZ();
+			}
+			return reducedUCDGridNodesV.size();
 		}
 		public int getNumVolumeNodesXY(){
 			return
@@ -248,6 +294,110 @@ public class CartesianMesh implements Serializable, Matchable {
 		public int getNumMembraneCells(){
 			return getNumMembraneElements();
 		}
+		private int calcNodeCount(int axis){
+			if(axis == Coordinate.X_AXIS){
+				return 1+getSizeX();
+			}else if(axis == Coordinate.Y_AXIS){
+				return 1+(getGeometryDimension() > 1?getSizeY():0);
+			}else if(axis == Coordinate.Z_AXIS){
+				return 1+(getGeometryDimension() > 2?getSizeZ():0);
+			}
+			throw new RuntimeException("Axis value "+axis+" unknown");
+		}
+		private Coordinate[][][] calcUCDGridNodes(){
+			Coordinate[][][] ucdMeshNodes =
+				new Coordinate[calcNodeCount(Coordinate.Z_AXIS)]
+				              [calcNodeCount(Coordinate.Y_AXIS)]
+				              [calcNodeCount(Coordinate.X_AXIS)];
+			double dx = getExtent().getX()/(getSizeX()-1);
+			double dy = (getGeometryDimension() > 1?getExtent().getY()/(getSizeY()-1):0);
+			double dz = (getGeometryDimension() > 2?getExtent().getZ()/(getSizeZ()-1):0);
+			CoordinateIndex coordIndex = new CoordinateIndex(0,0,0);
+			for (int z = 0; z < getSizeZ(); z++) {
+				coordIndex.z = z;
+				boolean bZEnd = z+1 == getSizeZ();
+				for (int y = 0; y < getSizeY(); y++) {
+					coordIndex.y = y;
+					boolean bYEnd = y+1 == getSizeY();
+					for (int x = 0; x < getSizeX(); x++) {
+						coordIndex.x = x;
+						boolean bXEnd = x+1 == getSizeX();
+						
+						//Get mesh volume element center coordinate.
+						Coordinate volCenterCoord = getCoordinate(coordIndex);
+						
+						//convert volume center coord to UCD grid "cell" node
+						double nodeX = volCenterCoord.getX()-(x==0?0:dx/2);
+						double nodeY = volCenterCoord.getY()-(y==0?0:dy/2);
+						double nodeZ = volCenterCoord.getZ()-(z==0?0:dz/2);
+						ucdMeshNodes[z][y][x] = new Coordinate(nodeX,nodeY,nodeZ);
+						
+						//Add "end" nodes when necessary
+						if(bXEnd){
+							ucdMeshNodes[z][y][x+1] = new Coordinate(volCenterCoord.getX(),nodeY,nodeZ);
+						}
+						if(bYEnd){
+							ucdMeshNodes[z][y+1][x] = new Coordinate(nodeX,volCenterCoord.getY(),nodeZ);
+						}
+						if(bZEnd){
+							ucdMeshNodes[z+1][y][x] = new Coordinate(nodeX,nodeY,volCenterCoord.getZ());
+						}
+						
+						if(bXEnd && bYEnd){
+							ucdMeshNodes[z][y+1][x+1] = new Coordinate(volCenterCoord.getX(),volCenterCoord.getY(),nodeZ);
+						}
+						if(bYEnd && bZEnd){
+							ucdMeshNodes[z+1][y+1][x] = new Coordinate(nodeX,volCenterCoord.getY(),volCenterCoord.getZ());
+						}
+						if(bZEnd && bXEnd){
+							ucdMeshNodes[z+1][y][x+1] = new Coordinate(volCenterCoord.getX(),nodeY,volCenterCoord.getZ());
+						}
+
+						if(bXEnd && bYEnd && bZEnd){
+							ucdMeshNodes[z+1][y+1][x+1] = new Coordinate(volCenterCoord.getX(),volCenterCoord.getY(),volCenterCoord.getZ());
+						}				
+					}
+				}
+			}
+			
+			return ucdMeshNodes;
+		}
+		private int[][] calcUCDMembraneQuads(){
+			int[][] membrQuadNodes = new int[getMembraneElements().length][4];
+			final int xNodeCount = calcNodeCount(Coordinate.X_AXIS);
+			final int yNodeCount = calcNodeCount(Coordinate.Y_AXIS);
+			final int xyNodeCount = xNodeCount*yNodeCount;
+			for (int i = 0; i < getMembraneElements().length; i++) {
+				CoordinateIndex coordIndex0 = getCoordinateIndexFromVolumeIndex(getMembraneElements()[i].getInsideVolumeIndex());
+				CoordinateIndex coordIndex1 = getCoordinateIndexFromVolumeIndex(getMembraneElements()[i].getOutsideVolumeIndex());
+				if(coordIndex0.y == coordIndex1.y && coordIndex0.z == coordIndex1.z){//perpendicular x-axis
+					int xBase = Math.max(coordIndex0.x, coordIndex1.x);
+					membrQuadNodes[i][0] = xBase +(coordIndex0.y*xNodeCount) +(coordIndex0.z*xyNodeCount);
+					membrQuadNodes[i][1] = xBase +((coordIndex0.y+1)*xNodeCount) +(coordIndex0.z*xyNodeCount);
+					membrQuadNodes[i][2] = xBase +((coordIndex0.y+1)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+					membrQuadNodes[i][3] = xBase +((coordIndex0.y)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+
+				}else if(coordIndex0.x == coordIndex1.x && coordIndex0.z == coordIndex1.z){//perpendicular y-axis
+					int yBase = Math.max(coordIndex0.y, coordIndex1.y);
+					membrQuadNodes[i][0] = coordIndex0.x +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
+					membrQuadNodes[i][1] = coordIndex0.x+1 +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
+					membrQuadNodes[i][2] = coordIndex0.x+1 +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+					membrQuadNodes[i][3] = coordIndex0.x +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
+
+				}else if(coordIndex0.x == coordIndex1.x && coordIndex0.y == coordIndex1.y){//perpendicular z-axis
+					int zBase = Math.max(coordIndex0.z, coordIndex1.z);
+					membrQuadNodes[i][0] = coordIndex0.x +(coordIndex0.y*xNodeCount) +(zBase*xyNodeCount);
+					membrQuadNodes[i][1] = coordIndex0.x +((coordIndex0.y+1)*xNodeCount) +(zBase*xyNodeCount);
+					membrQuadNodes[i][2] = coordIndex0.x+1 +((coordIndex0.y+1)*xNodeCount) +(zBase*xyNodeCount);
+					membrQuadNodes[i][3] = coordIndex0.x+1 +((coordIndex0.y)*xNodeCount) +(zBase*xyNodeCount);
+
+				}else{
+					throw new RuntimeException("No boundary found for MembraneElement "+i+" in="+coordIndex0+" out="+coordIndex1);
+				}
+			}
+			return membrQuadNodes;
+		}
+
 	};
 
 /**
@@ -573,102 +723,9 @@ public int getContourRegionIndex(int contourIndex) {
 
 
 public UCDInfo getUCDInfo(){
-	return new UCDInfo(getUCDGridNodes(),getUCDMembraneQuads());
-}
-private int[][] getUCDMembraneQuads(){
-	int[][] membrQuadNodes = new int[getMembraneElements().length][4];
-	final int xNodeCount = getSizeX()+1;
-	final int yNodeCount = (getSizeY() == 1?1:getSizeY()+1);
-	final int xyNodeCount = xNodeCount*yNodeCount;
-	for (int i = 0; i < getMembraneElements().length; i++) {
-		CoordinateIndex coordIndex0 = getCoordinateIndexFromVolumeIndex(getMembraneElements()[i].getInsideVolumeIndex());
-		CoordinateIndex coordIndex1 = getCoordinateIndexFromVolumeIndex(getMembraneElements()[i].getOutsideVolumeIndex());
-		if(coordIndex0.y == coordIndex1.y && coordIndex0.z == coordIndex1.z){//perpendicular x-axis
-			int xBase = Math.max(coordIndex0.x, coordIndex1.x);
-			membrQuadNodes[i][0] = xBase +(coordIndex0.y*xNodeCount) +(coordIndex0.z*xyNodeCount);
-			membrQuadNodes[i][1] = xBase +((coordIndex0.y+1)*xNodeCount) +(coordIndex0.z*xyNodeCount);
-			membrQuadNodes[i][2] = xBase +((coordIndex0.y+1)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
-			membrQuadNodes[i][3] = xBase +((coordIndex0.y)*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
-
-		}else if(coordIndex0.x == coordIndex1.x && coordIndex0.z == coordIndex1.z){//perpendicular y-axis
-			int yBase = Math.max(coordIndex0.y, coordIndex1.y);
-			membrQuadNodes[i][0] = coordIndex0.x +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
-			membrQuadNodes[i][1] = coordIndex0.x+1 +(yBase*xNodeCount) +(coordIndex0.z*xyNodeCount);
-			membrQuadNodes[i][2] = coordIndex0.x+1 +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
-			membrQuadNodes[i][3] = coordIndex0.x +(yBase*xNodeCount) +((coordIndex0.z+1)*xyNodeCount);
-
-		}else if(coordIndex0.x == coordIndex1.x && coordIndex0.y == coordIndex1.y){//perpendicular z-axis
-			int zBase = Math.max(coordIndex0.z, coordIndex1.z);
-			membrQuadNodes[i][0] = coordIndex0.x +(coordIndex0.y*xNodeCount) +(zBase*xyNodeCount);
-			membrQuadNodes[i][1] = coordIndex0.x +((coordIndex0.y+1)*xNodeCount) +(zBase*xyNodeCount);
-			membrQuadNodes[i][2] = coordIndex0.x+1 +((coordIndex0.y+1)*xNodeCount) +(zBase*xyNodeCount);
-			membrQuadNodes[i][3] = coordIndex0.x+1 +((coordIndex0.y)*xNodeCount) +(zBase*xyNodeCount);
-
-		}else{
-			throw new RuntimeException("No boundary found for MembraneElement "+i+" in="+coordIndex0+" out="+coordIndex1);
-		}
-	}
-	return membrQuadNodes;
+	return new UCDInfo();
 }
 
-private Coordinate[][][] getUCDGridNodes(){
-	Coordinate[][][] ucdMeshNodes =
-		new Coordinate[1+(getGeometryDimension() > 2?getSizeZ():0)]
-		              [1+(getGeometryDimension() > 1?getSizeY():0)]
-		              [1+getSizeX()];
-	double dx = getExtent().getX()/(getSizeX()-1);
-	double dy = (getGeometryDimension() > 1?getExtent().getY()/(getSizeY()-1):0);
-	double dz = (getGeometryDimension() > 2?getExtent().getZ()/(getSizeZ()-1):0);
-	CoordinateIndex coordIndex = new CoordinateIndex(0,0,0);
-	for (int z = 0; z < getSizeZ(); z++) {
-		coordIndex.z = z;
-		boolean bZEnd = z+1 == getSizeZ();
-		for (int y = 0; y < getSizeY(); y++) {
-			coordIndex.y = y;
-			boolean bYEnd = y+1 == getSizeY();
-			for (int x = 0; x < getSizeX(); x++) {
-				coordIndex.x = x;
-				boolean bXEnd = x+1 == getSizeX();
-				
-				//Get mesh volume element center coordinate.
-				Coordinate volCenterCoord = getCoordinate(coordIndex);
-				
-				//convert volume center coord to UCD grid "cell" node
-				double nodeX = volCenterCoord.getX()-(x==0?0:dx/2);
-				double nodeY = volCenterCoord.getY()-(y==0?0:dy/2);
-				double nodeZ = volCenterCoord.getZ()-(z==0?0:dz/2);
-				ucdMeshNodes[z][y][x] = new Coordinate(nodeX,nodeY,nodeZ);
-				
-				//Add "end" nodes when necessary
-				if(bXEnd){
-					ucdMeshNodes[z][y][x+1] = new Coordinate(volCenterCoord.getX(),nodeY,nodeZ);
-				}
-				if(bYEnd){
-					ucdMeshNodes[z][y+1][x] = new Coordinate(nodeX,volCenterCoord.getY(),nodeZ);
-				}
-				if(bZEnd){
-					ucdMeshNodes[z+1][y][x] = new Coordinate(nodeX,nodeY,volCenterCoord.getZ());
-				}
-				
-				if(bXEnd && bYEnd){
-					ucdMeshNodes[z][y+1][x+1] = new Coordinate(volCenterCoord.getX(),volCenterCoord.getY(),nodeZ);
-				}
-				if(bYEnd && bZEnd){
-					ucdMeshNodes[z+1][y+1][x] = new Coordinate(nodeX,volCenterCoord.getY(),volCenterCoord.getZ());
-				}
-				if(bZEnd && bXEnd){
-					ucdMeshNodes[z+1][y][x+1] = new Coordinate(volCenterCoord.getX(),nodeY,volCenterCoord.getZ());
-				}
-
-				if(bXEnd && bYEnd && bZEnd){
-					ucdMeshNodes[z+1][y+1][x+1] = new Coordinate(volCenterCoord.getX(),volCenterCoord.getY(),volCenterCoord.getZ());
-				}				
-			}
-		}
-	}
-	
-	return ucdMeshNodes;
-}
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.geometry.Coordinate
