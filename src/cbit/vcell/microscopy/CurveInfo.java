@@ -1,7 +1,5 @@
 package cbit.vcell.microscopy;
 
-import cbit.vcell.microscopy.FRAPStudy.AnalysisParameters;
-
 public class CurveInfo {
 	AnalysisParameters analysisParameters;
 	String roiName = null;

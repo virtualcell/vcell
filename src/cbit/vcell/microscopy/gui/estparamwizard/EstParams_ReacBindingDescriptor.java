@@ -34,11 +34,6 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 		{
 			params = frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters();
 		}
-		else if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null && 
-				frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()!= null)
-		{
-			params = FRAPModel.createReacBindingParametersFromDiffusionParameters(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters());
-		}
 		else if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null && 
 				frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()!=null)
 		{

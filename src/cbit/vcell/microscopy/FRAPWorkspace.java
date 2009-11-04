@@ -19,13 +19,23 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class FRAPWorkspace implements PropertyChangeListener{
 	
-	//property names
-	public static final String FRAPSTUDY_CHANGE_NEW_PROPERTY = "FRAPSTUDY_CHANGE_NEW_PROPERTY";
-	public static final String FRAPSTUDY_CHANGE_NOTNEW_PROPERTY = "FRAPSTUDY_CHANGE_NOTNEW_PROPERTY";
-	public static final String FRAPDATA_VERIFY_INFO_PROPERTY = "FRAPDATA_VERIFY_INFO_PROPERTY";
-	
 	private FRAPStudy frapStudy = null;
 	private PropertyChangeSupport propertyChangeSupport;
+	
+	//Properties that are used in VFRAP
+	public static final String PROPERTY_CHANGE_FRAPSTUDY_NEW = "FRAPSTUDY_NEW";
+	public static final String PROPERTY_CHANGE_FRAPSTUDY_UPDATE = "FRAPSTUDY_UPDATE";
+	public static final String FRAPDATA_VERIFY_INFO_PROPERTY = "FRAPDATA_VERIFY_INFO_PROPERTY";
+	public static final String PROPERTY_CHANGE_EST_OFF_RATE = "EST_OFF_RATE";
+	public static final String PROPERTY_CHANGE_EST_ON_RATE = "EST_ON_RATE";
+	public static final String PROPERTY_CHANGE_EST_BS_CONCENTRATION = "EST_BS_CONCENTRATION";
+	public static final String PROPERTY_CHANGE_RUN_BINDING_SIMULATION = "RUN_BINDING_SIMULATION";
+	public static final String PROPERTY_CHANGE_EST_BINDING_PARAMETERS = "EST_BINDING_PARAMETERS";
+	public static final String PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES = "PARAMETER_ESTIMATE_VALUES_CHANGE";
+	public static final String PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE = "CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE";
+	public static final String PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE = "CURRENTLY_DISPLAYED_ROI_WITH_SAVE";
+	public static final String PROPERTY_CHANGE_OPTIMIZER_VALUE = "OPTIMIZER_VALUE_CHANGE";
+	public static final String PROPERTY_CHANGE_BEST_MODEL = "BEST_MODEL_CHANGE";
 	
 	public FRAPWorkspace()
 	{
@@ -46,11 +56,11 @@ public class FRAPWorkspace implements PropertyChangeListener{
 		this.frapStudy = arg_frapStudy;
 		if(bNew)
 		{
-			firePropertyChange(FRAPSTUDY_CHANGE_NEW_PROPERTY, oldFrapStudy, arg_frapStudy);
+			firePropertyChange(PROPERTY_CHANGE_FRAPSTUDY_NEW, oldFrapStudy, arg_frapStudy);
 		}
 		else
 		{
-			firePropertyChange(FRAPSTUDY_CHANGE_NOTNEW_PROPERTY, oldFrapStudy, arg_frapStudy);
+			firePropertyChange(PROPERTY_CHANGE_FRAPSTUDY_UPDATE, oldFrapStudy, arg_frapStudy);
 		}
 	}
 
@@ -166,9 +176,9 @@ public class FRAPWorkspace implements PropertyChangeListener{
 
 	public void propertyChange(PropertyChangeEvent evt) 
 	{
-		if(evt.getPropertyName().equals(FRAPStudy.PROPERTY_CHANGE_BEST_MODEL))
+		if(evt.getPropertyName().equals(PROPERTY_CHANGE_BEST_MODEL))
 		{
-			firePropertyChange(FRAPStudy.PROPERTY_CHANGE_BEST_MODEL, evt.getOldValue(), evt.getNewValue());
+			firePropertyChange(PROPERTY_CHANGE_BEST_MODEL, evt.getOldValue(), evt.getNewValue());
 		}
 		
 	}

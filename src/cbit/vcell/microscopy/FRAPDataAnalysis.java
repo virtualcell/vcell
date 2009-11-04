@@ -254,6 +254,9 @@ public class FRAPDataAnalysis {
 			mFracExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_preBlchAvg), new Expression(preBleachAverage_bleachedArea));
 			mFracExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_fB), new Expression(cellAreaBleached));
 			double mobileFrac = mFracExp.evaluateConstant();
+			//sometimes the mobile fraction goes beyond [0,1], we have to restrict the mobile fraction value. 
+			mobileFrac = Math.min(1,mobileFrac);
+			mobileFrac = Math.max(0, mobileFrac);
 			//set frap data analysis results
 			frapDataAnalysisResults.setFitExpression(fittedCurve.flatten());
 			frapDataAnalysisResults.setRecoveryTau(fittedRecoveryTau);

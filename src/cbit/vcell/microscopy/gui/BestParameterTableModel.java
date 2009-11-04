@@ -7,16 +7,13 @@ import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.opt.Parameter;
 
 public class BestParameterTableModel extends AbstractTableModel implements PropertyChangeListener
 {
-//	public final static int NUM_COLUMNS = 4;
 	public final static int NUM_COLUMNS = 3;
 	public final static int COLUMN_NAME = 0;
-//	public final static int COLUMN_DESCRIPTION = 1;//remove description since the name and the description are the same
 	public final static int COLUMN_VALUE = 1;
 	public final static int COLUMN_UNITS = 2;
 	public final static String COL_LABELS[] = {"Parameter Name",/* "Description",*/ "Expression", "Unit"};
@@ -163,7 +160,7 @@ public class BestParameterTableModel extends AbstractTableModel implements Prope
     }
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(evt.getPropertyName().equals(FRAPStudy.PROPERTY_CHANGE_BEST_MODEL))
+		if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_BEST_MODEL))
 		{
 			if(evt.getNewValue() instanceof Integer)
 			{

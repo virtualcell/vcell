@@ -1,18 +1,13 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,12 +41,6 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
-
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.gui.DialogUtils;
-
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.PropertyLoader;
@@ -59,7 +48,13 @@ import org.vcell.util.Range;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.wizard.Wizard;
+import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.rmi.event.ExportEvent;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -73,6 +68,12 @@ import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.GeometrySpecs;
+import cbit.vcell.export.server.MovieSpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
@@ -81,14 +82,11 @@ import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
-import cbit.vcell.microscopy.SpatialAnalysisResults;
-import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_ModelTypesDescriptor;
 import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BackgroundROIDescriptor;
@@ -97,7 +95,6 @@ import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CellROIDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CropDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_SummaryDescriptor;
-import cbit.vcell.microscopy.gui.estparamwizard.AnalysisResultsPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_CompareResultsDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReacBindingDescriptor;
@@ -107,9 +104,6 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFileDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SingleFileDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryDescriptor;
-import org.vcell.wizard.Wizard;
-import org.vcell.wizard.WizardPanelDescriptor;
-
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
@@ -119,17 +113,10 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VCData;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.rmi.event.ExportEvent;
-import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.GeometrySpecs;
-import cbit.vcell.export.server.MovieSpecs;
-import cbit.vcell.export.server.TimeSpecs;
-import cbit.vcell.export.server.VariableSpecs;
-import cbit.vcell.simdata.gui.DisplayPreferences;
 
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
@@ -148,11 +135,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String NEW_FRAPSTUDY_KEY = "NEW_FRAPSTUDY";
 	public static final String SAVE_FILE_NAME_KEY = "SAVE_FILE_NAME";
 	public static final String SIMULATION_KEY = "SIMULATION_KEY";
- 	public static final String LOADDATA_FRAPSTUDY_CHANGE_PROPERTY = "LOADDATA_FRAPSTUDY_CHANGE_PROPERTY";
-	public static final String LOADDATA_VERIFY_INFO_PROPERTY = "LOADDATA_VERIFY_INFO_PROPERTY";
-	public static final String DEFINEROI_CROP_PROPERTY = "DEFINEROI_CROP_PROPERTY";
-	public static final String DEFINEROI_CHANGE_PROPERTY = "DEFINEROI_CHANGE_PROPERTY";
-	public static final String DEFINEROI_VERIFY_INFO_PROPERTY = "DEFINEROI_VERIFY_INFO_PROPERTY";
 	
 	private Expression Norm_Exp_Fluor = null;
 	private Expression Norm_Sim = null;
@@ -1546,8 +1528,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								//if external files are missing/currupt or ROIs are changed, create keys and save them
 								fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
 								fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
-								fStudy.saveROIsAsExternalData(localWorkspace, fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(fStudy.getStartingIndexForRecovery()));
-								fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(fStudy.getStartingIndexForRecovery()));
+								fStudy.saveROIsAsExternalData(localWorkspace, fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+								fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
 							}
 							//run ref sim
 							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, this.getClientTaskStatusSupport()));
@@ -1990,7 +1972,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public void propertyChange(PropertyChangeEvent evt) 
 	{
 		
-		if(evt.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NEW_PROPERTY) || evt.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NOTNEW_PROPERTY))
+		if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW) || evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE))
 		{
 			if(evt.getNewValue() instanceof FRAPStudy)
 			{
@@ -2005,7 +1987,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 			}
 		}
-		if(evt.getPropertyName().equals(FRAPStudy.PROPERTY_CHANGE_BEST_MODEL))
+		if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_BEST_MODEL))
 		{
 			if(evt.getNewValue() instanceof Integer)
 			{
@@ -2044,8 +2026,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.IMAGE_EXTDATA_NAME));
 							fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.ROI_EXTDATA_NAME));
 							try {
-								fStudy.saveROIsAsExternalData(getLocalWorkspace(), fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(fStudy.getStartingIndexForRecovery()));
-								fStudy.saveImageDatasetAsExternalData(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(fStudy.getStartingIndexForRecovery()));
+								fStudy.saveROIsAsExternalData(getLocalWorkspace(), fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+								fStudy.saveImageDatasetAsExternalData(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -2125,7 +2107,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							bioModel.getSimulations(0),
 							fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 							fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
-							this.getClientTaskStatusSupport(), true);
+							this.getClientTaskStatusSupport(), false);
 	
 						
 						fStudy.setBioModel(bioModel);

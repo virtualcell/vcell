@@ -55,11 +55,11 @@ public class FRAPOptimization {
 	//This function generates average intensity under different ROIs according to each time points for REFERENCE data.
 	//the results returns double[roi length][time points].
 	public static double[][] dataReduction(
-			VCDataManager vcDataManager,VCSimulationDataIdentifier vcSimdataID, double[] rawSimTimePoints, int argStartRecoveryIndex,
+			VCDataManager vcDataManager,VCSimulationDataIdentifier vcSimdataID, double[] rawSimTimePoints,
 			ROI[] expRois, ClientTaskStatusSupport progressListener, boolean isRefSim) throws Exception{ 
 
 		if(progressListener != null){
-			progressListener.setMessage("Reading Reference data, generating ROI averages");
+			progressListener.setMessage("Reading data, generating ROI averages");
 		}
 		int roiLen = expRois.length;
 		double[] simTimes = rawSimTimePoints;

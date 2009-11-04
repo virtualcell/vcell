@@ -27,23 +27,23 @@ public class EstimatedParameterTableRenderer extends DefaultTableCellRenderer
 		if(nameObj instanceof String)
 		{
 			String name = (String)nameObj;
-			if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartDiffRate]) ||
-			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartFraction]) ||
-			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexDiffRate]) ||
-			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexFraction]) ||
-			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BleachMonitorRate]) ||
-			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BSConc]) ||
-			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacOnRate]) ||
-			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacOffRate]))
-			{
-				setBackground( new Color(255,255,128));
-				setForeground(Color.black);
-			}
-			else
-			{
-				setBackground(table.getBackground());
-				setForeground(Color.black);
-			}
+//			if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartDiffRate]) ||
+//			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartFraction]) ||
+//			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexDiffRate]) ||
+//			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexFraction]) ||
+//			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BleachMonitorRate]) ||
+//			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BSConc]) ||
+//			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacOnRate]) ||
+//			   name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacOffRate]))
+//			{
+//				setBackground( new Color(255,255,128));
+//				setForeground(Color.black);
+//			}
+//			else
+//			{
+//				setBackground(table.getBackground());
+//				setForeground(Color.black);
+//			}
 		}
 		if(column == EstimatedParameterTableModel.COLUMN_VALUE)
 		{

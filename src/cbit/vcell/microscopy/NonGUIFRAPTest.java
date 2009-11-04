@@ -332,10 +332,11 @@ public class NonGUIFRAPTest {
 		FRAPStudy frapStudy = new FRAPStudy();
 		frapStudy.setFrapData(frapData);
 		
-		FRAPStudy.FRAPModelParameters frapModelParameters = new FRAPStudy.FRAPModelParameters( 
-				  new FRAPStudy.InitialModelParameters(freeDiffusionRateStr, freeMobileFractionStr, bleachWhileMonitoringRateString, startingIndexForRecovery),
-				  null,
-				  null);
+		//old model parameters, need to rewrite
+//		FRAPStudy.FRAPModelParameters frapModelParameters = new FRAPStudy.FRAPModelParameters( 
+//				  new FRAPStudy.InitialModelParameters(freeDiffusionRateStr, freeMobileFractionStr, bleachWhileMonitoringRateString, startingIndexForRecovery),
+//				  null,
+//				  null);
 		
 //		frapStudy.setFrapModelParameters(frapModelParameters);
 		frapStudy.refreshDependentROIs();
@@ -347,10 +348,10 @@ public class NonGUIFRAPTest {
 		
 		frapStudy.saveImageDatasetAsExternalData(
 				localWorkspace,frapStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
-				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery));
+				frapStudy.getStartingIndexForRecovery());
 		frapStudy.saveROIsAsExternalData(
 				localWorkspace, frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
-				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery));
+				frapStudy.getStartingIndexForRecovery());
 
 //		Double bleachWhileMonitoringRate =
 //			(!bleachWhileMonitoringRateString.equals("-")
@@ -384,7 +385,7 @@ public class NonGUIFRAPTest {
 				null,
 				LocalWorkspace.createNewKeyValue(),
 				LocalWorkspace.getDefaultOwner(),
-				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery));
+				new Integer(frapStudy.getStartingIndexForRecovery()));
 		frapStudy.setBioModel(bioModel);
 		DataSetControllerImpl.ProgressListener progressListener =
 			new DataSetControllerImpl.ProgressListener(){
@@ -420,8 +421,8 @@ public class NonGUIFRAPTest {
 		SpatialAnalysisResults spatialAnalysisResults =
 			FRAPStudy.spatialAnalysis(
 				simulationDataManager,
-				new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery),
-				frapDataTimeStamps[new Integer(frapModelParameters.getIniModelParameters().startingIndexForRecovery)],
+				new Integer(frapStudy.getStartingIndexForRecovery()),
+				frapDataTimeStamps[new Integer(frapStudy.getStartingIndexForRecovery())],
 				parameters,
 				frapData,
 				prebleachAverage);

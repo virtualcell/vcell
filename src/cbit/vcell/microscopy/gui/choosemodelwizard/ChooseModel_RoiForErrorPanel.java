@@ -121,7 +121,6 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		centerPanel.add(roiImagePanel, gridBagConstraints_12);
 
 		roi_bleachedCheckBox = new JCheckBox("",true);
-		roi_bleachedCheckBox.setText("");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.weightx = 0;
 		gridBagConstraints_3.weighty = 1;
@@ -131,8 +130,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		centerPanel.add(roi_bleachedCheckBox, gridBagConstraints_3);
 		roi_bleachedCheckBox.addActionListener(this);
 
-		roi_bleached_ring1CheckBox = new JCheckBox();
-		roi_bleached_ring1CheckBox.setText("");
+		roi_bleached_ring1CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.weighty = 1;
 		gridBagConstraints_4.weightx = 0;
@@ -151,8 +149,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		gridBagConstraints_2.gridx = 1;
 		centerPanel.add(roi_bleached_ring1Label, gridBagConstraints_2);
 		
-		roi_bleached_ring2CheckBox = new JCheckBox();
-		roi_bleached_ring2CheckBox.setText("");
+		roi_bleached_ring2CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.weighty = 1;
 		gridBagConstraints_5.weightx = 0;
@@ -171,8 +168,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		gridBagConstraints_13.gridx = 1;
 		centerPanel.add(roi_bleached_ring2Label, gridBagConstraints_13);
 
-		roi_bleached_ring3CheckBox = new JCheckBox();
-		roi_bleached_ring3CheckBox.setText("");
+		roi_bleached_ring3CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.weighty = 1;
 		gridBagConstraints_6.weightx = 0;
@@ -190,8 +186,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		gridBagConstraints_14.gridx = 1;
 		centerPanel.add(roi_bleached_ring3Label, gridBagConstraints_14);
 
-		roi_bleached_ring4CheckBox = new JCheckBox();
-		roi_bleached_ring4CheckBox.setText("");
+		roi_bleached_ring4CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.weighty = 1;
 		gridBagConstraints_7.weightx = 0;
@@ -209,8 +204,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		gridBagConstraints_15.gridx = 1;
 		centerPanel.add(roi_bleached_ring4Label, gridBagConstraints_15);
 
-		roi_bleached_ring5CheckBox = new JCheckBox();
-		roi_bleached_ring5CheckBox.setText("");
+		roi_bleached_ring5CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weighty = 1;
 		gridBagConstraints_8.weightx = 0;
@@ -228,8 +222,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		gridBagConstraints_16.gridx = 1;
 		centerPanel.add(roi_bleached_ring5Label, gridBagConstraints_16);
 
-		roi_bleached_ring6CheckBox = new JCheckBox();
-		roi_bleached_ring6CheckBox.setText("");
+		roi_bleached_ring6CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.weighty = 1;
 		gridBagConstraints_9.weightx = 0;
@@ -247,8 +240,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		gridBagConstraints_17.gridx = 1;
 		centerPanel.add(roi_bleached_ring6Label, gridBagConstraints_17);
 
-		roi_bleached_ring7CheckBox = new JCheckBox();
-		roi_bleached_ring7CheckBox.setText("");
+		roi_bleached_ring7CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.weighty = 1;
 		gridBagConstraints_10.weightx = 0;
@@ -266,8 +258,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		gridBagConstraints_18.gridx = 1;
 		centerPanel.add(roi_bleached_ring7Label, gridBagConstraints_18);
 
-		roi_bleached_ring8CheckBox = new JCheckBox();
-		roi_bleached_ring8CheckBox.setText("");
+		roi_bleached_ring8CheckBox = new JCheckBox("",true);
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.weighty = 1;
 		gridBagConstraints_11.weightx = 0;

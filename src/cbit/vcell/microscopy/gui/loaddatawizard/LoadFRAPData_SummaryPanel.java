@@ -17,6 +17,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Extent;
 import org.vcell.util.NumberUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -29,14 +30,16 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 {
 	public final String loadSuccessInfo = "Data loaded. Please varify/modify the following information.";
 	public final String loadFailedInfo= "Data loading failed.";
-	private JTextField imgSizeY = null;
-	private JTextField imgSizeX = null;
+	private JTextField imgPixelSizeY = null;
+	private JTextField imgPixelSizeX = null;
 	private JComboBox eTimeCombo = null;
 	private JComboBox sTimeCombo = null;
 	private JLabel totTimeLabel = null;
 	private JPanel timePanel = null;
 	private JPanel sizePanel = null;
 	private JLabel loadInfo = null;
+	private JLabel numXPixelsValLabel;
+	private JLabel numYPixelsValLabel;
 	public LoadFRAPData_SummaryPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -159,24 +162,22 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 		{
 			final GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.rowHeights = new int[] {0,7,7};
-//			gridBagLayout.rowHeights = new int[] {0,7,7};
-//			gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
-			gridBagLayout.columnWidths = new int[] {7,7,7};
+			gridBagLayout.columnWidths = new int[] {7,7,7,0,0,7,7,0,7};
 			sizePanel = new JPanel(gridBagLayout);
 			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 			gridBagConstraints1.gridy = 0;
 			gridBagConstraints1.gridx = 1;
-			sizePanel.add(new JLabel("Image size X "), gridBagConstraints1);
+			sizePanel.add(new JLabel("Pixel size X "), gridBagConstraints1);
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 			gridBagConstraints2.anchor = GridBagConstraints.WEST;
 			gridBagConstraints2.gridy = 2;
 			gridBagConstraints2.gridx = 1;
 
-			imgSizeX = new JTextField(12);
+			imgPixelSizeX = new JTextField(12);
 			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.gridy = 0;
 			gridBagConstraints.gridx = 2;
-			sizePanel.add(imgSizeX, gridBagConstraints);
+			sizePanel.add(imgPixelSizeX, gridBagConstraints);
 
 			final JLabel umLabel1 = new JLabel();
 			umLabel1.setText(" um");
@@ -184,13 +185,27 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			gridBagConstraints_2.gridy = 0;
 			gridBagConstraints_2.gridx = 4;
 			sizePanel.add(umLabel1, gridBagConstraints_2);
-			sizePanel.add(new JLabel("Image size Y "), gridBagConstraints2);
 
-			imgSizeY = new JTextField(12);
+			final JLabel imageNumOfLabel = new JLabel();
+			imageNumOfLabel.setText("Total Num. of Pixels X:");
+			final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
+			gridBagConstraints_4.gridy = 0;
+			gridBagConstraints_4.gridx = 7;
+			sizePanel.add(imageNumOfLabel, gridBagConstraints_4);
+
+			numXPixelsValLabel = new JLabel();
+			numXPixelsValLabel.setText("");
+			final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
+			gridBagConstraints_6.gridy = 0;
+			gridBagConstraints_6.gridx = 8;
+			sizePanel.add(numXPixelsValLabel, gridBagConstraints_6);
+			sizePanel.add(new JLabel("Pixel size Y "), gridBagConstraints2);
+
+			imgPixelSizeY = new JTextField(12);
 			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 			gridBagConstraints_1.gridy = 2;
 			gridBagConstraints_1.gridx = 2;
-			sizePanel.add(imgSizeY, gridBagConstraints_1);
+			sizePanel.add(imgPixelSizeY, gridBagConstraints_1);
 
 			final JLabel umLabel2 = new JLabel();
 			umLabel2.setText(" um");
@@ -199,6 +214,27 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			gridBagConstraints_3.gridx = 4;
 			sizePanel.add(umLabel2, gridBagConstraints_3);
 			sizePanel.setBorder(new TitledBorder(new LineBorder(new Color(153, 186,243), 1),"Adjust FRAP Image Size"));
+
+			final JLabel totalNumOfLabel = new JLabel();
+			totalNumOfLabel.setText("Total Num. of Pixels Y:");
+			final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
+			gridBagConstraints_5.gridy = 2;
+			gridBagConstraints_5.gridx = 7;
+			sizePanel.add(totalNumOfLabel, gridBagConstraints_5);
+
+			numYPixelsValLabel = new JLabel();
+			numYPixelsValLabel.setText("");
+			final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
+			gridBagConstraints_8.gridy = 2;
+			gridBagConstraints_8.gridx = 8;
+			sizePanel.add(numYPixelsValLabel, gridBagConstraints_8);
+
+			final JLabel label = new JLabel();
+			label.setText("");
+			final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
+			gridBagConstraints_7.gridy = 2;
+			gridBagConstraints_7.gridx = 9;
+			sizePanel.add(label, gridBagConstraints_7);
 		}
 		return sizePanel;
 	}
@@ -224,8 +260,14 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			eTimeCombo.setSelectedIndex(timeSteps.length-1);
 			totTimeLabel.setText((timeSteps[timeSteps.length-1] - timeSteps[0])+""); 
 			ImageDataset imgDataset = frapStudy.getFrapData().getImageDataset();
-			imgSizeX.setText(NumberUtils.formatNumber(imgDataset.getExtent().getX(), 15));
-			imgSizeY.setText(NumberUtils.formatNumber(imgDataset.getExtent().getY(), 15));
+			int numXPixels = imgDataset.getAllImages()[0].getNumX();
+			int numYPixels = imgDataset.getAllImages()[0].getNumY();
+			numXPixelsValLabel.setText(numXPixels + "");
+			numYPixelsValLabel.setText(numYPixels + "");
+			double pixelSizeX = imgDataset.getExtent().getX()/numXPixels;
+			double pixelSizeY = imgDataset.getExtent().getY()/numYPixels;
+			imgPixelSizeX.setText(NumberUtils.formatNumber(pixelSizeX, 10));
+			imgPixelSizeY.setText(NumberUtils.formatNumber(pixelSizeY, 10));
 		}
 		else
 		{
@@ -237,9 +279,11 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			eTimeCombo.removeAllItems();
 			eTimeCombo.addItem("     N/A     ");
 			totTimeLabel.setText("");
-			imgSizeX.setText("");
-			imgSizeY.setText("");
-			BeanUtils.enableComponents(getTimePanel(), false);
+			numXPixelsValLabel.setText("");
+			numYPixelsValLabel.setText("");
+			imgPixelSizeX.setText("");
+			imgPixelSizeY.setText("");
+			BeanUtils.enableComponents(getSizePanel(), false);
 			BeanUtils.enableComponents(getTimePanel(), false);
 		}
 	}
@@ -251,13 +295,13 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 			return "Starting time should NOT be greater than ending time.";
 		}
 		try{
-			Double.parseDouble(imgSizeX.getText());
+			Double.parseDouble(imgPixelSizeX.getText());
 		}catch(NumberFormatException e)
 		{
 			return "Image size X input error " + e.getMessage();
 		}
 		try{
-			Double.parseDouble(imgSizeY.getText());
+			Double.parseDouble(imgPixelSizeY.getText());
 		}catch(NumberFormatException e)
 		{
 			return "Image size Y input error " + e.getMessage();
@@ -269,9 +313,10 @@ public class LoadFRAPData_SummaryPanel extends JPanel
 	{
 		if(loadInfo.getText().equals(loadSuccessInfo)) //loaded successfully
 		{
+			double imgSizeX = Double.parseDouble(imgPixelSizeX.getText()) * Double.parseDouble(numXPixelsValLabel.getText());
+			double imgSizeY = Double.parseDouble(imgPixelSizeY.getText()) * Double.parseDouble(numYPixelsValLabel.getText());
 			return new DataVerifyInfo(Double.parseDouble((String)sTimeCombo.getSelectedItem()), Double.parseDouble((String)eTimeCombo.getSelectedItem()),
-									  Double.parseDouble(imgSizeX.getText()), Double.parseDouble(imgSizeY.getText()), 
-									  sTimeCombo.getSelectedIndex(), eTimeCombo.getSelectedIndex());
+									  imgSizeX, imgSizeY, sTimeCombo.getSelectedIndex(), eTimeCombo.getSelectedIndex());
 		}
 		return null;
 	}

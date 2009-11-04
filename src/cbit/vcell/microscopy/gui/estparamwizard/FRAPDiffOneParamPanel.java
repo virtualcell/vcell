@@ -53,9 +53,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 
 	private boolean B_HOLD_FIRE = false;
 	private boolean isExecuting = false;//for control whether a paragraph should execute in OPTIMIZER_SLIDER_CHANGE_LISTENER or not, when getValueIsAdjusting() is false.
-	public static final String PROPERTY_CHANGE_OPTIMIZER_VALUE = "PROPERTY_CHANGE_OPTIMIZER_VALUE";
-	public static final String PROPERTY_CHANGE_RUNSIM = "PROPERTY_CHANGE_RUNSIM";
-	public static final String PROPERTY_CHANGE_TO_REACTION_DIFFUTION = "PROPERTY_CHANGE_TO_REACTION_DIFFUTION";
 	public static final String INI_SECOND_DIFF_RATE = "0";
 	public static final String INI_SECOND_MOBILE_FRAC = "0";
 	
@@ -145,7 +142,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 						}
 					}
 					
-					firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
+					firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
 				}
 			}
 		};
@@ -232,7 +229,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 						immoFracValueLabel.setText(value+"");
 //					}
 					if(!B_HOLD_FIRE){
-						firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
+						firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
 					}
 				}catch (Exception e2){
 					e2.printStackTrace();
@@ -587,7 +584,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 								new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
 								new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess())
 								);
-						firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
+						firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
 					}
 				}
 			};
@@ -621,6 +618,9 @@ public class FRAPDiffOneParamPanel extends JPanel
 		diffusionRateSetButton.doClick();
 
 		B_HOLD_FIRE = false;
+		diffusionRateTextField.setCaretPosition(0);
+		mobileFractionTextField.setCaretPosition(0);
+		bleachWhileMonitorRateTextField.setCaretPosition(0);
 	}
 	private static Parameter[] createParameterArray(double diffusionRate, double mobileFraction, double monitorBleachRate)
 	{
@@ -682,89 +682,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 	
 	public double[][] getCurrentFitData() throws Exception{
 		return getFitData(getCurrentParameters());
-	}
-	
-	public void insertPureDiffusionParametersIntoFRAPStudy(FRAPStudy fStudy) throws Exception
-	{
-		if(fStudy != null)
-		{ 
-			if(getCurrentParameters()!=null)
-			{
-				try{
-					String primaryDiffRateText = diffusionRateTextField.getText();
-					if(primaryDiffRateText != null && primaryDiffRateText.length()>0){
-						//check validity
-						double diffusionRateDouble = Double.parseDouble(primaryDiffRateText);
-						if(diffusionRateDouble < 0){
-							throw new Exception("'Primary Diffusion Rate' must be >= 0.0");
-						}
-	
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Primary Diffusion Rate', "+e.getMessage());
-				}
-				try{
-					String mobileFractionText = mobileFractionTextField.getText();
-					if(mobileFractionText != null && mobileFractionText.length()>0){
-						//check validity
-						double mobileFractionDouble = Double.parseDouble(mobileFractionText);
-						if(mobileFractionDouble < 0 || mobileFractionDouble > 1.0){
-							throw new Exception("'Primary Mobile Fraction' must be between 0.0 and 1.0");
-						}
-	
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Primary Mobile Fraction', "+e.getMessage());
-				}
-				try{
-					String monitorBleachRateText = bleachWhileMonitorRateTextField.getText();
-					if(monitorBleachRateText != null && monitorBleachRateText.length()>0){
-						//check validity
-						double monitorBleadchRateDouble = Double.parseDouble(monitorBleachRateText);
-						if(monitorBleadchRateDouble < 0){
-							throw new Exception("'Bleach while monitoring rate' must be >= 0.0");
-						}
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Bleach while monitoring rate', "+e.getMessage());
-				}
-				FRAPStudy.PureDiffusionModelParameters pureDiffParameters = null;
-
-			}//all textfields are filled in legal forms
-		}
-	}
-	
-	public void updateSavedParameters(FRAPStudy.PureDiffusionModelParameters savedPureDiffParameters)
-	{
-		double immFraction;
-		if(savedPureDiffParameters != null)
-		{
-			diffusionRateTextField.setText(savedPureDiffParameters.primaryDiffusionRate == null?"":savedPureDiffParameters.primaryDiffusionRate);
-			mobileFractionTextField.setText(savedPureDiffParameters.primaryMobileFraction == null?"":savedPureDiffParameters.primaryMobileFraction);
-			bleachWhileMonitorRateTextField.setText(savedPureDiffParameters.monitorBleachRate == null?"":savedPureDiffParameters.monitorBleachRate);
-			if(savedPureDiffParameters.isSecondaryDiffusionApplied)
-			{
-				immFraction =1-Double.parseDouble(savedPureDiffParameters.primaryMobileFraction)-Double.parseDouble(savedPureDiffParameters.secondaryMobileFraction);
-			}
-			else
-			{
-				immoFracValueLabel.setText("");
-				if(savedPureDiffParameters.primaryMobileFraction != null){
-					immFraction =1-Double.parseDouble(savedPureDiffParameters.primaryMobileFraction);
-					immoFracValueLabel.setText(immFraction+"");
-				}
-			}
-//			diffusionRateSetButton.doClick();
-		}
-		else
-		{
-			diffusionRateTextField.setText("");
-			mobileFractionTextField.setText("");
-			bleachWhileMonitorRateTextField.setText("");
-			immoFracValueLabel.setText("");
-		}
-		//The set function actually go through everything (every slider). 
-		repaint();
 	}
 	
 	public String getDiffusionRateString() {
