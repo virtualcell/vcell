@@ -22,6 +22,7 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.SavedFrapModelInfo;
@@ -30,9 +31,7 @@ import cbit.vcell.opt.Parameter;
 public class FRAPReactionDiffusionParamPanel extends JPanel{
 
 	private JTextField complexFractionTextField;
-	private JTextField complexDiffRateTextField;
 	private JTextField offRateTextField;
-	private final JTextField bsConcentrationTextField;
 	private final JTextField onRateTextField;
 	private final JTextField freeDiffRateTextField;
 	private final JTextField freeFractionTextField;
@@ -41,12 +40,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	
 	private FRAPOptData frapOptData;
 
-	public static final String PROPERTY_EST_BINDING_PARAMETERS = "PROPERTY_EST_BINDING_PARAMETERS";
-	public static final String PROPERTY_RUN_BINDING_SIMULATION = "PROPERTY_RUN_BINDING_SIMULATION";
-	public static final String PROPERTY_EST_BS_CONCENTRATION = "PROPERTY_CHANGE_EST_BS_CONCENTRATION";
-	public static final String PROPERTY_EST_ON_RATE = "PROPERTY_EST_ON_RATE";
-	public static final String PROPERTY_EST_OFF_RATE = "PROPERTY_EST_OFF_RATE";
-	
 	public static String STR_FREE_DIFF_RATE = "Free particle diffusion rate";
 	public static String STR_FREE_FRACTION = "Free particle fraction";
 	public static String STR_BLEACH_MONITOR_RATE = "Bleach while monitoring rate";
@@ -59,9 +52,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 
 	private JButton runSimbutton = null;
 	private JButton estFromDiffParamButton = null; 
-	private JButton estBSButton = null;
-	private JButton estOnRateButton = null; 
-	private JButton estOffRateButton = null;
 	public FRAPReactionDiffusionParamPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -79,7 +69,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			public void actionPerformed(final ActionEvent e) {
 				if(checkParameters())
 				{
-					firePropertyChange(PROPERTY_RUN_BINDING_SIMULATION, null,null);
+					firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_RUN_BINDING_SIMULATION, null,null);
 				}
 			}
 		});
@@ -96,19 +86,9 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		add(estFromDiffParamButton, gridBagConstraints_20);
 		estFromDiffParamButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
-				firePropertyChange(PROPERTY_EST_BINDING_PARAMETERS, null, null);				
+				firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_EST_BINDING_PARAMETERS, null, null);				
 			}
 		});
-
-		final JLabel inputBindingSiteLabel = new JLabel();
-		inputBindingSiteLabel.setText("(Free BS concentration(uM) as a ratio of total fluorescence)");
-		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
-		gridBagConstraints_10.ipady = 5;
-		gridBagConstraints_10.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_10.gridwidth = 4;
-		gridBagConstraints_10.gridy = 1;
-		gridBagConstraints_10.gridx = 10;
-		add(inputBindingSiteLabel, gridBagConstraints_10);
 
 		final JLabel freeDiffRateLabel = new JLabel();
 		freeDiffRateLabel.setText("Free  Diffusion  Rate(um2/s):");
@@ -117,6 +97,16 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_9.gridy = 3;
 		gridBagConstraints_9.gridx = 0;
+
+		final JButton parameterScanButton = new JButton();
+		parameterScanButton.setEnabled(false);
+		parameterScanButton.setText("Parameter Scan on Current param set");
+		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_1.gridwidth = 2;
+		gridBagConstraints_1.gridy = 1;
+		gridBagConstraints_1.gridx = 10;
+		add(parameterScanButton, gridBagConstraints_1);
 		add(freeDiffRateLabel, gridBagConstraints_9);
 
 		freeDiffRateTextField = new JTextField();
@@ -129,56 +119,8 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints.gridx = 1;
 		add(freeDiffRateTextField, gridBagConstraints);
 
-		final JLabel complexDiffRateLabel = new JLabel();
-		complexDiffRateLabel.setText("complex Diffusion Rate(um2/s):");
-		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-		gridBagConstraints_1.gridy = 3;
-		gridBagConstraints_1.gridx = 5;
-		add(complexDiffRateLabel, gridBagConstraints_1);
-
-		complexDiffRateTextField = new JTextField();
-		complexDiffRateTextField.setPreferredSize(new Dimension(125, 20));
-		complexDiffRateTextField.setMinimumSize(new Dimension(125, 20));
-		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.gridy = 3;
-		gridBagConstraints_4.gridx = 6;
-		add(complexDiffRateTextField, gridBagConstraints_4);
-
-		final JLabel bsConcentrationLabel = new JLabel();
-		bsConcentrationLabel.setText("[Binding Site] :");
-		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
-		gridBagConstraints_14.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_14.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_14.gridy = 3;
-		gridBagConstraints_14.gridx = 10;
-		add(bsConcentrationLabel, gridBagConstraints_14);
-
-		bsConcentrationTextField = new JTextField();
-		bsConcentrationTextField.setMinimumSize(new Dimension(125, 20));
-		bsConcentrationTextField.setPreferredSize(new Dimension(125, 20));
-		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
-		gridBagConstraints_17.insets = new Insets(2, 2, 2, 0);
-		gridBagConstraints_17.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_17.gridy = 3;
-		gridBagConstraints_17.gridx = 11;
-		add(bsConcentrationTextField, gridBagConstraints_17);
-
-		estBSButton = new JButton();
-		estBSButton.setText("Estimate");
-		final GridBagConstraints gridBagConstraints_21 = new GridBagConstraints();
-		gridBagConstraints_21.insets = new Insets(2, 2, 2, 0);
-		gridBagConstraints_21.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_21.gridy = 3;
-		gridBagConstraints_21.gridx = 13;
-		add(estBSButton, gridBagConstraints_21);
-		estBSButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
-				firePropertyChange(PROPERTY_EST_BS_CONCENTRATION, null, null);				
-			}
-		});
-
 		final JLabel freeMobileFractionLabel = new JLabel();
-		freeMobileFractionLabel.setText("Free Particle Fraction:");
+		freeMobileFractionLabel.setText("Free Particle fraction:");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
@@ -211,7 +153,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		add(freeFractionTextField, gridBagConstraints_2);
 
 		final JLabel complexFractionLabel = new JLabel();
-		complexFractionLabel.setText("Complex Fraction :");
+		complexFractionLabel.setText("Complex fraction :");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_5.gridy = 6;
@@ -240,7 +182,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		add(complexFractionTextField, gridBagConstraints_6);
 
 		final JLabel onRateLabel = new JLabel();
-		onRateLabel.setText("On Reaction Rate(1/(uM.s):");
+		onRateLabel.setText("Psedo Reaction on Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_15.insets = new Insets(2, 2, 2, 2);
@@ -255,20 +197,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints_18.gridy = 6;
 		gridBagConstraints_18.gridx = 11;
 		add(onRateTextField, gridBagConstraints_18);
-
-		estOnRateButton = new JButton();
-		estOnRateButton.setText("Estimate");
-		final GridBagConstraints gridBagConstraints_22 = new GridBagConstraints();
-		gridBagConstraints_22.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_22.insets = new Insets(2, 2, 2, 0);
-		gridBagConstraints_22.gridy = 6;
-		gridBagConstraints_22.gridx = 13;
-		add(estOnRateButton, gridBagConstraints_22);
-		estOnRateButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
-				firePropertyChange(PROPERTY_EST_ON_RATE, null, null);				
-			}
-		});
 		
 		final JLabel bleachWhileMonitorLabel = new JLabel();
 		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate(1/s): ");
@@ -309,7 +237,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 
 		final JLabel offRateLabel = new JLabel();
 //		immboileFractionLabel.setFont(new Font("", Font.BOLD, 14));
-		offRateLabel.setText("Off Reaction Rate(1/s):");
+		offRateLabel.setText("Reaction  off  Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
 		gridBagConstraints_16.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_16.insets = new Insets(2, 2, 0, 2);
@@ -326,20 +254,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints_19.gridy = 9;
 		gridBagConstraints_19.gridx = 11;
 		add(offRateTextField, gridBagConstraints_19);
-
-		estOffRateButton = new JButton();
-		estOffRateButton.setText("Estimate");
-		final GridBagConstraints gridBagConstraints_23 = new GridBagConstraints();
-		gridBagConstraints_23.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_23.insets = new Insets(2, 2, 2, 0);
-		gridBagConstraints_23.gridy = 9;
-		gridBagConstraints_23.gridx = 13;
-		add(estOffRateButton, gridBagConstraints_23);
-		estOffRateButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
-				firePropertyChange(PROPERTY_EST_OFF_RATE, null, null);				
-			}
-		});
 	}
 
 	private void initialize(){
@@ -477,27 +391,15 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	}
 	
 	public Parameter[] getCurrentParameters(){
-		if(freeDiffRateTextField == null || freeDiffRateTextField.getText().equals("")||
-		   freeFractionTextField == null || freeFractionTextField.getText().equals("")||
-		   bleachWhileMonitorRateTextField == null || bleachWhileMonitorRateTextField.equals("") ||
-		   complexDiffRateTextField == null || complexDiffRateTextField.getText().equals("")||
-		   complexFractionTextField == null || complexFractionTextField.getText().equals("")||
-		   immobileValueLabel == null || immobileValueLabel.getText().equals("")||
-		   bsConcentrationTextField == null || bsConcentrationTextField.getText().equals("")||
-		   onRateTextField == null || onRateTextField.getText().equals("")||
-		   offRateTextField == null || offRateTextField.getText().equals(""))
-		{
-			return null;
-		}
 		double fr, ff, bwmr, cr, cf, imf, bs, on, off;
 		try
 		{
 			fr = Double.parseDouble(freeDiffRateTextField.getText());
 			ff = Double.parseDouble(freeFractionTextField.getText());
 			bwmr = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
-			cr = Double.parseDouble(complexDiffRateTextField.getText());
+			cr = 0; //complex diffusion is 0.
 			cf = Double.parseDouble(complexFractionTextField.getText());
-			bs = Double.parseDouble(bsConcentrationTextField.getText());
+			bs = 1;//binding site concentration
 			on = Double.parseDouble(onRateTextField.getText());
 			off = Double.parseDouble(offRateTextField.getText());
 			
@@ -510,15 +412,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			createParameterArray(fr, ff, bwmr, cr, cf, bs, on, off);
 	}
 	
-		
-	private void enableSecondDiffComponents()
-	{
-		freeFractionTextField.setEnabled(true);
-		bsConcentrationTextField.setEnabled(true);
-		onRateTextField.setEnabled(true);
-	}
-	
-
 	public boolean isAllTextFieldEmpty()
 	{
 		if(freeDiffRateTextField != null && !freeDiffRateTextField.getText().equals(""))
@@ -533,15 +426,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		{
 			return false;
 		}
-		if(complexDiffRateTextField != null && !complexDiffRateTextField.getText().equals(""))
-		{
-			return false;
-		}
 		if(complexFractionTextField != null && !complexFractionTextField.getText().equals(""))
-		{
-			return false;
-		}
-		if(bsConcentrationTextField != null && !bsConcentrationTextField.getText().equals(""))
 		{
 			return false;
 		}
@@ -662,105 +547,8 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			DialogUtils.showErrorDialog(this, "Required numbers are in illegal forms!");
 			return;
 		}
-		
-		bsConcentrationTextField.setText(BS_conc+"");
 	}
 
-	public void calOnRate(double prebleachAvg) 
-	{
-		//normalized prebleachAvg should be 1.
-		prebleachAvg = 1;
-		if(freeFractionTextField == null || freeFractionTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Free particle fraction is required to calculate Binding Site's concentration!");
-			return;
-		}
-		if(complexFractionTextField == null || complexFractionTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Complex fraction is required to calculate Binding Site's concentration!");
-			return;
-		}
-		if(bsConcentrationTextField == null || bsConcentrationTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Binding site's concentration is required to calculate Binding Site's concentration!");
-			return;
-		}
-		if(offRateTextField == null || offRateTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Reaction off rate is required to calculate Binding Site's concentration!");
-			return;
-		}
-		double freeFrac, complexFrac, fi, ci, kon, koff, bs;
-		try{
-			freeFrac = Double.parseDouble(freeFractionTextField.getText());
-			complexFrac = Double.parseDouble(complexFractionTextField.getText());
-			fi = prebleachAvg * freeFrac;
-			ci = prebleachAvg * complexFrac;
-			bs = Double.parseDouble(bsConcentrationTextField.getText())*prebleachAvg;
-			koff = Double.parseDouble(offRateTextField.getText());
-			if(bs == 0 || fi == 0)
-			{
-				DialogUtils.showErrorDialog(this, "Divided by 0 error! Free particle and binding site concentration should not be 0. !");
-				return;
-			}
-			kon = (koff*ci)/(fi*bs);
-		}catch(Exception e)
-		{
-			e.printStackTrace(System.out);
-			DialogUtils.showErrorDialog(this, "Required numbers are in illegal forms!");
-			return;
-		}
-		
-		onRateTextField.setText(kon+"");
-	}
-
-	public void calOffRate(double prebleachAvg) 
-	{
-		//normalized prebleachAvg should be 1.
-		prebleachAvg = 1;
-		if(freeFractionTextField == null || freeFractionTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Free particle fraction is required to calculate Binding Site's concentration!");
-			return;
-		}
-		if(complexFractionTextField == null || complexFractionTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Complex fraction is required to calculate Binding Site's concentration!");
-			return;
-		}
-		if(bsConcentrationTextField == null || bsConcentrationTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Binding site's concentration is required to calculate Binding Site's concentration!");
-			return;
-		}
-		if(onRateTextField == null || onRateTextField.getText().equals(""))
-		{
-			DialogUtils.showErrorDialog(this, "Reaction on rate is required to calculate Binding Site's concentration!");
-			return;
-		}
-		double freeFrac, complexFrac, fi, ci, kon, koff, bs;
-		try{
-			freeFrac = Double.parseDouble(freeFractionTextField.getText());
-			complexFrac = Double.parseDouble(complexFractionTextField.getText());
-			fi = prebleachAvg * freeFrac;
-			ci = prebleachAvg * complexFrac;
-			bs = Double.parseDouble(bsConcentrationTextField.getText())*prebleachAvg;
-			kon = Double.parseDouble(onRateTextField.getText());
-			if(ci == 0)
-			{
-				DialogUtils.showErrorDialog(this, "Divided by 0 error! Binding complex concentration should not be 0. !");
-				return;
-			}
-			koff = (fi*kon*bs)/ci;
-		}catch(Exception e)
-		{
-			e.printStackTrace(System.out);
-			DialogUtils.showErrorDialog(this, "Required numbers are in illegal forms!");
-			return;
-		}
-		offRateTextField.setText(koff+"");
-	}
-	
 	public void setFreeDiffRate(String freeDiffStr)
 	{
 		freeDiffRateTextField.setText(freeDiffStr);
@@ -777,10 +565,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	{
 		bleachWhileMonitorRateTextField.setText(bwmStr);
 	}
-	public void setComplexDiffRate(String complexDiffStr)
-	{
-		complexDiffRateTextField.setText(complexDiffStr);
-	}
 	public String getComplexFraction()
 	{
 		return complexFractionTextField.getText();
@@ -792,10 +576,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	public void setImmobileFraction(String immFracStr)
 	{
 		immobileValueLabel.setText(immFracStr);
-	}
-	public void setBSConcentration(String bsStr)
-	{
-		bsConcentrationTextField.setText(bsStr);
 	}
 	public void setOnRate(String onRateStr)
 	{
@@ -816,14 +596,14 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 				getFreeDiffusionRateString(),
 				isFreeMobileFractionChanged(savedFrapModelInfo),
 				getFreeMobileFractionString(),
-				isComplexDiffusionRateChanged(savedFrapModelInfo),
-				getComplexDiffusionRateString(),
+				false/*isComplexDiffusionRateChanged(savedFrapModelInfo)*/,
+				""/*getComplexDiffusionRateString()*/,
 				isComplexMobileFractionChanged(savedFrapModelInfo),
 				getComplexMobileFractionString(),
 				isMonitorBleachRateChanged(savedFrapModelInfo),
 				getMonitorBleachRateString(),
-				isBSConcentrationChanged(savedFrapModelInfo),
-				getBSConcentrationString(),
+				false/*isBSConcentrationChanged(savedFrapModelInfo)*/,
+				""/*getBSConcentrationString()*/,
 				isOnRateChanged(savedFrapModelInfo),
 				getOnRateString(),
 				isOffRateChanged(savedFrapModelInfo),
@@ -833,129 +613,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 
 	}
 	
-	public void insertReacDiffusionParametersIntoFRAPStudy(FRAPStudy fStudy) throws Exception
-	{
-		if(fStudy != null)
-		{
-			if(getCurrentParameters() != null)
-				{
-				try{
-					String freeDiffRateText = freeDiffRateTextField.getText();
-					if(freeDiffRateText != null && freeDiffRateText.length()>0){
-						//check validity
-						double diffusionRateDouble = Double.parseDouble(freeDiffRateText);
-						if(diffusionRateDouble < 0){
-							throw new Exception("'Free Diffusion Rate' must be >= 0.0");
-						}
-	
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Free Diffusion Rate', "+e.getMessage());
-				}
-				try{
-					String freeMFText = freeFractionTextField.getText();
-					if(freeMFText != null && freeMFText.length()>0){
-						//check validity
-						double mobileFractionDouble = Double.parseDouble(freeMFText);
-						if(mobileFractionDouble < 0 || mobileFractionDouble > 1.0){
-							throw new Exception("'Free Mobile Fraction' must be between 0.0 and 1.0");
-						}
-	
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Free Mobile Fraction', "+e.getMessage());
-				}
-				
-				try{
-					String complexDiffRateText = complexDiffRateTextField.getText();
-					if(complexDiffRateText != null && complexDiffRateText.length()>0){
-						//check validity
-						double diffusionRateDouble = Double.parseDouble(complexDiffRateText);
-						if(diffusionRateDouble < 0){
-							throw new Exception("'Binding complex Diffusion Rate' must be >= 0.0");
-						}
-	
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Binding complex Diffusion Rate', "+e.getMessage());
-				}
-				try{
-					String complexMFText = complexFractionTextField.getText();
-					if(complexMFText != null && complexMFText.length()>0){
-						//check validity
-						double mobileFractionDouble = Double.parseDouble(complexMFText);
-						if(mobileFractionDouble < 0 || mobileFractionDouble > 1.0){
-							throw new Exception("'Binding complex Mobile Fraction' must be between 0.0 and 1.0");
-						}
-	
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Binding complex Mobile Fraction', "+e.getMessage());
-				}
-				try{
-					String monitorBleachRateText = bleachWhileMonitorRateTextField.getText();
-					if(monitorBleachRateText != null && monitorBleachRateText.length()>0){
-						//check validity
-						double monitorBleadchRateDouble = Double.parseDouble(monitorBleachRateText);
-						if(monitorBleadchRateDouble < 0){
-							throw new Exception("'Bleach while monitoring rate' must be >= 0.0");
-						}
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Bleach while monitoring rate', "+e.getMessage());
-				}
-				try{
-					String bsConcentrationText = bsConcentrationTextField.getText();
-					if(bsConcentrationText != null && bsConcentrationText.length()>0){
-						//check validity
-						double concentrationDouble = Double.parseDouble(bsConcentrationText);
-						if(concentrationDouble < 0){
-							throw new Exception("'Binding site concentration' must be >= 0.0");
-						}
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Binding site concentration', "+e.getMessage());
-				}
-				try{
-					String onRateText = onRateTextField.getText();
-					if(onRateText != null && onRateText.length()>0){
-						//check validity
-						double rateDouble = Double.parseDouble(onRateText);
-						if(rateDouble < 0){
-							throw new Exception("'Reaction on rate' must be >= 0.0");
-						}
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Reaction on rate', "+e.getMessage());
-				}
-				try{
-					String offRateText = offRateTextField.getText();
-					if(offRateText != null && offRateText.length()>0){
-						//check validity
-						double rateDouble = Double.parseDouble(offRateText);
-						if(rateDouble < 0){
-							throw new Exception("'Reaction off rate' must be >= 0.0");
-						}
-					}
-				}catch(NumberFormatException e){
-					throw new Exception("Error parsing 'Reaction off rate', "+e.getMessage());
-				}
-				
-				FRAPStudy.ReactionDiffusionModelParameters reacDiffParameters = 
-									new FRAPStudy.ReactionDiffusionModelParameters(
-										freeDiffRateTextField.getText(),
-										freeFractionTextField.getText(),
-										complexDiffRateTextField.getText(),
-										complexFractionTextField.getText(),
-										bleachWhileMonitorRateTextField.getText(),
-										bsConcentrationTextField.getText(),
-										onRateTextField.getText(),
-										offRateTextField.getText());
-
-			}//all text fields are filled and are valid
-		}
-	}
-	
+		
 	public String getFullParamDescritpion()
 	{
 		String des = "";
@@ -977,11 +635,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			freeDiffRateTextField.setText(displayParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + "");
 			freeFractionTextField.setText(displayParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() + "");
 			bleachWhileMonitorRateTextField.setText(displayParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
-			
-			complexDiffRateTextField.setText(displayParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + "");
 			complexFractionTextField.setText(displayParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() + "");
-			
-			bsConcentrationTextField.setText(displayParameters[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() + "");
 			onRateTextField.setText(displayParameters[FRAPModel.INDEX_ON_RATE].getInitialGuess() + "");
 			offRateTextField.setText(displayParameters[FRAPModel.INDEX_OFF_RATE].getInitialGuess() + "");
 			updateFractions(true, displayParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess(), displayParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess());
@@ -992,10 +646,10 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			freeFractionTextField.setText("");
 			bleachWhileMonitorRateTextField.setText("");
 			
-			complexDiffRateTextField.setText("");
+//			complexDiffRateTextField.setText("");
 			complexFractionTextField.setText("");
 			
-			bsConcentrationTextField.setText("");
+//			bsConcentrationTextField.setText("");
 			onRateTextField.setText("");
 			offRateTextField.setText("");
 			immobileValueLabel.setText("");
@@ -1011,20 +665,12 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastFreeMobileFraction), getFreeMobileFractionString());
 	}
 	
-	private boolean isComplexDiffusionRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastComplexDiffusionRate), getComplexDiffusionRateString());
-	}
-	
 	private boolean isComplexMobileFractionChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
 		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastComplexMobileFraction), getComplexMobileFractionString());
 	}
 	
 	private boolean isMonitorBleachRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
 		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastBleachWhileMonitoringRate), getMonitorBleachRateString());
-	}
-	
-	private boolean isBSConcentrationChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastBSConcentration), getBSConcentrationString());
 	}
 	
 	private boolean isOnRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
@@ -1051,12 +697,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 				?null:freeFractionTextField.getText());
 	}
 	
-	private String getComplexDiffusionRateString(){
-		return
-			(complexDiffRateTextField.getText() == null || complexDiffRateTextField.getText().length() == 0
-				?null:complexDiffRateTextField.getText());
-	}
-	
 	private String getComplexMobileFractionString(){
 		return
 			(complexFractionTextField.getText() == null || complexFractionTextField.getText().length() == 0
@@ -1069,11 +709,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 				?null:bleachWhileMonitorRateTextField.getText());
 	}
 	
-	private String getBSConcentrationString(){
-		return
-			(bsConcentrationTextField.getText() == null || bsConcentrationTextField.getText().length() == 0
-				?null:bsConcentrationTextField.getText());
-	}
 	private String getOnRateString(){
 		return
 			(onRateTextField.getText() == null || onRateTextField.getText().length() == 0

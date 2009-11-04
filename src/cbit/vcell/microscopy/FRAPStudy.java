@@ -75,8 +75,6 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 
 public class FRAPStudy implements Matchable{
-	private transient String xmlFilename = null;
-	private transient String directory = null;
 	public static final String EXTRACELLULAR_NAME = "extracellular";
 	public static final String CYTOSOL_NAME = "cytosol";
 	public static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_primary_mobile"; 
@@ -89,26 +87,24 @@ public class FRAPStudy implements Matchable{
 	public static final String ROI_EXTDATA_NAME = "roiData";
 	public static final String REF_EXTDATA_NAME = "refData";
 	
-	public static final String PROPERTY_CHANGE_BEST_MODEL = "PROPERTY_BEST_MODEL_CHANGE";
-	
 	private String name = null; 
 	private String description = null;
+	private transient String xmlFilename = null;
 	private String originalImageFilePath = null;
 	private FRAPData frapData = null;
-	private int startingIndexForRecovery = -1;
+	private Integer startingIndexForRecovery = null;
 
 	private BioModel bioModel = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
 	//Added in Feb 2009, we want to store reference data together with the model in .vfrap file. 
 	private SimpleReferenceData storedRefData = null;
-	
-	
+		
 	//models
 	private FRAPModel[] models = new FRAPModel[FRAPModel.NUM_MODEL_TYPES];
 	private Integer bestModelIndex = null;
 	
-	//Selected ROIs for error calculation
+	//Selected ROIs for error calculation, length 11, according to the order in FRAPData.VFRAP_ROI_ENUM
 	private boolean[] selectedROIsForErrCalculation = null; 
 	
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -120,416 +116,8 @@ public class FRAPStudy implements Matchable{
 	//temporary data structure to store dimension reduced experimental data (all ROIs)
 	private transient double[][] dimensionReducedExpData = null;
 	
-	public static class InitialModelParameters 
-	{
-		public final String diffusionRate;
-		public final String mobileFraction;
-		public final String monitorBleachRate;
-		public final String startingIndexForRecovery;
-		public InitialModelParameters(String diffRate, String mFrac, String bwmRate, String startingIdx)
-		{
-			diffusionRate = (diffRate != null && diffRate.length()>0)?diffRate:null;
-			mobileFraction = (mFrac != null && mFrac.length() > 0)?mFrac:null;
-			monitorBleachRate = (bwmRate != null && bwmRate.length() > 0)?bwmRate:null;
-			startingIndexForRecovery = (startingIdx != null && startingIdx.length() > 0)?startingIdx:null;
-		}
-	}	
 	
-	public static class PureDiffusionModelParameters 
-	{
-		public final String primaryDiffusionRate;
-		public final String primaryMobileFraction;
-		public final String secondaryDiffusionRate;
-		public final String secondaryMobileFraction;
-		public final String monitorBleachRate;
-		public final Boolean isSecondaryDiffusionApplied;
-		public PureDiffusionModelParameters(String primaryDiffRate, String primaryMF, String secDiffRate, String secMF, String bwmRate, Boolean secDiffApplied)
-		{
-			primaryDiffusionRate = (primaryDiffRate !=null && primaryDiffRate.length() > 0)?primaryDiffRate:null;
-			primaryMobileFraction = (primaryMF != null && primaryMF.length() > 0)?primaryMF:null;
-			secondaryDiffusionRate = (secDiffRate != null && secDiffRate.length() > 0)?secDiffRate:null;
-			secondaryMobileFraction = (secMF != null && secMF.length() > 0)?secMF:null;
-			monitorBleachRate = (bwmRate != null && bwmRate.length() > 0)?bwmRate:null;
-			isSecondaryDiffusionApplied = secDiffApplied;
-		}
-		public boolean arePureDiffParametesAllNotNull()
-		{
-			if(primaryDiffusionRate == null)
-			{
-				return false;
-			}
-			if(primaryMobileFraction == null)
-			{
-				return false;
-			}
-			if(secondaryDiffusionRate== null)
-			{
-				return false;
-			}
-			if(secondaryMobileFraction== null)
-			{
-				return false;
-			}
-			if(monitorBleachRate== null)
-			{
-				return false;
-			}
-			if(isSecondaryDiffusionApplied == null)
-			{
-				return false;
-			}
-			return true;
-		}
-	}	
-	
-	public static class ReactionDiffusionModelParameters 
-	{
-		public final String freeDiffusionRate;
-		public final String freeMobileFraction;
-		public final String complexDiffusionRate;
-		public final String complexMobileFraction;
-		public final String monitorBleachRate;
-		public final String bsConcentration;
-		public final String reacOnRate;
-		public final String reacOffRate;
-		public ReactionDiffusionModelParameters(String freeDiffRate, String freeMF, String complexDiffRate, String complexMF, String bwmRate, String bsConc, String onRate, String offRate)
-		{
-			freeDiffusionRate = (freeDiffRate != null && freeDiffRate.length()>0)?freeDiffRate:null;
-			freeMobileFraction = (freeMF != null && freeMF.length() > 0)?freeMF:null;
-			complexDiffusionRate = (complexDiffRate != null && complexDiffRate.length() > 0)?complexDiffRate:null;
-			complexMobileFraction = (complexMF!=null && complexMF.length() > 0)?complexMF:null;
-			monitorBleachRate = (bwmRate!=null && bwmRate.length()>0)?bwmRate:null;
-			bsConcentration = (bsConc!=null && bsConc.length() > 0)?bsConc:null;
-			reacOnRate = (onRate!=null && onRate.length()>0)?onRate:null;
-			reacOffRate = (offRate!=null && offRate.length()>0)?offRate:null;
-		}
-	}
-	
-	public static class FRAPModelParameters {
-		public InitialModelParameters iniModelParameters = null;
-		public PureDiffusionModelParameters pureDiffModelParameters = null;
-		public ReactionDiffusionModelParameters reacDiffModelParameters = null;
-		public FRAPModelParameters(){};
-		public FRAPModelParameters(InitialModelParameters iniParams, PureDiffusionModelParameters pureDiffParams, ReactionDiffusionModelParameters reacDiffParams)
-		{
-			iniModelParameters = iniParams;
-			pureDiffModelParameters = pureDiffParams;
-			reacDiffModelParameters = reacDiffParams;
-		}
-		public InitialModelParameters getIniModelParameters() {
-			return iniModelParameters;
-		}
-		public void setIniModelParameters(InitialModelParameters iniModelParameters) {
-			this.iniModelParameters = iniModelParameters;
-		}
-		public PureDiffusionModelParameters getPureDiffModelParameters() {
-			return pureDiffModelParameters;
-		}
-		public void setPureDiffModelParameters(
-				PureDiffusionModelParameters pureDiffModelParameters) {
-			this.pureDiffModelParameters = pureDiffModelParameters;
-		}
-		public ReactionDiffusionModelParameters getReacDiffModelParameters() {
-			return reacDiffModelParameters;
-		}
-		public void setReacDiffModelParameters(
-				ReactionDiffusionModelParameters reacDiffModelParameters) {
-			this.reacDiffModelParameters = reacDiffModelParameters;
-		}
-	}
-	
-	public static class AnalysisParameters implements Matchable
-	{
-		private Parameter[] parameters = null;
-		
-		public Parameter[] getParameters() {
-			return parameters;
-		}
-
-		public void setParameters(Parameter[] parameters) {
-			this.parameters = parameters;
-		}
-
-		public AnalysisParameters(Parameter[] arg_parameters)
-		{
-			parameters = arg_parameters;
-		}
-
-		public boolean compareEqual(Matchable obj)
-		{
-			AnalysisParameters anaParameter = (AnalysisParameters)obj;
-			//should make Parameter implements matchable
-//			Compare.isEqualOrNull(getParameters(), anaParameter.getParameters());
-			return false;
-		}
-		
-		
-	};
-
-
-	public static SpatialAnalysisResults spatialAnalysis(
-			PDEDataManager simulationDataManager,
-			int startingIndexForRecovery,
-			double startingForRecoveryExperimentalTime,
-			Parameter[] modelParameters,
-			FRAPData frapData,
-			double[] preBleachAverageXYZ) throws Exception{
-		
-
-		String[] varNames = new String[] {SPECIES_NAME_PREFIX_COMBINED};
-		AnalysisParameters analysisParameters = new AnalysisParameters(modelParameters);
-		
-		
-		//
-		// for each simulation time step, get the data under each ROI <indexed by ROI, then diffusion
-		//
-		// preallocate arrays for all data first
-		Hashtable<CurveInfo, double[]> curveHash = new Hashtable<CurveInfo, double[]>();
-		ArrayList<int[]> nonZeroIndicesForROI = new ArrayList<int[]>();
-		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROINAMES.length; i++) {
-//			for (int j = 0; j < diffusionRates.length; j++) {
-				curveHash.put(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[i]), new double[frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery]);
-//			}
-			ROI roi_2D = frapData.getRoi(SpatialAnalysisResults.ORDERED_ROINAMES[i]);
-			nonZeroIndicesForROI.add(roi_2D.getRoiImages()[0].getNonzeroIndices());
-		}
-		
-		//
-		// collect data for experiment (over all ROIs), normalized with pre-bleach average
-		//
-		double[] avgBkIntensity = frapData.getAvgBackGroundIntensity();
-		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROINAMES.length; i++) {
-			double[] normalizedAverageFluorAtEachTimeUnderROI = new double[frapData.getImageDataset().getImageTimeStamps().length];
-			for (int j = 0; j < normalizedAverageFluorAtEachTimeUnderROI.length; j++) {
-				normalizedAverageFluorAtEachTimeUnderROI[j] = frapData.getAverageUnderROI(j,frapData.getRoi(SpatialAnalysisResults.ORDERED_ROINAMES[i]), preBleachAverageXYZ, avgBkIntensity[j]);				
-			}
-			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROINAMES[i]), normalizedAverageFluorAtEachTimeUnderROI);
-		}
-		
-		//
-		// get times to compare experimental data with simulated results.
-		//
-		double[] shiftedSimTimes = null;
-		if(simulationDataManager != null)
-		{
-			double[] simTimes = simulationDataManager.getDataSetTimes();
-			shiftedSimTimes = simTimes.clone();
-			for (int j = 0; j < simTimes.length; j++) {
-				shiftedSimTimes[j] = simTimes[j] + startingForRecoveryExperimentalTime;//timeStamps[startingIndexOfRecovery];
-			}
-			//
-			// get Simulation Data
-			//
-			int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length;
-//			if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalization and data reduction");}
-//			if(progressListener != null){progressListener.updateProgress(0);}
-			
-			//simulation may have different number of time points(1 more or 1 less) compare with experimental data.
-			//curveHash was intialized with exp time data length. so, we have to replace it with the real sim data length.
-			if(simTimes.length != (frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery))
-			{
-				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROINAMES.length; k++) {
-					CurveInfo ci = new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]);
-					curveHash.remove(ci);
-					curveHash.put(ci, new double[simTimes.length]);
-				}
-			}
-			for (int i = 0; i < simTimes.length; i++) {
-				for (int j = 0; j < varNames.length; j++) {
-					SimDataBlock simDataBlock = simulationDataManager.getSimDataBlock(varNames[j], simTimes[i]);
-					double[] data = simDataBlock.getData();
-					for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROINAMES.length; k++) {
-						CurveInfo ci = new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]);
-						int[] roiIndices = nonZeroIndicesForROI.get(k);
-						if(roiIndices != null && roiIndices.length > 0){
-							double accum = 0.0;
-							for (int index = 0; index < roiIndices.length; index++) {
-								accum += data[roiIndices[index]];
-							}
-							double[] values = curveHash.get(ci);
-							values[i] = accum/roiIndices.length;
-						}
-						double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length + j*SpatialAnalysisResults.ORDERED_ROINAMES.length + k;
-//						if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
-					}
-				}
-			}
-		}
-		SpatialAnalysisResults spatialAnalysisResults = new SpatialAnalysisResults(new AnalysisParameters[] {analysisParameters},shiftedSimTimes,curveHash);
-		return spatialAnalysisResults;
-	}
-	
-	public void setModels(FRAPModel[] arg_models)
-	{
-		models = arg_models;
-	}
-	
-	public static void runFVSolverStandalone(
-			File simulationDataDir,
-			SessionLog sessionLog,
-			Simulation sim,
-			ExternalDataIdentifier imageDataExtDataID,
-			ExternalDataIdentifier roiExtDataID,
-			ClientTaskStatusSupport progressListener) throws Exception{
-		runFVSolverStandalone(simulationDataDir, sessionLog, sim, imageDataExtDataID, roiExtDataID, progressListener, false);
-	}
-	
-	public static void runFVSolverStandalone(
-		File simulationDataDir,
-		SessionLog sessionLog,
-		Simulation sim,
-		ExternalDataIdentifier imageDataExtDataID,
-		ExternalDataIdentifier roiExtDataID,
-		ClientTaskStatusSupport progressListener,
-		boolean bCheckSteadyState) throws Exception{
-
-		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
-		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
-		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
-			if (fieldFunctionArgs[i].getFieldName().equals(imageDataExtDataID.getName())){
-				fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],imageDataExtDataID);
-			}else if (fieldFunctionArgs[i].getFieldName().equals(roiExtDataID.getName())){
-				fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],roiExtDataID);
-			}else{
-				throw new RuntimeException("failed to resolve field named "+fieldFunctionArgs[i].getFieldName());
-			}
-		}
-		
-		int jobIndex = 0;
-		SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
-		
-		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
-		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
-		//if we need to check steady state, do the following two lines
-		if(bCheckSteadyState)
-		{
-			simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
-			simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
-		}
-		
-		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
-		fvSolver.startSolver();
-		
-		SolverStatus status = fvSolver.getSolverStatus();
-		while (status.getStatus() != SolverStatus.SOLVER_FINISHED && status.getStatus() != SolverStatus.SOLVER_ABORTED )
-		{
-			if(progressListener != null){
-				progressListener.setProgress((int)(fvSolver.getProgress()*100));
-			}
-			Thread.sleep(100);
-			status = fvSolver.getSolverStatus();
-		}
-
-		if(status.getStatus() == SolverStatus.SOLVER_FINISHED){
-			String roiMeshFileName =
-				SimulationData.createCanonicalMeshFileName(
-					roiExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-			String imageDataMeshFileName =
-				SimulationData.createCanonicalMeshFileName(
-					imageDataExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-			String simulationMeshFileName =
-				SimulationData.createCanonicalMeshFileName(
-					sim.getVersion().getVersionKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-			// delete old external data mesh files and copy simulation mesh file to them
-			File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
-			File imgMeshFile = new File(simulationDataDir,imageDataMeshFileName);
-			File simMeshFile = new File(simulationDataDir,simulationMeshFileName);
-			if(!roiMeshFile.delete()){throw new Exception("Couldn't delete ROI Mesh file "+roiMeshFile.getAbsolutePath());}
-			if(!imgMeshFile.delete()){throw new Exception("Couldn't delete ImageData Mesh file "+imgMeshFile.getAbsolutePath());}
-			FileUtils.copyFile(simMeshFile, roiMeshFile);
-			FileUtils.copyFile(simMeshFile, imgMeshFile);
-		}
-		else{
-			throw new Exception("Sover did not finish normally." + status.toString());
-		}
-	}
-
-	public static ExternalDataInfo createNewExternalDataInfo(LocalWorkspace localWorkspace,String extDataIDName){
-		File targetDir = new File(localWorkspace.getDefaultSimDataDirectory());
-		ExternalDataIdentifier newImageDataExtDataID =
-			new ExternalDataIdentifier(LocalWorkspace.createNewKeyValue(),
-					LocalWorkspace.getDefaultOwner(),extDataIDName);
-		ExternalDataInfo newImageDataExtDataInfo =
-			new ExternalDataInfo(newImageDataExtDataID,
-				new File(targetDir,newImageDataExtDataID.getID()+SimDataConstants.LOGFILE_EXTENSION).getAbsolutePath());
-		return newImageDataExtDataInfo;
-	}
-	
-	public ExternalDataInfo getFrapDataExternalDataInfo() {
-		return frapDataExternalDataInfo;
-	}
-	
-	public void setFrapDataExternalDataInfo(ExternalDataInfo imageDatasetExternalDataInfo) {
-		ExternalDataInfo oldValue = this.frapDataExternalDataInfo;
-		this.frapDataExternalDataInfo = imageDatasetExternalDataInfo;
-		propertyChangeSupport.firePropertyChange("imageDatasetExternalDataInfo", oldValue, imageDatasetExternalDataInfo);
-	}
-
-	public ExternalDataInfo getRoiExternalDataInfo() {
-		return roiExternalDataInfo;
-	}
-
-	public void setRoiExternalDataInfo(ExternalDataInfo roiExternalDataInfo) {
-		ExternalDataInfo oldValue = this.roiExternalDataInfo;
-		this.roiExternalDataInfo = roiExternalDataInfo;
-		propertyChangeSupport.firePropertyChange("roiExternalDataInfo", oldValue, roiExternalDataInfo);
-	}
-		
-	public BioModel getBioModel() {
-		return bioModel;
-	}
-	/*
-	 * for selected models
-	 */
-	public FRAPModel[] getModels()
-	{
-		return models;
-	}
-	
-	public ArrayList<Integer> getSelectedModels()
-	{
-		ArrayList<Integer> result = new ArrayList<Integer>();
-		if(models != null)
-		{
-			for(int i=0 ; i<FRAPModel.NUM_MODEL_TYPES; i++)
-			{
-				if(models[i] != null)
-				{
-					result.add(new Integer(i));
-				}
-			}
-		}
-		return result;
-	}
-	
-	public void refreshModels(boolean[] modelBooleans)
-	{
-		for(int i =0; i<FRAPModel.NUM_MODEL_TYPES; i++)
-		{
-			if(modelBooleans[i])
-			{
-				models[i] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[i], null, null);
-			}
-			else
-			{
-				models[i] = null;
-			}
-		}
-	}
-	
-	public Integer getBestModelIndex() {
-		return bestModelIndex;
-	}
-
-
-	public void setBestModelIndex(Integer bestModelIdx) 
-	{
-		Integer oldModelIndex  = this.bestModelIndex;
-		this.bestModelIndex = bestModelIdx;
-		propertyChangeSupport.firePropertyChange(PROPERTY_CHANGE_BEST_MODEL, oldModelIndex, bestModelIdx);
-	}
-	
-	
+	//static functions
 	public static void removeExternalDataAndSimulationFiles(
 			KeyValue simulationKeyValue,
 			ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
@@ -969,6 +557,298 @@ public class FRAPStudy implements Matchable{
 		return bioModel;
 	}
 	
+	public static SpatialAnalysisResults spatialAnalysis(
+			PDEDataManager simulationDataManager,
+			int startingIndexForRecovery,
+			double startingForRecoveryExperimentalTime,
+			Parameter[] modelParameters,
+			FRAPData frapData,
+			double[] preBleachAverageXYZ) throws Exception{
+		
+
+		String[] varNames = new String[] {SPECIES_NAME_PREFIX_COMBINED};
+		AnalysisParameters analysisParameters = new AnalysisParameters(modelParameters);
+		
+		
+		//
+		// for each simulation time step, get the data under each ROI <indexed by ROI, then diffusion
+		//
+		// preallocate arrays for all data first
+		Hashtable<CurveInfo, double[]> curveHash = new Hashtable<CurveInfo, double[]>();
+		ArrayList<int[]> nonZeroIndicesForROI = new ArrayList<int[]>();
+		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROINAMES.length; i++) {
+//			for (int j = 0; j < diffusionRates.length; j++) {
+				curveHash.put(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[i]), new double[frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery]);
+//			}
+			ROI roi_2D = frapData.getRoi(SpatialAnalysisResults.ORDERED_ROINAMES[i]);
+			nonZeroIndicesForROI.add(roi_2D.getRoiImages()[0].getNonzeroIndices());
+		}
+		
+		//
+		// collect data for experiment (over all ROIs), normalized with pre-bleach average
+		//
+		double[] avgBkIntensity = frapData.getAvgBackGroundIntensity();
+		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROINAMES.length; i++) {
+			double[] normalizedAverageFluorAtEachTimeUnderROI = new double[frapData.getImageDataset().getImageTimeStamps().length];
+			for (int j = 0; j < normalizedAverageFluorAtEachTimeUnderROI.length; j++) {
+				normalizedAverageFluorAtEachTimeUnderROI[j] = frapData.getAverageUnderROI(j,frapData.getRoi(SpatialAnalysisResults.ORDERED_ROINAMES[i]), preBleachAverageXYZ, avgBkIntensity[j]);				
+			}
+			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROINAMES[i]), normalizedAverageFluorAtEachTimeUnderROI);
+		}
+		
+		//
+		// get times to compare experimental data with simulated results.
+		//
+		double[] shiftedSimTimes = null;
+		if(simulationDataManager != null)
+		{
+			double[] simTimes = simulationDataManager.getDataSetTimes();
+			shiftedSimTimes = simTimes.clone();
+			for (int j = 0; j < simTimes.length; j++) {
+				shiftedSimTimes[j] = simTimes[j] + startingForRecoveryExperimentalTime;//timeStamps[startingIndexOfRecovery];
+			}
+			//
+			// get Simulation Data
+			//
+			int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length;
+//			if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalization and data reduction");}
+//			if(progressListener != null){progressListener.updateProgress(0);}
+			
+			//simulation may have different number of time points(1 more or 1 less) compare with experimental data.
+			//curveHash was intialized with exp time data length. so, we have to replace it with the real sim data length.
+			if(simTimes.length != (frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery))
+			{
+				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROINAMES.length; k++) {
+					CurveInfo ci = new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]);
+					curveHash.remove(ci);
+					curveHash.put(ci, new double[simTimes.length]);
+				}
+			}
+			for (int i = 0; i < simTimes.length; i++) {
+				for (int j = 0; j < varNames.length; j++) {
+					SimDataBlock simDataBlock = simulationDataManager.getSimDataBlock(varNames[j], simTimes[i]);
+					double[] data = simDataBlock.getData();
+					for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROINAMES.length; k++) {
+						CurveInfo ci = new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROINAMES[k]);
+						int[] roiIndices = nonZeroIndicesForROI.get(k);
+						if(roiIndices != null && roiIndices.length > 0){
+							double accum = 0.0;
+							for (int index = 0; index < roiIndices.length; index++) {
+								accum += data[roiIndices[index]];
+							}
+							double[] values = curveHash.get(ci);
+							values[i] = accum/roiIndices.length;
+						}
+						double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length + j*SpatialAnalysisResults.ORDERED_ROINAMES.length + k;
+//						if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
+					}
+				}
+			}
+		}
+		SpatialAnalysisResults spatialAnalysisResults = new SpatialAnalysisResults(new AnalysisParameters[] {analysisParameters},shiftedSimTimes,curveHash);
+		return spatialAnalysisResults;
+	}
+	
+	public static void runFVSolverStandalone(
+			File simulationDataDir,
+			SessionLog sessionLog,
+			Simulation sim,
+			ExternalDataIdentifier imageDataExtDataID,
+			ExternalDataIdentifier roiExtDataID,
+			ClientTaskStatusSupport progressListener) throws Exception{
+		runFVSolverStandalone(simulationDataDir, sessionLog, sim, imageDataExtDataID, roiExtDataID, progressListener, false);
+	}
+	
+	public static void runFVSolverStandalone(
+		File simulationDataDir,
+		SessionLog sessionLog,
+		Simulation sim,
+		ExternalDataIdentifier imageDataExtDataID,
+		ExternalDataIdentifier roiExtDataID,
+		ClientTaskStatusSupport progressListener,
+		boolean bCheckSteadyState) throws Exception{
+
+		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
+		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
+		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
+			if (fieldFunctionArgs[i].getFieldName().equals(imageDataExtDataID.getName())){
+				fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],imageDataExtDataID);
+			}else if (fieldFunctionArgs[i].getFieldName().equals(roiExtDataID.getName())){
+				fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],roiExtDataID);
+			}else{
+				throw new RuntimeException("failed to resolve field named "+fieldFunctionArgs[i].getFieldName());
+			}
+		}
+		
+		int jobIndex = 0;
+		SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
+		
+		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
+		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
+		//if we need to check steady state, do the following two lines
+		if(bCheckSteadyState)
+		{
+			simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+			simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
+		}
+		
+		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
+		fvSolver.startSolver();
+		
+		SolverStatus status = fvSolver.getSolverStatus();
+		while (status.getStatus() != SolverStatus.SOLVER_FINISHED && status.getStatus() != SolverStatus.SOLVER_ABORTED )
+		{
+			if(progressListener != null){
+				progressListener.setProgress((int)(fvSolver.getProgress()*100));
+			}
+			Thread.sleep(100);
+			status = fvSolver.getSolverStatus();
+		}
+
+		if(status.getStatus() == SolverStatus.SOLVER_FINISHED){
+			String roiMeshFileName =
+				SimulationData.createCanonicalMeshFileName(
+					roiExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+			String imageDataMeshFileName =
+				SimulationData.createCanonicalMeshFileName(
+					imageDataExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+			String simulationMeshFileName =
+				SimulationData.createCanonicalMeshFileName(
+					sim.getVersion().getVersionKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+			// delete old external data mesh files and copy simulation mesh file to them
+			File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
+			File imgMeshFile = new File(simulationDataDir,imageDataMeshFileName);
+			File simMeshFile = new File(simulationDataDir,simulationMeshFileName);
+			if(!roiMeshFile.delete()){throw new Exception("Couldn't delete ROI Mesh file "+roiMeshFile.getAbsolutePath());}
+			if(!imgMeshFile.delete()){throw new Exception("Couldn't delete ImageData Mesh file "+imgMeshFile.getAbsolutePath());}
+			FileUtils.copyFile(simMeshFile, roiMeshFile);
+			FileUtils.copyFile(simMeshFile, imgMeshFile);
+		}
+		else{
+			throw new Exception("Sover did not finish normally." + status.toString());
+		}
+	}
+
+	public static ExternalDataInfo createNewExternalDataInfo(LocalWorkspace localWorkspace,String extDataIDName){
+		File targetDir = new File(localWorkspace.getDefaultSimDataDirectory());
+		ExternalDataIdentifier newImageDataExtDataID =
+			new ExternalDataIdentifier(LocalWorkspace.createNewKeyValue(),
+					LocalWorkspace.getDefaultOwner(),extDataIDName);
+		ExternalDataInfo newImageDataExtDataInfo =
+			new ExternalDataInfo(newImageDataExtDataID,
+				new File(targetDir,newImageDataExtDataID.getID()+SimDataConstants.LOGFILE_EXTENSION).getAbsolutePath());
+		return newImageDataExtDataInfo;
+	}
+	
+	public static File[] getCanonicalExternalDataFiles(LocalWorkspace localWorkspace,ExternalDataIdentifier originalExtDataID){
+		if(originalExtDataID != null){
+			File userDir = new File(localWorkspace.getDefaultSimDataDirectory());
+			File fdLogFile =
+				new File(userDir,
+						SimulationData.createCanonicalSimLogFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+			File fdMeshFile =
+				new File(userDir,
+						SimulationData.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+			File fdFunctionFile =
+				new File(userDir,
+						SimulationData.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+			File fdZipFile =
+				new File(userDir,
+						SimulationData.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+			return new File[] {fdLogFile,fdMeshFile,fdFunctionFile,fdZipFile};
+		}
+		return null;
+	}
+	
+	public static void deleteCanonicalExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier originalExtDataID) throws Exception{
+		File[] externalDataFiles = getCanonicalExternalDataFiles(localWorkspace, originalExtDataID);
+		for (int i = 0;externalDataFiles != null && i < externalDataFiles.length; i++) {
+			externalDataFiles[i].delete();
+		}
+	}
+	
+	public ExternalDataInfo getFrapDataExternalDataInfo() {
+		return frapDataExternalDataInfo;
+	}
+	
+	public void setFrapDataExternalDataInfo(ExternalDataInfo imageDatasetExternalDataInfo) {
+		ExternalDataInfo oldValue = this.frapDataExternalDataInfo;
+		this.frapDataExternalDataInfo = imageDatasetExternalDataInfo;
+		propertyChangeSupport.firePropertyChange("imageDatasetExternalDataInfo", oldValue, imageDatasetExternalDataInfo);
+	}
+
+	public ExternalDataInfo getRoiExternalDataInfo() {
+		return roiExternalDataInfo;
+	}
+
+	public void setRoiExternalDataInfo(ExternalDataInfo roiExternalDataInfo) {
+		ExternalDataInfo oldValue = this.roiExternalDataInfo;
+		this.roiExternalDataInfo = roiExternalDataInfo;
+		propertyChangeSupport.firePropertyChange("roiExternalDataInfo", oldValue, roiExternalDataInfo);
+	}
+		
+	public void setModels(FRAPModel[] arg_models)
+	{
+		models = arg_models;
+	}
+	
+	public BioModel getBioModel() {
+		return bioModel;
+	}
+	/*
+	 * for selected models
+	 */
+	public FRAPModel[] getModels()
+	{
+		return models;
+	}
+	
+	public ArrayList<Integer> getSelectedModels()
+	{
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		if(models != null)
+		{
+			for(int i=0 ; i<FRAPModel.NUM_MODEL_TYPES; i++)
+			{
+				if(models[i] != null)
+				{
+					result.add(new Integer(i));
+				}
+			}
+		}
+		return result;
+	}
+	
+	public void refreshModels(boolean[] modelBooleans)
+	{
+		for(int i =0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+		{
+			if(modelBooleans[i])
+			{
+				models[i] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[i], null, null);
+			}
+			else
+			{
+				models[i] = null;
+			}
+		}
+	}
+	
+	public Integer getBestModelIndex() {
+		return bestModelIndex;
+	}
+
+
+	public void setBestModelIndex(Integer bestModelIdx) 
+	{
+		Integer oldModelIndex  = this.bestModelIndex;
+		this.bestModelIndex = bestModelIdx;
+		propertyChangeSupport.firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_BEST_MODEL, oldModelIndex, bestModelIdx);
+	}
+	
+	
+	
+	
 	public void refreshDependentROIs(){
 		getFrapData().refreshDependentROIs();
 	}
@@ -1016,31 +896,7 @@ public class FRAPStudy implements Matchable{
 		localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
 	}
 	
-	public static File[] getCanonicalExternalDataFiles(LocalWorkspace localWorkspace,ExternalDataIdentifier originalExtDataID){
-		if(originalExtDataID != null){
-			File userDir = new File(localWorkspace.getDefaultSimDataDirectory());
-			File fdLogFile =
-				new File(userDir,
-						SimulationData.createCanonicalSimLogFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
-			File fdMeshFile =
-				new File(userDir,
-						SimulationData.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
-			File fdFunctionFile =
-				new File(userDir,
-						SimulationData.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
-			File fdZipFile =
-				new File(userDir,
-						SimulationData.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
-			return new File[] {fdLogFile,fdMeshFile,fdFunctionFile,fdZipFile};
-		}
-		return null;
-	}
-	public static void deleteCanonicalExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier originalExtDataID) throws Exception{
-		File[] externalDataFiles = getCanonicalExternalDataFiles(localWorkspace, originalExtDataID);
-		for (int i = 0;externalDataFiles != null && i < externalDataFiles.length; i++) {
-			externalDataFiles[i].delete();
-		}
-	}
+	
 	private CartesianMesh getCartesianMesh() throws Exception{
 		CartesianMesh cartesianMesh = null;
 		ImageDataset imgDataSet = getFrapData().getImageDataset();
@@ -1315,16 +1171,6 @@ public class FRAPStudy implements Matchable{
 		propertyChangeSupport.firePropertyChange("name", oldValue, name);
 	}
 
-	public String getDirectory() {
-		return directory;
-	}
-
-	void setDirectory(String directory) {
-		String oldValue = this.directory;
-		this.directory = directory;
-		propertyChangeSupport.firePropertyChange("directory", oldValue, directory);
-	}
-
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		propertyChangeSupport.addPropertyChangeListener(listener);
 	}
@@ -1378,16 +1224,6 @@ public class FRAPStudy implements Matchable{
 		return false;
 	}
 
-//	public ExternalDataInfo getRefExternalDataInfo() {
-//		return refExternalDataInfo;
-//	}
-//
-//
-//	public void setRefExternalDataInfo(ExternalDataInfo refExternalDataInfo) {
-//		this.refExternalDataInfo = refExternalDataInfo;
-//	}
-	
-	
 	public FRAPModel getFrapModel(int modelType)
 	{
 		if(modelType > -1 && modelType < FRAPModel.NUM_MODEL_TYPES)
@@ -1414,13 +1250,13 @@ public class FRAPStudy implements Matchable{
 		this.frapOptData = frapOptData;
 	}
 
-	public int getStartingIndexForRecovery() {
+	public Integer getStartingIndexForRecovery() {
 		return startingIndexForRecovery;
 	}
 
 
 	public void setStartingIndexForRecovery(int startingIndexForRecovery) {
-		this.startingIndexForRecovery = startingIndexForRecovery;
+		this.startingIndexForRecovery = new Integer(startingIndexForRecovery);
 	}
 	
 	public void setSelectedROIsForErrorCalculation(boolean[] arg_selectedROIs)

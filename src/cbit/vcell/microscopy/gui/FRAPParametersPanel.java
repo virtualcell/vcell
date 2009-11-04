@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -68,7 +69,7 @@ public class FRAPParametersPanel extends JPanel {
 		estimationPanel.addPropertyChangeListener(
 			new PropertyChangeListener(){
 				public void propertyChange(PropertyChangeEvent evt) {
-					if(evt.getPropertyName().equals(FRAPEstimationPanel.FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY)){
+					if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES)){
 						FRAPEstimationPanel.FRAPParameterEstimateValues frapParamEstVals = (FRAPEstimationPanel.FRAPParameterEstimateValues)evt.getNewValue();
 						
 						if(frapParamEstVals.startTimeRecovery != null){
@@ -363,36 +364,36 @@ public class FRAPParametersPanel extends JPanel {
 //		}
 	}
 
-	public void updateSavedParameters(FRAPStudy.InitialModelParameters savedIniParameters, double[] frapDataTimeStamps)
-	{
-		if(savedIniParameters != null)
-		{
-			diffusionRateTextField.setText(savedIniParameters.diffusionRate == null?"":savedIniParameters.diffusionRate);
-			mobileFractionTextField.setText(savedIniParameters.mobileFraction == null?"":savedIniParameters.mobileFraction);
-			monitorBleachRateTextField.setText(savedIniParameters.monitorBleachRate == null?"":savedIniParameters.monitorBleachRate);
-			updateImmobileFractionModelText();
-		}
-		else
-		{
-			diffusionRateTextField.setText("");
-			mobileFractionTextField.setText("");
-			monitorBleachRateTextField.setText("");
-			immobileFractionValueJLabel.setText("");
-		}
-		frapDataTimesComboBox.removeAllItems();
-		if(frapDataTimeStamps != null)
-		{
-			for (int i = 0; i < frapDataTimeStamps.length; i++) {
-				frapDataTimesComboBox.insertItemAt(frapDataTimeStamps[i],i);
-			}
-			frapDataTimesComboBox.setSelectedIndex(0);
-			if(savedIniParameters != null && savedIniParameters.startingIndexForRecovery != null){
-				frapDataTimesComboBox.setSelectedIndex(new Integer(savedIniParameters.startingIndexForRecovery));
-			}
-		}
-		repaint();
-
-	}
+//	public void updateSavedParameters(FRAPStudy.InitialModelParameters savedIniParameters, double[] frapDataTimeStamps)
+//	{
+//		if(savedIniParameters != null)
+//		{
+//			diffusionRateTextField.setText(savedIniParameters.diffusionRate == null?"":savedIniParameters.diffusionRate);
+//			mobileFractionTextField.setText(savedIniParameters.mobileFraction == null?"":savedIniParameters.mobileFraction);
+//			monitorBleachRateTextField.setText(savedIniParameters.monitorBleachRate == null?"":savedIniParameters.monitorBleachRate);
+//			updateImmobileFractionModelText();
+//		}
+//		else
+//		{
+//			diffusionRateTextField.setText("");
+//			mobileFractionTextField.setText("");
+//			monitorBleachRateTextField.setText("");
+//			immobileFractionValueJLabel.setText("");
+//		}
+//		frapDataTimesComboBox.removeAllItems();
+//		if(frapDataTimeStamps != null)
+//		{
+//			for (int i = 0; i < frapDataTimeStamps.length; i++) {
+//				frapDataTimesComboBox.insertItemAt(frapDataTimeStamps[i],i);
+//			}
+//			frapDataTimesComboBox.setSelectedIndex(0);
+//			if(savedIniParameters != null && savedIniParameters.startingIndexForRecovery != null){
+//				frapDataTimesComboBox.setSelectedIndex(new Integer(savedIniParameters.startingIndexForRecovery));
+//			}
+//		}
+//		repaint();
+//
+//	}
 	private void updateImmobileFractionModelText(){
 		double mobileFraction = -1;  
 		try{
@@ -475,12 +476,12 @@ public class FRAPParametersPanel extends JPanel {
 				throw new Exception("Error parsing '"+MONITOR_BLEACH_RATE_DESCRIPTION+"', "+e.getMessage());
 			}
 			
-			FRAPStudy.InitialModelParameters iniParameters =
-					new FRAPStudy.InitialModelParameters(
-							 getUserDiffusionRateString(),
-							 getUserMobileFractionString(),
-							 getUserMonitorBleachRateString(),
-			   				 getUserStartIndexForRecoveryString());
+//			FRAPStudy.InitialModelParameters iniParameters =
+//					new FRAPStudy.InitialModelParameters(
+//							 getUserDiffusionRateString(),
+//							 getUserMobileFractionString(),
+//							 getUserMonitorBleachRateString(),
+//			   				 getUserStartIndexForRecoveryString());
 
 
 			

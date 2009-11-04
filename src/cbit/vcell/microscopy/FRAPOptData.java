@@ -1,11 +1,16 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
+
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
@@ -237,7 +242,6 @@ public class FRAPOptData {
 			//get shifted time points
 			refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
 			System.out.println("simulation done...");
-			int startRecoveryIndex = getExpFrapStudy().getStartingIndexForRecovery();
 			
 			DataSetControllerImpl.ProgressListener reducedRefDataProgressListener =
 				new DataSetControllerImpl.ProgressListener(){
@@ -254,11 +258,14 @@ public class FRAPOptData {
 			};
 			dimensionReducedRefData =
 				FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID, rawRefDataTimePoints,
-						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(), progressListener/*reducedRefDataProgressListener*/, true);
+						 getExpFrapStudy().getFrapData().getRois(), progressListener/*reducedRefDataProgressListener*/, true);
 			System.out.println("generating dimension reduced ref data, done ....");
 			
 			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
-			getExpFrapStudy().setStoredRefData(convertToSimpleRefData());
+			boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+			Arrays.fill(selectedROIs, true);
+			getExpFrapStudy().setStoredRefData(FRAPOptimization.doubleArrayToSimpleRefData(dimensionReducedRefData, getRefDataTimePoints(), 0, selectedROIs));
+
 			//TODO: there is situation that no xml file name exists. we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
 //			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
 			//remove reference simulation files
@@ -338,7 +345,7 @@ public class FRAPOptData {
 													getRefTimeStep(), 
 													LocalWorkspace.createNewKeyValue(), 
 													LocalWorkspace.getDefaultOwner(), 
-													new Integer(expFrapStudy.getStartingIndexForRecovery()));
+													expFrapStudy.getStartingIndexForRecovery());
 			
 			//change time bound and time step
 			Simulation sim = bioModel.getSimulations()[0];
@@ -831,45 +838,16 @@ public class FRAPOptData {
 	public void setNumEstimatedParams(int numEstimatedParams) {
 		this.numEstimatedParams = numEstimatedParams;
 	}
-//	public Boolean isRunRefSim() {
-//		return bRunRefSim;
-//	}
-	
-	public SimpleReferenceData convertToSimpleRefData() throws Exception
-	{
-		double[][] refData =  getDimensionReducedRefData(null, null);//first dimension:11
-		if(getRefDataTimePoints() != null && refData != null)
-		{
-			ROI[] rois = getExpFrapStudy().getFrapData().getRois();//11
-			final int numROIs = rois.length; // 11
-			String[] columnNames = new String[numROIs+1];//12:t+rois
-			double[] weights = new double[numROIs+1];//12
-			columnNames[0] = "t";
-			weights[0] = 1.0;
-			double[] times = getRefDataTimePoints();
-			double[][] data = new double[numROIs+1][];//store data, the first dimension is t + rois, the second dimension is time series data according to roi.
-			data[0] = times;
-			
-			for (int i = 0; i < numROIs; i++) {
-				columnNames[i+1] = rois[i].getROIName();
-				weights[i+1] = 1.0;
-				double[] dataForEachRoi = refData[i];
-				data[i+1] = dataForEachRoi;
-			}
-			return new SimpleReferenceData(columnNames, weights, data);
-		}
-		return null;
-	}
 	
 	public void getFromStoredRefData(SimpleReferenceData argSimRefData)
 	{
-		ROI[] rois = getExpFrapStudy().getFrapData().getRois();
-		if(argSimRefData.getNumColumns() == (1+rois.length))
+		int roiLen = getExpFrapStudy().getFrapData().getROILength();
+		if(argSimRefData.getNumColumns() == (1+roiLen))
 		{
 			//t is in the first column of simpleReferenceData
 			refDataTimePoints = argSimRefData.getColumnData(0);
-			double[][] result = new double[rois.length][];
-			for(int i=0; i<rois.length; i++)
+			double[][] result = new double[roiLen][];
+			for(int i=0; i<roiLen; i++)
 			{
 				result[i]=argSimRefData.getColumnData(i+1); //first column is t, so the roi data starts from second column
 			}

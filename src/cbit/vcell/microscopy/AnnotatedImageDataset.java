@@ -24,8 +24,6 @@ public abstract class AnnotatedImageDataset {
 	private transient ROI currentlyDisplayedROI = null;
 	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-	public static final String PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITH_SAVE = "currentlyDisplayedROI_withsave";
-	public static final String PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE = "currentlyDisplayedROI_withoutsave";
 	/**
 	 * Constructor for AnnotatedImageDataset.
 	 * @param argImageDataset ImageDataset
@@ -314,11 +312,11 @@ public abstract class AnnotatedImageDataset {
 		this.currentlyDisplayedROI = argCurrentlyDisplayedROI;
 		if(bSave)
 		{
-			propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITH_SAVE, oldDisplayedROI, currentlyDisplayedROI);
+			propertyChangeSupport.firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE, oldDisplayedROI, currentlyDisplayedROI);
 		}
 		else
 		{
-			propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE, oldDisplayedROI, currentlyDisplayedROI);
+			propertyChangeSupport.firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE, oldDisplayedROI, currentlyDisplayedROI);
 		}
 	}
 

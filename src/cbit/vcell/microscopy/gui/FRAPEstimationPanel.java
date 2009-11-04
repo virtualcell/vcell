@@ -7,6 +7,7 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -49,8 +50,6 @@ public class FRAPEstimationPanel extends JPanel {
 	private ExpressionCanvas expressionCanvas;
 	private JComboBox bleachEstimationComboBox;
 	private static final String PARAM_EST_EQUATION_STRING = "FRAP Model Parameter Estimation Equation";
-	
-	public static final String FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY = "FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY";
 	
 	private enum FRAPParameterEstimateEnum {
 		DIFFUSION_RATE("Diffusion Rate","um2/s"),
@@ -99,7 +98,6 @@ public class FRAPEstimationPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JPanel panel = new JPanel();
-//		panel.setBorder(new LineBorder(Color.black, 1, false));
 		panel.setBorder(new EtchedBorder());
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.columnWidths = new int[] {7,0};
@@ -124,7 +122,6 @@ public class FRAPEstimationPanel extends JPanel {
 		panel.add(frapModelParameterLabel_1, gridBagConstraints_3);
 
 		final JLabel frapParameterEstimatesLabel = new JLabel();
-//		frapParameterEstimatesLabel.setFont(new Font("", Font.BOLD, 14));
 		frapParameterEstimatesLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		frapParameterEstimatesLabel.setText("Bleaching Type ");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
@@ -162,7 +159,6 @@ public class FRAPEstimationPanel extends JPanel {
 		scrollPane.setViewportView(table);
 
 		final JButton applyEstimatedValuesButton = new JButton();
-//		applyEstimatedValuesButton.setFont(new Font("", Font.BOLD, 16));
 		applyEstimatedValuesButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				Object[][] rowData = new Object[4][FRAP_ESTIMATE_COLUMN_NAMES.length];
@@ -228,7 +224,7 @@ public class FRAPEstimationPanel extends JPanel {
 								selectedStartTimeRecovery,
 								bleachWhileMonitoringRate
 							);
-						firePropertyChange(FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY, null, frapParameterEstimateValues);
+						firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES, null, frapParameterEstimateValues);
 					}
 				}catch(UserCancelException e2){
 					//ignore

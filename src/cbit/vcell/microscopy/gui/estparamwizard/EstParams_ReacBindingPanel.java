@@ -31,6 +31,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
@@ -61,7 +62,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	
 	private FRAPStudy fStudy = null;
 	private MultisourcePlotPane multisourcePlotPane;
-	private Hashtable<FRAPStudy.AnalysisParameters, DataSource[]> allDataHash;
+	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentSimResults = null; //a data structure used to store results according to the current params.
 	private double[] currentSimTimePoints = null; //used to store simulation time points according to the current params.
 	
@@ -107,24 +108,14 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					public void propertyChange(PropertyChangeEvent evt) {
 						if(evt.getSource() == reactionDiffusionPanel){
 							FRAPStudy frapStudy = getFrapWorkspace().getFrapStudy();
-							if((evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_BINDING_PARAMETERS))){
+							if((evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_EST_BINDING_PARAMETERS))){
 								activateReacDiffEstPanel();
-							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_BS_CONCENTRATION)){
+							}else if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_EST_BS_CONCENTRATION)){
 								if(frapStudy != null && frapStudy.getFrapData() != null)
 								{
 									reactionDiffusionPanel.calBSConcentration(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getFrapStudy().getStartingIndexForRecovery()));
 								}
-							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_ON_RATE)){
-								if(frapStudy != null && frapStudy.getFrapData() != null)
-								{
-									reactionDiffusionPanel.calOnRate(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getFrapStudy().getStartingIndexForRecovery()));
-								}
-							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_EST_OFF_RATE)){
-								if(frapStudy != null && frapStudy.getFrapData() != null)
-								{
-									reactionDiffusionPanel.calOffRate(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getFrapStudy().getStartingIndexForRecovery()));
-								}
-							}else if(evt.getPropertyName().equals(FRAPReactionDiffusionParamPanel.PROPERTY_RUN_BINDING_SIMULATION)){
+							}else if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_RUN_BINDING_SIMULATION)){
 								simulateWithCurrentParameters();
 							}
 						}
@@ -189,7 +180,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 //		
 //	}
 
-	private void plotDerivedSimulationResults(FRAPStudy.AnalysisParameters[] anaParams)
+	private void plotDerivedSimulationResults(AnalysisParameters[] anaParams)
 	{
 		try{
 			if(getCurrentSimResults() == null || getCurrentRawSimTimePoints() == null || allDataHash == null
@@ -439,11 +430,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		return getReactionDiffusionPanel().getCurrentParameters();
 	}
 	
-	public void insertReactionDiffusionParametersIntoFRAPStudy(FRAPStudy arg_FRAPStudy) throws Exception
-	{
-		getReactionDiffusionPanel().insertReacDiffusionParametersIntoFRAPStudy(arg_FRAPStudy);
-	}
-	
+		
 	public void setReacBindingParams(Parameter[] parameters)
 	{
 		getReactionDiffusionPanel().setParameters(parameters);
@@ -473,43 +460,16 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
 		//check if we can do auto estimation on reaction binding papameters
 		Parameter[] params = null;
-		if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
-		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
-		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
-		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null)
-		{
-			int choice = DialogUtils.showComponentOKCancelDialog(this, getQuestionPanel(), "Choose diffusion model used for estimation");
-			if(choice == JOptionPane.OK_OPTION)
-			{
-				if(diffOneRadioButton.isSelected())
-				{
-					params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();
-				}
-				else
-				{
-					params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
-				}
-			}
-			else
-			{
-				return;
-			}
-		}
-		else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
-		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null)
-		{
-			params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
-		}
-		else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
+		if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
 		   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null)
 		{
 			params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();
 		}
-		if (params == null)
+		else
 		{
-			DialogUtils.showErrorDialog(EstParams_ReacBindingPanel.this, "Parameters from at least one of 'Diffusion with One Diffusing Component' model and " +
-					                    " 'Diffusion with Two Diffusing Components' model are needed for auto estimation of reaction binding parameters.\n" +
-					                    "Please include one of the above-mentioned models using 'Choose Model Types' wizard.");
+			DialogUtils.showErrorDialog(EstParams_ReacBindingPanel.this, "Parameters from 'Diffusion with One Diffusing Component' model " +
+					                    "is needed for automated estimation of reaction binding parameters.\n" +
+					                    "Please include the above-mentioned model using 'Choose Model Types' wizard.");
 			return;
 		}
 
@@ -517,47 +477,9 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		{
 			estGuidePanel = new FRAPReacDiffEstimationGuidePanel();
 		}
+		//set initial parameters from diffusion with one diffusing component
+		estGuidePanel.setPrimaryParameters(params);
 		
-		String secDiffStr = null;
-		String secFracStr = null;
-		double secDiff = -1;
-		double secFrac = -1;
-		if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
-		{
-			secDiffStr = null;
-			secFracStr = null;
-			secDiff = -1; //if set to -1, it won't be displayed in table in diffRateEstimationPanel.
-			secFrac = -1; //if set to -1, it won't be displayed in table in diffRateEstimationPanel.
-			BeanUtils.enableComponents(estGuidePanel.getDiffTypePanel(), true);
-			estGuidePanel.updateUIForPureDiffusion();
-		}
-		else if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
-		{
-			secDiffStr = params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()+"";
-			secFracStr = params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()+"";
-			secDiff = params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
-			secFrac = params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
-			BeanUtils.enableComponents(estGuidePanel.getDiffTypePanel(), false);
-			estGuidePanel.updateUIForReacDiffusion();
-		}
-		estGuidePanel.setIniParamFromPureDiffusion(params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()+"",
-									params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()+"",
-									(params.length==5),
-	            					secDiffStr,
-	            					secFracStr,
-	            					params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()+"");
-		try {
-			estGuidePanel.updateTableParameters(params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess(), 
-												params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess(),
-					                            secDiff, secFrac, params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess(),
-					                            -1, -1, null, -1, -1, -1, null, -1, null, -1, -1, -1, -1, null, -1, -1, null);
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		int choice2 = DialogUtils.showComponentOKCancelDialog(EstParams_ReacBindingPanel.this, estGuidePanel, "FRAP Parameter Estimation Guide");
 		if (choice2 == JOptionPane.OK_OPTION)
 		{
@@ -572,27 +494,19 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					 {
 						 reactionDiffusionPanel.setFreeDiffRate(val+"");
 					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartFraction]))
+					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_FreePartConc]))
 					 {
 						 reactionDiffusionPanel.setFreeFraction(val+"");
 					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BleachMonitorRate]))
+					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BWMRate]))
 					 {
 						 reactionDiffusionPanel.setBleachMonitorRate(val+"");
 					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexDiffRate]))
-					 {
-						 reactionDiffusionPanel.setComplexDiffRate(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexFraction]))
+					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ComplexConc]))
 					 {
 						 reactionDiffusionPanel.setComplexFraction(val+"");
 					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_BSConc]))
-					 {
-						 reactionDiffusionPanel.setBSConcentration(val+"");
-					 }
-					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacOnRate]))
+					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_ReacPseudoOnRate]))
 					 {
 						 reactionDiffusionPanel.setOnRate(val+"");
 					 }
@@ -600,23 +514,13 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					 {
 						 reactionDiffusionPanel.setOffRate(val+"");
 					 }
+					 else if(name.equals(FRAPReacDiffEstimationGuidePanel.paramNames[FRAPReacDiffEstimationGuidePanel.IDX_Immobile]))
+					 {
+						 reactionDiffusionPanel.setImmobileFraction(val+"");
+					 }
 				}
-				//calculate immobile fraction
-				double immFrac = 0;
-				try
-				{
-					immFrac = 1- Double.parseDouble(reactionDiffusionPanel.getFreeFraction())- Double.parseDouble(reactionDiffusionPanel.getComplexFraction());
-					if(immFrac < (1+FRAPOptimization.epsilon) && immFrac > (1-FRAPOptimization.epsilon))
-					{
-						immFrac = 0;
-					}
-					reactionDiffusionPanel.setImmobileFraction(immFrac+"");
-				}catch(NumberFormatException e)
-				{
-					reactionDiffusionPanel.setImmobileFraction(immFrac+"");
-					e.printStackTrace(System.out);
-				}
-				multisourcePlotPane.setDataSources(null);
+				
+//				multisourcePlotPane.setDataSources(null);
 			}
 		}
 	}
@@ -652,8 +556,8 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.IMAGE_EXTDATA_NAME));
 					fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.ROI_EXTDATA_NAME));
 					try {
-						fStudy.saveROIsAsExternalData(getLocalWorkspace(), fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(fStudy.getStartingIndexForRecovery()));
-						fStudy.saveImageDatasetAsExternalData(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(fStudy.getStartingIndexForRecovery()));
+						fStudy.saveROIsAsExternalData(getLocalWorkspace(), fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+						fStudy.saveImageDatasetAsExternalData(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -713,7 +617,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 						bioModel.getSimulations(0),
 						fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 						fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
-						this.getClientTaskStatusSupport(), true);
+						this.getClientTaskStatusSupport(), false);
 					
 		//			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
 		//			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
@@ -755,8 +659,6 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					setCurrentRawSimTimePoints(rawSimTimePoints);
 			//		refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
 	//				System.out.println("simulation done...");
-					int startRecoveryIndex = fStudy.getStartingIndexForRecovery();
-					
 //					DataSetControllerImpl.ProgressListener reducedRefDataProgressListener =
 //						new DataSetControllerImpl.ProgressListener(){
 //							public void updateProgress(double progress) {
@@ -773,7 +675,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					
 					double[][] results =
 						FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,rawSimTimePoints,
-								startRecoveryIndex, fStudy.getFrapData().getRois(),this.getClientTaskStatusSupport(), false);
+								fStudy.getFrapData().getRois(),this.getClientTaskStatusSupport(), false);
 					//to store data in frap model.
 					setCurrentSimResults(results);
 					System.out.println("generating dimension reduced ref data, done ....");

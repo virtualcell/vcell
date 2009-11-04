@@ -27,6 +27,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -48,18 +49,14 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 	private final JLabel interactiveAnalysisUsingLabel_1;
 	
 
-	private FRAPDiffOneParamPanel pureDiffusionPanel;
+	private FRAPDiffOneParamPanel diffOnePanel;
 		
 	private FRAPOptData frapOptData;
 	private FRAPWorkspace frapWorkspace;
 	
 	private MultisourcePlotPane multisourcePlotPane;
-	private Hashtable<FRAPStudy.AnalysisParameters, DataSource[]> allDataHash;
+	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentEstimationResults = null; //a data structure used to store results according to the current params. 
-	
-	private boolean do_once = true;
-	
-	private static String[] summaryReportColumnNames = SpatialAnalysisResults.getSummaryReportColumnNames();
 	
 	public EstParams_OneDiffComponentPanel() {
 		super();
@@ -85,7 +82,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		interactiveAnalysisUsingLabel_1.setFont(new Font("", Font.PLAIN, 14));
 		interactiveAnalysisUsingLabel_1.setText("Interactive Analysis on 'Diffusion with One Diffusing Component' Model using FRAP Simulation Results");
 
-		pureDiffusionPanel = new FRAPDiffOneParamPanel();
+		diffOnePanel = new FRAPDiffOneParamPanel();
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.anchor = GridBagConstraints.SOUTH;
 		gridBagConstraints_10.fill = GridBagConstraints.BOTH;
@@ -93,12 +90,12 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		gridBagConstraints_10.gridx = 0;
 		gridBagConstraints_10.weightx = 1.5;
 		gridBagConstraints_10.weighty = 2;
-		paramPanel.add(pureDiffusionPanel, gridBagConstraints_10);
-		pureDiffusionPanel.addPropertyChangeListener(
+		paramPanel.add(diffOnePanel, gridBagConstraints_10);
+		diffOnePanel.addPropertyChangeListener(
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
-						if(evt.getSource() == pureDiffusionPanel){
-							if((evt.getPropertyName().equals(FRAPDiffOneParamPanel.PROPERTY_CHANGE_OPTIMIZER_VALUE)))
+						if(evt.getSource() == diffOnePanel){
+							if((evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE)))
 							{
 								plotDerivedSimulationResults(spatialAnalysisResults.getAnalysisParameters());
 							}
@@ -161,7 +158,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 //		init();
 	}
 
-	private void plotDerivedSimulationResults(FRAPStudy.AnalysisParameters[] anaParams)
+	private void plotDerivedSimulationResults(AnalysisParameters[] anaParams)
 	{
 //		boolean isSimData = false;
 		try{
@@ -295,7 +292,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 	}
 	
 	private FRAPDiffOneParamPanel getPureDiffusionPanel() {
-		return pureDiffusionPanel;
+		return diffOnePanel;
 	}
 	
 	public Parameter[] getCurrentParameters()
@@ -311,11 +308,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		this.currentEstimationResults = currentEstimationResults;
 	}
 	
-	public void insertPureDiffusionParametersIntoFRAPStudy(FRAPStudy arg_FRAPStudy) throws Exception
-	{
-		getPureDiffusionPanel().insertPureDiffusionParametersIntoFRAPStudy(arg_FRAPStudy);
-	}
-	
+		
 	public static void main(java.lang.String[] args) {
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();

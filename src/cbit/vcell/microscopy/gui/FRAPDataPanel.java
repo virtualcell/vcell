@@ -30,7 +30,6 @@ import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import cbit.vcell.microscopy.AnnotatedImageDataset;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -67,7 +66,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+ex.getMessage());
 			}
 		}
-		else if (e.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITH_SAVE)){
+		else if (e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE)){
 			//Save user changes from viewer to ROI
 			//To save only when the image is editable in this panel
 			if(isEditable)
@@ -77,12 +76,12 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			//Set new ROI on viewer
 			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 		}
-		else if (e.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE)){
+		else if (e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE)){
 			//Set new ROI on viewer
 			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 		}
-		else if (e.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NEW_PROPERTY) ||
-				e.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NOTNEW_PROPERTY))
+		else if (e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW) ||
+				e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE))
 		{
 			if(e.getNewValue() instanceof FRAPStudy)
 			{
@@ -100,7 +99,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					fData.addPropertyChangeListener(this);
 				}
 				
-				if(e.getPropertyName().equals(FRAPWorkspace.FRAPSTUDY_CHANGE_NEW_PROPERTY))
+				if(e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW))
 				{
 					overlayEditorPanel.setImages(
 						(fData==null?null:fData.getImageDataset()),true,

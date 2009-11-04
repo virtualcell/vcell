@@ -234,32 +234,18 @@ public class FRAPModel
 		
 		Parameter secondaryDiff = null;
 		Parameter secondaryFrac = null;
-		if(origParams.length == NUM_MODEL_PARAMETERS_TWO_DIFF)
-		{
-			secondaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE], 
-	                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-	                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-	                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
-	                origParams[INDEX_SECONDARY_DIFF_RATE].getInitialGuess());
-			secondaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION],
-					FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-	                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-	                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
-	                origParams[INDEX_SECONDARY_FRACTION].getInitialGuess());
-		}
-		else
-		{
-			secondaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE], 
-	                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-	                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-	                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
-	                0);
-			secondaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION],
-					FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-	                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-	                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
-	                0);
-		}
+		
+		secondaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE], 
+                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+                0);
+		secondaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION],
+				FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+                0);
+		
 		Parameter bsConcentration = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BINDING_SITE_CONCENTRATION],
 		                0,
 		                1,

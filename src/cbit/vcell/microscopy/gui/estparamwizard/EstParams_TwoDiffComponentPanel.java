@@ -27,6 +27,7 @@ import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -43,30 +44,23 @@ import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
 public class EstParams_TwoDiffComponentPanel extends JPanel {
 	
-	private static final int IDX_REACTION_DIFFUSION = 1;
-	private static final int IDX_PURE_DIFFUSION = 0;	
 	
 	private SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
 	private final JPanel paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
-	private JLabel simulationParametersLabel;
 	private final JLabel interactiveAnalysisUsingLabel_1;
 	
 
 	private ROIImagePanel roiImagePanel;
-	private FRAPDiffTwoParamPanel pureDiffusionPanel;
+	private FRAPDiffTwoParamPanel diffTwoPanel;
 		
 	private FRAPOptData frapOptData;
 	private FRAPWorkspace frapWorkspace;
 	
 	private MultisourcePlotPane multisourcePlotPane;
-	private Hashtable<FRAPStudy.AnalysisParameters, DataSource[]> allDataHash;
+	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentEstimationResults = null; //a data structure used to store results according to the current params. 
 	
 	private boolean do_once = true;
-	
-	private static String[] summaryReportColumnNames = SpatialAnalysisResults.getSummaryReportColumnNames();
-	
-	
 	
 	public EstParams_TwoDiffComponentPanel() {
 		super();
@@ -90,19 +84,19 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		interactiveAnalysisUsingLabel_1.setFont(new Font("", Font.PLAIN, 14));
 		interactiveAnalysisUsingLabel_1.setText("Interactive Analysis on 'Diffusion with Two Diffusing Components' Model using FRAP Simulation Results");
 
-		pureDiffusionPanel = new FRAPDiffTwoParamPanel();
+		diffTwoPanel = new FRAPDiffTwoParamPanel();
 //		pureDiffusionPanel.setSecondDiffComponentEnabled(true);
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_10.gridy = 1;
 		gridBagConstraints_10.gridx = 0;
 		gridBagConstraints_10.weightx = 1.5;
-		paramPanel.add(pureDiffusionPanel, gridBagConstraints_10);
-		pureDiffusionPanel.addPropertyChangeListener(
+		paramPanel.add(diffTwoPanel, gridBagConstraints_10);
+		diffTwoPanel.addPropertyChangeListener(
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
-						if(evt.getSource() == pureDiffusionPanel){
-							if((evt.getPropertyName().equals(FRAPDiffTwoParamPanel.PROPERTY_CHANGE_OPTIMIZER_VALUE)))
+						if(evt.getSource() == diffTwoPanel){
+							if((evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE)))
 							{
 								plotDerivedSimulationResults(spatialAnalysisResults.getAnalysisParameters());
 							}
@@ -166,7 +160,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 //		init();
 	}
 
-	private void plotDerivedSimulationResults(FRAPStudy.AnalysisParameters[] anaParams)
+	private void plotDerivedSimulationResults(AnalysisParameters[] anaParams)
 	{
 //		boolean isSimData = false;
 		try{
@@ -204,7 +198,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 				fitOdeSolverResultSet.addRow(row);
 			}
 			// populate values
-			double[][] currentOptFitData = pureDiffusionPanel.getCurrentFitData();
+			double[][] currentOptFitData = diffTwoPanel.getCurrentFitData();
 			//store results
 			setCurrentEstimationResults(currentOptFitData);
 			if(allDataHash != null && currentOptFitData != null)
@@ -303,7 +297,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 	}
 	
 	public FRAPDiffTwoParamPanel getPureDiffusionPanel() {
-		return pureDiffusionPanel;
+		return diffTwoPanel;
 	}
 	
 	public double[][] getCurrentEstimationResults() {
@@ -314,11 +308,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		this.currentEstimationResults = currentEstimationResults;
 	}
 	
-	public void insertPureDiffusionParametersIntoFRAPStudy(FRAPStudy arg_FRAPStudy) throws Exception
-	{
-		getPureDiffusionPanel().insertPureDiffusionParametersIntoFRAPStudy(arg_FRAPStudy);
-	}
-	
+		
 	public static void main(java.lang.String[] args) {
 		try {
 			try{

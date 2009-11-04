@@ -202,82 +202,8 @@ public void setEstimatedParameters(EstimatedParameter[] arg_estParams) {
 	firePropertyChange("EstimatedParameters", oldEstParams, estParams);
 }
 //Not used so far, the table is not editable.
-public void setValueAt(Object aValue, int row, int col) {
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	EstimatedParameter parameter = getParameter(row);
-		switch (col){
-			//Not used so far, the table is not editable.
-			case COLUMN_NAME:{
-				if (aValue instanceof String){
-					String newName = (String)aValue;
-					if (!parameter.getName().equals(newName)){
-						parameter.setName(newName);
-						fireTableRowsUpdated(row,row);
-					}
-				}
-				else
-				{
-					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Error changing parameter name:\n" + aValue.toString());
-				}
-				break;
-			}
-			//Not used so far, the table is not editable.
-			case COLUMN_DESCRIPTION: {
-				if (aValue instanceof String){
-					String newDesc = (String)aValue;
-					if (!parameter.getName().equals(newDesc)){
-						parameter.setName(newDesc);
-						fireTableRowsUpdated(row,row);
-					}
-				}
-				else
-				{
-					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Error changing parameter description:\n" + aValue.toString());
-				}
-				break;
-			}
-			//Not used so far, the table is not editable.
-			case COLUMN_VALUE: {
-				if (aValue instanceof Double){
-					Double newVal = (Double)aValue;
-					if (!parameter.getValue().equals(newVal)){
-						parameter.setValue(new Double(newVal.doubleValue()));
-						fireTableRowsUpdated(row,row);
-					}
-				}
-				else
-				{
-					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Error changing parameter value:\n" + aValue.toString());
-				}
-				break;
-			}
-			//Not used so far, the table is not editable.
-			case COLUMN_EXPRESSION:{
-				try {
-					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
-						parameter.setExpression(exp);
-					}else if (aValue instanceof String) {
-						String newExpressionString = (String)aValue;
-						parameter.setExpression(new Expression(newExpressionString));
-					}
-					fireTableRowsUpdated(row,row);
-				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(errorDialogParent, "Expression error:\n"+e.getMessage());
-				}
-				break;
-			}
-			//Not used so far, the table is not editable.
-			case COLUMN_UNITS:{
-				
-				break;
-			}
-		}
+public void setValueAt(Object aValue, int row, int col) 
+{
+	
 }
 }
