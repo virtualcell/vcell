@@ -86,10 +86,10 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 			return 1;
 		}
 	}
-	private final int NUM_COLUMNS = 4;
-	private final int COLUMN_DESCRIPTION = 0;
-	private final int COLUMN_NAME = 1;
-	private final int COLUMN_VALUE = 2;
+	private static final int NUM_COLUMNS = 4;
+	private static final int COLUMN_DESCRIPTION = 0;
+	private static final int COLUMN_NAME = 1;
+	public static final int COLUMN_VALUE = 2;
 	private final int COLUMN_UNIT = 3;
 	private String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
