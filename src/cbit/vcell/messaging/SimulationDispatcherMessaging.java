@@ -292,8 +292,6 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 								StatusMessage message = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
 								message.sendToClient(waitingJobDispatcher);
 							} else {
-								log.print("**DT: queued " + simTask);
-			
 								SimulationTaskMessage taskMsg = new SimulationTaskMessage(simTask);
 								// send the job the job queue
 								taskMsg.sendSimulationTask(waitingJobDispatcher);
@@ -303,6 +301,8 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 								// tell client
 								StatusMessage statusMsg = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
 								statusMsg.sendToClient(waitingJobDispatcher);
+								
+								log.print("**DT: queued " + simTask);
 							}
 						
 							tm.commit();

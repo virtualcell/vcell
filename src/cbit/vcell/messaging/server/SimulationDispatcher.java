@@ -325,7 +325,7 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 	int taskID = workerEvent.getTaskID();
 	int jobIndex = workerEvent.getJobIndex();
 	
-	log.print("onWorkerEventMessage[" + workerEvent.getEventTypeID() + "," + workerEvent.getSimulationMessage() + "][job=" + jobIndex + "]");
+	log.print("onWorkerEventMessage[" + workerEvent.getEventTypeID() + "," + workerEvent.getSimulationMessage() + "][simid=" + workerEvent.getVCSimulationDataIdentifier() + ",job=" + jobIndex + "]");
 
 	VCSimulationDataIdentifier vcSimDataID = workerEvent.getVCSimulationDataIdentifier();
 	if (vcSimDataID == null) {

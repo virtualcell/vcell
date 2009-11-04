@@ -4,9 +4,19 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import javax.swing.JViewport;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
 import org.vcell.util.gui.sorttable.JSortTable;
+
 import cbit.gui.TableCellEditorAutoCompletion;
-import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedExpression;
 /**
@@ -16,7 +26,7 @@ public class SpeciesContextSpecPanel extends javax.swing.JPanel implements java.
 	private SpeciesContextSpec ivjSpeciesContextSpec = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JScrollPane ivjjsortTable = null;
+	private javax.swing.JScrollPane ivjScrollPanel = null;
 	private JSortTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecParameterTableModel ivjSpeciesContextSpecParameterTableModel1 = null;
 	private GeometryContext ivjgeometryContext1 = null;
@@ -206,7 +216,7 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
 			ivjJPanel1.setLayout(new java.awt.BorderLayout());
-			getJPanel1().add(getjsortTable(), "Center");
+			getJPanel1().add(getJScrollPane(), "Center");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -223,14 +233,14 @@ private javax.swing.JPanel getJPanel1() {
  * @return javax.swing.JScrollPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getjsortTable() {
-	if (ivjjsortTable == null) {
+private javax.swing.JScrollPane getJScrollPane() {
+	if (ivjScrollPanel == null) {
 		try {
-			ivjjsortTable = new javax.swing.JScrollPane();
-			ivjjsortTable.setName("jsortTable");
-			ivjjsortTable.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjjsortTable.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getjsortTable().setViewportView(getScrollPaneTable());
+			ivjScrollPanel = new javax.swing.JScrollPane();
+			ivjScrollPanel.setName("jsortTable");
+			ivjScrollPanel.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			ivjScrollPanel.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+			getJScrollPane().setViewportView(getScrollPaneTable());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -239,7 +249,7 @@ private javax.swing.JScrollPane getjsortTable() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjjsortTable;
+	return ivjScrollPanel;
 }
 
 /**
@@ -263,9 +273,11 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getjsortTable().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
+			getJScrollPane().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
+			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
+			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -357,6 +369,42 @@ private void initConnections() throws java.lang.Exception {
 	getScrollPaneTable().addPropertyChangeListener(this);
 	this.addPropertyChangeListener(this);
 	connPtoP1SetTarget();
+	
+	getJScrollPane().getViewport().addChangeListener(new ChangeListener() {
+		
+		public void stateChanged(ChangeEvent e) {
+			JViewport jvp = (JViewport) (e.getSource());
+			int vpWidth = jvp.getSize().width;
+			int tableWidth = getScrollPaneTable().getPreferredSize().width;
+			
+			if (vpWidth > tableWidth) {
+				TableColumnModel tcm = getScrollPaneTable().getColumnModel();
+				int total_columns = tcm.getColumnCount();
+				for (int i = 0; i < total_columns; i++)	{
+					if (i != SpeciesContextSpecParameterTableModel.COLUMN_VALUE) {
+						TableColumn column = tcm.getColumn(i);
+						vpWidth = vpWidth - column.getPreferredWidth();
+					}
+				}
+	
+				// expand expression column if the scrollpane is wider than table.
+				TableColumn exprColumn = tcm.getColumn(SpeciesContextSpecParameterTableModel.COLUMN_VALUE);
+				if (vpWidth > exprColumn.getPreferredWidth()) {
+					exprColumn.setPreferredWidth(vpWidth);
+				}
+			}
+		}
+	});
+	
+	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	
+	getSpeciesContextSpecParameterTableModel1().addTableModelListener(
+		new javax.swing.event.TableModelListener(){
+			public void tableChanged(javax.swing.event.TableModelEvent e){
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+			}
+		}
+	);
 }
 
 /**
