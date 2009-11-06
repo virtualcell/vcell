@@ -94,7 +94,7 @@ private void parse(Message message) throws XmlParseException, JMSException {
 		 System.out.println("Property " + MessageConstants.FIELDDATAID_PROPERTY + " is missing");
 	}	
 
-	simTask = new SimulationTask(new SimulationJob(simulation, fieldDataIDs, jobIndex), taskID);
+	simTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIDs), taskID);
 }
 
 
@@ -118,7 +118,7 @@ public void sendSimulationTask(JmsSession session) throws javax.jms.JMSException
  * @param simulation cbit.vcell.solver.Simulation
  */
 private String simulation2XML() throws XmlParseException {
-	return XmlHelper.simToXML(simTask.getSimulationJob().getWorkingSim());
+	return XmlHelper.simToXML(simTask.getSimulationJob().getSimulation());
 }
 
 

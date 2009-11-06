@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
@@ -12,6 +13,7 @@ import javax.swing.JScrollPane;
 
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
+
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
@@ -24,6 +26,7 @@ import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
@@ -33,6 +36,7 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -43,7 +47,7 @@ public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;
 	private ClientSimManager clientSimManager = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.solver.Simulation[] fieldSimulations = null;
+	private Simulation[] fieldSimulations = null;
 	private JProgressBar[] statusBars = null;
 
 /**
@@ -136,10 +140,13 @@ public String checkCompatibility(Simulation simulation) {
  * @param simulation cbit.vcell.solver.Simulation
  */
 private boolean checkSimulationParameters(Simulation simulation, JComponent parent) {
+	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
+	
 	String errorMessage = null;
 	long maxTimepoints = Simulation.MAX_LIMIT_ODE_TIMEPOINTS;
 	long warningTimepoints = Simulation.WARNING_ODE_TIMEPOINTS;
-	if(simulation.getIsSpatial())
+	boolean bSpatial = simulation.isSpatial();
+	if(bSpatial)
 	{
 		maxTimepoints = Simulation.MAX_LIMIT_PDE_TIMEPOINTS;
 		warningTimepoints = Simulation.WARNING_PDE_TIMEPOINTS;
@@ -152,7 +159,7 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	
 	long maxSizeBytes = Simulation.MAX_LIMIT_0DE_MEGABYTES*1000000L;
 	long warningSizeBytes = Simulation.WARNING_0DE_MEGABYTES*1000000L;
-	if(simulation.getIsSpatial())
+	if(bSpatial)
 	{
 		maxSizeBytes = Simulation.MAX_LIMIT_PDE_MEGABYTES*1000000L;
 		warningSizeBytes = Simulation.WARNING_PDE_MEGABYTES*1000000L;
@@ -166,13 +173,13 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	long expectedNumTimePoints;
 	if(simulation.getMathDescription().isStoch())
 	{
-		expectedNumTimePoints = getEstimatedNumTimePointsForStoch(simulation); 
+		expectedNumTimePoints = getEstimatedNumTimePointsForStoch(simSymbolTable); 
 	}
 	else
 	{
 		expectedNumTimePoints = getExpectedNumTimePoints(simulation);
 	}
-	long expectedSizeBytes = getExpectedSizeBytes(simulation);
+	long expectedSizeBytes = getExpectedSizeBytes(simSymbolTable);
 	//
 	// check for error conditions (hard limits on resources) ... Note: each user should have it's own limits (and quotas).
 	//
@@ -450,8 +457,9 @@ private long getExpectedNumTimePoints(Simulation simulation) {
 	return simulation.getSolverTaskDescription().getExpectedNumTimePoints();
 }
 
-private long getEstimatedNumTimePointsForStoch(Simulation sim)
+private long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simSymbolTable)
 {
+	Simulation sim = simSymbolTable.getSimulation();
 	SolverTaskDescription solverTaskDescription = sim.getSolverTaskDescription();
 	TimeBounds tb = solverTaskDescription.getTimeBounds();
 	double startTime = tb.getStartingTime();
@@ -482,8 +490,8 @@ private long getEstimatedNumTimePointsForStoch(Simulation sim)
 	{
 		try {
 			Expression pExp = new Expression(probList.get(i));
-			pExp.bindExpression(sim);
-			pExp = sim.substituteFunctions(pExp);
+			pExp.bindExpression(simSymbolTable);
+			pExp = simSymbolTable.substituteFunctions(pExp);
 			pExp = pExp.flatten();
 			String[] symbols = pExp.getSymbols();
 			//substitute stoch vars with it's initial condition expressions
@@ -501,7 +509,7 @@ private long getEstimatedNumTimePointsForStoch(Simulation sim)
 					}
 				}
 			}
-			pExp = sim.substituteFunctions(pExp);
+			pExp = simSymbolTable.substituteFunctions(pExp);
 			pExp = pExp.flatten();
 			double val = pExp.evaluateConstant();
 			if(maxProbability < val)
@@ -535,11 +543,13 @@ private long getEstimatedNumTimePointsForStoch(Simulation sim)
  * @return boolean
  * @param simulation cbit.vcell.solver.Simulation
  */
-private long getExpectedSizeBytes(Simulation simulation) {
+private long getExpectedSizeBytes(SimulationSymbolTable simSymbolTable) {
+	Simulation simulation = simSymbolTable.getSimulation();
+	
 	long numTimepoints;
 	if(simulation.getMathDescription().isStoch())
 	{
-		numTimepoints = getEstimatedNumTimePointsForStoch(simulation); 
+		numTimepoints = getEstimatedNumTimePointsForStoch(simSymbolTable); 
 	}
 	else
 	{
@@ -547,7 +557,7 @@ private long getExpectedSizeBytes(Simulation simulation) {
 	}
 	int x,y,z;
 	int numVariables = 0;
-	if (simulation.getIsSpatial()) {
+	if (simulation.isSpatial()) {
 		x = simulation.getMeshSpecification().getSamplingSize().getX();
 		y = simulation.getMeshSpecification().getSamplingSize().getY();
 		z = simulation.getMeshSpecification().getSamplingSize().getZ();
@@ -555,9 +565,10 @@ private long getExpectedSizeBytes(Simulation simulation) {
 		// compute number of volume variables only (they are multiplied by x*y*z)
 		//
 		numVariables = 0;
-		cbit.vcell.math.Variable variables[] = simulation.getVariables();
-		for (int i = 0; i < variables.length; i++){
-			if (variables[i] instanceof VolVariable){
+		Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
+		while (variables.hasMoreElements()){
+			Variable var = variables.nextElement(); 
+			if (var instanceof VolVariable){
 				numVariables++;
 			}
 		}
@@ -566,10 +577,11 @@ private long getExpectedSizeBytes(Simulation simulation) {
 		y = 1;
 		z = 1;		
 		numVariables = 0;
-		cbit.vcell.math.Variable variables[] = simulation.getVariables();
-		for (int i = 0; i < variables.length; i++){
-			if ((variables[i] instanceof VolVariable) ||
-				(variables[i] instanceof Function)) {
+		Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
+		while (variables.hasMoreElements()){
+			Variable var = variables.nextElement(); 
+			if ((var instanceof VolVariable) ||
+				(var instanceof Function)) {
 				numVariables++;
 			}
 		}

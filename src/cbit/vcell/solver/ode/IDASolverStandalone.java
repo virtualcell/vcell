@@ -1,12 +1,16 @@
 package cbit.vcell.solver.ode;
 
+import java.io.File;
 import java.io.PrintWriter;
 
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solvers.MathExecutable;
 /**
  * Insert the type's description here.
  * Creation date: (10/23/2004 8:07:49 AM)
@@ -20,13 +24,13 @@ public class IDASolverStandalone extends SundialsSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, org.vcell.util.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public IDASolverStandalone(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
 }
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-protected void initialize() throws cbit.vcell.solver.SolverException {
+protected void initialize() throws SolverException {
 
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	super.initialize();
@@ -39,7 +43,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, getSimulation(), getJobIndex(), true);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, simulationJob, true);
 		idaFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
@@ -54,6 +58,6 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(new String[] {executableName, inputFilename, outputFilename}));
+	setMathExecutable(new MathExecutable(new String[] {executableName, inputFilename, outputFilename}));
 }
 }

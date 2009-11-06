@@ -4,9 +4,17 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
 import java.util.Vector;
+
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Jacobian;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.RateSensitivity;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.solver.SimulationSymbolTable;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 9:00:20 PM)
@@ -16,13 +24,14 @@ public class SensStateVariable extends StateVariable {
 	Expression optimizedRateSensExp = null;
 	Expression optimizedJacobianExps[] = null;
 	//SensVariable sensVars[] = null;
-	Vector sensVars = null;
+	Vector<SensVariable> sensVars = null;
 /**
  * TimeSeriesData constructor comment.
  */
-public SensStateVariable(SensVariable sensVariable, RateSensitivity rateSensitivity, Jacobian jacobian, Vector sensVarArray, cbit.vcell.solver.Simulation simulation) throws MathException, ExpressionException {
+public SensStateVariable(SensVariable sensVariable, RateSensitivity rateSensitivity, 
+		Jacobian jacobian, Vector<SensVariable> sensVarArray, SimulationSymbolTable simSymbolTable) throws MathException, ExpressionException {
 	super(sensVariable);
-	init(rateSensitivity,jacobian,simulation,sensVarArray);
+	init(rateSensitivity,jacobian,simSymbolTable,sensVarArray);
 }
 /**
  * This method was created in VisualAge.
@@ -153,8 +162,9 @@ public Expression getRateExpression() throws ExpressionException {
 	//               d Pj
 	//
 	for (int i=0;i<sensVars.size();i++){
-		SensVariable sensVariable = (SensVariable) sensVars.elementAt(i);
-		Expression exp1 = Expression.mult(optimizedJacobianExps[i], new Expression(sensVariable.getSensName(sensVariable.getVolVariable(), sensVariable.getParameter())));
+		SensVariable sensVariable = sensVars.elementAt(i);
+		Expression exp1 = Expression.mult(optimizedJacobianExps[i], 
+				new Expression(SensVariable.getSensName(sensVariable.getVolVariable(), sensVariable.getParameter())));
 		exp = Expression.add(exp, exp1);
 	}
     
@@ -165,13 +175,13 @@ public Expression getRateExpression() throws ExpressionException {
  * @param rateSensitivity cbit.vcell.math.RateSensitivity
  * @param jacobian cbit.vcell.math.Jacobian
  */
-private void init(RateSensitivity rateSensitivity, Jacobian jacobian, SymbolTable symbolTable, Vector sensVarArray) throws MathException, ExpressionException {
+private void init(RateSensitivity rateSensitivity, Jacobian jacobian, SymbolTable symbolTable, Vector<SensVariable> sensVarArray) throws MathException, ExpressionException {
 	//
 	// order sensVars according to the jacobian (rate index)
 	//
-	sensVars = (Vector)sensVarArray.clone();
+	sensVars = (Vector<SensVariable>)sensVarArray.clone();
 	for (int i=0;i<sensVarArray.size();i++){
-		SensVariable sensVar = (SensVariable)sensVarArray.elementAt(i);
+		SensVariable sensVar = sensVarArray.elementAt(i);
 		int index = jacobian.getRateIndex(sensVar.getVolVariable());
 		sensVars.setElementAt(sensVar,index);
 	}

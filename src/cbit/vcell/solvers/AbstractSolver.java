@@ -5,19 +5,30 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.*;
-import cbit.vcell.solver.*;
-import java.io.*;
+import java.io.File;
 
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.simdata.*;
-import cbit.vcell.solver.ode.SensStateVariable;
-import cbit.vcell.solver.ode.ODEStateVariable;
-import cbit.vcell.parser.*;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.math.*;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.Solver;
+import cbit.vcell.solver.SolverEvent;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverListener;
+import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.ode.ODEStateVariable;
+import cbit.vcell.solver.ode.SensStateVariable;
+import cbit.vcell.solver.ode.SensVariable;
+import cbit.vcell.solver.ode.StateVariable;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 2:48:23 PM)
@@ -29,7 +40,7 @@ public abstract class AbstractSolver implements Solver, SimDataConstants {
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	private File saveDirectory = null;
 	private boolean saveEnabled = true;
-	private SimulationJob simulationJob = null;
+	protected final SimulationJob simulationJob;
 
 /**
  * AbstractSolver constructor comment.
@@ -46,8 +57,8 @@ public AbstractSolver(SimulationJob simulationJob, File directory, SessionLog se
 		}
 	}		 
 		this.saveDirectory = directory;
-	if (!getSimulation().getIsValid()) {
-		throw new SolverException("Simulation is not valid: "+getSimulation().getWarning());
+	if (!simulationJob.getSimulation().getIsValid()) {
+		throw new SolverException("Simulation is not valid: "+simulationJob.getSimulation().getWarning());
 	}
 }
 
@@ -184,7 +195,7 @@ protected final String getBaseName() {
  * @return double
  */
 public abstract double getCurrentTime();
-protected abstract void initialize() throws cbit.vcell.solver.SolverException;
+protected abstract void initialize() throws SolverException;
 
 public final FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
 	return simulationJob.getFieldDataIdentifierSpecs();
@@ -195,7 +206,7 @@ public final FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
  * @return double[]
  * @param identifier java.lang.String
  */
-public Expression getFunctionSensitivity(Expression funcExpr, Constant constant, cbit.vcell.solver.ode.StateVariable stateVariables[]) throws cbit.vcell.parser.ExpressionException {
+public Expression getFunctionSensitivity(Expression funcExpr, Constant constant, StateVariable stateVariables[]) throws ExpressionException {
 	if (stateVariables==null || stateVariables.length == 0) {
 		return null;
 	}
@@ -209,22 +220,23 @@ public Expression getFunctionSensitivity(Expression funcExpr, Constant constant,
 	//
 	// collect the explicit term
 	//
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	
 	Expression sensFuncExp = funcExpr.differentiate(constant.getName());
-	sensFuncExp.bindExpression(getSimulation());
+	sensFuncExp.bindExpression(simSymbolTable);
 	sensFuncExp = sensFuncExp.flatten();
 	
 	for (int i = 0; i < stateVariables.length; i++) {
 		if (stateVariables[i] instanceof ODEStateVariable) {
 			ODEStateVariable sv = (ODEStateVariable) stateVariables[i];
-			cbit.vcell.math.VolVariable volVar = (cbit.vcell.math.VolVariable) sv.getVariable();
+			VolVariable volVar = (VolVariable) sv.getVariable();
 			//
 			// get corresponding sensitivity state variable
 			//
 			SensStateVariable sensStateVariable = null;
 			for (int j = 0; j < stateVariables.length; j++){
 				if (stateVariables[j] instanceof SensStateVariable && 
-					((cbit.vcell.solver.ode.SensVariable)((SensStateVariable)stateVariables[j]).getVariable()).getVolVariable().getName().equals(volVar.getName()) &&
+					((SensVariable)((SensStateVariable)stateVariables[j]).getVariable()).getVolVariable().getName().equals(volVar.getName()) &&
 					((SensStateVariable)stateVariables[j]).getParameter().getName().equals(constant.getName())){
 					sensStateVariable = (SensStateVariable)stateVariables[j];
 				}	
@@ -238,9 +250,9 @@ public Expression getFunctionSensitivity(Expression funcExpr, Constant constant,
 			// get coefficient of proportionality   (e.g.  A = total + b*B + c*C ... gives dA/dK = b*dB/dK + c*dC/dK)
 			//
 			Expression coeffExpression = funcExpr.differentiate(volVar.getName());
-			coeffExpression.bindExpression(getSimulation());
-			coeffExpression = cbit.vcell.math.MathUtilities.substituteFunctions(coeffExpression,getSimulation());
-			coeffExpression.bindExpression(getSimulation());
+			coeffExpression.bindExpression(simSymbolTable);
+			coeffExpression = MathUtilities.substituteFunctions(coeffExpression,simSymbolTable);
+			coeffExpression.bindExpression(simSymbolTable);
 			coeffExpression = coeffExpression.flatten();
 			sensFuncExp = Expression.add(sensFuncExp,Expression.mult(coeffExpression,new Expression(sensStateVariable.getVariable().getName())));
 		}
@@ -282,20 +294,9 @@ protected final java.io.File getSaveDirectory() {
  * This method was created in VisualAge.
  * @return cbit.vcell.math.MathDescription
  */
-protected final org.vcell.util.SessionLog getSessionLog() {
+protected final SessionLog getSessionLog() {
 	return (fieldSessionLog);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/26/2001 3:42:59 PM)
- * @return cbit.vcell.solver.Simulation
- */
-public final cbit.vcell.solver.Simulation getSimulation() {
-	return simulationJob.getWorkingSim();
-}
-
 
 /**
  * Gets the running property (boolean) value.
@@ -343,8 +344,8 @@ public final boolean isSaveEnabled() {
  * Creation date: (3/29/2001 5:18:16 PM)
  * @param listener cbit.vcell.solver.SolverListener
  */
-public synchronized void removeSolverListener(cbit.vcell.solver.SolverListener listener) {
-	listenerList.remove(cbit.vcell.solver.SolverListener.class, listener);
+public synchronized void removeSolverListener(SolverListener listener) {
+	listenerList.remove(SolverListener.class, listener);
 }
 
 
@@ -360,4 +361,5 @@ protected final void setSolverStatus(SolverStatus solverStatus) {
 public SimulationJob getSimulationJob() {
 	return simulationJob;
 }
+
 }

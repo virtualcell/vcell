@@ -4,8 +4,12 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SimulationSymbolTable;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:44 PM)
@@ -13,18 +17,16 @@ import cbit.vcell.parser.*;
  */
 public class ODEStateVariable extends StateVariable {
 	VolVariable variable = null;
-//	OdeEquation ode = null;
 	Expression optimizedRateExp = null;
 	Expression initialExp = null;
-//	double data[] = null;
 /**
  * TimeSeriesData constructor comment.
  */
-public ODEStateVariable(OdeEquation ode, cbit.vcell.solver.Simulation simulation) throws ExpressionException, MathException {
+public ODEStateVariable(OdeEquation ode, SimulationSymbolTable simSymbolTable) throws ExpressionException, MathException {
 	super(ode.getVariable());
 	this.variable = (VolVariable)ode.getVariable();
-	ode.bind(simulation);
-	optimizedRateExp = ode.getFlattenedRateExpression(simulation);
+	ode.bind(simSymbolTable);
+	optimizedRateExp = ode.getFlattenedRateExpression(simSymbolTable);
 	initialExp = ode.getInitialExpression();
 }
 /**

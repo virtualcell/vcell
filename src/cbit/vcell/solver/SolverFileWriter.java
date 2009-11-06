@@ -10,16 +10,14 @@ import cbit.vcell.messaging.JmsUtils;
 public abstract class SolverFileWriter {
 	protected PrintWriter printWriter = null;
 	protected boolean bUseMessaging = true;
-	protected Simulation simulation = null;
-	protected int jobIndex = 0;
+	protected final SimulationJob simulationJob;
 
 /**
  * OdeFileCoder constructor comment.
  */
-public SolverFileWriter(PrintWriter pw, Simulation sim, int ji, boolean messaging) {
+public SolverFileWriter(PrintWriter pw, SimulationJob simJob, boolean messaging) {
 	printWriter = pw;
-	simulation = sim;
-	jobIndex = ji;
+	simulationJob = simJob;
 	bUseMessaging = messaging;
 }
 
@@ -50,9 +48,9 @@ protected void writeJMSParamters() {
 	    printWriter.println("JMS_USER " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword());
 	    printWriter.println("JMS_QUEUE " + JmsUtils.getQueueWorkerEvent());  
 		printWriter.println("JMS_TOPIC " + JmsUtils.getTopicServiceControl());
-		printWriter.println("VCELL_USER " + simulation.getVersion().getOwner().getName());
-		printWriter.println("SIMULATION_KEY " + simulation.getVersion().getVersionKey());
-		printWriter.println("JOB_INDEX " + jobIndex);
+		printWriter.println("VCELL_USER " + simulationJob.getSimulation().getVersion().getOwner().getName());
+		printWriter.println("SIMULATION_KEY " + simulationJob.getSimulation().getVersion().getVersionKey());
+		printWriter.println("JOB_INDEX " + simulationJob.getJobIndex());
 		printWriter.println("JMS_PARAM_END");
 		printWriter.println();
 	}

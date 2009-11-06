@@ -500,13 +500,6 @@ private void refreshTotalMatrices() throws Exception {
 	//
 	// update scheme matrix for full system (slow and fast)
 	//
-	totalSchemeMatrix = new RationalNumberMatrix(speciesContextMappings.length,reactionSteps.length);
-	for (int i=0;i<speciesContextMappings.length;i++){
-		for (int j=0;j<reactionSteps.length;j++){
-			totalSchemeMatrix.set_elem(i,j,reactionSteps[j].getStoichiometry(speciesContextMappings[i].getSpeciesContext()));
-		}
-	}
-	
 	ReactionSpec[] reactionSpecs = new ReactionSpec[reactionSteps.length];
 	for (int j=0;j<reactionSteps.length;j++){
 		reactionSpecs[j] = mathMapping.getSimulationContext().getReactionContext().getReactionSpec(reactionSteps[j]);
@@ -514,6 +507,7 @@ private void refreshTotalMatrices() throws Exception {
 	//
 	// initialize rate expressions for speciesContext's due to scheme matrix
 	//
+	totalSchemeMatrix = new RationalNumberMatrix(speciesContextMappings.length,reactionSteps.length);
 	for (int i=0;i<speciesContextMappings.length;i++){
 		SpeciesContextMapping scm = speciesContextMappings[i];
 		SpeciesContext sc = scm.getSpeciesContext();
@@ -523,6 +517,9 @@ private void refreshTotalMatrices() throws Exception {
 		Expression exp = new Expression(0.0);
 		for (int j=0;j<reactionSteps.length;j++){
 			int stoichiometry = reactionSteps[j].getStoichiometry(sc);
+			
+			totalSchemeMatrix.set_elem(i,j,stoichiometry);
+			
 			if (stoichiometry != 0){
 				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
 					ReactionParticipant[] rps = reactionSteps[j].getReactionParticipants(sc);
@@ -532,19 +529,21 @@ private void refreshTotalMatrices() throws Exception {
 					// (e.g. if reaction is on membrane and reactionParticipant is in a feature)
 					//
 					if (rps.length > 0) {
+						String expInfix = reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope());
 						if ((structure instanceof Membrane) && (sc.getStructure()!=structure)){
 							Membrane membrane = (Membrane)structure;
 							MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 							Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)sc.getStructure());
+							String fluxCorrectionParameterSymbolName = mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter);
 							if (reactionSteps[j] instanceof FluxReaction){
-								exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
+								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+expInfix));
 							}else if (reactionSteps[j] instanceof SimpleReaction){
-								exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+ReservedSymbol.KMOLE.getName()+"*"+reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
+								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+ReservedSymbol.KMOLE.getName()+"*"+expInfix));
 							}else{
 								throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");
 							}
 						}else{
-							exp = Expression.add(exp,new Expression(reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
+							exp = Expression.add(exp,new Expression(expInfix));
 						}
 					}
 				}
@@ -585,6 +584,10 @@ private void refreshTotalMatrices() throws Exception {
  */
 private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVetoException {
 
+	if (structures == null){
+		return;
+	}
+	
 //System.out.println("StructureAnalyzer.refreshSpeciesContextMappings()");
 
 	//GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
@@ -598,9 +601,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	//          2) Species not involved with fast reactions.
 	//
 	Vector<SpeciesContextMapping> scmList = new Vector<SpeciesContextMapping>();
-	if (structures == null){
-		return;
-	}
+
 	//
 	// for each structure, get all non-constant speciesContext's that participate in fast reactions
 	//

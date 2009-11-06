@@ -19,21 +19,25 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.ode.ForwardEulerSolver;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolver;
@@ -42,6 +46,8 @@ import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
+import cbit.vcell.solvers.AbstractSolver;
+import cbit.vcell.solvers.NativeIDASolver;
 import cbit.vcell.util.RowColumnResultSet;
 import cbit.vcell.xml.XMLSource;
 
@@ -104,7 +110,7 @@ private String printComparisonReport(SimulationComparisonSummary simCompSummary,
 /**
  * Scans biomodels in the database and retrieves the applications that are 
  */
-private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFastSystems) {
+private static ODESolverResultSet solveSimulation(SimulationJob simJob, boolean hasFastSystems) {
 
 	//
 	// If hasFastSystems in true, use Forward Euler solver, else use NativeIDA solver
@@ -117,7 +123,7 @@ private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFas
 		// reset time step for Forward Euler solver from 0.1 to 1e-4
 		double FE_Solver_timeStep = 1e-4;
 		try {
-			sim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(FE_Solver_timeStep));
+			simJob.getSimulation().getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(FE_Solver_timeStep));
 			// sim.getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-10, 1e-12));
 		} catch (PropertyVetoException pve) {
 			pve.printStackTrace(System.out);
@@ -127,7 +133,7 @@ private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFas
         SessionLog sessionLog = new StdoutSessionLog("VCELL");
         ODESolver odeSolver = null;
         try {
-	        odeSolver = new cbit.vcell.solver.ode.ForwardEulerSolver(new SimulationJob(sim, null, 0), directory, sessionLog);
+	        odeSolver = new ForwardEulerSolver(new SimulationJob(simJob.getSimulation(), 0, null), directory, sessionLog);
         } catch (SolverException e) {
 	        e.printStackTrace(System.out);
 	        throw new RuntimeException("Error initializing RK-Fehlberg solver : " + e.getMessage());
@@ -159,13 +165,13 @@ private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFas
 		RowColumnResultSet rcResultSet = null;
 		try {
 			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), sim);
+			IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), simJob);
 			idaFileWriter.write();
 			stringWriter.close();
 			StringBuffer buffer = stringWriter.getBuffer();
 			String idaInputString = buffer.toString();
 
-			final cbit.vcell.solvers.NativeIDASolver nativeIDASolver = new cbit.vcell.solvers.NativeIDASolver();
+			final NativeIDASolver nativeIDASolver = new NativeIDASolver();
 			System.out.println(idaInputString);
 			rcResultSet = nativeIDASolver.solve(idaInputString);
 		} catch (Exception e) {
@@ -182,12 +188,13 @@ private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFas
 			odeSolverResultSet.addRow(rcResultSet.getRow(i));
 		}
 		// add appropriate Function columns to result set
-		cbit.vcell.math.Function functions[] = sim.getFunctions();
+		SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
+		Function functions[] = simSymbolTable.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
+			if (AbstractSolver.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
-					exp1 = sim.substituteFunctions(exp1);
+					exp1 = simSymbolTable.substituteFunctions(exp1);
 				} catch (cbit.vcell.math.MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
@@ -199,7 +206,7 @@ private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFas
 				try {
 					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					odeSolverResultSet.addFunctionColumn(cd);
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 				}
 			}
@@ -309,8 +316,10 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 		        simContexts[k].setMathDescription(mathDesc_1);
 		        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", null, null, null, null, null, null, null, null);
 		        Simulation sim_11 = new Simulation(simVersion_1, mathDesc_1);
+		        SimulationJob simJob_11 = new SimulationJob(sim_11, 0, null);
+		        
 		        sim_11.setName("sim_1_1");
-		        sim_11.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
+		        sim_11.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
 		        TimeStep timeStep_1 = new TimeStep();
 		        sim_11.getSolverTaskDescription().setTimeStep(new TimeStep(timeStep_1.getMinimumTimeStep(),timeStep_1.getDefaultTimeStep(),endTime/10000));
 		        sim_11.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/numTimeSteps));
@@ -321,7 +330,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				if (mathDesc_1.hasFastSystems()) {
 					hasFastSystems = true;
 				}
-				ODESolverResultSet odeSolverResultSet_1 = solveSimulation(sim_11, hasFastSystems);
+				ODESolverResultSet odeSolverResultSet_1 = solveSimulation(simJob_11, hasFastSystems);
 
 				// 
 				// For the imported simContext
@@ -332,6 +341,8 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 		        simContext_2.setMathDescription(mathDesc_2);
 		        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", null, null, null, null, null, null, null, null);
 		        Simulation sim_12 = new Simulation(simVersion_2, mathDesc_2);
+		        SimulationJob simJob_12 = new SimulationJob(sim_12, 0, null);
+		        
 		        sim_12.setName("sim_1_2");
 		        sim_12.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
 		        TimeStep timeStep_2 = new TimeStep();
@@ -344,7 +355,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				if (mathDesc_2.hasFastSystems()) {
 					hasFastSystems = true;
 				}
-				ODESolverResultSet odeSolverResultSet_2 = solveSimulation(sim_12, hasFastSystems);
+				ODESolverResultSet odeSolverResultSet_2 = solveSimulation(simJob_12, hasFastSystems);
 
 				//
 				// Now compare the 2 result sets - one from simulation from original biomodel, the other from the round-tripped biomodel.

@@ -17,6 +17,8 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
@@ -80,6 +82,8 @@ private double calculateWeightedError(double[] x) {
 			new java.math.BigDecimal(1.0), // branchID
 			new java.util.Date(), VersionFlag.Archived, "",  null);
 		Simulation simulation = new Simulation(simVersion,odeObjectiveFunction.getMathDescription());
+		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
+		
 		MathOverrides mathOverrides = simulation.getMathOverrides();
 		for (int i = 0; i < unscaledParameterNames.length; i++){
 			double unscaledParameterValue = x[i] * parameterScalings[i];
@@ -93,7 +97,7 @@ private double calculateWeightedError(double[] x) {
 		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 
 		java.io.StringWriter stringWriter = new java.io.StringWriter();
-		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), simulation);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
 		idaFileWriter.write(unscaledParameterNames);
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
@@ -128,12 +132,12 @@ private double calculateWeightedError(double[] x) {
 		//
 		// add appropriate Function columns to result set
 		//
-		Function functions[] = simulation.getFunctions();
+		Function functions[] = simSymbolTable.getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (AbstractSolver.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
-					exp1 = simulation.substituteFunctions(exp1);
+					exp1 = simSymbolTable.substituteFunctions(exp1);
 				} catch (MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());

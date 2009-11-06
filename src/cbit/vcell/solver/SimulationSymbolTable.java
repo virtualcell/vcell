@@ -1,0 +1,428 @@
+package cbit.vcell.solver;
+/*©
+ * (C) Copyright University of Connecticut Health Center 2001.
+ * All rights reserved.
+©*/
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+
+import org.vcell.util.BeanUtils;
+
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+/**
+ * Specifies the problem to be solved by a solver.
+ * It is subclassed for each type of problem/solver.
+ * Creation date: (8/16/2000 11:08:33 PM)
+ * @author: John Wagner
+ */
+public class SimulationSymbolTable implements ScopedSymbolTable {
+	private Simulation simulation = null;
+	//	
+	private transient HashMap<String, Variable> localVariableHash = null;	
+	/**
+	 * Field for multiplexing and spawning job arrays
+	 * Working sims created when necessarry with appropriate index
+	 */
+	private int index = 0;	
+	private NameScope nameScope = new SimulationNameScope();
+
+	public class SimulationNameScope extends AbstractNameScope {
+		public SimulationNameScope(){
+			super();
+		}
+
+		@Override
+		public NameScope[] getChildren() {
+			return null;
+		}
+
+		@Override
+		public String getName() {
+			return simulation.getName();
+		}
+
+		@Override
+		public NameScope getParent() {
+			return null;
+		}
+
+		@Override
+		public ScopedSymbolTable getScopedSymbolTable() {
+			return SimulationSymbolTable.this;
+		}
+
+	}
+	
+/**
+ * One of three ways to construct a Simulation.  This constructor
+ * is used when creating a new Simulation.
+ */
+public SimulationSymbolTable(Simulation arg_simulation, int arg_index) {
+	super();
+	simulation = arg_simulation;
+	index = arg_index;
+	rebindAll();  // especially needed to bind Constants so that .substitute() will eliminate Constants that are functions of other Constants.
+}
+
+public final Simulation getSimulation() {
+	return simulation;
+}
+
+/**
+ * getEntry method comment.
+ */
+public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
+	//
+	// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
+	//
+	SymbolTableEntry ste = simulation.getMathDescription().getEntry(identifierString);
+	if (ste instanceof Constant){
+		try {
+			Constant constant = getLocalConstant((Constant)ste);
+			return constant;
+		}catch (ExpressionException e){
+			e.printStackTrace(System.out);
+			throw new ExpressionBindingException("Simulation.getEntry(), error getting local Constant (math override)"+identifierString);
+		}
+	}else if (ste instanceof Function){
+		try {
+			Function function = getLocalFunction((Function)ste);
+			return function;
+		}catch (ExpressionException e){
+			e.printStackTrace(System.out);
+			throw new ExpressionBindingException("Simulation.getEntry(), error getting local Function "+identifierString+", "+e.getMessage());
+		}
+	}else{
+		return ste;
+	}
+}
+
+public void applyOverrides(MathDescription newMath) throws ExpressionException, MappingException, MathException {
+	
+	//
+	// replace original constants with "Simulation" constants
+	//
+	Variable newVarArray[] = (Variable[])BeanUtils.getArray(newMath.getVariables(),Variable.class);
+	for (int i = 0; i < newVarArray.length; i++){
+		if (newVarArray[i] instanceof Constant){
+			Constant origConstant = (Constant)newVarArray[i];
+			Constant simConstant = getLocalConstant(origConstant);
+			newVarArray[i] = new Constant(origConstant.getName(),new Expression(simConstant.getExpression()));
+		}
+	}
+	newMath.setAllVariables(newVarArray);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/25/01 11:34:08 AM)
+ * @return cbit.vcell.math.Variable[]
+ */
+public Function[] getFunctions() {
+	
+	Vector<Function> functList = new Vector<Function>();
+	
+	//
+	// get all variables from MathDescription, but replace MathOverrides
+	//
+	Variable variables[] = getVariables();
+	for (int i = 0; i < variables.length; i++){
+		if (variables[i] instanceof Function){
+			functList.addElement((Function)variables[i]);
+		}
+	}
+
+	return (Function[])BeanUtils.getArray(functList,Function.class);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (6/6/2001 7:52:15 PM)
+ * @return cbit.vcell.math.Function
+ * @param functionName java.lang.String
+ */
+private Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
+	if (localVariableHash == null) {
+		localVariableHash = new HashMap<String, Variable>();
+	}
+	Variable var = localVariableHash.get(referenceConstant.getName());
+	if (var instanceof Constant) {
+		Constant localConstant = (Constant)var;
+	
+		//
+		// make sure expression for localConstant is still up to date with MathOverrides table
+		//
+		Expression exp = simulation.getMathOverrides().getActualExpression(referenceConstant.getName(), index);
+		if (exp.compareEqual(localConstant.getExpression())){
+			//localConstant.bind(this); // update bindings to latest mathOverrides
+			return localConstant;
+		} else {
+			//
+			// MathOverride's Expression changed for this Constant, remove and create new one
+			//
+			localVariableHash.remove(localConstant.getName());
+		}	
+	} else if (var != null) {
+		throw new RuntimeException("Variable " + var + " expected to be a Constant");
+	}
+	//
+	// if local Constant not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
+	//
+	String name = referenceConstant.getName();
+	Constant newLocalConstant = new Constant(name,simulation.getMathOverrides().getActualExpression(name, index));
+	//newLocalConstant.bind(this);	
+	localVariableHash.put(newLocalConstant.getName(), newLocalConstant);	
+	return newLocalConstant;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (6/6/2001 7:52:15 PM)
+ * @return cbit.vcell.math.Function
+ * @param functionName java.lang.String
+ */
+private Function getLocalFunction(Function referenceFunction) throws ExpressionException {
+	if (localVariableHash == null) {
+		localVariableHash = new HashMap<String, Variable>();
+	}
+	Variable var = localVariableHash.get(referenceFunction.getName());
+	if (var instanceof Function) {
+		Function localFunction = (Function)var;
+		if (localFunction.compareEqual(referenceFunction)){
+			//localFunction.bind(this); // update bindings to latest mathOverrides
+			return localFunction;
+		}
+	} else if (var != null) {
+		throw new RuntimeException("Variable " + var + " expected to be a Function");
+	}
+	//
+	// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
+	//
+	Function newLocalFunction = new Function(referenceFunction.getName(),referenceFunction.getExpression());
+	//newLocalFunction.bind(this);
+	localVariableHash.put(newLocalFunction.getName(), newLocalFunction);
+	
+	return newLocalFunction;
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.util.Enumeration
+ * @param exp cbit.vcell.parser.Expression
+ */
+public Enumeration<Variable> getRequiredVariables(Expression exp) throws MathException, ExpressionException {
+	return MathUtilities.getRequiredVariables(exp,this);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/25/01 12:31:53 PM)
+ * @return cbit.vcell.math.Variable
+ * @param variableName java.lang.String
+ */
+public Variable getVariable(String variableName) {
+	try {
+		return (Variable)getEntry(variableName);
+	}catch (ExpressionBindingException e){
+		e.printStackTrace(System.out);
+		return null;
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/25/01 11:34:08 AM)
+ * @return cbit.vcell.math.Variable[]
+ */
+public Variable[] getVariables() {
+	
+	Vector<Variable> varList = new Vector<Variable>();
+	
+	//
+	// get all variables from MathDescription, but replace MathOverrides
+	//
+	Enumeration<Variable> enum1 = simulation.getMathDescription().getVariables();
+	while (enum1.hasMoreElements()) {
+		Variable mathDescriptionVar = enum1.nextElement();
+		//
+		// replace all Constants with math overrides
+		//
+		if (mathDescriptionVar instanceof Constant){
+			try {
+				Constant overriddenConstant = getLocalConstant((Constant)mathDescriptionVar);
+				varList.addElement(overriddenConstant);
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("local Constant "+mathDescriptionVar.getName()+" not found for Simulation");
+			}
+		//
+		// replace all Functions with local Functions that are bound to this Simulation
+		//
+		}else if (mathDescriptionVar instanceof Function){
+			try {
+				Function overriddenFunction = getLocalFunction((Function)mathDescriptionVar);
+				varList.addElement(overriddenFunction);
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("local Function "+mathDescriptionVar.getName()+" not found for Simulation");
+			}
+		//
+		// pass all other Variables through
+		//
+		}else{
+			varList.addElement(mathDescriptionVar);
+		}
+	}
+
+	Variable variables[] = (Variable[])BeanUtils.getArray(varList,Variable.class);
+
+	return variables;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (6/20/01 12:35:46 PM)
+ */
+private void rebindAll() {
+	//
+	// cleanup
+	//
+	if (localVariableHash != null) {
+		localVariableHash.clear();
+	}
+	
+	// reload
+	getVariables();
+
+	//
+	// bind all Variables, since now all the variables are sorted alphabetically
+	// a constant might be function of other constants which have not bound yet.
+	// so we need to first bind all then evaluate.
+	//
+	if (localVariableHash != null) {
+		for (Variable variable : localVariableHash.values()){
+			try {
+				variable.bind(this); // update bindings to latest mathOverrides
+			}catch (ExpressionBindingException e){
+				e.printStackTrace(System.out);
+			}
+		}
+	}
+}
+
+
+/**
+ * This method was created in VisualAge.
+ * @return cbit.vcell.parser.Expression
+ * @param exp cbit.vcell.parser.Expression
+ * @exception java.lang.Exception The exception description.
+ */
+public Expression substituteFunctions(Expression exp) throws MathException, ExpressionException {
+	return MathUtilities.substituteFunctions(exp,this);
+}
+
+
+public void getEntries(Map<String, SymbolTableEntry> entryMap) {		
+		simulation.getMathDescription().getEntries(entryMap);
+		entryMap.putAll(localVariableHash);
+	}
+
+
+	public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
+		getEntries(entryMap);		
+	}
+
+
+	public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+		return getEntry(identifier);
+	}
+
+
+	public NameScope getNameScope() {
+		return nameScope;
+	}
+
+
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return boolean
+	 * @param volVariable cbit.vcell.math.VolVariable
+	 */
+	public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws Exception {
+		Enumeration<SubDomain> enum1 = simulation.getMathDescription().getSubDomains();
+		while (enum1.hasMoreElements()){
+			SubDomain subDomain = enum1.nextElement();
+			Equation equation = subDomain.getEquation(variable);
+			//
+			// get diffusion expressions, see if function of time or volume variables
+			//
+			if (equation instanceof PdeEquation){
+				Vector<Expression> spatialExpressionList = new Vector<Expression>();
+				spatialExpressionList.add(((PdeEquation)equation).getDiffusionExpression());
+				if (((PdeEquation)equation).getVelocityX()!=null){
+					spatialExpressionList.add(((PdeEquation)equation).getVelocityX());
+				}
+				if (((PdeEquation)equation).getVelocityY()!=null){
+					spatialExpressionList.add(((PdeEquation)equation).getVelocityY());
+				}
+				if (((PdeEquation)equation).getVelocityZ()!=null){
+					spatialExpressionList.add(((PdeEquation)equation).getVelocityZ());
+				}
+				for (int i = 0; i < spatialExpressionList.size(); i++){
+					Expression spatialExp = spatialExpressionList.elementAt(i);
+					spatialExp = substituteFunctions(spatialExp);
+					String symbols[] = spatialExp.getSymbols();
+					if (symbols!=null){
+						for (int j=0;j<symbols.length;j++){
+							SymbolTableEntry entry = spatialExp.getSymbolBinding(symbols[j]);
+							if (entry instanceof ReservedVariable){
+								if (((ReservedVariable)entry).isTIME()){
+									return true;
+								}
+							}
+							if (entry instanceof VolVariable){
+								return true;
+							}
+							if (entry instanceof VolumeRegionVariable){
+								return true;
+							}
+							if (entry instanceof MemVariable || entry instanceof MembraneRegionVariable) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;		
+	}
+}

@@ -239,7 +239,7 @@ public SimulationTask getSimulationTask(SimulationJobStatus jobStatus) throws Da
 	VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
 	User user = getUser(vcSimID.getSimulationKey(), null);				
 	Simulation sim = getSimulation(user, vcSimID.getSimulationKey());
-	SimulationTask simTask = new SimulationTask(new SimulationJob(sim, getFieldDataIdentifierSpecs(sim), jobStatus.getJobIndex()), jobStatus.getTaskID());
+	SimulationTask simTask = new SimulationTask(new SimulationJob(sim, jobStatus.getJobIndex(), getFieldDataIdentifierSpecs(sim)), jobStatus.getTaskID());
 
 	return simTask;
 }

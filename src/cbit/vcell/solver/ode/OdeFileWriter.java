@@ -3,12 +3,37 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
+import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Vector;
 
-import java.util.*;
-import java.io.*;
-import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.ParameterVariable;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.Discontinuity;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.VariableSymbolTable;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverFileWriter;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
@@ -21,8 +46,8 @@ public abstract class OdeFileWriter extends SolverFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public OdeFileWriter(PrintWriter pw, Simulation sim, int ji, boolean messaging) {
-	super(pw, sim, ji, messaging);
+public OdeFileWriter(PrintWriter pw, SimulationJob simJob, boolean messaging) {
+	super(pw, simJob, messaging);
 }
 
 
@@ -47,7 +72,7 @@ protected VariableSymbolTable createSymbolTable() {
 	// Get the vector of sensVariables, needed for creating SensStateVariables 
 	Vector<SensStateVariable> sensVars = new Vector<SensStateVariable>();
 	for (int i = 0; i < getStateVariableCount(); i++) {
-		if (getSimulation().getSolverTaskDescription().getSensitivityParameter() != null) {
+		if (simulationJob.getSimulation().getSolverTaskDescription().getSensitivityParameter() != null) {
 			if (getStateVariable(i) instanceof SensStateVariable) {
 				sensVars.addElement((SensStateVariable)getStateVariable(i));
 			}
@@ -63,7 +88,7 @@ protected VariableSymbolTable createSymbolTable() {
 	varsSymbolTable.addVar(ReservedVariable.TIME); // SymbolTableEntry.index doesn't matter ... just code generating binding by var names not index.
 	int count = 0;
 	
-	Variable variables[] = getSimulation().getVariables();
+	Variable variables[] = simulationJob.getSimulationSymbolTable().getVariables();
 	for (int i = 0; i < variables.length; i++) {
 		if (variables[i] instanceof VolVariable) {
 			VolVariable vVar = (VolVariable)variables[i];
@@ -96,15 +121,6 @@ protected VariableSymbolTable createSymbolTable() {
 	return varsSymbolTable;
 }
 
-
-/**
- * OdeFileCoder constructor comment.
- */
-public Simulation getSimulation() {
-	return simulation;
-}
-
-
 /**
  * OdeFileCoder constructor comment.
  */
@@ -122,36 +138,41 @@ public int getStateVariableCount () {
 
 
 private void initialize() throws Exception {
-	if (!getSimulation().getIsValid()) {
-		throw new MathException("invalid simulation : "+getSimulation().getWarning());
+	Simulation simulation = simulationJob.getSimulation();
+	if (!simulation.getIsValid()) {
+		throw new MathException("invalid simulation : "+simulation.getWarning());
 	}
-	if (getSimulation().getIsSpatial()) {
+	if (simulation.isSpatial()) {
 		throw new MathException("solver does not support spatial models. Please change the solver.");
 	}
-	if (getSimulation().getMathDescription().hasFastSystems()) {
-		if (!getSimulation().getSolverTaskDescription().getSolverDescription().solvesFastSystem()) {
+	MathDescription mathDescription = simulation.getMathDescription();
+	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
+	if (mathDescription.hasFastSystems()) {
+		if (!solverTaskDescription.getSolverDescription().solvesFastSystem()) {
 			throw new MathException("solver does not support models containing fast system (algebraic constraints). Please change the solver.");
 		}
 	}
 
 
 	// get Ode's from MathDescription and create ODEStateVariables
-	Enumeration<Equation> enum1 = getSimulation().getMathDescription().getSubDomains().nextElement().getEquations();
+	Enumeration<Equation> enum1 = mathDescription.getSubDomains().nextElement().getEquations();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	while (enum1.hasMoreElements()) {
 		Equation equation = enum1.nextElement();
 		if (equation instanceof OdeEquation) {
-			addStateVariable(new ODEStateVariable((OdeEquation) equation, getSimulation()));
+			addStateVariable(new ODEStateVariable((OdeEquation) equation, simSymbolTable));
 		} else {
 			throw new MathException("encountered non-ode equation, unsupported");
 		}
 	}
 
 	//  Get sensitivity variables
-	Variable variables[] = getSimulation().getVariables(); 
+	Variable variables[] = simSymbolTable.getVariables(); 
 	Vector<SensVariable> sensVariables = new Vector<SensVariable>();
-	if (getSimulation().getSolverTaskDescription().getSensitivityParameter() != null) {
-		Constant origSensParam = getSimulation().getSolverTaskDescription().getSensitivityParameter();
-		Constant overriddenSensParam = (Constant)getSimulation().getVariable(origSensParam.getName());
+	Constant sensitivityParameter = solverTaskDescription.getSensitivityParameter();
+	if (sensitivityParameter != null) {
+		Constant origSensParam = sensitivityParameter;
+		Constant overriddenSensParam = (Constant)simSymbolTable.getVariable(origSensParam.getName());
 		for (int i = 0; i < variables.length; i++){
 			if (variables[i] instanceof VolVariable){
 				VolVariable volVariable = (VolVariable)variables[i];
@@ -165,10 +186,10 @@ private void initialize() throws Exception {
 	for (int v = 0; v < sensVariables.size(); v++) {
 		addStateVariable(
 			new SensStateVariable((SensVariable) sensVariables.elementAt(v),
-									getSimulation().getMathDescription().getRateSensitivity(), 
-									getSimulation().getMathDescription().getJacobian(),
-									sensVariables, 
-									getSimulation()));
+					mathDescription.getRateSensitivity(), 
+					mathDescription.getJacobian(),
+					sensVariables, 
+					simSymbolTable));
 	}
 }
 
@@ -186,13 +207,15 @@ protected abstract void writeEquations() throws MathException, ExpressionExcepti
 public void write(String[] parameterNames) throws Exception {
 	initialize();
 	
-	if (getSimulation().getSolverTaskDescription().getUseSymbolicJacobian()){
+	Simulation simulation = simulationJob.getSimulation();
+	
+	if (simulation.getSolverTaskDescription().getUseSymbolicJacobian()){
 		throw new RuntimeException("symbolic jacobian option not yet supported in interpreted Stiff solver");
 	}
 	
 	writeJMSParamters();
 	
-	SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
+	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 	TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 	ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
 	printWriter.println("SOLVER " + getSolverName());
@@ -200,8 +223,8 @@ public void write(String[] parameterNames) throws Exception {
 	printWriter.println("ENDING_TIME " + timeBounds.getEndingTime());
 	printWriter.println("RELATIVE_TOLERANCE " + errorTolerance.getRelativeErrorTolerance());
 	printWriter.println("ABSOLUTE_TOLERANCE " + errorTolerance.getAbsoluteErrorTolerance());
-  	printWriter.println("MAX_TIME_STEP "+getSimulation().getSolverTaskDescription().getTimeStep().getMaximumTimeStep());
-  	OutputTimeSpec ots = getSimulation().getSolverTaskDescription().getOutputTimeSpec();
+  	printWriter.println("MAX_TIME_STEP "+simulation.getSolverTaskDescription().getTimeStep().getMaximumTimeStep());
+  	OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
   	if (ots.isDefault()) {
 		printWriter.println("KEEP_EVERY "+((DefaultOutputTimeSpec)ots).getKeepEvery());
   	} else if (ots.isUniform()) {

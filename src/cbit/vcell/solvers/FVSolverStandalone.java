@@ -1,9 +1,19 @@
 package cbit.vcell.solvers;
-import cbit.vcell.solver.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.Solver;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverStatus;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -37,12 +47,14 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
  * This method was created by a SmartGuide.
  */
 protected void initialize() throws SolverException {
+	Simulation sim = simulationJob.getSimulation();
 	try {
-		if (getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-			if (getSimulation().getMathDescription().hasFastSystems()) {
+		if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+			MathDescription mathDescription = sim.getMathDescription();
+			if (mathDescription.hasFastSystems()) {
 				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " does not support models containing fast system. Please change the solver.");
 			}
-			if (getSimulation().getMathDescription().hasPeriodicBoundaryCondition()) {
+			if (mathDescription.hasPeriodicBoundaryCondition()) {
 				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " does not support models containing Periodic Boundary Condition. Please change the solver.");
 			}
 		}
@@ -57,7 +69,7 @@ protected void initialize() throws SolverException {
 		PrintWriter pw = null;
 		try {
 			pw = new PrintWriter(new FileWriter(fvinputFile));
-			new FiniteVolumeFileWriter(pw, getSimulationJob(), getResampledGeometry(), getSaveDirectory(), bMessaging).write();
+			new FiniteVolumeFileWriter(pw, simulationJob, getResampledGeometry(), getSaveDirectory(), bMessaging).write();
 		} finally {
 			if (pw != null) {
 				pw.close();

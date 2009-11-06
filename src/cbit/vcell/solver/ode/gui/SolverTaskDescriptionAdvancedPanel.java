@@ -856,7 +856,7 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	fieldSolverComboBoxModel.removeAllElements();
 	if(getSolverTaskDescription() != null) {
 		SolverDescription[] solverDescriptions = new SolverDescription[0];
-		if (getSolverTaskDescription().getSimulation().getIsSpatial()) 
+		if (getSolverTaskDescription().getSimulation().isSpatial()) 
 		{
 			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // PDE with FastSystem
 				solverDescriptions = SolverDescription.getPDEWithFastSystemSolverDescriptions();

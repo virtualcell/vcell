@@ -20,10 +20,10 @@ public class CppClassCoderMembraneVarContext extends CppClassCoderAbstractVarCon
 protected CppClassCoderMembraneVarContext(CppCoderVCell argCppCoderVCell,
 												Equation argEquation,
 												MembraneSubDomain argMembraneSubDomain,
-												Simulation argSimulation, 
+												SimulationJob argSimulationJob, 
 												String argParentClass) throws Exception
 {
-	super(argCppCoderVCell,argEquation,argMembraneSubDomain,argSimulation,argParentClass);
+	super(argCppCoderVCell,argEquation,argMembraneSubDomain,argSimulationJob,argParentClass);
 }
 
 
@@ -72,7 +72,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	try {
 		Expression ic = getEquation().getInitialExpression();
-		ic.bindExpression(getSimulation());
+		ic.bindExpression(simulationJob.getSimulationSymbolTable());
 		double value = ic.evaluateConstant();
 		out.println("\tinitialValue = new double;");
 		out.println("\t*initialValue = "+value+";");
@@ -110,7 +110,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("\tvirtual void resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
-	int dimension = getSimulation().getMathDescription().getGeometry().getDimension();
+	int dimension = simulationJob.getSimulation().getMathDescription().getGeometry().getDimension();
 	if (getEquation() instanceof PdeEquation){
 		PdeEquation pdeEqu = (PdeEquation)getEquation();
 		if (pdeEqu.getBoundaryXm()!=null){
@@ -177,7 +177,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	}		
 	try {
 		Expression ic = getEquation().getInitialExpression();
-		ic.bindExpression(getSimulation());
+		ic.bindExpression(simulationJob.getSimulationSymbolTable());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
 		out.println("\tvirtual double getInitialValue(MembraneElement *memElement);");
@@ -232,7 +232,7 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 		writeMembraneFunction(out,"getMembraneDiffusionRate", new Expression(0.0), bFlippedInsideOutside);
 	}
 	out.println("");
-	MathDescription mathDesc = getSimulation().getMathDescription();
+	MathDescription mathDesc = simulationJob.getSimulation().getMathDescription();
 	int dimension = mathDesc.getGeometry().getDimension();
 	if (getEquation() instanceof PdeEquation){
 		PdeEquation pde = (PdeEquation)getEquation();

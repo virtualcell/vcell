@@ -1,12 +1,19 @@
 package cbit.vcell.modelopt;
-import cbit.vcell.mapping.StructureMapping;
 import java.util.Vector;
-import cbit.vcell.opt.ReferenceData;
+
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solvers.FVSolver;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)
@@ -217,12 +224,12 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(Opt
 	}
 	String[] solutionNames = optResultSet.getSolutionNames();
 	if (solutionNames!=null && solutionNames.length>0){
-		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+		ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
 		//
 		// add data column descriptions
 		//
 		for (int i = 0; i < solutionNames.length; i++){
-			odeSolverResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(solutionNames[i]));
+			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(solutionNames[i]));
 		}
 		//
 		// add row data
@@ -234,27 +241,28 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(Opt
 		//
 		// make temporary simulation (with overrides for parameter values)
 		//
-		cbit.vcell.math.MathDescription mathDesc = ((cbit.vcell.opt.OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(mathDesc);
+		MathDescription mathDesc = ((cbit.vcell.opt.OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
+		Simulation simulation = new Simulation(mathDesc);
+		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
 		//
 		// set math overrides with initial guess
 		//
 		for (int i = 0; i < optSpec.getParameters().length; i++){
 			cbit.vcell.opt.Parameter parameter = optSpec.getParameters()[i];
-			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(parameter.getName(),new cbit.vcell.parser.Expression(parameter.getInitialGuess())));
+			simulation.getMathOverrides().putConstant(new Constant(parameter.getName(),new Expression(parameter.getInitialGuess())));
 		}
 		
 		//
 		// correct math overrides with parameter solution
 		//
 		for (int i = 0; i < optResultSet.getParameterNames().length; i++){
-			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(optResultSet.getParameterNames()[i],new cbit.vcell.parser.Expression(optResultSet.getParameterValues()[i])));
+			simulation.getMathOverrides().putConstant(new Constant(optResultSet.getParameterNames()[i],new Expression(optResultSet.getParameterValues()[i])));
 		}
 
 		//
 		// add functions (evaluating them at optimal parameter)
 		//
-		Vector <AnnotatedFunction> annotatedFunctions = cbit.vcell.solvers.FVSolver.createAnnotatedFunctionsList(simulation);
+		Vector <AnnotatedFunction> annotatedFunctions = FVSolver.createAnnotatedFunctionsList(simSymbolTable);
 		for (AnnotatedFunction f: annotatedFunctions){
 			Expression funcExp = f.getExpression();
 			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {

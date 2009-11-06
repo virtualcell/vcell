@@ -140,8 +140,8 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 									//update the database
 									jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
 									// send to simulation queue
-									Simulation sim = simTask.getSimulationJob().getWorkingSim();
-									SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifierSpecs(sim), newJobStatus.getJobIndex()), newJobStatus.getTaskID());
+									Simulation sim = simTask.getSimulationJob().getSimulation();
+									SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, newJobStatus.getJobIndex(), simDispatcher.getFieldDataIdentifierSpecs(sim)), newJobStatus.getTaskID());
 									SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);
 									taskMsg.sendSimulationTask(obsoleteJobDispatcher);
 									// tell client
@@ -242,7 +242,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 							foundOne = true;					
 							jobStatus = firstQualifiedJob.getSimJobStatus();					
 							Simulation sim = simDispatcher.getSimulation(firstQualifiedJob.getUser(), jobStatus.getVCSimulationIdentifier().getSimulationKey());							
-							simTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifierSpecs(sim), jobStatus.getJobIndex()), jobStatus.getTaskID());
+							simTask = new SimulationTask(new SimulationJob(sim, jobStatus.getJobIndex(), simDispatcher.getFieldDataIdentifierSpecs(sim)), jobStatus.getTaskID());
 							log.print("**DT: going to dispatch " + simTask);
 						}
 					}
@@ -514,7 +514,7 @@ private void do_start(Connection con, SimulationJobStatus oldJobStatus, Simulati
 	}
 
 	// update database
-	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simTask.getSimKey(), simTask.getSimulationJob().getWorkingSim().getVersion().getOwner());
+	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simTask.getSimKey(), simTask.getSimulationJob().getSimulation().getVersion().getOwner());
 	SimulationJobStatus newJobStatus = simDispatcher.updateQueueStatus(oldJobStatus, jobAdminXA, con, vcSimID, simTask.getSimulationJob().getJobIndex(), queueID, simTask.getTaskID(), true);
 
 	// tell client
@@ -729,7 +729,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 					log.alert("Can't start, simulation[" + vcSimID + "] job [" + i + "] is running already");
 				} else {
 					int newTaskID = oldJobStatus == null ? 0 : (oldJobStatus.getTaskID() & MessageConstants.TASKID_USERCOUNTER_MASK) + MessageConstants.TASKID_USERINCREMENT;
-					SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, fdis, i), newTaskID);
+					SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, i, fdis), newTaskID);
 					int queueID = MessageConstants.QUEUE_ID_WAITING;
 					// put all the jobs to waiting first, let dispatch thread decide which to dispatch
 					do_start(con, oldJobStatus, simTask, queueID);

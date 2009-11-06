@@ -163,7 +163,7 @@ public static void main(String[] args)
 	{
 		FileWriter fw = new FileWriter("C:/gibson_deploy/gibson_deploy/testInput.txt",false);
 		PrintWriter pw = new PrintWriter(fw);
-		StochFileWriter sfw = new StochFileWriter(pw, simInstance, 0, false);
+		StochFileWriter sfw = new StochFileWriter(pw, new SimulationJob(simInstance, 0, null), false);
 		try
 		{
 			sfw.write();

@@ -1,19 +1,33 @@
 package cbit.vcell.solver.ode;
-import cbit.vcell.server.*;
-import java.io.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.mapping.FastSystemAnalyzer;
-import cbit.vcell.math.*;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.PseudoConstant;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.*;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UserStopException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:56:23 PM)
@@ -40,7 +54,7 @@ public abstract class DefaultODESolver extends AbstractJavaSolver implements ODE
  */
 public DefaultODESolver(SimulationJob simJob, File directory, SessionLog sessionLog, int valueVectorCount)  throws SolverException {
 	super(simJob, directory, sessionLog);
-	if (getSimulation().getIsSpatial()) {
+	if (simulationJob.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use DefaultODESolver on spatial simulation");
 	}
 	fieldValueVectorCount = valueVectorCount;
@@ -81,6 +95,8 @@ protected void check(double values[]) throws SolverException {
  * This method was created in VisualAge.
  */
 private Vector<Variable> createIdentifiers() throws MathException, ExpressionException {
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
 	// create list of possible identifiers (including reserved x,y,z,t)
 	Vector<Variable> identifiers = new Vector<Variable>();
 	// add reserved variables x,y,z,t
@@ -89,7 +105,7 @@ private Vector<Variable> createIdentifiers() throws MathException, ExpressionExc
 	identifiers.addElement(ReservedVariable.fromString("y"));
 	identifiers.addElement(ReservedVariable.fromString("z"));
 	// add regular variables
-	Variable variables[] = getSimulation().getVariables();
+	Variable variables[] = simSymbolTable.getVariables();
 	for (int i = 0; i < variables.length; i++){	
 		if (variables[i] instanceof VolVariable) {
 			identifiers.addElement(variables[i]);
@@ -125,6 +141,8 @@ private Vector<Variable> createIdentifiers() throws MathException, ExpressionExc
 /**
  */
 private ODESolverResultSet createODESolverResultSet() throws ExpressionException {
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
 	//
 	// create symbol table for binding expression
 	//
@@ -149,13 +167,13 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 		}
 	}
 
-	Variable variables[] = getSimulation().getVariables();
+	Variable variables[] = simSymbolTable.getVariables();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
 			Function function = (Function)variables[i];
 			Expression exp1 = new Expression(function.getExpression());
 			try {
-				exp1 = getSimulation().substituteFunctions(exp1);
+				exp1 = simSymbolTable.substituteFunctions(exp1);
 			} catch (MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage());
@@ -178,7 +196,7 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 				Function depSensFunction = (Function)variables[i];
 				Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
 				try {
-					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);
+					depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);
 				} catch (MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+depSensFunction.getName()+" "+e.getMessage());
@@ -218,13 +236,16 @@ private Vector<SensVariable> createSensitivityVariables() throws MathException, 
  * This method was created in VisualAge.
  */
 private Vector<StateVariable> createStateVariables() throws MathException, ExpressionException {
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	Simulation sim = simSymbolTable.getSimulation();
+	
 	Vector<StateVariable> stateVariables = new Vector<StateVariable>();
 	// get Ode's from MathDescription and create ODEStateVariables
 	Enumeration<Equation> enum1 = getSubDomain().getEquations();
 	while (enum1.hasMoreElements()) {
 		Equation equation = enum1.nextElement();
 		if (equation instanceof OdeEquation) {
-			stateVariables.addElement(new ODEStateVariable((OdeEquation) equation, getSimulation()));
+			stateVariables.addElement(new ODEStateVariable((OdeEquation) equation, simSymbolTable));
 		} else {
 			throw new MathException("encountered non-ode equation, unsupported");
 		}
@@ -233,10 +254,10 @@ private Vector<StateVariable> createStateVariables() throws MathException, Expre
 	for (int v = 0; v < fieldSensVariables.size(); v++) {
 		stateVariables.addElement(
 			new SensStateVariable(fieldSensVariables.elementAt(v),
-									getSimulation().getMathDescription().getRateSensitivity(), 
-									getSimulation().getMathDescription().getJacobian(),
+									sim.getMathDescription().getRateSensitivity(), 
+									sim.getMathDescription().getJacobian(),
 									fieldSensVariables, 
-									getSimulation()));
+									simSymbolTable));
 	}
 	if (stateVariables.size() == 0) {
 		throw new MathException("there are no equations defined");
@@ -310,9 +331,12 @@ public final ODESolverResultSet getODESolverResultSet() {
  * @return double
  */
 public double getProgress() {
+	Simulation sim = simulationJob.getSimulation();
+
 	double currTime = getCurrentTime();
-	double startTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
-	double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+	TimeBounds timeBounds = sim.getSolverTaskDescription().getTimeBounds();
+	double startTime = timeBounds.getStartingTime();
+	double endTime = timeBounds.getEndingTime();
 	if ((endTime-startTime)==0.0){
 		throw new RuntimeException("DefaultODESolver.getProgress(), endTime==startTime");
 	}else{
@@ -328,14 +352,16 @@ public double getProgress() {
  * @return The sensitivityParameter property value.
  * @see #setSensitivityParameter
  */
-public cbit.vcell.math.Constant getSensitivityParameter() {
-	Constant origSensParam = getSimulation().getSolverTaskDescription().getSensitivityParameter();
+public Constant getSensitivityParameter() {
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
+	Constant origSensParam = simSymbolTable.getSimulation().getSolverTaskDescription().getSensitivityParameter();
 	//
 	// sensitivity parameter from solverTaskDescription will have the non-overridden nominal value.
 	// ask the Simulation for the updated Constant object (with the proper overridden value).
 	//
 	if (origSensParam!=null){
-		return (Constant)getSimulation().getVariable(origSensParam.getName());
+		return (Constant)simSymbolTable.getVariable(origSensParam.getName());
 	}else{
 		return null;
 	}
@@ -380,7 +406,7 @@ public int getStateVariableIndex(String variableName) {
  * @return The timeIndex property value.
  */
 protected SubDomain getSubDomain() {
-	return ((SubDomain) getSimulation().getMathDescription().getSubDomains().nextElement());
+	return ((SubDomain) simulationJob.getSimulation().getMathDescription().getSubDomains().nextElement());
 }
 
 
@@ -428,14 +454,17 @@ protected final int getVariableIndex(int i) {
  * @exception SolverException The exception description.
  */
 protected void initialize() throws SolverException {
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	Simulation sim = simSymbolTable.getSimulation();
 	try {
 		// create a fast system if necessary
 		fieldFastAlgebraicSystem = null;
 		if (getSubDomain().getFastSystem() != null) {
-			if (!getSimulation().getSolverTaskDescription().getSolverDescription().solvesFastSystem()) {
-				throw new SolverException(getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel() + " doesn't support models containing fast system (algebraic constraints). Please change the solver.");
+			SolverDescription solverDescription = sim.getSolverTaskDescription().getSolverDescription();
+			if (!solverDescription.solvesFastSystem()) {
+				throw new SolverException(solverDescription.getDisplayLabel() + " doesn't support models containing fast system (algebraic constraints). Please change the solver.");
 			}
-			fieldFastAlgebraicSystem = new FastAlgebraicSystem(new FastSystemAnalyzer(getSubDomain().getFastSystem(), getSimulation()));
+			fieldFastAlgebraicSystem = new FastAlgebraicSystem(new FastSystemAnalyzer(getSubDomain().getFastSystem(), simSymbolTable));
 		}
 		//refreshIdentifiers();
 		fieldIdentifiers = createIdentifiers();
@@ -455,7 +484,7 @@ protected void initialize() throws SolverException {
 		for (int i = 0; i < fieldIdentifiers.size(); i++) {
 			if (fieldIdentifiers.elementAt(i) instanceof Constant) {
 				Constant constant = (Constant) fieldIdentifiers.elementAt(i);
-				constant.bind(getSimulation());
+				constant.bind(simSymbolTable);
 				if (constant.isConstant()){
 					initialValues[constant.getIndex()] = constant.getExpression().evaluateConstant(); // constant.getValue();
 				}else{
@@ -469,7 +498,7 @@ protected void initialize() throws SolverException {
 		}
 		fieldODESolverResultSet = createODESolverResultSet();
 		// reset - in the ** default ** solvers we don't pick up from where we left off, we can override that behaviour in integrate() if ever necessary
-		fieldCurrentTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
+		fieldCurrentTime = sim.getSolverTaskDescription().getTimeBounds().getStartingTime();
 	} catch (ExpressionException expressionException) {
 		expressionException.printStackTrace(System.out);
 		throw new SolverException(expressionException.getMessage());
@@ -485,7 +514,7 @@ protected void initialize() throws SolverException {
  */
 protected void integrate() throws SolverException, UserStopException, IOException {
 	try {
-		SolverTaskDescription taskDescription = getSimulation().getSolverTaskDescription();
+		SolverTaskDescription taskDescription = simulationJob.getSimulation().getSolverTaskDescription();
 		double timeStep = taskDescription.getTimeStep().getDefaultTimeStep();
 		fieldCurrentTime = taskDescription.getTimeBounds().getStartingTime();
 		// before computation begins, settle fast equilibrium
@@ -561,9 +590,11 @@ protected final void updateResultSet() throws IOException, ExpressionException {
 		results.addRow (values);
 	}
 	//setSolverStatus(new SolverStatus (SolverStatus.SOLVER_RUNNING));
+	Simulation sim = simulationJob.getSimulation();
 	double t = getCurrentTime();
-	double t0 = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
-	double t1 = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+	TimeBounds timeBounds = sim.getSolverTaskDescription().getTimeBounds();
+	double t0 = timeBounds.getStartingTime();
+	double t1 = timeBounds.getEndingTime();
 	printToFile((t - t0) / (t1 - t0));
 }
 }

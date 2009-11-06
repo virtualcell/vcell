@@ -1,19 +1,27 @@
 package cbit.vcell.client.data;
 
 import java.util.Hashtable;
+
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.rmi.event.DataJobEvent;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.math.Constant;
-import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import javax.swing.*;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import cbit.vcell.math.Constant;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)
@@ -38,7 +46,7 @@ public class SimResultsViewer extends DataViewer {
 public SimResultsViewer(Simulation simulation, VCDataManager vcDataManager) throws DataAccessException {
 	super();
 	setSimulation(simulation);
-	this.isODEData = !simulation.getIsSpatial();
+	this.isODEData = !simulation.isSpatial();
 	this.vcDataManager = vcDataManager;
 	initialize();
 }

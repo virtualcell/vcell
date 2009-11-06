@@ -3,17 +3,33 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
-
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Vector;
 
 import cbit.vcell.mapping.FastSystemAnalyzer;
-import cbit.vcell.math.*;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.solver.*;
+import cbit.vcell.parser.Discontinuity;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.RationalExpUtils;
+import cbit.vcell.parser.VariableSymbolTable;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
@@ -23,19 +39,21 @@ public class IDAFileWriter extends OdeFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public IDAFileWriter(PrintWriter pw, Simulation simulation) {
-	this(pw, simulation, 0, false);
+public IDAFileWriter(PrintWriter pw, SimulationJob simJob) {
+	this(pw, simJob, false);
 }
 
 
-public IDAFileWriter(PrintWriter pw, Simulation simulation, int ji, boolean bUseMessaging) {
-	super(pw, simulation, ji, bUseMessaging);
+public IDAFileWriter(PrintWriter pw, SimulationJob simJob, boolean bUseMessaging) {
+	super(pw, simJob, bUseMessaging);
 }
 /**
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
 protected void writeEquations() throws MathException, ExpressionException {
+	Simulation simulation = simulationJob.getSimulation();
+	
 	VariableSymbolTable varsSymbolTable = createSymbolTable();
 
 	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();
@@ -43,15 +61,18 @@ protected void writeEquations() throws MathException, ExpressionException {
 	StringBuffer sb = new StringBuffer();
 	sb.append("NUM_EQUATIONS " + getStateVariableCount() + "\n");
 	
-	if (getSimulation().getMathDescription().hasFastSystems()){
+	MathDescription mathDescription = simulation.getMathDescription();
+	if (mathDescription.hasFastSystems()){
 		//
 		// define vector of original variables
 		//
-		CompartmentSubDomain subDomain = (CompartmentSubDomain)getSimulation().getMathDescription().getSubDomains().nextElement();
+		SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+		
+		CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDescription.getSubDomains().nextElement();
 		FastSystem fastSystem = subDomain.getFastSystem();
-		FastSystemAnalyzer fs_Analyzer = new FastSystemAnalyzer(fastSystem, getSimulation());
+		FastSystemAnalyzer fs_Analyzer = new FastSystemAnalyzer(fastSystem, simSymbolTable);
 		int numIndependent = fs_Analyzer.getNumIndependentVariables();
-		int systemDim = getSimulation().getMathDescription().getStateVariableNames().size();
+		int systemDim = mathDescription.getStateVariableNames().size();
 		int numDependent = systemDim - numIndependent;
 		
 		//
@@ -168,7 +189,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 		while (equationIndex < numDependent){
 			// print row of mass matrix followed by slow rate corresponding to fast invariant
 			Expression slowRateExp = new Expression(newSlowRateVector.get(equationIndex,0).infixString()).flatten();
-			slowRateExp.bindExpression(getSimulation());	
+			slowRateExp.bindExpression(simSymbolTable);	
 			slowRateExp = MathUtilities.substituteFunctions(slowRateExp, varsSymbolTable).flatten();
 			
 			Vector<Discontinuity> v = slowRateExp.getDiscontinuities();

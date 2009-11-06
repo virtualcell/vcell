@@ -3,38 +3,8 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
-
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Equation;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathUtilities;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.PdeEquation;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.VCML;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.parser.Expression;
-import java.util.Enumeration;
-
-import cbit.vcell.parser.AbstractNameScope;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -45,16 +15,16 @@ import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.VCML;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-public class Simulation implements Versionable, Matchable, ScopedSymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
+public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable {
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
@@ -97,50 +67,8 @@ public class Simulation implements Versionable, Matchable, ScopedSymbolTable, Ma
 	private SolverTaskDescription fieldSolverTaskDescription = null;
 	private java.lang.String fieldSimulationIdentifier = null;
 	private MeshSpecification fieldMeshSpecification = null;
-	private boolean fieldIsSpatial = false;
-	//
-	// lists used for binding for use by solvers.
-	//
-	private transient Vector<Function> localFunctions = null;
-	private transient Vector<Constant> localConstants = null;
-	
-	private transient HashMap<String, Variable> localVariableHash = null;
-	
 	private boolean fieldIsDirty = false;
 	private java.lang.String fieldWarning = null;
-	/**
-	 * Field for multiplexing and spawning job arrays
-	 * Working sims created when necessarry with appropriate index
-	 */
-	private int index = 0;
-	private NameScope nameScope = new SimulationNameScope();
-
-	public class SimulationNameScope extends AbstractNameScope {
-		public SimulationNameScope(){
-			super();
-		}
-
-		@Override
-		public NameScope[] getChildren() {
-			return null;
-		}
-
-		@Override
-		public String getName() {
-			return Simulation.this.getName();
-		}
-
-		@Override
-		public NameScope getParent() {
-			return null;
-		}
-
-		@Override
-		public ScopedSymbolTable getScopedSymbolTable() {
-			return Simulation.this;
-		}
-
-	}
 	
 /**
  * One of three ways to construct a Simulation.  This constructor
@@ -170,16 +98,9 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 	//  Must set the MathDescription before constructing these...
 	if (mathDescription.getGeometry().getDimension()>0){
 		fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
-		fieldIsSpatial = true;
-	}else{
-		fieldIsSpatial = false;
 	}
 	fieldMathOverrides = new MathOverrides(this);
-	fieldMathOverrides.addMathOverridesListener(this);
 	fieldSolverTaskDescription = new SolverTaskDescription(this);
-	
-	rebindAll();  // especially needed to bind Constants so that .substitute() will eliminate Constants that are functions of other Constants.
-
 }
 
 
@@ -205,14 +126,10 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
 		setMathDescription(mathDescription);
 		if (mathDescription.getGeometry().getDimension()>0){
 			fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
-			fieldIsSpatial = true;
-		}else{
-			fieldIsSpatial = false;
 		}
 	}
 	//  Must set the MathDescription before constructing these...
 	fieldMathOverrides = new MathOverrides(this, mathOverridesTokenizer);
-	fieldMathOverrides.addMathOverridesListener(this);
 	fieldSolverTaskDescription = new SolverTaskDescription(this, solverTaskDescriptionTokenizer);
 }
 
@@ -235,15 +152,9 @@ public Simulation(MathDescription mathDescription) {
 	//  Must set the MathDescription before constructing these...
 	if (mathDescription.getGeometry().getDimension()>0){
 		fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
-		fieldIsSpatial = true;
-	}else{
-		fieldIsSpatial = false;
 	}
 	fieldMathOverrides = new MathOverrides(this);
-	fieldMathOverrides.addMathOverridesListener(this);
 	fieldSolverTaskDescription = new SolverTaskDescription(this);
-	
-	rebindAll();  // especially needed to bind Constants so that .substitute() will eliminate Constants that are functions of other Constants.
 
 }
 
@@ -274,7 +185,6 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	}else{
 		fieldMathDescription = simulation.getMathDescription();
 	}
-	fieldIsSpatial = simulation.getIsSpatial();
 	if (simulation.getMeshSpecification()!=null){
 		fieldMeshSpecification = new MeshSpecification(simulation.getMeshSpecification());
 	}else{
@@ -282,11 +192,8 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	}
 	//  Must set the MathDescription before constructing these...
 	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
-	fieldMathOverrides.addMathOverridesListener(this);
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
 	dataProcessingInstructions = simulation.dataProcessingInstructions;
-
-	rebindAll();  // especially needed to bind Constants so that .substitute() will eliminate Constants that are functions of other Constants.
 }
 
 
@@ -297,52 +204,12 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
-
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/9/2002 10:54:06 PM)
- * @return cbit.vcell.math.MathDescription
- */
-public void applyOverrides(MathDescription newMath) throws ExpressionException, MappingException, MathException {
-	
-	//
-	// replace original constants with "Simulation" constants
-	//
-	Variable newVarArray[] = (Variable[])BeanUtils.getArray(newMath.getVariables(),Variable.class);
-	for (int i = 0; i < newVarArray.length; i++){
-		if (newVarArray[i] instanceof Constant){
-			Constant origConstant = (Constant)newVarArray[i];
-			Constant simConstant = getLocalConstant(origConstant);
-			newVarArray[i] = new Constant(origConstant.getName(),new Expression(simConstant.getExpression()));
-		}
-	}
-	newMath.setAllVariables(newVarArray);
-}
-
 
 /**
  * Insert the method's description here.
@@ -391,7 +258,6 @@ private boolean compareEqualMathematically(Simulation simulation) {
 	if (this == simulation) {
 		return true;
 	}
-	if (index != simulation.index) return false;
 	if (!getMathDescription().compareEqual(simulation.getMathDescription())) return (false);
 	if (!getMathOverrides().compareEqual(simulation.getMathOverrides())) return (false);
 	if (!getSolverTaskDescription().compareEqual(simulation.getSolverTaskDescription())) return (false);
@@ -401,34 +267,6 @@ private boolean compareEqualMathematically(Simulation simulation) {
 	return true;
 }
 
-
-/**
- * 
- * @param event cbit.vcell.solver.MathOverridesEvent
- */
-public void constantAdded(MathOverridesEvent event) {
-	rebindAll();
-}
-
-
-/**
- * 
- * @param event cbit.vcell.solver.MathOverridesEvent
- */
-public void constantChanged(MathOverridesEvent event) {
-	rebindAll();
-}
-
-
-/**
- * 
- * @param event cbit.vcell.solver.MathOverridesEvent
- */
-public void constantRemoved(MathOverridesEvent event) {
-	rebindAll();
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (10/25/00 1:53:36 PM)
@@ -437,43 +275,6 @@ public void constantRemoved(MathOverridesEvent event) {
  */
 public static String createSimulationID(KeyValue simKey) {
 	return "SimID_"+simKey;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/7/2005 4:44:10 PM)
- * @return cbit.vcell.solver.Simulation
- * @param sim cbit.vcell.solver.Simulation
- * @param jobIndex int
- */
-static Simulation createWorkingSim(Simulation sim, int jobIndex) {
-	if (jobIndex < 0 || jobIndex >= sim.getScanCount()) {
-		throw new RuntimeException("Bad job index ["+jobIndex+"] for simulation "+ sim.toString());
-	}
-	Simulation workingSim = null;
-
-	// try/catch block below could be replaced by alternate implementation
-	// should profile and choose according to best performance
-
-	try {
-		String xml = XmlHelper.simToXML(sim);
-		workingSim = XmlHelper.XMLToSim(xml);
-	} catch (XmlParseException exc) {
-		throw new RuntimeException("Exception occurred while cloning working simulation\n"+exc);
-	}
-
-	/*
-	--- begin alternate implementation ---
-
-	workingSim = cbit.util.BeanUtils.cloneSerializable(sim);
-
-	--- end alternate implementation   ---
-	*/
-	
-	workingSim.index = jobIndex;
-	workingSim.rebindAll();
-	return workingSim;
 }
 
 
@@ -566,59 +367,6 @@ public java.lang.String getDescription() {
 
 
 /**
- * getEntry method comment.
- */
-public SymbolTableEntry getEntry(java.lang.String identifierString) throws ExpressionBindingException {
-	//
-	// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
-	//
-	SymbolTableEntry ste = getMathDescription().getEntry(identifierString);
-	if (ste instanceof Constant){
-		try {
-			Constant constant = getLocalConstant((Constant)ste);
-			return constant;
-		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new ExpressionBindingException("Simulation.getEntry(), error getting local Constant (math override)"+identifierString);
-		}
-	}else if (ste instanceof Function){
-		try {
-			Function function = getLocalFunction((Function)ste);
-			return function;
-		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new ExpressionBindingException("Simulation.getEntry(), error getting local Function "+identifierString+", "+e.getMessage());
-		}
-	}else{
-		return ste;
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/25/01 11:34:08 AM)
- * @return cbit.vcell.math.Variable[]
- */
-public Function[] getFunctions() {
-	
-	Vector<Function> functList = new Vector<Function>();
-	
-	//
-	// get all variables from MathDescription, but replace MathOverrides
-	//
-	Variable variables[] = getVariables();
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof Function){
-			functList.addElement((Function)variables[i]);
-		}
-	}
-
-	return (Function[])BeanUtils.getArray(functList,Function.class);
-}
-
-
-/**
  * Gets the isDirty property (boolean) value.
  * @return The isDirty property value.
  * @see #setIsDirty
@@ -633,8 +381,8 @@ public boolean getIsDirty() {
  * @return The isSpatial property value.
  * @see #setIsSpatial
  */
-public boolean getIsSpatial() {
-	return fieldIsSpatial;
+public boolean isSpatial() {
+	return getMathDescription().getGeometry().getDimension() > 0;
 }
 
 
@@ -672,89 +420,6 @@ public boolean getIsValid() {
  */
 public KeyValue getKey() {
 	return (getVersion()!=null)?(getVersion().getVersionKey()):(null);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/6/2001 7:52:15 PM)
- * @return cbit.vcell.math.Function
- * @param functionName java.lang.String
- */
-private Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
-	if (localConstants==null){
-		localConstants = new Vector<Constant>();
-	}	
-	if (localVariableHash == null) {
-		localVariableHash = new HashMap<String, Variable>();
-	}
-	Variable var = localVariableHash.get(referenceConstant.getName());
-	if (var instanceof Constant) {
-		Constant localConstant = (Constant)var;
-	
-		//
-		// make sure expression for localConstant is still up to date with MathOverrides table
-		//
-		Expression exp = getMathOverrides().getActualExpression(referenceConstant.getName(), index);
-		if (exp.compareEqual(localConstant.getExpression())){
-			//localConstant.bind(this); // update bindings to latest mathOverrides
-			return localConstant;
-		} else {
-			//
-			// MathOverride's Expression changed for this Constant, remove and create new one
-			//
-			localConstants.remove(localConstant);
-			localVariableHash.remove(localConstant.getName());
-		}	
-	} else if (var != null) {
-		throw new RuntimeException("Variable " + var + " expected to be a Constant");
-	}
-	//
-	// if local Constant not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
-	//
-	String name = referenceConstant.getName();
-	Constant newLocalConstant = new Constant(name,getMathOverrides().getActualExpression(name, index));
-	//newLocalConstant.bind(this);
-	localConstants.add(newLocalConstant);
-	
-	localVariableHash.put(newLocalConstant.getName(), newLocalConstant);	
-	return newLocalConstant;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/6/2001 7:52:15 PM)
- * @return cbit.vcell.math.Function
- * @param functionName java.lang.String
- */
-private Function getLocalFunction(Function referenceFunction) throws ExpressionException {
-	if (localFunctions==null){
-		localFunctions = new Vector<Function>();
-	}
-	if (localVariableHash == null) {
-		localVariableHash = new HashMap<String, Variable>();
-	}
-	Variable var = localVariableHash.get(referenceFunction.getName());
-	if (var instanceof Function) {
-		Function localFunction = (Function)var;
-		if (localFunction.compareEqual(referenceFunction)){
-			//localFunction.bind(this); // update bindings to latest mathOverrides
-			return localFunction;
-		}
-	} else if (var != null) {
-		throw new RuntimeException("Variable " + var + " expected to be a Function");
-	}
-	//
-	// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
-	//
-	Function newLocalFunction = new Function(referenceFunction.getName(),new Expression(referenceFunction.getExpression()));
-	//newLocalFunction.bind(this);
-	localFunctions.add(newLocalFunction);
-	
-	localVariableHash.put(newLocalFunction.getName(), newLocalFunction);
-	
-	return newLocalFunction;
 }
 
 
@@ -804,16 +469,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
 	};
 	return propertyChange;
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return java.util.Enumeration
- * @param exp cbit.vcell.parser.Expression
- */
-public Enumeration<Variable> getRequiredVariables(Expression exp) throws MathException, ExpressionException {
-	return MathUtilities.getRequiredVariables(exp,this);
 }
 
 
@@ -869,73 +524,6 @@ public SimulationVersion getSimulationVersion() {
  */
 public SolverTaskDescription getSolverTaskDescription() {
 	return fieldSolverTaskDescription;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/25/01 12:31:53 PM)
- * @return cbit.vcell.math.Variable
- * @param variableName java.lang.String
- */
-public Variable getVariable(String variableName) {
-	try {
-		return (Variable)getEntry(variableName);
-	}catch (ExpressionBindingException e){
-		e.printStackTrace(System.out);
-		return null;
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/25/01 11:34:08 AM)
- * @return cbit.vcell.math.Variable[]
- */
-public Variable[] getVariables() {
-	
-	Vector<Variable> varList = new Vector<Variable>();
-	
-	//
-	// get all variables from MathDescription, but replace MathOverrides
-	//
-	Enumeration<Variable> enum1 = getMathDescription().getVariables();
-	while (enum1.hasMoreElements()) {
-		Variable mathDescriptionVar = enum1.nextElement();
-		//
-		// replace all Constants with math overrides
-		//
-		if (mathDescriptionVar instanceof Constant){
-			try {
-				Constant overriddenConstant = getLocalConstant((Constant)mathDescriptionVar);
-				varList.addElement(overriddenConstant);
-			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("local Constant "+mathDescriptionVar.getName()+" not found for Simulation");
-			}
-		//
-		// replace all Functions with local Functions that are bound to this Simulation
-		//
-		}else if (mathDescriptionVar instanceof Function){
-			try {
-				Function overriddenFunction = getLocalFunction((Function)mathDescriptionVar);
-				varList.addElement(overriddenFunction);
-			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException("local Function "+mathDescriptionVar.getName()+" not found for Simulation");
-			}
-		//
-		// pass all other Variables through
-		//
-		}else{
-			varList.addElement(mathDescriptionVar);
-		}
-	}
-
-	Variable variables[] = (Variable[])BeanUtils.getArray(varList,Variable.class);
-
-	return variables;
 }
 
 
@@ -1015,112 +603,6 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- * @param volVariable cbit.vcell.math.VolVariable
- */
-public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws Exception {
-	Enumeration<SubDomain> enum1 = getMathDescription().getSubDomains();
-	while (enum1.hasMoreElements()){
-		SubDomain subDomain = enum1.nextElement();
-		Equation equation = subDomain.getEquation(variable);
-		//
-		// get diffusion expressions, see if function of time or volume variables
-		//
-		if (equation instanceof PdeEquation){
-			Vector<Expression> spatialExpressionList = new Vector<Expression>();
-			spatialExpressionList.add(((PdeEquation)equation).getDiffusionExpression());
-			if (((PdeEquation)equation).getVelocityX()!=null){
-				spatialExpressionList.add(((PdeEquation)equation).getVelocityX());
-			}
-			if (((PdeEquation)equation).getVelocityY()!=null){
-				spatialExpressionList.add(((PdeEquation)equation).getVelocityY());
-			}
-			if (((PdeEquation)equation).getVelocityZ()!=null){
-				spatialExpressionList.add(((PdeEquation)equation).getVelocityZ());
-			}
-			for (int i = 0; i < spatialExpressionList.size(); i++){
-				Expression spatialExp = spatialExpressionList.elementAt(i);
-				spatialExp = substituteFunctions(spatialExp);
-				String symbols[] = spatialExp.getSymbols();
-				if (symbols!=null){
-					for (int j=0;j<symbols.length;j++){
-						SymbolTableEntry entry = spatialExp.getSymbolBinding(symbols[j]);
-						if (entry instanceof ReservedVariable){
-							if (((ReservedVariable)entry).isTIME()){
-								return true;
-							}
-						}
-						if (entry instanceof VolVariable){
-							return true;
-						}
-						if (entry instanceof VolumeRegionVariable){
-							return true;
-						}
-						if (entry instanceof MemVariable || entry instanceof MembraneRegionVariable) {
-							return true;
-						}
-					}
-				}
-			}
-		}
-	}
-	return false;		
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/20/01 12:35:46 PM)
- */
-private void rebindAll() {
-	//
-	// cleanup
-	//
-	if (localConstants!=null){
-		localConstants.removeAllElements();
-	}
-	if (localFunctions!=null){
-		localFunctions.removeAllElements();
-	}
-	if (localVariableHash != null) {
-		localVariableHash.clear();
-	}
-	
-	// reload
-	getVariables();
-
-	//
-	// bind all Constants, since now all the variables are sorted alphabetically
-	// a constant might be function of other constants which have not bound yet.
-	// so we need to first bind all then evaluate.
-	//
-	if (localConstants != null) {
-		for (Constant localConstant : localConstants){
-			try {
-				localConstant.bind(this); // update bindings to latest mathOverrides
-			}catch (ExpressionBindingException e){
-				e.printStackTrace(System.out);
-			}
-		}
-	}	
-	//
-	// bind all Functions
-	//
-	if (localFunctions != null) {
-		for (Function localFunction : localFunctions){			
-			try {
-				localFunction.bind(this); // update bindings to latest mathOverrides
-			}catch (ExpressionBindingException e){
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/11/01 4:00:35 PM)
@@ -1128,16 +610,10 @@ private void rebindAll() {
 public void refreshDependencies() {
 	removeVetoableChangeListener(this);
 	addVetoableChangeListener(this);
-	getMathOverrides().removeMathOverridesListener(this);
-	getMathOverrides().addMathOverridesListener(this);
 	if (getMeshSpecification()!=null){
 		getMeshSpecification().refreshDependencies();
 	}
 	getSolverTaskDescription().refreshDependencies();
-	//
-	// this ensures proper binding to override constants.
-	//
-	rebindAll();
 }
 
 /**
@@ -1147,30 +623,12 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
 /**
  * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
-
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
-}
-
 
 /**
  * Sets the description property (java.lang.String) value.
@@ -1198,18 +656,6 @@ public void setIsDirty(boolean isDirty) {
 
 
 /**
- * Sets the isSpatial property (boolean) value.
- * @param isSpatial The new value for the property.
- * @see #getIsSpatial
- */
-private void setIsSpatial(boolean isSpatial) {
-	boolean oldValue = fieldIsSpatial;
-	fieldIsSpatial = isSpatial;
-	firePropertyChange("isSpatial", new Boolean(oldValue), new Boolean(isSpatial));
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (10/24/00 1:17:37 PM)
  * @param mathDesc cbit.vcell.math.MathDescription
@@ -1223,14 +669,12 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
 	// refresh MeshSpecification
 	//
 	if (mathDescription.getGeometry().getDimension()>0){
-		setIsSpatial(true);
 		if (getMeshSpecification()!=null){
 			getMeshSpecification().setGeometry(mathDescription.getGeometry());
 		}else{
 			setMeshSpecification(new MeshSpecification(mathDescription.getGeometry()));
 		}
 	}else{
-		setIsSpatial(false);
 		setMeshSpecification(null);
 	}
 	//
@@ -1259,13 +703,7 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
  */
 public void setMathOverrides(MathOverrides mathOverrides) {
 	MathOverrides oldValue = fieldMathOverrides;
-	if (oldValue!=null){
-		oldValue.removeMathOverridesListener(this);
-	}
 	fieldMathOverrides = mathOverrides;
-	if (mathOverrides!=null){
-		mathOverrides.addMathOverridesListener(this);
-	}
 	// update overrides
 	mathOverrides.setSimulation(this);
 	mathOverrides.updateFromMathDescription();
@@ -1343,18 +781,6 @@ private void setWarning(java.lang.String warning) {
 	firePropertyChange("warning", oldValue, warning);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.parser.Expression
- * @param exp cbit.vcell.parser.Expression
- * @exception java.lang.Exception The exception description.
- */
-public Expression substituteFunctions(Expression exp) throws MathException, ExpressionException {
-	return MathUtilities.substituteFunctions(exp,this);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (9/28/2004 5:50:22 PM)
@@ -1426,24 +852,4 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		firePropertyChange("dataProcessingInstructions", oldValue, dataProcessingInstructions);
 }
 
-
-	public void getEntries(Map<String, SymbolTableEntry> entryMap) {		
-		getMathDescription().getEntries(entryMap);
-		entryMap.putAll(localVariableHash);
-	}
-
-
-	public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
-		getEntries(entryMap);		
-	}
-
-
-	public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
-		return getEntry(identifier);
-	}
-
-
-	public NameScope getNameScope() {
-		return nameScope;
-	}
 }

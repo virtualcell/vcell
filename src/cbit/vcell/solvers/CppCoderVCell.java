@@ -5,9 +5,21 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.Enumeration;
 
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FilamentRegionEquation;
+import cbit.vcell.math.FilamentSubDomain;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.*;
-import cbit.vcell.math.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 
 public class CppCoderVCell extends CppCoder
 {
@@ -136,39 +148,39 @@ public void initialize() throws Exception {
 	//
 	// add Simulation coder
 	//
-	Simulation simulation = simulationJob.getWorkingSim();
+	Simulation simulation = simulationJob.getSimulation();
 	addCppClassCoder(new CppClassCoderSimulation(this,simulationJob,new java.io.File(dir,baseFilename).getPath()));
 	
 	//
 	// add Model coder
 	//
-	addCppClassCoder(new CppClassCoderVCellModel(this,simulation));
+	addCppClassCoder(new CppClassCoderVCellModel(this,simulationJob));
 	
 	//
 	// add Feature coders
 	//
-	Enumeration enum1 = simulation.getMathDescription().getSubDomains();
+	Enumeration<SubDomain> enum1 = simulation.getMathDescription().getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof CompartmentSubDomain){
 			CompartmentSubDomain volSubDomain = (CompartmentSubDomain)subDomain;
-			addCppClassCoder(new CppClassCoderFeature(this,simulation,volSubDomain,null));
+			addCppClassCoder(new CppClassCoderFeature(this,simulationJob,volSubDomain,null));
 			
 			//
 			// add VolumeVarContext coders
 			//
-			Variable[] vars = simulation.getVariables();
+			Variable[] vars = simulationJob.getSimulationSymbolTable().getVariables();
 			for (int i = 0; i < vars.length; i ++) {
 				Equation equation = volSubDomain.getEquation(vars[i]);
 				if (equation != null && equation instanceof VolumeRegionEquation) {
-					addCppClassCoder(new CppClassCoderVolumeRegionVarContext(this,equation,volSubDomain,simulation,"VolumeRegionVarContext"));
+					addCppClassCoder(new CppClassCoderVolumeRegionVarContext(this,equation,volSubDomain,simulationJob,"VolumeRegionVarContext"));
 				} else {					
 					if (equation == null && (vars[i] instanceof VolVariable) && simulation.getMathDescription().isPDE((VolVariable)vars[i])) {
 						boolean bSteady = simulation.getMathDescription().isPdeSteady((VolVariable)vars[i]); 
 						equation = new PdeEquation(vars[i], bSteady, new Expression(0.0), new Expression(0.0), new Expression(0.0));
 					} 
 					if (equation != null) {
-						addCppClassCoder(new CppClassCoderVolumeVarContext(this,equation,volSubDomain,simulation,"VolumeVarContext"));
+						addCppClassCoder(new CppClassCoderVolumeVarContext(this,equation,volSubDomain,simulationJob,"VolumeVarContext"));
 					}
 				}
 			}
@@ -178,13 +190,13 @@ public void initialize() throws Exception {
 			//
 			// add MembraneVarContext coders
 			//
-			Enumeration enum_equ = memSubDomain.getEquations();
+			Enumeration<Equation> enum_equ = memSubDomain.getEquations();
 			while (enum_equ.hasMoreElements()){
-				Equation equation = (Equation)enum_equ.nextElement();
+				Equation equation = enum_equ.nextElement();
 				if (equation instanceof MembraneRegionEquation){
-					addCppClassCoder(new CppClassCoderMembraneRegionVarContext(this,equation,memSubDomain,simulation,"MembraneRegionVarContext"));
+					addCppClassCoder(new CppClassCoderMembraneRegionVarContext(this,equation,memSubDomain,simulationJob,"MembraneRegionVarContext"));
 				}else{
-					addCppClassCoder(new CppClassCoderMembraneVarContext(this,equation,memSubDomain,simulation,"MembraneVarContext"));
+					addCppClassCoder(new CppClassCoderMembraneVarContext(this,equation,memSubDomain,simulationJob,"MembraneVarContext"));
 				}
 			}	
 		}else if (subDomain instanceof FilamentSubDomain){
@@ -193,13 +205,13 @@ public void initialize() throws Exception {
 			//
 			// add FilamentVarContext coders
 			//
-			Enumeration enum_equ = filamentSubDomain.getEquations();
+			Enumeration<Equation> enum_equ = filamentSubDomain.getEquations();
 			while (enum_equ.hasMoreElements()){
-				Equation equation = (Equation)enum_equ.nextElement();
+				Equation equation = enum_equ.nextElement();
 				if (equation instanceof FilamentRegionEquation){
 //					addCppClassCoder(new CppClassCoderFilamentRegionVarContext(this,equation,filamentSubDomain,simulation,"ContourRegionVarContext"));
 				}else if (equation.getSolutionType() == Equation.UNKNOWN_SOLUTION){
-					addCppClassCoder(new CppClassCoderContourVarContext(this,equation,filamentSubDomain,simulation,"ContourVarContext"));
+					addCppClassCoder(new CppClassCoderContourVarContext(this,equation,filamentSubDomain,simulationJob,"ContourVarContext"));
 				}else if (equation.getSolutionType() == Equation.EXACT_SOLUTION){
 //					addCppClassCoder(new CppClassCoderExactContourVarContext(this,equation,filamentSubDomain,mathDesc,"ExactContourVarContext"));	
 					throw new Exception("membrane equation has unsupported solution type <EXACT SOLUTION>");
@@ -213,7 +225,7 @@ public void initialize() throws Exception {
 		//
 		FastSystem fastSystem = subDomain.getFastSystem();
 		if (fastSystem!=null){
-			addCppClassCoder(new CppClassCoderFastSystem(this,fastSystem,subDomain,simulation,"FastSystem"));
+			addCppClassCoder(new CppClassCoderFastSystem(this,fastSystem,subDomain,simulationJob,"FastSystem"));
 		}	
 	}	
 

@@ -26,6 +26,7 @@ import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -44,7 +45,6 @@ import cbit.vcell.math.*;
  * @author: Fei Gao
  */
 public class FiniteVolumeFileWriter extends SolverFileWriter {
-	private SimulationJob simulationJob = null;
 	private File userDirectory = null;
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
@@ -76,14 +76,13 @@ public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo
 }
 
 public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo, File dir, boolean arg_bMessaging) {
-	super(pw, simJob.getWorkingSim(), simJob.getJobIndex(), arg_bMessaging);
-	simulationJob = simJob;
+	super(pw, simJob, arg_bMessaging);
 	resampledGeometry = geo;
 	userDirectory = dir;
 }
 
 private Expression subsituteExpression(Expression exp) throws Exception {
-	return subsituteExpression(exp, simulation);
+	return subsituteExpression(exp, simulationJob.getSimulationSymbolTable());
 }
 /**
  * Insert the method's description here.
@@ -134,6 +133,7 @@ SampleImageFile mask 0.0 \\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\schaff\\S
 DATA_PROCESSOR_END
 */
 private void writeDataProcessor() throws Exception {
+	Simulation simulation = simulationJob.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
 		return;
@@ -216,7 +216,7 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 	if (fastSystem == null) {
 		return;
 	}
-	FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, simulation);
+	FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, simulationJob.getSimulationSymbolTable());
 	int numIndep = fs_analyzer.getNumIndependentVariables();
 	int numDep = fs_analyzer.getNumDependentVariables();
 	int numPseudo = fs_analyzer.getNumPseudoConstants();	
@@ -304,11 +304,12 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
  * Creation date: (5/9/2005 2:52:48 PM)
  */
 private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) throws Exception {
+	Simulation simulation = simulationJob.getSimulation();
 	//
 	// get list of volVariables participating in PDEs (anywhere).
 	//
 	Vector<VolVariable> pdeVolVariableList = new Vector<VolVariable>();
-	Variable[] variables = simulation.getVariables();
+	Variable[] variables = simulationJob.getSimulationSymbolTable().getVariables();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof VolVariable && simulation.getMathDescription().isPDE((VolVariable)variables[i])){
 			pdeVolVariableList.add((VolVariable)variables[i]);
@@ -430,7 +431,8 @@ EQUATION_END
 COMPARTMENT_END
 */
 private void writeCompartments() throws Exception {
-	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
+	Simulation simulation = simulationJob.getSimulation();
+	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
 		SubDomain sd = enum1.nextElement();
@@ -619,7 +621,8 @@ JUMP_CONDITION_END
 MEMBRANE_END
  */
 private void writeMembranes() throws Exception {
-	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
+	Simulation simulation = simulationJob.getSimulation();
+	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
 		SubDomain sd = enum1.nextElement();
@@ -647,9 +650,11 @@ FEATURE cytosol 0 101 value value value value
 MODEL_END
 */
 private void writeModelDescription() throws Exception {
+	Simulation simulation = simulationJob.getSimulation();
+	
 	printWriter.println("# Model description: FEATURE name handle priority boundary_conditions");
 	printWriter.println("MODEL_BEGIN");
-	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
+	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {
 		SubDomain sd = enum1.nextElement();
@@ -665,10 +670,13 @@ private void writeModelDescription() throws Exception {
 
 
 private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSet<Double> discontinuityTimes) throws ExpressionException, MathException {
+	Simulation simulation = simulationJob.getSimulation();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
 	for (Discontinuity discontinuity : discontinuities) {
 		Expression rfexp = discontinuity.getRootFindingExp();
-		rfexp.bindExpression(simulation);
-		rfexp = simulation.substituteFunctions(rfexp).flatten();
+		rfexp.bindExpression(simSymbolTable);
+		rfexp = simSymbolTable.substituteFunctions(rfexp).flatten();
 		String[] symbols = rfexp.getSymbols();
 		boolean bHasT = false;
 		for (String symbol : symbols) {
@@ -708,6 +716,7 @@ SIMULATION_PARAM_END
  * @throws ExpressionException 
 */
 private void writeSimulationParamters() throws ExpressionException, MathException {	
+	Simulation simulation = simulationJob.getSimulation();
 	SolverTaskDescription solverTaskDesc = simulation.getSolverTaskDescription();
 	
 	printWriter.println("# Simulation Parameters");
@@ -724,7 +733,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 			Enumeration<Equation> enum_equ = sd.getEquations();
 			while (enum_equ.hasMoreElements()){
 				Equation equation = enum_equ.nextElement();
-				equation.getDiscontinuities(simulation, discontinuities);
+				equation.getDiscontinuities(simulationJob.getSimulationSymbolTable(), discontinuities);
 			}
 		}
 		getDiscontinuityTimes(discontinuities, discontinuityTimes);
@@ -805,19 +814,21 @@ VOLUME_PDE r uM false false
 VOLUME_ODE rfB uM
 VARIABLE_END
  */
-private void writeVariables() throws Exception {	  			
+private void writeVariables() throws Exception {
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
 	String units;
 	
 	printWriter.println("# Variables : type name unit time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
 	printWriter.println("VARIABLE_BEGIN");
-	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
-	Variable[] vars = simulation.getVariables();
+	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
+	Variable[] vars = simSymbolTable.getVariables();
 	for (int i = 0; i < vars.length; i ++) {
 		if (vars[i] instanceof VolVariable) {
 			Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
 			int totalNumCompartments = 0;
 			StringBuffer compartmentNames = new StringBuffer();
-			Enumeration<SubDomain> subDomainEnum = simulation.getMathDescription().getSubDomains();
+			Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
 			while (subDomainEnum.hasMoreElements()){
 		  		SubDomain subDomain = subDomainEnum.nextElement();
 		 		if (subDomain instanceof CompartmentSubDomain){
@@ -825,9 +836,9 @@ private void writeVariables() throws Exception {
 			  		totalNumCompartments++;
 			  		Equation varEquation = subDomain.getEquation(vars[i]);
 			  		if (varEquation != null) {
-				  		if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simulation, compartmentSubDomain)){
+				  		if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simSymbolTable, compartmentSubDomain)){
 							listOfSubDomains.add(compartmentSubDomain);
-							int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
+							int handle = mathDesc.getHandle(compartmentSubDomain);
 							compartmentNames.append(compartmentSubDomain.getName()+"("+handle+") ");					
 				  		}
 			  		}
@@ -837,10 +848,11 @@ private void writeVariables() throws Exception {
 			units = "uM";
 			VolVariable volVar = (VolVariable)vars[i];
 			if (mathDesc.isPDE(volVar)) {
+				boolean hasTimeVaryingDiffusionOrAdvection = simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar);
 				if (mathDesc.isPdeSteady(volVar)) {
-					printWriter.print("VOLUME_PDE_STEADY " + volVar.getName() + " " + units + " " +	simulation.hasTimeVaryingDiffusionOrAdvection(volVar) + " " + mathDesc.hasVelocity(volVar));
+					printWriter.print("VOLUME_PDE_STEADY " + volVar.getName() + " " + units + " " +	hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
 				} else {
-					printWriter.print("VOLUME_PDE " + volVar.getName() + " " + units + " " +	simulation.hasTimeVaryingDiffusionOrAdvection(volVar) + " " + mathDesc.hasVelocity(volVar));
+					printWriter.print("VOLUME_PDE " + volVar.getName() + " " + units + " " + hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
 				}
 			} else {
 				printWriter.print("VOLUME_ODE " + volVar.getName() + " " + units);
@@ -864,7 +876,7 @@ private void writeVariables() throws Exception {
 			units = "molecules/squm";
 			MemVariable memVar = (MemVariable)vars[i];
 			if (mathDesc.isPDE(memVar)) {
-				printWriter.println("MEMBRANE_PDE " + memVar.getName() + " " + units + " " +	simulation.hasTimeVaryingDiffusionOrAdvection(memVar));
+				printWriter.println("MEMBRANE_PDE " + memVar.getName() + " " + units + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
 			} else {
 				printWriter.println("MEMBRANE_ODE " + memVar.getName() + " " + units);
 			}
@@ -921,7 +933,7 @@ private void writeFieldData() throws Exception {
 	
 	FieldFunctionArguments psfFieldFunc = null;
 	
-	Variable var = simulation.getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+	Variable var = simulationJob.getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
 	if (var != null) {
 		FieldFunctionArguments[] ffas = var.getExpression().getFieldFunctionArguments();
 		if (ffas == null || ffas.length == 0) {

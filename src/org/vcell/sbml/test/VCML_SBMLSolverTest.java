@@ -2,10 +2,8 @@ package org.vcell.sbml.test;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.vcell.sbml.SimSpec;
@@ -13,12 +11,16 @@ import org.vcell.sbml.copasi.CopasiSBMLSolver;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathException;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -26,6 +28,7 @@ import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
+import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -137,7 +140,8 @@ public class VCML_SBMLSolverTest {
 		// solve simulation - USING NativeIDASolver ....
 		//
 		StringWriter stringWriter = new StringWriter();
-		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), sim);
+		SimulationJob simJob = new SimulationJob(sim, 0, null);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), simJob);
 		idaFileWriter.write();
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
@@ -151,9 +155,9 @@ public class VCML_SBMLSolverTest {
 		// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
 		//
 		
-		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+		ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
 		for (int i = 0; i < rcResultSet.getDataColumnCount(); i++){
-			odeSolverResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
+			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
 		}
 		for (int i = 0; i < rcResultSet.getRowCount(); i++){
 			odeSolverResultSet.addRow(rcResultSet.getRow(i));
@@ -161,16 +165,17 @@ public class VCML_SBMLSolverTest {
 		//
 		// add appropriate Function columns to result set
 		//
-		cbit.vcell.math.Function functions[] = sim.getFunctions();
+		SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
+		Function functions[] = simSymbolTable.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
+			if (AbstractSolver.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
-					exp1 = sim.substituteFunctions(exp1);
-				} catch (cbit.vcell.math.MathException e) {
+					exp1 = simSymbolTable.substituteFunctions(exp1);
+				} catch (MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 				}

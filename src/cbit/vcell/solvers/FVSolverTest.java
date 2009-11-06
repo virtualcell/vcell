@@ -57,25 +57,25 @@ public static void main(String args[]) {
 		// read in vcml file and initialize MathDescription
 		//
 		mathDescription = MathDescriptionTest.getExample();
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(mathDescription) {
+		cbit.vcell.solver.Simulation simulation = new Simulation(mathDescription) {
 			public String getSimulationIdentifier() {
 				return ("NewSIMULATION");
 			}
-			public void constantAdded(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantAdded(MathOverridesEvent e){
 			}
-			public void constantRemoved(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantRemoved(MathOverridesEvent e){
 			}
-			public void constantChanged(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantChanged(MathOverridesEvent e){
 			}
 			public void clearVersion(){
 			}
 		};
 		System.out.println(mathDescription.getVCML_database());
-		new org.vcell.util.PropertyLoader();
-		FVSolver solver = new FVSolver(new SimulationJob(simulation, null, 0), directoryFile, sessionLog);
+		new PropertyLoader();
+		FVSolver solver = new FVSolver(new SimulationJob(simulation, 0, null), directoryFile, sessionLog);
 		solver.startSolver();
 
-		while (solver.getSolverStatus().getStatus() != cbit.vcell.solver.SolverStatus.SOLVER_STOPPED){
+		while (solver.getSolverStatus().getStatus() != SolverStatus.SOLVER_STOPPED){
 			try {
 				Thread.sleep(1000);
 			}catch(InterruptedException e){

@@ -1,30 +1,53 @@
 package cbit.vcell.solver.test;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.client.server.DataManager;
-import cbit.vcell.client.server.PDEDataManager;
-import java.util.Vector;
-import cbit.vcell.mapping.VariableHash;
-import cbit.vcell.numericstest.ConstructedSolutionTemplate;
-import cbit.vcell.numericstest.TestCaseNew;
-
 import java.util.Enumeration;
+import java.util.Vector;
 
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.util.ColumnDescription;
+import cbit.vcell.mapping.VariableHash;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FilamentRegionVariable;
+import cbit.vcell.math.FilamentVariable;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.numericstest.ConstructedSolutionTemplate;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.math.*;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2003 2:31:28 PM)
@@ -95,7 +118,8 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResults(Simulation testSim, PDEDataManager testDataManager, Simulation refSim, PDEDataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTable testSimSymbolTable, 
+		PDEDataManager testDataManager, SimulationSymbolTable refSimSymbolTable, PDEDataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	boolean bTimesEqual = true;
@@ -130,10 +154,10 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
 	//}
 		
 	cbit.vcell.solvers.CartesianMesh testMesh = testDataManager.getMesh();
-	MathDescription testMathDesc = testSim.getMathDescription();
+	MathDescription testMathDesc = testSimSymbolTable.getSimulation().getMathDescription();
 	
 	//Variable[] refVars = refSim.getVariables();	
-	MathDescription refMathDesc = refSim.getMathDescription();
+	MathDescription refMathDesc = refSimSymbolTable.getSimulation().getMathDescription();
 	cbit.vcell.solvers.CartesianMesh refMesh = refDataManager.getMesh();
 
 	int[] membraneIndexMapping = null;
@@ -194,8 +218,8 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
 				break;
 			}
 		}
-		Variable refVar = getSimVar(refSim, varsToCompare[i]);
-		Variable testVar = getSimVar(testSim, varsToCompare[i]);
+		Variable refVar = getSimVar(refSimSymbolTable, varsToCompare[i]);
+		Variable testVar = getSimVar(testSimSymbolTable, varsToCompare[i]);
 		// for each time in timeArray. ('t' is used to index the testTimeArray, for interpolation purposes.)
 		int t = 0;
 		for (int j = 0; j < refTimeArray.length; j++){
@@ -320,14 +344,14 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, PDEDataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationSymbolTable simSymbolTable, PDEDataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	
 	double[] timeArray = dataManager.getDataSetTimes();
-	Variable[] vars = sim.getVariables();
+	Variable[] vars = simSymbolTable.getVariables();
 	cbit.vcell.solvers.CartesianMesh mesh = dataManager.getMesh();
-	MathDescription mathDesc = sim.getMathDescription();
+	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
 
 	// Get volumeSubdomains from mathDesc/mesh and store in lookupTable
 	int numVol = mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ();
@@ -394,8 +418,8 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
 					DataErrorSummary tempVar = (DataErrorSummary)tempVarHash.get(hashKey);
 					if (tempVar == null) {
 						Expression exp = new Expression(subDomain.getEquation(vars[i]).getExactSolution());
-						exp.bindExpression(sim);
-						exp = MathUtilities.substituteFunctions(exp, sim);
+						exp.bindExpression(simSymbolTable);
+						exp = MathUtilities.substituteFunctions(exp, simSymbolTable);
 						exp = exp.flatten();
 						exp.bindExpression(symbolTable);
 						tempVar = new DataErrorSummary(exp);
@@ -1213,28 +1237,29 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param sim cbit.vcell.solver.Simulation
  */
-public static cbit.vcell.solver.ode.ODESolverResultSet getConstructedResultSet(MathDescription mathDesc, double time[]) throws Exception {
+public static ODESolverResultSet getConstructedResultSet(MathDescription mathDesc, double time[]) throws Exception {
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
 	}
-	cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(mathDesc);
-	cbit.vcell.solver.ode.ODESolverResultSet resultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
-	resultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription("t"));
+	Simulation sim = new Simulation(mathDesc);
+	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
+	ODESolverResultSet resultSet = new ODESolverResultSet();
+	resultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
 	for (int i = 0; i < time.length; i++){
 		resultSet.addRow(new double[] { time[i] });
 	}
-	java.util.Enumeration subDomainEnum = mathDesc.getSubDomains();
+	java.util.Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
 	String errorString = "Variable(s) : ";
 	while (subDomainEnum.hasMoreElements()) {
-		SubDomain subDomain = (SubDomain)subDomainEnum.nextElement();
-		java.util.Enumeration enumEquations = subDomain.getEquations();
+		SubDomain subDomain = subDomainEnum.nextElement();
+		java.util.Enumeration<Equation> enumEquations = subDomain.getEquations();
 		while (enumEquations.hasMoreElements()) {
-			Equation equation = (Equation)enumEquations.nextElement();
-			cbit.vcell.parser.Expression constructedSolution = equation.getExactSolution();
+			Equation equation = enumEquations.nextElement();
+			Expression constructedSolution = equation.getExactSolution();
 			if (constructedSolution!=null){
 				constructedSolution = new Expression(constructedSolution);
-				constructedSolution.bindExpression(sim);
-				constructedSolution = sim.substituteFunctions(constructedSolution);
+				constructedSolution.bindExpression(simSymbolTable);
+				constructedSolution = simSymbolTable.substituteFunctions(constructedSolution);
 				constructedSolution = constructedSolution.flatten();
 				resultSet.addFunctionColumn(new FunctionColumnDescription(constructedSolution,equation.getVariable().getName(),null,equation.getVariable().getName(),false));
 			}else{
@@ -1255,37 +1280,38 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getConstructedResultSet(M
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param sim cbit.vcell.solver.Simulation
  */
-public static cbit.vcell.solver.ode.ODESolverResultSet getExactResultSet(MathDescription mathDesc, double time[], Constant sensitivityParam) throws Exception {
+public static ODESolverResultSet getExactResultSet(MathDescription mathDesc, double time[], Constant sensitivityParam) throws Exception {
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
 	}
-	cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(mathDesc);
-	cbit.vcell.solver.ode.ODESolverResultSet resultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
-	resultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription("t"));
+	Simulation sim = new Simulation(mathDesc);
+	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
+	ODESolverResultSet resultSet = new ODESolverResultSet();
+	resultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
 	for (int i = 0; i < time.length; i++){
 		resultSet.addRow(new double[] { time[i] });
 	}
-	java.util.Enumeration subDomainEnum = mathDesc.getSubDomains();
+	java.util.Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
 	while (subDomainEnum.hasMoreElements()) {
-		SubDomain subDomain = (SubDomain)subDomainEnum.nextElement();
-		java.util.Enumeration enumEquations = subDomain.getEquations();
+		SubDomain subDomain = subDomainEnum.nextElement();
+		java.util.Enumeration<Equation> enumEquations = subDomain.getEquations();
 		while (enumEquations.hasMoreElements()) {
-			Equation equation = (Equation)enumEquations.nextElement();
-			cbit.vcell.parser.Expression exactSolution = equation.getExactSolution();
+			Equation equation = enumEquations.nextElement();
+			Expression exactSolution = equation.getExactSolution();
 			if (exactSolution!=null){
 				exactSolution = new Expression(exactSolution);
-				exactSolution.bindExpression(sim);
-				exactSolution = sim.substituteFunctions(exactSolution);
-				exactSolution.bindExpression(sim);
+				exactSolution.bindExpression(simSymbolTable);
+				exactSolution = simSymbolTable.substituteFunctions(exactSolution);
+				exactSolution.bindExpression(simSymbolTable);
 				exactSolution = exactSolution.flatten();
 				resultSet.addFunctionColumn(new FunctionColumnDescription(exactSolution,equation.getVariable().getName(),null,equation.getVariable().getName(),false));
 
 				if (sensitivityParam != null) {
 					exactSolution = equation.getExactSolution();
 					Expression exactSensitivity = new Expression(exactSolution);
-					exactSensitivity.bindExpression(sim);
-					exactSensitivity = sim.substituteFunctions(exactSensitivity);
-					exactSensitivity.bindExpression(sim);
+					exactSensitivity.bindExpression(simSymbolTable);
+					exactSensitivity = simSymbolTable.substituteFunctions(exactSensitivity);
+					exactSensitivity.bindExpression(simSymbolTable);
 					exactSensitivity = exactSensitivity.differentiate(sensitivityParam.getName());
 					exactSensitivity = exactSensitivity.flatten();
 					VolVariable volVar = (VolVariable)equation.getVariable();
@@ -1395,7 +1421,7 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
  */
 public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression insideOutsideFunction, String baseName) throws ExpressionException, cbit.vcell.mapping.MappingException {
 	
-	java.util.Vector varList = new java.util.Vector();
+	java.util.Vector<Function> varList = new java.util.Vector<Function>();
 	Expression F = new Expression(insideOutsideFunction);
 	F.bindExpression(null);
 	F = F.flatten();
@@ -1442,9 +1468,9 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression in
  * @param origExp cbit.vcell.parser.Expression
  * @param subDomain cbit.vcell.math.SubDomain
  */
-private static Variable getSimVar(Simulation refSim, String testSimVarName) {
+private static Variable getSimVar(SimulationSymbolTable refSimSymbolTable, String testSimVarName) {
 
-	Variable[] refSimVars = refSim.getVariables();
+	Variable[] refSimVars = refSimSymbolTable.getVariables();
 
 	boolean bEqual = false;
 	for (int i = 0; i < refSimVars.length; i++) {
@@ -1452,6 +1478,7 @@ private static Variable getSimVar(Simulation refSim, String testSimVarName) {
 			return refSimVars[i];
 		}
 	}
+	Simulation refSim = refSimSymbolTable.getSimulation();
 	throw new RuntimeException("The variable "+testSimVarName+" was not found in Simulation ("+refSim.getName()+" "+refSim.getVersion().getDate()+")\n");
 }
 

@@ -238,7 +238,7 @@ public class NetCDFWriterTest {
 		public static void main(String[] args) {
 			if(getExample2() != null)
 			{
-				NetCDFWriter ncWriter = new NetCDFWriter(new SimulationJob(getExample1(), null, 0),"c:/test.nc");
+				NetCDFWriter ncWriter = new NetCDFWriter(new SimulationJob(getExample1(), 0, null),"c:/test.nc");
 				try{
 					ncWriter.writeHybridInputFile();
 				}catch (Exception e){

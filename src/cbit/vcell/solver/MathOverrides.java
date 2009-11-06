@@ -4,16 +4,20 @@ package cbit.vcell.solver;
  * All rights reserved.
 ©*/
 import java.util.Enumeration;
-import java.util.Hashtable;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Matchable;
 
-import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VCML;
+import cbit.vcell.math.Variable;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Constant expressions that override those specified in the MathDescription
  * for a given Simulation.  These expressions are to be bound to the Simulation
@@ -21,16 +25,16 @@ import cbit.vcell.parser.ExpressionBindingException;
  * Creation date: (8/17/2000 3:47:33 PM)
  * @author: John Wagner
  */
-public class MathOverrides implements org.vcell.util.Matchable, java.io.Serializable {
+public class MathOverrides implements Matchable, java.io.Serializable {
 	private Simulation simulation = null;
 	//
 	// key = constant name (String)
 	// value = wrapper containing expression and flag(s) (MathOverrides.Element)
 	//
-	private java.util.Hashtable overridesHash = new java.util.Hashtable();
+	private java.util.Hashtable<String, Element> overridesHash = new java.util.Hashtable<String, Element>();
 	protected transient cbit.vcell.solver.MathOverridesListener aMathOverridesListener = null;
 	
-	class Element implements java.io.Serializable, org.vcell.util.Matchable {
+	class Element implements java.io.Serializable, Matchable {
 		private Expression actualValue;
 		private String name;
 		private ConstantArraySpec spec;
@@ -45,12 +49,12 @@ public class MathOverrides implements org.vcell.util.Matchable, java.io.Serializ
 			this.name = argName;
 			this.spec = ConstantArraySpec.clone(argSpec);
 		}
-		public boolean compareEqual(org.vcell.util.Matchable obj){
+		public boolean compareEqual(Matchable obj){
 			if (obj instanceof MathOverrides.Element){
 				MathOverrides.Element element = (MathOverrides.Element)obj;
-				if (!org.vcell.util.Compare.isEqualOrNull(actualValue,element.actualValue) ||
-					!org.vcell.util.Compare.isEqual(name,element.name) ||
-					!org.vcell.util.Compare.isEqualOrNull(spec,element.spec)){
+				if (!Compare.isEqualOrNull(actualValue,element.actualValue) ||
+					!Compare.isEqual(name,element.name) ||
+					!Compare.isEqualOrNull(spec,element.spec)){
 					return false;
 				}
 				return true;
@@ -99,10 +103,10 @@ public MathOverrides(Simulation simulation, CommentStringTokenizer tokenizer) th
  */
 public MathOverrides(Simulation simulation, MathOverrides mathOverrides) {
 	setSimulation(simulation);
-	java.util.Set keySet = mathOverrides.getOverridesHash().keySet();
-	java.util.Iterator keyIter = keySet.iterator();
+	java.util.Set<String> keySet = mathOverrides.overridesHash.keySet();
+	java.util.Iterator<String> keyIter = keySet.iterator();
 	while (keyIter.hasNext()) {
-		String constantName = (String)keyIter.next();
+		String constantName = keyIter.next();
 		MathOverrides.Element element = mathOverrides.getOverridesElement(constantName);
 		if(element.actualValue != null) {
 			// regular override
@@ -120,8 +124,8 @@ public MathOverrides(Simulation simulation, MathOverrides mathOverrides) {
  * 
  * @param newListener cbit.vcell.solver.MathOverridesListener
  */
-public void addMathOverridesListener(cbit.vcell.solver.MathOverridesListener newListener) {
-	aMathOverridesListener = cbit.vcell.solver.MathOverridesEventMulticaster.add(aMathOverridesListener, newListener);
+public void addMathOverridesListener(MathOverridesListener newListener) {
+	aMathOverridesListener = MathOverridesEventMulticaster.add(aMathOverridesListener, newListener);
 	return;
 }
 
@@ -163,14 +167,14 @@ private void checkUnresolved(Expression exp, MathDescription mathDescription, St
  * Creation date: (10/24/00 1:23:14 PM)
  * @return boolean
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof MathOverrides)){
 		return false;
 	}
 	//
 	// use the superclass definition of equals(), it compares contents not references.
 	//
-	boolean returnValue = org.vcell.util.Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
+	boolean returnValue = Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
 	return returnValue;
 }
 
@@ -236,7 +240,7 @@ public Expression getActualExpression(String key, int index) {
 		for (int i = 0; i < names.length; i++){
 			bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
 		}
-		int[] coordinates = org.vcell.util.BeanUtils.indexToCoordinate(index, bounds);
+		int[] coordinates = BeanUtils.indexToCoordinate(index, bounds);
 		int localIndex = coordinates[java.util.Arrays.binarySearch(names, key)];
 		return getConstantArraySpec(key).getConstants()[localIndex].getExpression();
 	}
@@ -244,12 +248,12 @@ public Expression getActualExpression(String key, int index) {
 
 
 public String[] getAllConstantNames() {
-	Enumeration en = getSimulation().getMathDescription().getConstants();
-	java.util.Vector v = new java.util.Vector();
+	Enumeration<Constant> en = getSimulation().getMathDescription().getConstants();
+	java.util.Vector<String> v = new java.util.Vector<String>();
 	while (en.hasMoreElements()) {
-		v.add(((Constant)en.nextElement()).getName());
+		v.add((en.nextElement()).getName());
 	}
-	return (String[])org.vcell.util.BeanUtils.getArray(v, String.class);
+	return (String[])BeanUtils.getArray(v, String.class);
 }
 
 
@@ -260,7 +264,7 @@ public String[] getAllConstantNames() {
  * @param constantName java.lang.String
  */
 public Constant getConstant(String constantName) {
-	 cbit.vcell.math.Variable variable = getSimulation().getMathDescription().getVariable(constantName);
+	 Variable variable = getSimulation().getMathDescription().getVariable(constantName);
 	 if(variable instanceof Constant){
 		 return (Constant)variable;
 	 }
@@ -294,7 +298,7 @@ public ConstantArraySpec getConstantArraySpec(String key) {
  * @param key java.lang.String
  */
 public Expression getDefaultExpression(String key) {
-	cbit.vcell.math.Variable var = getSimulation().getMathDescription().getVariable(key);
+	Variable var = getSimulation().getMathDescription().getVariable(key);
 	if (var instanceof Constant){
 		Constant c = (Constant)var;
 		return new Expression(c.getExpression()); // always returning clones...
@@ -327,7 +331,7 @@ private MathOverrides.Element getOverridesElement(String key) {
  * Creation date: (7/25/2001 7:39:57 PM)
  * @return java.util.Hashtable
  */
-private java.util.Hashtable getOverridesHash() {
+private java.util.Hashtable<String, Element> getOverridesHash() {
 	return overridesHash;
 }
 
@@ -349,11 +353,11 @@ public int getScanCount() {
 
 public String[] getScannedConstantNames() {
 	String[] overrides = getOverridenConstantNames();
-	java.util.Vector v = new java.util.Vector();
+	java.util.Vector<String> v = new java.util.Vector<String>();
 	for (int i = 0; i < overrides.length; i++){
 		if (isScan(overrides[i])) v.add(overrides[i]);
 	}
-	return (String[])org.vcell.util.BeanUtils.getArray(v, String.class);
+	return (String[])BeanUtils.getArray(v, String.class);
 }
 
 
@@ -393,9 +397,9 @@ public String getVCML() {
 
 	buffer.append(VCML.MathOverrides+" "+VCML.BeginBlock+"\n");
 	
-	java.util.Enumeration enum1 = getOverridesHash().keys();
+	java.util.Enumeration<String> enum1 = getOverridesHash().keys();
 	while (enum1.hasMoreElements()){
-		String name = (String)enum1.nextElement();
+		String name = enum1.nextElement();
 		MathOverrides.Element element = (MathOverrides.Element)getOverridesHash().get(name);
 		Expression exp = element.actualValue;
 		if (exp != null) {
@@ -460,10 +464,10 @@ public boolean isValid(MathDescription mathDescription) {
 	//
 	// look for Constants from MathDescription not present in Overrides
 	//
-	Enumeration enumeration = mathDescription.getConstants();
-	java.util.HashSet mathDescriptionHash = new java.util.HashSet();
+	Enumeration<Constant> enumeration = mathDescription.getConstants();
+	java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
 	while (enumeration.hasMoreElements()) {
-		Constant constant = (Constant) enumeration.nextElement();
+		Constant constant = enumeration.nextElement();
 		mathDescriptionHash.add(constant.getName());
 		if (!getOverridesHash().containsKey(constant.getName())){
 			return false;
@@ -472,9 +476,9 @@ public boolean isValid(MathDescription mathDescription) {
 	//
 	//  look for Constants from Overrides not present in MathDescription
 	//
-	Enumeration mathOverrideNamesEnum = getOverridesHash().keys();
+	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
 	while (mathOverrideNamesEnum.hasMoreElements()){
-		String name = (String) mathOverrideNamesEnum.nextElement();
+		String name = mathOverrideNamesEnum.nextElement();
 		if (!mathDescriptionHash.contains(name)){
 			return false;
 		}
@@ -488,7 +492,7 @@ public boolean isValid(MathDescription mathDescription) {
  * <code>value</code> . Neither the key nor the 
  * value can be <code>null</code>. <p>
  */
-public void putConstant(Constant value) throws cbit.vcell.parser.ExpressionException {
+public void putConstant(Constant value) throws ExpressionException {
 	putConstant(value, true);
 }
 
@@ -498,7 +502,7 @@ public void putConstant(Constant value) throws cbit.vcell.parser.ExpressionExcep
  * <code>value</code> . Neither the key nor the 
  * value can be <code>null</code>. <p>
  */
-private void putConstant(Constant value, boolean bFireEvent) throws cbit.vcell.parser.ExpressionException {
+private void putConstant(Constant value, boolean bFireEvent) throws ExpressionException {
 	//
 	// verify that new expression can be bound properly
 	//
@@ -508,7 +512,7 @@ private void putConstant(Constant value, boolean bFireEvent) throws cbit.vcell.p
 	String name = value.getName();
 	Expression act = value.getExpression();
 	Expression def = null;
-	cbit.vcell.math.Variable var = getSimulation().getMathDescription().getVariable(name);
+	Variable var = getSimulation().getMathDescription().getVariable(name);
 	if (var != null && var instanceof Constant) {
 		def = ((Constant)var).getExpression();
 	} else {
@@ -636,8 +640,8 @@ private void readVCML(CommentStringTokenizer tokens)
  * 
  * @param newListener cbit.vcell.solver.MathOverridesListener
  */
-public void removeMathOverridesListener(cbit.vcell.solver.MathOverridesListener newListener) {
-	aMathOverridesListener = cbit.vcell.solver.MathOverridesEventMulticaster.remove(aMathOverridesListener, newListener);
+public void removeMathOverridesListener(MathOverridesListener newListener) {
+	aMathOverridesListener = MathOverridesEventMulticaster.remove(aMathOverridesListener, newListener);
 	return;
 }
 
@@ -651,10 +655,10 @@ private void revertUnboundExpressions(MathDescription mathDescription) {
 	//
 	//  remove those expressions that contain unresolved symbols
 	//
-	Enumeration mathOverrideNamesEnum = getOverridesHash().keys();
+	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
 	while (mathOverrideNamesEnum.hasMoreElements()){
-		String name = (String) mathOverrideNamesEnum.nextElement();
-		MathOverrides.Element element = (MathOverrides.Element)getOverridesHash().get(name);
+		String name = mathOverrideNamesEnum.nextElement();
+		MathOverrides.Element element = getOverridesHash().get(name);
 		if (element.actualValue != null) {
 			// regular override
 			Expression exp = element.actualValue;
@@ -682,8 +686,8 @@ void setSimulation(Simulation newSimulation) {
 }
 
 
-private static java.util.Vector toVector (java.util.Enumeration enumeration) {
-	java.util.Vector vector = new java.util.Vector();
+private static java.util.Vector<Element> toVector (java.util.Enumeration<Element> enumeration) {
+	java.util.Vector<Element> vector = new java.util.Vector<Element>();
 	while (enumeration.hasMoreElements()) {
 		vector.add(enumeration.nextElement());
 	}
@@ -705,18 +709,18 @@ void updateFromMathDescription () {
 	//
 	// get list of names of constants in this math
 	//
-	Enumeration enumeration = mathDescription.getConstants();
-	java.util.HashSet mathDescriptionHash = new java.util.HashSet();
+	Enumeration<Constant> enumeration = mathDescription.getConstants();
+	java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
 	while (enumeration.hasMoreElements()) {
-		Constant constant = (Constant) enumeration.nextElement();
+		Constant constant = enumeration.nextElement();
 		mathDescriptionHash.add(constant.getName());
 	}
 	//
 	//  Now remove any elements in this MathOverrides NOT in the MathDescription...
 	//
-	Enumeration mathOverrideNamesEnum = getOverridesHash().keys();
+	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
 	while (mathOverrideNamesEnum.hasMoreElements()){
-		String name = (String) mathOverrideNamesEnum.nextElement();
+		String name = mathOverrideNamesEnum.nextElement();
 		if (!mathDescriptionHash.contains(name)){
 			getOverridesHash().remove(name);
 		}
@@ -744,7 +748,9 @@ private void verifyExpression(Constant value, boolean checkScan) throws Expressi
 			//
 			// expression must be a function of another Simulation parameter
 			//
-			if (!(getSimulation().getVariable(symbols[i]) != null && getSimulation().getVariable(symbols[i]) instanceof Constant)){
+			MathDescription mathDescription = getSimulation().getMathDescription();
+			Variable variable = mathDescription.getVariable(symbols[i]);
+			if (!(variable != null && variable instanceof Constant)){
 				throw new ExpressionBindingException("identifier "+symbols[i]+" not found");
 			}
 			if (checkScan && isScan(symbols[i])) {

@@ -21,7 +21,6 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -186,7 +185,7 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, Simula
 private static SimulationContext applyOverrides(BioModel bm, SimulationContext sc, SimulationJob simJob) {
 	SimulationContext overriddenSimContext = sc;
 	if (simJob != null ) {
-		Simulation sim = simJob.getWorkingSim();
+		Simulation sim = simJob.getSimulation();
 		// need to clone Biomodel, simContext, etc. only if simulation has override(s)
 		try {
 			if (sim != null && sim.getMathOverrides().hasOverrides()) {

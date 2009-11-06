@@ -3,30 +3,31 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
-
 import java.io.PrintWriter;
-import java.util.*;
-import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
+import java.util.HashMap;
+import java.util.Vector;
+
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.parser.Discontinuity;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.VariableSymbolTable;
+import cbit.vcell.solver.SimulationJob;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
  * @author: John Wagner
  */
 public class CVodeFileWriter extends OdeFileWriter {
+
+public CVodeFileWriter(PrintWriter pw, SimulationJob simJob) {
+	super(pw, simJob, false);
+}
 	
-/**
- * OdeFileCoder constructor comment.
- */
-public CVodeFileWriter(PrintWriter pw, Simulation simulation) {
-	this(pw, simulation, 0, false);
+public CVodeFileWriter(PrintWriter pw, SimulationJob simJob, boolean bUseMessaging) {
+	super(pw, simJob, bUseMessaging);
 }
-
-public CVodeFileWriter(PrintWriter pw, Simulation simulation, int ji, boolean bUseMessaging) {
-	super(pw, simulation, ji, bUseMessaging);
-}
-
 
 /**
  * Insert the method's description here.

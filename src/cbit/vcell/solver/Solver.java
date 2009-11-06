@@ -28,7 +28,7 @@ double getCurrentTime();
  * @return double
  */
 double getProgress();
-	public Simulation getSimulation();
+	public SimulationJob getSimulationJob();
 	public SolverStatus getSolverStatus();
 	/**
 	 *

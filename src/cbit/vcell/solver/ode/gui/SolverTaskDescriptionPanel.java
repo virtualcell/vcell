@@ -3,18 +3,26 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.math.Constant;
 import java.awt.Color;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.TreeSet;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.vcell.solver.*;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.math.Constant;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:36 PM)
@@ -1579,7 +1587,8 @@ public void updateKeepEvery() {
  * Comment
  */
 private void updateSensitivityParameterDisplay(Constant sensParam) {
-	if(getTornOffSolverTaskDescription().getSimulation().getIsSpatial() || getTornOffSolverTaskDescription().getSimulation().getMathDescription().isStoch())
+	Simulation simulation = getTornOffSolverTaskDescription().getSimulation();
+	if(simulation.isSpatial() || simulation.getMathDescription().isStoch())
 		getPerformSensitivityAnalysisCheckbox().setEnabled(false);
 	else getPerformSensitivityAnalysisCheckbox().setEnabled(true);
 	if (sensParam == null){

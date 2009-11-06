@@ -1,16 +1,20 @@
 package cbit.vcell.client.desktop.simulation;
-import java.awt.*;
-import java.beans.*;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
+import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import cbit.vcell.client.data.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.document.*;
+import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationIdentifier;
+
 public class SimulationWindow {
 	private VCSimulationIdentifier vcSimulationIdentifier = null;
 	private javax.swing.JInternalFrame frame = null;
-	private cbit.vcell.solver.Simulation simulation = null;
-	private cbit.vcell.document.SimulationOwner simOwner = null;
+	private Simulation simulation = null;
+	private SimulationOwner simOwner = null;
 	private transient PropertyChangeListener pcl = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt){
 			if (evt.getSource() == getSimulation() && evt.getPropertyName().equals("name")){
@@ -51,7 +55,7 @@ public javax.swing.JInternalFrame getFrame() {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @return cbit.vcell.document.SimulationOwner
  */
-public cbit.vcell.document.SimulationOwner getSimOwner() {
+public SimulationOwner getSimOwner() {
 	return simOwner;
 }
 
@@ -61,7 +65,7 @@ public cbit.vcell.document.SimulationOwner getSimOwner() {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @return cbit.vcell.solver.Simulation
  */
-public cbit.vcell.solver.Simulation getSimulation() {
+public Simulation getSimulation() {
 	return simulation;
 }
 
@@ -83,9 +87,9 @@ public VCSimulationIdentifier getVcSimulationIdentifier() {
  */
 private void initialize(DataViewer dataViewer) {
 	// create frame
-	setFrame(new org.vcell.util.gui.JInternalFrameEnhanced("SIMULATION: " + getSimulation().getName(), true, true, true, true));
+	setFrame(new JInternalFrameEnhanced("SIMULATION: " + getSimulation().getName(), true, true, true, true));
 	getFrame().setContentPane(dataViewer);
-	if (!getSimulation().getIsSpatial()) {
+	if (!getSimulation().isSpatial()) {
 		getFrame().setSize(450, 450);
 		getFrame().setMinimumSize(new Dimension(400, 400));
 	} else {
@@ -101,7 +105,7 @@ private void initialize(DataViewer dataViewer) {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @param newSimulation cbit.vcell.solver.Simulation
  */
-public void resetSimulation(cbit.vcell.solver.Simulation newSimulation) {
+public void resetSimulation(Simulation newSimulation) {
 	if (getSimulation() != null) {
 		getSimulation().removePropertyChangeListener(pcl);
 	}
@@ -127,7 +131,7 @@ private void setFrame(javax.swing.JInternalFrame newFrame) {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @param newSimOwner cbit.vcell.document.SimulationOwner
  */
-private void setSimOwner(cbit.vcell.document.SimulationOwner newSimOwner) {
+private void setSimOwner(SimulationOwner newSimOwner) {
 	simOwner = newSimOwner;
 }
 
@@ -137,7 +141,7 @@ private void setSimOwner(cbit.vcell.document.SimulationOwner newSimOwner) {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @param newSimulation cbit.vcell.solver.Simulation
  */
-private void setSimulation(cbit.vcell.solver.Simulation newSimulation) {
+private void setSimulation(Simulation newSimulation) {
 	simulation = newSimulation;
 }
 

@@ -1,18 +1,11 @@
 package cbit.vcell.solvers;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.math.Constant;
 import java.util.Vector;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.Function;
+
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelTest;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.math.MathDescriptionTest;
-import java.io.File;
+import cbit.vcell.solver.SimulationSymbolTable;
 
 /**
  * Insert the type's description here.
@@ -28,10 +21,10 @@ public static void main(java.lang.String[] args) {
 	// Insert code to start the application here.
 
 	try {
-		cbit.vcell.biomodel.BioModel model = cbit.vcell.biomodel.BioModelTest.getExample();
+		BioModel model = BioModelTest.getExample();
 		Simulation[] sims = model.getSimulations();
 
-		Vector <AnnotatedFunction> annotatedFunctionList = FVSolver.createAnnotatedFunctionsList(sims[1]);
+		Vector <AnnotatedFunction> annotatedFunctionList = FVSolver.createAnnotatedFunctionsList(new SimulationSymbolTable(sims[1], 0));
 		
 		FunctionFileGenerator funcFileGen = new FunctionFileGenerator("\\\\C:\\"+sims[1].getName()+".functions", annotatedFunctionList);
 		System.out.println("\n\n FILE NAME : "+funcFileGen.getBasefileName()+"\n\n");
