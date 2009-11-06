@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 
 import cbit.vcell.math.*;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 11:10:26 PM)
@@ -22,7 +23,7 @@ public static void main(java.lang.String[] args) {
 		MathDescription mathDescription = MathDescriptionTest.getOdeExample();
 		Simulation simulation = new Simulation(mathDescription);
 		
-		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(System.out), simulation);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(System.out), new SimulationJob(simulation, 0, null));
 		idaFileWriter.write();
 	}catch (Throwable e){
 		e.printStackTrace(System.out);

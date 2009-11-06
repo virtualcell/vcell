@@ -7,18 +7,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 
-import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.solver.stoch.StochSimOptions;
-
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.EmptyBorderBean;
+
+import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.math.Constant;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.stoch.StochSimOptions;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2001 12:17:49 PM)
@@ -221,7 +235,7 @@ private void displayAnnotation() {
  */
 private void displayMesh() {
     try {
-    	boolean isSpatial = getSimulation().getIsSpatial();
+    	boolean isSpatial = getSimulation().isSpatial();
     	getJLabel11().setVisible(isSpatial);
     	getJLabelMesh().setVisible(isSpatial);
         if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
@@ -268,7 +282,7 @@ private void displayMesh() {
  * Comment
  */
 private void displayOther() {
-	boolean isSpatial = getSimulation().getIsSpatial();
+	boolean isSpatial = getSimulation().isSpatial();
 
 	try {
 		getJLabel8().setVisible(isSpatial);
@@ -389,7 +403,7 @@ private void displayTask() {
 		getJLabelAbsTolValue().setText("");
 	}
 	try {
-		if (getSimulation().getIsSpatial() || solverDescription.isSTOCHSolver()) {
+		if (getSimulation().isSpatial() || solverDescription.isSTOCHSolver()) {
 			getJLabelSensitivity().setVisible(false);
 			getJLabel10().setVisible(false);
 		} else {

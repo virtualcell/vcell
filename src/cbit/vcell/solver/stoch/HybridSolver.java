@@ -21,9 +21,11 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
@@ -254,15 +256,16 @@ private ODESolverResultSet getHybridSolverResultSet()
 	 *No function columns for the results of multiple stochastic trials.
 	 *In stochastic simulation the functions include probability functions and clamped variable.
 	 */
-	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	if(simSymbolTable.getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 	{
-		Function functions[] = getSimulation().getFunctions();
+		Function functions[] = simSymbolTable.getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (isFunctionSaved(functions[i])) 
 			{
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
-					exp1 = getSimulation().substituteFunctions(exp1);
+					exp1 = simSymbolTable.substituteFunctions(exp1);
 				} catch (MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
@@ -303,7 +306,6 @@ private void writeLogFile() throws SolverException {
 	}
 }
 
-
 /**
  *  This method takes the place of the old runUnsteady()...
  */
@@ -321,7 +323,7 @@ protected void initialize() throws SolverException
 	//
 	sessionLog.print("HybridSolver.initialize() baseName = " + getBaseName());
 	//
-	NetCDFWriter ncWriter = new NetCDFWriter(getSimulationJob(),inputFilename);
+	NetCDFWriter ncWriter = new NetCDFWriter(simulationJob,inputFilename);
 	try {
 		ncWriter.initialize();
 	} catch (Exception e) {
@@ -353,16 +355,18 @@ protected void initialize() throws SolverException
 	String SDE_Tolerance = " 1e-4";
 	String SDE_dt = " 0.1";
 	String paraString = "";
-	if(getSimulation().getSolverTaskDescription().getStochOpt() instanceof StochHybridOptions)
+
+	SolverTaskDescription solverTaskDescription = simulationJob.getSimulation().getSolverTaskDescription();
+	if(solverTaskDescription.getStochOpt() instanceof StochHybridOptions)
 	{
-		StochHybridOptions sho = ((StochHybridOptions)getSimulation().getSolverTaskDescription().getStochOpt());
+		StochHybridOptions sho = ((StochHybridOptions)solverTaskDescription.getStochOpt());
 		epsilon = " "+String.valueOf(sho.getEpsilon());
 	    lambda = " "+String.valueOf(sho.getLambda());
 	    MSR_Tolerance = " "+String.valueOf(sho.getMSRTolerance());
-	    if(getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
+	    if(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
 	    	SDE_Tolerance = " "+String.valueOf(sho.getSDETolerance());
 	    else SDE_Tolerance = "";
-	    SDE_dt = " "+String.valueOf(getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+	    SDE_dt = " "+String.valueOf(solverTaskDescription.getTimeStep().getDefaultTimeStep());
 	    paraString = epsilon + lambda + MSR_Tolerance + SDE_Tolerance + SDE_dt;
 	    if(sho.isUseCustomSeed())
 	    	randomNumber = " -R "+String.valueOf(sho.getCustomSeed());
@@ -504,16 +508,18 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
-	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
+	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
-				exp1 = getSimulation().substituteFunctions(exp1).flatten();
-			} catch (cbit.vcell.math.MathException e) {
+				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
+			} catch (MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
+			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}

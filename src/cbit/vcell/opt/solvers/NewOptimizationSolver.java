@@ -21,6 +21,8 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.Variable;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
@@ -44,6 +46,7 @@ import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
@@ -116,13 +119,14 @@ public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec o
 			}
 			MathDescription mathDesc = odeObjFunc.getMathDescription();
 			Simulation sim = new Simulation(mathDesc);
+			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
 			MathOverrides mathOverrides = sim.getMathOverrides();
 			String[] parameterNames = newOptResultSet.getParameterNames();
 			double[] parameterValues = newOptResultSet.getParameterValues();
 			for (int i = 0; i < parameterValues.length; i++) {
 				mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterValues[i])));
 			}
-			odeSolverResultSet = getOdeSolverResultSet(rcResultSet, sim, parameterNames, parameterValues);
+			odeSolverResultSet = getOdeSolverResultSet(rcResultSet, simSymbolTable, parameterNames, parameterValues);
 		}
 		OptimizationResultSet optResultSet = new OptimizationResultSet(
 				newOptResultSet.getParameterNames(),
@@ -139,7 +143,7 @@ public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec o
 	}
 }
 	
-public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResultSet, Simulation sim, String[] parameterNames, double[] parameterValues){
+public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResultSet, SimulationSymbolTable simSymbolTable, String[] parameterNames, double[] parameterValues){
 	//
 	// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
 	//
@@ -154,12 +158,12 @@ public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResu
 	//
 	// add appropriate Function columns to result set
 	//
-	Function functions[] = sim.getFunctions();
+	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
-				exp1 = sim.substituteFunctions(exp1).flatten();
+				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
 				//
 				// substitute in place all "optimization parameter" values.
 				//
@@ -270,6 +274,7 @@ public static Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec)
 		objectiveFunctionElement.addContent(modelElement);
 		
 		Simulation tempSim = new Simulation(odeObjectiveFunction.getMathDescription());
+		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(tempSim, 0);
 		//
 		// write data/model variable mappings
 		//
@@ -283,8 +288,8 @@ public static Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec)
 				cbit.vcell.math.Variable var = odeObjectiveFunction.getMathDescription().getVariable(refData.getColumnNames()[i]);
 				if (var instanceof cbit.vcell.math.Function) {
 					Expression exp = new Expression(var.getExpression());
-					exp.bindExpression(tempSim);
-					exp = cbit.vcell.math.MathUtilities.substituteFunctions(exp, tempSim);
+					exp.bindExpression(simSymbolTable);
+					exp = MathUtilities.substituteFunctions(exp, simSymbolTable);
 					mappingExpression = exp.flatten();
 				} else {
 					mappingExpression = new Expression(var.getName());
@@ -309,6 +314,7 @@ public static Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec)
 		objectiveFunctionElement.addContent(modelElement);
 		
 		Simulation tempSim = new Simulation(pdeObjectiveFunction.getMathDescription());
+		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(tempSim, 0); 
 		//
 		// write data/model variable mappings
 		//
@@ -319,11 +325,11 @@ public static Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec)
 
 			Expression mappingExpression = null;
 			try {
-				cbit.vcell.math.Variable var = pdeObjectiveFunction.getMathDescription().getVariable(refData.getVariableNames()[i]);
-				if (var instanceof cbit.vcell.math.Function) {
+				Variable var = pdeObjectiveFunction.getMathDescription().getVariable(refData.getVariableNames()[i]);
+				if (var instanceof Function) {
 					Expression exp = new Expression(var.getExpression());
-					exp.bindExpression(tempSim);
-					exp = cbit.vcell.math.MathUtilities.substituteFunctions(exp, tempSim);
+					exp.bindExpression(simSymbolTable);
+					exp = MathUtilities.substituteFunctions(exp, simSymbolTable);
 					mappingExpression = exp.flatten();
 				} else {
 					mappingExpression = new Expression(var.getName());
@@ -420,7 +426,7 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 			simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, refDataEndTime));
 			simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 			StringWriter simulationInputStringWriter = new StringWriter();
-			IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(simulationInputStringWriter,true), simulation);
+			IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(simulationInputStringWriter,true), new SimulationJob(simulation, 0, null));
 			idaFileWriter.write(parameterNames);
 			simulationInputStringWriter.close();
 			modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_IDA);
@@ -438,7 +444,7 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 			simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, refDataEndTime));
 			simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.CVODE);
 			StringWriter simulationInputStringWriter = new StringWriter();
-			CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(new PrintWriter(simulationInputStringWriter,true), simulation);
+			CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(new PrintWriter(simulationInputStringWriter,true), new SimulationJob(simulation, 0, null));
 			cvodeFileWriter.write(parameterNames);
 			simulationInputStringWriter.close();
 			modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_CVODE);
@@ -496,7 +502,7 @@ public static Element getModelXML(PdeObjectiveFunction pdeObjectiveFunction, Str
 			e.printStackTrace();
 			throw new SolverException(e.getMessage());
 		}	
-		SimulationJob simJob = new SimulationJob(simulation, pdeObjectiveFunction.getFieldDataIDSs(), 0);
+		SimulationJob simJob = new SimulationJob(simulation, 0, pdeObjectiveFunction.getFieldDataIDSs());
 		
 		StringWriter simulationInputStringWriter = new StringWriter();
 		FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new PrintWriter(simulationInputStringWriter,true), simJob, resampledGeometry, pdeObjectiveFunction.getWorkingDirectory());		

@@ -1,12 +1,20 @@
 package cbit.vcell.solver;
 
+import java.io.File;
+
+import org.vcell.util.SessionLog;
+
+import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
+import cbit.vcell.solver.ode.CVodeSolverStandalone;
+import cbit.vcell.solver.ode.ForwardEulerSolver;
+import cbit.vcell.solver.ode.IDASolverStandalone;
+import cbit.vcell.solver.ode.RungeKuttaFehlbergSolver;
+import cbit.vcell.solver.ode.RungeKuttaFourSolver;
+import cbit.vcell.solver.ode.RungeKuttaTwoSolver;
+import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.CombinedSundialsSolver;
 import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FVSolverStandalone;
-import cbit.vcell.solver.ode.*;
-import cbit.vcell.solver.stoch.HybridSolver;
-import java.io.*;
-import org.vcell.util.SessionLog;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -22,8 +30,8 @@ public class SolverFactory {
 /**
  * create Solvers according to the solver description.
  */
-public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File directory, SimulationJob simJob) throws SolverException {
-	SolverDescription solverDescription = simJob.getWorkingSim().getSolverTaskDescription().getSolverDescription();
+public static Solver createSolver(SessionLog sessionLog, File directory, SimulationJob simJob) throws SolverException {
+	SolverDescription solverDescription = simJob.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
 	}

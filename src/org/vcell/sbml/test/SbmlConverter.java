@@ -36,7 +36,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -164,7 +163,7 @@ public static void main(String[] args) {
 		        // Solve simulation, which also generates and saves the .idainput file and .csv
 				// SimSpec to get vars to solve and output in .csv
 				SimSpec simSpec = SimSpec.fromSBML(xmlString);
-				solveSimulation(sim1, vcmlFile.getPath(), speciesUnitsHash, timeFactor, simSpec);
+				solveSimulation(new SimulationJob(sim1, 0, null), vcmlFile.getPath(), speciesUnitsHash, timeFactor, simSpec);
 	        } catch (Exception e) {
 	        	e.printStackTrace(System.err);
 	        	// create a 'blank' vcml file with only a Biomodel element with name of model 
@@ -222,7 +221,7 @@ public static void main(String[] args) {
 							if (simulations[j].getMathOverrides().hasOverrides()) {
 								// Check for parameter scan and create simJob to pass into exporter
 								for (int k = 0; k < simulations[j].getScanCount(); k++) {
-									SimulationJob simJob = new SimulationJob(simulations[j], null, k);
+									SimulationJob simJob = new SimulationJob(simulations[j], k, null);
 									sbmlString = null;
 									sbmlString = XmlHelper.exportSBML(bioModel, 2, 1, simContext, simJob);
 									String fileName = TokenMangler.mangleToSName(outputFileName + "_" + j + "_" + k); 
@@ -264,13 +263,13 @@ public static String getXMLString(String fileName) throws IOException {
 /**
  * Scans biomodels in the database and retrieves the applications that are 
  */
-private static void solveSimulation(Simulation sim, String filePathName, Hashtable argSpUnitsHash, double argTimeFactor, SimSpec argSimSpec) {
+private static void solveSimulation(SimulationJob simJob, String filePathName, Hashtable argSpUnitsHash, double argTimeFactor, SimSpec argSimSpec) {
 	ODESolverResultSet odeSolverResultSet = null;
 	try {
 		// Generate .idaInput string		
 		File idaInputFile = new File(filePathName.replace(".vcml", ".idaInput"));
 		PrintWriter idaPW = new java.io.PrintWriter(idaInputFile);
-		IDAFileWriter idaFileWriter = new IDAFileWriter(idaPW, sim);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(idaPW, simJob);
 		idaFileWriter.write();
 		idaPW.close();
 
@@ -294,7 +293,7 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 */
 
 		// get the result 
-		odeSolverResultSet = getODESolverResultSet(sim, idaOutputFile.getPath());
+		odeSolverResultSet = getODESolverResultSet(simJob, idaOutputFile.getPath());
 
 	} catch (Exception e) {
         e.printStackTrace(System.out);
@@ -320,7 +319,7 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 		    for (int i = 0; i < argSimSpec.getVarsList().length; i++) {
 		        column = odeSolverResultSet.findColumn(argSimSpec.getVarsList()[i]);
 		        if (column == -1) {
-		            Variable var = sim.getVariable(argSimSpec.getVarsList()[i]);
+		            Variable var = simJob.getSimulationSymbolTable().getVariable(argSimSpec.getVarsList()[i]);
 		            data[i + 1] = new double[data[0].length];
 		            if (var instanceof cbit.vcell.math.Constant) {
 		                double value = ((cbit.vcell.math.Constant) var).getExpression().evaluateConstant();
@@ -336,7 +335,7 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 		        }
 		    }
 		
-			double endTime = (sim.getSolverTaskDescription().getTimeBounds().getEndingTime());
+			double endTime = (simJob.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime());
 			// for each time, print row
 		    int index = 0;
 			double[] sampleTimes = new double[numTimeSteps + 1];
@@ -452,7 +451,7 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 	}
 }
 
-public static ODESolverResultSet getODESolverResultSet(Simulation argSim, String idaFileName)  {
+public static ODESolverResultSet getODESolverResultSet(SimulationJob argSimJob, String idaFileName)  {
 	// read .ida file
 	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
 	FileInputStream inputStream = null;
@@ -505,12 +504,12 @@ public static ODESolverResultSet getODESolverResultSet(Simulation argSim, String
 	}
 
 	// add appropriate Function columns to result set
-	cbit.vcell.math.Function functions[] = argSim.getFunctions();
+	cbit.vcell.math.Function functions[] = argSimJob.getSimulationSymbolTable().getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (AbstractSolver.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
-				exp1 = argSim.substituteFunctions(exp1);
+				exp1 = argSimJob.getSimulationSymbolTable().substituteFunctions(exp1);
 			} catch (cbit.vcell.math.MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());

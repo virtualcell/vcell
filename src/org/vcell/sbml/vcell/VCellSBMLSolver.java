@@ -13,11 +13,20 @@ import org.vcell.sbml.SolverException;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.sbml.test.SbmlConverter;
 import org.vcell.util.Executable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.math.Variable;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.units.VCUnitDefinition;
@@ -103,9 +112,9 @@ public class VCellSBMLSolver implements SBMLSolver {
 		    cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
 		    cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
 		    simContext.setMathDescription(mathDesc);
-		    org.vcell.util.document.SimulationVersion simVersion =
-		        new org.vcell.util.document.SimulationVersion(
-		            new org.vcell.util.document.KeyValue("100"),
+		    SimulationVersion simVersion =
+		        new SimulationVersion(
+		            new KeyValue("100"),
 		            "unnamed",
 		            null,
 		            null,
@@ -115,16 +124,17 @@ public class VCellSBMLSolver implements SBMLSolver {
 		            null,
 		            null,
 		            null);
-		    cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(simVersion, mathDesc);
+		    Simulation sim = new Simulation(simVersion, mathDesc);
+		    
 		    sim.setName("unnamed");
 		    // if time factor from SBML is not 1 (i.e., it is not in secs but in minutes or hours), convert endTime to min/hr as : endTime*timeFactor
 		   	double endTime = testSpec.getEndTime()*timeFactor;
 		    	
-		    sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
-		    cbit.vcell.solver.TimeStep timeStep = new cbit.vcell.solver.TimeStep();
-		    sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(timeStep.getMinimumTimeStep(),timeStep.getDefaultTimeStep(),endTime/10000));
-		    sim.getSolverTaskDescription().setOutputTimeSpec(new cbit.vcell.solver.UniformOutputTimeSpec((endTime-0)/testSpec.getNumTimeSteps()));
-		    sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
+		    sim.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
+		    TimeStep timeStep = new TimeStep();
+		    sim.getSolverTaskDescription().setTimeStep(new TimeStep(timeStep.getMinimumTimeStep(),timeStep.getDefaultTimeStep(),endTime/10000));
+		    sim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/testSpec.getNumTimeSteps()));
+		    sim.getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-10, 1e-12));
 		    // sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
 	
 			// Generate .idaInput string
@@ -142,7 +152,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 			// Generate .cvodeInput string
 			File cvodeFile = new File(outDir,filePrefix+SimDataConstants.CVODEINPUT_DATA_EXTENSION);
 			PrintWriter cvodePW = new java.io.PrintWriter(cvodeFile);
-		    CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(cvodePW, sim);
+			SimulationJob simJob = new SimulationJob(sim, 0, null);
+		    CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(cvodePW, simJob);
 			cvodeFileWriter.write();
 			cvodePW.close();
 
@@ -152,7 +163,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			executable.start();
 	
 		// get the result 
-			ODESolverResultSet odeSolverResultSet = SbmlConverter.getODESolverResultSet(sim, cvodeOutputFile.getPath());	
+			ODESolverResultSet odeSolverResultSet = SbmlConverter.getODESolverResultSet(simJob, cvodeOutputFile.getPath());	
 			//
 		    // print header
 		    //
@@ -173,7 +184,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 		    for (int i = 0; i < testSpec.getVarsList().length; i++) {
 		        column = odeSolverResultSet.findColumn(testSpec.getVarsList()[i]);
 		        if (column == -1) {
-		            Variable var = sim.getVariable(testSpec.getVarsList()[i]);
+		            Variable var = simJob.getSimulationSymbolTable().getVariable(testSpec.getVarsList()[i]);
 		            data[i + 1] = new double[data[0].length];
 		            if (var instanceof cbit.vcell.math.Constant) {
 		                double value = ((cbit.vcell.math.Constant) var).getExpression().evaluateConstant();

@@ -78,7 +78,7 @@ public void addSimulationJobStatusListener(cbit.rmi.event.SimulationJobStatusLis
  * @param simulation cbit.vcell.solver.Simulation
  */
 private SolverController createNewSolverController(User user, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException {
-	Simulation simulation = simulationJob.getWorkingSim();
+	Simulation simulation = simulationJob.getSimulation();
 	if (getLocalVCellServer().isPrimaryServer()){
 		ComputeHost[] allActiveHosts = getLocalVCellServer().getConnectionPoolStatus().getActiveHosts();
 		// now limit to only those appopriate to the simulation type
@@ -86,7 +86,7 @@ private SolverController createNewSolverController(User user, SimulationJob simu
 		if (allActiveHosts != null) {
 			java.util.Vector<ComputeHost> v = new java.util.Vector<ComputeHost>();
 			int simType;
-			if (simulation.getIsSpatial()) {
+			if (simulation.isSpatial()) {
 				simType = ComputeHost.PDEComputeHost;
 			} else {
 				simType = ComputeHost.ODEComputeHost;
@@ -270,11 +270,12 @@ public SolverControllerInfo[] getSolverControllerInfos() {
  * @exception java.rmi.RemoteException The exception description.
  */
 SolverProxy getSolverProxy(User user, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException, PermissionException, DataAccessException {
-	VCSimulationIdentifier vcSimID = simulationJob.getWorkingSim().getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+	Simulation simulation = simulationJob.getSimulation();
+	VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	if (vcSimID == null){
 		throw new IllegalArgumentException("cannot run an unsaved simulation");
 	}
-	if (!simulationJob.getWorkingSim().getVersion().getOwner().equals(user)){
+	if (!simulation.getVersion().getOwner().equals(user)){
 		throw new PermissionException("insufficient privilege: startSimulation()");
 	}
 	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(simulationJob.getSimulationJobID());
@@ -441,7 +442,7 @@ public void startSimulation(User user, Simulation simulation, SessionLog userSes
 	} 
 	
 	for (int i = 0; i < simulation.getScanCount(); i++){
-		SimulationJob simJob = new SimulationJob(simulation,fieldDataIDs, i);
+		SimulationJob simJob = new SimulationJob(simulation, i, fieldDataIDs);
 		VCSimulationIdentifier vcSimID = simJob.getVCDataIdentifier().getVcSimID();
 		try {
 			SolverProxy solverProxy = getSolverProxy(user,simJob,userSessionLog);

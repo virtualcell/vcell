@@ -21,7 +21,7 @@ import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MathOverridesEvent;
 import cbit.vcell.solver.MathOverridesListener;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (10/22/2000 11:46:26 AM)
@@ -39,6 +39,7 @@ public class MathOverridesTableModel extends javax.swing.table.AbstractTableMode
 	public final static int COLUMN_SCAN = 3;
 	private String[] columnNames = new String[] {"Parameter Name", "Default", "New Value/Expression", "Scan"};
 	private JTable ownerTable = null;
+	private SimulationSymbolTable simSymbolTable = null;
 
 /**
  * MathOverridesTableModel constructor comment.
@@ -248,7 +249,6 @@ public Object getValueAt(int row, int column) {
 					if(actualExpression == null) {
 						return null;
 					}
-					Simulation sim = getMathOverrides().getSimulation();
 					
 					AutoCompleteSymbolFilter symbolTableEntryFilter = new AutoCompleteSymbolFilter() {
 
@@ -267,7 +267,7 @@ public Object getValueAt(int row, int column) {
 						}
 						
 					};
-					return new ScopedExpression(actualExpression, sim.getNameScope(), true, symbolTableEntryFilter); 
+					return new ScopedExpression(actualExpression, simSymbolTable.getNameScope(), true, symbolTableEntryFilter); 
 				}
 			}
 			case COLUMN_SCAN: {
@@ -376,8 +376,8 @@ public void setEditable(boolean editable) {
  * @param mathOverrides The new value for the property.
  * @see #getMathOverrides
  */
-public void setMathOverrides(cbit.vcell.solver.MathOverrides mathOverrides) {
-	cbit.vcell.solver.MathOverrides oldValue = fieldMathOverrides;
+public void setMathOverrides(MathOverrides mathOverrides) {
+	MathOverrides oldValue = fieldMathOverrides;
 	if (oldValue!=null){
 		oldValue.removeMathOverridesListener(this);
 	}
@@ -395,7 +395,9 @@ public void setMathOverrides(cbit.vcell.solver.MathOverrides mathOverrides) {
 			fieldKeys = mathOverrides.getOverridenConstantNames();
 		}
 		sort(fieldKeys, 0, fieldKeys.length-1);
+		simSymbolTable = new SimulationSymbolTable(getMathOverrides().getSimulation(), 0);
 	}
+	
 	firePropertyChange("mathOverrides", oldValue, mathOverrides);
 	//  Or should this only be fireTableDataChanged()???
 	fireTableDataChanged();

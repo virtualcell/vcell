@@ -4,12 +4,24 @@ package cbit.vcell.matlab;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
-import java.util.*;
-import cbit.vcell.math.*;
+import java.util.Vector;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
+
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumberMatrix;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
@@ -18,6 +30,7 @@ import cbit.vcell.solver.Simulation;
 public class MatlabOdeFileCoder {
 	private Simulation simulation = null;
 	private RationalMatrix stoichMatrix = null;
+	private SimulationSymbolTable simulationSymbolTable = null;
 /**
  * OdeFileCoder constructor comment.
  */
@@ -30,6 +43,7 @@ public MatlabOdeFileCoder(Simulation argSimulation) {
 public MatlabOdeFileCoder(Simulation argSimulation, RationalNumberMatrix argStoichMatrix) {
 	this.simulation = argSimulation;
 	this.stoichMatrix = argStoichMatrix;
+	simulationSymbolTable = new SimulationSymbolTable(simulation, 0);
 }
 /**
  * Insert the method's description here.
@@ -56,24 +70,24 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 	// print constants
 	//
 	pw.println("% Constants");
-	Variable variables[] = simulation.getVariables();
+	Variable variables[] = simulationSymbolTable.getVariables();
 	for (int i = 0; i < variables.length; i++){
 		Variable var = (Variable)variables[i];
 		if (var instanceof Constant){
 			Constant constant = (Constant)var;
-			pw.println(org.vcell.util.TokenMangler.getEscapedTokenMatlab(constant.getName())+" = "+constant.getExpression().infix_Matlab()+";");
+			pw.println(TokenMangler.getEscapedTokenMatlab(constant.getName())+" = "+constant.getExpression().infix_Matlab()+";");
 		}
 	}
 
 	//pw.println("SIZEY = size(y);");
 	//pw.println("if SIZEY ~= 0");
-	Vector volVarList = new Vector();
+	Vector<VolVariable> volVarList = new Vector<VolVariable>();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof VolVariable){
-			volVarList.addElement(variables[i]);
+			volVarList.addElement((VolVariable)variables[i]);
 		}
 	}
-	VolVariable volVars[] = (VolVariable[])org.vcell.util.BeanUtils.getArray(volVarList,VolVariable.class);
+	VolVariable volVars[] = (VolVariable[])BeanUtils.getArray(volVarList,VolVariable.class);
 	CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
 	//
 	// print volVariables (in order and assign to var vector)
@@ -82,12 +96,12 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 	pw.println("% need this for time=0 (initial conditions) when y is empty");
 	for (int i = 0; i < volVars.length; i++){
 		Expression initialExp = subDomain.getEquation(volVars[i]).getInitialExpression();
-		pw.println(org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+initialExp.infix_Matlab()+";\t\t% initial condition for '"+volVars[i].getName()+"'");
+		pw.println(TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+initialExp.infix_Matlab()+";\t\t% initial condition for '"+volVars[i].getName()+"'");
 	}
 	pw.println("SIZEY = size(y);");
 	pw.println("if SIZEY ~= 0\t\t% when y is not empty");
 	for (int i = 0; i < volVars.length; i++){
-		pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+"y("+(i+1)+");");
+		pw.println("\t"+TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+"y("+(i+1)+");");
 	}
 	pw.println("end");
 
@@ -99,7 +113,7 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 		Variable var = (Variable)variables[i];
 		if (var instanceof Function){
 			Function function = (Function)var;
-			pw.println(org.vcell.util.TokenMangler.getEscapedTokenMatlab(function.getName())+" = "+function.getExpression().infix_Matlab()+";");
+			pw.println(TokenMangler.getEscapedTokenMatlab(function.getName())+" = "+function.getExpression().infix_Matlab()+";");
 		}
 	}
 	
@@ -145,10 +159,10 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 	for (int i=0;i<volVars.length;i++){
 		for (int j=0;j<volVars.length;j++){
 			Expression rate = subDomain.getEquation(volVars[i]).getRateExpression();
-			rate.bindExpression(simulation);
-			rate = simulation.substituteFunctions(rate);
+			rate.bindExpression(simulationSymbolTable);
+			rate = simulationSymbolTable.substituteFunctions(rate);
 			Expression differential = rate.differentiate(volVars[j].getName());
-			differential.bindExpression(simulation);
+			differential.bindExpression(simulationSymbolTable);
 			differential = differential.flatten();
 			pw.println("\t\t\t"+differential.infix_Matlab()+","); //    % d "+volVars[i].getName())+"' / d "+volVars[j].getName()));
 		}
@@ -216,52 +230,39 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("%     param is the parameter vector that was used");
 	pw.println("%");
 	
-	Variable variables[] = simulation.getVariables();
+	Variable variables[] = simulationSymbolTable.getVariables();
 	CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
 
 	//
 	// collect "true" constants (Constants without identifiers)
 	//
-	Vector constantList = new Vector();
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof Constant){
-			Constant constant = (Constant)variables[i];
-			if (constant.getExpression().getSymbols()==null || constant.getExpression().getSymbols().length==0){
-				constantList.addElement(variables[i]);
-			}
-		}
-	}
-	Constant constants[] = (Constant[])org.vcell.util.BeanUtils.getArray(constantList,Constant.class);
-	
 	//
 	// collect "variables" (VolVariables only)
 	//
-	Vector volVarList = new Vector();
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof VolVariable){
-			volVarList.addElement(variables[i]);
-		}
-	}
-	VolVariable volVars[] = (VolVariable[])org.vcell.util.BeanUtils.getArray(volVarList,VolVariable.class);
-	
 	//
 	// collect "functions" (Functions and Constants with identifiers)
 	//
-	Vector functionList = new Vector();
+	Vector<Constant> constantList = new Vector<Constant>();
+	Vector<VolVariable> volVarList = new Vector<VolVariable>();
+	Vector<Variable> functionList = new Vector<Variable>();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof Constant){
 			Constant constant = (Constant)variables[i];
-			if (constant.getExpression().getSymbols()!=null && constant.getExpression().getSymbols().length>0){
+			String[] symbols = constant.getExpression().getSymbols();
+			if (symbols==null || symbols.length==0){
+				constantList.addElement(constant);
+			} else {
 				functionList.add(constant);
 			}
-		}
-	}
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof Function){
+		} else if (variables[i] instanceof VolVariable){
+			volVarList.addElement((VolVariable)variables[i]);
+		} else if (variables[i] instanceof Function){
 			functionList.addElement(variables[i]);
 		}
 	}
-	Variable functions[] = (Variable[])org.vcell.util.BeanUtils.getArray(functionList,Variable.class);
+	Constant constants[] = (Constant[])BeanUtils.getArray(constantList,Constant.class);
+	VolVariable volVars[] = (VolVariable[])BeanUtils.getArray(volVarList,VolVariable.class);
+	Variable functions[] = (Variable[])BeanUtils.getArray(functionList,Variable.class);
 
 	
 	pw.println("");

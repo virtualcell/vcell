@@ -1,5 +1,10 @@
 package cbit.vcell.solver;
 
+import org.vcell.util.BeanUtils;
+
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathDescriptionTest;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/3/2001 2:05:06 PM)
@@ -106,12 +111,13 @@ public static boolean testIfEquilavent(Simulation sim, cbit.vcell.math.MathDescr
 			System.out.println("-------MathDesc 1 and MathDesc 2 are same object ------------");
 			return false;
 		}
-		mathDesc1 = (cbit.vcell.math.MathDescription)org.vcell.util.BeanUtils.cloneSerializable(mathDesc1);
-		mathDesc2 = (cbit.vcell.math.MathDescription)org.vcell.util.BeanUtils.cloneSerializable(mathDesc2);
-		sim.applyOverrides(mathDesc1);
-		sim.applyOverrides(mathDesc2);
+		mathDesc1 = (MathDescription)BeanUtils.cloneSerializable(mathDesc1);
+		mathDesc2 = (MathDescription)BeanUtils.cloneSerializable(mathDesc2);
+		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
+		simSymbolTable.applyOverrides(mathDesc1);
+		simSymbolTable.applyOverrides(mathDesc2);
 		StringBuffer reasonForDecision = new StringBuffer();
-		boolean bEquivalent = cbit.vcell.math.MathDescriptionTest.testIfSame(mathDesc1,mathDesc2,reasonForDecision);
+		boolean bEquivalent = MathDescriptionTest.testIfSame(mathDesc1,mathDesc2,reasonForDecision);
 //		System.out.println(reasonForDecision);
 		return bEquivalent;
 	}catch (Throwable e){

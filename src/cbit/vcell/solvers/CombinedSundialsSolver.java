@@ -26,7 +26,7 @@ public class CombinedSundialsSolver extends AbstractCompiledSolver {
  */
 public CombinedSundialsSolver(SimulationJob simJob, File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simJob, directory, sessionLog);
-	if (getSimulation().getMathDescription().hasFastSystems()) {
+	if (simulationJob.getSimulation().getMathDescription().hasFastSystems()) {
 		realSolver = new IDASolverStandalone(simJob, directory, sessionLog);
 	} else {
 		realSolver = new CVodeSolverStandalone(simJob, directory, sessionLog);

@@ -12,15 +12,13 @@ import cbit.vcell.solver.*;
  * 
  */
 public class CppClassCoderVCellModel extends CppClassCoder {
-	protected Simulation simulation = null;
 /**
  * VarContextCppCoder constructor comment.
  * @param name java.lang.String
  */
-protected CppClassCoderVCellModel(CppCoderVCell cppCoderVCell, Simulation argSimulation) 
+protected CppClassCoderVCellModel(CppCoderVCell cppCoderVCell, SimulationJob argSimulationJob) 
 {
-	super(cppCoderVCell,"UserVCellModel", "VCellModel");
-	this.simulation = argSimulation;
+	super(argSimulationJob, cppCoderVCell,"UserVCellModel", "VCellModel");
 }
 /**
  * This method was created by a SmartGuide.
@@ -51,7 +49,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
  	//
  	// add 'Contours' to VCellModel (if any)
  	//
- 	cbit.vcell.geometry.FilamentGroup fg = simulation.getMathDescription().getGeometry().getGeometrySpec().getFilamentGroup();
+ 	cbit.vcell.geometry.FilamentGroup fg = simulationJob.getSimulation().getMathDescription().getGeometry().getGeometrySpec().getFilamentGroup();
   	for (int i=0;i<fg.getFilamentCount();i++){
 	  	out.println("\taddContour(new Contour("+i+"));  // for Filament "+fg.getFilamentNames()[i]);
   	}	 	

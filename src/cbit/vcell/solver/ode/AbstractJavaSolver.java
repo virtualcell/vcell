@@ -1,19 +1,26 @@
 package cbit.vcell.solver.ode;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
 import org.vcell.util.SessionLog;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.solver.*;
+
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.UserStopException;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solvers.AbstractSolver;
 /**
  * Some of this class' stuff could/should go into an AbstractSolver
  * base class...just have to wait until we finalize Solver's interface.
  * Creation date: (8/19/2000 8:55:19 PM)
  * @author: John Wagner
  */
-public abstract class AbstractJavaSolver extends cbit.vcell.solvers.AbstractSolver {
+public abstract class AbstractJavaSolver extends AbstractSolver {
 	private boolean bUserStopRequest = false;
 	private transient boolean fieldRunning = false;
 	private transient Thread fieldThread = null;
@@ -116,10 +123,12 @@ protected final void printToFile(double progress) throws IOException {
 			// write file and fire event
 			if (this instanceof ODESolver) {
 				ODESolverResultSet odeSolverResultSet = ((ODESolver)this).getODESolverResultSet();
-				if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {
-					odeSolverResultSet.trimRows(((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
+				Simulation simulation = simulationJob.getSimulation();
+				OutputTimeSpec outputTimeSpec = simulation.getSolverTaskDescription().getOutputTimeSpec();
+				if (outputTimeSpec.isDefault()) {
+					odeSolverResultSet.trimRows(((DefaultOutputTimeSpec)outputTimeSpec).getKeepAtMost());
 				}
-				ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
+				ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
 				String mathName = odeSimData.getMathName();
 				getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
 				File logFile = new File(getBaseName() + LOGFILE_EXTENSION);

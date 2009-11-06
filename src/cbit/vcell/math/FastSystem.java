@@ -4,16 +4,19 @@ package cbit.vcell.math;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.parser.*;
-import cbit.util.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SimulationSymbolTable;
 
 public class FastSystem implements MathObject, Serializable, Matchable {
 	protected MathDescription mathDesc = null;
@@ -167,13 +170,13 @@ public MathDescription getMathDesc() {
  * Creation date: (10/10/2002 11:15:31 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throws ExpressionException, MathException {
+void flatten(SimulationSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
 	//
 	// replace fastRates with flattended and substituted fastRates
 	//
 	for (int i = 0; i < fastRateList.size(); i++) {
 		Expression oldExp = fastRateList.elementAt(i).getFunction();
-		fastRateList.setElementAt(new FastRate(getFlattenedExpression(sim,oldExp,bRoundCoefficients)),i);
+		fastRateList.setElementAt(new FastRate(getFlattenedExpression(simSymbolTable,oldExp,bRoundCoefficients)),i);
 	}
 	
 	//
@@ -181,22 +184,22 @@ void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throw
 	//
 	for (int i = 0; i < fastInvariantList.size(); i++) {
 		Expression oldExp = fastInvariantList.elementAt(i).getFunction();
-		fastInvariantList.setElementAt(new FastInvariant(getFlattenedExpression(sim,oldExp,bRoundCoefficients)),i);
+		fastInvariantList.setElementAt(new FastInvariant(getFlattenedExpression(simSymbolTable,oldExp,bRoundCoefficients)),i);
 	}
 }
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 10:31:03 AM)
- * @param sim cbit.vcell.solver.Simulation
+ * @param simSymbolTable cbit.vcell.solver.SimulationSymbolTable
  */
-private Expression getFlattenedExpression(cbit.vcell.solver.Simulation sim, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
+private Expression getFlattenedExpression(SimulationSymbolTable simSymbolTable, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
 
 	if (exp == null){
 		return null;
 	}
 	
-	exp.bindExpression(sim);
-	exp = sim.substituteFunctions(exp);
+	exp.bindExpression(simSymbolTable);
+	exp = simSymbolTable.substituteFunctions(exp);
 	exp = exp.flatten();
 	if (bRoundCoefficients){
 		exp.roundToFloat();

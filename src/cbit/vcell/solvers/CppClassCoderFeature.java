@@ -12,18 +12,16 @@ import cbit.vcell.solver.*;
  * 
  */
 public class CppClassCoderFeature extends CppClassCoder {
-	protected Simulation simulation = null;
 	protected CompartmentSubDomain volumeSubDomain = null;
 	protected MembraneSubDomain membraneSubDomain = null;
 /**
  * VarContextCppCoder constructor comment.
  * @param name java.lang.String
  */
-protected CppClassCoderFeature(CppCoderVCell cppCoderVCell, Simulation argSimulation, 
+protected CppClassCoderFeature(CppCoderVCell cppCoderVCell, SimulationJob argSimulationJob, 
 										CompartmentSubDomain volSubDomain, MembraneSubDomain memSubDomain) 
 {
-	super(cppCoderVCell,"Feature"+volSubDomain.getName(), "Feature");
-	this.simulation = argSimulation;
+	super(argSimulationJob, cppCoderVCell,"Feature"+volSubDomain.getName(), "Feature");
 	this.volumeSubDomain = volSubDomain;
 	this.membraneSubDomain = memSubDomain;
 }
@@ -39,7 +37,7 @@ public CompartmentSubDomain getCompartmentSubDomain() {
  * @param out java.io.PrintWriter
  */
 protected void writeConstructor(java.io.PrintWriter out) throws Exception {
-	int handle = simulation.getMathDescription().getHandle(volumeSubDomain);	
+	int handle = simulationJob.getSimulation().getMathDescription().getHandle(volumeSubDomain);	
 	out.println(getClassName()+"::"+getClassName()+"(string& Aname, int priority)");
 	out.println(": Feature(Aname, "+handle+", priority)");
  	out.println("{");

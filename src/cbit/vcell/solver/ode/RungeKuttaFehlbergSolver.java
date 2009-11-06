@@ -1,18 +1,17 @@
 package cbit.vcell.solver.ode;
 
-import cbit.vcell.server.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
 import org.vcell.util.SessionLog;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.math.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+
 import cbit.vcell.math.MathException;
-import cbit.vcell.solver.*;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.UserStopException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:50 PM)
@@ -50,7 +49,7 @@ protected void integrate() throws cbit.vcell.solver.SolverException, UserStopExc
 		final double epsilon = DBL_EPSILON;
 		final double twentySixEpsilon = 26 * epsilon;
 		//
-		SolverTaskDescription taskDescription = getSimulation().getSolverTaskDescription();
+		SolverTaskDescription taskDescription = simulationJob.getSimulation().getSolverTaskDescription();
 		double startingTime = taskDescription.getTimeBounds().getStartingTime();
 		double endingTime = taskDescription.getTimeBounds().getEndingTime();
 		double relativeErrorTolerance = taskDescription.getErrorTolerance().getRelativeErrorTolerance();

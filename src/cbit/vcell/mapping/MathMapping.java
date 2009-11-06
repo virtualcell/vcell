@@ -1,35 +1,70 @@
 package cbit.vcell.mapping;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
-import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
-import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
-import cbit.vcell.mapping.potential.MembraneElectricalDevice;
-import cbit.vcell.mapping.potential.PotentialMapping;
-import cbit.vcell.mapping.potential.ElectricalDevice;
-import cbit.vcell.units.VCUnitException;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.math.*;
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.*;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.client.server.VCellThreadChecker;
-import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
-
 import java.beans.PropertyVetoException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.client.server.VCellThreadChecker;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
+import cbit.vcell.mapping.potential.ElectricalDevice;
+import cbit.vcell.mapping.potential.MembraneElectricalDevice;
+import cbit.vcell.mapping.potential.PotentialMapping;
+import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitException;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
@@ -956,11 +991,12 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 		ElectricalDevice.ElectricalDeviceParameter edParm = (ElectricalDevice.ElectricalDeviceParameter)ste;
 		ElectricalDevice electricalDevice = (ElectricalDevice)edParm.getNameScope().getScopedSymbolTable();
 		if (electricalDevice instanceof MembraneElectricalDevice){
+			String nameWithScope = ((MembraneElectricalDevice)electricalDevice).getMembraneMapping().getMembrane().getNameScope().getName();
 			if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
-				return "I_"+((MembraneElectricalDevice)electricalDevice).getMembraneMapping().getMembrane().getNameScope().getName();
+				return "I_"+nameWithScope;
 			}
 			if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
-				return "F_"+((MembraneElectricalDevice)electricalDevice).getMembraneMapping().getMembrane().getNameScope().getName();
+				return "F_"+nameWithScope;
 			}
 		//}else if (electricalDevice instanceof CurrentClampElectricalDevice) {
 			//if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
@@ -981,30 +1017,30 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	if (ste instanceof ElectricalStimulus.ElectricalStimulusParameter){
 		ElectricalStimulus.ElectricalStimulusParameter esParm = (ElectricalStimulus.ElectricalStimulusParameter)ste;
 		ElectricalStimulus electricalStimulus = (ElectricalStimulus)esParm.getNameScope().getScopedSymbolTable();
+		String nameWithScope = electricalStimulus.getNameScope().getName();
 		if (esParm.getRole()==ElectricalStimulus.ROLE_Current){
-			return "I_"+electricalStimulus.getNameScope().getName();
-		}
-		if (esParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
-			return "V_"+electricalStimulus.getNameScope().getName();
+			return "I_"+nameWithScope;
+		} else if (esParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
+			return "V_"+nameWithScope;
 		}
 	}
 	if (ste instanceof StructureMapping.StructureMappingParameter){
 		StructureMapping.StructureMappingParameter smParm = (StructureMapping.StructureMappingParameter)ste;
 		Structure structure = ((StructureMapping)(smParm.getNameScope().getScopedSymbolTable())).getStructure();
-		if (smParm.getRole()==StructureMapping.ROLE_VolumeFraction){
+		int role = smParm.getRole();
+		if (role==StructureMapping.ROLE_VolumeFraction){
 			return "VolFract_"+((Membrane)structure).getInsideFeature().getNameScope().getName();
-		}
-		if (smParm.getRole()==StructureMapping.ROLE_SurfaceToVolumeRatio){
-			return "SurfToVol_"+structure.getNameScope().getName();
-		}
-		if (smParm.getRole()==StructureMapping.ROLE_InitialVoltage){
-			return smParm.getName();
-		}
-		if (smParm.getRole()==StructureMapping.ROLE_SpecificCapacitance){
-			return "C_"+structure.getNameScope().getName();
-		}
-		if (smParm.getRole()==StructureMapping.ROLE_Size){
-			return "Size_"+structure.getNameScope().getName();
+		} else {
+			String nameWithScope = structure.getNameScope().getName();
+			if (role==StructureMapping.ROLE_SurfaceToVolumeRatio){
+				return "SurfToVol_"+nameWithScope;
+			} else if (role==StructureMapping.ROLE_InitialVoltage){
+				return smParm.getName();
+			} else if (role==StructureMapping.ROLE_SpecificCapacitance){
+				return "C_"+nameWithScope;
+			} else if (role==StructureMapping.ROLE_Size){
+				return "Size_"+nameWithScope;
+			}
 		}
 	}
 	//
@@ -1407,7 +1443,8 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Expression insideCorrectionExp = getInsideFluxCorrectionExpression(simContext,membraneMapping);
 			insideCorrectionExp.bindExpression(this);
 			Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
-			String insideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+insideFeature.getNameScope().getName();
+			String membraneNameWithScope = membraneMapping.getNameScope().getName();
+			String insideName = "KFlux_"+membraneNameWithScope+"_"+insideFeature.getNameScope().getName();
 			KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,insideFeature);
 			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
 
@@ -1417,7 +1454,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Expression outsideCorrectionExp = getOutsideFluxCorrectionExpression(simContext,membraneMapping);
 			outsideCorrectionExp.bindExpression(this);
 			Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
-			String outsideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+outsideFeature.getNameScope().getName();
+			String outsideName = "KFlux_"+membraneNameWithScope+"_"+outsideFeature.getNameScope().getName();
 			KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,outsideFeature);
 			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
 		}

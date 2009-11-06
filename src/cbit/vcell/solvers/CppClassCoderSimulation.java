@@ -21,7 +21,6 @@ import cbit.vcell.messaging.JmsUtils;
  * 
  */
 public class CppClassCoderSimulation extends CppClassCoder {
-	private SimulationJob simulationJob = null;
 	private String baseDataName = null;
 	private String psfFieldDataGlobalVarName = "NULL";
 
@@ -31,8 +30,7 @@ public class CppClassCoderSimulation extends CppClassCoder {
  */
 protected CppClassCoderSimulation(CppCoderVCell cppCoderVCell, SimulationJob argSimulationJob, String baseDataName) 
 {
-	super(cppCoderVCell,"UserSimulation", "Simulation");
-	this.simulationJob = argSimulationJob;
+	super(argSimulationJob, cppCoderVCell,"UserSimulation", "Simulation");
 	this.baseDataName = baseDataName;
 }
 
@@ -64,8 +62,10 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println("\tdouble pcgRelTol = SimTool::getInstance()->getPCGRelativeErrorTolerance();");
 	out.println();
 
-	Simulation simulation = simulationJob.getWorkingSim();
-	Variable variables[] = simulation.getVariables();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	MathDescription mathDescription = simSymbolTable.getSimulation().getMathDescription();
+	
+	Variable variables[] = simSymbolTable.getVariables();
 	for (int i=0;i<variables.length;i++){
 	  	Variable var = (Variable)variables[i];
 	  	String units;
@@ -81,8 +81,8 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		//
 	  		Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
 	  		int totalNumCompartments = 0;
-	  		StringBuffer compartmentNames = new StringBuffer();
-	  		Enumeration<SubDomain> subDomainEnum = simulation.getMathDescription().getSubDomains();
+	  		StringBuffer compartmentNames = new StringBuffer();	  		
+			Enumeration<SubDomain> subDomainEnum = mathDescription.getSubDomains();
 	  		while (subDomainEnum.hasMoreElements()){
 		  		SubDomain subDomain = (SubDomain)subDomainEnum.nextElement();
 		  		if (subDomain instanceof CompartmentSubDomain){
@@ -90,9 +90,9 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 			  		totalNumCompartments++;
 			  		Equation varEquation = subDomain.getEquation(var);
 			  		if (varEquation != null) {
-			  			if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simulation, compartmentSubDomain)){
+			  			if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simSymbolTable, compartmentSubDomain)){
 				  			listOfSubDomains.add(compartmentSubDomain);
-				  			int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
+				  			int handle = mathDescription.getHandle(compartmentSubDomain);
 				  			compartmentNames.append(compartmentSubDomain.getName()+"("+handle+") ");
 				  		}
 			  		}
@@ -120,7 +120,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  		out.println("\t\tVolumeRegion *volRegion = mesh->getVolumeRegion(i);");
 			  	for (int j = 0; j < listOfSubDomains.size(); j++){
 					CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)listOfSubDomains.elementAt(j);
-				  	int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
+				  	int handle = mathDescription.getHandle(compartmentSubDomain);
 					out.println("\t\tif (volRegion->getFeature()->getHandle() == (FeatureHandle)(0xff & "+handle+")){  // test if this region is same as '"+compartmentSubDomain.getName()+"'");
 					out.println("\t\t\tsolveRegions[numSolveRegions ++] = volRegion->getId();");
 					out.println("\t\t}");
@@ -129,13 +129,13 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		}
 	  		
 	  		if (listOfSubDomains.size() > 0) {
-		  		if (simulation.getMathDescription().isPDE(volVar)) {
-		  			if (simulation.getMathDescription().isPdeSteady(volVar)) {
+		  		if (mathDescription.isPDE(volVar)) {
+		  			if (mathDescription.isPdeSteady(volVar)) {
 		  				out.println("\tsmbuilder = new EllipticVolumeEqnBuilder(volumeVar,mesh, numSolveRegions, solveRegions);");
 		  			} else {
-		  				out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
+		  				out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (mathDescription.hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
 		  			}
-	  				out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,pcgRelTol,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
+	  				out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,pcgRelTol,"+simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
 	  				out.println("\taddSolver(slSolver);");
 		  		}else{
 		  			out.println("\todeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
@@ -152,9 +152,9 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		out.println("\tvarname = \"" + memVar.getName() + "\";");
 	  		out.println("\tunits = \"" + units+ "\";");		  		
 	  		out.println("\tmembraneVar = new MembraneVariable(mesh->getNumMembraneElements(),varname, units);");
-		  	if (simulation.getMathDescription().isPDE(memVar)) {
+		  	if (mathDescription.isPDE(memVar)) {
 		  		out.println("\tsmbuilder = new MembraneEqnBuilderDiffusion(membraneVar,mesh);");
-	  			out.println("\tslSolver = new SparseLinearSolver(membraneVar,smbuilder,pcgRelTol,"+simulation.hasTimeVaryingDiffusionOrAdvection(memVar)+");");	  			
+	  			out.println("\tslSolver = new SparseLinearSolver(membraneVar,smbuilder,pcgRelTol,"+simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar)+");");	  			
 	  			out.println("\taddSolver(slSolver);");
 		  		out.println("\taddVariable(membraneVar);");
 		  	} else {		  		
@@ -238,7 +238,7 @@ public void writeDeclaration(java.io.PrintWriter out) {
  */
 protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 
-	Simulation simulation = simulationJob.getWorkingSim();
+	Simulation simulation = simulationJob.getSimulation();
 	SolverTaskDescription taskDesc = simulation.getSolverTaskDescription();
 	if (taskDesc==null){
 		throw new Exception("task description not defined");
@@ -353,7 +353,7 @@ public void writePSFFieldDataFunction(PrintWriter out) {
  */
 protected void writeMain(java.io.PrintWriter out) throws Exception {
 
-	Simulation simulation = simulationJob.getWorkingSim();
+	Simulation simulation = simulationJob.getSimulation();
 	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
 	//FieldDataIdentifierSpec[] fieldDataIDSs = simulationJob.getFieldDataIdentifierSpecs();
 	SolverTaskDescription taskDesc = simulation.getSolverTaskDescription();
@@ -483,10 +483,12 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\tSimulationMessaging::getInstVar()->start(); // start the thread");
 	out.println("#endif");
 
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		FieldFunctionArguments psfFieldFunc = null;
 		
-		Variable var = simulation.getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+		Variable var = simSymbolTable.getVariable(SimDataConstants.PSF_FUNCTION_NAME);
 		if (var != null) {
 			FieldFunctionArguments[] ffas = var.getExpression().getFieldFunctionArguments();
 			if (ffas == null || ffas.length == 0) {

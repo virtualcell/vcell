@@ -107,7 +107,7 @@ private void start() {
 		
 		String xmlString = FileUtils.readFileToString(new File(userDirectory, inputFile));
 		Simulation simulation = XmlHelper.XMLToSim(xmlString);
-		simulationTask = new SimulationTask(new SimulationJob(simulation, null, jobIndex), taskID);
+		simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, null), taskID);
 		
 		log = new StdoutSessionLog(simulationTask.getSimulationJobIdentifier());	
 		

@@ -16,7 +16,6 @@ import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
-
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -29,8 +28,8 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import flanagan.math.Fmath;
 /**
  * This class is used to write input file for stochastic hybrid solvers.
  * The input file will be in NetCDF format containing all the requred model information
@@ -42,7 +41,6 @@ import flanagan.math.Fmath;
 
 public class NetCDFWriter {
 
-	private Simulation simulation = null;
 	private String filename = null;
 	private SimulationJob simJob = null;
 	// to store variables and their orders in the reactions. It is set to global in this
@@ -61,16 +59,7 @@ public class NetCDFWriter {
 	public NetCDFWriter(SimulationJob arg_simulationJob, String fn) 
 	{
 		simJob = arg_simulationJob;
-		simulation = simJob.getWorkingSim();
 		filename = fn;
-	}
-
-	/**
-	 * get simulation para.
-	 */
-	public Simulation getSimulation()
-	{
-		return simulation;
 	}
 
 	/**
@@ -82,29 +71,30 @@ public class NetCDFWriter {
 	 */
 	public boolean initialize() throws Exception
 	{
-		if (!getSimulation().getIsValid()) 
+		Simulation simulation = simJob.getSimulation();
+		if (!simulation.getIsValid()) 
 		{
-			throw new MathException("Invalid simulation : "+getSimulation().getWarning());
+			throw new MathException("Invalid simulation : "+simulation.getWarning());
 		}
-		if (getSimulation().getIsSpatial()) 
+		if (simulation.isSpatial()) 
 		{
 			throw new MathException("Stochastic simulation for spacial problems is under development.");		
 		}
-		if (getSimulation().getMathDescription().hasFastSystems()) 
+		if (simulation.getMathDescription().hasFastSystems()) 
 		{
 			throw new MathException("Math description contains algebraic constraints, cannot create file.");
 		}
 		//check variables
-		if(!getSimulation().getMathDescription().getVariables().hasMoreElements())
+		if(!simulation.getMathDescription().getVariables().hasMoreElements())
 		{
 			throw new MathException("Stochastic model has no variable.");
 		}
 		//check subDomain
 		SubDomain subDomain = null;
-		java.util.Enumeration e=getSimulation().getMathDescription().getSubDomains();
+		java.util.Enumeration<SubDomain> e=simulation.getMathDescription().getSubDomains();
 		if(e.hasMoreElements())
 		{
-			subDomain = (SubDomain)e.nextElement();
+			subDomain = e.nextElement();
 		}
 		else throw new MathException("There is no sub domain.");
 		//check jump processes
@@ -134,25 +124,28 @@ public class NetCDFWriter {
 	 */
 	public void writeHybridInputFile(String[] parameterNames) throws Exception,cbit.vcell.parser.ExpressionException,IOException, MathException, InvalidRangeException
 	{
+		Simulation simulation = simJob.getSimulation();
+		SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
 		if(initialize())
 		{
 			//we need to get model and control information first
 			NetcdfFileWriteable ncfile = NetcdfFileWriteable.createNew(filename, false);
-			java.util.Enumeration e = getSimulation().getMathDescription().getSubDomains();//Model info. will be extracted from subDomain of mathDescription
-		  	SubDomain subDomain = (SubDomain)e.nextElement();//remember we are dealing with compartmental model here. only 1 subdomain.
+			java.util.Enumeration<SubDomain> e = simulation.getMathDescription().getSubDomains();//Model info. will be extracted from subDomain of mathDescription
+		  	SubDomain subDomain = e.nextElement();//remember we are dealing with compartmental model here. only 1 subdomain.
 		  	JumpProcess reactions[] = (JumpProcess[])subDomain.getJumpProcesses().toArray(new JumpProcess[subDomain.getJumpProcesses().size()]);
 		  	//get species variable names
-		  	String[] speciesNames = new String[getSimulation().getVariables().length];
-		  	for(int i=0; i< getSimulation().getVariables().length; i++)
-		  		speciesNames[i]=getSimulation().getVariables()[i].getName();
+		  	Variable[] variables = simSymbolTable.getVariables();
+			String[] speciesNames = new String[variables.length];
+		  	for(int i=0; i< variables.length; i++)
+		  		speciesNames[i]=variables[i].getName();
 		  	Expression probs[] = new Expression[reactions.length]; // the probabilities for reactions
 		  	for(int i=0; i< reactions.length; i++) 
 			{
-				probs[i] = getSimulation().substituteFunctions(reactions[i].getProbabilityRate());
+				probs[i] = simSymbolTable.substituteFunctions(reactions[i].getProbabilityRate());
 				probs[i] = probs[i].flatten();
 			}
 			VarIniCondition varInis[] = (VarIniCondition[])subDomain.getVarIniConditions().toArray(new VarIniCondition[subDomain.getVarIniConditions().size()]);
-			Vector vars = new Vector(); // the non-constant stoch variables
+			Vector<Variable> vars = new Vector<Variable>(); // the non-constant stoch variables
 			for(int i=0; i< varInis.length; i++)
 			{
 				if(varInis[i].getVar() instanceof StochVolVariable)
@@ -164,7 +157,7 @@ public class NetCDFWriter {
 			//get reaction rate law types and rate constants
 			ReactionRateLaw[] reactionRateLaws = getReactionRateLaws(probs);
 			
-		  	cbit.vcell.solver.SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
+		  	cbit.vcell.solver.SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 			cbit.vcell.solver.TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 			cbit.vcell.solver.UniformOutputTimeSpec timeSpec = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
 			cbit.vcell.solver.UniformOutputTimeSpec outputTimeSpec = ((UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec());
@@ -183,7 +176,7 @@ public class NetCDFWriter {
 			Dimension stringLen = ncfile.addDimension("StringLen", 72);
 			//define variables
 			//jms info
-			ArrayList dims = new ArrayList();
+			ArrayList<Dimension> dims = new ArrayList<Dimension>();
 			dims.add(stringLen);
 			ncfile.addVariable("JMS_BROKER", DataType.CHAR, dims);
 			ncfile.addVariable("JMS_USER", DataType.CHAR, dims);
@@ -191,24 +184,24 @@ public class NetCDFWriter {
 			ncfile.addVariable("JMS_QUEUE", DataType.CHAR, dims);  
 			ncfile.addVariable("JMS_TOPIC", DataType.CHAR, dims);
 			ncfile.addVariable("VCELL_USER", DataType.CHAR, dims);
-			ncfile.addVariable("SIMULATION_KEY", DataType.INT, new ArrayList());
-			ncfile.addVariable("JOB_INDEX", DataType.INT, new ArrayList());
+			ncfile.addVariable("SIMULATION_KEY", DataType.INT, new ArrayList<Dimension>());
+			ncfile.addVariable("JOB_INDEX", DataType.INT, new ArrayList<Dimension>());
 			//scalars
-			ncfile.addVariable("TStart", DataType.DOUBLE, new ArrayList());
-			ncfile.addVariable("TEnd", DataType.DOUBLE, new ArrayList());
-			ncfile.addVariable("SaveTime", DataType.DOUBLE, new ArrayList());
-			ncfile.addVariable("Volume", DataType.DOUBLE, new ArrayList());
-			ncfile.addVariable("CellGrowthTime", DataType.DOUBLE, new ArrayList());
-			ncfile.addVariable("CellGrowthTimeSD", DataType.DOUBLE, new ArrayList());
-			ncfile.addVariable("ExpType", DataType.INT, new ArrayList());
-			ncfile.addVariable("LastTrial", DataType.INT, new ArrayList());
-			ncfile.addVariable("LastModel", DataType.INT, new ArrayList());
-			ncfile.addVariable("MaxNumModels", DataType.INT, new ArrayList());
-			ncfile.addVariable("NumModels", DataType.INT, new ArrayList());
+			ncfile.addVariable("TStart", DataType.DOUBLE, new ArrayList<Dimension>());
+			ncfile.addVariable("TEnd", DataType.DOUBLE, new ArrayList<Dimension>());
+			ncfile.addVariable("SaveTime", DataType.DOUBLE, new ArrayList<Dimension>());
+			ncfile.addVariable("Volume", DataType.DOUBLE, new ArrayList<Dimension>());
+			ncfile.addVariable("CellGrowthTime", DataType.DOUBLE, new ArrayList<Dimension>());
+			ncfile.addVariable("CellGrowthTimeSD", DataType.DOUBLE, new ArrayList<Dimension>());
+			ncfile.addVariable("ExpType", DataType.INT, new ArrayList<Dimension>());
+			ncfile.addVariable("LastTrial", DataType.INT, new ArrayList<Dimension>());
+			ncfile.addVariable("LastModel", DataType.INT, new ArrayList<Dimension>());
+			ncfile.addVariable("MaxNumModels", DataType.INT, new ArrayList<Dimension>());
+			ncfile.addVariable("NumModels", DataType.INT, new ArrayList<Dimension>());
 			//variables with at least 1 dimension
-			ArrayList dimspecies = new ArrayList();
+			ArrayList<Dimension> dimspecies = new ArrayList<Dimension>();
 			dimspecies.add(numSpecies);
-			ArrayList dimreactions = new ArrayList();
+			ArrayList<Dimension> dimreactions = new ArrayList<Dimension>();
 			dimreactions.add(numReactions);
 			ncfile.addVariable("SpeciesSplitOnDivision", DataType.INT, dimspecies);
 			ncfile.addVariable("SaveSpeciesData", DataType.INT, dimspecies);
@@ -425,7 +418,7 @@ public class NetCDFWriter {
 						int j=0;
 						while(varnames.hasMoreElements())
 						{
-							String name = (String)varnames.nextElement();
+							String name = varnames.nextElement();
 							A9.setInt(idx.set(i,j),getVariableIndex(name, vars));
 							j++;
 						}
@@ -438,7 +431,7 @@ public class NetCDFWriter {
 						//we must make sure to put the higher order species first.
 						while(varnames.hasMoreElements())
 						{
-							lowOrderName = (String)varnames.nextElement();
+							lowOrderName = varnames.nextElement();
 							if(tem.get(lowOrderName) > order)
 							{
 								String s = highOrderName;
@@ -475,7 +468,7 @@ public class NetCDFWriter {
 			     ArrayChar A11 = new ArrayChar.D2(numSpecies.getLength(), stringLen.getLength());
 			     for(int i=0; i<numSpecies.getLength(); i++)
 				 {
-			    	 String name = ((Variable)vars.elementAt(i)).getName();
+			    	 String name = vars.elementAt(i).getName();
 			    	 int diff = stringLen.getLength()-name.length();
 			    	 if(diff >= 0)
 			    	 {
@@ -495,9 +488,9 @@ public class NetCDFWriter {
 			    for(int i=0; i<numSpecies.getLength(); i++)
 			    {
 			    	try{
-			    		Expression varIni = subDomain.getVarIniCondition(((Variable)vars.elementAt(i)).getName()).getIniVal();
-			    		varIni.bindExpression(simulation);
-			    		varIni = simulation.substituteFunctions(varIni).flatten();
+			    		Expression varIni = subDomain.getVarIniCondition(vars.elementAt(i).getName()).getIniVal();
+			    		varIni.bindExpression(simSymbolTable);
+			    		varIni = simSymbolTable.substituteFunctions(varIni).flatten();
 			    		int val = (int)Math.round(varIni.evaluateConstant());
 			    		A12.setInt(idx.set(i),val);
 			    	}catch(ExpressionException ex)
@@ -544,6 +537,8 @@ public class NetCDFWriter {
 	 */		
 	private  ReactionRateLaw[] getReactionRateLaws(Expression[] probs) throws ExpressionException, MathException
 	{
+		SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
+		
 		ReactionRateLaw[] results = new ReactionRateLaw[probs.length];
 		varInProbOrderHash = new Hashtable[probs.length];
 		for(int i=0; i<probs.length; i++)
@@ -586,8 +581,8 @@ public class NetCDFWriter {
 				results[i].setLawType(ReactionRateLaw.order_0);
 				coefExp = new Expression(coefExp.flatten().infix()+"/6.02e23");
 				try{
-					coefExp.bindExpression(simulation);
-					coefExp = simulation.substituteFunctions(coefExp).flatten();
+					coefExp.bindExpression(simSymbolTable);
+					coefExp = simSymbolTable.substituteFunctions(coefExp).flatten();
 					double val = coefExp.evaluateConstant();
 					results[i].setRateConstant(val);
 				}catch(Exception e)
@@ -601,8 +596,8 @@ public class NetCDFWriter {
 				results[i].setLawType(ReactionRateLaw.order_1);
 				coefExp = coefExp.flatten();
 				try{
-					coefExp.bindExpression(simulation);
-					coefExp = simulation.substituteFunctions(coefExp).flatten();
+					coefExp.bindExpression(simSymbolTable);
+					coefExp = simSymbolTable.substituteFunctions(coefExp).flatten();
 					double val = coefExp.evaluateConstant();
 					results[i].setRateConstant(val);
 				}catch(Exception e)
@@ -619,8 +614,8 @@ public class NetCDFWriter {
 					coefExp = new Expression(coefExp.flatten().infix()+"*6.02e23");
 					results[i].setLawType(ReactionRateLaw.order_2_1substrate);
 					try{
-						coefExp.bindExpression(simulation);
-						coefExp = simulation.substituteFunctions(coefExp).flatten();
+						coefExp.bindExpression(simSymbolTable);
+						coefExp = simSymbolTable.substituteFunctions(coefExp).flatten();
 						double val = coefExp.evaluateConstant();
 						results[i].setRateConstant(val);
 					}catch(Exception e)
@@ -634,8 +629,8 @@ public class NetCDFWriter {
 					coefExp = new Expression(coefExp.flatten().infix()+"*6.02e23");
 					results[i].setLawType(ReactionRateLaw.order_2_2substrate);
 					try{
-						coefExp.bindExpression(simulation);
-						coefExp = simulation.substituteFunctions(coefExp).flatten();
+						coefExp.bindExpression(simSymbolTable);
+						coefExp = simSymbolTable.substituteFunctions(coefExp).flatten();
 						double val = coefExp.evaluateConstant();
 						results[i].setRateConstant(val);
 					}catch(Exception e)
@@ -665,8 +660,8 @@ public class NetCDFWriter {
 				}
 				coefExp = coefExp.flatten();
 				try{
-					coefExp.bindExpression(simulation);
-					coefExp = simulation.substituteFunctions(coefExp).flatten();
+					coefExp.bindExpression(simSymbolTable);
+					coefExp = simSymbolTable.substituteFunctions(coefExp).flatten();
 					double val = coefExp.evaluateConstant();
 					results[i].setRateConstant(val);
 				}catch(Exception e)
@@ -685,7 +680,9 @@ public class NetCDFWriter {
 		
 	private String[] getVariableSymbols(String[] symbols)
 	{
-		Vector vars = new Vector();
+		Simulation simulation = simJob.getSimulation();
+		
+		Vector<String> vars = new Vector<String>();
 		if(symbols != null)
 		{
 			for(int i=0; i< symbols.length; i++)
@@ -696,17 +693,17 @@ public class NetCDFWriter {
 					vars.add(symbols[i]);
 				}
 			}
-			return (String[])vars.toArray(new String[vars.size()]);
+			return vars.toArray(new String[vars.size()]);
 		}
-		else return (String[])vars.toArray(new String[0]);
+		else return vars.toArray(new String[0]);
 	}
 	
 	//variable index based on VarIniCondition List
-	private int getVariableIndex(String varname, Vector vars)
+	private int getVariableIndex(String varname, Vector<Variable> vars)
 	{
 		for(int i = 0; i<vars.size(); i++)
 		{
-			if(varname.equals(((Variable)vars.elementAt(i)).getName()))
+			if(varname.equals(vars.elementAt(i).getName()))
 				return (i+1);
 		}
 		return -1;

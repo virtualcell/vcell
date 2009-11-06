@@ -103,9 +103,11 @@ private String printComparisonReport(SimulationComparisonSummary simCompSummary,
 private static ODESolverResultSet solveSimulation(Simulation sim) {
 	// NativeIDA solver
 	RowColumnResultSet rcResultSet = null;
+	SimulationJob simJob = null;
 	try {
 		StringWriter stringWriter = new StringWriter();
-		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), sim);
+		simJob = new SimulationJob(sim, 0, null);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), simJob);
 		idaFileWriter.write();
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
@@ -128,12 +130,12 @@ private static ODESolverResultSet solveSimulation(Simulation sim) {
 			odeSolverResultSet.addRow(rcResultSet.getRow(i));
 		}
 		// add appropriate Function columns to result set
-		cbit.vcell.math.Function functions[] = sim.getFunctions();
+		cbit.vcell.math.Function functions[] = simJob.getSimulationSymbolTable().getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
-					exp1 = sim.substituteFunctions(exp1);
+					exp1 = simJob.getSimulationSymbolTable().substituteFunctions(exp1);
 				} catch (cbit.vcell.math.MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
@@ -306,7 +308,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 					for (int i = 0; i < sims.length; i++) {
 						for (int j = 0; j < sims[i].getScanCount(); j++) {
 							logFilePrintStream.println("Simulation : " + sims[i].getName() + ":\tscan # : " + j);
-							SimulationJob simJob = new SimulationJob(sims[i], null, j);
+							SimulationJob simJob = new SimulationJob(sims[i], j, null);
 							exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k], simJob);
 							//exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k].getName());
 							XmlUtil.writeXMLStringToFile(exportedSBMLStr, "C:\\SBMLRelated\\SBML_Testing\\SBMLValidationSuiteTests\\SBMLOverridesExportTests\\Alpha_Results_4_22_08\\" + bioModel_1.getName()+"_"+simContexts[k].getName()+"_"+sims[i].getName()+"_"+j+".xml",true);
@@ -314,13 +316,14 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 							bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr));
 							
 							// solve the original vcell model simulation.
-							simJob.getWorkingSim().getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
-							simJob.getWorkingSim().getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
+							Simulation simulation = simJob.getSimulation();
+							simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
+							simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
 					        TimeStep timeStep_1 = new TimeStep();
-					        simJob.getWorkingSim().getSolverTaskDescription().setTimeStep(new TimeStep(timeStep_1.getMinimumTimeStep(),timeStep_1.getDefaultTimeStep(),endTime/10000));
-					        simJob.getWorkingSim().getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/numTimeSteps));
-					        simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-10, 1e-12));
-							ODESolverResultSet odeSolverResultSet_1 = solveSimulation(simJob.getWorkingSim());
+					        simulation.getSolverTaskDescription().setTimeStep(new TimeStep(timeStep_1.getMinimumTimeStep(),timeStep_1.getDefaultTimeStep(),endTime/10000));
+					        simulation.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/numTimeSteps));
+					        simulation.getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-10, 1e-12));
+							ODESolverResultSet odeSolverResultSet_1 = solveSimulation(simulation);
 	
 							// For the imported simContext, create new simulation
 							SimulationContext simContext_2 = bioModel_2.getSimulationContexts(0);

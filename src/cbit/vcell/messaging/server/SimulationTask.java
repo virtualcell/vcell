@@ -1,13 +1,16 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.ISize;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 
 /**
@@ -28,15 +31,11 @@ public class SimulationTask implements java.io.Serializable {
  * @param argUserid java.lang.String
  */
 public SimulationTask(SimulationJob argSimulationJob, int tid) {
-	if (argSimulationJob == null || argSimulationJob.getWorkingSim() == null){
-		throw new RuntimeException("simulation cannot be null");
-	}
-	simulationJob = argSimulationJob;
-	taskID = tid;
+	this(argSimulationJob, tid, null);
 }
 
 public SimulationTask(SimulationJob argSimulationJob, int tid, String comres) {
-	if (argSimulationJob == null || argSimulationJob.getWorkingSim() == null){
+	if (argSimulationJob == null || argSimulationJob.getSimulation() == null){
 		throw new RuntimeException("simulation cannot be null");
 	}
 	simulationJob = argSimulationJob;
@@ -48,19 +47,22 @@ public double getEstimatedMemorySizeMB() {
 	//
 	// calculate number of PDE variables and total number of spatial variables
 	//
+	SimulationSymbolTable simSymbolTable = getSimulationJob().getSimulationSymbolTable();
+	Simulation simulation = simSymbolTable.getSimulation();
+	MathDescription mathDescription = simulation.getMathDescription();
+	
 	int pdeVarCount=0;
 	int odeVarCount=0;
-	Simulation simulation = getSimulationJob().getWorkingSim();
-	Variable variables[] = simulation.getVariables();
+	Variable variables[] = simSymbolTable.getVariables();
 	for (int i=0;i<variables.length;i++){
 	  	if (variables[i] instanceof VolVariable) {
-	  		if (simulation.getMathDescription().isPDE((VolVariable)variables[i])) {
+	  		if (mathDescription.isPDE((VolVariable)variables[i])) {
 	  			pdeVarCount ++;
 	  		} else {
 	  			odeVarCount ++;
 	  		}
 	  	} else if (variables[i] instanceof MemVariable) {
-	  		if (simulation.getMathDescription().isPDE((MemVariable)variables[i])) {	  	
+	  		if (mathDescription.isPDE((MemVariable)variables[i])) {	  	
 	  			pdeVarCount ++;
 	  		} else {
 	  			odeVarCount ++;
@@ -68,8 +70,8 @@ public double getEstimatedMemorySizeMB() {
 	  	}
 	}	
 	long numMeshPoints = 1;
-	if (simulation.getMathDescription().getGeometry().getDimension() > 0) {
-		org.vcell.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
+	if (simulation.isSpatial()) {
+		ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
 		numMeshPoints = samplingSize.getX()*samplingSize.getY()*samplingSize.getZ();
 	}
 	
@@ -88,7 +90,7 @@ public double getEstimatedMemorySizeMB() {
  * @return cbit.sql.KeyValue
  */
 public KeyValue getSimKey() {
-	return getSimulationJob().getWorkingSim().getKey();
+	return getSimulationJob().getSimulation().getKey();
 }
 
 
@@ -98,7 +100,7 @@ public KeyValue getSimKey() {
  * @return cbit.vcell.solver.Simulation
  */
 public SimulationInfo getSimulationInfo() {
-	return (getSimulationJob().getWorkingSim() == null) ? null : getSimulationJob().getWorkingSim().getSimulationInfo();
+	return getSimulationJob().getSimulation().getSimulationInfo();
 }
 
 
@@ -107,7 +109,7 @@ public SimulationInfo getSimulationInfo() {
  * Creation date: (10/10/2005 3:02:30 PM)
  * @return cbit.vcell.solver.SimulationJob
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() {
+public SimulationJob getSimulationJob() {
 	return simulationJob;
 }
 
@@ -137,12 +139,8 @@ public int getTaskID() {
  * Creation date: (3/11/2004 8:51:11 AM)
  * @return java.lang.String
  */
-public org.vcell.util.document.User getUser() {
-	if (getSimulationJob().getWorkingSim() == null) {
-		return null;
-	}
-	
-	return getSimulationJob().getWorkingSim().getVersion().getOwner();
+public User getUser() {	
+	return getSimulationJob().getSimulation().getVersion().getOwner();
 }
 
 

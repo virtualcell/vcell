@@ -1,18 +1,17 @@
 package cbit.vcell.solver.ode;
 
-import cbit.vcell.server.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
 import org.vcell.util.SessionLog;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.math.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+
 import cbit.vcell.math.MathException;
-import cbit.vcell.solver.*;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.UserStopException;
 /**
  * Insert the type's description here.
  * Creation date: (4/22/00 12:05:08 AM)
@@ -42,7 +41,7 @@ protected void initialize() throws SolverException {
  */
 protected void integrate() throws SolverException, UserStopException, IOException {
 	try {
-		SolverTaskDescription taskDescription = getSimulation().getSolverTaskDescription();
+		SolverTaskDescription taskDescription = simulationJob.getSimulation().getSolverTaskDescription();
 		double timeStep = taskDescription.getTimeStep().getDefaultTimeStep();
 		fieldCurrentTime = taskDescription.getTimeBounds().getStartingTime();
 

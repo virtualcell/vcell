@@ -262,7 +262,7 @@ public void runSimulations(boolean bNew, String startKey) {
 				cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
 				sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(0.001, 0.001, 0.001));
 				sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0,0.001));
-				cbit.vcell.solver.Solver solver = SolverFactory.createSolver(log, new File(dataDir), new SimulationJob(sim,null, 0));		
+				cbit.vcell.solver.Solver solver = SolverFactory.createSolver(log, new File(dataDir), new SimulationJob(sim,0,null));		
 				solver.startSolver();
 				while (true) {
 					cbit.vcell.solver.SolverStatus solverStatus = solver.getSolverStatus();

@@ -927,15 +927,11 @@ public SimulationContext getSelectedSimContext() {
 	return vcSelectedSimContext;
 }
 
-private SimulationJob getSelectedSimulationJob() {
-	return vcSelectedSimJob;
-}
-
 private Simulation getSelectedSimulation() {
 	if (vcSelectedSimJob == null) {
 		return null;
 	}
-	return vcSelectedSimJob.getWorkingSim();
+	return vcSelectedSimJob.getSimulation();
 }
 
 

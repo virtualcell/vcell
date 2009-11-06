@@ -1,14 +1,23 @@
 package cbit.vcell.solver.stoch;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.math.JumpProcess;
-import cbit.vcell.math.Action;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.SubDomain;
-import java.io.*;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Vector;
+
+import cbit.vcell.math.Action;
+import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFormatException;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverFileWriter;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 
 /**
  * The function reads model information from simulation and
@@ -22,9 +31,9 @@ public class StochFileWriter extends SolverFileWriter
 /**
  * StochFileWriter constructor comment.
  */
-public StochFileWriter(PrintWriter pw, Simulation arg_simulation, int jobIndex, boolean bMessaging) 
+public StochFileWriter(PrintWriter pw, SimulationJob arg_simulationJob, boolean bMessaging) 
 {
-	super(pw, arg_simulation, jobIndex, bMessaging);
+	super(pw, arg_simulationJob, bMessaging);
 }
 
 
@@ -49,7 +58,7 @@ private Vector<String> getDependencies(JumpProcess process, Vector<JumpProcess> 
 			if(!process.compareEqual(processList.elementAt(i)))//to avoid comparing with it's own
 			{
 				Expression probExp = processList.elementAt(i).getProbabilityRate();
-				probExp = getSimulation().substituteFunctions(probExp).flatten();
+				probExp = simulationJob.getSimulationSymbolTable().substituteFunctions(probExp).flatten();
 				String[] vars = probExp.getSymbols();
 				if((vars != null)&&(vars.length>0))
 				{				
@@ -61,16 +70,6 @@ private Vector<String> getDependencies(JumpProcess process, Vector<JumpProcess> 
 		}
 	}
 	return result;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2006 5:38:54 PM)
- */
-public Simulation getSimulation()
-{
-	return simulation;
 }
 
 
@@ -103,27 +102,29 @@ private boolean hasCommonElement(String[] oriArray, String[] comArray)
  */
 public void initialize() throws Exception
 {
-	if (!getSimulation().getIsValid()) 
+	Simulation simulation = simulationJob.getSimulation();
+	
+	if (!simulation.getIsValid()) 
 	{
-		throw new MathException("Invalid simulation : "+getSimulation().getWarning());
+		throw new MathException("Invalid simulation : "+simulation.getWarning());
 	}
-	if (getSimulation().getIsSpatial()) 
+	if (simulation.isSpatial()) 
 	{
 		throw new MathException("Stochastic simulation for spacial problems is under development.");		
 	}
-	if (getSimulation().getMathDescription().hasFastSystems()) 
+	if (simulation.getMathDescription().hasFastSystems()) 
 	{
 		
 		throw new MathException("Math description contains algebraic constraints, cannot create file.");
 	}
 	//check variables
-	if(!getSimulation().getMathDescription().getVariables().hasMoreElements())
+	if(!simulation.getMathDescription().getVariables().hasMoreElements())
 	{
 		throw new MathException("Stochastic model has no variable.");
 	}
 	//check subDomain
 	SubDomain subDomain = null;
-	Enumeration<SubDomain> e=getSimulation().getMathDescription().getSubDomains();
+	Enumeration<SubDomain> e=simulation.getMathDescription().getSubDomains();
 	if(e.hasMoreElements())
 	{
 		subDomain = e.nextElement();
@@ -143,10 +144,12 @@ public void initialize() throws Exception
  */
 public boolean isValidProbabilityExpression(Expression probExp)
 {
+	Simulation simulation = simulationJob.getSimulation();
+	
 	String[] symbols = probExp.getSymbols();
 	for(int i=0; symbols != null && i<symbols.length; i++)
 	{
-		if(getSimulation().getMathDescription().getVariable(symbols[i]) != null)
+		if(simulation.getMathDescription().getVariable(symbols[i]) != null)
 			continue;
 		else
 			return false;
@@ -158,14 +161,17 @@ public boolean isValidProbabilityExpression(Expression probExp)
  * Write the model to a text file which serves as an input for Stochastic simulation engine.
  * Creation date: (6/22/2006 5:37:26 PM)
  */
-public void write(String[] parameterNames) throws Exception,cbit.vcell.parser.ExpressionException
+public void write(String[] parameterNames) throws Exception,ExpressionException
 {
+	Simulation simulation = simulationJob.getSimulation();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable(); 
+	
 	initialize();
 	writeJMSParamters();
 
 	// Write control information
 	printWriter.println("<control>");
-	cbit.vcell.solver.SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
+	cbit.vcell.solver.SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 	cbit.vcell.solver.TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 	cbit.vcell.solver.OutputTimeSpec outputTimeSpec = solverTaskDescription.getOutputTimeSpec();
 	ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
@@ -186,7 +192,7 @@ public void write(String[] parameterNames) throws Exception,cbit.vcell.parser.Ex
   	printWriter.println();
 
   	//write model information
-  	Enumeration<SubDomain> e = getSimulation().getMathDescription().getSubDomains();//Model info. will be extracted from subDomain of mathDescription
+  	Enumeration<SubDomain> e = simulation.getMathDescription().getSubDomains();//Model info. will be extracted from subDomain of mathDescription
   	SubDomain subDomain = null;
   	if(e.hasMoreElements()) {
 		subDomain = e.nextElement();
@@ -204,8 +210,8 @@ public void write(String[] parameterNames) throws Exception,cbit.vcell.parser.Ex
 			{
 		  		try{
 		  			Expression iniExp = varInis.elementAt(i).getIniVal();
-		  			iniExp.bindExpression(getSimulation());
-					iniExp = getSimulation().substituteFunctions(iniExp).flatten();
+		  			iniExp.bindExpression(simSymbolTable);
+					iniExp = simSymbolTable.substituteFunctions(iniExp).flatten();
 		  			double iniValue = iniExp.evaluateConstant();
 		  			printWriter.println(((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"\t"+Math.round(iniValue));
 		  		}catch(cbit.vcell.parser.ExpressionException ex)
@@ -245,8 +251,8 @@ public void write(String[] parameterNames) throws Exception,cbit.vcell.parser.Ex
 				printWriter.println("JumpProcess"+"\t"+temProc.getName()); //jump process name
 				Expression probExp = temProc.getProbabilityRate();
 				try {
-					probExp.bindExpression(getSimulation());
-					probExp = getSimulation().substituteFunctions(probExp).flatten();
+					probExp.bindExpression(simSymbolTable);
+					probExp = simSymbolTable.substituteFunctions(probExp).flatten();
 					if(!isValidProbabilityExpression(probExp))
 					{
 						throw new MathFormatException("probability rate in jump process "+temProc.getName()+" has illegal symbols(should only contain variable names).");

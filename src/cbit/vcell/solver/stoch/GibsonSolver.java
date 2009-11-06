@@ -19,6 +19,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
@@ -161,15 +162,16 @@ public ODESolverResultSet getStochSolverResultSet()
 	Add appropriate Function columns to result set if the stochastic simulation is to display the trajectory.
 	No function columns for the results of multiple stochastic trials
 	*/
-	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	if(simSymbolTable.getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 	{
-		Function functions[] = getSimulation().getFunctions();
+		Function functions[] = simSymbolTable.getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (isFunctionSaved(functions[i])) 
 			{
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
-					exp1 = getSimulation().substituteFunctions(exp1);
+					exp1 = simSymbolTable.substituteFunctions(exp1);
 				} catch (MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
@@ -212,7 +214,7 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		StochFileWriter stFileWriter = new StochFileWriter(pw, getSimulation(), getJobIndex(), true);
+		StochFileWriter stFileWriter = new StochFileWriter(pw, simulationJob, true);
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
@@ -256,7 +258,7 @@ private final void printStochFile() throws IOException
 //	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
 //	stSimData.writeODELogFile(logFile, dataFile);
 	// fire event to inform that solver has data printed. however, for gibson multiple trial and hybrid solvers, we don't show intermediate results
-	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
+	if(simulationJob.getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 		fireSolverPrinted(getCurrentTime());
 }
 
@@ -343,12 +345,13 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
-	Function functions[] = getSimulation().getFunctions();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
-				exp1 = getSimulation().substituteFunctions(exp1).flatten();
+				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
 			} catch (MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());

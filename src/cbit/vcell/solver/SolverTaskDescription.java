@@ -49,7 +49,7 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
-		if (simulation.getIsSpatial()) 
+		if (simulation.isSpatial()) 
 		{
 			setSolverDescription(SolverDescription.getDefaultPDESolverDescription());
 		} //amended Sept.27, 2006
@@ -136,7 +136,7 @@ public SolverTaskDescription(Simulation simulation) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
-		if (simulation.getIsSpatial()) 
+		if (simulation.isSpatial()) 
 		{
 			setSolverDescription(SolverDescription.getDefaultPDESolverDescription());
 		} //amended Sept.27, 2006
@@ -562,11 +562,11 @@ private boolean isAllowableSolverDescription(SolverDescription argSolverDescript
 		return true;
 	}
 
-	if (getSimulation().getIsSpatial()==true && argSolverDescription.isPDESolver()){
+	if (getSimulation().isSpatial()==true && argSolverDescription.isPDESolver()){
 		return true;
-	}else if (getSimulation().getIsSpatial()==false && argSolverDescription.isODESolver()){
+	}else if (getSimulation().isSpatial()==false && argSolverDescription.isODESolver()){
 		return true;
-	}else if (getSimulation().getIsSpatial()==false && argSolverDescription.isSTOCHSolver()){
+	}else if (getSimulation().isSpatial()==false && argSolverDescription.isSTOCHSolver()){
 		return true;
 	}else{
 		return false;

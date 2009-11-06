@@ -4,14 +4,18 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
+import java.io.File;
 import java.util.Vector;
 
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.server.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.TimeBounds;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 3:18:18 PM)
@@ -30,7 +34,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
  */
 public AbstractCompiledSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
-	setCurrentTime(getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
+	setCurrentTime(simulationJob.getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
 }
 /**
  * Insert the method's description here.
@@ -66,8 +70,10 @@ protected MathExecutable getMathExecutable() {
  * @return double
  */
 public double getProgress() {
-	double startTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
-	double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+	Simulation simulation = simulationJob.getSimulation();
+	TimeBounds timeBounds = simulation.getSolverTaskDescription().getTimeBounds();
+	double startTime = timeBounds.getStartingTime();
+	double endTime = timeBounds.getEndingTime();
 	return (currentTime-startTime)/(endTime-startTime);
 }
 
@@ -111,7 +117,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 private void runSolver() {
 	try {
 		fieldRunning = true;
-		setCurrentTime(getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
+		setCurrentTime(simulationJob.getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));
 		// fireSolverStarting("initializing");
 		// depends on solver; the initialize() method in actual solver will fire detailed messages

@@ -2,9 +2,11 @@ package cbit.vcell.client.task;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.Hashtable;
+
 import javax.swing.filechooser.FileFilter;
+
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.FileFilters;
 
 import cbit.util.xml.XmlUtil;
@@ -16,12 +18,11 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.matlab.MatlabOdeFileCoder;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
-import org.vcell.util.document.VCDocument;
-
-import sun.misc.CharacterEncoder;
 
 /**
  * Insert the type's description here.
@@ -37,9 +38,9 @@ public class ExportToXML extends AsynchClientTask {
  * Insert the method's description here.
  * Creation date: (7/26/2004 12:29:53 PM)
  */
-private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc) throws cbit.vcell.parser.ExpressionException, MathException {
-	cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(mathDesc);
-	cbit.vcell.matlab.MatlabOdeFileCoder coder = new cbit.vcell.matlab.MatlabOdeFileCoder(sim);
+private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc) throws ExpressionException, MathException {
+	Simulation sim = new Simulation(mathDesc);
+	MatlabOdeFileCoder coder = new MatlabOdeFileCoder(sim);
 	java.io.StringWriter sw = new java.io.StringWriter();
 	java.io.PrintWriter pw = new java.io.PrintWriter(sw);
 	String functionName = exportFile.getName();
@@ -109,7 +110,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 						return;
 					} else {
 						for (int sc = 0; sc < selectedSim.getScanCount(); sc++) {
-							SimulationJob simJob = new SimulationJob(selectedSim, null, sc);
+							SimulationJob simJob = new SimulationJob(selectedSim, sc, null);
 							resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, selectedSimContext, simJob);
 							// Need to export each parameter scan into a separate file 
 							String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";

@@ -2,25 +2,25 @@ package cbit.vcell.solver;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 
 public class SimulationJob implements java.io.Serializable {
-	private Simulation workingSim = null;
+	private Simulation sim = null;
 	private int jobIndex = -1;				// expect non-negative value.
 	private FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = null;
-
+	private transient SimulationSymbolTable simulationSymbolTable = null;
+	
 /**
  * Insert the method's description here.
  * Creation date: (10/7/2005 4:50:05 PM)
  * @param masterSim cbit.vcell.solver.Simulation
  * @param jobIndex int
  */
-public SimulationJob(Simulation masterSim, FieldDataIdentifierSpec[] argFDIS, int jobIndex) {
+public SimulationJob(Simulation argSim, int jobIndex, FieldDataIdentifierSpec[] argFDIS) {
 	if (jobIndex<0){
 		throw new RuntimeException("unexpected simulation jobIndex < 0");
 	}
-	workingSim = Simulation.createWorkingSim(masterSim, jobIndex);
+	sim = argSim;
 	fieldDataIdentifierSpecs = argFDIS;
 	this.jobIndex = jobIndex;
 }
-
 
 /**
  * Insert the method's description here.
@@ -58,7 +58,7 @@ public int getJobIndex() {
  * @return java.lang.String
  */
 public String getSimulationJobID() {
-	return createSimulationJobID(getWorkingSim().getSimulationID(),jobIndex);
+	return createSimulationJobID(sim.getSimulationID(),jobIndex);
 }
 
 
@@ -68,7 +68,7 @@ public String getSimulationJobID() {
  * @return cbit.vcell.server.VCDataIdentifier
  */
 public VCSimulationDataIdentifier getVCDataIdentifier() {
-	return new VCSimulationDataIdentifier(workingSim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
+	return new VCSimulationDataIdentifier(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
 }
 
 
@@ -77,7 +77,15 @@ public VCSimulationDataIdentifier getVCDataIdentifier() {
  * Creation date: (10/7/2005 4:48:57 PM)
  * @return cbit.vcell.solver.Simulation
  */
-public Simulation getWorkingSim() {
-	return workingSim;
+public Simulation getSimulation() {
+	return sim;
+}
+
+
+public final SimulationSymbolTable getSimulationSymbolTable() {
+	if (simulationSymbolTable == null) {
+		simulationSymbolTable = new SimulationSymbolTable(sim, jobIndex);
+	}
+	return simulationSymbolTable;
 }
 }

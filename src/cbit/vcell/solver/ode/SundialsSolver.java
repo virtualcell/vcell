@@ -1,18 +1,45 @@
 package cbit.vcell.solver.ode;
-import cbit.vcell.math.*;
-import cbit.vcell.solvers.*;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.parser.Expression;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.SessionLog;
+
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
 import cbit.vcell.math.Function;
-import java.util.*;
-import java.io.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.ApplicationMessage;
 /**
  * Insert the type's description here.
  * Creation date: (3/9/2001 3:04:39 PM)
  * @author: John Wagner
  */
-public abstract class SundialsSolver extends cbit.vcell.solvers.AbstractCompiledSolver implements ODESolver {
+public abstract class SundialsSolver extends AbstractCompiledSolver implements ODESolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
@@ -21,14 +48,14 @@ public abstract class SundialsSolver extends cbit.vcell.solvers.AbstractCompiled
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public SundialsSolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, org.vcell.util.SessionLog sessionLog) throws SolverException {
+public SundialsSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
-	if (getSimulation().getIsSpatial()) {
+	if (simulationJob.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use SundialsSolver on spatial simulation");
 	}
 }
 
-protected void initialize() throws cbit.vcell.solver.SolverException {
+protected void initialize() throws SolverException {
 	writeFunctionsFile();
 	writeLogFile();
 }
@@ -50,21 +77,24 @@ public void cleanup() {
 	This method was created in Visual Age
 */
 
-private StateVariable[] createStateVariables() throws cbit.vcell.math.MathException, cbit.vcell.parser.ExpressionException {
+private StateVariable[] createStateVariables() throws MathException, ExpressionException {
 	Vector<StateVariable> stateVariables = new Vector<StateVariable>();
 	// get Ode's from MathDescription and create ODEStateVariables
-	Enumeration<Equation> enum1 = ((SubDomain)getSimulation().getMathDescription().getSubDomains().nextElement()).getEquations();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	
+	MathDescription mathDescription = simSymbolTable.getSimulation().getMathDescription();
+	Enumeration<Equation> enum1 = ((SubDomain)mathDescription.getSubDomains().nextElement()).getEquations();
 	while (enum1.hasMoreElements()) {
 		Equation equation = (Equation) enum1.nextElement();
 		if (equation instanceof OdeEquation) {
-			stateVariables.addElement(new ODEStateVariable((OdeEquation) equation, getSimulation()));
+			stateVariables.addElement(new ODEStateVariable((OdeEquation) equation, simSymbolTable));
 		} else {
 			throw new MathException("encountered non-ode equation, unsupported");
 		}
 	}
 
 	//  Get sensitivity variables
-	Variable variables[] = getSimulation().getVariables(); 
+	Variable variables[] = simSymbolTable.getVariables(); 
 	Vector<SensVariable> sensVariables = new Vector<SensVariable>();
 	if (getSensitivityParameter() != null) {
 		for (int i = 0; i < variables.length; i++){
@@ -80,16 +110,16 @@ private StateVariable[] createStateVariables() throws cbit.vcell.math.MathExcept
 	for (int v = 0; v < sensVariables.size(); v++) {
 		stateVariables.addElement(
 			new SensStateVariable((SensVariable) sensVariables.elementAt(v),
-									getSimulation().getMathDescription().getRateSensitivity(), 
-									getSimulation().getMathDescription().getJacobian(),
-									sensVariables, 
-									getSimulation()));
+					mathDescription.getRateSensitivity(), 
+					mathDescription.getJacobian(),
+					sensVariables, 
+					simSymbolTable));
 	}
 	if (stateVariables.size() == 0) {
 		throw new MathException("there are no equations defined");
 	}
 
-	StateVariable stateVars[] = (StateVariable[])org.vcell.util.BeanUtils.getArray(stateVariables,StateVariable.class);
+	StateVariable stateVars[] = (StateVariable[])BeanUtils.getArray(stateVariables,StateVariable.class);
 	return(stateVars);
 }
 
@@ -108,8 +138,9 @@ protected ApplicationMessage getApplicationMessage(String message) {
 	if (message.startsWith(PROGRESS_PREFIX)){
 		String progressString = message.substring(message.lastIndexOf(SEPARATOR)+1,message.indexOf("%"));
 		double progress = Double.parseDouble(progressString)/100.0;
-		double startTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
-		double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+		TimeBounds timeBounds = simulationJob.getSimulation().getSolverTaskDescription().getTimeBounds();
+		double startTime = timeBounds.getStartingTime();
+		double endTime = timeBounds.getEndingTime();
 		setCurrentTime(startTime + (endTime-startTime)*progress);
 		return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
 	} else if (message.startsWith(DATA_PREFIX)){
@@ -138,16 +169,17 @@ public ODESolverResultSet getODESolverResultSet()  {
 	//
 	// add appropriate Function columns to result set
 	//
-	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
-				exp1 = getSimulation().substituteFunctions(exp1);
-			} catch (cbit.vcell.math.MathException e) {
+				exp1 = simSymbolTable.substituteFunctions(exp1);
+			} catch (MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
+			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}
@@ -155,7 +187,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 			try {
 				FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 				odeSolverResultSet.addFunctionColumn(cd);
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 			}
 		}
@@ -170,14 +202,14 @@ public ODESolverResultSet getODESolverResultSet()  {
 				FunctionColumnDescription fcd = new FunctionColumnDescription(new Expression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getName(), null, getSensitivityParameter().getName(), false);
 				odeSolverResultSet.addFunctionColumn(fcd);
 			}
-			Variable variables[] = getSimulation().getVariables();
+			Variable variables[] = simSymbolTable.getVariables();
 			StateVariable stateVars[] = createStateVariables();
 						
 			for (int i = 0; i < variables.length; i++){
 				if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
 					Function depSensFunction = (Function)variables[i];
 					Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
-					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);
+					depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);
 					
 					depSensFnExpr = getFunctionSensitivity(depSensFnExpr, getSensitivityParameter(), stateVars);
 					// depSensFnExpr = depSensFnExpr.flatten(); 	// already bound and flattened in getFunctionSensitivity, no need here.....
@@ -193,7 +225,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 		} catch (MathException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
 		}
@@ -219,13 +251,14 @@ public int getSaveToFileInterval() {
  * @return int
  */
 public Constant getSensitivityParameter() {
-	Constant origSensParam = getSimulation().getSolverTaskDescription().getSensitivityParameter();
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	Constant origSensParam = simSymbolTable.getSimulation().getSolverTaskDescription().getSensitivityParameter();
 	//
 	// sensitivity parameter from solverTaskDescription will have the non-overridden nominal value.
 	// ask the Simulation for the updated Constant object (with the proper overridden value).
 	//
 	if (origSensParam!=null){
-		return (Constant)getSimulation().getVariable(origSensParam.getName());
+		return (Constant)simSymbolTable.getVariable(origSensParam.getName());
 	}else{
 		return null;
 	}
@@ -303,17 +336,7 @@ private final void printODEFile() throws IOException {
 	if (odeSolverResultSet == null) {
 		return;
 	}
-//	if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
-//		odeSolverResultSet.trimRows(((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
-//	}
-//	ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
-//	String mathName = odeSimData.getMathName();
-//	getSessionLog().print("SundialsSolver.printODEFile(" + mathName + ")");
-//	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
-//	File dataFile = new File(getSaveDirectory(), mathName + ODE_DATA_EXTENSION);
-//	ODESimData.writeODEDataFile(odeSimData, dataFile);
-//	odeSimData.writeODELogFile(logFile, dataFile);
-//	// fire event
+	// fire event
 	fireSolverPrinted(getCurrentTime());
 }
 
@@ -385,14 +408,15 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	// add appropriate Function columns to result set
 	//
+	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
-	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	cbit.vcell.math.Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
-				exp1 = getSimulation().substituteFunctions(exp1).flatten();
+				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
 			} catch (cbit.vcell.math.MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
@@ -415,14 +439,14 @@ public Vector<AnnotatedFunction> createFunctionList() {
 			if (!funcList.contains(saf)) {
 				funcList.add(saf);
 			}
-			Variable variables[] = getSimulation().getVariables();
+			Variable variables[] = simSymbolTable.getVariables();
 			StateVariable stateVars[] = createStateVariables();
 						
 			for (int i = 0; i < variables.length; i++){
 				if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
 					Function depSensFunction = (Function)variables[i];
 					Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
-					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);
+					depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);
 					
 					depSensFnExpr = getFunctionSensitivity(depSensFnExpr, getSensitivityParameter(), stateVars);
 					// depSensFnExpr = depSensFnExpr.flatten(); 	// already bound and flattened in getFunctionSensitivity, no need here.....
@@ -438,7 +462,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 		} catch (MathException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
 		}
@@ -455,8 +479,9 @@ private void writeLogFile() throws SolverException {
 		pw.println(IDA_DATA_IDENTIFIER);
 		pw.println(IDA_DATA_FORMAT_ID);
 		pw.println(ideDataFileName);
-		if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
-			pw.println(KEEP_MOST + " " + ((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
+		OutputTimeSpec outputTimeSpec = simulationJob.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
+		if (outputTimeSpec.isDefault()) {	
+			pw.println(KEEP_MOST + " " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepAtMost());
 		}		
 		pw.close();
 	} catch (FileNotFoundException e) {

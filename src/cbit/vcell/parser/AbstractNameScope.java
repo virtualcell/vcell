@@ -147,7 +147,8 @@ public NameScope getNameScopeFromPrefix(String prefix) {
 	//
 	// if prefix is empty or is this Name (e.g. A where this = A)
 	//
-	if (prefix.length()==0 || prefix.equals(getName())){
+	String name = getName();
+	if (prefix.length()==0 || prefix.equals(name)){
 		return this;
 	}
 	
@@ -156,7 +157,7 @@ public NameScope getNameScopeFromPrefix(String prefix) {
 	// then pass down to children to continue resolving
 	//
 	NameScope children[] = getChildren();
-	if (prefix.startsWith(getName())){
+	if (prefix.startsWith(name)){
 		for (int i = 0; i < children.length; i++){
 			NameScope nameScope = ((AbstractNameScope)children[i]).getNameScopeFromPrefix(getSuffix(prefix));
 			if (nameScope!=null){
@@ -167,7 +168,7 @@ public NameScope getNameScopeFromPrefix(String prefix) {
 	// if scope ends with this Name (e.g.  A.B.C where this = C)
 	// then confirm that the prefix is consistent with the parents (check A->B is the parent).
 	//
-	}else if (prefix.endsWith(getName())){
+	}else if (prefix.endsWith(name)){
 		String remainingPrefix = getPrefix(prefix);
 		NameScope tempParent = getParent();
 		while (remainingPrefix.length()>0){
@@ -247,14 +248,15 @@ public String getRelativeScopePrefix(NameScope referenceNameScope) {
 	//    \
 	//     C
 	//
+	String name = getName();
 	if (referenceNameScope.isAncestor(this)){
-		return getName()+".";
+		return name+".";
 	}else if (isAncestor(referenceNameScope)){
-		return getParent().getRelativeScopePrefix(referenceNameScope)+getName()+".";
+		return getParent().getRelativeScopePrefix(referenceNameScope)+name+".";
 	}else if (referenceNameScope == this || referenceNameScope.isPeer(this)){
 		return "";
 	}else{
-		System.out.println("AbstractNameScope.getRelativeScopePrefix() scopes '"+getName()+"' and '"+referenceNameScope.getName()+"' are unrelated");
+		System.out.println("AbstractNameScope.getRelativeScopePrefix() scopes '"+name+"' and '"+referenceNameScope.getName()+"' are unrelated");
 		return "UNRESOLVED.";
 		//throw new RuntimeException("scopes are unrelated");
 	}
