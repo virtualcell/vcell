@@ -640,4 +640,47 @@ public static String getEscapedPathName(String pathname) {
 	return escapedPathName;
 }
 
+
+/**
+ * This method is only for VCID used in VCMetaData. The vcid for entities is represented as EntityType(Entity name); for example:
+ * 		Biomodel(newBiomodel). Sometimes, the entity names can have parantheses in their names, which can be a problem while 
+ * 		parsing VCId. So replace all occurrences of  '(' with '&lpar;' & ')' with '&rpar;' in the entity name before creating VCId.
+ *
+ *
+ * This method was created in VisualAge.
+ * @return java.lang.String
+ */
+public static String mangleVCId(String name) {
+	//Check is not null or empty
+	if (name==null || name.length()==0){ 
+		return "";
+	}
+	//remove extra spaces
+	String string = name.trim();
+
+	string = string.replaceAll("(", "&lpar;");
+	string = string.replaceAll(")", "&rpar;");
+	string = string.replaceAll("\'", "&apos;");
+	string = string.replaceAll("\"", "&quot;");
+
+	return string;
+}
+
+public static String unmangleVCId(String name) {
+	//Check is not null or empty
+	if (name==null || name.length()==0){ 
+		return "";
+	}
+	//remove extra spaces
+	String string = name.trim();
+
+	//Replace '&lpar;' with '(' & '&rpar;' with ')'.
+	string = string.replaceAll("&lpar;", "(");
+	string = string.replaceAll("&rpar;", ")");
+	string = string.replaceAll("&apos;", "\'");
+	string = string.replaceAll("&quot;", "\"");
+	
+	return string;
+}
+
 }
