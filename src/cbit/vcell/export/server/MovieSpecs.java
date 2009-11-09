@@ -61,7 +61,10 @@ public boolean equals(java.lang.Object object) {
 			mirroringType == movieSpecs.getMirroringType() &&
 			duration == movieSpecs.getDuration() &&
 			bHideMembraneOutline == movieSpecs.isHideMembraneOutline() &&
-			displayPreferences.length == movieSpecs.getDisplayPreferences().length
+			displayPreferences.length == movieSpecs.getDisplayPreferences().length &&
+			imageScaling == movieSpecs.imageScaling &&
+			membraneScaling == movieSpecs.membraneScaling &&
+			meshMode == movieSpecs.meshMode
 		) {
 			for (int i = 0; i < displayPreferences.length; i++){
 				if (! displayPreferences[i].equals(movieSpecs.getDisplayPreferences()[i])) {
