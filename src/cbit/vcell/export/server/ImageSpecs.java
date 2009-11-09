@@ -66,7 +66,10 @@ public boolean equals(java.lang.Object object) {
 			duration == imageSpecs.getDuration() &&
 			loopingMode == imageSpecs.getLoopingMode() &&
 			bHideMembraneOutline == imageSpecs.isHideMembraneOutline() &&
-			displayPreferences.length == imageSpecs.getDisplayPreferences().length
+			displayPreferences.length == imageSpecs.getDisplayPreferences().length &&
+			imageScaling == imageSpecs.imageScaling &&
+			membraneScaling == imageSpecs.membraneScaling &&
+			meshMode == imageSpecs.meshMode
 		) {
 			for (int i = 0; i < displayPreferences.length; i++){
 				if (! displayPreferences[i].equals(imageSpecs.getDisplayPreferences()[i])) {
