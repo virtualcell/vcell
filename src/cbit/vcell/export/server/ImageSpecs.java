@@ -18,6 +18,10 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private double duration;
 	private int loopingMode;
 	private boolean bHideMembraneOutline;
+	private int imageScaling;
+	private int membraneScaling;
+	private int meshMode;
+	private int viewZoom;
 /**
  * Insert the method's description here.
  * Creation date: (3/1/2001 12:13:46 PM)
@@ -28,7 +32,10 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
  * @param duration double
  * @param loopingMode int
  */
-public ImageSpecs(DisplayPreferences[] displayPreferences, int format, int compression, int mirroringType, double duration, int loopingMode, boolean hideMembraneOutline) {
+public ImageSpecs(DisplayPreferences[] displayPreferences, int format,
+		int compression, int mirroringType,
+		double duration, int loopingMode, boolean hideMembraneOutline,
+		int imageScaling,int membraneScaling,int meshMode) {
 	this.displayPreferences = displayPreferences;
 	this.format = format;
 	this.compression = compression;
@@ -36,6 +43,12 @@ public ImageSpecs(DisplayPreferences[] displayPreferences, int format, int compr
 	this.duration = duration;
 	this.loopingMode = loopingMode;
 	this.bHideMembraneOutline = hideMembraneOutline;
+	this.imageScaling = imageScaling;
+	this.membraneScaling = membraneScaling;
+	this.meshMode = meshMode;
+}
+public void setViewZoom(int viewZoom){
+	this.viewZoom = viewZoom;
 }
 /**
  * Insert the method's description here.
@@ -143,5 +156,14 @@ public java.lang.String toString() {
 	}
 	buf.append("]");
 	return buf.toString();
+}
+public int getImageScaling() {
+	return (getMeshMode() == ImagePaneModel.MESH_MODE?viewZoom:imageScaling);
+}
+public int getMembraneScaling() {
+	return membraneScaling;
+}
+public int getMeshMode(){
+	return meshMode;
 }
 }

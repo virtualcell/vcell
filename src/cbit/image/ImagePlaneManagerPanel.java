@@ -822,6 +822,9 @@ private ImagePaneModel getimagePaneModel() {
 	// user code end
 	return ivjimagePaneModel;
 }
+public int getViewZoom(){
+	return getimagePaneModel().getZoom();
+}
 /**
  * Return the ImagePaneScroller1 property value.
  * @return cbit.image.ImagePaneScroller

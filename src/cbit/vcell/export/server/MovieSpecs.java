@@ -17,6 +17,11 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private int encodingFormat;
 	private int mirroringType;
 	private boolean bHideMembraneOutline;
+	private int imageScaling;
+	private int membraneScaling;
+	private int meshMode;
+	private int viewZoom;
+
 /**
  * This method was created in VisualAge.
  * @param duration double
@@ -25,13 +30,21 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  * @param encoding int
  * @param mirroring int
  */
-public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, int encodingFormat, int mirroringType, boolean hideMembraneOutline) {
+public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, int encodingFormat,
+		int mirroringType, boolean hideMembraneOutline,
+		int imageScaling,int membraneScaling,int meshMode) {
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;
 	this.encodingFormat = encodingFormat;
 	this.mirroringType = mirroringType;
 	this.bHideMembraneOutline = hideMembraneOutline;
+	this.imageScaling = imageScaling;
+	this.membraneScaling = membraneScaling;
+	this.meshMode = meshMode;
+}
+public void setViewZoom(int viewZoom){
+	this.viewZoom = viewZoom;
 }
 /**
  * Insert the method's description here.
@@ -130,5 +143,14 @@ public java.lang.String toString() {
 	}
 	buf.append("]");
 	return buf.toString();
+}
+public int getImageScaling() {
+	return (getMeshMode() == ImagePaneModel.MESH_MODE?viewZoom:imageScaling);
+}
+public int getMembraneScaling() {
+	return membraneScaling;
+}
+public int getMeshMode(){
+	return meshMode;
 }
 }

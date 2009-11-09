@@ -3,6 +3,8 @@ import java.util.*;
 import cbit.vcell.export.quicktime.atoms.*;
 import cbit.vcell.export.quicktime.*;
 import cbit.vcell.simdata.gui.*;
+
+import java.awt.Dimension;
 import java.io.*;
 import java.util.zip.*;
 import java.rmi.*;
@@ -22,7 +24,10 @@ import cbit.vcell.geometry.*;
  */
 public class QTExporter implements ExportConstants {
 	private ExportServiceImpl exportServiceImpl = null;
-private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] varNames, int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber, DisplayPreferences[] displayPreferences, int mirroringType, double duration, boolean hideMembraneOutline)
+private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID,
+		String[] varNames, int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber,
+		DisplayPreferences[] displayPreferences, int mirroringType, double duration, boolean hideMembraneOutline,
+		int imageScale,int membraneScale,int meshMode)
 						throws DataAccessException, RemoteException, DataFormatException, IOException, Exception {
 
 	String simID = vcdID.getID();
@@ -39,11 +44,12 @@ private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl da
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);
 	
-	int originalWidth = (int)off.getImageDimension().getWidth();
-	int originalHeight = (int)off.getImageDimension().getHeight();
-	int width = originalWidth; int height = originalHeight;
-	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) width = 2 * originalWidth;
-	if ((mirroringType == MIRROR_TOP) || (mirroringType == MIRROR_BOTTOM)) height = 2 * originalHeight;
+	Dimension imageDimension = off.getImageDimension(meshMode,imageScale);
+	int originalWidth = (int)imageDimension.getWidth();
+	int originalHeight = (int)imageDimension.getHeight();
+	int mirrorWidth = originalWidth; int mirrorHeight = originalHeight;
+	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) mirrorWidth = 2 * originalWidth;
+	if ((mirroringType == MIRROR_TOP) || (mirroringType == MIRROR_BOTTOM)) mirrorHeight = 2 * originalHeight;
 	
 	ExportOutput[] output = new ExportOutput[varNames.length];
 	String dataType = ".mov";
@@ -57,7 +63,7 @@ private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl da
 			progress = (double)(k * chunks.length + i) / (varNames.length * chunks.length);
 			exportServiceImpl.fireExportProgress(jobID, vcdID, "MOV", progress);
 			off.setTimepoint(allTimes[i]);
-			int[] pixels = off.getPixelsRGB();
+			int[] pixels = off.getPixelsRGB(imageScale,membraneScale,meshMode);
 			pixels = ExportUtils.extendMirrorPixels(pixels, originalWidth, originalHeight, mirroringType);
 			ByteArrayOutputStream sampleBytes = new ByteArrayOutputStream();
 			DataOutputStream sampleData = new DataOutputStream(sampleBytes);
@@ -71,7 +77,7 @@ private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl da
 				sampleDuration = (int)Math.ceil((allTimes[i + 1] - allTimes[i]) / interval * duration);
 			}
 //			sample = new VideoMediaSampleRaw(width, height, sampleDuration, bytes, bitsPerPixel, isGrayscale);
-			sample = new VideoMediaSampleRaw(width, height, sampleDuration,
+			sample = new VideoMediaSampleRaw(mirrorWidth, mirrorHeight, sampleDuration,
 					new MediaSample.MediaSampleStream(bytes),
 					bytes.length,
 					bitsPerPixel, isGrayscale);
@@ -132,7 +138,10 @@ public ExportOutput[] makeMovieData(JobRequest jobRequest, User user, DataServer
 			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getDisplayPreferences(),
 			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMirroringType(),
 			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getDuration(),
-			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline()
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline(),
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getImageScaling(),
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMembraneScaling(),
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMeshMode()
 			);
 	else
 		rawOutput = makeSimpleMovies(
@@ -148,7 +157,10 @@ public ExportOutput[] makeMovieData(JobRequest jobRequest, User user, DataServer
 			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getDisplayPreferences(),
 			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMirroringType(),
 			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getDuration(),
-			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline()
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline(),
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getImageScaling(),
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMembraneScaling(),
+			((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getMeshMode()
 			);
 	switch (((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getEncodingFormat()) {
 		case RAW_RGB:
@@ -169,7 +181,10 @@ public ExportOutput[] makeMovieData(JobRequest jobRequest, User user, DataServer
  * @param slicePlane int
  * @param sliceNumber int
  */
-private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] varNames, int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber, DisplayPreferences[] displayPreferences, int mirroringType, double duration, boolean hideMembraneOutline)
+private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] varNames,
+		int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber, DisplayPreferences[] displayPreferences,
+		int mirroringType, double duration, boolean hideMembraneOutline,
+		int imageScale,int membraneScale,int meshMode)
 						throws DataAccessException, RemoteException, DataFormatException, IOException, Exception {
 
 	String simID = vcdID.getID();
@@ -186,11 +201,12 @@ private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl da
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);
 
-	int originalWidth = (int)off.getImageDimension().getWidth();
-	int originalHeight = (int)off.getImageDimension().getHeight();
-	int width = originalWidth; int height = originalHeight;
-	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) width = 2 * originalWidth;
-	if ((mirroringType == MIRROR_TOP) || (mirroringType == MIRROR_BOTTOM)) height = 2 * originalHeight;
+	Dimension imageDimension = off.getImageDimension(meshMode,imageScale);
+	int originalWidth = (int)imageDimension.getWidth();
+	int originalHeight = (int)imageDimension.getHeight();
+	int mirrorWidth = originalWidth; int mirrorHeight = originalHeight;
+	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) mirrorWidth = 2 * originalWidth;
+	if ((mirroringType == MIRROR_TOP) || (mirroringType == MIRROR_BOTTOM)) mirrorHeight = 2 * originalHeight;
 
 	String dataType = ".mov";
 	double progress = 0.0;
@@ -205,7 +221,7 @@ private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl da
 			exportServiceImpl.fireExportProgress(jobID, vcdID, "MOV", progress);
 			off.setVariable(varNames[k]);
 			off.setDisplayPreferences(displayPreferences[k]);
-			int[] pixels = off.getPixelsRGB();
+			int[] pixels = off.getPixelsRGB(imageScale,membraneScale,meshMode);
 			pixels = ExportUtils.extendMirrorPixels(pixels, originalWidth, originalHeight, mirroringType);
 			for (int j=0;j<pixels.length;j++) sampleData.writeInt(pixels[j]);
 		}
@@ -218,7 +234,7 @@ private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl da
 			sampleDuration = (int)Math.ceil((allTimes[i + 1] - allTimes[i]) / interval * duration);
 		}
 //		sample = new VideoMediaSampleRaw(width, height * varNames.length, sampleDuration, bytes, bitsPerPixel, isGrayscale);
-		sample = new VideoMediaSampleRaw(width, height * varNames.length, sampleDuration,
+		sample = new VideoMediaSampleRaw(mirrorWidth, mirrorHeight * varNames.length, sampleDuration,
 				new MediaSample.MediaSampleStream(bytes),
 				bytes.length,
 				bitsPerPixel, isGrayscale);

@@ -71,6 +71,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private static final String PROP_SELECTEDREGION = "selectedRegion";
 	private SpatialSelection[] spatialSelectionsVolume = null;
 	private SpatialSelection[] spatialSelectionsMembrane = null;
+	private int viewZoom;
 	
 	private static final String EXPORT_QT_MOVIE = "QuickTime movie files (*.mov)";
 	private static final String EXPORT_GIF_IMAGES = "GIF89a image files (*.gif)";
@@ -978,6 +979,7 @@ private ExportSpecs getExportSpecs() {
 		selections[i] = (SpatialSelection)selectionsArr[i];
 	}
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
+	updateSpecsForMeshMode();
 	return new ExportSpecs(
 		getPdeDataContext().getVCDataIdentifier(),
 		getExportSettings1().getSelectedFormat(),
@@ -988,6 +990,16 @@ private ExportSpecs getExportSpecs() {
 	);
 }
 
+private void updateSpecsForMeshMode(){
+	if(getExportSettings1().getFormatSpecificSpecs() instanceof ImageSpecs){
+		ImageSpecs imageSpecs = (ImageSpecs)getExportSettings1().getFormatSpecificSpecs();
+		imageSpecs.setViewZoom(viewZoom);
+	}else if(getExportSettings1().getFormatSpecificSpecs() instanceof MovieSpecs){
+		MovieSpecs movieSpecs = (MovieSpecs)getExportSettings1().getFormatSpecificSpecs();
+		movieSpecs.setViewZoom(viewZoom);
+	}
+
+}
 
 ///**
 // * Return the JButtonAdd property value.
@@ -2212,34 +2224,59 @@ private void startExport() {
 //					}
 //				}
 //			}
-			Vector<Object> v = new Vector<Object>();
-			for (int i = 0; i < displayPreferences.length; i++){
+			
+			StringBuffer noScaleInfoNames = new StringBuffer();
+			for (int i = 0; i < displayPreferences.length; i++) {
 				displayPreferences[i] = getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]);
-				if (displayPreferences[i] == null) {
-					PopupGenerator.showErrorDialog(this, "No scale range or colormap available for variable '" + (String)variableSelections[i] + "'\nplease view each variable to be exported");
-					return;
-				} else {
-					if (displayPreferences[i].scaleIsDefault()) {
-						v.add(variableSelections[i]);
-					}
+				if(!getDisplayAdapterService().hasStateID((String)variableSelections[i])){
+					noScaleInfoNames.append("--- "+(String)variableSelections[i]+"\n");
 				}
 			}
-			if (! v.isEmpty()) {
-//				StringBuffer names = new StringBuffer();
-//				Enumeration<Object> en = v.elements();
-//				while (en.hasMoreElements()) {
-//					names.append("\n" + en.nextElement());
+			if(noScaleInfoNames.length() > 0){
+				String OK_OPTION = "OK";
+				String result = PopupGenerator.showWarningDialog(this, 
+						"The following export choices have no user defined color/scale settings.\n"+
+						noScaleInfoNames.toString()+
+						"User defined color/scale is set in the 'View data' tab by unchecking the\n"+
+						"'Auto (current time)' checkbox.\n"+
+						"Default min-max color/scale range will be used",
+						new String[] {OK_OPTION,"Cancel"},OK_OPTION);
+				if(result == null || !result.equals(OK_OPTION)){
+					return;
+				}
+			}
+//			Vector<Object> v = new Vector<Object>();
+//			for (int i = 0; i < displayPreferences.length; i++){
+//				displayPreferences[i] = getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]);
+//				if (displayPreferences[i] == null) {
+//					PopupGenerator.showErrorDialog(this, "No scale range or colormap available for variable '" + (String)variableSelections[i] + "'\nplease view each variable to be exported");
+//					return;
+//				} else {
+//					if (displayPreferences[i].scaleIsDefault()) {
+//						v.add(variableSelections[i]);
+//					}
 //				}
-				String choice = PopupGenerator.showWarningDialog(this, getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
-				//String choice = PopupGenerator.showWarningDialog((TopLevelWindowManager)getDataViewerManager(), getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
-				if (choice.equals(UserMessage.OPTION_CANCEL)){
-					// user canceled
-					return;
-				}
-			}
+//			}
+//			if (! v.isEmpty()) {
+////				StringBuffer names = new StringBuffer();
+////				Enumeration<Object> en = v.elements();
+////				while (en.hasMoreElements()) {
+////					names.append("\n" + en.nextElement());
+////				}
+//				String choice = PopupGenerator.showWarningDialog(this,
+//						getDataViewerManager().getUserPreferences(),
+//						UserMessage.warn_noScaleSettings,null);
+//				//String choice = PopupGenerator.showWarningDialog((TopLevelWindowManager)getDataViewerManager(), getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
+//				if (choice.equals(UserMessage.OPTION_CANCEL)){
+//					// user canceled
+//					return;
+//				}
+//			}
 
 			break;
 		}
+		
+		
 		case ExportConstants.FORMAT_CSV: {
 			// check for membrane variables... warn for 3D geometry...
 			// one gets the whole nine yards by index, not generally useful... except for a few people like Boris :)
@@ -2269,7 +2306,7 @@ private void startExport() {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
 	}
 	getExportSettings1().setDisplayPreferences(displayPreferences);
-	boolean okToExport = getExportSettings1().showFormatSpecificDialog(this);
+	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this));
 			
 	if (!okToExport) {
 		return;
@@ -2539,9 +2576,10 @@ private void updateTimes(double[] times) {
 	}
 
 
-	public void setSpatialSelections(SpatialSelection[] spatialSelectionsVolume,SpatialSelection[] spatialSelectionsMembrane) {
+	public void setSpatialSelections(SpatialSelection[] spatialSelectionsVolume,SpatialSelection[] spatialSelectionsMembrane,int viewZoom) {
 		this.spatialSelectionsVolume = spatialSelectionsVolume;
 		this.spatialSelectionsMembrane = spatialSelectionsMembrane;
+		this.viewZoom = viewZoom;
 		updateChoiceROI();
 		updateInterface();
 	}
