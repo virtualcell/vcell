@@ -2,6 +2,8 @@ package cbit.vcell.biomodel.meta;
 
 import java.util.StringTokenizer;
 
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
@@ -35,10 +37,11 @@ public class VCID {
 	
 	private void parse(String id) throws InvalidVCIDException {
 		// parse class
-		StringTokenizer token = new StringTokenizer(id,"()/",true);
+		StringTokenizer token = new StringTokenizer(id,"()",true);
 		String class_Name = token.nextToken();
 		String beginParentheses = token.nextToken();
 		String name = token.nextToken();
+		name = TokenMangler.unmangleVCId(name);
 		String endParentheses = token.nextToken();
 		if (!(beginParentheses.equals("(") && endParentheses.equals(")"))){
 			throw new InvalidVCIDException("illegal syntax");
@@ -98,6 +101,9 @@ public class VCID {
 		}else{
 			throw new RuntimeException("unsupported Identifiable class");
 		}
+		
+		localName = TokenMangler.mangleVCId(localName);
+			
 		VCID vcid = new VCID(className+"("+localName+")");
 		vcid.className = className;
 		vcid.localName = localName;
