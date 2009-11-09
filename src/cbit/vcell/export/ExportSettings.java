@@ -113,7 +113,7 @@ private void connEtoC10(java.util.EventObject arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeCancel(getJDialogASCIISettings());
+		this.closeCancel(ivjJDialogASCIISettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -133,7 +133,7 @@ private void connEtoC11(java.util.EventObject arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeCancel(getJDialogRasterSettings());
+		this.closeCancel(ivjJDialogRasterSettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -191,7 +191,7 @@ private void connEtoC4() {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeOK(getJDialogImageSettings());
+		this.closeOK(ivjJDialogImageSettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -210,7 +210,7 @@ private void connEtoC5() {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeOK(getJDialogMovieSettings());
+		this.closeOK(ivjJDialogMovieSettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -229,7 +229,7 @@ private void connEtoC6() {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeOK(getJDialogASCIISettings());
+		this.closeOK(ivjJDialogASCIISettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -248,7 +248,7 @@ private void connEtoC7() {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeOK(getJDialogRasterSettings());
+		this.closeOK(ivjJDialogRasterSettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -268,7 +268,7 @@ private void connEtoC8(java.util.EventObject arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeCancel(getJDialogImageSettings());
+		this.closeCancel(ivjJDialogImageSettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -288,7 +288,7 @@ private void connEtoC9(java.util.EventObject arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.closeCancel(getJDialogMovieSettings());
+		this.closeCancel(ivjJDialogMovieSettings);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -586,8 +586,8 @@ private ImageSettingsPanel getImageSettingsPanel1() {
 		try {
 			ivjImageSettingsPanel1 = new cbit.vcell.export.ImageSettingsPanel();
 			ivjImageSettingsPanel1.setName("ImageSettingsPanel1");
-			ivjImageSettingsPanel1.setPreferredSize(new java.awt.Dimension(240, 343));
-			ivjImageSettingsPanel1.setMinimumSize(new java.awt.Dimension(240, 343));
+//			ivjImageSettingsPanel1.setPreferredSize(new java.awt.Dimension(240, 430));
+//			ivjImageSettingsPanel1.setMinimumSize(new java.awt.Dimension(240, 430));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -605,16 +605,16 @@ private ImageSettingsPanel getImageSettingsPanel1() {
  * @return javax.swing.JDialog
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JDialog getJDialogASCIISettings() {
+private javax.swing.JDialog getJDialogASCIISettings(Frame reference) {
 	if (ivjJDialogASCIISettings == null) {
 		try {
-			ivjJDialogASCIISettings = new javax.swing.JDialog();
+			ivjJDialogASCIISettings = new javax.swing.JDialog(reference);
 			ivjJDialogASCIISettings.setName("JDialogASCIISettings");
 			ivjJDialogASCIISettings.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 			ivjJDialogASCIISettings.setBounds(123, 502, 176, 183);
 			ivjJDialogASCIISettings.setModal(true);
 			ivjJDialogASCIISettings.setTitle("ASCII Settings");
-			getJDialogASCIISettings().setContentPane(getJDialogContentPane());
+			ivjJDialogASCIISettings.add(getJDialogContentPane());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -727,16 +727,16 @@ private javax.swing.JPanel getJDialogContentPane3() {
  * @return javax.swing.JDialog
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JDialog getJDialogImageSettings() {
+private javax.swing.JDialog getJDialogImageSettings(Frame reference) {
 	if (ivjJDialogImageSettings == null) {
 		try {
-			ivjJDialogImageSettings = new javax.swing.JDialog();
+			ivjJDialogImageSettings = new javax.swing.JDialog(reference);
 			ivjJDialogImageSettings.setName("JDialogImageSettings");
 			ivjJDialogImageSettings.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 			ivjJDialogImageSettings.setBounds(117, 84, 244, 359);
 			ivjJDialogImageSettings.setModal(true);
 			ivjJDialogImageSettings.setTitle("Image Settings");
-			getJDialogImageSettings().setContentPane(getJDialogContentPane1());
+			ivjJDialogImageSettings.add(getJDialogContentPane1());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -753,16 +753,16 @@ private javax.swing.JDialog getJDialogImageSettings() {
  * @return javax.swing.JDialog
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JDialog getJDialogMovieSettings() {
+private javax.swing.JDialog getJDialogMovieSettings(Frame reference) {
 	if (ivjJDialogMovieSettings == null) {
 		try {
-			ivjJDialogMovieSettings = new javax.swing.JDialog();
+			ivjJDialogMovieSettings = new javax.swing.JDialog(reference);
 			ivjJDialogMovieSettings.setName("JDialogMovieSettings");
 			ivjJDialogMovieSettings.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 			ivjJDialogMovieSettings.setBounds(422, 85, 234, 368);
 			ivjJDialogMovieSettings.setModal(true);
 			ivjJDialogMovieSettings.setTitle("Movie Settings");
-			getJDialogMovieSettings().setContentPane(getJDialogContentPane2());
+			ivjJDialogMovieSettings.add(getJDialogContentPane2());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -779,16 +779,16 @@ private javax.swing.JDialog getJDialogMovieSettings() {
  * @return javax.swing.JDialog
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JDialog getJDialogRasterSettings() {
+private javax.swing.JDialog getJDialogRasterSettings(Frame reference) {
 	if (ivjJDialogRasterSettings == null) {
 		try {
-			ivjJDialogRasterSettings = new javax.swing.JDialog();
+			ivjJDialogRasterSettings = new javax.swing.JDialog(reference);
 			ivjJDialogRasterSettings.setName("JDialogRasterSettings");
 			ivjJDialogRasterSettings.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 			ivjJDialogRasterSettings.setBounds(393, 536, 180, 214);
 			ivjJDialogRasterSettings.setModal(true);
 			ivjJDialogRasterSettings.setTitle("Raster Settings");
-			getJDialogRasterSettings().setContentPane(getJDialogContentPane3());
+			ivjJDialogRasterSettings.add(getJDialogContentPane3());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -810,6 +810,9 @@ private MovieSettingsPanel getMovieSettingsPanel1() {
 		try {
 			ivjMovieSettingsPanel1 = new cbit.vcell.export.MovieSettingsPanel();
 			ivjMovieSettingsPanel1.setName("MovieSettingsPanel1");
+//			ivjMovieSettingsPanel1.setPreferredSize(new java.awt.Dimension(240, 430));
+//			ivjMovieSettingsPanel1.setMinimumSize(new java.awt.Dimension(240, 430));
+
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1097,22 +1100,22 @@ public void setSimDataType(int simDataType) {
 /**
  * Comment
  */
-public boolean showFormatSpecificDialog(Component reference) {
+public boolean showFormatSpecificDialog(Frame reference) {
 	JDialog dialogToShow = null;
 	setClosedOK(false);
 	switch (getSelectedFormat()) {
 		case FORMAT_CSV:
-			dialogToShow = getJDialogASCIISettings();
+			dialogToShow = getJDialogASCIISettings(reference);
 			break;
 		case FORMAT_QUICKTIME:
-			dialogToShow = getJDialogMovieSettings();
+			dialogToShow = getJDialogMovieSettings(reference);
 			break;
 		case FORMAT_GIF:
 		case FORMAT_ANIMATED_GIF:
-			dialogToShow = getJDialogImageSettings();
+			dialogToShow = getJDialogImageSettings(reference);
 			break;
 		case FORMAT_NRRD:
-			dialogToShow = getJDialogRasterSettings();
+			dialogToShow = getJDialogRasterSettings(reference);
 			break;
 		case FORMAT_UCD:
 			int result = PopupGenerator.showComponentOKCancelDialog(new JDialog(), new JTextField("Continue UCD Export?"), "UCD Export");

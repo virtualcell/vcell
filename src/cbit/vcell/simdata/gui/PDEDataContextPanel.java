@@ -877,6 +877,9 @@ public cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool, 
 public int getNormalAxis() {
 	return fieldNormalAxis;
 }
+public int getViewZoom(){
+	return getImagePlaneManagerPanel().getViewZoom();
+}
 /**
  * Gets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
  * @return The pdeDataContext property value.

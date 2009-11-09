@@ -1753,7 +1753,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 								getPDEDataContextPanel1().fetchSpatialSelectionsAll(VariableType.VOLUME);
 							SpatialSelection[] spatialSelectionsMembrane =
 								getPDEDataContextPanel1().fetchSpatialSelectionsAll(VariableType.MEMBRANE);
-							getPDEExportPanel1().setSpatialSelections(spatialSelectionsVolume, spatialSelectionsMembrane);
+							getPDEExportPanel1().setSpatialSelections(spatialSelectionsVolume, spatialSelectionsMembrane,getPDEDataContextPanel1().getViewZoom());
 						}
 					}
 				}

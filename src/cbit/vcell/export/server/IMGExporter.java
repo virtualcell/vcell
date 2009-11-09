@@ -1,5 +1,7 @@
 package cbit.vcell.export.server;
 import GIFUtils.*;
+
+import java.awt.Dimension;
 import java.io.*;
 import java.rmi.*;
 
@@ -11,6 +13,7 @@ import org.vcell.util.document.User;
 import cbit.vcell.simdata.gui.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;
+import cbit.image.ImagePaneModel;
 import cbit.util.*;
 import cbit.vcell.geometry.*;
 /**
@@ -30,7 +33,11 @@ public IMGExporter(ExportServiceImpl exportServiceImpl) {
 }
 
 
-private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] varNames, int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber, DisplayPreferences[] displayPreferences, int mirroringType, double duration, int loopingMode, boolean hideMembraneOutline)
+private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl dataServerImpl,
+		VCDataIdentifier vcdID, String[] varNames,
+		int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber,
+		DisplayPreferences[] displayPreferences, int mirroringType, double duration, int loopingMode, boolean hideMembraneOutline,
+		int imageScale,int membraneScale,int meshMode)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	String simID = vcdID.getID();
@@ -41,10 +48,11 @@ private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl da
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);
 
-	int originalWidth = (int)off.getImageDimension().getWidth();
-	int originalHeight = (int)off.getImageDimension().getHeight();
-	int width = originalWidth;
-	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) width = 2 * originalWidth;
+	Dimension imageDimension = off.getImageDimension(meshMode,imageScale);
+	int originalWidth = (int)imageDimension.getWidth();
+	int originalHeight = (int)imageDimension.getHeight();
+	int mirrorWidth = originalWidth;
+	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) mirrorWidth = 2 * originalWidth;
 
 	ExportOutput[] output = new ExportOutput[varNames.length];
 	String dataType = ".gif";
@@ -61,7 +69,7 @@ private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl da
 			progress = (double)(k * (endTimeIndex - beginTimeIndex + 1) + i) / (varNames.length * (endTimeIndex - beginTimeIndex + 1));
 			exportServiceImpl.fireExportProgress(jobID, vcdID, "GIF", progress);
 			off.setTimepoint(allTimes[i]);
-			int[] pixels = off.getPixelsRGB();
+			int[] pixels = off.getPixelsRGB(imageScale,membraneScale,meshMode);
 			pixels = ExportUtils.extendMirrorPixels(pixels, originalWidth, originalHeight, mirroringType);
 			int imageDuration = 0;
 			if (i == endTimeIndex) {
@@ -74,10 +82,10 @@ private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl da
 				imageDuration = (int)Math.ceil((allTimes[i + 1] - allTimes[i]) / interval * duration / 10); // 100th of second
 			}
 			if (i == beginTimeIndex) {
-				gifImage = new GIFUtils.GIFImage(pixels, width);
+				gifImage = new GIFUtils.GIFImage(pixels, mirrorWidth);
 				gifImage.setDelay(imageDuration);
 			} else {
-				gifImage.addImage(pixels, width, true);
+				gifImage.addImage(pixels, mirrorWidth, true);
 				gifImage.setDelay(i - beginTimeIndex, imageDuration);
 			}
 		}
@@ -102,7 +110,12 @@ private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl da
  * @param slicePlane int
  * @param sliceNumber int
  */
-private ExportOutput[] makeGIFs(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] varNames, int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber, DisplayPreferences[] displayPreferences, int mirroringType, boolean hideMembraneOutline)
+private ExportOutput[] makeGIFs(long jobID, User user, DataServerImpl dataServerImpl,
+		VCDataIdentifier vcdID, String[] varNames,
+		int beginTimeIndex, int endTimeIndex,
+		int axis, int sliceNumber, DisplayPreferences[] displayPreferences,
+		int mirroringType, boolean hideMembraneOutline,
+		int imageScale,int membraneScale,int meshMode)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	String simID = vcdID.getID();
@@ -112,10 +125,11 @@ private ExportOutput[] makeGIFs(long jobID, User user, DataServerImpl dataServer
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);
 
-	int originalWidth = (int)off.getImageDimension().getWidth();
-	int originalHeight = (int)off.getImageDimension().getHeight();
-	int width = originalWidth;
-	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) width = 2 * originalWidth;
+	Dimension imageDimension = off.getImageDimension(meshMode,imageScale);
+	int originalWidth = (int)imageDimension.getWidth();
+	int originalHeight = (int)imageDimension.getHeight();
+	int mirrorWidth = originalWidth;
+	if ((mirroringType == MIRROR_LEFT) || (mirroringType == MIRROR_RIGHT)) mirrorWidth = 2 * originalWidth;
 
 	ExportOutput[] output = new ExportOutput[varNames.length * (endTimeIndex - beginTimeIndex + 1)];
 	String dataType = ".gif";
@@ -136,9 +150,9 @@ private ExportOutput[] makeGIFs(long jobID, User user, DataServerImpl dataServer
 			ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
 			GIFOutputStream gifOut = new GIFOutputStream(bytesOut);
 			off.setTimepoint(allTimes[i]);
-			int[] pixels = off.getPixelsRGB();
-			pixels = ExportUtils.extendMirrorPixels(pixels, originalWidth, originalHeight, mirroringType);
-			GIFUtils.GIFImage gifImage = new GIFUtils.GIFImage(pixels, width);
+			int[] pixels = off.getPixelsRGB(imageScale,membraneScale,meshMode);
+			pixels = ExportUtils.extendMirrorPixels(pixels,originalWidth,originalHeight, mirroringType);
+			GIFUtils.GIFImage gifImage = new GIFUtils.GIFImage(pixels,mirrorWidth);
 			gifImage.write(gifOut);
 			gifOut.close();
 			byte[] data = bytesOut.toByteArray();
@@ -170,7 +184,10 @@ public ExportOutput[] makeImageData(JobRequest jobRequest, User user, DataServer
 				exportSpecs.getGeometrySpecs().getSliceNumber(),
 				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getDisplayPreferences(),
 				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMirroringType(),
-				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline()
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline(),
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getImageScaling(),
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMembraneScaling(),
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMeshMode()
 				);
 		case ANIMATED_GIF:
 			return makeAnimatedGIFs(
@@ -187,7 +204,10 @@ public ExportOutput[] makeImageData(JobRequest jobRequest, User user, DataServer
 				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMirroringType(),
 				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getDuration(),
 				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getLoopingMode(),
-				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline()
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).isHideMembraneOutline(),
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getImageScaling(),
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMembraneScaling(),
+				((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getMeshMode()
 				);
 		case TIFF:
 //			return makeTIFFs();
