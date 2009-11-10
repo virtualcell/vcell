@@ -7,17 +7,17 @@ package cbit.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import oracle.jdbc.pool.OracleConnectionPoolDataSource;
-
+import oracle.jdbc.pool.OracleDataSource;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 
 /**
  * This type was created in VisualAge.y
  */
 public final class OraclePoolingConnectionFactory implements ConnectionFactory  {
 
-	private OracleConnectionPoolDataSource oracleConnectionPoolDataSource = null;
+	private OracleDataSource oracleDataSource = null;
 	private SessionLog log = null;
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
@@ -29,11 +29,19 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoun
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
 	this.log = sessionLog;
-	if (oracleConnectionPoolDataSource==null){
-		oracleConnectionPoolDataSource = new OracleConnectionPoolDataSource();
-		oracleConnectionPoolDataSource.setURL(argConnectURL);
-		oracleConnectionPoolDataSource.setUser(argUserid);
-		oracleConnectionPoolDataSource.setPassword(argPassword);
+	if (oracleDataSource==null){
+		oracleDataSource = new OracleDataSource();
+		// set DataSource properties
+		oracleDataSource.setURL(argConnectURL);
+		oracleDataSource.setUser(argUserid);
+		oracleDataSource.setPassword(argPassword);
+		oracleDataSource.setConnectionCachingEnabled(true);		
+		// set cache properties    
+		java.util.Properties prop = new java.util.Properties();    
+		prop.setProperty("MinLimit", "1");    
+		prop.setProperty("MaxLimit", "20");
+		oracleDataSource.setConnectionCacheProperties (prop);    
+		oracleDataSource.setConnectionCacheName("ImplicitCache01"); // this cache's name
 	}
 	
 }
@@ -50,34 +58,10 @@ public void failed(Connection con, Object lock) throws SQLException {
 }
 
 public Connection getConnection(Object lock) throws SQLException {
-	// possibly because OracleConnectionPoolDataSource can't generate connections at fast rate.
-	// it worked before probably because our inefficient code had built-in delay.
-	Connection conn = null;
-	boolean bRetry = true;
-	try {
-		Thread.sleep(50);
-	} catch (InterruptedException e) {
-		e.printStackTrace();
+	Connection conn = oracleDataSource.getConnection();
+	if (conn == null) {
+		throw new SQLException("max connection limit has reached. no connections are available.");
 	}
-	while (conn == null) {
-		try {
-			conn = oracleConnectionPoolDataSource.getConnection();
-		} catch (SQLException x) {
-			if (bRetry && x.getMessage().indexOf("ORA-12519") != -1){
-				// sleep for a while
-				System.out.println("failed");
-				bRetry = false;
-				try {
-					Thread.sleep(250);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			} else {
-				throw x;
-			}
-		}
-	}
-	
 	return conn;
 }
 /**
@@ -85,6 +69,33 @@ public Connection getConnection(Object lock) throws SQLException {
  * @param con java.sql.Connection
  */
 public void release(Connection con, Object lock) throws SQLException {
-	con.close();
+	if (con != null) {
+		con.close();
+	}
+}
+
+public static void main(String[] args) {
+	try {
+		PropertyLoader.loadProperties();
+	
+		OraclePoolingConnectionFactory fac = new OraclePoolingConnectionFactory(new StdoutSessionLog("aa"));
+		Object lock = new Object();
+		Connection conn1 = null, conn2 = null;
+		int i = 0;
+		while (i<2000) {
+			i ++;
+			try {
+				conn1 = fac.getConnection(lock);
+				System.out.println(conn1);
+				conn2 = fac.getConnection(lock);
+				System.out.println(conn2);
+			} finally {
+				fac.release(conn1, lock);		
+				fac.release(conn2, lock);
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
 }
 }
