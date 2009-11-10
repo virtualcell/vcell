@@ -494,6 +494,7 @@ private void setTestSuiteInfo(cbit.vcell.numericstest.TestSuiteInfoNew testSuite
 private JTextArea getJTextAreaAnnot() {
 	if (jTextAreaAnnot == null) {
 		jTextAreaAnnot = new JTextArea();
+		jTextAreaAnnot.setLineWrap(true);
 	}
 	return jTextAreaAnnot;
 }
