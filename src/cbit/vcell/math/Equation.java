@@ -60,12 +60,12 @@ protected Equation(Variable var, Expression initialExp, Expression rateExp) {
  */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	MathDescription mathDesc = null;
-	if (symbolTable instanceof Simulation){
-		mathDesc = ((Simulation)symbolTable).getMathDescription();
+	if (symbolTable instanceof SimulationSymbolTable){
+		mathDesc = ((SimulationSymbolTable)symbolTable).getSimulation().getMathDescription();
 	}else if (symbolTable instanceof MathDescription){
 		mathDesc = (MathDescription)symbolTable;
 	}else{
-		throw new RuntimeException("unexpected SymbolTable type '"+symbolTable.getClass().getName()+"', expecting MathDescription or Simulation");
+		throw new RuntimeException("unexpected SymbolTable type '"+symbolTable.getClass().getName()+"', expecting MathDescription or SimulationSymbolTable");
 	}
 	Enumeration<Expression> enum1 = getExpressions(mathDesc).elements();
 	while (enum1.hasMoreElements()){
