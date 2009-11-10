@@ -110,23 +110,10 @@ public static String getChildSummaryElementEscapedString(String inputString) {
  */
 public static String getChildSummaryElementRestoredString(String inputString) {
 
-	String escapeSeq = "&#010;";
-
-	while (true){
-		int replaceIndex = inputString.indexOf(escapeSeq);
-		if (replaceIndex==-1){
-			break;
-		}
-		if (replaceIndex==0){
-			inputString = "\n"+inputString.substring(escapeSeq.length(),inputString.length());
-		}else if (replaceIndex==inputString.length() - escapeSeq.length()){
-			inputString = inputString.substring(0,replaceIndex)+"\n";
-		}else{
-			inputString = inputString.substring(0,replaceIndex) + "\n" +
-							inputString.substring(replaceIndex+escapeSeq.length(),inputString.length());
-		}
-	}
-	return inputString;
+	String[] escapeSeq = {"&#010;"};
+	char[] escapedChar = {'\n'};
+	
+	return getRestoredString(inputString, escapeSeq, escapedChar);
 }
 
 
@@ -174,7 +161,6 @@ public static String getEscapedString(String inputString) {
 	}
 	return buffer.toString();
 }
-
 
 /**
  * Insert the method's description here.
@@ -337,26 +323,32 @@ public static String getNextRandomToken(String originalToken) {
  */
 public static String getRestoredString(String inputString) {
 
-	if (inputString == null){
-		throw new IllegalArgumentException("input string is null");
-	}
-
 	String[] escapeSeq =    {"&lt;","&gt;","&amp;","&apos;","&quot;","&#09;","&#10;","&#13;"};
 	char[]   escapedChar =  {'<'   ,'>'   ,'&'    ,'\''    ,'"'     ,'\t'   ,'\n'   ,'\r'};
+	
+	return getRestoredString(inputString, escapeSeq, escapedChar);
+}
+
+
+public static String getRestoredString(String inputString, String[] escapeSeq, char[] escapedChar) {
+
+	if (inputString == null){
+		throw new IllegalArgumentException("TokenMangler.getRestoredString(), input string is null");
+	}
 
 	boolean bChanged = true;
 	while (bChanged){
 		bChanged = false;
-		for (int i=0;i<escapeSeq.length;i++){
+		for (int i = 0; i < escapeSeq.length; i ++){
 			int replaceIndex = inputString.indexOf(escapeSeq[i]);
-			if (replaceIndex!=-1){
-				if (replaceIndex==0){
-					inputString = "'"+inputString.substring(escapeSeq[i].length(),inputString.length());
-				}else if (replaceIndex==inputString.length() - escapeSeq[i].length()){
-					inputString = inputString.substring(0,replaceIndex)+escapedChar[i];
+			if (replaceIndex != -1){
+				if (replaceIndex == 0){
+					inputString = escapedChar[i] + inputString.substring(escapeSeq[i].length(),inputString.length());
+				}else if (replaceIndex == inputString.length() - escapeSeq[i].length()){
+					inputString = inputString.substring(0,replaceIndex) + escapedChar[i];
 				}else{
 					inputString = inputString.substring(0,replaceIndex) + escapedChar[i] +
-									inputString.substring(replaceIndex+escapeSeq[i].length(),inputString.length());
+									inputString.substring(replaceIndex + escapeSeq[i].length(),inputString.length());
 				}
 				bChanged = true;
 			}
@@ -365,38 +357,16 @@ public static String getRestoredString(String inputString) {
 	return inputString;
 }
 
-
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
  */
 public static String getRestoredStringECLiPSe(String inputString) {
-
-	if (inputString == null){
-		throw new IllegalArgumentException("input string is null");
-	}
-
 	String[] escapeSeq =    {"ddoott"};
 	char[]   escapedChar =  {'.'   };
 
-	boolean bChanged = true;
-	while (bChanged){
-		bChanged = false;
-		for (int i=0;i<escapeSeq.length;i++){
-			int replaceIndex = inputString.indexOf(escapeSeq[i]);
-			if (replaceIndex!=-1){
-				if (replaceIndex==0){
-					inputString = "'"+inputString.substring(escapeSeq[i].length(),inputString.length());
-				}else if (replaceIndex==inputString.length() - escapeSeq[i].length()){
-					inputString = inputString.substring(0,replaceIndex)+escapedChar[i];
-				}else{
-					inputString = inputString.substring(0,replaceIndex) + escapedChar[i] +
-									inputString.substring(replaceIndex+escapeSeq[i].length(),inputString.length());
-				}
-				bChanged = true;
-			}
-		}
-	}
+	inputString = getRestoredString(inputString, escapeSeq, escapedChar);
+	
 	if (inputString.startsWith(ECLiPSe_PREFIX)){
 		return inputString.substring(ECLiPSe_PREFIX.length());
 	}else{
@@ -411,32 +381,10 @@ public static String getRestoredStringECLiPSe(String inputString) {
  */
 public static String getRestoredStringJSCL(String inputString) {
 
-	if (inputString == null){
-		throw new IllegalArgumentException("input string is null");
-	}
-
 	String[] escapeSeq =    {"underscore","ddoott"};
 	char[]   escapedChar =  {     '_'    ,  '.'   };
-
-	boolean bChanged = true;
-	while (bChanged){
-		bChanged = false;
-		for (int i=0;i<escapeSeq.length;i++){
-			int replaceIndex = inputString.indexOf(escapeSeq[i]);
-			if (replaceIndex!=-1){
-				if (replaceIndex==0){
-					inputString = escapedChar[i]+inputString.substring(escapeSeq[i].length(),inputString.length());
-				}else if (replaceIndex==inputString.length() - escapeSeq[i].length()){
-					inputString = inputString.substring(0,replaceIndex)+escapedChar[i];
-				}else{
-					inputString = inputString.substring(0,replaceIndex) + escapedChar[i] +
-									inputString.substring(replaceIndex+escapeSeq[i].length(),inputString.length());
-				}
-				bChanged = true;
-			}
-		}
-	}
-	return inputString;
+	
+	return getRestoredString(inputString, escapeSeq, escapedChar);
 }
 
 
@@ -495,23 +443,10 @@ public static String getSQLEscapedString(String inputString, int maxLength) {
  */
 public static String getSQLRestoredString(String inputString) {
 
-	String escapeSeq = "&apos;";
-
-	while (true){
-		int replaceIndex = inputString.indexOf(escapeSeq);
-		if (replaceIndex==-1){
-			break;
-		}
-		if (replaceIndex==0){
-			inputString = "'"+inputString.substring(escapeSeq.length(),inputString.length());
-		}else if (replaceIndex==inputString.length() - escapeSeq.length()){
-			inputString = inputString.substring(0,replaceIndex)+"'";
-		}else{
-			inputString = inputString.substring(0,replaceIndex) + "'" +
-							inputString.substring(replaceIndex+escapeSeq.length(),inputString.length());
-		}
-	}
-	return inputString;
+	String escapeSeq[] = {"&apos;"};
+	char escapedChar[] = {'\''};
+	
+	return getRestoredString(inputString, escapeSeq, escapedChar);
 }
 
 
@@ -652,35 +587,41 @@ public static String getEscapedPathName(String pathname) {
  */
 public static String mangleVCId(String name) {
 	//Check is not null or empty
-	if (name==null || name.length()==0){ 
-		return "";
+	if (name==null){ 
+		throw new IllegalArgumentException("TokenMangler.mangleVCId(), input string is null");
 	}
-	//remove extra spaces
-	String string = name.trim();
+	StringBuffer buffer = new StringBuffer();
 
-	string = string.replaceAll("(", "&lpar;");
-	string = string.replaceAll(")", "&rpar;");
-	string = string.replaceAll("\'", "&apos;");
-	string = string.replaceAll("\"", "&quot;");
+	for (int i = 0; i < name.length(); i ++){
+		char currChar = name.charAt(i);
+		switch (currChar){
+			case '(':
+				buffer.append("&lpar;");
+				break;
+			case ')':
+				buffer.append("&rpar;");
+				break;
+			case '\'':
+				buffer.append("&apos;");
+				break;
+			case '"':
+				buffer.append("&quot;");
+				break;
+			default:
+				buffer.append(currChar);
+				break;
+		}
+	}
 
-	return string;
+	return buffer.toString();
 }
 
 public static String unmangleVCId(String name) {
-	//Check is not null or empty
-	if (name==null || name.length()==0){ 
-		return "";
-	}
-	//remove extra spaces
-	String string = name.trim();
+	String[] escapeSeq =    {"&lpar;","&rpar;", "&apos;", "&quot;"};
+	char[]   escapedChar =  {'(', ')', '\'', '"'};
 
-	//Replace '&lpar;' with '(' & '&rpar;' with ')'.
-	string = string.replaceAll("&lpar;", "(");
-	string = string.replaceAll("&rpar;", ")");
-	string = string.replaceAll("&apos;", "\'");
-	string = string.replaceAll("&quot;", "\"");
 	
-	return string;
+	return getRestoredString(name, escapeSeq, escapedChar);
 }
 
 }
