@@ -1511,7 +1511,7 @@ public TestCaseNew[] getNewTestCaseArr() throws UserCancelException{
 	// This is where we invoke the TestCaseAddPanel to define a testCase for the test suite ...
 	getTestCaseAddPanel().resetTextFields();
 	while(true){
-		Object choice = showAddTestCaseDialog(getTestCaseAddPanel(), null);
+		Object choice = showAddTestCaseDialog(getTestCaseAddPanel(), getComponent());
 		
 		if (choice != null && choice.equals("OK")) {
 			try{
@@ -1581,7 +1581,7 @@ public NewTestSuiteUserInformation getNewTestSuiteInfoFromUser(String tsAnnotati
 
 	getAddTestSuitePanel().resetTextFields(tsAnnotation,duplicateTestSuiteName != null);
 	while(true){
-		Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), null,duplicateTestSuiteName);
+		Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), getComponent(), duplicateTestSuiteName);
 	
 		if (choice != null && choice.equals("OK")) {
 			return getAddTestSuitePanel().getTestSuiteInfo();
