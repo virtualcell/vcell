@@ -130,6 +130,8 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JProgressBar ivjProgressBar = null;
 	private JLabel ivjNumSelectedLabel = null;
 	
+	private JButton ivjStopSelectedButton = null;
+	
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
@@ -166,6 +168,9 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 				}
 				if (e.getSource() == getRefreshServerManagerButton()) {
 					refreshServerManager();
+				}
+				if (e.getSource() == ServerManageConsole.this.getStopSelectedButton()) { 
+					stopSelectedButton_ActionPerformed(e);
 				}
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -844,6 +849,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
 			textPanel.add(new JLabel(" selected "));
 			panel8.add(textPanel, "West");
 			JPanel panel = new JPanel();
+			panel.add(getStopSelectedButton());
 			panel.add(getSubmitSelectedButton());
 			panel.add(getRemoveFromListButton());
 			panel8.add(panel, "East");			
@@ -1743,6 +1749,22 @@ private javax.swing.JButton getSubmitSelectedButton() {
 	return ivjSubmitSelectedButton;
 }
 
+private javax.swing.JButton getStopSelectedButton() {
+	if (ivjStopSelectedButton == null) {
+		try {
+			ivjStopSelectedButton = new javax.swing.JButton();
+			ivjStopSelectedButton.setText("Stop selected jobs");
+			ivjStopSelectedButton.setEnabled(false);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjStopSelectedButton;
+}
 
 /**
  * Return the SendMessageButton property value.
@@ -2167,6 +2189,7 @@ private void initConnections() throws java.lang.Exception {
 	getDeleteServiceButton().addActionListener(ivjEventHandler);
 	getModifyServiceButton().addActionListener(ivjEventHandler);
 	getRefreshServerManagerButton().addActionListener(ivjEventHandler);
+	getStopSelectedButton().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -2372,6 +2395,7 @@ private void query() {
 	
 	getRemoveFromListButton().setEnabled(false);
 	getSubmitSelectedButton().setEnabled(false);
+	getStopSelectedButton().setEnabled(false);
 	StringBuffer conditions = new StringBuffer();
 	String text = getQuerySimField().getText();
 	if (text != null && text.trim().length() > 0) {
@@ -2567,8 +2591,38 @@ private void submitSelectedButton_ActionPerformed(ActionEvent e) {
 		for (int i = 0; i < srows.length; i++) {
 			int selectedRow = srows[i];
 			SimpleJobStatus jobStatus = getReturnedSimulationJobStatus(selectedRow);
-			System.out.println("Submitting job ("+(i+1)+" of "+srows.length+") : "+jobStatus.toObjects());
-			resubmitSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+			String statusString = "["+ jobStatus.getVCSimulationIdentifier() + ", " + jobStatus.getStatusMessage() + "]";
+			if (jobStatus.isDone()) {
+				log.print("Submitting job (" + (i+1) + " of " + srows.length + ") : " + statusString);
+				resubmitSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+			} else {
+				log.print("Submitting job ("+(i+1)+" of "+srows.length+") : " + statusString + ", is still running, skipping...");
+			}
+		}
+	}
+}
+
+private void stopSelectedButton_ActionPerformed(ActionEvent e) {
+	int srows[] = getQueryResultTable().getSelectedRows();
+	if (srows==null || srows.length==0) {
+		return;
+	}
+	final String STOP_JOBS_OPTION = "stop jobs";
+	final String CANCEL_OPTION = "cancel";
+	String response = DialogUtils.showWarningDialog(this, "Are you sure you want to stop "
+			+srows.length+" simulation job(s)? (see console for progress printed to stdout)", 
+			new String[] { STOP_JOBS_OPTION, CANCEL_OPTION }, CANCEL_OPTION);
+	if (response.equals(STOP_JOBS_OPTION)){
+		for (int i = 0; i < srows.length; i++) {
+			int selectedRow = srows[i];
+			SimpleJobStatus jobStatus = getReturnedSimulationJobStatus(selectedRow);
+			String statusString = "["+ jobStatus.getVCSimulationIdentifier() + ", " + jobStatus.getStatusMessage() + "]";
+			if (!jobStatus.isDone()) {
+				log.print("Stopping job ("+(i+1)+" of "+srows.length+") : "+statusString);	
+				stopSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+			} else {
+				log.print("***Stopping job ("+(i+1)+" of "+srows.length+") : "+statusString + ", is already finished, skipping");
+			}
 		}
 	}
 }
@@ -2602,11 +2656,13 @@ public void queryResultTable_MouseClicked(java.awt.event.MouseEvent mouseEvent) 
 	if (srow < 0) {
 		getRemoveFromListButton().setEnabled(false);
 		getSubmitSelectedButton().setEnabled(false);
+		getStopSelectedButton().setEnabled(false);
 		return;
 	}
 	if (mouseEvent.getClickCount() == 1) {
 		getRemoveFromListButton().setEnabled(true);
 		getSubmitSelectedButton().setEnabled(true);
+		getStopSelectedButton().setEnabled(true);
 		getNumSelectedLabel().setText("" + getQueryResultTable().getSelectedRowCount());
 	} else if (mouseEvent.getClickCount() == 2) {
 		SimulationJobStatusDetailDialog dialog = new SimulationJobStatusDetailDialog(this, getQueryResultTable().getRowCount(), srow);
@@ -3084,7 +3140,7 @@ private void stopService(ServiceSpec ss) {
  * Creation date: (7/19/2004 3:32:52 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public void stopSimulation(String userid, org.vcell.util.document.KeyValue simKey) {
+public void stopSimulation(String userid, KeyValue simKey) {
 	try {
 		User user = adminDbTop.getUser(userid, true);
 		RpcDbServerProxy dbProxy = getDbProxy(user);
