@@ -115,7 +115,8 @@ public class FRAPStudy implements Matchable{
 	private transient double[][] analysisMSESummaryData = null; 
 	//temporary data structure to store dimension reduced experimental data (all ROIs)
 	private transient double[][] dimensionReducedExpData = null;
-	
+	//temporary data structure to identify whether the current frapStudy needs a save or not
+	private transient boolean bSaveNeeded = false;
 	
 	//static functions
 	public static void removeExternalDataAndSimulationFiles(
@@ -681,15 +682,15 @@ public class FRAPStudy implements Matchable{
 		}
 		
 		int jobIndex = 0;
-		SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
+		SimulationJob simJob = new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs);
 		
 		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
 		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
 		//if we need to check steady state, do the following two lines
 		if(bCheckSteadyState)
 		{
-			simJob.getWorkingSim().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
-			simJob.getWorkingSim().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
+			simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 		}
 		
 		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
@@ -698,7 +699,8 @@ public class FRAPStudy implements Matchable{
 		SolverStatus status = fvSolver.getSolverStatus();
 		while (status.getStatus() != SolverStatus.SOLVER_FINISHED && status.getStatus() != SolverStatus.SOLVER_ABORTED )
 		{
-			if(progressListener != null){
+			if(progressListener != null)
+			{
 				progressListener.setProgress((int)(fvSolver.getProgress()*100));
 			}
 			Thread.sleep(100);
@@ -825,7 +827,10 @@ public class FRAPStudy implements Matchable{
 		{
 			if(modelBooleans[i])
 			{
-				models[i] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[i], null, null);
+				if(models[i] == null)
+				{
+					models[i] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[i], null, null, null);
+				}
 			}
 			else
 			{
@@ -1304,6 +1309,35 @@ public class FRAPStudy implements Matchable{
 	public void setDimensionReducedExpData(double[][] dimensionReducedExpData) {
 		this.dimensionReducedExpData = dimensionReducedExpData;
 	}
+		
+	public boolean isSaveNeeded() {
+		return bSaveNeeded;
+	}
+
+	public void setSaveNeeded(boolean bNeedSave) {
+		this.bSaveNeeded = bNeedSave;
+	}
+	
+	public boolean areFRAPModelsEqual(FRAPModel[] arg_frapModels)
+	{
+		if((getModels() != null && arg_frapModels == null) ||
+		   (getModels() == null && arg_frapModels != null))
+		{
+			return false;
+		}
+		else 
+		{
+			for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+			{
+				if(!Compare.isEqualOrNull(getModels()[i], arg_frapModels[i]))
+				{
+					return false;
+				}
+			}
+			
+		}
+		return true;
+	}
 	
 	public void createAnalysisMSESummaryData()
 	{
@@ -1376,7 +1410,8 @@ public class FRAPStudy implements Matchable{
 			double diff = expData[i]-simData[i];
 			error = error + diff*diff;
 		}
-		double result = Math.sqrt(error/(len-1));
+//		double result = Math.sqrt(error/(len-1));
+		double result = error;
 		
 		return result;
 	}

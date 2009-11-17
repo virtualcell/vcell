@@ -1,11 +1,14 @@
 package cbit.vcell.microscopy;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class FRAPModel 
+public class FRAPModel implements Matchable
 {
 	public static final String[] MODEL_TYPE_ARRAY = new String[]{"Diffusion with One Diffusing Component", 
 		                                                       "Diffusion with Two Diffusing Components",
@@ -55,11 +58,12 @@ public class FRAPModel
 
 	private Parameter[] modelParameters = null;
 	
-	public FRAPModel(String arg_id, Parameter[] arg_parameters, double[][] arg_result)
+	public FRAPModel(String arg_id, Parameter[] arg_parameters, double[][] arg_data, double[] arg_timePoints)
 	{
 		modelIdentifer = arg_id;
 		modelParameters = arg_parameters;
-		data = arg_result;
+		data = arg_data;
+		timepoints = arg_timePoints;
 	}
 
 	public String getModelIdentifer() {
@@ -74,8 +78,8 @@ public class FRAPModel
 		return data;
 	}
 
-	public void setData(double[][] result) {
-		this.data = result;
+	public void setData(double[][] data) {
+		this.data = data;
 	}
 
 	public double[] getTimepoints() {
@@ -276,5 +280,56 @@ public class FRAPModel
 		return params;
 	}
 	
+	//In this mehtod, the data are not compared, because
+	//if the parameters and the timepoints are the same, the data should be the same
+	public boolean compareEqual(Matchable obj) 
+	{
+		if (this == obj) {
+			return true;
+		}
+		if (obj != null && obj instanceof FRAPModel) 
+		{
+			FRAPModel frapModel = (FRAPModel) obj;
+			if (!modelIdentifer.equals(frapModel.getModelIdentifer()))
+			{
+				return false;
+			}
+			if(!Compare.isEqualOrNull(modelParameters, frapModel.getModelParameters()))
+			{
+				return false;
+			}
+			if(!Compare.isEqualOrNull(timepoints, frapModel.getTimepoints()))
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		return false;
+	}
 	
+	public Parameter[] duplicateParameters()
+	{
+		if(getModelParameters() != null)
+		{
+			Parameter[] result = new Parameter[this.getModelParameters().length];
+			for(int i=0; i<this.getModelParameters().length; i++)
+			{
+				result[i] = this.getModelParameters()[i].duplicate();
+			}
+			return result;
+		}
+		return null;
+	}
+	
+	public double[] duplicateTimePoints()
+	{
+		if(getTimepoints() != null)
+		{
+			double[] result = new double[this.getTimepoints().length]; 
+			System.arraycopy(this.getTimepoints(), 0, result, 0, this.getTimepoints().length);
+			return result;
+		}
+		return null;
+	}
 }

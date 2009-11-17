@@ -352,14 +352,14 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 					                     monitorBleachRate);
 		Parameter secondaryDiff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 
-      			                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+      			                         FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+				                         FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+				                         FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
 				                         complexDifffRate);
 		Parameter secondaryFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
-				   						 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-                                         FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-                                         FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+				   						 FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+                                         FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+                                         FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(), 
                                          complexFraction);
 		Parameter bsConcentration = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION],
                                          0,

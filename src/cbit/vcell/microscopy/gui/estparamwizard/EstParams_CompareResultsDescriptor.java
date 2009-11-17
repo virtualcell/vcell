@@ -39,12 +39,14 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     {
     	FRAPStudy fStudy = frapWorkspace.getFrapStudy();
     	//create Mean square error for different models under different ROIs
-    	if(fStudy.getAnalysisMSESummaryData() == null)
-    	{
-    		fStudy.createAnalysisMSESummaryData();
-    	}
+//    	if(fStudy.getAnalysisMSESummaryData() == null)
+//    	{
+    	fStudy.createAnalysisMSESummaryData();
+//    	}
     	//auto find best model for user if best model is not selected. 
     	double[][] mseSummaryData = fStudy.getAnalysisMSESummaryData();
+//    	for(int i =0; i<10; i++)
+//    	System.out.print(mseSummaryData[0][i]+"  ");
     	
     	int bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
     	if(fStudy.getBestModelIndex() != null)
@@ -69,14 +71,14 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	}
     	((EstParams_CompareResultsPanel)this.getPanelComponent()).setBestModelRadioButton(bestModel);
     	//set data source to multiSourcePlotPane
-    	DataSource[] comparableDataSource = new DataSource[fStudy.getSelectedModels().size() + 1]; //selected models + exp
+    	ArrayList<DataSource> comparableDataSource = new ArrayList<DataSource>(); // length shoulf be fStudy.getSelectedModels().size()+1, however, reaction binding may not have data
     	//add exp data
     	ReferenceData expReferenceData = FRAPOptimization.doubleArrayToSimpleRefData(fStudy.getDimensionReducedExpData(),
                                          fStudy.getFrapData().getImageDataset().getImageTimeStamps(), 
                                          fStudy.getStartingIndexForRecovery(), 
                                          fStudy.getSelectedROIsForErrorCalculation());
     	final DataSource expDataSource = new DataSource.DataSourceReferenceData("exp", expReferenceData); 
-    	comparableDataSource[0] = expDataSource;
+    	comparableDataSource.add(expDataSource);
     	//add opt/sim data
     	//using the same loop, disable the radio button if the model is not included
     	((EstParams_CompareResultsPanel)this.getPanelComponent()).disableAllRadioButtons();//adjust radio buttons
@@ -120,17 +122,22 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     			((EstParams_CompareResultsPanel)this.getPanelComponent()).enableRadioButton(FRAPModel.IDX_MODEL_DIFF_BINDING);//adjust radio button
     			FRAPModel temModel = fStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_BINDING);
     			double startTimePoint = expTimePoints[fStudy.getStartingIndexForRecovery()];
-    			ODESolverResultSet temSolverResultSet = FRAPOptimization.doubleArrayToSolverResultSet(temModel.getData(), 
-    					             temModel.getTimepoints(),
-    					             startTimePoint,
-    					             fStudy.getSelectedROIsForErrorCalculation());
-    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("sim_DB", temSolverResultSet);
+    			if(temModel.getData() != null)
+    			{
+	    			ODESolverResultSet temSolverResultSet = FRAPOptimization.doubleArrayToSolverResultSet(temModel.getData(), 
+	    					             temModel.getTimepoints(),
+	    					             startTimePoint,
+	    					             fStudy.getSelectedROIsForErrorCalculation());
+	    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("sim_DB", temSolverResultSet);
+    			}
     		}
-    		
-    		comparableDataSource[i+1] = newDataSource;
+    		if(newDataSource != null)
+    		{
+    			comparableDataSource.add(newDataSource);
+    		}
     	}
     	//set data to multiSourcePlotPane
-    	((EstParams_CompareResultsPanel)this.getPanelComponent()).setPlotData(comparableDataSource);
+    	((EstParams_CompareResultsPanel)this.getPanelComponent()).setPlotData(comparableDataSource.toArray(new DataSource[comparableDataSource.size()]));
 	}
     
     public ArrayList<AsynchClientTask> preNextProcess()

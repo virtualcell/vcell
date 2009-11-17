@@ -80,22 +80,18 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
-    					//TODO: to check if save is needed before loading 
-//    					saveIfNeeded();
-    				
-    					FRAPStudy newFRAPStudy = null;
-//    					SavedFrapModelInfo newSavedFrapModelInfo = null;
-    					
-    					newFRAPStudy = getFrapWorkspace().loadFRAPDataFromMultipleFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
-    					isFileLoaded = true;
-    					
-    					//for all loaded files
-    					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
+					FRAPStudy newFRAPStudy = null;
+
+					newFRAPStudy = getFrapWorkspace().loadFRAPDataFromMultipleFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
+					isFileLoaded = true;
+					
+					//for all loaded files
+					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
     					
     			}
     		};
     		
-    		AsynchClientTask afterLoadingSwingTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) 
+    		AsynchClientTask afterLoadingSwingTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{

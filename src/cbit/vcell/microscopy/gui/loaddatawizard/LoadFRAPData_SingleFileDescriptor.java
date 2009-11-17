@@ -57,10 +57,6 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 		
     	if(singleFilePanel.getFileName().length() > 0)
     	{
-//    		final String inFileDescription =
-//    			(inFileArr.length == 1
-//    				?"file "+inFileArr[0].getAbsolutePath()
-//    				:"files from "+inFileArr[0].getParentFile().getAbsolutePath());
     		final String fileStr = singleFilePanel.getFileName();
     		final String LOADING_MESSAGE = "Loading "+fileStr+"...";
     		
@@ -77,17 +73,12 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
-    					//TODO: to check if save is needed before loading 
-//    					saveIfNeeded();
-    				
     					FRAPStudy newFRAPStudy = null;
-//    					SavedFrapModelInfo newSavedFrapModelInfo = null;
     					
     					File inFile = new File(fileStr);
     					if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)) //.log (vcell log file) 
     					{
-							DataIdentifier[] dataIdentifiers =
-								FRAPData.getDataIdentiferListFromVCellSimulationData(inFile, 0);
+							DataIdentifier[] dataIdentifiers = FRAPData.getDataIdentiferListFromVCellSimulationData(inFile, 0);
 							String[][] rowData = new String[dataIdentifiers.length][1];
 							for (int i = 0; i < dataIdentifiers.length; i++) {
 								if(dataIdentifiers[i].getVariableType().equals(VariableType.VOLUME)){
@@ -118,7 +109,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     			}
     		};
     		
-    		AsynchClientTask afterLoadingSwingTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) 
+    		AsynchClientTask afterLoadingSwingTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{

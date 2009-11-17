@@ -122,9 +122,8 @@ public class VirtualFrapLoader {
 			    //set up file choosers 
 			    openVFRAPFileChooser = new JFileChooser(); 
 			    openVFRAPFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
-			    openVFRAPFileChooser.addChoosableFileFilter(filter_lsm); 
-			    openVFRAPFileChooser.addChoosableFileFilter(filter_tif); 
 			    openVFRAPFileChooser.addChoosableFileFilter(filter_vfrap); 
+			    openVFRAPFileChooser.setAcceptAllFileFilterUsed(false);
 			    loadFRAPImageFileChooser = new JFileChooser(); 
 			    loadFRAPImageFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_tif);

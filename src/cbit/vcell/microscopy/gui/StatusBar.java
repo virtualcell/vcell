@@ -31,6 +31,8 @@ public class StatusBar extends JPanel implements Runnable
     progress.setMinimumSize(new Dimension(100, 20));
     progress.setSize(new Dimension(100, 20));
     progress.setStringPainted(true);
+    //set to false, because it is not ready to display progress yet. remove this when progress can be properly displayed
+    progress.setVisible(false);
     JPanel proPanel=new JPanel();
     proPanel.setLayout(new GridLayout(1,2));
     proPanel.add(new JLabel(" "));

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.zip.DeflaterOutputStream;
 import org.jdom.Element;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -12,7 +13,9 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
+import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.xml.XMLTags;
@@ -27,8 +30,7 @@ import cbit.vcell.xml.Xmlproducer;
  */
 public class MicroscopyXmlproducer {
 
-public static void writeXMLFile(FRAPStudy frapStudy,File outputFile,boolean bPrintKeys,
-		DataSetControllerImpl.ProgressListener progressListener,boolean bSaveCompressed) throws Exception{
+public static void writeXMLFile(FRAPStudy frapStudy,File outputFile,boolean bPrintKeys, ClientTaskStatusSupport progressListener,boolean bSaveCompressed) throws Exception{
 	
 	Xmlproducer vcellXMLProducer = new Xmlproducer(bPrintKeys);
 	Element root = MicroscopyXmlproducer.getXML(frapStudy,vcellXMLProducer,progressListener,bSaveCompressed);
@@ -53,11 +55,11 @@ private static String mangle(String str){
  * This methods returns a XML represnetation of a VCImage object.
  * Creation date: (3/1/2001 3:02:37 PM)
  * @param param cbit.image.VCImage
- * @return org.jdom.Element
+ * @return Element
  * @throws XmlParseException
  */
-private static org.jdom.Element getXML(UShortImage param,Xmlproducer vcellXMLProducer,boolean bSaveCompressed) throws XmlParseException{
-		org.jdom.Element image = new org.jdom.Element(MicroscopyXMLTags.UShortImageTag);
+private static Element getXML(UShortImage param,Xmlproducer vcellXMLProducer,boolean bSaveCompressed) throws XmlParseException{
+		Element image = new Element(MicroscopyXMLTags.UShortImageTag);
 
 		//add atributes
 		if (param.getName()!=null && param.getName().length()>0){
@@ -66,7 +68,7 @@ private static org.jdom.Element getXML(UShortImage param,Xmlproducer vcellXMLPro
 
 		//Add annotation
 		if (param.getDescription()!=null && param.getDescription().length()>0) {
-			org.jdom.Element annotationElement = new org.jdom.Element(XMLTags.AnnotationTag);
+			Element annotationElement = new Element(XMLTags.AnnotationTag);
 			annotationElement.setText( mangle(param.getDescription()) );
 			image.addContent(annotationElement);
 		}
@@ -122,7 +124,7 @@ private static org.jdom.Element getXML(UShortImage param,Xmlproducer vcellXMLPro
 			}
 			break;
 		}
-		org.jdom.Element imagedata = new org.jdom.Element(XMLTags.ImageDataTag);
+		Element imagedata = new Element(XMLTags.ImageDataTag);
 		
 		//Get imagedata attributes
 		imagedata.setAttribute(XMLTags.XAttrTag, String.valueOf(aNumX));
@@ -141,12 +143,12 @@ private static org.jdom.Element getXML(UShortImage param,Xmlproducer vcellXMLPro
  * This method returns a XML representation for a Biomodel object.
  * Creation date: (2/14/2001 3:41:13 PM)
  * @param param cbit.vcell.biomodel.BioModel
- * @return org.jdom.Element
+ * @return Element
  * @throws XmlParseException
  * @throws cbit.vcell.parser.ExpressionException
  */
-private static org.jdom.Element getXML(ROI param,Xmlproducer vcellXMLProducer,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
-	org.jdom.Element roiNode = new org.jdom.Element(MicroscopyXMLTags.ROITag);
+private static Element getXML(ROI param,Xmlproducer vcellXMLProducer,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
+	Element roiNode = new Element(MicroscopyXMLTags.ROITag);
 	UShortImage[] images = param.getRoiImages();
 	for (int i = 0; i < images.length; i++) {
 		roiNode.addContent( getXML(param.getRoiImages()[i],vcellXMLProducer,bSaveCompressed) );
@@ -159,12 +161,12 @@ private static org.jdom.Element getXML(ROI param,Xmlproducer vcellXMLProducer,bo
  * This method returns a XML representation for a Biomodel object.
  * Creation date: (2/14/2001 3:41:13 PM)
  * @param param cbit.vcell.biomodel.BioModel
- * @return org.jdom.Element
+ * @return Element
  * @throws XmlParseException
  * @throws cbit.vcell.parser.ExpressionException
  */
-private static org.jdom.Element getXML(ImageDataset param,Xmlproducer vcellXMLProducer,DataSetControllerImpl.ProgressListener progressListener,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
-	org.jdom.Element imageDatasetNode = new org.jdom.Element(MicroscopyXMLTags.ImageDatasetTag);
+private static Element getXML(ImageDataset param,Xmlproducer vcellXMLProducer, ClientTaskStatusSupport progressListener,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
+	Element imageDatasetNode = new Element(MicroscopyXMLTags.ImageDatasetTag);
 	//Get ImageDataset
 	UShortImage[] images = param.getAllImages();
 	//added in Feb 2008, for counting saving progress
@@ -173,7 +175,8 @@ private static org.jdom.Element getXML(ImageDataset param,Xmlproducer vcellXMLPr
 	for (int i = 0; i < images.length; i++) {
 		imageDatasetNode.addContent( getXML(images[i],vcellXMLProducer,bSaveCompressed) );
 		imageCount++;
-		if(progressListener != null){progressListener.updateProgress((double)imageCount/(double)imageSize);}	
+		//suppose image data set takes 95% and roi takes 5% of total progress.
+		if(progressListener != null){progressListener.setProgress(((int)((imageCount*95)/(double)imageSize)));}	
 	}
 	if (param.getImageTimeStamps()!=null){
 		Element timeStampListNode = new Element(MicroscopyXMLTags.TimeStampListTag);
@@ -195,16 +198,13 @@ private static org.jdom.Element getXML(ImageDataset param,Xmlproducer vcellXMLPr
  * This method returns a XML representation for a Biomodel object.
  * Creation date: (2/14/2001 3:41:13 PM)
  * @param param cbit.vcell.biomodel.BioModel
- * @return org.jdom.Element
+ * @return Element
  * @throws XmlParseException
  * @throws cbit.vcell.parser.ExpressionException
  */
-private static org.jdom.Element getXML(FRAPData param,Xmlproducer vcellXMLProducer,DataSetControllerImpl.ProgressListener progressListener, boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
-	//Creation of BioModel Node
-//	private ImageDataset imageDataset = null;
-//	private ArrayList<ROI> rois = new ArrayList<ROI>();
-
-	org.jdom.Element frapDataNode = new org.jdom.Element(MicroscopyXMLTags.FRAPDataTag);
+private static Element getXML(FRAPData param,Xmlproducer vcellXMLProducer, ClientTaskStatusSupport progressListener, boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException 
+{
+	Element frapDataNode = new Element(MicroscopyXMLTags.FRAPDataTag);
 	//Get ImageDataset
 	if (param.getImageDataset()!=null){
 		frapDataNode.addContent( getXML(param.getImageDataset(),vcellXMLProducer,progressListener,bSaveCompressed) );
@@ -216,8 +216,8 @@ private static org.jdom.Element getXML(FRAPData param,Xmlproducer vcellXMLProduc
 	}
 	//Write pixel value scaling info
 	if(param.getOriginalGlobalScaleInfo() != null){
-		org.jdom.Element originalGlobalScaleInfoNode =
-			new org.jdom.Element(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
+		Element originalGlobalScaleInfoNode =
+			new Element(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
 		originalGlobalScaleInfoNode.setAttribute(
 				MicroscopyXMLTags.OriginalGlobalScaleInfoMinTag,
 			String.valueOf(param.getOriginalGlobalScaleInfo().originalGlobalScaledMin));
@@ -233,21 +233,14 @@ private static org.jdom.Element getXML(FRAPData param,Xmlproducer vcellXMLProduc
 		frapDataNode.addContent(originalGlobalScaleInfoNode);
 	}
 	// We assume saving ROI rings takes 5% of the total progress
-	if(progressListener != null){progressListener.updateProgress(1.0);}
+	if(progressListener != null){progressListener.setProgress(100);}
 	return frapDataNode;
 }
 
-/**
- * This method returns a XML representation for a Biomodel object.
- * Creation date: (2/14/2001 3:41:13 PM)
- * @param param cbit.vcell.biomodel.BioModel
- * @return org.jdom.Element
- * @throws XmlParseException
- * @throws cbit.vcell.parser.ExpressionException
- */
-private static org.jdom.Element getXML(FRAPStudy.FRAPModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException {
+//commented loading old parameters
+/*private static Element getXML(FRAPStudy.FRAPModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException {
 
-	org.jdom.Element frapModelParametersNode = new org.jdom.Element(MicroscopyXMLTags.FRAPModelParametersTag);
+	Element frapModelParametersNode = new Element(MicroscopyXMLTags.FRAPModelParametersTag);
 	//get initial parameters
 	if (param.getIniModelParameters()!=null){
 		frapModelParametersNode.addContent( getXML(param.getIniModelParameters()));
@@ -263,9 +256,9 @@ private static org.jdom.Element getXML(FRAPStudy.FRAPModelParameters param) thro
 	return frapModelParametersNode;
 }
 
-private static org.jdom.Element getXML(FRAPStudy.InitialModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException
+private static Element getXML(FRAPStudy.InitialModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException
 {
-	org.jdom.Element iniParamNode = new org.jdom.Element(MicroscopyXMLTags.FRAPInitialParametersTag);
+	Element iniParamNode = new Element(MicroscopyXMLTags.FRAPInitialParametersTag);
 	
 	if (param.monitorBleachRate!=null){
 		iniParamNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, param.monitorBleachRate.toString());
@@ -282,9 +275,9 @@ private static org.jdom.Element getXML(FRAPStudy.InitialModelParameters param) t
 	return iniParamNode;
 }
 
-private static org.jdom.Element getXML(FRAPStudy.PureDiffusionModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException
+private static Element getXML(FRAPStudy.PureDiffusionModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException
 {
-	org.jdom.Element pureDiffParamNode = new org.jdom.Element(MicroscopyXMLTags.FRAPPureDiffusionParametersTag);
+	Element pureDiffParamNode = new Element(MicroscopyXMLTags.FRAPPureDiffusionParametersTag);
 	
 	if (param.monitorBleachRate!=null){
 		pureDiffParamNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, param.monitorBleachRate.toString());
@@ -314,9 +307,9 @@ private static org.jdom.Element getXML(FRAPStudy.PureDiffusionModelParameters pa
 	return pureDiffParamNode;
 }
 
-private static org.jdom.Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException
+private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException
 {
-	org.jdom.Element reacDiffParamNode = new org.jdom.Element(MicroscopyXMLTags.FRAPReactionDiffusionParametersTag);
+	Element reacDiffParamNode = new Element(MicroscopyXMLTags.FRAPReactionDiffusionParametersTag);
 
 	if (param.freeDiffusionRate!=null){
 		reacDiffParamNode.setAttribute(MicroscopyXMLTags.FreeDiffusionRateAttTag, param.freeDiffusionRate.toString());
@@ -343,7 +336,7 @@ private static org.jdom.Element getXML(FRAPStudy.ReactionDiffusionModelParameter
 		reacDiffParamNode.setAttribute(MicroscopyXMLTags.ReactionOffRateAttTag, param.reacOffRate.toString());
 	}
 	return reacDiffParamNode;
-}
+}*/
 /**
  * Method getXML.
  * @param param ExternalDataIdentifier
@@ -362,34 +355,81 @@ private static Element getXML(ExternalDataIdentifier param){
  * This method returns a XML representation for a Biomodel object.
  * Creation date: (2/14/2001 3:41:13 PM)
  * @param param cbit.vcell.biomodel.BioModel
- * @return org.jdom.Element
+ * @return Element
  * @throws XmlParseException
  * @throws cbit.vcell.parser.ExpressionException
  */
-private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProducer,DataSetControllerImpl.ProgressListener progressListener,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
-	//Creation of BioModel Node
-	org.jdom.Element frapStudyNode = new org.jdom.Element(MicroscopyXMLTags.FRAPStudyTag);
+private static Element getXML(FRAPStudy param,Xmlproducer vcellXMLProducer, ClientTaskStatusSupport progressListener,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
+
+	Element frapStudyNode = new Element(MicroscopyXMLTags.FRAPStudyTag);
+	//name
 	if (param.getName()!=null){
 		String name = param.getName();
 		frapStudyNode.setAttribute(XMLTags.NameAttrTag, name);
 	}
+	//originalImageFilePath
 	if (param.getOriginalImageFilePath()!=null && param.getOriginalImageFilePath().length()>0) {
 		String name = param.getOriginalImageFilePath();
 		frapStudyNode.setAttribute(MicroscopyXMLTags.OriginalImagePathAttrTag, name);
 	}
+	//Description
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		frapStudyNode.addContent(annotationElem);
 	}
+	//starting index for recovery
+	if (param.getStartingIndexForRecovery() != null) {
+		Element indexElem = new Element(MicroscopyXMLTags.StartingIndexForRecoveryTag);
+		indexElem.setText(mangle(param.getStartingIndexForRecovery().toString()));
+		frapStudyNode.addContent(indexElem);
+	}
+	//Get frap best model index
+	if(param.getBestModelIndex() != null)
+	{
+		Element bestModelIdxElem = new Element(MicroscopyXMLTags.BestModelIndexTag);
+		bestModelIdxElem.setText(mangle(param.getBestModelIndex().toString()));
+		frapStudyNode.addContent(bestModelIdxElem);
+	}
+	//Get selected ROIs
+	if(param.getSelectedROIsForErrorCalculation() != null && param.getSelectedROIsForErrorCalculation().length >0)
+	{
+		Element selectedROIsNode = new Element(MicroscopyXMLTags.SelectedROIsTag);
+		boolean[] selectedROIs = param.getSelectedROIsForErrorCalculation();
+		String rowText = "";
+		for (int i = 0; i < selectedROIs.length; i++){
+            if (i > 0){
+                  rowText += " ";
+            }
+            rowText += selectedROIs[i];
+	    }
+		selectedROIsNode.addContent(rowText);
+		frapStudyNode.addContent(selectedROIsNode);
+	}
+	//Get frap models
+	if(param.getModels() != null && param.getModels().length > 0)
+	{
+		Element frapModelsNode = new Element(MicroscopyXMLTags.FrapModelsTag);
+		if(param.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
+		{
+			frapModelsNode.addContent(getXML(param.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]));
+		}
+		if(param.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
+		{
+			frapModelsNode.addContent(getXML(param.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]));
+		}
+		if(param.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+		{
+			frapModelsNode.addContent(getXML(param.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING]));
+		}
+		frapStudyNode.addContent(frapModelsNode);
+	}
 	
-	//Get model parameters
-
 	//Get ExternalDataIdentifier (for timeseries)
 	if (param.getFrapDataExternalDataInfo()!=null){
 		Element imageDatasetEDINode = new Element(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
 		imageDatasetEDINode.setAttribute(MicroscopyXMLTags.FilenameAttrTag,param.getFrapDataExternalDataInfo().getFilename());
-		imageDatasetEDINode.addContent( getXML(param.getFrapDataExternalDataInfo().getExternalDataIdentifier()) );
+		imageDatasetEDINode.addContent(getXML(param.getFrapDataExternalDataInfo().getExternalDataIdentifier()) );
 		frapStudyNode.addContent( imageDatasetEDINode );
 	}
 	//Get ExternalDataIdentifier (for ROIs)
@@ -401,7 +441,7 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 	}
 	//Get Reference Data (for reference data)
 	if (param.getStoredRefData()!=null){
-		frapStudyNode.addContent( getXML(param.getStoredRefData()) );
+		frapStudyNode.addContent( getXML(param.getStoredRefData(), MicroscopyXMLTags.ReferenceDataTag) );
 	}
 	//Get BioModel
 	if (param.getBioModel()!=null){
@@ -415,9 +455,105 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 	return frapStudyNode;
 }
 
-private static org.jdom.Element getXML(SimpleReferenceData referenceData)
+private static Element getXML(FRAPModel param)
 {
-    Element referenceDataElement = new Element(MicroscopyXMLTags.ReferenceDataTag);
+	if(param.getModelIdentifer().equals(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]))
+	{
+		Element diffOneModelNode = new Element(MicroscopyXMLTags.DiffustionWithOneComponentModelTag);
+		diffOneModelNode.setAttribute(MicroscopyXMLTags.ModelIdentifierAttTag, param.getModelIdentifer());
+		//add model parameters.
+		if(param.getModelParameters() != null)
+		{
+			diffOneModelNode.addContent(getXML(param.getModelParameters()));
+		}
+		return diffOneModelNode;
+	}
+	else if(param.getModelIdentifer().equals(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]))
+	{
+		Element diffTwoModelNode = new Element(MicroscopyXMLTags.DiffustionWithTwoComponentsModelTag);
+		diffTwoModelNode.setAttribute(MicroscopyXMLTags.ModelIdentifierAttTag, param.getModelIdentifer());
+		if(param.getModelParameters() != null)
+		{
+			diffTwoModelNode.addContent(getXML(param.getModelParameters()));
+		}
+		return diffTwoModelNode;
+	}
+	else if(param.getModelIdentifer().equals(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_BINDING]))
+	{
+		Element reacDiffModelNode = new Element(MicroscopyXMLTags.DiffustionReactionModelTag);
+		reacDiffModelNode.setAttribute(MicroscopyXMLTags.ModelIdentifierAttTag, param.getModelIdentifer());
+		if(param.getModelParameters() != null)
+		{
+			reacDiffModelNode.addContent(getXML(param.getModelParameters()));
+		}
+		if(param.getTimepoints() != null && param.getTimepoints().length > 0)
+		{
+			reacDiffModelNode.addContent(getXML(param.getTimepoints()));
+		}
+		if(param.getData() != null && param.getData().length > 0)
+		{
+			boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+			Arrays.fill(selectedROIs, true);
+			SimpleReferenceData diffReacData = FRAPOptimization.doubleArrayToSimpleRefData(param.getData(), param.getTimepoints(), 0, selectedROIs);
+			reacDiffModelNode.addContent(getXML(diffReacData, MicroscopyXMLTags.ModelDataTag)); //TODO: store as simple reference data
+		}
+		return reacDiffModelNode;
+	}
+	
+	return null;
+}
+
+private static Element getXML(Parameter[] params)
+{
+	Element parametersNode = new Element(MicroscopyXMLTags.ModelParametersTag);
+	if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
+	{
+		parametersNode.setAttribute(MicroscopyXMLTags.PrimaryRateAttrTag, params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.PrimaryFractionAttTag, params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
+	}
+	else if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
+	{
+		parametersNode.setAttribute(MicroscopyXMLTags.PrimaryRateAttrTag, params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.PrimaryFractionAttTag, params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.SecondRateAttrTag, params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.SecondFractionAttTag, params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() + "");
+	}
+	else if(params.length == FRAPModel.NUM_MODEL_PARAMETERS_BINDING)
+	{
+		parametersNode.setAttribute(MicroscopyXMLTags.PrimaryRateAttrTag, params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.PrimaryFractionAttTag, params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.SecondRateAttrTag, params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.SecondFractionAttTag, params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.BindingSiteConcentrationAttTag, params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.ReactionOnRateAttTag, params[FRAPModel.INDEX_ON_RATE].getInitialGuess() + "");
+		parametersNode.setAttribute(MicroscopyXMLTags.ReactionOffRateAttTag, params[FRAPModel.INDEX_OFF_RATE].getInitialGuess() + "");
+	}
+	return parametersNode;
+}
+
+private static Element getXML(double[] timePoints)
+{
+	Element timePointsNode = new Element(MicroscopyXMLTags.ModelTimePointsTag);
+	timePointsNode.setAttribute(MicroscopyXMLTags.ModelTimePointsLengthAttTag, Integer.toString(timePoints.length));
+	String timeText = "";
+	for(int i=0; i<timePoints.length; i++)
+	{
+		if (i>0){
+			timeText += " ";
+		}
+		timeText += timePoints[i];
+	}
+	timePointsNode.addContent(timeText);
+	return timePointsNode;
+}
+
+
+private static Element getXML(SimpleReferenceData referenceData, String referenDataTag)
+{
+    Element referenceDataElement = new Element(referenDataTag);
     referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumRowsAttribute,Integer.toString(referenceData.getNumRows()));
     referenceDataElement.setAttribute(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute,Integer.toString(referenceData.getNumColumns()));
 

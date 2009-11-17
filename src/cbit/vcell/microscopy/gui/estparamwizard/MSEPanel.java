@@ -11,10 +11,10 @@ public class MSEPanel extends BoxPanel
 	private MSETablePanel mseTablePanel;
 	private FRAPWorkspace frapWorkspace = null;
 	public MSEPanel() {
-		super("Mean Square Error among Available Models under Selected ROIs");
+		super("Squared Error among Available Models under Selected ROIs");
 			mseTablePanel = new MSETablePanel(this);
-	        contentPane.setLayout(/*new BorderLayout()*/new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-	        contentPane.add(mseTablePanel/*, BorderLayout.CENTER*/);
+	        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+	        contentPane.add(mseTablePanel);
 	}
 	
 	public FRAPWorkspace getFrapWorkspace()
