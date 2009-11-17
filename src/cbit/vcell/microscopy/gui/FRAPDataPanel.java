@@ -305,8 +305,6 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		Plot2D plot2D = new Plot2D(null, varNames, plotDatas);
 		
 		plotter.setPlot2D(plot2D);
-		plotter.setStepViewVisible(false, false);
-
 		
 		JDialog plotDialog = new JDialog();
 		plotDialog.setTitle("ROI time course");
