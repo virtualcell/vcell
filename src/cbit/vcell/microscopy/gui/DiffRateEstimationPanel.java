@@ -63,7 +63,7 @@ public class DiffRateEstimationPanel extends JPanel
 		add(weightTextField, gridBagConstraints_3);
 
 		final JLabel kdLabel = new JLabel();
-		kdLabel.setText("kD");
+		kdLabel.setText(" kD");
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_8.gridy = 5;
@@ -102,7 +102,7 @@ public class DiffRateEstimationPanel extends JPanel
 		add(diffRateTextField, gridBagConstraints_5);
 
 		final JLabel um2sLabel = new JLabel();
-		um2sLabel.setText("um2/s");
+		um2sLabel.setText(" um2/s");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.gridy = 7;
 		gridBagConstraints_9.gridx = 3;
@@ -122,7 +122,7 @@ public class DiffRateEstimationPanel extends JPanel
 				}
 			}
 		});
-		searchWebButton.setText("search web");
+		searchWebButton.setText("Search Web");
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.gridy = 7;
 		gridBagConstraints_7.gridx = 6;
@@ -131,23 +131,23 @@ public class DiffRateEstimationPanel extends JPanel
 	
 	private void estimateDiffRate()
 	{
-		double weight = Double.parseDouble(weightTextField.getText());
-		double diffRate = (Math.pow(weight, -0.333)*gfpDiffRate)/Math.pow(gfpWeight, -0.333);
-		diffRateTextField.setText(NumberUtils.formatNumber(diffRate,10));
+		try{
+			double weight = Double.parseDouble(weightTextField.getText());
+			double diffRate = (Math.pow(weight, -0.333)*gfpDiffRate)/Math.pow(gfpWeight, -0.333);
+			diffRateTextField.setText(NumberUtils.formatNumber(diffRate,10));
+		}catch(NumberFormatException e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(DiffRateEstimationPanel.this, "Particle molecular weight is empty or in illegal form." + e.getMessage());
+		}
 	}
 	
-	public Double getDiffRate()
+	public String getDiffRate() 
 	{
-		Double diffRate = null;
-		if(diffRateTextField.getText()!=null)
-		{
-			try{
-				diffRate = new Double(diffRateTextField.getText());
-			}catch(NumberFormatException e)
-			{
-				e.printStackTrace(System.out);
-			}
-		}
+		String diffRate = null;
+		
+		diffRate = diffRateTextField.getText();
+
 		return diffRate;
 	}
 	

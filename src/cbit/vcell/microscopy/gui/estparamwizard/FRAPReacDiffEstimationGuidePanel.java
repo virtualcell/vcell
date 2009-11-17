@@ -415,7 +415,8 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		{
 			if(diffRateEstPanel.getDiffRate()!= null)
 			{
-				freeDiffTextField.setText(diffRateEstPanel.getDiffRate().toString());
+				freeDiffTextField.setText(diffRateEstPanel.getDiffRate());
+				freeDiffTextField.setCaretPosition(0);
 			}
 		}
 	}
@@ -426,60 +427,80 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		{
 			onRateEstPanel = new DiffOnRateEstimationPanel();
 		}
-		onRateEstPanel.setFreeDiffRate(new Double(freeDiffTextField.getText()));
-		int choice = DialogUtils.showComponentOKCancelDialog(FRAPReacDiffEstimationGuidePanel.this, onRateEstPanel, "Help on estimate reaction on rate");
-		if (choice == JOptionPane.OK_OPTION)
-		{
-			if(onRateEstPanel.getOnRate()!= null)
+		try{
+			Double freeDiffRate = new Double(freeDiffTextField.getText());
+			onRateEstPanel.setFreeDiffRate(freeDiffRate);
+			int choice = DialogUtils.showComponentOKCancelDialog(FRAPReacDiffEstimationGuidePanel.this, onRateEstPanel, "Help on estimate reaction on rate");
+			if (choice == JOptionPane.OK_OPTION)
 			{
-				konTextField.setText(onRateEstPanel.getOnRate().toString());
+				if(onRateEstPanel.getOnRate()!= null)
+				{
+					konTextField.setText(onRateEstPanel.getOnRate().toString());
+					konTextField.setCaretPosition(0);
+				}
 			}
+		}catch(NumberFormatException e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Free diffusion rate is empty or in illegal form." + e.getMessage());
 		}
 	}
 	
 	public void autoEstimateReactionBindingParameters()
 	{
-		if(konButton.isSelected()) // parameters have been set
-		{	
-			if(konTextField.getText() != null && freeDiffTextField.getText() != null) 
+		try{
+			//get free diffusion rate
+			double df = Double.parseDouble(freeDiffTextField.getText());
+			if(effDiffRate >= df )
 			{
-				double df = Double.parseDouble(freeDiffTextField.getText());
-				double kon = Double.parseDouble(konTextField.getText());
-				double koff = (kon*effDiffRate)/(df-effDiffRate);
-				double cf = (totMobileFraction*koff)/(kon+koff);
-				double cc = (totMobileFraction*kon)/(kon+koff);
-
-				try{
-					updateTableParameters(df, cf, cc, kon, koff, bwmRate, immFraction, true);
-				}catch(ExpressionException ee)
-				{
-					ee.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
-				}
-				koffTextField.setText(koff + "");
-				koffTextField.setCaretPosition(0);
+				DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Free diffusion rate should be greater than effective diffusion rate." );
+				return;
 			}
-		}
-		else if(koffButton.isSelected())
+			if(konButton.isSelected()) // parameters have been set
+			{	
+				if(konTextField.getText() != null && freeDiffTextField.getText() != null) 
+				{
+					
+					double kon = Double.parseDouble(konTextField.getText());
+					double koff = (kon*effDiffRate)/(df-effDiffRate);
+					double cf = (totMobileFraction*koff)/(kon+koff);
+					double cc = (totMobileFraction*kon)/(kon+koff);
+	
+					try{
+						updateTableParameters(df, cf, cc, kon, koff, bwmRate, immFraction, true);
+					}catch(ExpressionException ee)
+					{
+						ee.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
+					}
+					koffTextField.setText(koff + "");
+					koffTextField.setCaretPosition(0);
+				}
+			}
+			else if(koffButton.isSelected())
+			{
+				if(konTextField.getText() != null && freeDiffTextField.getText() != null)
+				{
+					double koff = Double.parseDouble(koffTextField.getText());
+					double kon = ((df-effDiffRate)*koff)/(effDiffRate);
+					double cf = (totMobileFraction*koff)/(kon+koff);
+					double cc = (totMobileFraction*kon)/(kon+koff);
+	
+					try{
+						updateTableParameters(df, cf, cc, kon, koff, bwmRate, immFraction, false);
+					}catch(ExpressionException ee)
+					{
+						ee.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
+					}
+					konTextField.setText(kon + "");
+					konTextField.setCaretPosition(0);
+				}
+			}
+		}catch(NumberFormatException ex)
 		{
-			if(konTextField.getText() != null && freeDiffTextField.getText() != null)
-			{
-				double df = Double.parseDouble(freeDiffTextField.getText());
-				double koff = Double.parseDouble(koffTextField.getText());
-				double kon = ((df-effDiffRate)*koff)/(effDiffRate);
-				double cf = (totMobileFraction*koff)/(kon+koff);
-				double cc = (totMobileFraction*kon)/(kon+koff);
-
-				try{
-					updateTableParameters(df, cf, cc, kon, koff, bwmRate, immFraction, false);
-				}catch(ExpressionException ee)
-				{
-					ee.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error creating expression when trying to update table: " + ee.getMessage());
-				}
-				konTextField.setText(kon + "");
-				konTextField.setCaretPosition(0);
-			}
+			ex.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(FRAPReacDiffEstimationGuidePanel.this, "Error in estimation parameters: numbers in textfield are empty or in illeagal forms. " + ex.getMessage());
 		}
 	}
 	

@@ -373,7 +373,7 @@ public class DiffOnRateEstimationPanel extends JPanel
 		}
 		else if(calculateRadioButton.isSelected())
 		{
-			if(onRateValLabel.getText()!=null)
+			if(onRateValLabel.getText()!=null && !onRateValLabel.getText().equals(""))
 			{
 				try{
 					onRate = new Double(onRateValLabel.getText());
