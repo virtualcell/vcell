@@ -1,4 +1,9 @@
 package cbit.vcell.opt;
+
+import org.vcell.util.Matchable;
+
+import cbit.vcell.VirtualMicroscopy.ROI;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -8,7 +13,7 @@ package cbit.vcell.opt;
  * Creation date: (3/3/00 12:13:49 AM)
  * @author: 
  */
-public class Parameter {
+public class Parameter implements Matchable{
 	private String name = null;
 	private double lowerBound = Double.NEGATIVE_INFINITY;
 	private double upperBound = Double.POSITIVE_INFINITY;
@@ -85,4 +90,45 @@ public double getScale() {
 public double getUpperBound() {
 	return upperBound;
 }
+
+//Implemented Matchable Nov. 2009
+public boolean compareEqual(Matchable obj) 
+{
+	if (this == obj) {
+		return true;
+	}
+	if (obj != null && obj instanceof Parameter) 
+	{
+		Parameter param = (Parameter) obj;
+		if (name != param.getName())
+		{
+			return false;
+		}
+		if(lowerBound != param.getLowerBound())
+		{
+			return false;
+		}
+		if(upperBound != param.getUpperBound())
+		{
+			return false;
+		}
+		if(initialGuess != param.getInitialGuess())
+		{
+			return false;
+		}
+		if(scale != param.getScale())
+		{
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+
+public Parameter duplicate()
+{
+	Parameter result = new Parameter(this.name, this.lowerBound, this.upperBound, this.scale, this.initialGuess);
+	return result;
+}
+
 }
