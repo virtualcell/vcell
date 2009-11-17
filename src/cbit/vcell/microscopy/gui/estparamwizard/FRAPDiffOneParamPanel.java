@@ -35,7 +35,6 @@ import cbit.vcell.opt.Parameter;
 
 public class FRAPDiffOneParamPanel extends JPanel
 {
-	private final JSlider secondMobileFracSlider = null;
 	private final JLabel immoFracValueLabel;
 	private final JSlider diffusionRateSlider;
 	private final JSlider mobileFractionSlider;
@@ -53,8 +52,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 
 	private boolean B_HOLD_FIRE = false;
 	private boolean isExecuting = false;//for control whether a paragraph should execute in OPTIMIZER_SLIDER_CHANGE_LISTENER or not, when getValueIsAdjusting() is false.
-	public static final String INI_SECOND_DIFF_RATE = "0";
-	public static final String INI_SECOND_MOBILE_FRAC = "0";
 	
 	private final ActionListener OPTIMIZER_VALUE_ACTION_LISTENER =
 		new ActionListener() {
@@ -107,7 +104,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 							double primaryFrac = Double.parseDouble(mobileFractionTextField.getText());
 							double immFrac = Double.parseDouble(immoFracValueLabel.getText());
 							
-							double[] adjustedVals = adjustMobileFractions(primaryFrac, isSetPrimaryMFrac);
+							double[] adjustedVals = adjustMobileFractions(primaryFrac);
 							//primary				
 							double value = adjustedVals[0];
 							mobileFractionSetButton.setEnabled(false);
@@ -122,21 +119,9 @@ public class FRAPDiffOneParamPanel extends JPanel
 							}
 							mobileFractionSlider.setValue(sliderValue);
 							mobileFractionTextField.setText(value+"");
-							//secondary
-							value = adjustedVals[1];
-							sliderValue = (int)
-								(((value-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())*(double)secondMobileFracSlider.getMaximum())/
-								(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()));
-							if(sliderValue < secondMobileFracSlider.getMinimum()){
-								sliderValue = secondMobileFracSlider.getMinimum();
-							}
-							if(sliderValue > secondMobileFracSlider.getMaximum()){
-								sliderValue = secondMobileFracSlider.getMaximum();
-							}
-							secondMobileFracSlider.setValue(sliderValue);
 							
 							//immobile
-							immoFracValueLabel.setText(adjustedVals[2]+"");
+							immoFracValueLabel.setText(adjustedVals[1]+"");
 						}finally{
 							isExecuting = false;
 						}
@@ -159,7 +144,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 					//get mobile fractions
 					double primaryMFrac = Double.parseDouble(mobileFractionTextField.getText());
 					double immMFrac = Double.parseDouble(immoFracValueLabel.getText());
-					double[] adjustedVals = adjustMobileFractions(primaryMFrac, isSetPrimaryMFrac);
+					double[] adjustedVals = adjustMobileFractions(primaryMFrac);
 					
 //					if(e.getSource() == diffusionRateSetButton){
 						double value = Double.parseDouble(diffusionRateTextField.getText());
@@ -225,7 +210,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 						bleachWhileMonitorSlider.setValue(sliderValue);
 						bleachWhileMonitorSetButton.setEnabled(false);
 						//set immobile label
-						value = adjustedVals[2];
+						value = adjustedVals[1];
 						immoFracValueLabel.setText(value+"");
 //					}
 					if(!B_HOLD_FIRE){
@@ -258,22 +243,17 @@ public class FRAPDiffOneParamPanel extends JPanel
 			}
 		};
 	//array inFractions stores 0:primary mobile fraction 1:secondary M F. 2:immobile fraction
-	private double[] adjustMobileFractions(double primaryMF, boolean movingPrimaryMFrac)
+	private double[] adjustMobileFractions(double primaryMF)
 	{
 		double primaryMFrac = primaryMF;
-		double secMFrac = 0;
 		//constrain the upper and lower bound for primary and secondary mobile fractions
 		primaryMFrac = Math.max(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(), primaryMFrac);
 		primaryMFrac = Math.min(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(), primaryMFrac);
-		secMFrac = Math.max(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(), secMFrac);
-		secMFrac = Math.min(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(), secMFrac);
 		double immFrac = 0;
-		 //second diffusion is not applied
-			
-			immFrac = 1 - primaryMFrac;
-			secMFrac = 0;
+		//second diffusion is not applied
+		immFrac = 1 - primaryMFrac;
 		
-		return new double[]{primaryMFrac, secMFrac, immFrac};
+		return new double[]{primaryMFrac, immFrac};
 	}
 		
 	public FRAPDiffOneParamPanel() {

@@ -33,7 +33,6 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
         setProgressPopupShown(false); 
         setTaskProgressKnown(false);
     }
-
     
     public String getNextPanelDescriptorID() {
         return Wizard.FINISH.getPanelDescriptorIdentifier();

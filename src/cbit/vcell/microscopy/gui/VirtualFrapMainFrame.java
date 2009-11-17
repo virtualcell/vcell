@@ -11,6 +11,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
@@ -197,39 +198,20 @@ public class VirtualFrapMainFrame extends JFrame
   //Inner class MenuHandler
   public class MenuHandler implements ActionListener
   {
-	  private void saveAndSaveAs(final boolean bSaveAs){
-
-		    AsynchClientTask saveTask = new AsynchClientTask("Start saving ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-			{
-				public void run(Hashtable<String, Object> hashTable) throws Exception
-				{
-
-		    	  try {
-		    		  if(bSaveAs){
-		    			  frapStudyPanel.saveAs();
-		    		  }else{
-		    			  frapStudyPanel.save();
-		    		  }
-				  }catch(UserCancelException e1){
-					  //ignore
-				  }catch(final Exception e){
-//					  pp.stop();
-					  updateStatus((bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
-					  try{
-						  SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-							  DialogUtils.showErrorDialog(VirtualFrapMainFrame.this,(bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
-						  }});
-					  }catch(Exception e2){
-						  e2.printStackTrace();
-					  }
-				  }	finally{
-//					  pp.stop();
-				  }
-				}
-			};
-			//dispatch
-			ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask}, false);
-//			}}).start();
+	  private void saveAndSaveAs(final boolean bSaveAs)
+	  {
+    	  
+    	  if(bSaveAs)
+    	  {
+    		  AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
+    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
+    	  }else{
+    		  //dispatch
+    		  AsynchClientTask[] saveTasks = frapStudyPanel.save();
+    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveTasks, true);
+    		  
+    	  }
+		  
 
 	  }
  		public void actionPerformed(ActionEvent e) {
@@ -246,63 +228,18 @@ public class VirtualFrapMainFrame extends JFrame
 	  			  }else{
 	  				  return;
 	  			  }
-	  			  try{
-	  	  			frapStudyPanel.load(new File[] {inputFile},null);
-	  			  }catch(UserCancelException e2){
-	  				  //ignore
-	  			  }catch(Exception e2){
-	  				  e2.printStackTrace();
-	  				  DialogUtils.showErrorDialog(VirtualFrapMainFrame.this,
-	  						"Error opening file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
-	  			  }
+	  			  
+	  	  		  AsynchClientTask[] openTasks = frapStudyPanel.open(inputFile);
+	    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), openTasks, true);
+	  			  
 		      }
 			  else if(arg.equals(SAVE_ACTION_COMMAND))
 		      {
 				  saveAndSaveAs(false);
-//					final AsynchProgressPopup pp =
-//						new AsynchProgressPopup(
-//							VirtualFrapMainFrame.this,
-//							"Saving current FRAP document",
-//							"Working...",true,false
-//					);
-//					pp.start();
-//					new Thread(new Runnable(){public void run(){
-//				    	  try {
-//						      frapStudyPanel.save();
-//						  }catch(UserCancelException e1){
-//							  //ignore
-//						  }catch(Exception e){
-//							  pp.stop();
-//							  DialogUtils.showErrorDialog("Save Error: " + e.getMessage());
-//							  updateStatus("Save Error: " + e.getMessage());
-//						  }	finally{
-//							  pp.stop();
-//						  }
-//					}}).start();
 		      }
 		      else if(arg.equals(SAVEAS_ACTION_COMMAND))
 		      {
 		    	  saveAndSaveAs(true);
-//					final AsynchProgressPopup pp =
-//						new AsynchProgressPopup(
-//							VirtualFrapMainFrame.this,
-//							"Saving New FRAP document",
-//							"Working...",true,false
-//					);
-//					pp.start();
-//					new Thread(new Runnable(){public void run(){
-//				    	  try {
-//						      frapStudyPanel.saveAs();
-//						  }catch(UserCancelException e1){
-//							  //ignore
-//						  }catch(Exception e){
-//							  pp.stop();
-//							  DialogUtils.showErrorDialog("SaveAs Error: " + e.getMessage());
-//							  updateStatus("SaveAs Error: " + e.getMessage());
-//						  }	finally{
-//							  pp.stop();
-//						  }
-//					}}).start();
 		      }
 		      else if(arg.equals(IMPORTFILESERIES_ACTION_COMMAND))
 		      {

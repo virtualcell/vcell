@@ -396,7 +396,7 @@ public class NonGUIFRAPTest {
 					System.out.println(message);
 				}
 			};
-		MicroscopyXmlproducer.writeXMLFile(frapStudy, new File(outputXMLFileName), true,progressListener,false);
+		MicroscopyXmlproducer.writeXMLFile(frapStudy, new File(outputXMLFileName), true, null,false);//no progress listener, need to change
 		FRAPStudy.runFVSolverStandalone(
 			new File(localWorkspace.getDefaultSimDataDirectory()),
 			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),

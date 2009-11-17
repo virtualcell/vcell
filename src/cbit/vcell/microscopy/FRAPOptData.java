@@ -211,107 +211,41 @@ public class FRAPOptData {
 	
 	public void refreshDimensionReducedRefData(final ClientTaskStatusSupport progressListener) throws Exception
 	{
-		final double RUNSIM_PROGRESS_FRACTION = .5;
-//		DataSetControllerImpl.ProgressListener runSimProgressListener =
-//			new DataSetControllerImpl.ProgressListener(){
-//				public void updateProgress(double progress) {
-//					if(progressListener != null){
-//						progressListener.setProgress((int)(progress*RUNSIM_PROGRESS_FRACTION*100));
-//					}
-//				}
-//				public void updateMessage(String message){
-//					if(progressListener != null){
-//						progressListener.setMessage(message);
-//					}
-//				}
-//		};
 		
 		System.out.println("run simulation...");
 		KeyValue referenceSimKeyValue = null;
-//		if(isRunRefSim().booleanValue())
-//		{
-//			referenceSimKeyValue = runRefSimulation(runSimProgressListener);
-			referenceSimKeyValue = runRefSimulation(progressListener);
+		referenceSimKeyValue = runRefSimulation(progressListener);
+		System.out.println("simulation done...");
 		
-			VCSimulationIdentifier vcSimID =
-				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
-			VCSimulationDataIdentifier vcSimDataID =
-				new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
-			//original simulation time points
-			final double[] rawRefDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
-			//get shifted time points
-			refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
-			System.out.println("simulation done...");
-			
-			DataSetControllerImpl.ProgressListener reducedRefDataProgressListener =
-				new DataSetControllerImpl.ProgressListener(){
-					public void updateProgress(double progress) {
-						if(progressListener != null){
-							progressListener.setProgress((int)((.5+progress*(1-RUNSIM_PROGRESS_FRACTION))*100));
-						}
-					}
-					public void updateMessage(String message){
-						if(progressListener != null){
-							progressListener.setMessage(message);
-						}
-					}
-			};
-			dimensionReducedRefData =
-				FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID, rawRefDataTimePoints,
-						 getExpFrapStudy().getFrapData().getRois(), progressListener/*reducedRefDataProgressListener*/, true);
-			System.out.println("generating dimension reduced ref data, done ....");
-			
-			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
-			boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
-			Arrays.fill(selectedROIs, true);
-			getExpFrapStudy().setStoredRefData(FRAPOptimization.doubleArrayToSimpleRefData(dimensionReducedRefData, getRefDataTimePoints(), 0, selectedROIs));
+		VCSimulationIdentifier vcSimID =
+			new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
+		VCSimulationDataIdentifier vcSimDataID =
+			new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+		//original simulation time points
+		final double[] rawRefDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
+		//get shifted time points
+		refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
+		//get sim data
+		dimensionReducedRefData = FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID, rawRefDataTimePoints,
+					 			  getExpFrapStudy().getFrapData().getRois(), progressListener, true);
+		System.out.println("generating dimension reduced ref data, done ....");
+		
+		//if reference simulation completes successfully, we save reference data info and remove old simulation files.
+		boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+		Arrays.fill(selectedROIs, true);
+		getExpFrapStudy().setStoredRefData(FRAPOptimization.doubleArrayToSimpleRefData(dimensionReducedRefData, getRefDataTimePoints(), 0, selectedROIs));
 
-			//TODO: there is situation that no xml file name exists. we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
-//			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
-			//remove reference simulation files
-			if(referenceSimKeyValue!= null)
-			{
-				FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace());
-			}
-//		}
-//		else
-//		{
-//			referenceSimKeyValue = getExpFrapStudy().getRefExternalDataInfo().getExternalDataIdentifier().getKey();
-//		}
-		//loading data only if the reference data is null or a new reference simulation is done
-//		if(isLoadRefDataNeeded(isRunRefSim().booleanValue()))
-//		{
-//			VCSimulationIdentifier vcSimID =
-//				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
-//			VCSimulationDataIdentifier vcSimDataID =
-//				new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
-//			double[] rawRefDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
-//			refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
-//			System.out.println("simulation done...");
-//			int startRecoveryIndex = Integer.parseInt(getExpFrapStudy().getFrapModelParameters().getIniModelParameters().startingIndexForRecovery);
-//			
-//			DataSetControllerImpl.ProgressListener reducedRefDataProgressListener =
-//				new DataSetControllerImpl.ProgressListener(){
-//					public void updateProgress(double progress) {
-//						if(progressListener != null){
-//							progressListener.updateProgress(.5+progress*(1-RUNSIM_PROGRESS_FRACTION));
-//						}
-//					}
-//					public void updateMessage(String message){
-//						if(progressListener != null){
-//							progressListener.updateMessage(message);
-//						}
-//					}
-//			};
-//			dimensionReducedRefData =
-//				FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,
-//						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(),reducedRefDataProgressListener);
-//			System.out.println("generating dimension reduced ref data, done ....");
-//		}
+		//TODO: there is situation that no xml file name exists. we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
+//		MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
+		//remove reference simulation files
+		if(referenceSimKeyValue!= null)
+		{
+			FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace());
+		}
 	}
 	
 	private double[] timeShiftForBaseDiffRate(double[] timePoints)
-	{
+	{ 
 		double delT = Double.parseDouble(REFERENCE_DIFF_DELTAT);
 		double s = Double.parseDouble(REFERENCE_DIFF_RATE_COEFFICIENT);
 		double[] shiftedTimePoints = new double[timePoints.length];
@@ -322,16 +256,6 @@ public class FRAPOptData {
 		}
 		return shiftedTimePoints;
 	}
-	
-	
-//	public boolean isLoadRefDataNeeded(boolean isRunRefSim)
-//	{
-//		if(/*dimensionReducedRefData == null ||*/ isRunRefSim)
-//		{
-//			return true;
-//		}
-//		return false;
-//	}
 	
 	public KeyValue runRefSimulation(final ClientTaskStatusSupport progressListener) throws Exception
 	{
@@ -353,25 +277,8 @@ public class FRAPOptData {
 			sim.getSolverTaskDescription().setTimeStep(getRefTimeStep());
 			sim.getSolverTaskDescription().setOutputTimeSpec(getRefTimeSpec());
 			
-	//		System.out.println("run FRAP Reference Simulation...");
-			final double RUN_REFSIM_PROGRESS_FRACTION = 1.0;
-//			DataSetControllerImpl.ProgressListener runRefSimProgressListener =
-//				new DataSetControllerImpl.ProgressListener(){
-//					public void updateProgress(double progress) {
-//						if(progressListener != null){
-//							//To run to the steady state the time length is unpredictable. Progress increase 10 times
-//							//because we manually set ending time to 1000 and usually it will reach steady state in less than 100 seconds.
-//							//max allowed progress is 80%. this is heuristic.
-//							progressListener.setProgress(Math.min(0.8, (progress*10)*RUN_REFSIM_PROGRESS_FRACTION));
-//						}
-//					}
-//					public void updateMessage(String message){
-//						if(progressListener != null){
-//							progressListener.setMessage(message);
-//						}
-//					}
-//			};
-	
+			System.out.println("run FRAP Reference Simulation...");
+
 			//run simulation
 			FRAPStudy.runFVSolverStandalone(
 				new File(getLocalWorkspace().getDefaultSimDataDirectory()),
@@ -380,15 +287,6 @@ public class FRAPOptData {
 				getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 				getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
 				progressListener, true);
-			
-//			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
-//			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
-//			//we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
-//			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
-//			if(oldRefDataInfo != null && oldRefDataInfo.getExternalDataIdentifier() != null)
-//			{
-//				FRAPStudy.removeExternalDataAndSimulationFiles(oldRefDataInfo.getExternalDataIdentifier().getKey(), null, null, getLocalWorkspace());
-//			}
 			
 			return sim.getVersion().getVersionKey();
 		}catch(Exception e){

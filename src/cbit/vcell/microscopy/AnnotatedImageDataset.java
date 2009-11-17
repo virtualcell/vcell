@@ -125,6 +125,24 @@ public abstract class AnnotatedImageDataset {
 		return collectedPixels;
 	}
 
+	//reorder ROIs according to the order of FRAPData.VFRAP_ROI_ENUM
+	public static ROI[] reorderROIs(ROI[] origROIs)
+	{
+		ROI[] resultROIs = new ROI[origROIs.length];
+		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		{
+			for(int j=0; j<origROIs.length; j++)
+			{
+				if(FRAPData.VFRAP_ROI_ENUM.values()[i].name().equals(origROIs[j].getROIName()))
+				{
+					resultROIs[i] = origROIs[j];
+					break;
+				}
+			}
+		}
+		return resultROIs;
+	}
+	
 	/**
 	 * Method getAverageUnderROI.
 	 * @param channelIndex int
@@ -264,27 +282,14 @@ public abstract class AnnotatedImageDataset {
 
 	/**
 	 * This method returns a ROI array of rois.
-	 * Please note use arraylist.toArray will mix the roi order. 
-	 * Therefore, we loop through rois to put rois according to FRAPData.VFRAP_ROI_ENUM
-	 * Use getROILength method if simply need the length of rois.
+	 * In this method, we loop through rois to put rois according to the order of FRAPData.VFRAP_ROI_ENUM
+	 * Please note : Use getROILength() method if simply need the length of rois.
 	 * Create a local variable if need to use getRois() multiple times.
-	 * Above comments writen in Oct, 2009 
 	 */
-	public ROI[] getRois() {
-		
-		ROI[] resultROIs = new ROI[rois.size()];
-		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
-		{
-			for(int j=0; j<rois.size(); j++)
-			{
-				if(FRAPData.VFRAP_ROI_ENUM.values()[i].name().equals(rois.get(j).getROIName()))
-				{
-					resultROIs[i] = rois.get(j);
-					break;
-				}
-			}
-		}
-		return resultROIs;
+	public ROI[] getRois()
+	{
+		ROI[] oldROIs = rois.toArray(new ROI[rois.size()]);
+		return reorderROIs(oldROIs);
 	}
 
 	public int getROILength()

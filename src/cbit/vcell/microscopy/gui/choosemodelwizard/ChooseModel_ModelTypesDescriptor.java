@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
@@ -33,6 +34,34 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
     public void setFrapWorkspace(FRAPWorkspace arg_FrapWorkspace)
     {
     	frapWorkspace = arg_FrapWorkspace;
+    }
+    
+    public void aboutToDisplayPanel() 
+    {
+    	FRAPStudy fStudy = frapWorkspace.getFrapStudy();
+    	//if there are models selected and saved, load the model types. otherwise, apply default(diffusion with one component is selected).
+    	if(fStudy.getModels() != null && fStudy.getModels().length > 0 && fStudy.getSelectedModels().size() > 0)
+    	{
+    		modelTypesPanel.clearAllSelected();
+    		FRAPModel[] models = fStudy.getModels();
+			if(models[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
+			{
+				modelTypesPanel.setDiffOneSelected(true);
+			}
+			if(models[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
+			{
+				modelTypesPanel.setDiffTwoSelected(true);
+			}
+			if(models[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+			{
+				modelTypesPanel.setDiffBindingSelected(true);
+			}
+    	}
+    	else //new frap document
+    	{
+    		modelTypesPanel.clearAllSelected();
+    		modelTypesPanel.setDiffOneSelected(true);
+    	}
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()

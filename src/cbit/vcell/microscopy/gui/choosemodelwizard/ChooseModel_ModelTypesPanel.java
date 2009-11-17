@@ -111,4 +111,26 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		}
 		return result;
 	}
+	
+	public void clearAllSelected()
+	{
+		diffOneCheckBox.setSelected(false);
+		diffTwoCheckBox.setSelected(false);
+		diffBindingCheckBox.setSelected(false);
+	}
+	
+	public void setDiffOneSelected(boolean bSelected)
+	{
+		diffOneCheckBox.setSelected(bSelected);
+	}
+	
+	public void setDiffTwoSelected(boolean bSelected)
+	{
+		diffTwoCheckBox.setSelected(bSelected);
+	}
+	
+	public void setDiffBindingSelected(boolean bSelected)
+	{
+		diffBindingCheckBox.setSelected(bSelected);
+	}
 }

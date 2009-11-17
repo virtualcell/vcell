@@ -31,6 +31,7 @@ import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.ResultPanelButtonHandler;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
 import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
@@ -198,11 +199,17 @@ public class ResultDisplayPanel extends JPanel
 		reacBindingLabel.setBorder(new LineBorder(Color.black, 2));
 	}
 	
-	private void clearHighlightLabel()
+	public void clearBestModel()
 	{
 		oneDiffComponentLabel.setBorder(null);
 		twoDiffComponentLabel.setBorder(null);
 		reacBindingLabel.setBorder(null);
+	}
+	
+	public void clearResultTable()
+	{
+		getBestParameterTableModel().setBestModelIndex(null);
+		getRestultTable().removeAll();
 	}
 	
 	private JPanel getTablePanel()
@@ -272,7 +279,7 @@ public class ResultDisplayPanel extends JPanel
 		{
 			resultTable = new JTable();
 			//set table model
-			tableModel = new BestParameterTableModel(); 
+			tableModel = getBestParameterTableModel(); 
 			resultTable.setModel(tableModel);//set table model
 			
 			//set table renderer
@@ -287,6 +294,15 @@ public class ResultDisplayPanel extends JPanel
 		return resultTable;
 	}
 	
+	private BestParameterTableModel getBestParameterTableModel()
+	{
+		if(tableModel == null)
+		{
+			tableModel = new BestParameterTableModel();
+		}
+		return tableModel;
+	}
+	
 	public void setRunSimButtonEnable(boolean enabled)
 	{
 		getRunSimButton().setEnabled(enabled);
@@ -297,9 +313,9 @@ public class ResultDisplayPanel extends JPanel
 		getShowResultButton().setEnabled(enabled);
 	}
 	
-	public void setBestModel(int bestModelIndex)
+	public void setBestModel(int bestModelIndex, LocalWorkspace localWorkspace)
 	{
-		clearHighlightLabel();
+		clearBestModel();
 		if(bestModelIndex == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 		{
 			highLightOneDiffLabel();
@@ -312,10 +328,24 @@ public class ResultDisplayPanel extends JPanel
 		{
 			highLightReacBindingLabel();
 		}
-		//refresh run simulation button
-		if(getFRAPWorkspace().getFrapStudy().getModels()[bestModelIndex].getModelParameters() != null)
+		//refresh parameter table and buttons
+		FRAPStudy fStudy = getFRAPWorkspace().getFrapStudy();
+		setRunSimButtonEnable(false);
+		setResultsButtonEnabled(false);
+		if(fStudy.getModels()[bestModelIndex].getModelParameters() != null && fStudy.getModels()[bestModelIndex].getModelParameters().length > 0)
 		{
+			getBestParameterTableModel().setBestModelIndex(bestModelIndex);
 			setRunSimButtonEnable(true);
+			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
+			   fStudy.getBioModel().getSimulations()[0] != null && fStudy.getBioModel().getSimulations()[0].getKey() != null &&
+			   FRAPStudyPanel.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
+			{
+				setResultsButtonEnabled(true);
+			}
+		}
+		else
+		{
+			clearResultTable();
 		}
 	}
 	

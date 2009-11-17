@@ -33,24 +33,37 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 		   frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters()!= null)
 		{
 			params = frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters();
+			((EstParams_ReacBindingPanel)getPanelComponent()).setCurrentSimResults(frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getData());
+			((EstParams_ReacBindingPanel)getPanelComponent()).setCurrentRawSimTimePoints(frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getTimepoints());
 		}
-		else if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null && 
-				frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()!=null)
+		else
 		{
-			params = FRAPModel.createReacBindingParametersFromDiffusionParameters(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters());
+			((EstParams_ReacBindingPanel)getPanelComponent()).setCurrentSimResults(null);
+			((EstParams_ReacBindingPanel)getPanelComponent()).setCurrentRawSimTimePoints(null);
+			
+			if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null && 
+					frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()!=null)
+			{
+				params = FRAPModel.createReacBindingParametersFromDiffusionParameters(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters());
+			}
+			else // no parameters are available
+			{
+				try{
+			    	params = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_BINDING]);
+		    	}catch(Exception ex)
+		    	{
+		    		ex.printStackTrace(System.out);
+		    		DialogUtils.showErrorDialog(((EstParams_ReacBindingPanel)getPanelComponent()), "Error getting parameters for diffusion plus binding model." + ex.getMessage());
+		    	}
+			}
 		}
-		else // no parameters are available
-		{
-			try{
-		    	params = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_BINDING]);
-	    	}catch(Exception ex)
-	    	{
-	    		ex.printStackTrace(System.out);
-	    		DialogUtils.showErrorDialog(((EstParams_OneDiffComponentPanel)getPanelComponent()), "Error getting parameters for diffusion plus binding model.");
-	    	}
-		}
-    	
     	((EstParams_ReacBindingPanel)getPanelComponent()).setReacBindingParams(params);
+    	try {
+			((EstParams_ReacBindingPanel)getPanelComponent()).setData(fStudy.getFrapData(), params, fStudy.getFrapData().getImageDataset().getImageTimeStamps(), fStudy.getStartingIndexForRecovery(), fStudy.getSelectedROIsForErrorCalculation());
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+    		DialogUtils.showErrorDialog(((EstParams_ReacBindingPanel)getPanelComponent()), "Error plotting data for diffusion plus binding model." + ex.getMessage());
+		}
 	}    
     
     //save model parameters
