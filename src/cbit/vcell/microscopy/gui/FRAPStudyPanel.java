@@ -281,14 +281,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   			    
 		  	   			if(roiWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
 	  	   				{
-	  	   					
-	  	   					//check if one of images/rois/starting index for recovery is chaged. if so, rerun ref simulation by setting frapoptdata and storedrefdata to null.
-	  	   					FRAPStudy newFrapStudy = getFrapWorkspace().getFrapStudy();
+		  	   				FRAPStudy newFrapStudy = getFrapWorkspace().getFrapStudy();
+		  	   				//check if one of images/rois/starting index for recovery is chaged. if so, rerun ref simulation by setting frapoptdata and storedrefdata to null.
 	  	   					if(!Compare.isEqualOrNull(lastCellROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastBleachROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastBackgroundROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastImgISize,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getISize()) ||
-	  	   					   (oldStartIndexForRecovery.intValue() != newFrapStudy.getStartingIndexForRecovery().intValue()))
+	  	   					   !Compare.isEqualOrNull(oldStartIndexForRecovery, newFrapStudy.getStartingIndexForRecovery()))
 	  	   					{
 	  	   						//set need save flag
 	  	   						getFrapWorkspace().getFrapStudy().setSaveNeeded(true);

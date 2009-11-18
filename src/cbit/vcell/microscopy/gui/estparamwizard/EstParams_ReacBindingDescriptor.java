@@ -66,7 +66,7 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 		}
 	}    
     
-    //save model parameters
+    //save model parameters when go next
     public ArrayList<AsynchClientTask> preNextProcess()
     {
     	//create AsynchClientTask arraylist
@@ -75,17 +75,40 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				Parameter[] params = ((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentParameters();
-				FRAPModel  frapModel = getFrapWorkspace().getFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_BINDING);
-				frapModel.setModelParameters(params);
-				frapModel.setData(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentSimResults());
-				frapModel.setTimepoints(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentRawSimTimePoints());
+				saveModelParameters();
 			}
 		};
 		
 		taskArrayList.add(saveParametersTask);
 	
 		return taskArrayList;
+    }
+    
+    //save model parameters also when go back
+    public ArrayList<AsynchClientTask> preBackProcess()
+    {
+    	//create AsynchClientTask arraylist
+		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
+		AsynchClientTask saveParametersTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				saveModelParameters();
+			}
+		};
+		
+		taskArrayList.add(saveParametersTask);
+	
+		return taskArrayList;
+    }
+    
+    private void saveModelParameters()
+    {
+    	Parameter[] params = ((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentParameters();
+		FRAPModel  frapModel = getFrapWorkspace().getFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_BINDING);
+		frapModel.setModelParameters(params);
+		frapModel.setData(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentSimResults());
+		frapModel.setTimepoints(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentRawSimTimePoints());
     }
     
     public FRAPWorkspace getFrapWorkspace() {

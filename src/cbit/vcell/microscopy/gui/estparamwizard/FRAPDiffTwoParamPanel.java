@@ -309,6 +309,8 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 						//set immobile label
 						value = adjustedVals[2];
 						immoFracValueLabel.setText(value+"");
+						//put cursor to position 0
+						setAllTextFieldsPosition(0);
 //					}
 					if(!B_HOLD_FIRE){
 						firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
@@ -821,12 +823,18 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		diffusionRateSetButton.doClick();
 		B_HOLD_FIRE = false;
 		//put cursor to position 0
-		diffusionRateTextField.setCaretPosition(0);
-		mobileFractionTextField.setCaretPosition(0);
-		secondDiffTextField.setCaretPosition(0);
-		secondMobileFracTextField.setCaretPosition(0);
-		bleachWhileMonitorRateTextField.setCaretPosition(0);
+		setAllTextFieldsPosition(0);
 	}
+	
+	private void setAllTextFieldsPosition(int pos)
+	{
+		diffusionRateTextField.setCaretPosition(pos);
+		mobileFractionTextField.setCaretPosition(pos);
+		secondDiffTextField.setCaretPosition(pos);
+		secondMobileFracTextField.setCaretPosition(pos);
+		bleachWhileMonitorRateTextField.setCaretPosition(pos);
+	}
+	
 	private static Parameter[] createParameterArray(double diffusionRate,double mobileFraction,double monitorBleachRate, double secondDiffRate, double secondMobileFrac)
 	{
 		Parameter[] params = null;
