@@ -552,6 +552,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	public void setFreeDiffRate(String freeDiffStr)
 	{
 		freeDiffRateTextField.setText(freeDiffStr);
+		freeDiffRateTextField.setCaretPosition(0);
 	}
 	public String getFreeFraction()
 	{
@@ -560,10 +561,12 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	public void setFreeFraction(String freeFracStr)
 	{
 		freeFractionTextField.setText(freeFracStr);
+		freeFractionTextField.setCaretPosition(0);
 	}
 	public void setBleachMonitorRate(String bwmStr)
 	{
 		bleachWhileMonitorRateTextField.setText(bwmStr);
+		bleachWhileMonitorRateTextField.setCaretPosition(0);
 	}
 	public String getComplexFraction()
 	{
@@ -572,6 +575,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	public void setComplexFraction(String complexFracStr)
 	{
 		complexFractionTextField.setText(complexFracStr);
+		complexFractionTextField.setCaretPosition(0);
 	}
 	public void setImmobileFraction(String immFracStr)
 	{
@@ -580,10 +584,12 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	public void setOnRate(String onRateStr)
 	{
 		onRateTextField.setText(onRateStr);
+		onRateTextField.setCaretPosition(0);
 	}
 	public void setOffRate(String offRateStr)
 	{
 		offRateTextField.setText(offRateStr);
+		offRateTextField.setCaretPosition(0);
 	}
 	
 	public FrapChangeInfo createCompleteFRAPChangeInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,
@@ -633,11 +639,17 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		if(displayParameters != null)
 		{
 			freeDiffRateTextField.setText(displayParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + "");
+			freeDiffRateTextField.setCaretPosition(0);
 			freeFractionTextField.setText(displayParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() + "");
+			freeFractionTextField.setCaretPosition(0);
 			bleachWhileMonitorRateTextField.setText(displayParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + "");
+			bleachWhileMonitorRateTextField.setCaretPosition(0);
 			complexFractionTextField.setText(displayParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() + "");
+			complexFractionTextField.setCaretPosition(0);
 			onRateTextField.setText(displayParameters[FRAPModel.INDEX_ON_RATE].getInitialGuess() + "");
+			onRateTextField.setCaretPosition(0);
 			offRateTextField.setText(displayParameters[FRAPModel.INDEX_OFF_RATE].getInitialGuess() + "");
+			offRateTextField.setCaretPosition(0);
 			updateFractions(true, displayParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess(), displayParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess());
 		}
 		else
