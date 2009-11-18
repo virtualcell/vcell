@@ -41,6 +41,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.ISize;
@@ -1864,6 +1865,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			BeanUtils.centerOnComponent(flourViewer, FRAPStudyPanel.this);
 			flourViewer.repaint();
 			
 		}

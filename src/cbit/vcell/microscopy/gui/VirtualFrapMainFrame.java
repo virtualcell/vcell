@@ -255,7 +255,11 @@ public class VirtualFrapMainFrame extends JFrame
 		      }
 		      else if(arg.equals(EXIT_ACTION_COMMAND))
 			  {
-		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!", new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
+		    	  String text = "";
+		    	  if (frapWorkspace != null && frapWorkspace.getFrapStudy() != null && frapWorkspace.getFrapStudy().isSaveNeeded()) {
+		    		  text = "UnSaved changes will be lost!";
+		    	  }
+		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
 		    	  if (result == UserMessage.OPTION_CLOSE)
 	    	      {
 	    	    	  System.exit(0);
@@ -542,19 +546,6 @@ public class VirtualFrapMainFrame extends JFrame
       {
 	  		menuHandler.actionPerformed(new ActionEvent(menuExit,0,EXIT_ACTION_COMMAND));
 	  }
-  }
-
-  public boolean close()
-  {
-	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? UnSaved changes will be lost!", new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
-	  if (result == UserMessage.OPTION_CLOSE)
-      {
-    	  return true;
-      }
-      else
-      {
-    	  return false;
-      }
   }
   
   //setTitle overrides the orginal function in java.awt.Frame
