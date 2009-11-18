@@ -328,13 +328,19 @@ public class DiffOnRateEstimationPanel extends JPanel
 	
 	private void calculateDiffLimitedOnRate()
 	{
-		double fRadius = Double.parseDouble(FRadiusTextField.getText());
-		double bsRadius = Double.parseDouble(BsRadiusTextField.getText());
-		double freeDiffRate = getFreeDiffRate().doubleValue();
-		double bsDiffRate = 0;
-		//kon = 4*PI*D*R, D is sum of reactants' diff rates, R is sum of reactants' radius. 1/602 is a conversion rate from um3/s to 1/(uM.s)
-		double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)/602.0;
-		onRateValLabel.setText(NumberUtils.formatNumber(kon, 10));
+		try{
+			double fRadius = Double.parseDouble(FRadiusTextField.getText());
+			double bsRadius = Double.parseDouble(BsRadiusTextField.getText());
+			double freeDiffRate = getFreeDiffRate().doubleValue();
+			double bsDiffRate = 0;
+			//kon = 4*PI*D*R, D is sum of reactants' diff rates, R is sum of reactants' radius. 1/602 is a conversion rate from um3/s to 1/(uM.s)
+			double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)/602.0;
+			onRateValLabel.setText(NumberUtils.formatNumber(kon, 10));
+		}catch(NumberFormatException e)
+		{
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(DiffOnRateEstimationPanel.this, "Free particle radius or Bindingsite particle radius is empty or in illegal form.");
+		}
 	}
 	
 	public Double getOnRate()
