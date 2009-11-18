@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.border.EmptyBorder;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
 /**
@@ -152,6 +153,7 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
         {
         	wizardDialog.setSize(dim);
         }
+        BeanUtils.centerOnComponent(wizardDialog, wizardDialog.getParent());
         wizardDialog.setVisible(true);
         
         return returnCode;
