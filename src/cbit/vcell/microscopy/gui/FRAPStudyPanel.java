@@ -444,6 +444,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   		{
 	  	   			try {
 						refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
+						BeanUtils.centerOnComponent(get2DResultDialog(), FRAPStudyPanel.this);
 						get2DResultDialog().setVisible(true);
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
@@ -1865,7 +1866,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			BeanUtils.centerOnComponent(flourViewer, FRAPStudyPanel.this);
 			flourViewer.repaint();
 			
 		}
