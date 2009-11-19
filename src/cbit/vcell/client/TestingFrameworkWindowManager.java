@@ -1540,7 +1540,7 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
 
 	while(true){
 		// display the editCriteriaPanel.
-		Object choice = showEditTestCriteriaDialog(getEditTestCriteriaPanel(), null);
+		Object choice = showEditTestCriteriaDialog(getEditTestCriteriaPanel(), getComponent());
 	
 		if (choice != null && choice.equals("OK")) {
 			TestCriteriaNew tcritNew = getEditTestCriteriaPanel().getNewTestCriteria();
