@@ -842,7 +842,8 @@ private String getBioModelXML(KeyValue vKey) throws DataAccessException {
 			return xmlString;
 		}
 	}catch (ObjectNotFoundException e){
-		return null;
+		throw new DataAccessException("BioModel (id=" + vKey + ") does not exist. It either " +
+			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
@@ -1042,7 +1043,8 @@ private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 			return xmlString;
 		}
 	}catch (ObjectNotFoundException e){
-		return null;
+		throw new DataAccessException("Geometry (id=" + vKey + ") does not exist. It either " +
+			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
@@ -1297,7 +1299,8 @@ private String getMathModelXML(KeyValue vKey) throws DataAccessException {
 			return xmlString;
 		}
 	}catch (ObjectNotFoundException e){
-		return null;
+		throw new DataAccessException("MathModel (id=" + vKey + ") does not exist. It either " +
+			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
