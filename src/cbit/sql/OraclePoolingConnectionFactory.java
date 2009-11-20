@@ -7,6 +7,7 @@ package cbit.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import oracle.jdbc.pool.OracleConnectionCacheManager;
 import oracle.jdbc.pool.OracleDataSource;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -17,6 +18,7 @@ import org.vcell.util.StdoutSessionLog;
  */
 public final class OraclePoolingConnectionFactory implements ConnectionFactory  {
 
+	private static final String CONNECTION_CACHE_NAME = "ImplicitCache01";
 	private OracleDataSource oracleDataSource = null;
 	private SessionLog log = null;
 
@@ -44,7 +46,7 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 		prop.setProperty("InactivityTimeout", "1800");    //  seconds
 		prop.setProperty("AbandonedConnectionTimeout", "900");  //  seconds
 		oracleDataSource.setConnectionCacheProperties (prop);    
-		oracleDataSource.setConnectionCacheName("ImplicitCache01"); // this cache's name
+		oracleDataSource.setConnectionCacheName(CONNECTION_CACHE_NAME); // this cache's name
 	}
 	
 }
@@ -58,6 +60,10 @@ public synchronized void closeAll() throws java.sql.SQLException {
 public void failed(Connection con, Object lock) throws SQLException {
 	log.print("OraclePoolingConnectionFactory.failed("+con+")");
 	release(con, lock);
+	// Get singleton ConnectionCacheManager instance
+	OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
+	// Refresh invalid connections in cache
+	occm.refreshCache(CONNECTION_CACHE_NAME, OracleConnectionCacheManager.REFRESH_INVALID_CONNECTIONS);
 }
 
 public Connection getConnection(Object lock) throws SQLException {
