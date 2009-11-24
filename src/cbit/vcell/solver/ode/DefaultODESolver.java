@@ -10,6 +10,7 @@ import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PseudoConstant;
@@ -46,6 +47,8 @@ public abstract class DefaultODESolver extends AbstractJavaSolver implements ODE
 	private int fieldVariableIndexes[] = null;
 	// current state of the computation
 	protected double fieldCurrentTime = 0.0;
+	private transient RateSensitivity rateSensitivity = null;
+	private transient Jacobian jacobian = null;
 
 /**
  * Set sensitivityParameter to null if sensitivity analysis
@@ -250,12 +253,19 @@ private Vector<StateVariable> createStateVariables() throws MathException, Expre
 			throw new MathException("encountered non-ode equation, unsupported");
 		}
 	}
+	MathDescription mathDescription = sim.getMathDescription();
+	if (rateSensitivity==null){
+		rateSensitivity = new RateSensitivity(mathDescription, mathDescription.getSubDomains().nextElement());
+	}
+	if (jacobian==null){
+		jacobian = new Jacobian(mathDescription, mathDescription.getSubDomains().nextElement());
+	}
 	// get Jacobian and RateSensitivities from MathDescription and create SensStateVariables
 	for (int v = 0; v < fieldSensVariables.size(); v++) {
 		stateVariables.addElement(
 			new SensStateVariable(fieldSensVariables.elementAt(v),
-									sim.getMathDescription().getRateSensitivity(), 
-									sim.getMathDescription().getJacobian(),
+									rateSensitivity, 
+									jacobian,
 									fieldSensVariables, 
 									simSymbolTable));
 	}
