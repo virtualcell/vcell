@@ -7,9 +7,7 @@ package cbit.vcell.solver.ode;
 import java.util.Vector;
 
 import cbit.vcell.math.Constant;
-import cbit.vcell.math.Jacobian;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.RateSensitivity;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

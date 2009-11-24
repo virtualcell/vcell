@@ -42,6 +42,8 @@ import cbit.vcell.solvers.ApplicationMessage;
 public abstract class SundialsSolver extends AbstractCompiledSolver implements ODESolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
+	private transient RateSensitivity rateSensitivity = null;
+	private transient Jacobian jacobian = null;
 
 /**
  * IDASolver constructor comment.
@@ -106,12 +108,17 @@ private StateVariable[] createStateVariables() throws MathException, ExpressionE
 		}
 	}
 	
-	// get Jacobian and RateSensitivities from MathDescription and create SensStateVariables
+	if (rateSensitivity==null){
+		rateSensitivity = new RateSensitivity(mathDescription, mathDescription.getSubDomains().nextElement());
+	}
+	if (jacobian==null){
+		jacobian = new Jacobian(mathDescription, mathDescription.getSubDomains().nextElement());
+	}
 	for (int v = 0; v < sensVariables.size(); v++) {
 		stateVariables.addElement(
 			new SensStateVariable((SensVariable) sensVariables.elementAt(v),
-					mathDescription.getRateSensitivity(), 
-					mathDescription.getJacobian(),
+					rateSensitivity, 
+					jacobian,
 					sensVariables, 
 					simSymbolTable));
 	}

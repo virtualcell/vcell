@@ -54,8 +54,6 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	private Vector<Variable> variableList = new Vector<Variable>();
 	private HashMap<String, Variable> variableHashTable = new HashMap<String, Variable>();
 	private Geometry geometry = null;
-	private transient Jacobian jacobian = null;
-	private transient RateSensitivity rateSensitivity = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -1315,20 +1313,6 @@ public int getHandle(CompartmentSubDomain compartmentSubDomain) throws Exception
 	return subVolume.getHandle();
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.math.Jacobian
- * @exception java.lang.Exception The exception description.
- */
-public Jacobian getJacobian() throws MathException {
-	if (jacobian == null){
-		refreshJacobian();
-	}
-	return jacobian;
-}
-
-
 /**
  * This method was created in VisualAge.
  * @return KeyValue
@@ -1432,20 +1416,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.math.RateSensitivity
- * @exception java.lang.Exception The exception description.
- */
-public RateSensitivity getRateSensitivity() throws MathException {
-	if (rateSensitivity==null){
-		refreshRateSensitivity();
-	}	
-	return rateSensitivity;
-}
-
 
 /**
  * Insert the method's description here.
@@ -2797,44 +2767,6 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
  * This method was created in VisualAge.
  */
 public void refreshDependencies() {
-	try {
-		getRateSensitivity().refreshDependencies();
-	}catch (MathException e){
-	}
-	try {
-		if (getJacobian()!=null){
-			getJacobian().refreshDependencies();
-		}
-	}catch (MathException e){
-	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- */
-public void refreshJacobian() throws MathException {
-	jacobian = null;
-	if (subDomainList.size() != 1){
-		throw new MathException("there are more than one subdomain, can't calculate rate sensitivities");
-	}	
-	SubDomain subDomain = subDomainList.elementAt(0);
-	jacobian = new Jacobian(this,subDomain);
-	fireStateChanged();
-}
-
-
-/**
- * This method was created by a SmartGuide.
- */
-public void refreshRateSensitivity() throws MathException {
-	rateSensitivity = null;
-	if (subDomainList.size() != 1){
-		throw new MathException("there are more than one subdomain, can't calculate rate sensitivities");
-	}	
-	SubDomain subDomain = subDomainList.elementAt(0);
-	rateSensitivity = new RateSensitivity(this,subDomain);
-	fireStateChanged();
 }
 
 

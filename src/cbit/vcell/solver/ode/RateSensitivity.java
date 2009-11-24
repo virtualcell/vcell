@@ -1,9 +1,17 @@
-package cbit.vcell.math;
+package cbit.vcell.solver.ode;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.*;
 import java.util.*;
 import javax.swing.event.*;

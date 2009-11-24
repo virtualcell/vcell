@@ -42,6 +42,8 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 public abstract class OdeFileWriter extends SolverFileWriter {
 	private Vector<StateVariable> fieldStateVariables = new Vector<StateVariable>();
 	protected String ROOT_VARIABLE_PREFIX = "__D_B_";
+	private transient RateSensitivity rateSensitivity = null;
+	private transient Jacobian jacobian = null;
 
 /**
  * OdeFileCoder constructor comment.
@@ -181,13 +183,18 @@ private void initialize() throws Exception {
 			}
 		}
 	}
-	
+	if (rateSensitivity==null){
+		rateSensitivity = new RateSensitivity(mathDescription, mathDescription.getSubDomains().nextElement());
+	}
+	if (jacobian==null){
+		jacobian = new Jacobian(mathDescription, mathDescription.getSubDomains().nextElement());
+	}
 	// get Jacobian and RateSensitivities from MathDescription and create SensStateVariables
 	for (int v = 0; v < sensVariables.size(); v++) {
 		addStateVariable(
 			new SensStateVariable((SensVariable) sensVariables.elementAt(v),
-					mathDescription.getRateSensitivity(), 
-					mathDescription.getJacobian(),
+					rateSensitivity, 
+					jacobian,
 					sensVariables, 
 					simSymbolTable));
 	}
