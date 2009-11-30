@@ -355,11 +355,11 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 			Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
 			writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"\t");
 			if (bFlipInsideOutside){
-				out.println("\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
-				out.println("\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
+				out.println("\t*inFlux = "+infix_C(outFluxExp_substituted)+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
+				out.println("\t*outFlux = "+infix_C(inFluxExp_substituted)+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
 			}else{
-				out.println("\t*inFlux = "+inFluxExp_substituted.infix_C()+";");
-				out.println("\t*outFlux = "+outFluxExp_substituted.infix_C()+";");
+				out.println("\t*inFlux = "+infix_C(inFluxExp_substituted)+";");
+				out.println("\t*outFlux = "+infix_C(outFluxExp_substituted)+";");
 			}
 		}else if (membraneSubDomainsOwned.length>1){
 			//
@@ -404,11 +404,11 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 				Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
 				writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"\t\t");
 				if (bFlipInsideOutside){
-					out.println("\t\t\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
-					out.println("\t\t\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
+					out.println("\t\t\t*inFlux = "+infix_C(outFluxExp_substituted)+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
+					out.println("\t\t\t*outFlux = "+infix_C(inFluxExp_substituted)+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
 				}else{
-					out.println("\t\t\t*inFlux = "+inFluxExp_substituted.infix_C()+";");
-					out.println("\t\t\t*outFlux = "+outFluxExp_substituted.infix_C()+";");
+					out.println("\t\t\t*inFlux = "+infix_C(inFluxExp_substituted)+";");
+					out.println("\t\t\t*outFlux = "+infix_C(outFluxExp_substituted)+";");
 				}
 				out.println("\t\t\tbreak;");
 				out.println("\t\t}");

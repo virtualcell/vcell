@@ -9,7 +9,7 @@ import java.util.Hashtable;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 
-import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CppClassCoder;
 import net.sourceforge.interval.ia_math.*;
@@ -2334,46 +2334,14 @@ public Node flatten() throws ExpressionException {
 	return funcNode;	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/15/2006 1:35:48 PM)
- * @return java.util.Vector
- */
-//void getFieldDataIdentifierSpecs(java.util.Vector v) {
-//	if (getFunction() == ASTFuncNode.FIELD) {
-//		ASTIdNode fieldname = (ASTIdNode)jjtGetChild(0);
-//		ASTIdNode variablename = (ASTIdNode)jjtGetChild(1);
-//		v.add(new cbit.vcell.field.FieldDataIdentifierSpec(fieldname.name, variablename.name));
-//	} else {
-//		super.getFieldDataIdentifierSpecs(v);		 
-//	}	
-//}
-
-void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {
-	if (getFunction() == ASTFuncNode.FIELD) {
-		ASTIdNode fieldname = (ASTIdNode)jjtGetChild(0);
-		ASTIdNode variablename = (ASTIdNode)jjtGetChild(1);
-		Expression time = null;
-		try {
-			time = new Expression(jjtGetChild(2).infixString(LANGUAGE_DEFAULT, null));
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Unexpected time expression for FieldData\n"+e.getMessage());
-		}		
-		FieldFunctionArguments fieldFuncArgs = null;
-		if (jjtGetNumChildren() == 4) {
-			ASTIdNode vartype = (ASTIdNode)jjtGetChild(3);
-			fieldFuncArgs = new FieldFunctionArguments(fieldname.name, variablename.name,time,VariableType.getVariableTypeFromVariableTypeName(vartype.name));
-		} else {
-			fieldFuncArgs =	new FieldFunctionArguments(fieldname.name, variablename.name,time, VariableType.UNKNOWN);
+void getFunctionInvocations(java.util.Vector<FunctionInvocation> v, FunctionFilter filter) {
+	if (filter==null || filter.accept(getFunction())){
+		FunctionInvocation functionInvocation = new FunctionInvocation(this);
+		if (!v.contains(functionInvocation)){
+			v.add(functionInvocation);
 		}
-		if(!v.contains(fieldFuncArgs)){
-			v.add(fieldFuncArgs);
-		}
-	} else {
-		super.getFieldFunctionArguments(v);		 
-	}	
+	}
+	super.getFunctionInvocations(v, filter);
 }
 
 /**
@@ -2405,26 +2373,6 @@ boolean hasGradient(){
 	}
 }
 
-void substituteFieldFunctionFieldName(Hashtable<String, ExternalDataIdentifier> substituteNamesHash) {
-	if(getFunction() == FIELD){
-		ASTIdNode fieldFunctionFieldNameIDNode =
-			((ASTIdNode)jjtGetChild(0));
-		if(substituteNamesHash.containsKey(fieldFunctionFieldNameIDNode.name)){
-			String newFieldFunctionName =
-				substituteNamesHash.get(fieldFunctionFieldNameIDNode.name).getName();
-//			ASTIdNode newFieldFunctionFieldNameIDNode = new ASTIdNode();
-//			newFieldFunctionFieldNameIDNode.name = newFieldFunctionName;
-			fieldFunctionFieldNameIDNode.name = newFieldFunctionName;		
-//			try{
-//				substitute(fieldFunctionFieldNameIDNode, newFieldFunctionFieldNameIDNode);
-//			}catch(ExpressionException e){
-//				throw new RuntimeException("ASTFuncNode.substituteFieldFunctionFieldName: Error - "+e.getMessage());
-//			}
-		}
-	}else{
-		super.substituteFieldFunctionFieldName(substituteNamesHash);
-	}	
-}
 
 /**
  * Insert the method's description here.
@@ -2575,12 +2523,7 @@ public String infixString(int lang, NameScope nameScope) {
 		}
 	 	case FIELD: {
 		 	if (lang == LANGUAGE_C){
-			 	return CppClassCoder.getEscapedLocalFieldVariableName_C(			 			
-			 				jjtGetChild(0).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
-			 				jjtGetChild(1).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
-			 				jjtGetChild(2).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
-			 				jjtGetNumChildren()==4?jjtGetChild(3).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT):VariableType.UNKNOWN.getTypeName()
-			 			);
+		 		throw new RuntimeException("field functions must be substituted away before infix_C() is called");
 		 	} else {
 				buffer.append(getName() + "(");
 				for (int i=0;i<jjtGetNumChildren();i++){

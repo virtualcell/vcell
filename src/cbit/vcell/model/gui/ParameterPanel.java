@@ -11,10 +11,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ScopedExpression;
 /**
  * This type was created in VisualAge.
  */

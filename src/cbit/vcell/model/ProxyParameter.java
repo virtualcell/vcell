@@ -9,10 +9,11 @@ import java.lang.reflect.Method;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolProxy;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public abstract class ProxyParameter extends Parameter {
+public abstract class ProxyParameter extends Parameter implements SymbolProxy {
 	
 	private SymbolTableEntry target = null;
 	

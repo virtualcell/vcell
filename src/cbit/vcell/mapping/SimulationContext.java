@@ -28,6 +28,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.MathDescription;
@@ -870,7 +871,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 	
 	Parameter[] parameterArr = getAllParameters();
 	for(int j=0;j<parameterArr.length;j+= 1){
-		Expression.addFieldFuncArgsAndExpToCollection(
+		FieldUtilities.addFieldFuncArgsAndExpToCollection(
 				fieldFuncArgsExpHash,
 				parameterArr[j].getExpression());
 	}
@@ -879,7 +880,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 }
 
 public void substituteFieldFuncNames(Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID) throws MathException, ExpressionException{
-	MathDescription.substituteFieldFuncNames(
+	FieldUtilities.substituteFieldFuncNames(
 			oldFieldFuncArgsNameNewID, collectFieldFuncAndExpressions());
 	
 	getMathDescription().substituteFieldFuncNames(oldFieldFuncArgsNameNewID);

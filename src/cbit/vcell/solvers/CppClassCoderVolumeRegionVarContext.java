@@ -252,7 +252,7 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 		// then write out dependencies
 		//
 		writeMembraneFunctionDeclarations(out,"element", inFluxExp_substituted, bFlipInsideOutside, "\t");
-		out.println("\t*inFlux = " + inFluxExp_substituted.infix_C() + ";");
+		out.println("\t*inFlux = " + infix_C(inFluxExp_substituted) + ";");
 		out.println("\t*outFlux = 0.0;");
 	} else {
 		throw new Exception("VolumeRegionEquation is required.");

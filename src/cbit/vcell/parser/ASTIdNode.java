@@ -5,7 +5,6 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import cbit.vcell.solvers.CppClassCoder;
 
 import net.sourceforge.interval.ia_math.*;
 
@@ -271,7 +270,7 @@ public String infixString(int lang, NameScope nameScope) {
 	if (lang == LANGUAGE_DEFAULT) {
 		return idName;
 	} else if (lang == LANGUAGE_C){
-		return CppClassCoder.getEscapedLocalVariableName_C(idName);
+		return idName;
 	} else if (lang == LANGUAGE_MATLAB){	
 		return org.vcell.util.TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {

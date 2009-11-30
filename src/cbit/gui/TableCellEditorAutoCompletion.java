@@ -12,7 +12,6 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 	private TextFieldAutoCompletion textFieldAutoCompletion = null;

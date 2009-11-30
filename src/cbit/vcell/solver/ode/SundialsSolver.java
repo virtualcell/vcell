@@ -179,7 +179,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (isFunctionSaved(functions[i])){
+		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1);
@@ -213,7 +213,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 			StateVariable stateVars[] = createStateVariables();
 						
 			for (int i = 0; i < variables.length; i++){
-				if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
+				if (variables[i] instanceof Function && SimulationSymbolTable.isFunctionSaved((Function)variables[i])){
 					Function depSensFunction = (Function)variables[i];
 					Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
 					depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);
@@ -420,7 +420,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	
 	cbit.vcell.math.Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (isFunctionSaved(functions[i])){
+		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
@@ -450,7 +450,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 			StateVariable stateVars[] = createStateVariables();
 						
 			for (int i = 0; i < variables.length; i++){
-				if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
+				if (variables[i] instanceof Function && SimulationSymbolTable.isFunctionSaved((Function)variables[i])){
 					Function depSensFunction = (Function)variables[i];
 					Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
 					depSensFnExpr = simSymbolTable.substituteFunctions(depSensFnExpr);

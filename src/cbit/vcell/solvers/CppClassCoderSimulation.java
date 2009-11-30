@@ -13,6 +13,7 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.*;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.math.*;
 import cbit.vcell.messaging.JmsUtils;
 
@@ -490,11 +491,11 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 		
 		Variable var = simSymbolTable.getVariable(SimDataConstants.PSF_FUNCTION_NAME);
 		if (var != null) {
-			FieldFunctionArguments[] ffas = var.getExpression().getFieldFunctionArguments();
+			FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 			if (ffas == null || ffas.length == 0) {
 				throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 			} else {				
-				Expression newexp = new Expression("field(" + ffas[0].toCSVString() + ")");
+				Expression newexp = new Expression(ffas[0].infix());
 				if (!var.getExpression().compareEqual(newexp)) {
 					throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 				}

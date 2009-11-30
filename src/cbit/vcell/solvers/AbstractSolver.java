@@ -309,28 +309,6 @@ public final SolverStatus getSolverStatus() {
 
 /**
  * Insert the method's description here.
- * Creation date: (6/6/2001 10:57:51 AM)
- * @return boolean
- * @param function cbit.vcell.math.Function
- */
-public static boolean isFunctionSaved(cbit.vcell.math.Function function) {
-	String name = function.getName();
-	if (!name.startsWith("SurfToVol_") && 
-		!name.startsWith("VolFract_") && 
-		!name.startsWith("KFlux_") && 
-		!name.startsWith("Kflux_") &&
-		!name.endsWith("_init") && 
-		!name.endsWith("_total") &&
-		!name.equals(SimDataConstants.PSF_FUNCTION_NAME)){
-		return true;
-	}else{
-		return false;
-	}
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (6/27/2001 10:53:53 AM)
  * @return boolean
  */

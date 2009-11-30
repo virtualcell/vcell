@@ -10,7 +10,7 @@ import java.util.Vector;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.parser.Expression.FunctionFilter;
 
 public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Node parent;
@@ -119,17 +119,10 @@ boolean hasGradient() {
 	return false;
 }
 
-void substituteFieldFunctionFieldName(Hashtable<String, ExternalDataIdentifier> substituteNamesHash) {
+void getFunctionInvocations(java.util.Vector<FunctionInvocation> v, FunctionFilter filter) {	
 	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
 		SimpleNode child = (SimpleNode)jjtGetChild(i);
-		child.substituteFieldFunctionFieldName(substituteNamesHash);
-	}
-}
-
-void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {	
-	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
-		SimpleNode child = (SimpleNode)jjtGetChild(i);
-		child.getFieldFunctionArguments(v);		 
+		child.getFunctionInvocations(v,filter);		 
 	}	
 }
 

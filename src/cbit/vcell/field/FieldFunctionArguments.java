@@ -5,9 +5,10 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.MathMLTags;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.simdata.VariableType;
 
 public class FieldFunctionArguments implements Serializable {
@@ -22,9 +23,36 @@ public class FieldFunctionArguments implements Serializable {
 		this.fieldName = fieldName;
 		this.variableName = variableName;
 		this.time = time;
-		variableType = vt;
+		this.variableType = vt;
 	}
 	
+	public FieldFunctionArguments(FunctionInvocation functionInvocation){
+		if (functionInvocation.getFunctionId() != ASTFuncNode.FIELD) {
+			throw new IllegalArgumentException("not a FieldData function invocation");
+		}
+		Expression[] arguments = functionInvocation.getArguments();
+		if (arguments==null || arguments.length<3 || arguments.length>4){
+			throw new RuntimeException("field function invalid, expecting field(fieldname,varname,time,variabletype) where variabletype is optional");
+		}
+		this.fieldName = getSymbol(arguments[0]);
+		this.variableName = getSymbol(arguments[1]);
+		this.time = new Expression(arguments[2]);
+		if (arguments.length==4){
+			this.variableType = VariableType.getVariableTypeFromVariableTypeName(getSymbol(arguments[3]));
+		}else{
+			this.variableType = VariableType.UNKNOWN;
+		}
+	}
+	
+
+	private String getSymbol(Expression exp){
+		String[] symbols = exp.getSymbols();
+		if (symbols.length!=1 || !symbols[0].equals(exp.infix())){
+			throw new IllegalArgumentException("field function argument '"+exp.infix()+"' is unexpected");
+		}
+		return symbols[0];
+	}
+
 	public static FieldFunctionArguments fromTokens(StringTokenizer st) throws ExpressionException{
 		return
 			new FieldFunctionArguments(
@@ -34,9 +62,14 @@ public class FieldFunctionArguments implements Serializable {
 					VariableType.getVariableTypeFromVariableTypeName(st.nextToken()));
 	}
 	
+	public String infix(){
+		return ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD] + "(" + toCSVString() + ")";
+	}
+	
 	public String toCSVString(){
 		return fieldName+","+variableName  + "," + time.infix()+"," + variableType.getTypeName();
 	}
+	
 	public String getFieldName() {
 		return fieldName;
 	}

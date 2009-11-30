@@ -34,13 +34,13 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -506,7 +506,7 @@ public static ODESolverResultSet getODESolverResultSet(SimulationJob argSimJob, 
 	// add appropriate Function columns to result set
 	cbit.vcell.math.Function functions[] = argSimJob.getSimulationSymbolTable().getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (AbstractSolver.isFunctionSaved(functions[i])){
+		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = argSimJob.getSimulationSymbolTable().substituteFunctions(exp1);

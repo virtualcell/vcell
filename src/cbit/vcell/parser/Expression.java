@@ -1,19 +1,19 @@
 package cbit.vcell.parser;
 
-import cbit.vcell.field.FieldFunctionArguments;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.StreamTokenizer;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Vector;
+
+import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
-import org.vcell.util.document.ExternalDataIdentifier;
-
-import net.sourceforge.interval.ia_math.*;
 
 public class Expression implements java.io.Serializable, org.vcell.util.Matchable {
 
@@ -92,26 +92,6 @@ public Expression(CommentStringTokenizer tokens) throws ExpressionException {
 	read(tokens);
 }  
 
-
-public static void addFieldFuncArgsAndExpToCollection(Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsAndExpHash,Expression expression){
-	if(expression == null){
-		return;
-	}
-	FieldFunctionArguments[] fieldFuncArgs =
-			expression.getFieldFunctionArguments();
-	for(int i=0;i<fieldFuncArgs.length;i+= 1){
-		Vector<Expression> expV = null;
-		if(fieldFuncArgsAndExpHash.contains(fieldFuncArgs[i])){
-			 expV= fieldFuncArgsAndExpHash.get(fieldFuncArgs[i]);
-			
-		}else{
-			expV = new Vector<Expression>();
-			fieldFuncArgsAndExpHash.put(fieldFuncArgs[i],expV);
-			
-		}
-		expV.add(expression);
-	}
-}
 
 /**
  * This method was created by a SmartGuide.
@@ -358,15 +338,14 @@ public boolean hasGradient(){
 	return rootNode.hasGradient();
 }
 
-public void substituteFieldFunctionFieldName(Hashtable<String, ExternalDataIdentifier> substituteNamesHash){
-	normalizedInfixString = null;
-	rootNode.substituteFieldFunctionFieldName(substituteNamesHash);
+public interface FunctionFilter {
+	boolean accept(int functionId);
 }
 
-public FieldFunctionArguments[] getFieldFunctionArguments() {
-	Vector<FieldFunctionArguments> v = new Vector<FieldFunctionArguments>();
-	rootNode.getFieldFunctionArguments(v);
-	FieldFunctionArguments[] funcs = new FieldFunctionArguments[v.size()];
+public FunctionInvocation[] getFunctionInvocations(FunctionFilter filter) {  // null selects all functions.
+	Vector<FunctionInvocation> v = new Vector<FunctionInvocation>();
+	rootNode.getFunctionInvocations(v,filter);
+	FunctionInvocation[] funcs = new FunctionInvocation[v.size()];
 	v.copyInto(funcs);
 	return funcs;
 }
@@ -501,16 +480,15 @@ public boolean hasSymbol(String symbolName) {
 public int hashCode() {
 	return getNormalizedInfixString().hashCode();
 }
-public String infix_C()
-   {
-	  return infix_C(SimpleNode.NAMESCOPE_DEFAULT);
-   }   
-   public String infix_C(NameScope nameScope)
+/**
+ * @deprecated
+ */
+   public String infix_C()
    {
 	  if (rootNode==null){
 		 return null;
 	  }else{
-		 return rootNode.infixString(SimpleNode.LANGUAGE_C, nameScope);
+		 return rootNode.infixString(SimpleNode.LANGUAGE_C, SimpleNode.NAMESCOPE_DEFAULT);
 	  }
    }   
    public String infix_ECLiPSe()

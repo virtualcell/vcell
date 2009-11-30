@@ -9,8 +9,6 @@ import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.util.graph.Tree;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MathSystemHash;
-import cbit.vcell.mapping.MathSystemTest;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;

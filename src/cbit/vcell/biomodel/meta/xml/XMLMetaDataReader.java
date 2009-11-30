@@ -28,15 +28,15 @@ public class XMLMetaDataReader extends XMLMetaData {
 	
 	@SuppressWarnings("unchecked")
 	public static void readFromElement(VCMetaData metaData, BioModel bioModel, Element metadataElement) throws XmlParseException {
-		Element bindingElement = metadataElement.getChild(XMLMetaData.URI_BINDING_LIST_TAG, XMLMetaData.nsVCML);
+		Element bindingElement = metadataElement.getChild(XMLMetaData.URI_BINDING_LIST_TAG, VCMetaData.nsVCML);
 		if (bindingElement!=null){
 			// read binding
-			List<Element> entryElements = bindingElement.getChildren(XMLMetaData.URI_BINDING_TAG, XMLMetaData.nsVCML);
+			List<Element> entryElements = bindingElement.getChildren(XMLMetaData.URI_BINDING_TAG, VCMetaData.nsVCML);
 			for (Iterator<Element> iterator = entryElements.iterator(); iterator.hasNext();) {
 				Element entryElement = iterator.next();
 				try {
-					String uri = entryElement.getAttributeValue(XMLMetaData.URI_ATTR_TAG, XMLMetaData.nsVCML);
-					String vcidString = entryElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG, XMLMetaData.nsVCML);
+					String uri = entryElement.getAttributeValue(XMLMetaData.URI_ATTR_TAG, VCMetaData.nsVCML);
+					String vcidString = entryElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG, VCMetaData.nsVCML);
 					// make new entry based on URI
 					OpenEntry openEntry = metaData.getRegistry().forURI(uri);
 					// create VCID
@@ -66,7 +66,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 		if (nonRDFAnnotationListElement!=null){
 			List<Element> nonRDFAnnotationElements = nonRDFAnnotationListElement.getChildren(XMLMetaData.NONRDF_ANNOTATION_TAG);
 			for (Element nonRDFAnnotationElement : nonRDFAnnotationElements){
-				String vcidString = nonRDFAnnotationElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG, XMLMetaData.nsVCML);
+				String vcidString = nonRDFAnnotationElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG, VCMetaData.nsVCML);
 				VCID vcid = null;
 				try {
 					vcid = VCID.fromString(vcidString);

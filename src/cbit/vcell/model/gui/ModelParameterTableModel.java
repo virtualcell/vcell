@@ -9,6 +9,7 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
+import cbit.gui.ScopedExpression;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
@@ -21,7 +22,6 @@ import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
@@ -182,7 +182,7 @@ public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.gui.ScopedExpression.class;
 		}
 		case COLUMN_DESCRIPTION:{
 			return String.class;
@@ -659,8 +659,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof cbit.gui.ScopedExpression){
+						Expression exp = ((cbit.gui.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof KineticsParameter){
 							cbit.vcell.model.Kinetics kinetics = ((ReactionStep) parameter.getNameScope().getScopedSymbolTable()).getKinetics();
 							kinetics.setParameterValue((KineticsParameter)parameter,exp);

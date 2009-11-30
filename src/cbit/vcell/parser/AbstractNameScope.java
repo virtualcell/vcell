@@ -2,8 +2,6 @@ package cbit.vcell.parser;
 
 import java.util.Map;
 
-import cbit.vcell.model.ProxyParameter;
-
 /**
  * Insert the type's description here.
  * Creation date: (7/31/2003 3:10:31 PM)
@@ -310,8 +308,8 @@ public String getSymbolName(SymbolTableEntry symbolTableEntry) {
 	if (symbolTableEntry==null){
 		throw new IllegalArgumentException("symbolTableEntry was null");
 	}
-	if (symbolTableEntry instanceof ProxyParameter){
-		return getSymbolName(((ProxyParameter)symbolTableEntry).getTarget());
+	if (symbolTableEntry instanceof SymbolProxy){
+		return getSymbolName(((SymbolProxy)symbolTableEntry).getTarget());
 	}
 	if (symbolTableEntry.getNameScope()==null){
 		//throw new RuntimeException("NameScope can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no scope");

@@ -9,6 +9,7 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentVariable;
@@ -154,7 +155,7 @@ protected void writeContourFunction(java.io.PrintWriter out, String functionName
 	Expression exp2 = simulationJob.getSimulationSymbolTable().substituteFunctions(exp).flatten();
 	writeContourFunctionDeclarations(out,"contourElement",exp2);
 
-	out.println("   return "+exp2.infix_C()+";");
+	out.println("\treturn "+infix_C(exp2)+";");
 		
 	out.println("}");
 	out.println("");
@@ -228,7 +229,7 @@ private final void writeFieldFunctionDeclarations(java.io.PrintWriter out, Expre
 		throw new Exception("null expression");
 	}
 
-	FieldFunctionArguments[] fieldFuncArgs = exp.getFieldFunctionArguments();
+	FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(exp);
 
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
 		String localvarname = CppClassCoder.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);
@@ -254,7 +255,7 @@ protected final void writeMembraneFunction(java.io.PrintWriter out, String funct
 	Expression exp2 = simulationJob.getSimulationSymbolTable().substituteFunctions(exp).flatten();
 	writeMembraneFunctionDeclarations(out,"memElement",exp2,bFlipInsideOutside,"   ");
 
-	out.println("\treturn "+exp2.infix_C()+";");
+	out.println("\treturn "+infix_C(exp2)+";");
 		
 	out.println("}");
 	out.println();
@@ -348,7 +349,7 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
 	Expression exp2 = simulationJob.getSimulationSymbolTable().substituteFunctions(exp).flatten();
 	writeMembraneRegionFunctionDeclarations(out,"memRegion",exp2);
 
-	out.println("\treturn "+exp2.infix_C()+";");
+	out.println("\treturn "+infix_C(exp2)+";");
 		
 	out.println("}");
 	out.println("");
@@ -450,7 +451,7 @@ protected final void writeVolumeConstantFunction(java.io.PrintWriter out, String
 	} catch (Exception ex) {
 		throw new RuntimeException("Not a constant: " + exp.infix());
 	}
-	out.println("\treturn "+exp2.infix_C()+";");
+	out.println("\treturn "+infix_C(exp2)+";");
 		
 	out.println("}");
 	out.println("");
@@ -474,7 +475,7 @@ protected final void writeVolumeFunction(java.io.PrintWriter out, String functio
 	Expression exp2 = substituteFunctions(exp).flatten();
 	writeVolumeFunctionDeclarations(out,exp2,"volumeIndex");
 
-	out.println("\treturn "+exp2.infix_C()+";");
+	out.println("\treturn "+infix_C(exp2)+";");
 		
 	out.println("}");
 	out.println("");
@@ -554,7 +555,7 @@ protected final void writeVolumeRegionFunction(java.io.PrintWriter out, String f
 	Expression exp2 = substituteFunctions(exp).flatten();
 	writeVolumeRegionFunctionDeclarations(out,exp2,"volumeRegion");
 
-	out.println("\treturn "+exp2.infix_C()+";");
+	out.println("\treturn "+infix_C(exp2)+";");
 		
 	out.println("}");
 	out.println("");

@@ -34,6 +34,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.mapping.FastSystemAnalyzer;
@@ -90,7 +91,8 @@ private Expression subsituteExpression(Expression exp) throws Exception {
  */
 private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) throws Exception {
 	Expression exp2 = MathUtilities.substituteFunctions(exp, symbolTable).flatten();
-	if (exp2.getFieldFunctionArguments() != null && exp2.getFieldFunctionArguments().length > 0) {
+	FieldFunctionArguments[] fieldFunctionArguments = FieldUtilities.getFieldFunctionArguments(exp2);
+	if (fieldFunctionArguments != null && fieldFunctionArguments.length > 0) {
 		if (uniqueFieldDataNSet != null && uniqueFieldDataNSet.size() > 0) {	
 			for (FieldDataNumerics fdn: uniqueFieldDataNSet) {
 				exp2.substituteInPlace(new Expression(fdn.getFieldFunction()), new Expression(fdn.getNumericsSubsitute()));
@@ -935,11 +937,11 @@ private void writeFieldData() throws Exception {
 	
 	Variable var = simulationJob.getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
 	if (var != null) {
-		FieldFunctionArguments[] ffas = var.getExpression().getFieldFunctionArguments();
+		FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 		if (ffas == null || ffas.length == 0) {
 			throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 		} else {				
-			Expression newexp = new Expression("field(" + ffas[0].toCSVString() + ")");
+			Expression newexp = new Expression(ffas[0].infix());
 			if (!var.getExpression().compareEqual(newexp)) {
 				throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 			}

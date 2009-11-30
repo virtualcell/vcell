@@ -13,7 +13,6 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solvers.FVSolver;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)
@@ -262,7 +261,7 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(Opt
 		//
 		// add functions (evaluating them at optimal parameter)
 		//
-		Vector <AnnotatedFunction> annotatedFunctions = FVSolver.createAnnotatedFunctionsList(simSymbolTable);
+		Vector <AnnotatedFunction> annotatedFunctions = simSymbolTable.createAnnotatedFunctionsList();
 		for (AnnotatedFunction f: annotatedFunctions){
 			Expression funcExp = f.getExpression();
 			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {

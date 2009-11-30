@@ -7,10 +7,10 @@ import java.awt.Component;
 
 import org.vcell.util.gui.JTableFixed;
 
+import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
-import cbit.vcell.parser.ScopedExpression;
 /**
  * This type was created in VisualAge.
  */

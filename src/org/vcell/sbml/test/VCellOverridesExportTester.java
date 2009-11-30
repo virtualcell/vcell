@@ -132,7 +132,7 @@ private static ODESolverResultSet solveSimulation(Simulation sim) {
 		// add appropriate Function columns to result set
 		cbit.vcell.math.Function functions[] = simJob.getSimulationSymbolTable().getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
+			if (cbit.vcell.solver.SimulationSymbolTable.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = simJob.getSimulationSymbolTable().substituteFunctions(exp1);

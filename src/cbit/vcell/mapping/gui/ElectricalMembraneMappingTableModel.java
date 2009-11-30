@@ -6,13 +6,13 @@ package cbit.vcell.mapping.gui;
 ©*/
 import javax.swing.JTable;
 
+import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

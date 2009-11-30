@@ -4,18 +4,15 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.jdom.Element;
-import org.jdom.Text;
+import org.jdom.Namespace;
 import org.vcell.sybil.rdf.RDFBox;
 import org.vcell.util.document.KeyValue;
-
-import sun.misc.VM;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -27,7 +24,6 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
-import cbit.vcell.biomodel.meta.xml.XMLMetaData;
 import cbit.vcell.xml.XMLTags;
 
 /**
@@ -39,6 +35,8 @@ import cbit.vcell.xml.XMLTags;
 
 public class VCMetaData implements RDFBox {
 	
+	public static final Namespace nsVCML = Namespace.getNamespace("vcml",XMLTags.VCML_NS);
+
 	protected BioModel bioModel;
 	protected RDFBox rdfBox = new RDFBox.Default();
 	protected String baseURI;
@@ -130,7 +128,7 @@ if (statements.size()==0){
 		OpenEntry entry = registry.forObject(identifiable);
 		Resource resource = entry.resource();
 		if (resource==null){
-			resource = getRdf().createResource(XMLMetaData.nsVCML + "/" + identifiable.getClass().getName()
+			resource = getRdf().createResource(nsVCML + "/" + identifiable.getClass().getName()
 					+ "/" +(Math.abs((new Random()).nextInt())));
 			entry.setResource(resource);
 		}
@@ -216,45 +214,4 @@ if (statements.size()==0){
 		}
 	}
 
-	/** creating XMLMetaData element for nonRDFAnnotation element here since nonRDFAnnotation was made package level
-	 *	this is similar to XMLRDFWriter.createElement(metaData)
-	 * 
-	 * @return the created NonRDFAnnotationListElement
-	 */
-	public Element createNonRDFAnnotationElement() {
-		Set<Entry<OpenEntry, NonRDFAnnotation>> allNonRdfAnnotations = getAllNonRDFAnnotations();
-		Element nonRDFAnnotationListElement = new Element(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG);
-		Iterator<Entry<OpenEntry, NonRDFAnnotation>> iter = allNonRdfAnnotations.iterator();
-		while (iter.hasNext()){
-			Entry<OpenEntry, NonRDFAnnotation> entry = iter.next();
-			OpenEntry openEntry = entry.getKey();
-			NonRDFAnnotation nonRDFAnnotation = entry.getValue();
-			if (!nonRDFAnnotation.isEmpty()){
-				Element nonRDFAnnotationElement = new Element(XMLMetaData.NONRDF_ANNOTATION_TAG);
-				nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, VCID.getVCID(bioModel, (Identifiable)openEntry.object()).toASCIIString(), XMLMetaData.nsVCML);
-				nonRDFAnnotationListElement.addContent(nonRDFAnnotationElement);
-				String freeTextAnnotation = nonRDFAnnotation.getFreeTextAnnotation();
-				if (freeTextAnnotation!=null && freeTextAnnotation.length()>0){
-					Element freeTextAnnotationElement = new Element(XMLMetaData.FREETEXT_TAG);
-					freeTextAnnotationElement.addContent(new Text(freeTextAnnotation));
-					nonRDFAnnotationElement.addContent(freeTextAnnotationElement);
-				}
-				Element xhtmlNotes = nonRDFAnnotation.getXhtmlNotes();
-				if (xhtmlNotes!=null){
-					Element notesElement = new Element(XMLMetaData.NOTES_TAG);
-					notesElement.addContent(new Text(freeTextAnnotation));
-					nonRDFAnnotationElement.addContent(notesElement);
-				}
-				Element[] otherAnnotations = nonRDFAnnotation.getXmlAnnotations();
-				if (otherAnnotations!=null && otherAnnotations.length>0){
-					Element annotationListElement = new Element(XMLMetaData.ANNOTATION_LIST_TAG);
-					nonRDFAnnotationElement.addContent(annotationListElement);
-					for (int i = 0; i < otherAnnotations.length; i++) {
-						annotationListElement.addContent(otherAnnotations[i]);
-					}
-				}
-			}
-		}
-		return nonRDFAnnotationListElement;
-	}
 }

@@ -2,7 +2,7 @@ package cbit.vcell.biomodel.meta;
 
 import org.jdom.Element;
 
-class NonRDFAnnotation {
+public class NonRDFAnnotation {
 	private Element xhtmlNotes;
 	private Element[] xmlAnnotations;
 	private String freeTextAnnotation;

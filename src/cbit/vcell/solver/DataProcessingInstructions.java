@@ -13,6 +13,7 @@ import org.vcell.util.document.User;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -51,7 +52,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 			}
 			sb.append("\n");
 		}
-		sb.append("SampleImage " + numRegions + " " + zSlice + " " + fieldDataKey + " " + ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD] + "(" + fd.toCSVString() + ")\n");
+		sb.append("SampleImage " + numRegions + " " + zSlice + " " + fieldDataKey + " " + fd.infix()+"\n");
 		sb.append("StoreEnabled " + bStoreEnabled + "\n");
 
 		return new DataProcessingInstructions("VFRAP", sb.toString());
@@ -108,7 +109,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 					String fieldFunction = st.nextToken();
 					try {
 						Expression exp = new Expression(fieldFunction);					
-						FieldFunctionArguments[] ffa = exp.getFieldFunctionArguments();
+						FieldFunctionArguments[] ffa = FieldUtilities.getFieldFunctionArguments(exp);
 						return new FieldDataIdentifierSpec(ffa[0], new ExternalDataIdentifier(KeyValue.fromString(key), user, ffa[0].getFieldName()));
 					} catch (ExpressionException e) {
 						e.printStackTrace();

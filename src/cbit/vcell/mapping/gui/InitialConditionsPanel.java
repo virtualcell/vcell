@@ -18,6 +18,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -32,7 +33,6 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
 
 /**

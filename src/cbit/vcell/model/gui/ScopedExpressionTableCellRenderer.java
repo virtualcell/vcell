@@ -12,8 +12,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
+
+import cbit.gui.ScopedExpression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
-import cbit.vcell.parser.ScopedExpression;
 
 /**
  * Insert the type's description here.
@@ -205,7 +206,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 			String str = "<html><em><font color='"+color+"'>"+((String)value)+"</font></em></html>";
 			return stringRenderer.getTableCellRendererComponent(theTable, str, isSelected, hasFocus, row, column);
 		}
-		String scopedExpressInfix = ((cbit.vcell.parser.ScopedExpression)value).infix();
+		String scopedExpressInfix = ((cbit.gui.ScopedExpression)value).infix();
 		if(scopedExpressionImageIconHash.containsKey(scopedExpressInfix) && 
 			scopedExpressionSelectedHash.containsKey(scopedExpressInfix) &&
 			((Boolean)scopedExpressionSelectedHash.get(scopedExpressInfix)).booleanValue() == isSelected){

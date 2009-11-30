@@ -8,9 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.Set;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -27,6 +25,7 @@ import org.vcell.util.document.Versionable;
 
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
@@ -1062,7 +1061,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 		Variable variable = variableList.elementAt(i);
 		if(variable instanceof Function){
 			Function function = (Function)variable;
-			Expression.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,function.getExpression());
+			FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,function.getExpression());
 		}
 	}
 	// go through each subdomain
@@ -1077,7 +1076,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 			// go through each expresson
 			for (int i = 0; i < exs.size(); i ++) {
 				Expression exp = (Expression)exs.get(i);
-				Expression.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,exp);
+				FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,exp);
 			}
 		}
 		// go through each Fast System
@@ -1085,7 +1084,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 		if(fastSystem != null){
 			Expression[] fsExprArr = fastSystem.getExpressions();
 			for (int i = 0; i < fsExprArr.length; i ++) {
-				Expression.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,fsExprArr[i]);
+				FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,fsExprArr[i]);
 			}
 		}
 		// go through each Jump Process
@@ -1094,7 +1093,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 			JumpProcess jumpProcess = jumpconditionV.elementAt(jp);
 			Expression[] jpExprArr = jumpProcess.getExpressions();
 			for (int i = 0; i < jpExprArr.length; i ++) {
-				Expression.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,jpExprArr[i]);
+				FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,jpExprArr[i]);
 			}
 		}
 		// go through VarInitConditions
@@ -1104,7 +1103,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 			Expression[] vicExprArr =
 				new Expression[] {varInitCond.getIniVal(),varInitCond.getVar().getExpression()};
 			for (int i = 0; i < vicExprArr.length; i ++) {
-				Expression.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,vicExprArr[i]);
+				FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,vicExprArr[i]);
 			}
 		}
 	}
@@ -1113,7 +1112,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 }
 
 public void substituteFieldFuncNames(Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID) throws MathException, ExpressionException{
-	MathDescription.substituteFieldFuncNames(
+	FieldUtilities.substituteFieldFuncNames(
 			oldFieldFuncArgsNameNewID, collectFieldFuncAndExpressions());
 }
 
@@ -1121,70 +1120,6 @@ public FieldFunctionArguments[] getFieldFunctionArguments() throws MathException
 	return collectFieldFuncAndExpressions().keySet().toArray(new FieldFunctionArguments[0]);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/28/01 1:30:46 PM)
- * @return cbit.vcell.solver.Simulation
- * @param simulationInfo cbit.vcell.solver.SimulationInfo
- */
-//public FieldFunctionArguments[] getFieldFunctionArguments() throws MathException, ExpressionException {
-//	// make sure each field only added once
-//	HashSet<FieldFunctionArguments> fieldFuncArgHash = new HashSet<FieldFunctionArguments>();
-//	Enumeration enum1 = getSubDomains();
-//	
-//	for(int i=0;i<variableList.size();i+=1){
-//		if(variableList.elementAt(i) instanceof Function){
-//			Function function = (Function)variableList.elementAt(i);
-//			fieldFuncArgHash.addAll(Arrays.asList(function.getExpression().getFieldFunctionArguments()));
-//		}
-//	}
-//	// go through each subdomain
-//	while (enum1.hasMoreElements()){
-//		SubDomain subDomain = (SubDomain)enum1.nextElement();
-//		// go through each equation
-//		Enumeration enum_equ = subDomain.getEquations();
-//		while (enum_equ.hasMoreElements()){
-//			Equation equation = (Equation)enum_equ.nextElement();
-//			Vector exs = equation.getExpressions(this);
-//
-//			// go through each expresson
-//			for (int i = 0; i < exs.size(); i ++) {
-//				Expression exp = (Expression)exs.get(i);
-//				fieldFuncArgHash.addAll(Arrays.asList(exp.getFieldFunctionArguments()));
-//			}
-//		}
-//		// go through each Fast System
-//		FastSystem fastSystem = subDomain.getFastSystem();
-//		if(fastSystem != null){
-//			Expression[] fsExprArr = fastSystem.getExpressions();
-//			for (int i = 0; i < fsExprArr.length; i ++) {
-//				fieldFuncArgHash.addAll(Arrays.asList(fsExprArr[i].getFieldFunctionArguments()));
-//			}
-//		}
-//		// go through each Jump Process
-//		Vector<JumpProcess> jumpconditionV = subDomain.getJumpProcesses();
-//		for(int jp=0;jp<jumpconditionV.size();jp+= 1){
-//			JumpProcess jumpProcess = jumpconditionV.elementAt(jp);
-//			Expression[] jpExprArr = jumpProcess.getExpressions();
-//			for (int i = 0; i < jpExprArr.length; i ++) {
-//				fieldFuncArgHash.addAll(Arrays.asList(jpExprArr[i].getFieldFunctionArguments()));
-//			}
-//		}
-//		// go through VarInitConditions
-//		Vector<VarIniCondition> varInitCondV = subDomain.getVarIniConditions();
-//		for(int jp=0;jp<varInitCondV.size();jp+= 1){
-//			VarIniCondition varInitCond = varInitCondV.elementAt(jp);
-//			Expression[] vicExprArr =
-//				new Expression[] {varInitCond.getIniVal(),varInitCond.getVar().getExpression()};
-//			for (int i = 0; i < vicExprArr.length; i ++) {
-//				fieldFuncArgHash.addAll(Arrays.asList(vicExprArr[i].getFieldFunctionArguments()));
-//			}
-//		}
-//	}
-//	
-//	return fieldFuncArgHash.toArray(new FieldFunctionArguments[fieldFuncArgHash.size()]);
-//}
 
 /**
  * Insert the method's description here.
@@ -3079,21 +3014,6 @@ public String toString() {
 	return "Math@"+Integer.toHexString(hashCode())+"("+version+")";
 }
 
-
-public static void substituteFieldFuncNames(
-		Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID,
-		Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash
-		) throws MathException, ExpressionException{
-
-	Set<Map.Entry<FieldFunctionArguments, Vector<Expression>>> set = fieldFuncArgsExpHash.entrySet();
-	Iterator<Entry<FieldFunctionArguments, Vector<Expression>>> iter = set.iterator();
-	while(iter.hasNext()){
-		Entry<FieldFunctionArguments, Vector<Expression>> entry = iter.next();
-		for(int i=0;i<entry.getValue().size();i+= 1){
-			entry.getValue().elementAt(i).substituteFieldFunctionFieldName(oldFieldFuncArgsNameNewID);
-		}
-	}
-}
 
 public String getMathType()
 {
