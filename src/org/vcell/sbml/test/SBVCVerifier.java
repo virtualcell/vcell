@@ -46,7 +46,6 @@ import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
-import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.NativeIDASolver;
 import cbit.vcell.util.RowColumnResultSet;
 import cbit.vcell.xml.XMLSource;
@@ -191,7 +190,7 @@ private static ODESolverResultSet solveSimulation(SimulationJob simJob, boolean 
 		SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
 		Function functions[] = simSymbolTable.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (AbstractSolver.isFunctionSaved(functions[i])){
+			if (SimulationSymbolTable.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = simSymbolTable.substituteFunctions(exp1);

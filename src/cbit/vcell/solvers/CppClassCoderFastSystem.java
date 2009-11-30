@@ -224,7 +224,7 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 	Enumeration<PseudoConstant> enum2 = fs_analyzer.getPseudoConstants();
 	while (enum2.hasMoreElements()){
 		PseudoConstant pc = (PseudoConstant)enum2.nextElement();
-		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + " = " + simulationJob.getSimulationSymbolTable().substituteFunctions(pc.getPseudoExpression()).flatten().infix_C()+";");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + " = " + infix_C(simulationJob.getSimulationSymbolTable().substituteFunctions(pc.getPseudoExpression()).flatten())+";");
 		invariantCount++;
 	}
 		
@@ -311,7 +311,7 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 		Variable depVar = enum_var.nextElement();
 		exp.bindExpression(fs_analyzer);
 		exp = MathUtilities.substituteFunctions(exp, fs_analyzer).flatten();
-		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(depVar.getName()) + "->setCurr(currIndex," + exp.infix_C() + ");");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(depVar.getName()) + "->setCurr(currIndex," + infix_C(exp) + ");");
 	}
 	
 	out.println("}");
@@ -370,12 +370,12 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 			Expression exp = MathUtilities.substituteFunctions(fre, fs_analyzer).flatten();
 			Expression differential = exp.differentiate(var.getName());
 			differential.bindExpression(fs_analyzer);
-			out.println("\tsetMatrix("+frCount+", "+varCount+", "+differential.flatten().infix_C()+");");
+			out.println("\tsetMatrix("+frCount+", "+varCount+", "+infix_C(differential.flatten())+");");
 			varCount++;
 		}
 		Expression exp = Expression.negate(fre);
 		exp = MathUtilities.substituteFunctions(exp, fs_analyzer);
-		out.println("\tsetMatrix("+frCount+", "+varCount+", "+exp.flatten().infix_C()+");");
+		out.println("\tsetMatrix("+frCount+", "+varCount+", "+infix_C(exp.flatten())+");");
 		frCount++;
 		out.println();
 	}

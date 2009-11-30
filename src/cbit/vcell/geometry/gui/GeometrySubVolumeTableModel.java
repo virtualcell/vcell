@@ -7,6 +7,7 @@ import javax.swing.JTable;
 
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
@@ -16,7 +17,6 @@ import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.

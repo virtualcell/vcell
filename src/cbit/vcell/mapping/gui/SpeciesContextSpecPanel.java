@@ -12,13 +12,13 @@ import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 /**
  * This type was created in VisualAge.
  */

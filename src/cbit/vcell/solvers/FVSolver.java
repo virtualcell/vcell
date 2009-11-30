@@ -18,22 +18,13 @@ import org.vcell.util.SessionLog;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.FilamentRegionVariable;
-import cbit.vcell.math.FilamentVariable;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.InsideVariable;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -43,7 +34,6 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -290,7 +280,7 @@ public void cleanup() {
  */
 @Override
 public Vector<AnnotatedFunction> createFunctionList() {
-	Vector<AnnotatedFunction> annotatedFunctionVector = createAnnotatedFunctionsList(simulationJob.getSimulationSymbolTable());
+	Vector<AnnotatedFunction> annotatedFunctionVector = simulationJob.getSimulationSymbolTable().createAnnotatedFunctionsList();
 	//Try to save existing user defined functions
 	
 	try{
@@ -315,87 +305,6 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	}
 	return annotatedFunctionVector;
 }
-public static Vector<AnnotatedFunction> createAnnotatedFunctionsList(SimulationSymbolTable simSymbolTable) {
-	Function[] functions = simSymbolTable.getFunctions();
-
-	// Get the list of (volVariables) in the simulation. Needed to determine 'type' of  functions
-	Variable[] allVariables = simSymbolTable.getVariables();
-	Vector<Variable> varVector = new Vector<Variable>();
-	for (int i = 0; i < allVariables.length; i++){
-		if ( (allVariables[i] instanceof VolVariable) || (allVariables[i] instanceof VolumeRegionVariable) || (allVariables[i] instanceof MemVariable) || 
-			 (allVariables[i] instanceof MembraneRegionVariable) || (allVariables[i] instanceof FilamentVariable) || (allVariables[i] instanceof FilamentRegionVariable) ||
-			 (allVariables[i] instanceof InsideVariable) || (allVariables[i] instanceof OutsideVariable) ) {
-				 
-			varVector.addElement(allVariables[i]);
-		}
-	}
-	Variable[] variables = (Variable[])org.vcell.util.BeanUtils.getArray(varVector, Variable.class);
-	String[] variableNames = new String[variables.length];
-	for (int i = 0; i < variableNames.length; i++){
-		variableNames[i] = variables[i].getName();
-	}
-
-	// Lookup table for variableType for each variable in 'variables' array.	
-	VariableType[] variableTypes = new VariableType[variables.length];
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof VolVariable) {
-			variableTypes[i] = VariableType.VOLUME;
-		} else if (variables[i] instanceof VolumeRegionVariable) {
-			variableTypes[i] = VariableType.VOLUME_REGION;
-		} else if (variables[i] instanceof MemVariable) {
-			variableTypes[i] = VariableType.MEMBRANE;
-		} else if (variables[i] instanceof MembraneRegionVariable) {
-			variableTypes[i] = VariableType.MEMBRANE_REGION;
-		} else if (variables[i] instanceof FilamentVariable) {
-			variableTypes[i] = VariableType.CONTOUR;
-		} else if (variables[i] instanceof FilamentRegionVariable) {
-			variableTypes[i] = VariableType.CONTOUR_REGION;
-		} else if (variables[i] instanceof InsideVariable) {
-			variableTypes[i] = VariableType.MEMBRANE;
-		} else if (variables[i] instanceof OutsideVariable) {
-			variableTypes[i] = VariableType.MEMBRANE;
-		} else {
-			variableTypes[i] = null;
-		}
-	}
-
-	//
-	// Bind and substitute functions to simulation before storing them in the '.functions' file
-	//
-	Vector<AnnotatedFunction> annotatedFunctionVector = new Vector<AnnotatedFunction>();
-	for (int i = 0; i < functions.length; i++){
-		if (isFunctionSaved(functions[i])) {
-			String errString = "";
-			VariableType funcType = null;		
-			try {
-				Expression substitutedExp = simSymbolTable.substituteFunctions(functions[i].getExpression());
-				substitutedExp.bindExpression(simSymbolTable);
-				functions[i].setExpression(substitutedExp.flatten());
-			}catch (MathException e){
-				e.printStackTrace(System.out);
-				errString = errString+", "+e.getMessage();	
-				// throw new RuntimeException(e.getMessage());
-			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				errString = errString+", "+e.getMessage();				
-				// throw new RuntimeException(e.getMessage());
-			}
-
-			//
-			// get function's data type from the types of it's identifiers
-			//
-			funcType = getFunctionVariableType(functions[i], variableNames, variableTypes, simSymbolTable.getSimulation().isSpatial());
-
-			AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), errString, funcType, false);
-			annotatedFunctionVector.addElement(annotatedFunc);
-		}
-	}
-
-	
-	return annotatedFunctionVector;	
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (6/27/01 3:25:11 PM)
@@ -432,89 +341,6 @@ protected ApplicationMessage getApplicationMessage(String message) {
  */
 public static String getDescription() {
 	return "Finite Volume, Structured Grid";
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/19/2004 11:17:15 AM)
- * @return cbit.vcell.simdata.VariableType
- * @param function cbit.vcell.math.Function
- * @param variableNames java.lang.String[]
- * @param variableTypes cbit.vcell.simdata.VariableType[]
- */
-public static VariableType getFunctionVariableType(Function function, String[] variableNames, VariableType[] variableTypes, boolean isSpatial) {
-	VariableType funcType = null;
-	Expression exp = function.getExpression();
-	String symbols[] = exp.getSymbols();
-	if (symbols != null) {
-		for (int j = 0; j < symbols.length; j++){
-			boolean bFound = false;
-			for (int k = 0; !bFound && k < variableNames.length; k++){
-				if (symbols[j].equals(variableNames[k])) {
-					bFound = true;
-					if (funcType == null){
-						funcType = variableTypes[k];
-					}else{
-						//
-						// example: if VOLUME_REGION and VOLUME data are used in same function,
-						// then function must be evaluated at each volume index (hence VOLUME wins).
-						//
-						if (variableTypes[k].isExpansionOf(funcType)){
-							funcType = variableTypes[k];
-						}
-					}
-				}
-				if (symbols[j].equals(variableNames[k]+"_INSIDE") || symbols[j].equals(variableNames[k]+"_OUTSIDE")){
-					bFound=true;
-					if (variableTypes[k].equals(VariableType.VOLUME)){
-						funcType = VariableType.MEMBRANE;
-					}else if (funcType == null && variableTypes[k].equals(VariableType.VOLUME_REGION)){
-						funcType = VariableType.MEMBRANE_REGION;
-					}
-				}
-			}
-		}
-	}
-	//
-	// if determined to be a volume region or membrane region function, 
-	// then if it is an explicit function of space, promote type to corresponding non-region type (e.g. volRegion --> volume)
-	//
-	boolean bExplicitFunctionOfSpace = false;
-	if (symbols != null) {
-		for (int i = 0; i < symbols.length; i++){
-			if (symbols[i].equals(cbit.vcell.math.ReservedVariable.X.toString()) ||
-				symbols[i].equals(cbit.vcell.math.ReservedVariable.Y.toString()) ||
-				symbols[i].equals(cbit.vcell.math.ReservedVariable.Z.toString())){
-				bExplicitFunctionOfSpace = true;
-			}
-		}
-	}
-
-		
-	if (funcType == null){
-		//
-		// set default VariableType's for functions that have no variables (best guess).
-		//
-		if (!isSpatial) {
-			funcType = VariableType.NONSPATIAL;
-		} else {	
-			FieldFunctionArguments[] fieldFuncArgs = function.getExpression().getFieldFunctionArguments();
-			if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
-				return fieldFuncArgs[0].getVariableType();
-			}			
-			funcType = VariableType.VOLUME;
-		}
-	}else{
-		if (funcType.equals(VariableType.MEMBRANE_REGION) && bExplicitFunctionOfSpace){
-			funcType = VariableType.MEMBRANE;
-		}else if (funcType.equals(VariableType.VOLUME_REGION) && bExplicitFunctionOfSpace){
-			funcType = VariableType.VOLUME;
-		}else if (funcType.equals(VariableType.CONTOUR_REGION) && bExplicitFunctionOfSpace){
-			funcType = VariableType.CONTOUR;
-		}
-	}
-	return funcType;
 }
 
 
@@ -656,13 +482,13 @@ public static void resampleFieldData(
 	if (simulationJob != null) {
 		Variable var = simulationJob.getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
 		if (var != null) {
-			FieldFunctionArguments[] ffas = var.getExpression().getFieldFunctionArguments();
+			FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 			if (ffas == null || ffas.length == 0) {
 				throw new SolverException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 			} else {				
 				Expression newexp;
 				try {
-					newexp = new Expression("field(" + ffas[0].toCSVString() + ")");				
+					newexp = new Expression(ffas[0].infix());				
 					if (!var.getExpression().compareEqual(newexp)) {
 						throw new SolverException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 					}

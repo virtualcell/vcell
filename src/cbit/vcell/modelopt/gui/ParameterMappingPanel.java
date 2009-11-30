@@ -705,7 +705,7 @@ public static void main(java.lang.String[] args) {
  */
 private void parameterMappingPanel_Initialize() {
 	
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(cbit.gui.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
 	
 	getparameterMappingTableModel().addTableModelListener(
 		new javax.swing.event.TableModelListener(){

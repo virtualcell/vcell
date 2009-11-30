@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
@@ -15,7 +16,6 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
 ©*/
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.mapping.SpeciesContextSpec;
 /**
  * Insert the type's description here.

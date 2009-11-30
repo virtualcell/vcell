@@ -1,6 +1,8 @@
-package cbit.vcell.parser;
+package cbit.gui;
 
-import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
 
 /**
  * Insert the type's description here.

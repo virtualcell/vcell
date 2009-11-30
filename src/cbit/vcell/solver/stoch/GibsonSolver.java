@@ -167,7 +167,7 @@ public ODESolverResultSet getStochSolverResultSet()
 	{
 		Function functions[] = simSymbolTable.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (isFunctionSaved(functions[i])) 
+			if (SimulationSymbolTable.isFunctionSaved(functions[i])) 
 			{
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
@@ -348,7 +348,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (isFunctionSaved(functions[i])){
+		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();

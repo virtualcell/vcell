@@ -5,6 +5,7 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldDataParameterVariable;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.rmi.event.*;
 import cbit.vcell.simdata.gui.SpatialSelection;
@@ -1682,8 +1683,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 	
 	
 	Expression origExpression = function.getExpression();
-	FieldFunctionArguments[] fieldfuncArgumentsArr =
-		origExpression.getFieldFunctionArguments();
+	FieldFunctionArguments[] fieldfuncArgumentsArr = FieldUtilities.getFieldFunctionArguments(origExpression);
 	if(fieldfuncArgumentsArr == null || fieldfuncArgumentsArr.length == 0){
 		return origExpression;
 	}
@@ -1962,7 +1962,7 @@ private void checkFieldDataExists(AnnotatedFunction annotatedFunction,User user)
 	if(annotatedFunction == null){
 		return;
 	}
-	FieldFunctionArguments[] fieldfuncArgs = annotatedFunction.getExpression().getFieldFunctionArguments();
+	FieldFunctionArguments[] fieldfuncArgs = FieldUtilities.getFieldFunctionArguments(annotatedFunction.getExpression());
 	if(fieldfuncArgs != null && fieldfuncArgs.length > 0){
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = getFieldDataIdentifierSpecs(fieldfuncArgs, user);
 	}
@@ -1971,7 +1971,7 @@ private void checkFieldDataExists(AnnotatedFunction annotatedFunction,User user)
 private VariableType getVariableTypeForFieldFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
 	VariableType funcType = function.getFunctionType(); 
 	if (funcType == null || funcType.equals(VariableType.UNKNOWN)) {
-		FieldFunctionArguments[] ffas  = function.getExpression().getFieldFunctionArguments();
+		FieldFunctionArguments[] ffas  = FieldUtilities.getFieldFunctionArguments(function.getExpression());
 		if (ffas == null || ffas.length == 0) {
 			throw new DataAccessException("Unknown function type for function " + function.getName());
 		}
@@ -2525,8 +2525,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 			}
 			AnnotatedFunction functionFromVarName = getFunction(vcdID,variableNames[i]);
 			if(functionFromVarName != null){
-				FieldFunctionArguments[] fieldFunctionArgumentsArr =
-					functionFromVarName.getExpression().getFieldFunctionArguments();
+				FieldFunctionArguments[] fieldFunctionArgumentsArr = FieldUtilities.getFieldFunctionArguments(functionFromVarName.getExpression());
 				if(functionFromVarName.getExpression().hasGradient() ||
 					(fieldFunctionArgumentsArr != null && fieldFunctionArgumentsArr.length > 0)){
 					bIsSpecial = true;
@@ -3053,12 +3052,14 @@ private void adjustMembraneAdjacentVolumeValues(
 				insideFunction = new AnnotatedFunction("",insideExp,"",VariableType.MEMBRANE,true);
 				outsideFunction = new AnnotatedFunction("",outsideExp,"",VariableType.MEMBRANE,true);
 				insideFunction.setExpression(insideExp.flatten());
-				outsideFunction.setExpression(outsideExp.flatten());				
+				outsideFunction.setExpression(outsideExp.flatten());
+				FieldFunctionArguments[] insideExpFieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(insideExp);
+				FieldFunctionArguments[] outsideExpFieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(outsideExp);
 				bIsSpecial =
 					!isAllowOptimizedTimeDataRetrieval() || 
 					insideExp.hasGradient() || outsideExp.hasGradient() ||
-					(insideExp.getFieldFunctionArguments() != null && insideExp.getFieldFunctionArguments().length > 0) ||
-					(outsideExp.getFieldFunctionArguments() != null && outsideExp.getFieldFunctionArguments().length > 0);
+					(insideExpFieldFunctionArgs != null && insideExpFieldFunctionArgs.length > 0) ||
+					(outsideExpFieldFunctionArgs != null && outsideExpFieldFunctionArgs.length > 0);
 				if(bIsSpecial && fullDataValueSource == null){
 					throw new IllegalArgumentException(this.getClass().getName()+".adjustMembraneAdjacentVolumeValues: special values need SimDataBlock");
 				}

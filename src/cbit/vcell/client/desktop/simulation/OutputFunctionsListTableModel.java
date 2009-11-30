@@ -7,11 +7,11 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
+import cbit.gui.ScopedExpression;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -90,7 +90,7 @@ public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_OUTPUTFN_EXPRESSION:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.gui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;

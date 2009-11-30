@@ -15,12 +15,12 @@ import javax.swing.KeyStroke;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.EmptyBorderBean;
 
+import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.MathOverrides;
 /*©

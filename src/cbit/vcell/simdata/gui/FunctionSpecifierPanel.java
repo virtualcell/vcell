@@ -35,7 +35,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solvers.FVSolver;
+import cbit.vcell.solver.SimulationSymbolTable;
 
 import javax.swing.JComboBox;
 
@@ -215,7 +215,7 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 			dataIdNames[i] = allIdentifiers[i].getName();
 			dataIdVarTypes[i] = allIdentifiers[i].getVariableType();
 		}
-		VariableType funcType = FVSolver.getFunctionVariableType(func, dataIdNames, dataIdVarTypes,isSpatial);
+		VariableType funcType = SimulationSymbolTable.getFunctionVariableType(func, dataIdNames, dataIdVarTypes,isSpatial);
 		if (funcType.equals(VariableType.UNKNOWN)) {
 			throw new IllegalArgumentException("Must specify variable type for field function");
 		}

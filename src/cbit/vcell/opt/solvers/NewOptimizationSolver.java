@@ -160,7 +160,7 @@ public static ODESolverResultSet getOdeSolverResultSet(RowColumnResultSet rcResu
 	//
 	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
+		if (cbit.vcell.solver.SimulationSymbolTable.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();

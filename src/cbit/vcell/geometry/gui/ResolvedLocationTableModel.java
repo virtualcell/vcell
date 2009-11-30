@@ -44,7 +44,7 @@ public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_INSIDE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.gui.ScopedExpression.class;
 		}
 		case COLUMN_OUTSIDE:{
 			return String.class;

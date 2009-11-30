@@ -29,13 +29,13 @@ import org.vcell.util.gui.UtilCancelException;
 
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
-import cbit.vcell.parser.ScopedExpression;
 /**
  * This type was created in VisualAge.
  */
@@ -565,7 +565,7 @@ private void geometry_This(cbit.vcell.geometry.Geometry arg1) {
 private void geometrySubVolumePanel_Initialize() {
 	
 	getScrollPaneTable().setDefaultRenderer(SubVolume.class,new GeometrySubVolumeTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(cbit.gui.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
 	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), true));
 	getScrollPaneTable().setDefaultEditor(SubVolume.class,new DefaultCellEditor(new JTextField()) {
 			private int lastRow = -1;

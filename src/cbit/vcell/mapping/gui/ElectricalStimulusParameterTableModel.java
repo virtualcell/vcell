@@ -9,13 +9,13 @@ import javax.swing.JTable;
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -402,8 +402,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		switch (columnIndex){
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof cbit.gui.ScopedExpression){
+						Expression exp = ((cbit.gui.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
 							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
 							getElectricalStimulus().setParameterValue(scsParm,exp);

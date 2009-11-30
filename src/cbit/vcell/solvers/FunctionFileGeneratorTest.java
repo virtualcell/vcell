@@ -24,7 +24,8 @@ public static void main(java.lang.String[] args) {
 		BioModel model = BioModelTest.getExample();
 		Simulation[] sims = model.getSimulations();
 
-		Vector <AnnotatedFunction> annotatedFunctionList = FVSolver.createAnnotatedFunctionsList(new SimulationSymbolTable(sims[1], 0));
+		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(sims[1], 0);
+		Vector <AnnotatedFunction> annotatedFunctionList = simulationSymbolTable.createAnnotatedFunctionsList();
 		
 		FunctionFileGenerator funcFileGen = new FunctionFileGenerator("\\\\C:\\"+sims[1].getName()+".functions", annotatedFunctionList);
 		System.out.println("\n\n FILE NAME : "+funcFileGen.getBasefileName()+"\n\n");

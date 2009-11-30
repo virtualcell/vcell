@@ -12,7 +12,6 @@ import cbit.vcell.xml.XMLTags;
 
 public class XMLMetaData {
 	
-	public static final Namespace nsVCML = Namespace.getNamespace("vcml",XMLTags.VCML_NS);
 	public static final Namespace rdfNameSpace = Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI);
 	
 	public static final String VCMETADATA_TAG				= "vcmetadata";

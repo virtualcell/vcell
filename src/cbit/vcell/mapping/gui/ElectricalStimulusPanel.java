@@ -3,9 +3,9 @@ package cbit.vcell.mapping.gui;
 import org.vcell.util.Coordinate;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.mapping.CurrentClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;

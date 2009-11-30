@@ -29,6 +29,7 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
 import cbit.image.VCPixelClass;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.geometry.AnalyticSubVolume;
@@ -328,7 +329,7 @@ public cbit.vcell.biomodel.BioModel getBioModel(Element param) throws XmlParseEx
 	//	biomodel.getVCMetaData().setAnnotation(biomodel, param);
 	//	biomodel.getVCMetaData().setNotes(biomodel, param);
 	boolean bMetaDataPopulated = false;
-	List<Element> elementsMetaData = param.getChildren(XMLMetaData.VCMETADATA_TAG, XMLMetaData.nsVCML);
+	List<Element> elementsMetaData = param.getChildren(XMLMetaData.VCMETADATA_TAG, VCMetaData.nsVCML);
 	if (elementsMetaData != null && elementsMetaData.size() > 0) {
 		for(Element elementMetaData : elementsMetaData) {
 			XMLMetaDataReader.readFromElement(biomodel.getVCMetaData(), biomodel, elementMetaData);		

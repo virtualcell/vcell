@@ -1,4 +1,4 @@
-package cbit.vcell.mapping;
+package cbit.vcell.modelopt;
 import cbit.util.graph.*;
 import cbit.vcell.parser.Expression;
 /**
