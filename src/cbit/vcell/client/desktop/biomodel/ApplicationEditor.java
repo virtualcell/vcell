@@ -59,11 +59,13 @@ public class ApplicationEditor extends JPanel {
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private ReactionSpecsPanel ivjReactionSpecsPanel = null;
 	private SimulationListPanel ivjSimulationListPanel = null;
+	private SPPRPanel ivjSPPRPanel = null;
 	private StructureMappingCartoonPanel ivjStaticCartoonPanel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
 	private boolean ivjConnPtoP6Aligning = false;
+	private boolean ivjConnPtoP9Aligning = false;
 	private SimulationContext ivjsimulationContext = null;
 	private GeometryContext ivjgeometryContext = null;
 	private JPanel ivjJPanel3 = null;
@@ -94,7 +96,8 @@ public class ApplicationEditor extends JPanel {
 	private ComboBoxModel ivjmodel1 = null;
 	private JButton ivjCopyButton = null;
 	private JLabel mappingInfoLabel = null; 
-         
+	
+	         
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ApplicationEditor.this.getViewModifyGeometryButton()) 
@@ -1023,6 +1026,45 @@ private void connPtoP8SetTarget() {
 	}
 }
 
+/**
+ * connPtoP9SetSource:
+ */
+private void connPtoP9SetSource() {
+	/* Set the source from the target */
+	try {
+		if (ivjConnPtoP9Aligning == false) {
+			ivjConnPtoP9Aligning = true;
+			setsimulationWorkspace1(getSPPRPanel().getSimulationWorkspace());
+			ivjConnPtoP9Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP9Aligning = false;
+		handleException(ivjExc);
+	}
+}
+
+
+/**
+ * connPtoP9SetTarget:
+ */
+private void connPtoP9SetTarget() {
+	/* Set the target from the source */
+	try {
+		if (ivjConnPtoP9Aligning == false) {
+			ivjConnPtoP9Aligning = true;
+			if ((getsimulationWorkspace1() != null)) {
+				getSPPRPanel().setSimulationWorkspace(getsimulationWorkspace1());
+			}
+			ivjConnPtoP9Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP9Aligning = false;
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
 
 /**
  * Comment
@@ -1386,6 +1428,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, TAB_IDX_VIEW_MATH);
 			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, TAB_IDX_SIMULATION);
 			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, TAB_IDX_ANALYSIS);
+			ivjJTabbedPane1.insertTab("SPPR", null, getSPPRPanel(), null, 7);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1640,6 +1683,23 @@ private SimulationListPanel getSimulationListPanel() {
 }
 
 /**
+ * Return the SPPRPanel1 property value.
+ * @return cbit.vcell.client.desktop.simulation.SimulationListPanel
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private SPPRPanel getSPPRPanel() {
+	if (ivjSPPRPanel == null) {
+		try {
+			ivjSPPRPanel = new SPPRPanel();
+			ivjSPPRPanel.setName("SpeciesParamsReactionsPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjSPPRPanel;
+}
+
+/**
  * Gets the simulationWorkspace property (cbit.vcell.client.desktop.simulation.SimulationWorkspace) value.
  * @return The simulationWorkspace property value.
  * @see #setSimulationWorkspace
@@ -1872,6 +1932,7 @@ private void initConnections() throws java.lang.Exception {
 	getViewModifyGeometryButton().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getSimulationListPanel().addPropertyChangeListener(ivjEventHandler);
+	getSPPRPanel().addPropertyChangeListener(ivjEventHandler);
 	getStaticCartoonPanel().addPropertyChangeListener(ivjEventHandler);
 	getInitialConditionsPanel().addPropertyChangeListener(ivjEventHandler);
 	getReactionSpecsPanel().addPropertyChangeListener(ivjEventHandler);
@@ -1893,6 +1954,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP6SetTarget();
 	connPtoP7SetTarget();
 	connPtoP8SetTarget();
+	connPtoP9SetTarget();
 }
 
 /**
@@ -2254,6 +2316,9 @@ private void setsimulationContext(SimulationContext newValue) {
 public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
 	SimulationWorkspace oldValue = fieldSimulationWorkspace;
 	fieldSimulationWorkspace = simulationWorkspace;
+	
+	getSPPRPanel().setSimulationWorkspace(simulationWorkspace);
+
 	firePropertyChange("simulationWorkspace", oldValue, simulationWorkspace);
 }
 
