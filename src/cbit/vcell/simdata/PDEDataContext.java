@@ -7,8 +7,8 @@ import java.util.Comparator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
-import org.vcell.util.TimeSeriesJobResults;
-import org.vcell.util.TimeSeriesJobSpec;
+import org.vcell.util.document.TimeSeriesJobResults;
+import org.vcell.util.document.TimeSeriesJobSpec;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.SourceDataInfo;
@@ -419,7 +419,7 @@ public java.lang.String[] getVariableNames() {
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public abstract org.vcell.util.VCDataIdentifier getVCDataIdentifier();
+public abstract org.vcell.util.document.VCDataIdentifier getVCDataIdentifier();
 
 
 /**

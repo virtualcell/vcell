@@ -1,4 +1,4 @@
-package org.vcell.util;
+package org.vcell.util.document;
 /**
  * Insert the type's description here.
  * Creation date: (2/21/2006 1:43:07 PM)

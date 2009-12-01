@@ -13,7 +13,7 @@ import java.io.*;
 import java.util.*;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 import ucar.ma2.ArrayDouble;
 import cbit.vcell.simdata.*;

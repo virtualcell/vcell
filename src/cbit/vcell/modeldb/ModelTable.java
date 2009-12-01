@@ -18,7 +18,7 @@ import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.
  */
-public class ModelTable extends cbit.sql.VersionTable {
+public class ModelTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_model";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 

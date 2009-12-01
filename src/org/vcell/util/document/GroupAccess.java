@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 ©*/
 import java.io.*;
 
-import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 /**

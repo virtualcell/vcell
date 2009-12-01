@@ -8,8 +8,8 @@ import java.rmi.*;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.simdata.*;
@@ -249,11 +249,11 @@ private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDa
 		distances = ssh.getWorldCoordinateLengths();
 	}
 
-	org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
-		new org.vcell.util.TimeSeriesJobSpec(
+	org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
+		new org.vcell.util.document.TimeSeriesJobSpec(
 				new String[]{variableName},new int[][]{pointIndexes},new int[][]{crossingMembraneIndexes},allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
-	org.vcell.util.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
+	org.vcell.util.document.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.document.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array
 	// variableValues[1] is values for 1st spatial point.
@@ -401,11 +401,11 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
  */
 private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	
-	org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
-		new org.vcell.util.TimeSeriesJobSpec(
+	org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
+		new org.vcell.util.document.TimeSeriesJobSpec(
 				new String[]{variableName},new int[][]{pointIndexes},null,allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
-	org.vcell.util.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
+	org.vcell.util.document.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.document.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array
 	// variableValues[1] is values for 1st spatial point.

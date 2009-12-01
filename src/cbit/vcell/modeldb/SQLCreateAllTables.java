@@ -1,7 +1,15 @@
-package cbit.sql;
+package cbit.vcell.modeldb;
 
 import java.awt.*;
 
+import cbit.sql.ConnectionFactory;
+import cbit.sql.Field;
+import cbit.sql.KeyFactory;
+import cbit.sql.MysqlConnectionFactory;
+import cbit.sql.MysqlKeyFactory;
+import cbit.sql.OracleKeyFactory;
+import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.sql.Table;
 import cbit.vcell.server.*;
 import java.sql.*;
 import javax.swing.*;

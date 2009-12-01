@@ -1,8 +1,7 @@
-package org.vcell.util;
+package org.vcell.util.document;
 
 import java.util.BitSet;
 
-import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.solvers.CartesianMesh;
 

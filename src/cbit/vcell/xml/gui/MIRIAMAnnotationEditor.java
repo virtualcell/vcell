@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package cbit.vcell.xml.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -51,8 +51,9 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.Structure;
-import cbit.vcell.xml.MiriamTreeModel.IdentifiableNode;
-import cbit.vcell.xml.MiriamTreeModel.LinkNode;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.gui.MiriamTreeModel.IdentifiableNode;
+import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 
 import com.hp.hpl.jena.rdf.model.Statement;
 

@@ -26,8 +26,8 @@ import java.util.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.util.*;
 import cbit.vcell.solver.ode.*;

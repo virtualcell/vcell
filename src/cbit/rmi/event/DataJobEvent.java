@@ -4,9 +4,9 @@ package cbit.rmi.event;
  * All rights reserved.
 ©*/
 
-import org.vcell.util.TimeSeriesJobResults;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 /**

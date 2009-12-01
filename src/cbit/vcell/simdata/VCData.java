@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;

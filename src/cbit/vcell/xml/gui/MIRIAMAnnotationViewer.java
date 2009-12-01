@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package cbit.vcell.xml.gui;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -26,7 +26,7 @@ import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
-import cbit.vcell.xml.MIRIAMAnnotationEditor;
+import cbit.vcell.xml.gui.MIRIAMAnnotationEditor;
 
 public class MIRIAMAnnotationViewer extends JPanel {
 	private JTextArea LoStextArea;

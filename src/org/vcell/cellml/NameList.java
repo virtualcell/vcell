@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package org.vcell.cellml;
 import java.io.*;
 import java.util.*;
 import java.lang.*;

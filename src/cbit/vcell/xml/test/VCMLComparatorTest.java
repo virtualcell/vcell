@@ -1,6 +1,10 @@
-package cbit.vcell.xml;
+package cbit.vcell.xml.test;
 
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.xml.VCMLComparator;
+import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Element;

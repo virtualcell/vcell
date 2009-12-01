@@ -25,7 +25,6 @@ import org.vcell.util.document.VersionableType;
 import cbit.sql.Field;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
-import cbit.sql.VersionTable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;

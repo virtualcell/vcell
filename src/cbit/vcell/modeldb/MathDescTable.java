@@ -22,7 +22,7 @@ import cbit.vcell.geometry.Geometry;
 /**
  * This type was created in VisualAge.
  */
-public class MathDescTable extends cbit.sql.VersionTable {
+public class MathDescTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_math";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 

@@ -1,9 +1,9 @@
 package cbit.vcell.messaging.server;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -32,7 +32,7 @@ public RpcDataServerProxy(User argUser, JmsClientMessaging clientMessaging, Sess
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(org.vcell.util.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
+public void addFunctions(org.vcell.util.document.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
 	rpc("addFunctions",new Object[]{user, vcdID,functionArr,bReplaceArr});
 }
 
@@ -70,7 +70,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws org.vcell.util.Da
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
+public cbit.vcell.math.AnnotatedFunction[] getFunctions(org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
 	return (cbit.vcell.math.AnnotatedFunction[])rpc("getFunctions",new Object[]{user, vcdataID});
 }
 
@@ -177,11 +177,11 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
 //	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 	try {
 		if(!timeSeriesJobSpec.getVcDataJobID().isBackgroundTask()){
-			return (org.vcell.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
+			return (org.vcell.util.document.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 		}else{
 			rpc(ServiceType.DATA, "getTimeSeriesValues", new Object[]{user, vcdID,timeSeriesJobSpec}, false);
 		}
@@ -231,7 +231,7 @@ public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.Export
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void removeFunction(org.vcell.util.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException {
+public void removeFunction(org.vcell.util.document.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException {
 	rpc("removeFunction",new Object[]{user, vcdataID,function});
 }
 

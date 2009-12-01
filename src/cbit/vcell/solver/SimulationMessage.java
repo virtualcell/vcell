@@ -1,7 +1,9 @@
 package cbit.vcell.solver;
 
 import java.io.Serializable;
+
 import org.vcell.util.Compare;
+
 import cbit.vcell.messaging.db.SimulationJobStatus;
 
 public class SimulationMessage implements Serializable {

@@ -1,7 +1,8 @@
 package cbit.vcell.client.server;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
+
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.MergedDatasetViewer;

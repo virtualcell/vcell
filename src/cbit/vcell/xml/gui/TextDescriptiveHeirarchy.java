@@ -1,9 +1,10 @@
 /**
  * 
  */
-package cbit.vcell.xml;
+package cbit.vcell.xml.gui;
 
 import org.jdom.Text;
+
 
 class TextDescriptiveHeirarchy extends DescriptiveHeirarchy{
 	private Text text;

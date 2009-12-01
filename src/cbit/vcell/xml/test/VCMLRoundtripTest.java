@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package cbit.vcell.xml.test;
 
 import java.io.PrintStream;
 import java.util.Vector;
@@ -38,6 +38,8 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import cbit.vcell.util.RowColumnResultSet;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 
 public class VCMLRoundtripTest implements VCDatabaseVisitor {
 

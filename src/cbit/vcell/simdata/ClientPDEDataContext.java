@@ -1,6 +1,6 @@
 package cbit.vcell.simdata;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.client.server.DataManager;
@@ -137,7 +137,7 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
 	return dataManager.getTimeSeriesValues(timeSeriesJobSpec);
 }
 
@@ -146,7 +146,7 @@ public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.Ti
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public org.vcell.util.VCDataIdentifier getVCDataIdentifier() {
+public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
 	return dataManager.getVCDataIdentifier();
 }
 

@@ -27,8 +27,8 @@ import java.util.zip.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCDataIdentifier;
 /**
  * This type was created in VisualAge.
  */

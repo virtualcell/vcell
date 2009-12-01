@@ -1,6 +1,7 @@
 package cbit.vcell.client.server;
 
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
+
 import cbit.vcell.client.data.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.simdata.PDEDataContext;
@@ -208,7 +209,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double ti
  * 
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
 	return getVcDataManager().getTimeSeriesValues(getVcDataIdentifier(),timeSeriesJobSpec);
 }
 
@@ -218,7 +219,7 @@ public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.Ti
  * Creation date: (6/11/2004 3:53:21 PM)
  * @return cbit.vcell.server.VCDataIdentifier
  */
-private org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
+private org.vcell.util.document.VCDataIdentifier getVcDataIdentifier() {
 	return vcDataIdentifier;
 }
 
@@ -227,7 +228,7 @@ private org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public org.vcell.util.VCDataIdentifier getVCDataIdentifier() {
+public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
 	return getVcDataIdentifier();
 }
 
@@ -260,7 +261,7 @@ public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws or
  * Creation date: (6/11/2004 3:53:21 PM)
  * @param newVcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-private void setVcDataIdentifier(org.vcell.util.VCDataIdentifier newVcDataIdentifier) {
+private void setVcDataIdentifier(org.vcell.util.document.VCDataIdentifier newVcDataIdentifier) {
 	vcDataIdentifier = newVcDataIdentifier;
 }
 

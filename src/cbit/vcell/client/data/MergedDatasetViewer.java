@@ -1,7 +1,7 @@
 package cbit.vcell.client.data;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.server.ODEDataManager;

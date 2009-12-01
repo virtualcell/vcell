@@ -1,7 +1,7 @@
 package cbit.vcell.simdata;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.SimulationInfo;
@@ -140,7 +140,7 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
 	return getDataServerImpl().getTimeSeriesValues(user, vcDataID, timeSeriesJobSpec);
 }
 

@@ -15,13 +15,13 @@ import javax.swing.ListSelectionModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ReferenceQueryResult;
-import org.vcell.util.ReferenceQuerySpec;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.ReferenceQueryResult;
+import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;

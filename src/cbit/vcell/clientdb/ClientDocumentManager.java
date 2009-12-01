@@ -516,7 +516,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public org.vcell.util.ReferenceQueryResult findReferences(org.vcell.util.ReferenceQuerySpec rqs) throws org.vcell.util.DataAccessException {
+public org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.document.ReferenceQuerySpec rqs) throws org.vcell.util.DataAccessException {
 
 	try{
 		return getSessionManager().getUserMetaDbServer().findReferences(rqs);

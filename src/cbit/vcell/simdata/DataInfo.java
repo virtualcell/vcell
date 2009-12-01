@@ -33,7 +33,7 @@ protected DataInfo(User user, String simID, String varName, double simTime, long
  * @return boolean
  * @param simResultsInfo cbit.vcell.simdata.SimResultsInfo
  */
-public boolean belongsTo(org.vcell.util.VCDataIdentifier vcDataID){
+public boolean belongsTo(org.vcell.util.document.VCDataIdentifier vcDataID){
 	return (getSimID().equals(vcDataID.getID()) && 
 			getUser().equals(vcDataID.getOwner()));
 }

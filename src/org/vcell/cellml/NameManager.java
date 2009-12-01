@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package org.vcell.cellml;
 /**
  * This class takes of names and tokens used when trnasfroming a VCML -> CELLML.
  * Creation date: (4/12/2002 11:14:10 AM)

@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;

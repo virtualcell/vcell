@@ -3,7 +3,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.xml.NameManager;
 import cbit.vcell.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.units.VCUnitDefinition;

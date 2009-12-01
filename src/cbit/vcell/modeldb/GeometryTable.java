@@ -20,7 +20,7 @@ import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.
  */
-public class GeometryTable extends cbit.sql.VersionTable {
+public class GeometryTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_geometry";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 

@@ -1,11 +1,13 @@
 /**
  * 
  */
-package cbit.vcell.xml;
+package cbit.vcell.xml.gui;
 
 import java.util.Vector;
 
 import org.jdom.Element;
+
+import cbit.vcell.xml.XMLTags;
 
 public abstract class DescriptiveHeirarchy{
 		private Vector<Element> heirarchy = new Vector<Element>();
