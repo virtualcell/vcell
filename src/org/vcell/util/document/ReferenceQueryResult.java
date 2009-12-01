@@ -1,6 +1,5 @@
-package org.vcell.util;
+package org.vcell.util.document;
 
-import org.vcell.util.document.VersionableFamily;
 
 /**
  * Insert the type's description here.

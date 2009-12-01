@@ -111,7 +111,7 @@ cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-org.vcell.util.ReferenceQueryResult findReferences(org.vcell.util.ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.document.ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**

@@ -4,8 +4,8 @@ import java.io.*;
 import java.rmi.*;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.ImageException;
 import cbit.rmi.event.ExportEvent;

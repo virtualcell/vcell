@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package cbit.vcell.xml.gui;
 
 import java.util.Iterator;
 import java.util.List;

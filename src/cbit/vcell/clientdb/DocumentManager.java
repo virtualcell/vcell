@@ -147,7 +147,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-org.vcell.util.ReferenceQueryResult findReferences(org.vcell.util.ReferenceQuerySpec sqs) throws DataAccessException;
+org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.document.ReferenceQuerySpec sqs) throws DataAccessException;
 
 	public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos) throws Exception;
 

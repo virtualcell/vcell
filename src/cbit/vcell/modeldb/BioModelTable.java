@@ -24,7 +24,7 @@ import org.vcell.util.document.VersionInfo;
 /**
  * This type was created in VisualAge.
  */
-public class BioModelTable extends cbit.sql.VersionTable {
+public class BioModelTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_biomodel";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 

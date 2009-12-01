@@ -20,8 +20,8 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.server.*;
@@ -59,7 +59,7 @@ public LocalDataSetControllerMessaging (SessionLog sLog, User argUser, cbit.vcel
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(org.vcell.util.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
+public void addFunctions(org.vcell.util.document.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.addFunctions(vcdID=" + vcdID);
 	try {
 		dataServerProxy.addFunctions(vcdID, functionArr,bReplaceArr);
@@ -130,7 +130,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
+public cbit.vcell.math.AnnotatedFunction[] getFunctions(org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.getFunctions(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getFunctions(vcdataID);
@@ -306,7 +306,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param varName java.lang.String
  * @param index int
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.getTimeSeriesValues(vcdID=" + vcdID + ", " + timeSeriesJobSpec + ")");
 	try {
 		return dataServerProxy.getTimeSeriesValues(vcdID,timeSeriesJobSpec);
@@ -346,7 +346,7 @@ public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessExce
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void removeFunction(org.vcell.util.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException {
+public void removeFunction(org.vcell.util.document.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.removeFunction(vcdataID=" + vcdataID + ", function=" + function + ")");
 	try {
 		dataServerProxy.removeFunction(vcdataID, function);

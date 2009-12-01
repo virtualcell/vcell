@@ -14,8 +14,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -334,7 +334,7 @@ public SimDataBlock getSimDataBlock(User user, VCDataIdentifier vcdID, String va
  * @param y int
  * @param z int
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(User user, VCDataIdentifier vcdID, org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(User user, VCDataIdentifier vcdID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.getTimeSeriesValues(vcdID,timeSeriesJobSpec);

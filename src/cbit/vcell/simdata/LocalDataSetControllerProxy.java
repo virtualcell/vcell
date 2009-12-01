@@ -21,7 +21,7 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.server.*;
@@ -472,7 +472,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param varName java.lang.String
  * @param index int
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.getTimeSeriesValues(simID="+vcdID.getID()+", "+timeSeriesJobSpec+")");
 	try {
 		//

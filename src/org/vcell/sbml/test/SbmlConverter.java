@@ -3,12 +3,10 @@ package org.vcell.sbml.test;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Hashtable;
@@ -18,6 +16,7 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.sbml.vcell.VCellSBMLSolver;
 import org.vcell.util.Executable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -30,17 +29,13 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -293,7 +288,7 @@ private static void solveSimulation(SimulationJob simJob, String filePathName, H
 */
 
 		// get the result 
-		odeSolverResultSet = getODESolverResultSet(simJob, idaOutputFile.getPath());
+		odeSolverResultSet = VCellSBMLSolver.getODESolverResultSet(simJob, idaOutputFile.getPath());
 
 	} catch (Exception e) {
         e.printStackTrace(System.out);
@@ -449,87 +444,6 @@ private static void solveSimulation(SimulationJob simJob, String filePathName, H
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Errors saving results to CSV file" + e.getMessage());
 	}
-}
-
-public static ODESolverResultSet getODESolverResultSet(SimulationJob argSimJob, String idaFileName)  {
-	// read .ida file
-	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
-	FileInputStream inputStream = null;
-	try {
-		inputStream = new FileInputStream(idaFileName);
-		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-		//  Read header
-		String line = bufferedReader.readLine();
-		if (line == null) {
-			//  throw exception
-		}
-		while (line.indexOf(':') > 0) {
-			String name = line.substring(0, line.indexOf(':'));
-			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
-			line = line.substring(line.indexOf(':') + 1);
-		}
-		//  Read data
-		while ((line = bufferedReader.readLine()) != null) {
-			line = line + "\t";
-			double[] values = new double[odeSolverResultSet.getDataColumnCount()];
-			boolean bCompleteRow = true;
-			for (int i = 0; i < odeSolverResultSet.getDataColumnCount(); i++) {
-				if (line.indexOf('\t')==-1){
-					bCompleteRow = false;
-					break;
-				}else{
-					String value = line.substring(0, line.indexOf('\t')).trim();
-					values[i] = Double.valueOf(value).doubleValue();
-					line = line.substring(line.indexOf('\t') + 1);
-				}
-			}
-			if (bCompleteRow){
-				odeSolverResultSet.addRow(values);
-			}else{
-				break;
-			}
-		}
-		//
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-	} finally {
-		try {
-			if (inputStream != null) {
-				inputStream.close();
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-		}
-	}
-
-	// add appropriate Function columns to result set
-	cbit.vcell.math.Function functions[] = argSimJob.getSimulationSymbolTable().getFunctions();
-	for (int i = 0; i < functions.length; i++){
-		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
-			Expression exp1 = new Expression(functions[i].getExpression());
-			try {
-				exp1 = argSimJob.getSimulationSymbolTable().substituteFunctions(exp1);
-			} catch (cbit.vcell.math.MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			}
-			
-			try {
-				FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
-				odeSolverResultSet.addFunctionColumn(cd);
-			}catch (cbit.vcell.parser.ExpressionException e){
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-	
-	/* !------ Ignoring Sensitivity parameter, since SBML does not have a representation for sensitivity parameter  ---------! */
-
-	return odeSolverResultSet;
 }
 
 }

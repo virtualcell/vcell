@@ -26,7 +26,17 @@ public class VCMLComparator {
 
 	private static boolean VERBOSE_MODE = true;	                //for now...
 	
-	protected static PrintStream ps;
+	private static PrintStream ps;
+	public static PrintStream getPs() {
+		return ps;
+	}
+
+
+	public static void setPs(PrintStream ps) {
+		VCMLComparator.ps = ps;
+	}
+
+
 	private static Hashtable map;
 
 	public static class VCMLElementSorter implements Comparator {
@@ -179,7 +189,7 @@ public class VCMLComparator {
 	}
 
 
-	protected static boolean compareMatchables(Matchable m1, Matchable m2, String type) {
+	public static boolean compareMatchables(Matchable m1, Matchable m2, String type) {
 
 		Element source = null, target = null; 
 		try { 

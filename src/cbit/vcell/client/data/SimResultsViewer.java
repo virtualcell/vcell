@@ -10,7 +10,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.server.ODEDataManager;

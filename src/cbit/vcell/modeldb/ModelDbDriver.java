@@ -24,7 +24,6 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.sql.VersionTable;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;

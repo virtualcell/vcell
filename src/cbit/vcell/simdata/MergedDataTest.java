@@ -6,8 +6,8 @@ import cbit.vcell.solver.ode.ODESolverResultSetTest;
 import java.io.File;
 
 import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (10/10/2003 11:48:54 AM)
@@ -23,7 +23,7 @@ public static void main(String[] args) {
 
 	final User user = new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("2302355"));
 	File userFile = new File("\\\\fs2\\RAID\\vcell\\users");
-	org.vcell.util.VCDataIdentifier vcData1 = new org.vcell.util.VCDataIdentifier() {
+	org.vcell.util.document.VCDataIdentifier vcData1 = new org.vcell.util.document.VCDataIdentifier() {
 		public String getID() {
 			return "SimID_6389673";
 		}
@@ -31,7 +31,7 @@ public static void main(String[] args) {
 			return user;
 		}
 	};
-	org.vcell.util.VCDataIdentifier vcData2 = new org.vcell.util.VCDataIdentifier() {
+	org.vcell.util.document.VCDataIdentifier vcData2 = new org.vcell.util.document.VCDataIdentifier() {
 		public String getID() {
 			return "SimID_6383968";
 		}
@@ -58,7 +58,7 @@ public static void main(String[] args) {
 
 //	MergedData MergedData = new MergedData("MergedData1", dscImpl, new SimulationData[] {simData1, simData2});
 	try {
-		VCDataIdentifier[] vcIdentifierArray = new org.vcell.util.VCDataIdentifier[] {simData1.getResultsInfoObject(), simData2.getResultsInfoObject()};
+		VCDataIdentifier[] vcIdentifierArray = new org.vcell.util.document.VCDataIdentifier[] {simData1.getResultsInfoObject(), simData2.getResultsInfoObject()};
 		MergedDataInfo mergedInfo = new MergedDataInfo(user,vcIdentifierArray ,MergedDataInfo.createDefaultPrefixNames(vcIdentifierArray.length));
 		MergedData mergedData = (MergedData)dscImpl.getVCData(mergedInfo);
 		ODEDataBlock combinedODEDataBlk = mergedData.getODEDataBlock();

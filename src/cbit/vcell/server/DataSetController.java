@@ -10,7 +10,7 @@ import java.rmi.*;
 
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.solvers.*;
 import cbit.vcell.simdata.*;
@@ -128,7 +128,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(VCDataIdentifier vcdataID
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdataID, org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException;
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdataID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2001 2:53:44 PM)

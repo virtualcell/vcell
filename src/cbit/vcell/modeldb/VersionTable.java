@@ -1,4 +1,4 @@
-package cbit.sql;
+package cbit.vcell.modeldb;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -20,6 +20,8 @@ import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
 import cbit.image.VCImage;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;

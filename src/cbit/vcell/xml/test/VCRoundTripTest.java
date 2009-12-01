@@ -1,4 +1,4 @@
-package cbit.vcell.xml;
+package cbit.vcell.xml.test;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
@@ -18,6 +18,12 @@ import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.VCMLComparator;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Attribute;
@@ -103,7 +109,7 @@ public VCRoundTripTest(String fName, String userName, String testType, String mo
 					excludeList.add(temp.trim());
 			}
 		}
-		VCMLComparator.ps = ps;
+		VCMLComparator.setPs(ps);
 		new PropertyLoader();
 		DatabasePolicySQL.bSilent = true;
 		SessionLog log = new StdoutSessionLog("Admin");

@@ -19,7 +19,6 @@ import org.vcell.util.document.VersionableType;
 import cbit.sql.Field;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
-import cbit.sql.VersionTable;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextInfo;
@@ -28,7 +27,7 @@ import cbit.vcell.model.Model;
 /**
  * This type was created in VisualAge.
  */
-public class SimContextTable extends cbit.sql.VersionTable {
+public class SimContextTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_simcontext";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 

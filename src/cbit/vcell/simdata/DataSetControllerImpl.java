@@ -31,14 +31,14 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
-import org.vcell.util.TSJobResultsNoStats;
-import org.vcell.util.TimeSeriesJobResults;
-import org.vcell.util.TimeSeriesJobSpec;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TimeSeriesJobResults;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.solver.DataProcessingOutput;
@@ -462,7 +462,7 @@ private SpatialStatsInfo calcSpatialStatsInfo(TimeSeriesJobSpec timeSeriesJobSpe
  * Insert the method's description here.
  * Creation date: (2/16/2006 12:28:29 PM)
  */
-private org.vcell.util.TimeSeriesJobResults calculateStatisticsFromWhole(
+private org.vcell.util.document.TimeSeriesJobResults calculateStatisticsFromWhole(
 	TimeSeriesJobSpec timeSeriesJobSpec,
     double[][][] timeSeriesFormatedValuesArr,
     double[] desiredTimeValues,
@@ -497,7 +497,7 @@ private org.vcell.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 		    }
 	    }
 	    if(!timeSeriesJobSpec.isCalcSpaceStats()){//No space stats
-	        return new org.vcell.util.TSJobResultsTimeStats(
+	        return new org.vcell.util.document.TSJobResultsTimeStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -526,7 +526,7 @@ private org.vcell.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 			    timeSpaceStatsUnweightedMean[i] = mean;
 			    timeSpaceStatsWeightedMean[i] = wmean;
 		    }
-	        return new org.vcell.util.TSJobResultsTimeStats(
+	        return new org.vcell.util.document.TSJobResultsTimeStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -571,7 +571,7 @@ private org.vcell.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 			    spaceStatsWeightedSum[i][k] = wsum;
 		    }
 	    }
-        return new org.vcell.util.TSJobResultsSpaceStats(
+        return new org.vcell.util.document.TSJobResultsSpaceStats(
             timeSeriesJobSpec.getVariableNames(),
             timeSeriesJobSpec.getIndices(),
             desiredTimeValues,
@@ -2618,7 +2618,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 
 
 
-private org.vcell.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+private org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	TimeInfo timeInfo =
 		new TimeInfo(vcdID,timeSeriesJobSpec.getStartTime(),timeSeriesJobSpec.getStep(),timeSeriesJobSpec.getEndTime());
@@ -2815,7 +2815,7 @@ private org.vcell.util.TimeSeriesJobResults getTimeSeriesValues_private(final VC
 					wsum[i][j] = timeStat[WSUM_OFFSET+1][j];
 				}
 			}
-			return new org.vcell.util.TSJobResultsSpaceStats(
+			return new org.vcell.util.document.TSJobResultsSpaceStats(
 					timeSeriesJobSpec.getVariableNames(),
 					timeSeriesJobSpec.getIndices(),
 					desiredTimeValues,
@@ -2833,7 +2833,7 @@ private org.vcell.util.TimeSeriesJobResults getTimeSeriesValues_private(final VC
 		}else{
 			double[][][] timeSeriesFormatedValuesArr = new double[valuesV.size()][][];
 			valuesV.copyInto(timeSeriesFormatedValuesArr);
-			TSJobResultsNoStats tsJobResultsNoStats =  new org.vcell.util.TSJobResultsNoStats(
+			TSJobResultsNoStats tsJobResultsNoStats =  new org.vcell.util.document.TSJobResultsNoStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -2863,7 +2863,7 @@ private org.vcell.util.TimeSeriesJobResults getTimeSeriesValues_private(final VC
 }
 
 
-public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	fireDataJobEventIfNecessary(
 			timeSeriesJobSpec.getVcDataJobID(),

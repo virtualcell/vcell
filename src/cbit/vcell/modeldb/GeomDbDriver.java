@@ -33,7 +33,6 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
 import cbit.sql.Table;
-import cbit.sql.VersionTable;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.Filament;
 import cbit.vcell.geometry.Geometry;

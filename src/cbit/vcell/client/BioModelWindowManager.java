@@ -41,7 +41,7 @@ import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.xml.MIRIAMAnnotationViewer;
+import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:17:07 PM)

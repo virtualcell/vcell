@@ -10,7 +10,7 @@ import cbit.vcell.field.SimResampleInfoProvider;
 public class VCSimulationDataIdentifier
 	implements
 		java.io.Serializable,
-		org.vcell.util.VCDataIdentifier,
+		org.vcell.util.document.VCDataIdentifier,
 		SimResampleInfoProvider{
 
 

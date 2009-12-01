@@ -7,8 +7,8 @@ import java.rmi.*;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.simdata.gui.*;
 import cbit.vcell.simdata.*;

@@ -20,13 +20,13 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.ReferenceQuerySpec;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
@@ -547,7 +547,7 @@ public void findModelsUsingSelectedGeometry() {
 
 	ReferenceQuerySpec rqs = new ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
 	try{
-		org.vcell.util.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
+		org.vcell.util.document.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
 		//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
 		org.vcell.util.document.VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
 		//System.out.println("\n");

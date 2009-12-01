@@ -15,13 +15,13 @@ public class DataManagerTest extends PDEDataManager {
 	private cbit.vcell.math.AnnotatedFunction functions[] = new cbit.vcell.math.AnnotatedFunction[0];
 	private double times[] = null;
 	private cbit.vcell.solvers.CartesianMesh mesh = null;
-	private org.vcell.util.VCDataIdentifier dataID = null;
+	private org.vcell.util.document.VCDataIdentifier dataID = null;
 /**
  * DataManagerTest constructor comment.
  * @param argVcdID cbit.vcell.server.VCDataIdentifier
  * @param argSimulationCollectionManager cbit.vcell.desktop.controls.ClientSimulationCollectionManager
  */
-public DataManagerTest(cbit.vcell.math.AnnotatedFunction argFunctions[], double argTimes[], cbit.vcell.solvers.CartesianMesh argMesh, org.vcell.util.VCDataIdentifier argVCDataIdentifier) {
+public DataManagerTest(cbit.vcell.math.AnnotatedFunction argFunctions[], double argTimes[], cbit.vcell.solvers.CartesianMesh argMesh, org.vcell.util.document.VCDataIdentifier argVCDataIdentifier) {
 	super(null,null);
 	this.functions = argFunctions;
 	this.times = argTimes;
@@ -206,7 +206,7 @@ public static DataManagerTest getPDEExample1() {
 		// read the mesh file into this string .... DO A FILE READ
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size10241024.mesh");
 		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
-		org.vcell.util.VCDataIdentifier vcDataIdentifier = new org.vcell.util.VCDataIdentifier() {
+		org.vcell.util.document.VCDataIdentifier vcDataIdentifier = new org.vcell.util.document.VCDataIdentifier() {
 										public org.vcell.util.document.User getOwner() {
 											return new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("123"));
 										}
@@ -243,7 +243,7 @@ public static DataManagerTest getPDEExample2() {
 		// read the mesh file into this string .... DO A FILE READ
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size44.mesh");
 		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
-		org.vcell.util.VCDataIdentifier vcDataIdentifier = new org.vcell.util.VCDataIdentifier() {
+		org.vcell.util.document.VCDataIdentifier vcDataIdentifier = new org.vcell.util.document.VCDataIdentifier() {
 										public org.vcell.util.document.User getOwner() {
 											return new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("123"));
 										}
@@ -343,7 +343,7 @@ public double[][] getTimeSeriesValues(String varName, int[] indices) throws org.
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public org.vcell.util.VCDataIdentifier getVCDataIdentifier() {
+public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
 	return dataID;
 }
 /**

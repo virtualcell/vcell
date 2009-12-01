@@ -9,7 +9,6 @@ import org.vcell.util.document.User;
 
 import cbit.sql.Table;
 import cbit.sql.Field;
-import cbit.sql.VersionTable;
 /**
  * This type was created in VisualAge.
  */

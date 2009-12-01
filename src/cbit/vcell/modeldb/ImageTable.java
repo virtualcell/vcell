@@ -19,7 +19,7 @@ import cbit.image.GifParsingException;
 /**
  * This type was created in VisualAge.
  */
-public class ImageTable extends cbit.sql.VersionTable {
+public class ImageTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_image";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 

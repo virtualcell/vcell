@@ -1,6 +1,5 @@
-package org.vcell.util;
+package org.vcell.util.document;
 
-import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.

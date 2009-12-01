@@ -8,10 +8,10 @@ import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.sql.VersionTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 

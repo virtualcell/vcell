@@ -11,7 +11,7 @@ import cbit.vcell.solvers.CartesianMesh;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 public interface DataManager {
 

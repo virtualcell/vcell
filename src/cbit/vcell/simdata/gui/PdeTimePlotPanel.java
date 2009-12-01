@@ -16,8 +16,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.Coordinate;
-import org.vcell.util.TSJobResultsNoStats;
-import org.vcell.util.TimeSeriesJobSpec;
+import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.plot.Plot2D;

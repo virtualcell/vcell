@@ -1,5 +1,5 @@
 package cbit.vcell.desktop.controls;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.server.*;
 /**
@@ -25,7 +25,7 @@ public DataEvent(Object source, VCDataIdentifier vcDataIdentifier) {
  * Creation date: (6/11/2004 2:16:21 PM)
  * @return cbit.vcell.server.VCDataIdentifier
  */
-public org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
+public org.vcell.util.document.VCDataIdentifier getVcDataIdentifier() {
 	return vcDataIdentifier;
 }
 
@@ -35,7 +35,7 @@ public org.vcell.util.VCDataIdentifier getVcDataIdentifier() {
  * Creation date: (6/11/2004 2:16:21 PM)
  * @param newVcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-private void setVcDataIdentifier(org.vcell.util.VCDataIdentifier newVcDataIdentifier) {
+private void setVcDataIdentifier(org.vcell.util.document.VCDataIdentifier newVcDataIdentifier) {
 	vcDataIdentifier = newVcDataIdentifier;
 }
 }

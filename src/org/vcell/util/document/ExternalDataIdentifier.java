@@ -2,7 +2,6 @@ package org.vcell.util.document;
 import java.util.StringTokenizer;
 
 import org.vcell.util.Matchable;
-import org.vcell.util.VCDataIdentifier;
 
 /**
  * Insert the type's description here.

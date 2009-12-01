@@ -22,8 +22,8 @@ import java.awt.*;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.Range;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.server.*;
 /**

@@ -12,7 +12,7 @@ public class SimulationDataTest {
  */
 public static void main(String[] args) {
 	final org.vcell.util.document.User user = new org.vcell.util.document.User("fgao15",new org.vcell.util.document.KeyValue("4123431"));	
-	org.vcell.util.VCDataIdentifier vcData1 = new org.vcell.util.VCDataIdentifier() {
+	org.vcell.util.document.VCDataIdentifier vcData1 = new org.vcell.util.document.VCDataIdentifier() {
 		public String getID() {
 			return "SimID_8483780";
 		}

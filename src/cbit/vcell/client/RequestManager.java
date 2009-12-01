@@ -2,9 +2,9 @@ package cbit.vcell.client;
 import java.awt.Component;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 

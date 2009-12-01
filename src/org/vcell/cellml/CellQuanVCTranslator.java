@@ -22,8 +22,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.MathMLTags;
 import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.xml.NameList;
-import cbit.vcell.xml.NameManager;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XMLTags;
 

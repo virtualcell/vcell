@@ -1,9 +1,9 @@
 package cbit.vcell.client.server;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.TimeSeriesJobResults;
-import org.vcell.util.TimeSeriesJobSpec;
-import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.TimeSeriesJobResults;
+import org.vcell.util.document.TimeSeriesJobSpec;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
 import cbit.vcell.math.AnnotatedFunction;

@@ -27,7 +27,7 @@ import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.
  */
-public class MathModelTable extends cbit.sql.VersionTable {
+public class MathModelTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_mathmodel";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
