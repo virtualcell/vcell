@@ -114,9 +114,11 @@ String infix_C(Expression exp) throws ExpressionException {
 	}
 	// substitute local variable names
 	String[] symbols = exp.getSymbols();
-	for (int i = 0; i < symbols.length; i++) {
-		if (!symbols[i].startsWith(CppClassCoder.C_LOCALFIELD_PREFIX)){
-			exp.substituteInPlace(new Expression(symbols[i]), new Expression(getEscapedLocalVariableName_C(symbols[i])));
+	if (symbols  != null) {
+		for (int i = 0; i < symbols.length; i++) {
+			if (!symbols[i].startsWith(CppClassCoder.C_LOCALFIELD_PREFIX)){
+				exp.substituteInPlace(new Expression(symbols[i]), new Expression(getEscapedLocalVariableName_C(symbols[i])));
+			}
 		}
 	}
 	return exp.infix_C();
