@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -41,6 +42,7 @@ import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
+import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.DataViewer;
@@ -59,8 +61,16 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
+import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.controls.DataListener;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FilamentRegionVariable;
@@ -98,7 +108,11 @@ import cbit.vcell.numericstest.TestCriteriaNewBioModel;
 import cbit.vcell.numericstest.TestCriteriaNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -135,7 +149,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
 	private EditTestCriteriaPanel editTestCriteriaPanel =
 		new EditTestCriteriaPanel();
 	private TestCaseAddPanel testCaseAddPanel = new TestCaseAddPanel();
-	private Vector dataViewerPlotsFramesVector = new Vector();
+	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 	private AddTestSuitePanel addTestSuitePanel = new AddTestSuitePanel();
 	private JOptionPane addTestSuiteDialog =
 		new JOptionPane(
@@ -172,7 +186,7 @@ public TestingFrameworkWindowManager(TestingFrameworkWindowPanel testingFramewor
 /**
  * Add a cbit.vcell.desktop.controls.DataListener.
  */
-public void addDataListener(cbit.vcell.desktop.controls.DataListener newListener) {}
+public void addDataListener(DataListener newListener) {}
 
 
 /**
@@ -218,7 +232,7 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 	if(testSuite != null){
 		//Saving BioModels
 		TestCaseNew existingTestCases[] = testSuite.getTestCases();
-		java.util.HashMap bioModelHashMap = new java.util.HashMap();
+		java.util.HashMap<KeyValue, BioModel> bioModelHashMap = new java.util.HashMap<KeyValue, BioModel>();
 		//if(existingTestCases != null){
 			// Find BioModels, Using the same BM reference for sibling Applications
 			for (int i = 0; i < testCases.length; i++){
@@ -270,18 +284,22 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 
 							if (newBioModel==null){
 								pp.setMessage("Saving BM "+testCases[i].getVersion().getName());
-								cbit.vcell.mapping.SimulationContext[] simContexts = bioModel.getSimulationContexts();
+								SimulationContext[] simContexts = bioModel.getSimulationContexts();
 								for (int j = 0; j < simContexts.length; j++){
 									simContexts[j].clearVersion();
-									cbit.vcell.geometry.surface.GeometrySurfaceDescription gsd =
-										simContexts[j].getGeometry().getGeometrySurfaceDescription();
+									GeometrySurfaceDescription gsd = simContexts[j].getGeometry().getGeometrySurfaceDescription();
 									if(gsd != null){
-										cbit.vcell.geometry.surface.GeometricRegion[] grArr = gsd.getGeometricRegions();
+										GeometricRegion[] grArr = gsd.getGeometricRegions();
 										if(grArr == null){
 											gsd.updateAll();
 										}
 									}
-									cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContexts[j]);
+									MathMapping mathMapping = null;
+									if (simContexts[j].isStoch()) {
+										mathMapping = new StochMathMapping(simContexts[j]);
+									} else {
+										mathMapping = new MathMapping(simContexts[j]);
+									}
 									simContexts[j].setMathDescription(mathMapping.getMathDescription());
 								}
 								Simulation[] sims = bioModel.getSimulations();
@@ -321,7 +339,7 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 					if(newBioModel == null){
 						throw new Exception("BioModel not found");
 					}
-					cbit.vcell.mapping.SimulationContext simContext = null;
+					SimulationContext simContext = null;
 					for (int j = 0; j < newBioModel.getSimulationContexts().length; j++){
 						if (newBioModel.getSimulationContexts(j).getName().equals(bioTestCase.getSimContextName())){
 							simContext = newBioModel.getSimulationContexts(j);
@@ -539,11 +557,11 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 		DataManager data1Manager = getRequestManager().getDataManager(vcSimId1, isSpatial);
 		DataManager data2Manager = getRequestManager().getDataManager(vcSimId2, isSpatial);
 		
-		Vector functionList = new Vector();
+		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
 		AnnotatedFunction data1Functions[] = data1Manager.getFunctions();
 		AnnotatedFunction existingFunctions[] = mergedDataManager.getFunctions();
-		cbit.vcell.simdata.DataIdentifier data1Identifiers[] = data1Manager.getDataIdentifiers();
-		cbit.vcell.simdata.DataIdentifier data2Identifiers[] = data2Manager.getDataIdentifiers();
+		DataIdentifier data1Identifiers[] = data1Manager.getDataIdentifiers();
+		DataIdentifier data2Identifiers[] = data2Manager.getDataIdentifiers();
 		for (int i = 0; i < data1Identifiers.length; i++){
 			//
 			// make sure dataIdentifier is not already a function
@@ -576,8 +594,8 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 			String data1Name = "Data1."+data1Identifiers[i].getName();
 			String data2Name = "Data2."+data1Identifiers[i].getName();
 			String functionName = "DIFF_"+data1Identifiers[i].getName();
-			cbit.vcell.simdata.VariableType varType = data1Identifiers[i].getVariableType();
-			cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(data1Name+"-"+data2Name);
+			VariableType varType = data1Identifiers[i].getVariableType();
+			Expression exp = new Expression(data1Name+"-"+data2Name);
 			AnnotatedFunction newFunction = new AnnotatedFunction(functionName,exp,"",varType,true);
 			
 			//
@@ -637,7 +655,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
  * Creation date: (3/29/2006 4:13:02 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
+public void dataJobMessage(DataJobEvent event) {
 	
 	// just pass them along...
 	fireDataJobMessage(event);
@@ -794,37 +812,24 @@ private void updateReports(final Hashtable<TestSuiteInfoNew, Vector<TestCriteria
 					.iterator();
 			while (tsInfoIter.hasNext()) {
 				try {
-					java.util.Map.Entry<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>> entry = tsInfoIter
-							.next();
+					Entry<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>> entry = tsInfoIter.next();
 					TestSuiteInfoNew tsInfo = entry.getKey();
-					Vector<TestCriteriaCrossRefOPResults.CrossRefData> xrefDataV = entry
-							.getValue();
+					Vector<TestCriteriaCrossRefOPResults.CrossRefData> xrefDataV = entry.getValue();
 					//
 					Vector<AsynchClientTask> tasksVLocal = new java.util.Vector<AsynchClientTask>();
-					tasksVLocal
-							.add(new cbit.vcell.client.task.TFUpdateRunningStatus(
-									TestingFrameworkWindowManager.this, tsInfo));
-					TestSuiteNew tsNew = getTestingFrameworkWindowPanel()
-							.getDocumentManager().getTestSuite(
-									tsInfo.getTSKey());
+					tasksVLocal.add(new TFUpdateRunningStatus(TestingFrameworkWindowManager.this, tsInfo));
+					TestSuiteNew tsNew = getTestingFrameworkWindowPanel().getDocumentManager().getTestSuite(tsInfo.getTSKey());
 					for (int i = 0; i < xrefDataV.size(); i++) {
+						CrossRefData crossRefData = xrefDataV.elementAt(i);
 						boolean bDone = false;
 						for (int j = 0; j < tsNew.getTestCases().length; j++) {
-							if (tsNew.getTestCases()[j].getTCKey().equals(
-									xrefDataV.elementAt(i).tcaseKey)) {
-								for (int k = 0; k < tsNew.getTestCases()[j]
-										.getTestCriterias().length; k++) {
-									if (tsNew.getTestCases()[j]
-											.getTestCriterias()[k]
-											.getTCritKey()
-											.equals(
-													xrefDataV.elementAt(i).tcritKey)) {
-										tasksVLocal
-												.add(new TFGenerateReport(
-														TestingFrameworkWindowManager.this,
-														tsNew.getTestCases()[j],
-														tsNew.getTestCases()[j]
-																.getTestCriterias()[k],null));
+							TestCaseNew testCaseNew = tsNew.getTestCases()[j];
+							if (testCaseNew.getTCKey().equals(crossRefData.tcaseKey)) {
+								for (int k = 0; k < testCaseNew.getTestCriterias().length; k++) {
+									TestCriteriaNew testCriteria = testCaseNew.getTestCriterias()[k];
+									if (testCriteria.getTCritKey().equals(crossRefData.tcritKey)) {
+										tasksVLocal.add(new TFGenerateReport(TestingFrameworkWindowManager.this,
+														testCaseNew, testCriteria,null));
 										bDone = true;
 										break;
 									}
@@ -879,8 +884,7 @@ public void toggleTestCaseSteadyState(TestCaseNew[] testCases) throws DataAccess
 		}
 	}
 
-	EditTestCasesOP etcop =
-		new EditTestCasesOP(testCaseKeys,isSteadyState);
+	EditTestCasesOP etcop = new EditTestCasesOP(testCaseKeys,isSteadyState);
 	getRequestManager().getDocumentManager().doTestSuiteOP(etcop);
 }
 /**
@@ -1014,9 +1018,9 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 				//bioTestCase.
 				BioModelInfo bmInfo = bioTestCase.getBioModelInfo();
 				BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
-				cbit.vcell.mapping.SimulationContext[] simContextArr = bioModel.getSimulationContexts();
+				SimulationContext[] simContextArr = bioModel.getSimulationContexts();
 				if(simContextArr != null && simContextArr.length > 0){
-					cbit.vcell.mapping.SimulationContext simContext = null;
+					SimulationContext simContext = null;
 					for(int i=0;i<simContextArr.length;i+= 1){
 						if(simContextArr[i].getVersion().getVersionKey().compareEqual(bioTestCase.getSimContextKey())){
 							simContext = simContextArr[i];
@@ -1159,7 +1163,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1185,7 +1189,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1220,7 +1224,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}							
@@ -1253,7 +1257,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1282,7 +1286,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1326,7 +1330,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}													
@@ -1407,9 +1411,8 @@ public String generateTestSuiteReport(TestSuiteInfoNew testSuiteInfo, ClientTask
 	}catch(Throwable e){
 		e.printStackTrace();
 		sb.append("ERROR "+e.getClass().getName()+" mesg="+e.getMessage());
-	}finally{
-		return sb.toString();
 	}
+	return sb.toString();	
 }
 
 
@@ -1602,7 +1605,7 @@ public NewTestSuiteUserInformation getNewTestSuiteInfoFromUser(String tsAnnotati
 public KeyValue getSimContextKey(BioModelInfo bmInfo, String appName) throws DataAccessException {
 	BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
 	if (bioModel!=null){
-		cbit.vcell.mapping.SimulationContext simContexts[] = bioModel.getSimulationContexts();
+		SimulationContext simContexts[] = bioModel.getSimulationContexts();
 		for (int i = 0; i < simContexts.length; i++){
 			if (simContexts[i].getName().equals(appName)){
 				return simContexts[i].getVersion().getVersionKey();
@@ -1628,7 +1631,7 @@ private TestCaseAddPanel getTestCaseAddPanel() {
  * Creation date: (7/24/2004 4:44:02 PM)
  * @return cbit.vcell.client.desktop.TestingFrameworkWindowPanel
  */
-public cbit.vcell.client.desktop.TestingFrameworkWindowPanel getTestingFrameworkWindowPanel() {
+public TestingFrameworkWindowPanel getTestingFrameworkWindowPanel() {
 	return testingFrameworkWindowPanel;
 }
 
@@ -1731,7 +1734,7 @@ public boolean isRecyclable() {
  */
 public void loadModel(TestCaseNew testCase) throws DataAccessException{
 	
-	org.vcell.util.document.VCDocumentInfo vcDocInfo = null;
+	VCDocumentInfo vcDocInfo = null;
 	if (testCase instanceof TestCaseNewMathModel) {
 		TestCaseNewMathModel mathTestCase = (TestCaseNewMathModel)testCase;
 		vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(mathTestCase.getMathModelInfo().getVersion().getVersionKey());
@@ -2006,7 +2009,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRows[i], XREFDATA_OFFSET);
 						if(xrefData != null && (actionEvent.getActionCommand().equals(OPEN_REGRREFMODEL)?xrefData.regressionModelID != null:true)){
 							openCount+= 1;
-							org.vcell.util.document.VCDocumentInfo vcDocInfo = null;
+							VCDocumentInfo vcDocInfo = null;
 							if(xrefData.isBioModel){
 								vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(new KeyValue((actionEvent.getActionCommand().equals(OPEN_REGRREFMODEL)?xrefData.regressionModelID:xrefData.modelID)));
 							}else{
@@ -2249,7 +2252,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 /**
  * Remove a cbit.vcell.desktop.controls.DataListener.
  */
-public void removeDataListener(cbit.vcell.desktop.controls.DataListener newListener) {}
+public void removeDataListener(DataListener newListener) {}
 
 
 /**
@@ -2272,7 +2275,6 @@ public void removeTestCase(TestCaseNew testCase) throws DataAccessException{
 
 public void removeTestSuite(TestSuiteInfoNew tsInfo) throws DataAccessException{
 
-	TestSuiteNew testSuite = getRequestManager().getDocumentManager().getTestSuite(tsInfo.getTSKey());
 	getRequestManager().getDocumentManager().doTestSuiteOP(new RemoveTestSuiteOP(tsInfo.getTSKey()));
 }
 
@@ -2333,25 +2335,21 @@ public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws Data
 	// code for obtaining siminfos from Biomodel and displaying it as a list
 	// and displaying the siminfo in the label
 
-	cbit.vcell.mapping.SimulationContext simContext = null;
-	//try {
-		BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
-		for(int i=0;i<bioModel.getSimulationContexts().length;i+= 1){
-			if(bioModel.getSimulationContexts()[i].getName().equals(appName)){
-				simContext = bioModel.getSimulationContexts()[i];
-				break;
-			}
+	SimulationContext simContext = null;
+	BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
+	for(int i=0;i<bioModel.getSimulationContexts().length;i+= 1){
+		if(bioModel.getSimulationContexts()[i].getName().equals(appName)){
+			simContext = bioModel.getSimulationContexts()[i];
+			break;
 		}
-		if(simContext != null){
-			cbit.vcell.solver.SimulationInfo simInfo = selectSimInfoPrivate(bioModel.getSimulations(simContext));
-			return new Object[] {simContext.getName(),simInfo};
-		}else{
-			PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "No simcontext found for biomodel "+bmInfo+" app="+appName);
-			return null;
-		}
-	//} catch (cbit.vcell.server.DataAccessException e) {
-	//	e.printStackTrace(System.out);
-	//}
+	}
+	if(simContext != null){
+		SimulationInfo simInfo = selectSimInfoPrivate(bioModel.getSimulations(simContext));
+		return new Object[] {simContext.getName(),simInfo};
+	}else{
+		PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "No simcontext found for biomodel "+bmInfo+" app="+appName);
+		return null;
+	}
 	
 }
 
@@ -2374,7 +2372,7 @@ public SimulationInfo selectRefSimInfo(MathModelInfo mmInfo) {
 	MathModel mathModel = null;
 	try {
 		 mathModel = getRequestManager().getDocumentManager().getMathModel(mmInfo);
-	} catch (org.vcell.util.DataAccessException e) {
+	} catch (DataAccessException e) {
 		e.printStackTrace(System.out);
 	}
 	return selectSimInfoPrivate(mathModel.getSimulations());
@@ -2439,7 +2437,7 @@ private SimulationInfo selectSimInfoPrivate(Simulation[] sims) {
  * Creation date: (7/15/2004 4:48:36 PM)
  * @param newTestingFrameworkWindowPanel cbit.vcell.client.desktop.TestingFrameworkWindowPanel
  */
-private void setTestingFrameworkWindowPanel(cbit.vcell.client.desktop.TestingFrameworkWindowPanel newTestingFrameworkWindowPanel) {
+private void setTestingFrameworkWindowPanel(TestingFrameworkWindowPanel newTestingFrameworkWindowPanel) {
 	testingFrameworkWindowPanel = newTestingFrameworkWindowPanel;
 }
 
@@ -2521,7 +2519,7 @@ private Object showEditTestCriteriaDialog(JComponent editTCrPanel, Component req
 	JDialog d = getEditTestCriteriaDialog().createDialog(requester, "Edit Test Criteria:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d, requester);
+	ZEnforcer.showModalDialogOnTop(d, requester);
 	return getEditTestCriteriaDialog().getValue();
 }
 
@@ -2599,7 +2597,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
  * Insert the method's description here.
  * Creation date: (11/18/2004 4:44:45 PM)
  */
-public void startExport(cbit.vcell.export.server.ExportSpecs exportSpecs) {
+public void startExport(ExportSpecs exportSpecs) {
 	getRequestManager().startExport(this, exportSpecs);
 }
 
@@ -2658,8 +2656,8 @@ public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,ClientTas
 		TestSuiteNew testSuite =
 			getRequestManager().getDocumentManager().getTestSuite(testSuiteInfo.getTSKey());
 		
-		Vector tcritVector = new Vector();
-		cbit.vcell.numericstest.TestCaseNew[] testCases = testSuite.getTestCases();
+		Vector<TestCriteriaNew> tcritVector = new Vector<TestCriteriaNew>();
+		TestCaseNew[] testCases = testSuite.getTestCases();
 		if(testCases != null){
 			for (int i = 0; i < testCases.length; i++){
 				TestCriteriaNew[] tCriteria = testCases[i].getTestCriterias();
@@ -2734,7 +2732,7 @@ public String updateSimRunningStatus(ClientTaskStatusSupport pp,TestSuiteInfoNew
 			for(int i=0;i<runningTCrits.size();i+= 1){
 				try{
 					TestCriteriaNew tcn = (TestCriteriaNew)runningTCrits.elementAt(i);
-					cbit.vcell.solver.SimulationInfo simInfo = tcn.getSimInfo();
+					SimulationInfo simInfo = tcn.getSimInfo();
 					pp.setProgress((int)(50+(i*50/runningTCrits.size())));
 					pp.setMessage("Update SimsRunning, Setting Status "+simInfo.getName());
 					//Check if there is some status different from "running"
@@ -2847,7 +2845,6 @@ public void viewResults(TestCriteriaNew testCriteria) {
 	// get the data manager and wire it up
 	try {
 		Simulation sim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(testCriteria.getSimInfo());
-		DataManager dataManager = getRequestManager().getDataManager(vcdID, sim.isSpatial());
 		
 		DataViewerController dynamicDataMgr = getRequestManager().getDataViewerController(sim);
 		addDataListener(dynamicDataMgr);
