@@ -98,7 +98,7 @@ public class ModelParameterTableModel extends ManageTableModel implements java.b
 	private final int COLUMN_SCOPE = 0;
 	private final int COLUMN_NAME = 1;
 	private final int COLUMN_DESCRIPTION = 2;
-	private final int COLUMN_VALUE = 3;
+	public static final int COLUMN_VALUE = 3;
 	private final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
 	private String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };

@@ -398,7 +398,7 @@ public List<String> getAutoCompletionWords() {
 public String getTemplate_OdeEquation() {	
 	return VCML.OdeEquation + " varName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.Rate + " 0.0;\n" 
-		+ "\t\t" + VCML.Initial + "0.0;\n"
+		+ "\t\t" + VCML.Initial + " 0.0;\n"
 		+ "\t}\n";
 }
 

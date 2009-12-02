@@ -8,6 +8,11 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import javax.swing.JDesktopPane;
+import javax.swing.JViewport;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
@@ -480,6 +485,33 @@ private void initConnections() throws java.lang.Exception {
 
 	connPtoP3SetTarget();
 	connPtoP2SetTarget();
+	
+	getJScrollPane1().getViewport().addChangeListener(new ChangeListener() {
+			
+		public void stateChanged(ChangeEvent e) {
+			JViewport jvp = (JViewport) (e.getSource());
+			int vpWidth = jvp.getSize().width;
+			int tableWidth = getScrollPaneTable().getPreferredSize().width;
+			
+			if (vpWidth > tableWidth) {
+				int expressionColumn = ModelParameterTableModel.COLUMN_VALUE;
+				TableColumnModel tcm = getScrollPaneTable().getColumnModel();
+				int total_columns = tcm.getColumnCount();
+				for (int i = 0; i < total_columns; i++)	{
+					if (i != expressionColumn) {
+						TableColumn column = tcm.getColumn(i);
+						vpWidth = vpWidth - column.getPreferredWidth();
+					}
+				}
+	
+				// expand expression column if the scrollpane is wider than table.
+				TableColumn exprColumn = tcm.getColumn(expressionColumn);
+				if (vpWidth > exprColumn.getPreferredWidth()) {
+					exprColumn.setPreferredWidth(vpWidth);
+				}
+			}
+		}
+	});
 }
 
 /**
