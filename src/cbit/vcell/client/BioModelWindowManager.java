@@ -35,7 +35,6 @@ import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.modeldb.SimContextStatus;
 import cbit.vcell.opt.solvers.LocalOptimizationService;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
@@ -377,14 +376,14 @@ public boolean isRecyclable() {
  * Insert the method's description here.
  * Creation date: (6/13/2004 11:17:41 PM)
  */
-public void preloadApps() {
-//System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
-	SimulationContext[] scs = getBioModel().getSimulationContexts();
-	for (int i = 0; i < scs.length; i++){
-		createAppComponents(scs[i]);
-	}
-//System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
-}
+//public void preloadApps() {
+////System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
+//	SimulationContext[] scs = getBioModel().getSimulationContexts();
+//	for (int i = 0; i < scs.length; i++){
+//		createAppComponents(scs[i]);
+//	}
+////System.out.println("+++++++++++"+(new Date(System.currentTimeMillis())));
+//}
 
 
 	/**
