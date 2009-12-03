@@ -175,11 +175,11 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 				
 				getSimulationContext().getModel().getReactionSteps()[i].getKinetics().addPropertyChangeListener(this);
 				getSimulationContext().getModel().getReactionSteps()[i].addPropertyChangeListener(this);
-				try {	// ???
-					getSimulationContext().getModel().getReactionSteps()[i].rebindAllToModel(getSimulationContext().getModel());
-				}catch (Exception e){
-					e.printStackTrace(System.out);
-				}
+//				try {	// ???
+//					getSimulationContext().getModel().getReactionSteps()[i].rebindAllToModel(getSimulationContext().getModel());
+//				}catch (Exception e){
+//					e.printStackTrace(System.out);
+//				}
 				if(getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants() != null) {
 					for (int j=0; j<getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants().length; j++) {
 						getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants()[j].removePropertyChangeListener(this);
