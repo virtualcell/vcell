@@ -126,6 +126,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connPtoP1SetTarget();
 				refreshAnalysisTab();
 				refreshMappingInfoLabel();
+				refreshSPPRTab();
 			}
 			if (evt.getSource() == ApplicationEditor.this.getSimulationListPanel() && (evt.getPropertyName().equals("simulationWorkspace"))) 
 				connPtoP2SetSource();
@@ -1027,46 +1028,6 @@ private void connPtoP8SetTarget() {
 }
 
 /**
- * connPtoP9SetSource:
- */
-private void connPtoP9SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP9Aligning == false) {
-			ivjConnPtoP9Aligning = true;
-			setsimulationWorkspace1(getSPPRPanel().getSimulationWorkspace());
-			ivjConnPtoP9Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP9Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP9SetTarget:
- */
-private void connPtoP9SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP9Aligning == false) {
-			ivjConnPtoP9Aligning = true;
-			if ((getsimulationWorkspace1() != null)) {
-				getSPPRPanel().setSimulationWorkspace(getsimulationWorkspace1());
-			}
-			ivjConnPtoP9Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP9Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * Comment
  */
 private void copyAnalysisTaskButton_ActionPerformed() {
@@ -1954,7 +1915,6 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP6SetTarget();
 	connPtoP7SetTarget();
 	connPtoP8SetTarget();
-	connPtoP9SetTarget();
 }
 
 /**
@@ -2316,9 +2276,6 @@ private void setsimulationContext(SimulationContext newValue) {
 public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
 	SimulationWorkspace oldValue = fieldSimulationWorkspace;
 	fieldSimulationWorkspace = simulationWorkspace;
-	
-	getSPPRPanel().setSimulationWorkspace(simulationWorkspace);
-
 	firePropertyChange("simulationWorkspace", oldValue, simulationWorkspace);
 }
 
@@ -2458,6 +2415,10 @@ private void refreshMappingInfoLabel() {
 
 public void setTabIndex(int tabIndex) {
 	getJTabbedPane1().setSelectedIndex(tabIndex);	
+}
+
+private void refreshSPPRTab() {
+	getSPPRPanel().setSimulationContext((SimulationContext)getSimulationWorkspace().getSimulationOwner());
 }
 
 }

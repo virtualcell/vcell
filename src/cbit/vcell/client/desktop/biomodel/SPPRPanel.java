@@ -21,7 +21,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
@@ -29,7 +28,6 @@ import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.model.gui.ModelParameterPanel;
 
 public class SPPRPanel extends JPanel {
-	private SimulationWorkspace fieldSimulationWorkspace = null;
 
 	private JSplitPane outerSplitPane;
 	private javax.swing.JScrollPane treePanel = null;
@@ -134,24 +132,14 @@ public class SPPRPanel extends JPanel {
 		System.out.println("Test");
 	}
 	
-	public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
-		SimulationWorkspace oldValue = fieldSimulationWorkspace;
-		fieldSimulationWorkspace = simulationWorkspace;
-		
-		SimulationContext simContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
-		getInitialConditionsPanel().setSimulationContext(simContext);
-		getModelParameterPanel().setModel(simContext.getModel());
-		getReactionSpecsPanel().setSimulationContext(simContext);
-		setSimulationContext(simContext);
-
-		firePropertyChange("simulationWorkspace", oldValue, simulationWorkspace);
-	}
-	public SimulationWorkspace getSimulationWorkspace() {
-		return fieldSimulationWorkspace;
-	}
-	public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
-		cbit.vcell.mapping.SimulationContext oldValue = fieldSimulationContext;
+	public void setSimulationContext(SimulationContext simulationContext) {
+		SimulationContext oldValue = fieldSimulationContext;
 		fieldSimulationContext = simulationContext;
+		
+		getInitialConditionsPanel().setSimulationContext(fieldSimulationContext);
+		getModelParameterPanel().setModel(fieldSimulationContext.getModel());
+		getReactionSpecsPanel().setSimulationContext(fieldSimulationContext);
+		
 		firePropertyChange("simulationContext", oldValue, simulationContext);
 		getSpprTreeModel().setSimulationContext(fieldSimulationContext);
 	}
