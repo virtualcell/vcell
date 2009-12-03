@@ -77,6 +77,7 @@ import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
@@ -1652,6 +1653,7 @@ private String[] getVariableNamesToCompare(SimulationSymbolTable simSymbolTable1
 	Variable simVars[] = simSymbolTable1.getVariables();
 	for (int i = 0;simVars!=null && i < simVars.length; i++){
 		if (simVars[i] instanceof VolVariable ||
+			simVars[i] instanceof StochVolVariable ||
 			simVars[i] instanceof MemVariable ||
 			simVars[i] instanceof VolumeRegionVariable ||
 			simVars[i] instanceof MembraneRegionVariable ||

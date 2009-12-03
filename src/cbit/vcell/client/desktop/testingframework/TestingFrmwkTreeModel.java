@@ -4,16 +4,22 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
 
+import javax.swing.JTree;
+
 import org.vcell.util.DataAccessException;
 
-import cbit.vcell.numericstest.*;
-import cbit.vcell.solver.test.VariableComparisonSummary;
-
-import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestCriteriaNewBioModel;
+import cbit.vcell.numericstest.TestCriteriaNewMathModel;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.
  * Creation date: (7/23/2004 10:10:20 AM)
@@ -58,12 +64,14 @@ public class TestingFrmwkTreeModel
 		}
 	};
 
+	private JTree treeOwner = null;
 /**
  * TestingFrmwkTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
  */
-public TestingFrmwkTreeModel() {
+public TestingFrmwkTreeModel(JTree owner) {
 	super(new BioModelNode("empty",false),true);
+	treeOwner = owner;
 	addPropertyChangeListener(this);
 }
 /**
@@ -71,12 +79,6 @@ public TestingFrmwkTreeModel() {
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
-}
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
 }
 /**
  * Insert the method's description here.
@@ -225,10 +227,8 @@ private BioModelNode createTestCaseSubTree(TestCaseNew testCase) throws DataAcce
 	//Sort
 	if(tCriteria != null && tCriteria.length > 0){
 		java.util.Arrays.sort(tCriteria,
-			new java.util.Comparator (){
-					public int compare(Object o1,Object o2){
-						TestCriteriaNew tc1 = (TestCriteriaNew)o1;
-						TestCriteriaNew tc2 = (TestCriteriaNew)o2;
+			new java.util.Comparator<TestCriteriaNew> (){
+					public int compare(TestCriteriaNew tc1,TestCriteriaNew tc2){
 						return tc1.getSimInfo().getVersion().getName().compareTo(tc2.getSimInfo().getVersion().getName());
 					}
 					public boolean equals(Object obj){
@@ -296,25 +296,7 @@ private BioModelNode createTestSuiteSubTree(TestSuiteNew testSuite) throws DataA
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
@@ -322,7 +304,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-private cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+private DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -437,7 +419,7 @@ public void refreshTree(final TestSuiteInfoNew tsin) {
 					updateTree(tsg,bRemove);
 				}
 			};
-			ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] { GetTestSuites, updateTreeTask }, false);
+			ClientTaskDispatcher.dispatch(treeOwner.getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] { GetTestSuites, updateTreeTask }, false);
 		}else{
 			setRoot(new BioModelNode(getDocumentManager().getUser().getName()+" Not TestAccount User"));
 		}
@@ -451,12 +433,7 @@ public void refreshTree(final TestSuiteInfoNew tsin) {
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
+
 /**
  * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
  * @param documentManager The new value for the property.

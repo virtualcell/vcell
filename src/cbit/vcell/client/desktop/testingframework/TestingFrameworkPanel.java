@@ -1,9 +1,11 @@
 package cbit.vcell.client.desktop.testingframework;
 
+import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 
 import javax.swing.SwingUtilities;
@@ -13,6 +15,8 @@ import javax.swing.tree.TreeNode;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.gui.NumericsTestCellRenderer;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -111,11 +115,11 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	};
 	private TSRefreshListener tsRefreshListener = new TSRefreshListener();
 
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
-	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
+	private DocumentManager fieldDocumentManager = null;
+	private TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.JTree ivjJTree1 = null;
-	private cbit.vcell.numericstest.gui.NumericsTestCellRenderer ivjnumericsTestCellRenderer = null;
+	private NumericsTestCellRenderer ivjnumericsTestCellRenderer = null;
 	private javax.swing.JMenuItem ivjChangeTypeToSteadyMenuItem = null;
 	private javax.swing.JMenuItem ivjEditAnnotationTestCaseMenuItem = null;
 	private javax.swing.JMenuItem ivjEditAnnotationTestSuiteMenuItem = null;
@@ -139,8 +143,8 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	protected transient java.awt.event.ActionListener aActionListener = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private boolean ivjConnPtoP3Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjdocumentManager1 = null;
-	private cbit.vcell.client.TestingFrameworkWindowManager ivjtestingFrameworkWindowManager1 = null;
+	private DocumentManager ivjdocumentManager1 = null;
+	private TestingFrameworkWindowManager ivjtestingFrameworkWindowManager1 = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.tree.TreeSelectionModel ivjselectionModel = null;
 	private javax.swing.JMenuItem ivjRemoveTSMenuItem = null;
@@ -332,24 +336,15 @@ public void addActionListener(java.awt.event.ActionListener newListener) {
 private void genTCritReportUserDefinedReference(ActionEvent e){
 	tsRefreshListener.rememberSelectedNode();
 	this.refireActionPerformed(e);
-
-//	gettestingFrameworkWindowManager1().generateTestCriteriaReport(testCase, testCriteria, sim, refSimInfo);
 }
 /**
  * connEtoC1:  (AddTestSuiteMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> TestingFrameworkPanel.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC1(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -357,18 +352,11 @@ private void connEtoC1(java.awt.event.ActionEvent arg1) {
  * connEtoC10:  (GenerateTCReportMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> TestingFrameworkPanel.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC10(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		tsRefreshListener.rememberSelectedNode();
 		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -376,18 +364,11 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
  * connEtoC11:  (RunSimMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> TestingFrameworkPanel.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC11(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		tsRefreshListener.rememberSelectedNode();
 		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -395,18 +376,11 @@ private void connEtoC11(java.awt.event.ActionEvent arg1) {
  * connEtoC12:  (EditTCrMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> TestingFrameworkPanel.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC12(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		tsRefreshListener.rememberSelectedNode();
 		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -676,7 +650,7 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM1(DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -1014,7 +988,7 @@ private javax.swing.JMenuItem getCompareUserDefinedMenuItem() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -1022,7 +996,7 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.clientdb.DocumentManager getdocumentManager1() {
+private DocumentManager getdocumentManager1() {
 	// user code begin {1}
 	// user code end
 	return ivjdocumentManager1;
@@ -1322,32 +1296,16 @@ private javax.swing.JPopupMenu getTestCasePopupMenu() {
 public TreePath[] getSelectedTreePaths() {
 	TreeSelectionModel treeSelectionModel = getselectionModel();
 	return treeSelectionModel.getSelectionPaths();
-//	if (treePaths == null){
-//		return null;
-//	}
-//	Object[][] objArr = new Object[treePaths.length][];
-//	for(int i=0;i<treePaths.length;i+= 1){
-//		objArr[i] = null;
-//		if(treePaths[i].getLastPathComponent() instanceof BioModelNode){
-//			if(((BioModelNode)treePaths[i].getLastPathComponent()).getUserObject() instanceof TestCriteriaNew &&
-//				((BioModelNode)treePaths[i].getParentPath().getLastPathComponent()).getUserObject() instanceof TestCaseNew){
-//				objArr[i] = new Object[2];
-//				objArr[i][0] = ((BioModelNode)treePaths[i].getParentPath().getLastPathComponent()).getUserObject();
-//				objArr[i][1] = ((BioModelNode)treePaths[i].getLastPathComponent()).getUserObject();
-//			}
-//		}
-//	}
-//	return objArr;
 }
 /**
  * Return the numericsTestCellRenderer property value.
  * @return cbit.vcell.numericstest.gui.NumericsTestCellRenderer
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.numericstest.gui.NumericsTestCellRenderer getnumericsTestCellRenderer() {
+private NumericsTestCellRenderer getnumericsTestCellRenderer() {
 	if (ivjnumericsTestCellRenderer == null) {
 		try {
-			ivjnumericsTestCellRenderer = new cbit.vcell.numericstest.gui.NumericsTestCellRenderer();
+			ivjnumericsTestCellRenderer = new NumericsTestCellRenderer();
 			ivjnumericsTestCellRenderer.setName("numericsTestCellRenderer");
 			ivjnumericsTestCellRenderer.setText("numericsTestCellRenderer");
 			ivjnumericsTestCellRenderer.setBounds(571, 294, 153, 16);
@@ -1529,17 +1487,13 @@ private javax.swing.JMenuItem getRunSimsMenuItem() {
  * Return the selectionModel property value.
  * @return javax.swing.tree.TreeSelectionModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.tree.TreeSelectionModel getselectionModel() {
-	// user code begin {1}
-	// user code end
 	return ivjselectionModel;
 }
 /**
  * Return the SimulationPopupMenu property value.
  * @return javax.swing.JPopupMenu
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPopupMenu getSimulationPopupMenu() {
 	if (ivjSimulationPopupMenu == null) {
 		try {
@@ -1554,11 +1508,7 @@ private javax.swing.JPopupMenu getSimulationPopupMenu() {
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportMenuItem1());
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportUserDefinedReferenceMenuItem1());
 			ivjSimulationPopupMenu.add(getQueryTCritCrossRefMenuItem1());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1589,22 +1539,6 @@ public TestSuiteInfoNew getTestSuiteInfoOfSelectedTestCase(){
 	TreeSelectionModel treeSelectionModel = getselectionModel();
 	TreePath treePath = treeSelectionModel.getSelectionPath();
 	return getTestSuiteInfoOfTreePath(treePath);
-	
-//	TreeSelectionModel treeSelectionModel = getselectionModel();
-//	TreePath treePath = treeSelectionModel.getSelectionPath();
-//	if (treePath == null){
-//		return null;
-//	}
-//
-//	BioModelNode selectedNode = (BioModelNode)treePath.getLastPathComponent();
-//	if (selectedNode.getUserObject() instanceof TestCaseNew) {
-//		TreePath parentPath = treePath.getParentPath();
-//		BioModelNode parentNode = (BioModelNode)parentPath.getLastPathComponent();	
-//		if (parentNode.getUserObject() instanceof TestSuiteInfoNew) {
-//			return (TestSuiteInfoNew)parentNode.getUserObject();
-//		}
-//	}
-//	return null;
 }
 
 
@@ -1612,33 +1546,13 @@ public TestSuiteInfoNew getTestSuiteInfoOfSelectedTestCriteria(){
 	TreeSelectionModel treeSelectionModel = getselectionModel();
 	TreePath treePath = treeSelectionModel.getSelectionPath();
 	return getTestSuiteInfoOfTreePath(treePath);
-
-//	TreeSelectionModel treeSelectionModel = getselectionModel();
-//	TreePath treePath = treeSelectionModel.getSelectionPath();
-//	if (treePath == null){
-//		return null;
-//	}
-//
-//	BioModelNode selectedNode = (BioModelNode)treePath.getLastPathComponent();
-//	if (selectedNode.getUserObject() instanceof TestCriteriaNew) {
-//		TreePath parentPath = treePath.getParentPath();
-//		BioModelNode parentNode = (BioModelNode)parentPath.getLastPathComponent();	
-//		if (parentNode.getUserObject() instanceof TestCaseNew) {
-//			parentPath = parentPath.getParentPath();
-//			parentNode = (BioModelNode)parentPath.getLastPathComponent();	
-//			if (parentNode.getUserObject() instanceof TestSuiteInfoNew) {
-//				return (TestSuiteInfoNew)parentNode.getUserObject();
-//			}
-//		}
-//	}
-//	return null;
 }
 /**
  * Gets the testingFrameworkWindowManager property (cbit.vcell.client.TestingFrameworkWindowManager) value.
  * @return The testingFrameworkWindowManager property value.
  * @see #setTestingFrameworkWindowManager
  */
-public cbit.vcell.client.TestingFrameworkWindowManager getTestingFrameworkWindowManager() {
+public TestingFrameworkWindowManager getTestingFrameworkWindowManager() {
 	return fieldTestingFrameworkWindowManager;
 }
 /**
@@ -1646,7 +1560,7 @@ public cbit.vcell.client.TestingFrameworkWindowManager getTestingFrameworkWindow
  * @return cbit.vcell.client.TestingFrameworkWindowManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.client.TestingFrameworkWindowManager gettestingFrameworkWindowManager1() {
+private TestingFrameworkWindowManager gettestingFrameworkWindowManager1() {
 	// user code begin {1}
 	// user code end
 	return ivjtestingFrameworkWindowManager1;
@@ -1659,7 +1573,7 @@ private cbit.vcell.client.TestingFrameworkWindowManager gettestingFrameworkWindo
 private TestingFrmwkTreeModel gettestingFrmwkTreeModel1() {
 	if (ivjtestingFrmwkTreeModel1 == null) {
 		try {
-			ivjtestingFrmwkTreeModel1 = new cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel();
+			ivjtestingFrmwkTreeModel1 = new TestingFrmwkTreeModel(getJTree1());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1762,10 +1676,7 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	getAddTestSuiteMenuItem().addActionListener(ivjEventHandler);
 	getAddTestCaseMenuItem().addActionListener(ivjEventHandler);
 	getRunAllMenuItem().addActionListener(ivjEventHandler);
@@ -1805,11 +1716,8 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("TestingFrameworkPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(477, 532);
@@ -1818,8 +1726,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -1837,7 +1743,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1889,7 +1794,7 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
 										new TFUpdateRunningStatus(getTestingFrameworkWindowManager(),tsInfo),
 										new TFRefresh(getTestingFrameworkWindowManager(),tsInfo)
 									};
-									ClientTaskDispatcher.dispatch(TestingFrameworkPanel.this,new Hashtable(), tasksArr, true);
+									ClientTaskDispatcher.dispatch(TestingFrameworkPanel.this,new Hashtable<String, Object>(), tasksArr, true);
 									UPDATE_IN_PROGRESS = true;
 									break;
 								}
@@ -1962,8 +1867,8 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(DocumentManager documentManager) {
+	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }
@@ -1972,10 +1877,10 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManag
  * @param newValue cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdocumentManager1(cbit.vcell.clientdb.DocumentManager newValue) {
+private void setdocumentManager1(DocumentManager newValue) {
 	if (ivjdocumentManager1 != newValue) {
 		try {
-			cbit.vcell.clientdb.DocumentManager oldValue = getdocumentManager1();
+			DocumentManager oldValue = getdocumentManager1();
 			ivjdocumentManager1 = newValue;
 			connPtoP2SetSource();
 			connEtoM1(ivjdocumentManager1);
@@ -2026,8 +1931,8 @@ private void setselectionModel(javax.swing.tree.TreeSelectionModel newValue) {
  * @param testingFrameworkWindowManager The new value for the property.
  * @see #getTestingFrameworkWindowManager
  */
-public void setTestingFrameworkWindowManager(cbit.vcell.client.TestingFrameworkWindowManager testingFrameworkWindowManager) {
-	cbit.vcell.client.TestingFrameworkWindowManager oldValue = fieldTestingFrameworkWindowManager;
+public void setTestingFrameworkWindowManager(TestingFrameworkWindowManager testingFrameworkWindowManager) {
+	TestingFrameworkWindowManager oldValue = fieldTestingFrameworkWindowManager;
 	fieldTestingFrameworkWindowManager = testingFrameworkWindowManager;
 	firePropertyChange("testingFrameworkWindowManager", oldValue, testingFrameworkWindowManager);
 }
@@ -2036,10 +1941,10 @@ public void setTestingFrameworkWindowManager(cbit.vcell.client.TestingFrameworkW
  * @param newValue cbit.vcell.client.TestingFrameworkWindowManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void settestingFrameworkWindowManager1(cbit.vcell.client.TestingFrameworkWindowManager newValue) {
+private void settestingFrameworkWindowManager1(TestingFrameworkWindowManager newValue) {
 	if (ivjtestingFrameworkWindowManager1 != newValue) {
 		try {
-			cbit.vcell.client.TestingFrameworkWindowManager oldValue = gettestingFrameworkWindowManager1();
+			TestingFrameworkWindowManager oldValue = gettestingFrameworkWindowManager1();
 			ivjtestingFrameworkWindowManager1 = newValue;
 			connPtoP3SetSource();
 			firePropertyChange("testingFrameworkWindowManager", oldValue, newValue);
