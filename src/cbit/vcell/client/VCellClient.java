@@ -102,7 +102,7 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc, boolean fr
 		switch (startupDoc.getDocumentType()) {
 			case VCDocument.BIOMODEL_DOC: {
 				windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
-				((BioModelWindowManager)windowManager).preloadApps();
+//				((BioModelWindowManager)windowManager).preloadApps();
 				break;
 			}
 			case VCDocument.MATHMODEL_DOC: {

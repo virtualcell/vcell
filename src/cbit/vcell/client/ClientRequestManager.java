@@ -1,59 +1,31 @@
 package cbit.vcell.client;
 
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.xml.XmlHelper;
-import cbit.xml.merge.*;
-import cbit.image.*;
-import cbit.vcell.export.server.*;
-import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.xml.XMLInfo;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import cbit.vcell.geometry.gui.ROISourceData;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.solver.ode.gui.*;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solver.*;
-import cbit.vcell.client.task.*;
-import cbit.vcell.desktop.LoginDialog;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.math.*;
-import cbit.vcell.mapping.*;
-
-import java.beans.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-
-import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.ExportListener;
-import cbit.rmi.event.VCellMessageEvent;
-import cbit.rmi.event.VCellMessageEventListener;
-
-import java.awt.*;
-
-import cbit.vcell.client.server.*;
-import cbit.vcell.server.*;
-import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
-import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
-import cbit.vcell.clientdb.DocumentManager;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Random;
+import java.util.Vector;
 import java.util.zip.DataFormatException;
 
-import javax.swing.*;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.undo.UndoableEditSupport;
 
 import org.jdom.Element;
@@ -80,8 +52,81 @@ import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.vcell.xml.XMLTags;
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.VCellMessageEvent;
+import cbit.rmi.event.VCellMessageEventListener;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
+import cbit.vcell.client.server.AsynchMessageManager;
+import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.server.DataViewerController;
+import cbit.vcell.client.server.MergedDatasetViewerController;
+import cbit.vcell.client.server.ODEDataManager;
+import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.client.server.SimResultsViewerController;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.server.VCellThreadChecker;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.CheckBeforeDelete;
+import cbit.vcell.client.task.CheckUnchanged;
+import cbit.vcell.client.task.ChooseFile;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.DeleteOldDocument;
+import cbit.vcell.client.task.DocumentToExport;
+import cbit.vcell.client.task.DocumentValid;
+import cbit.vcell.client.task.EditImageAttributes;
+import cbit.vcell.client.task.ExportToXML;
+import cbit.vcell.client.task.FinishExport;
+import cbit.vcell.client.task.FinishSave;
+import cbit.vcell.client.task.NewName;
+import cbit.vcell.client.task.RunSims;
+import cbit.vcell.client.task.SaveDocument;
+import cbit.vcell.client.task.SetMathDescription;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.LoginDialog;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.geometry.gui.ROISourceData;
+import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.server.UserRegistrationOP;
+import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.xml.XMLInfo;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
+import cbit.xml.merge.TMLPanel;
+import cbit.xml.merge.XmlTreeDiff;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 2:42:55 AM)
@@ -1678,7 +1723,9 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}
 			}
-			prepareDocumentToLoad(doc);
+//			if (inNewWindow) {
+//				prepareDocumentToLoad(doc);
+//			}
 			hashTable.put("doc", doc);
 		}
 	};
@@ -1695,9 +1742,9 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						windowManager = createDocumentWindowManager(doc);
 						// request was to create a new top-level window with this doc
 						getMdiManager().createNewDocumentWindow(windowManager);						
-						if (windowManager instanceof BioModelWindowManager) {
-							((BioModelWindowManager)windowManager).preloadApps();
-						}
+//						if (windowManager instanceof BioModelWindowManager) {
+//							((BioModelWindowManager)windowManager).preloadApps();
+//						}
 					} else {
 						// request was to replace the document in an existing window
 						windowManager = (DocumentWindowManager)requester;
