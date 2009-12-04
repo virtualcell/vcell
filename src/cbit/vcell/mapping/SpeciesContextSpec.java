@@ -353,12 +353,14 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSimulationContext) {
 	this.speciesContext = speciesContext;
 
-	VCUnitDefinition fluxUnits = speciesContext.getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um).divideBy(VCUnitDefinition.UNIT_s);
+	// avoid unit computation for case of micromolar
+	VCUnitDefinition unit = speciesContext.getUnitDefinition();
+	VCUnitDefinition fluxUnits = computeFluxUnit();
 	fieldParameters = new SpeciesContextSpecParameter[NUM_ROLES];
 	if(argSimulationContext == null)//called from XmlReader.getSpeciesContextSpec(Element)
 	{
 		fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], null,
-															ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
+															ROLE_InitialConcentration,unit,
 															RoleDescriptions[ROLE_InitialConcentration]);
 		
 		fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], null,
@@ -370,7 +372,7 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 		if(argSimulationContext.isUsingConcentration())
 		{
 			fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], new Expression(0),
-					ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
+					ROLE_InitialConcentration,unit,
 					RoleDescriptions[ROLE_InitialConcentration]);
 
 			fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], null,
@@ -380,7 +382,7 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 		else
 		{
 			fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], null,
-					ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
+					ROLE_InitialConcentration,unit,
 					RoleDescriptions[ROLE_InitialConcentration]);
 
 			fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], new Expression(0),
@@ -428,6 +430,16 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 	resetDefaults();
 	refreshDependencies();
 }            
+
+
+public VCUnitDefinition computeFluxUnit() {
+	VCUnitDefinition unit = speciesContext.getUnitDefinition();
+	VCUnitDefinition fluxUnits = VCUnitDefinition.UNIT_uM_um_per_s;
+	if (!unit.getSymbol().equals(VCUnitDefinition.UNIT_uM.getSymbol())) {
+		fluxUnits = unit.multiplyBy(VCUnitDefinition.UNIT_um_per_s);
+	}
+	return fluxUnits;
+}
 
 
 /**

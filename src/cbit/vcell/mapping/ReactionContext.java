@@ -33,8 +33,8 @@ public  class ReactionContext implements Serializable, Matchable, PropertyChange
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ReactionSpec[] fieldReactionSpecs = new ReactionSpec[0];
-	private cbit.vcell.mapping.SpeciesContextSpec[] fieldSpeciesContextSpecs = new SpeciesContextSpec[0];
-	private cbit.vcell.model.Model fieldModel = null;
+	private SpeciesContextSpec[] fieldSpeciesContextSpecs = new SpeciesContextSpec[0];
+	private Model fieldModel = null;
 	private SimulationContext simContext = null;
 
 /**
@@ -219,7 +219,7 @@ public void gatherIssues(Vector issueVector) {
  * @return The model property value.
  * @see #setModel
  */
-public cbit.vcell.model.Model getModel() {
+public Model getModel() {
 	return fieldModel;
 }
 
@@ -270,7 +270,7 @@ public ReactionSpec getReactionSpec(ReactionStep reactionStep) {
  * @return The reactionSpecs property value.
  * @see #setReactionSpecs
  */
-public cbit.vcell.mapping.ReactionSpec[] getReactionSpecs() {
+public ReactionSpec[] getReactionSpecs() {
 	return fieldReactionSpecs;
 }
 
@@ -304,7 +304,7 @@ public SimulationContext getSimulationContext() {
 public SpeciesContextSpec getSpeciesContextSpec(SpeciesContext speciesContext) {
 	for (int i=0;i<fieldSpeciesContextSpecs.length;i++){
 		SpeciesContextSpec scs = fieldSpeciesContextSpecs[i];
-		if (scs.getSpeciesContext().compareEqual(speciesContext)){
+		if (scs.getSpeciesContext() == speciesContext){
 			return scs;
 		}
 	}
@@ -316,7 +316,7 @@ public SpeciesContextSpec getSpeciesContextSpec(SpeciesContext speciesContext) {
  * @return The speciesContextSpecs property value.
  * @see #setSpeciesContextSpecs
  */
-public cbit.vcell.mapping.SpeciesContextSpec[] getSpeciesContextSpecs() {
+public SpeciesContextSpec[] getSpeciesContextSpecs() {
 	return fieldSpeciesContextSpecs;
 }
 
@@ -547,7 +547,7 @@ void refreshSpeciesContextSpecBoundaryUnits(StructureMapping structureMappings[]
 	for (int i = 0; i < fieldSpeciesContextSpecs.length; i++){
 		SpeciesContextSpec scs = fieldSpeciesContextSpecs[i];
 		VCUnitDefinition dirichletUnit = scs.getSpeciesContext().getUnitDefinition();
-		VCUnitDefinition neumannUnit = scs.getSpeciesContext().getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um).divideBy(VCUnitDefinition.UNIT_s);
+		VCUnitDefinition neumannUnit = scs.computeFluxUnit();
 		for (int j = 0; j < structureMappings.length; j++){
 			if (structureMappings[j].getStructure().equals(scs.getSpeciesContext().getStructure())){
 				try {
@@ -736,7 +736,7 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
  * @param model The new value for the property.
  * @see #getModel
  */
-public void setModel(cbit.vcell.model.Model model) throws MappingException, java.beans.PropertyVetoException {
+public void setModel(Model model) throws MappingException, java.beans.PropertyVetoException {
 	Model oldValue = fieldModel;
 	fieldModel = model;
 
@@ -761,8 +761,8 @@ public void setModel(cbit.vcell.model.Model model) throws MappingException, java
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getReactionSpecs
  */
-public void setReactionSpecs(cbit.vcell.mapping.ReactionSpec[] reactionSpecs) throws java.beans.PropertyVetoException {
-	cbit.vcell.mapping.ReactionSpec[] oldValue = fieldReactionSpecs;
+public void setReactionSpecs(ReactionSpec[] reactionSpecs) throws java.beans.PropertyVetoException {
+	ReactionSpec[] oldValue = fieldReactionSpecs;
 	fireVetoableChange("reactionSpecs", oldValue, reactionSpecs);
 	fieldReactionSpecs = reactionSpecs;
 	firePropertyChange("reactionSpecs", oldValue, reactionSpecs);
@@ -790,8 +790,8 @@ public void setReactionSpecs(int index, ReactionSpec reactionSpecs) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSpeciesContextSpecs
  */
-public void setSpeciesContextSpecs(cbit.vcell.mapping.SpeciesContextSpec[] speciesContextSpecs) throws java.beans.PropertyVetoException {
-	cbit.vcell.mapping.SpeciesContextSpec[] oldValue = fieldSpeciesContextSpecs;
+public void setSpeciesContextSpecs(SpeciesContextSpec[] speciesContextSpecs) throws java.beans.PropertyVetoException {
+	SpeciesContextSpec[] oldValue = fieldSpeciesContextSpecs;
 	fireVetoableChange("speciesContextSpecs", oldValue, speciesContextSpecs);
 	for (int i = 0; i < oldValue.length; i++){
 		oldValue[i].simulationContext = null;
