@@ -89,9 +89,9 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 			targetRows = (int[])targetRows.clone();
 			java.util.Arrays.sort(targetRows);
 		}
-		if (targetRows.length == 0) {
-			return;
-		}
+//		if (targetRows.length == 0) {
+//			return;
+//		}
 		if(targetColumns == null){
 			targetColumns = new int[targetTable.getColumnCount()];
 			for(int i=0;i<targetColumns.length;i+= 1){
@@ -234,7 +234,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 			String str = "<html><em><font color='"+color+"'>"+((String)value)+"</font></em></html>";
 			return stringRenderer.getTableCellRendererComponent(theTable, str, isSelected, hasFocus, row, column);
 		}
-		String scopedExpressInfix = ((cbit.gui.ScopedExpression)value).infix();
+		String scopedExpressInfix = ((ScopedExpression)value).infix();
 		if(scopedExpressionImageIconHash.containsKey(scopedExpressInfix) && 
 			scopedExpressionSelectedHash.containsKey(scopedExpressInfix) &&
 			((Boolean)scopedExpressionSelectedHash.get(scopedExpressInfix)).booleanValue() == isSelected){
