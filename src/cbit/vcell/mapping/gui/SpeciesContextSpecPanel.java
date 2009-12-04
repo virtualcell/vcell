@@ -4,11 +4,8 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
-import javax.swing.JViewport;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -191,20 +188,6 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * Method to handle events for the FocusListener interface.
- * @param e java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void focusGained(java.awt.event.FocusEvent e) {
-	// user code begin {1}
-	// user code end
-	// user code begin {2}
-	// user code end
-}
-
-
 /**
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
@@ -370,29 +353,9 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(this);
 	connPtoP1SetTarget();
 	
-	getJScrollPane().getViewport().addChangeListener(new ChangeListener() {
-		
-		public void stateChanged(ChangeEvent e) {
-			JViewport jvp = (JViewport) (e.getSource());
-			int vpWidth = jvp.getSize().width;
-			int tableWidth = getScrollPaneTable().getPreferredSize().width;
-			
-			if (vpWidth > tableWidth) {
-				TableColumnModel tcm = getScrollPaneTable().getColumnModel();
-				int total_columns = tcm.getColumnCount();
-				for (int i = 0; i < total_columns; i++)	{
-					if (i != SpeciesContextSpecParameterTableModel.COLUMN_VALUE) {
-						TableColumn column = tcm.getColumn(i);
-						vpWidth = vpWidth - column.getPreferredWidth();
-					}
-				}
-	
-				// expand expression column if the scrollpane is wider than table.
-				TableColumn exprColumn = tcm.getColumn(SpeciesContextSpecParameterTableModel.COLUMN_VALUE);
-				if (vpWidth > exprColumn.getPreferredWidth()) {
-					exprColumn.setPreferredWidth(vpWidth);
-				}
-			}
+	getJScrollPane().addComponentListener(new ComponentAdapter() {
+		public void componentResized(ComponentEvent e) {
+			ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
 		}
 	});
 	

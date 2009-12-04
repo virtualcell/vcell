@@ -7,6 +7,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
@@ -25,12 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -365,29 +362,9 @@ public class OutputFunctionsPanel extends JPanel {
 		getFnScrollPaneTable().addMouseListener(ivjEventHandler);
 		this.addPropertyChangeListener(ivjEventHandler);
 		
-		getFnTableScrollPane().getViewport().addChangeListener(new ChangeListener() {
-			
-			public void stateChanged(ChangeEvent e) {
-				JViewport jvp = (JViewport) (e.getSource());
-				int vpWidth = jvp.getSize().width;
-				int tableWidth = getFnScrollPaneTable().getPreferredSize().width;
-				
-				if (vpWidth > tableWidth) {
-					TableColumnModel tcm = getFnScrollPaneTable().getColumnModel();
-					int total_columns = tcm.getColumnCount();
-					for (int i = 0; i < total_columns; i++)	{
-						if (i != OutputFunctionsListTableModel.COLUMN_OUTPUTFN_EXPRESSION) {
-							TableColumn column = tcm.getColumn(i);
-							vpWidth = vpWidth - column.getPreferredWidth();
-						}
-					}
-		
-					// expand expression column if the scrollpane is wider than table.
-					TableColumn exprColumn = tcm.getColumn(OutputFunctionsListTableModel.COLUMN_OUTPUTFN_EXPRESSION);
-					if (vpWidth > exprColumn.getPreferredWidth()) {
-						exprColumn.setPreferredWidth(vpWidth);
-					}
-				}
+		getFnTableScrollPane().addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getFnScrollPaneTable(),null,null);
 			}
 		});
 
@@ -530,7 +507,6 @@ public class OutputFunctionsPanel extends JPanel {
 					System.exit(0);
 				};
 			});
-			frame.setVisible(true);
 			java.awt.Insets insets = frame.getInsets();
 			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 			frame.setVisible(true);
