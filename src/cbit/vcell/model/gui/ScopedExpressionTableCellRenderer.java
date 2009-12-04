@@ -8,6 +8,8 @@ import java.util.Hashtable;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -121,15 +123,42 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//Set column widths to fit widest component in targetColumns
 		//without making any smaller than preferred
 		//
+		int expressionColumn = -1;
 		for (int columnIndex : targetColumns) {
 			TableColumnModel columnModel = targetTable.getTableHeader().getColumnModel();
 			TableColumn column = columnModel.getColumn(columnIndex);
 			// set prefer width if it is expression since the size is computed through image.
-			if (targetTable.getColumnClass(columnIndex) == ScopedExpression.class || column.getPreferredWidth() < maxColumnWidths[columnIndex]){
-				column.setPreferredWidth(maxColumnWidths[columnIndex] + columnModel.getColumnMargin());
+			int preferredWidth = maxColumnWidths[columnIndex] + columnModel.getColumnMargin();
+			if (targetTable.getColumnClass(columnIndex) == ScopedExpression.class) {
+				expressionColumn = columnIndex;
+				column.setPreferredWidth(preferredWidth);
+			}
+			if (column.getPreferredWidth() < maxColumnWidths[columnIndex]){
+				column.setPreferredWidth(preferredWidth);
 			}
 		}
 		
+		// expand the table to parent width, give the extra space to expression column 		
+		if (expressionColumn >= 0 && targetTable.getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
+			int parentWidth = targetTable.getParent().getSize().width;
+			int tableWidth = targetTable.getPreferredSize().width;
+			if (parentWidth > tableWidth) {
+				TableColumnModel tcm = targetTable.getColumnModel();
+				int total_columns = tcm.getColumnCount();
+				for (int i = 0; i < total_columns; i++)	{
+					if (i != expressionColumn) {
+						TableColumn column = tcm.getColumn(i);
+						parentWidth = parentWidth - column.getPreferredWidth();
+					}
+				}
+	
+				TableColumn exprColumn = tcm.getColumn(expressionColumn);
+				if (parentWidth > exprColumn.getPreferredWidth()) {
+					exprColumn.setPreferredWidth(parentWidth);
+				}
+			}
+		}
+			
 		//
 		//Set row heights to fit tallest component in row
 		//without making any smaller than preferred
@@ -145,8 +174,7 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		}
 	}catch(Exception exc){
 		exc.printStackTrace();
-	}
-	
+	}	
 }
 
 

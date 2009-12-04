@@ -2,22 +2,21 @@ package cbit.vcell.model.gui;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import javax.swing.JDesktopPane;
-import javax.swing.JViewport;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
@@ -49,9 +48,9 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private ModelParameterTableModel ivjmodelParameterTableModel = null;
 	private JSortTable ivjScrollPaneTable = null;
-	private cbit.vcell.model.Model fieldModel = null;
+	private Model fieldModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
-	private cbit.vcell.model.Model ivjmodel1 = null;
+	private Model ivjmodel1 = null;
 	private javax.swing.JMenuItem ivjJMenuItemAdd = null;
 	private javax.swing.JMenuItem ivjJMenuItemDelete = null;
 	private javax.swing.JMenuItem ivjJMenuItemPromoteToGlobal = null;
@@ -126,34 +125,6 @@ public ModelParameterPanel() {
 	super();
 	initialize();
 }
-
-/**
- * ModelParameterPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public ModelParameterPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * ModelParameterPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public ModelParameterPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * ModelParameterPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public ModelParameterPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
 
 /**
  * Insert the method's description here.
@@ -393,7 +364,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return The model property value.
  * @see #setModel
  */
-public cbit.vcell.model.Model getModel() {
+public Model getModel() {
 	return fieldModel;
 }
 
@@ -402,7 +373,7 @@ public cbit.vcell.model.Model getModel() {
  * Return the model1 property value.
  * @return cbit.vcell.model.Model
  */
-private cbit.vcell.model.Model getmodel1() {
+private Model getmodel1() {
 	return ivjmodel1;
 }
 
@@ -485,33 +456,6 @@ private void initConnections() throws java.lang.Exception {
 
 	connPtoP3SetTarget();
 	connPtoP2SetTarget();
-	
-	getJScrollPane1().getViewport().addChangeListener(new ChangeListener() {
-			
-		public void stateChanged(ChangeEvent e) {
-			JViewport jvp = (JViewport) (e.getSource());
-			int vpWidth = jvp.getSize().width;
-			int tableWidth = getScrollPaneTable().getPreferredSize().width;
-			
-			if (vpWidth > tableWidth) {
-				int expressionColumn = ModelParameterTableModel.COLUMN_VALUE;
-				TableColumnModel tcm = getScrollPaneTable().getColumnModel();
-				int total_columns = tcm.getColumnCount();
-				for (int i = 0; i < total_columns; i++)	{
-					if (i != expressionColumn) {
-						TableColumn column = tcm.getColumn(i);
-						vpWidth = vpWidth - column.getPreferredWidth();
-					}
-				}
-	
-				// expand expression column if the scrollpane is wider than table.
-				TableColumn exprColumn = tcm.getColumn(expressionColumn);
-				if (vpWidth > exprColumn.getPreferredWidth()) {
-					exprColumn.setPreferredWidth(vpWidth);
-				}
-			}
-		}
-	});
 }
 
 /**
@@ -541,7 +485,7 @@ private void jMenuItemAdd_ActionPerformed(ActionEvent actionEvent) throws Except
 		Container container = (Container)BeanUtils.findTypeParentOfComponent(getJScrollPane1(), JDesktopPane.class);
 		container.remove(createGlobalParamDialog);
 		container.add(createGlobalParamDialog, JDesktopPane.MODAL_LAYER);
-		org.vcell.util.BeanUtils.centerOnComponent(createGlobalParamDialog, this);
+		BeanUtils.centerOnComponent(createGlobalParamDialog, this);
 		createGlobalParamDialog.setVisible(true);
 	}
 }
@@ -802,8 +746,8 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 					rows = getScrollPaneTable().getSelectedRows();
 				}
 			
-			java.util.Vector primarySymbolTableEntriesV = new java.util.Vector();
-			java.util.Vector resolvedValuesV = new java.util.Vector();
+			java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
+			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
 
 			//
 			//Create formatted string for text/spreadsheet pasting.
@@ -811,9 +755,9 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			StringBuffer sb = new StringBuffer();
 			sb.append("\"Context\"\t\"Description\"\t\"Parameter\"\t\"Expression\"\t\"Units\"\n");
 			for(int i=0;i<rows.length;i+= 1){
-				cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+				Parameter parameter = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
 				primarySymbolTableEntriesV.add(parameter);
-				resolvedValuesV.add(new cbit.vcell.parser.Expression(parameter.getExpression()));
+				resolvedValuesV.add(new Expression(parameter.getExpression()));
 
 				sb.append("\""+parameter.getNameScope().getName()+"\"\t\""+parameter.getDescription()+"\"\t\""+parameter.getName()+"\"\t\""+parameter.getExpression().infix()+"\"\t\""+parameter.getUnitDefinition().getSymbol()+"\"\n");
 			}
@@ -823,14 +767,14 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			VCellTransferable.ResolvedValuesSelection rvs =
 				new VCellTransferable.ResolvedValuesSelection(
-					(cbit.vcell.parser.SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,cbit.vcell.parser.SymbolTableEntry.class),
+					(SymbolTableEntry[])BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
 					null,
-					(cbit.vcell.parser.Expression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,cbit.vcell.parser.Expression.class),
+					(Expression[])BeanUtils.getArray(resolvedValuesV,Expression.class),
 					sb.toString());
 
 			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(this, "ModelParametersPanel Copy failed.  "+e.getMessage());
+			PopupGenerator.showErrorDialog(this, "ModelParametersPanel Copy failed.  "+e.getMessage());
 		}
 	}
 }
@@ -841,12 +785,12 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
  */
 private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	
-	java.util.Vector pasteDescriptionsV = new java.util.Vector();
-	java.util.Vector newExpressionsV = new java.util.Vector();
-	java.util.Vector changedParametersV = new java.util.Vector();
+	java.util.Vector<String> pasteDescriptionsV = new java.util.Vector<String>();
+	java.util.Vector<Expression> newExpressionsV = new java.util.Vector<Expression>();
+	java.util.Vector<SymbolTableEntry> changedParametersV = new java.util.Vector<SymbolTableEntry>();
 	try{
 		if(actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()){
-			Object pasteThis = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
+			Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 			
 			int[] rows = null;
 			if(actionEvent.getSource() == getJMenuItemPasteAll()){
@@ -864,19 +808,19 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			//
 			StringBuffer errors = null;
 			for(int i=0;i<rows.length;i+= 1){
-				cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+				Parameter parameter = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
 				try{
 					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 						VCellTransferable.ResolvedValuesSelection rvs =
 							(VCellTransferable.ResolvedValuesSelection)pasteThis;
 						for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
-							cbit.vcell.model.Parameter pasteDestination = null;
-							cbit.vcell.model.Parameter clipboardBiologicalParameter = null;
-							if(rvs.getPrimarySymbolTableEntries()[j] instanceof cbit.vcell.model.Parameter){
-								clipboardBiologicalParameter = (cbit.vcell.model.Parameter)rvs.getPrimarySymbolTableEntries()[j];
+							Parameter pasteDestination = null;
+							Parameter clipboardBiologicalParameter = null;
+							if(rvs.getPrimarySymbolTableEntries()[j] instanceof Parameter){
+								clipboardBiologicalParameter = (Parameter)rvs.getPrimarySymbolTableEntries()[j];
 							}else if(rvs.getAlternateSymbolTableEntries() != null &&
-									rvs.getAlternateSymbolTableEntries()[j] instanceof cbit.vcell.model.Parameter){
-								clipboardBiologicalParameter = (cbit.vcell.model.Parameter)rvs.getAlternateSymbolTableEntries()[j];
+									rvs.getAlternateSymbolTableEntries()[j] instanceof Parameter){
+								clipboardBiologicalParameter = (Parameter)rvs.getAlternateSymbolTableEntries()[j];
 							}
 							if(clipboardBiologicalParameter != null){
 								if(parameter.getName().equals(clipboardBiologicalParameter.getName()) &&
@@ -890,7 +834,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 								changedParametersV.add(pasteDestination);
 								newExpressionsV.add(rvs.getExpressionValues()[j]);
 								pasteDescriptionsV.add(
-									cbit.vcell.desktop.VCellCopyPasteHelper.formatPasteList(
+									VCellCopyPasteHelper.formatPasteList(
 										parameter.getNameScope().getName(),
 										parameter.getName(),
 										pasteDestination.getExpression().infix()+"",
@@ -910,7 +854,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 
 		}
 	}catch(Throwable e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
 		return;
 	}
 
@@ -921,7 +865,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			pasteDescriptionsV.copyInto(pasteDescriptionArr);
 			Parameter[] changedParametersArr = new Parameter[changedParametersV.size()];
 			changedParametersV.copyInto(changedParametersArr);
-			Expression[] newExpressionsArr = new cbit.vcell.parser.Expression[newExpressionsV.size()];
+			Expression[] newExpressionsArr = new Expression[newExpressionsV.size()];
 			newExpressionsV.copyInto(newExpressionsArr);
 			VCellCopyPasteHelper.chooseApplyPaste(this, pasteDescriptionArr,changedParametersArr,newExpressionsArr);
 		}else{
@@ -966,8 +910,8 @@ public static void main(java.lang.String[] args) {
  */
 private void modelParameterPanel_Initialize() {
 	
-	getScrollPaneTable().setDefaultRenderer(cbit.gui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultEditor(cbit.gui.ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
+	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
 	
 	getmodelParameterTableModel().addPropertyChangeListener(
 		new java.beans.PropertyChangeListener(){
@@ -989,6 +933,11 @@ private void modelParameterPanel_Initialize() {
 			}
 		}
 	);
+	getJScrollPane1().addComponentListener(new ComponentAdapter() {		
+		public void componentResized(ComponentEvent e) {
+			ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+		}		
+	});
 }
 
 
@@ -997,7 +946,7 @@ private void modelParameterPanel_Initialize() {
  */
 private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 	if(mouseEvent.isPopupTrigger()){
-		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
+		Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 		boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
 		boolean bSomethingSelected = getScrollPaneTable().getSelectedRowCount() > 0;
 		getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
@@ -1044,8 +993,8 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
  * @param model The new value for the property.
  * @see #getModel
  */
-public void setModel(cbit.vcell.model.Model model) {
-	cbit.vcell.model.Model oldValue = fieldModel;
+public void setModel(Model model) {
+	Model oldValue = fieldModel;
 	if(oldValue != null){
 		oldValue.removePropertyChangeListener(ModelParametersPropertyChangeListener);
 	}
@@ -1058,10 +1007,10 @@ public void setModel(cbit.vcell.model.Model model) {
  * Set the model1 to a new value.
  * @param newValue cbit.vcell.model.Model
  */
-private void setmodel1(cbit.vcell.model.Model newValue) {
+private void setmodel1(Model newValue) {
 	if (ivjmodel1 != newValue) {
 		try {
-			cbit.vcell.model.Model oldValue = getmodel1();
+			Model oldValue = getmodel1();
 			ivjmodel1 = newValue;
 			connPtoP3SetSource();
 			getmodelParameterTableModel().setModel(getmodel1());
@@ -1080,7 +1029,7 @@ private void setmodel1(cbit.vcell.model.Model newValue) {
  * Set the this12 to a new value.
  * @param newValue cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-private void setthis12(org.vcell.util.gui.sorttable.JSortTable newValue) {
+private void setthis12(JSortTable newValue) {
 	if (ivjthis12 != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -1114,7 +1063,7 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		ReactionStep rs = getmodelParameterTableModel().getEditableAnnotationReactionStep(getScrollPaneTable().getSelectedRow());
 		if(rs != null){
 			VCMetaData vcMetaData = rs.getModel().getVcMetaData();
-			String newAnnotation = org.vcell.util.gui.DialogUtils.showAnnotationDialog(this, vcMetaData.getFreeTextAnnotation(rs));
+			String newAnnotation = DialogUtils.showAnnotationDialog(this, vcMetaData.getFreeTextAnnotation(rs));
 			if(newAnnotation != null && newAnnotation.length() == 0){
 				newAnnotation = null;
 			}
@@ -1133,7 +1082,7 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 			modelParameter.setModelParameterAnnotation(newAnnotation);
 			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
 		}
-	}catch(org.vcell.util.gui.UtilCancelException e){
+	}catch(UtilCancelException e){
 		//Do Nothing
 	}catch (Throwable exc) {
 		exc.printStackTrace(System.out);
