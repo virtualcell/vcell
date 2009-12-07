@@ -7,10 +7,12 @@ package cbit.gui;
  */
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -39,6 +41,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -66,6 +69,8 @@ import javax.swing.text.Highlighter.Highlight;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+
+import org.vcell.util.BeanUtils;
 
 public class MultiPurposeTextPanel extends JPanel implements DocumentListener, ActionListener {
 	private JTextPane textPane = null;
@@ -105,6 +110,8 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	
 	private MyUndoableEditListener undoListener = new MyUndoableEditListener();
 	private int searchPointer = 0;
+	
+	private String textContent = null;
 
 	class MyPasteAction extends DefaultEditorKit.PasteAction {
 	
@@ -508,6 +515,15 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 		return newText;
 	}
 
+	public void setText(String text) {
+		textContent = filterCarriageReturn(text);
+		textPane.setText(null);
+		
+		if (textPane.isShowing()) {
+			updateTextPane();
+		}
+	}
+	
 	/**
 	 * Insert the method's description here. Creation date: (10/9/2006 1:53:03
 	 * PM)
@@ -515,20 +531,24 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	 * @param text
 	 *            java.lang.String
 	 */
-	public void setText(String text) {
+	public void showTextContent() {
+		if (textPane.getText() != null && !textPane.getText().isEmpty()) {
+			return;
+		}
+		textPane.setText(textContent);
 		textPane.getDocument().removeDocumentListener(this);
 		textPane.getDocument().removeUndoableEditListener(undoListener);
-		String newText = filterCarriageReturn(text);
 		
-		textPane.setText(newText);
 		try {
-			highlightKeywords(newText, 0);
+			highlightKeywords(textContent, 0);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
 		textPane.getDocument().addDocumentListener(this);
 		textPane.getDocument().addUndoableEditListener(undoListener);
 		getTextPane().setCharacterAttributes(getDefaultStyle(), true);
+		
+		setCaretPosition(0);
 	}
 
 	/**
@@ -930,5 +950,29 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	
 	public static boolean isIdentifierPart(char ch) {
 		return Character.isJavaIdentifierStart(ch) || Character.isDigit(ch);
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				updateTextPane();
+			}
+		});
+	}
+
+	private void updateTextPane() {
+		final Frame parentFrame = JOptionPane.getFrameForComponent(MultiPurposeTextPanel.this);
+		BeanUtils.setCursorThroughout(parentFrame, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		try {
+			showTextContent();
+		} finally {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {			
+					BeanUtils.setCursorThroughout(parentFrame, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				}
+			});
+		}
 	}
 }

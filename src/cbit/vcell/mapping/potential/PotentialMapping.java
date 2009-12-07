@@ -1,27 +1,33 @@
 package cbit.vcell.mapping.potential;
 import java.math.BigInteger;
 
+import cbit.util.graph.Edge;
+import cbit.util.graph.Graph;
+import cbit.util.graph.Node;
+import cbit.util.graph.Path;
+import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.Electrode;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.math.MathException;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.Variable;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
-import cbit.util.graph.*;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 /**
  * Insert the type's description here.
@@ -110,7 +116,7 @@ public PotentialMapping(SimulationContext argSimContext, MathMapping argMathMapp
  * Insert the method's description here.
  * Creation date: (6/8/2004 5:04:39 PM)
  */
-public void computeMath() throws cbit.vcell.math.MathException, MappingException, ExpressionException, MatrixException {
+public void computeMath() throws MathException, MappingException, ExpressionException, MatrixException {
 	double tempK = fieldSimContext.getTemperatureKelvin();
 	determineLumpedEquations(getCircuitGraph(fieldSimContext, fieldMathMapping),tempK);
 }
@@ -122,7 +128,7 @@ public void computeMath() throws cbit.vcell.math.MathException, MappingException
  * @return cbit.vcell.mathmodel.MathModel
  * @param circuitGraph cbit.vcell.mapping.potential.Graph
  */
-private void determineLumpedEquations(Graph graph, double temperatureKelvin) throws ExpressionException, MatrixException, cbit.vcell.mapping.MappingException, cbit.vcell.math.MathException {
+private void determineLumpedEquations(Graph graph, double temperatureKelvin) throws ExpressionException, MatrixException, MappingException, MathException {
 	//
 	// traverses graph and calculates RHS expressions for all capacitive devices (dV/dt)
 	// 
@@ -507,6 +513,7 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 	for (int i = 0; i < fieldEdges.length; i++){
 		ElectricalDevice device = (ElectricalDevice)fieldEdges[cIndex[i]].getData();
 		StringBuffer buffer = new StringBuffer("0.0");
+		Expression totalCurrExp = new Expression(0);
 		//
 		// include Fi terms
 		//
@@ -514,6 +521,7 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 			RationalExp coefficient = currentMatrix.get(i,j+graph.getNumEdges());
 			if (!coefficient.isZero()){
 				ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
+				totalCurrExp = Expression.add(totalCurrExp, Expression.mult(new Expression(coefficient.minus() + ""), new Expression(colDevice.getSourceSymbol())));  
 				buffer.append(" + "+coefficient.minus()+"*"+fieldMathMapping.getNameScope().getSymbolName(colDevice.getSourceSymbol()));
 			}	
 		}
@@ -533,7 +541,7 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 		totalCurrents[cIndex[i]] = (new Expression(buffer.toString())).flatten();
 		totalCurrents[cIndex[i]].bindExpression(device.getNameScope().getParent().getScopedSymbolTable());
 		try {
-			device.getParameterFromRole(device.ROLE_TotalCurrentDensity).setExpression(totalCurrents[cIndex[i]]);
+			device.getParameterFromRole(ElectricalDevice.ROLE_TotalCurrentDensity).setExpression(totalCurrents[cIndex[i]]);
 		}catch (java.beans.PropertyVetoException e){
 			e.printStackTrace(System.out);
 			throw new MappingException("failed to set total current density: "+e.getMessage());
@@ -616,7 +624,7 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
  */
 public MembraneElectricalDevice getCapacitiveDevice(Membrane membrane) {
 	Edge edgesForMembrane[] = getEdges(membrane);
-	java.util.Vector capDeviceList = new java.util.Vector();
+	java.util.Vector<ElectricalDevice> capDeviceList = new java.util.Vector<ElectricalDevice>();
 	for (int i = 0; i < edgesForMembrane.length; i++){
 		ElectricalDevice device = (ElectricalDevice)edgesForMembrane[i].getData();
 		if (device instanceof MembraneElectricalDevice){
@@ -646,23 +654,23 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 	//
 	// add nodes to the graph (one for each Feature)
 	//
-	cbit.vcell.model.Structure structures[] = model.getStructures();
+	Structure structures[] = model.getStructures();
 	for (int i = 0; i < structures.length; i++){
-		if (structures[i] instanceof cbit.vcell.model.Feature){
+		if (structures[i] instanceof Feature){
 			graph.addNode(new Node(structures[i].getName(),structures[i]));		
 		}
 	}
 	//
 	// add edges for all current clamp electrodes (always have dependent voltages)
 	//
-	cbit.vcell.mapping.ElectricalStimulus stimuli[] = simContext.getElectricalStimuli();
-	cbit.vcell.mapping.Electrode groundElectrode = simContext.getGroundElectrode();
+	ElectricalStimulus stimuli[] = simContext.getElectricalStimuli();
+	Electrode groundElectrode = simContext.getGroundElectrode();
 	for (int i = 0; i < stimuli.length; i++){
-		cbit.vcell.mapping.ElectricalStimulus stimulus = stimuli[i];
+		ElectricalStimulus stimulus = stimuli[i];
 		//
 		// get electrodes
 		//
-		cbit.vcell.mapping.Electrode probeElectrode = stimulus.getElectrode();
+		Electrode probeElectrode = stimulus.getElectrode();
 		if (probeElectrode == null){
 			throw new RuntimeException("null electrode for electrical stimulus");
 		}
@@ -672,8 +680,8 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 //if (!membraneMapping.getResolved()){
 		Node groundNode = graph.getNode(groundElectrode.getFeature().getName());
 		Node probeNode = graph.getNode(probeElectrode.getFeature().getName());
-		if (stimulus instanceof cbit.vcell.mapping.CurrentClampStimulus){
-			cbit.vcell.mapping.CurrentClampStimulus ccStimulus = (cbit.vcell.mapping.CurrentClampStimulus)stimulus;
+		if (stimulus instanceof CurrentClampStimulus){
+			CurrentClampStimulus ccStimulus = (CurrentClampStimulus)stimulus;
 			ElectricalDevice device = new CurrentClampElectricalDevice(ccStimulus,mathMapping);
 			Edge edge = new Edge(probeNode,groundNode,device);
 			graph.addEdge(edge);
@@ -712,11 +720,11 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 	// add edges for all voltage clamp electrodes (ALWAYS independent voltages)
 	//
 	for (int i = 0; i < stimuli.length; i++){
-		cbit.vcell.mapping.ElectricalStimulus stimulus = stimuli[i];
+		ElectricalStimulus stimulus = stimuli[i];
 		//
 		// get electrodes
 		//
-		cbit.vcell.mapping.Electrode probeElectrode = stimulus.getElectrode();
+		Electrode probeElectrode = stimulus.getElectrode();
 		if (probeElectrode == null){
 			throw new RuntimeException("null electrode for electrical stimulus");
 		}
@@ -726,8 +734,8 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 //if (!membraneMapping.getResolved()){
 		Node groundNode = graph.getNode(groundElectrode.getFeature().getName());
 		Node probeNode = graph.getNode(probeElectrode.getFeature().getName());
-		if (stimulus instanceof cbit.vcell.mapping.VoltageClampStimulus){
-			cbit.vcell.mapping.VoltageClampStimulus vcStimulus = (cbit.vcell.mapping.VoltageClampStimulus)stimulus;
+		if (stimulus instanceof VoltageClampStimulus){
+			VoltageClampStimulus vcStimulus = (VoltageClampStimulus)stimulus;
 			ElectricalDevice device = new VoltageClampElectricalDevice(vcStimulus,mathMapping);
 			Edge edge = new Edge(probeNode,groundNode,device);
 			graph.addEdge(edge);
@@ -756,14 +764,14 @@ public Edge[] getEdges() {
  * @return cbit.vcell.mapping.potential.Edge[]
  */
 private Edge[] getEdges(Membrane membrane) {
-	java.util.Vector edgeList = new java.util.Vector();
+	java.util.Vector<Edge> edgeList = new java.util.Vector<Edge>();
 	for (int i = 0; i < fieldEdges.length; i++){
-		if (membrane.getInsideFeature().compareEqual((cbit.vcell.model.Feature)fieldEdges[i].getNode1().getData()) &&
-			membrane.getOutsideFeature().compareEqual((cbit.vcell.model.Feature)fieldEdges[i].getNode2().getData())){
+		if (membrane.getInsideFeature().compareEqual((Feature)fieldEdges[i].getNode1().getData()) &&
+			membrane.getOutsideFeature().compareEqual((Feature)fieldEdges[i].getNode2().getData())){
 			edgeList.add(fieldEdges[i]);
 		}
-		if (membrane.getInsideFeature().compareEqual((cbit.vcell.model.Feature)fieldEdges[i].getNode2().getData()) &&
-			membrane.getOutsideFeature().compareEqual((cbit.vcell.model.Feature)fieldEdges[i].getNode1().getData())){
+		if (membrane.getInsideFeature().compareEqual((Feature)fieldEdges[i].getNode2().getData()) &&
+			membrane.getOutsideFeature().compareEqual((Feature)fieldEdges[i].getNode1().getData())){
 			edgeList.add(fieldEdges[i]);
 		}			
 	}
@@ -779,7 +787,7 @@ private Edge[] getEdges(Membrane membrane) {
  * @return cbit.vcell.mapping.potential.ElectricalDevice[]
  */
 public ElectricalDevice[] getElectricalDevices() {
-	java.util.Vector deviceList = new java.util.Vector();
+	java.util.Vector<ElectricalDevice> deviceList = new java.util.Vector<ElectricalDevice>();
 	for (int i = 0; i < fieldEdges.length; i++){
 		deviceList.add((ElectricalDevice)fieldEdges[i].getData());
 	}
@@ -796,7 +804,7 @@ public ElectricalDevice[] getElectricalDevices() {
  */
 public ElectricalDevice[] getElectricalDevices(Membrane membrane) {
 	Edge edges[] = getEdges(membrane);
-	java.util.Vector deviceList = new java.util.Vector();
+	java.util.Vector<ElectricalDevice> deviceList = new java.util.Vector<ElectricalDevice>();
 	for (int i = 0; i < edges.length; i++){
 		deviceList.add((ElectricalDevice)edges[i].getData());
 	}
@@ -804,42 +812,6 @@ public ElectricalDevice[] getElectricalDevices(Membrane membrane) {
 	deviceList.copyInto(devices);
 	return devices;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/24/2002 10:40:17 AM)
- * @return int
- * @param device cbit.vcell.mapping.potential.ElectricalDevice
- */
-private int getIndex(ElectricalDevice device) {
-	for (int i = 0; i < fieldEdges.length; i++){
-		ElectricalDevice d = (ElectricalDevice)fieldEdges[i].getData();
-		if (d == device){
-			return i;
-		}
-	}
-	throw new RuntimeException("device "+device.getName()+" not found");
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/19/2002 12:58:13 PM)
- * @return double
- * @param simContext cbit.vcell.mapping.SimulationContext
- * @param membrane cbit.vcell.model.Membrane
- */
-private static Expression getMembraneSurfaceAreaExpression(SimulationContext simContext, Membrane membrane) throws ExpressionException {
-	MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
-	FeatureMapping featureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(membrane);
-	Expression totalVolFract = featureMapping.getResidualVolumeFraction(simContext);
-	Expression surfaceToVolume = membraneMapping.getSurfaceToVolumeParameter().getExpression();
-	Expression surfaceArea = Expression.mult(surfaceToVolume,totalVolFract);
-
-	return surfaceArea;
-}
-
 
 /**
  * Insert the method's description here.
@@ -894,7 +866,7 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 	// gather current terms
 	//
 	Expression currentExp = new Expression(0.0);
-	cbit.vcell.mapping.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
+	ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 	for (int i = 0; i < reactionSpecs.length; i++){
 		//
 		// only include currents from this membrane from reactions that are not disabled ("excluded")
@@ -903,23 +875,21 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 			continue;
 		}
 		if (reactionSpecs[i].getReactionStep().getKinetics() instanceof DistributedKinetics){
-			cbit.vcell.model.ReactionStep rs = reactionSpecs[i].getReactionStep();
+			ReactionStep rs = reactionSpecs[i].getReactionStep();
 			DistributedKinetics distributedKinetics = (DistributedKinetics)rs.getKinetics();
 			if (rs.getStructure() == membrane){
-				Expression current = new Expression(distributedKinetics.getCurrentDensityParameter().getExpression().infix(mathMapping.getNameScope()));
-				if (!current.compareEqual(new Expression(0.0))){
+				if (!distributedKinetics.getCurrentDensityParameter().getExpression().isZero()){
 					//
 					// change sign convension from inward current to outward current (which is consistent with voltage convension)
 					//
-					currentExp = Expression.add(currentExp, Expression.negate(new Expression(mathMapping.getNameScope().getSymbolName(distributedKinetics.getCurrentDensityParameter()))));
+					currentExp = Expression.add(currentExp, Expression.negate(new Expression(distributedKinetics.getCurrentDensityParameter())));
 				}
 			}
 		}else{
-			cbit.vcell.model.ReactionStep rs = reactionSpecs[i].getReactionStep();
+			ReactionStep rs = reactionSpecs[i].getReactionStep();
 			LumpedKinetics lumpedKinetics = (LumpedKinetics)rs.getKinetics();
 			if (rs.getStructure() == membrane){
-				Expression current = new Expression(lumpedKinetics.getLumpedCurrentParameter().getExpression().infix(mathMapping.getNameScope()));
-				if (!current.isZero()){
+				if (!lumpedKinetics.getLumpedCurrentParameter().getExpression().isZero()){
 					//
 					// change sign convension from inward current to outward current (which is consistent with voltage convension)
 					//
@@ -934,14 +904,14 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 					// translate from total current into current density
 					// @TODO later we will express in terms of total currents where possible.
 					//
-					Expression lumpedCurrentSymbolExp = new Expression(mathMapping.getNameScope().getSymbolName(lumpedKinetics.getLumpedCurrentParameter()));
-					Expression membraneSizeExp = new Expression(mathMapping.getNameScope().getSymbolName(sizeParameter));
+					Expression lumpedCurrentSymbolExp = new Expression(lumpedKinetics.getLumpedCurrentParameter());
+					Expression membraneSizeExp = new Expression(sizeParameter);
 					currentExp = Expression.add(currentExp, Expression.negate(Expression.mult(lumpedCurrentSymbolExp,Expression.invert(membraneSizeExp))));
 				}
 			}
 		}
 	}
-	currentExp.bindExpression(mathMapping);
+//	currentExp.bindExpression(mathMapping);
 	return currentExp.flatten();
 }
 

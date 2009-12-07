@@ -65,7 +65,6 @@ public class ApplicationEditor extends JPanel {
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
 	private boolean ivjConnPtoP6Aligning = false;
-	private boolean ivjConnPtoP9Aligning = false;
 	private SimulationContext ivjsimulationContext = null;
 	private GeometryContext ivjgeometryContext = null;
 	private JPanel ivjJPanel3 = null;
@@ -1857,7 +1856,7 @@ private javax.swing.JRadioButton getViewVCMDLRadioButton() {
 		try {
 			ivjViewVCMDLRadioButton = new javax.swing.JRadioButton();
 			ivjViewVCMDLRadioButton.setName("ViewVCMDLRadioButton");
-			ivjViewVCMDLRadioButton.setText("View Model Description Language");
+			ivjViewVCMDLRadioButton.setText("View Math Description Language");
 			ivjViewVCMDLRadioButton.setActionCommand("VCMLPanel");
 			// user code begin {1}
 			// user code end
@@ -2360,14 +2359,23 @@ private AsynchClientTask[] updateMath() {
 			hashTable.put("mathDesc", mathDesc);
 		}			
 	};
-	AsynchClientTask task2 = new AsynchClientTask("refreshing math", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	AsynchClientTask task2 = new AsynchClientTask("formating math", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
+			if (mathDesc != null) {
+				simContext.setMathDescription(mathDesc);
+			}
+		}
+	};
+	AsynchClientTask task3 = new AsynchClientTask("showing issues", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathMapping mathMapping = (MathMapping)hashTable.get("mathMapping");
 			MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
 			if (mathDesc != null) {
-				simContext.setMathDescription(mathDesc);
 				//
 				// inform user if any issues
 				//					
@@ -2388,7 +2396,7 @@ private AsynchClientTask[] updateMath() {
 			}
 		}
 	};
-	return new AsynchClientTask[] { task1, task2};
+	return new AsynchClientTask[] { task1, task2, task3};
 }
 
 private void viewMath_ItemStateChanged(ItemEvent itemEvent) {

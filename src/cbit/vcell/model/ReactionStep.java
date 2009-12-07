@@ -35,7 +35,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
  * This class is the superclass of all classes representing 
@@ -398,12 +397,12 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 	if (getKinetics() instanceof DistributedKinetics){
 		DistributedKinetics distributedKinetics = (DistributedKinetics)getKinetics();
 		if (stoich!=1){
-			Expression exp = Expression.mult(new Expression(stoich),new Expression(distributedKinetics.getReactionRateParameter().getName()));
-			exp.bindExpression(this);
+			Expression exp = Expression.mult(new Expression(stoich),new Expression(distributedKinetics.getReactionRateParameter()));
+//			exp.bindExpression(this);
 			return exp;
 		}else{
-			Expression exp = new Expression(distributedKinetics.getReactionRateParameter().getName());
-			exp.bindExpression(this);
+			Expression exp = new Expression(distributedKinetics.getReactionRateParameter());
+//			exp.bindExpression(this);
 			return exp;
 		}
 	}else if (getKinetics() instanceof LumpedKinetics){
@@ -411,41 +410,23 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 		final StructureMappingParameter sizeParameter = structureMapping.getSizeParameter();
 		//
 		// need to put this into concentration/time with respect to structure for reaction.
-		//
-		SymbolTable tempSymbolTable = new SymbolTable(){
-			public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
-				SymbolTableEntry ste = ReactionStep.this.getEntry(identifierString);
-				if (ste!=null){
-					return ste;
-				}
-				if (identifierString.equals(sizeParameter.getName())){
-					return sizeParameter;
-				}
-				return null;
-			}
-
-			public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-				entryMap.put(sizeParameter.getName(), sizeParameter);
-				ReactionStep.this.getEntries(entryMap);				
-			}
-		};
-		
+		//		
 		LumpedKinetics lumpedKinetics = (LumpedKinetics)getKinetics();
 		Expression factor = null;
 		if (getStructure() instanceof Feature || ((getStructure() instanceof Membrane) && this instanceof FluxReaction)){
-			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE.getName()),Expression.invert(new Expression(sizeParameter.getName())));
+			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE),Expression.invert(new Expression(sizeParameter)));
 		}else if (getStructure() instanceof Membrane && this instanceof SimpleReaction){
-			factor = Expression.invert(new Expression(sizeParameter.getName()));
+			factor = Expression.invert(new Expression(sizeParameter));
 		}else{
 			throw new RuntimeException("failed to create reaction rate expression for reaction "+getName()+", with kinetic type of "+getKinetics().getClass().getName());
 		}
 		if (stoich!=1){
-			Expression exp = Expression.mult(new Expression(stoich),Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter().getName()),factor));
-			exp.bindExpression(tempSymbolTable);
+			Expression exp = Expression.mult(new Expression(stoich),Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter()),factor));
+//			exp.bindExpression(tempSymbolTable);
 			return exp;
 		}else{
-			Expression exp = Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter().getName()),factor);
-			exp.bindExpression(tempSymbolTable);
+			Expression exp = Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter()),factor);
+//			exp.bindExpression(tempSymbolTable);
 			return exp;
 		}
 	}else{

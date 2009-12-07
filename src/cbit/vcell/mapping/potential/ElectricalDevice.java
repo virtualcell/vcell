@@ -127,12 +127,12 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 
 		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
 			expression = new Expression(expression);
-			try {
-				expression.bindExpression(ElectricalDevice.this);
-			} catch (ExpressionBindingException e) {
-				e.printStackTrace();
-				throw new PropertyVetoException(e.getMessage(),null);
-			}
+//			try {
+//				expression.bindExpression(ElectricalDevice.this);
+//			} catch (ExpressionBindingException e) {
+//				e.printStackTrace();
+//				throw new PropertyVetoException(e.getMessage(),null);
+//			}
 			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
