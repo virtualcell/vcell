@@ -2482,7 +2482,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 				continue;
 			}
 			ReactionStep rs = reactionSpec.getReactionStep();
-			if (rs instanceof SimpleReaction && rs.getReactionParticipants(scs.getSpeciesContext()).length > 0){
+			if (rs instanceof SimpleReaction && rs.countNumReactionParticipants(scs.getSpeciesContext()) > 0){
 				if (reactionSpec.isFast()){
 					scm.setFastParticipant(true);
 				}

@@ -1223,7 +1223,7 @@ public SpeciesContext[] getSpeciesContextsNeededByMovingMembrane(Membrane moving
 	for(int i=0;i<fieldReactionSteps.length;i+= 1){
 		if(fieldReactionSteps[i].getStructure() == movingMembrane){
 			for(int j=0;j<outSC.length;j+= 1){
-				if(fieldReactionSteps[i].getReactionParticipants(outSC[j]).length > 0){
+				if(fieldReactionSteps[i].countNumReactionParticipants(outSC[j]) > 0){
 					if(!neededSC.contains(outSC[j])){
 						neededSC.add(outSC[j]);
 					}
@@ -1417,7 +1417,7 @@ public synchronized boolean hasListeners(String propertyName) {
  */
 public boolean isUsed(SpeciesContext speciesContext) {
 	for (int i=0;i<fieldReactionSteps.length;i++){
-		if (fieldReactionSteps[i].getReactionParticipants(speciesContext).length > 0){
+		if (fieldReactionSteps[i].countNumReactionParticipants(speciesContext) > 0){
 			return true;
 		}
 	}
@@ -1470,10 +1470,12 @@ public void moveFeature(Feature movingFeature, Feature destinationFeature) throw
 		if(fieldReactionSteps[i].getStructure() == movingFeature.getMembrane()){
 			if(neededSC != null){
 				for(int j=0;j<neededSC.length;j+= 1){
-					ReactionParticipant[] rps = fieldReactionSteps[i].getReactionParticipants(neededSC[j]);
+					ReactionParticipant[] rps = fieldReactionSteps[i].getReactionParticipants();
 					if(rps != null){
 						for (int k = 0; k < rps.length; k++){
-							rps[k].setSpeciesContext(getSpeciesContext(neededSC[j].getSpecies(),destinationFeature));
+							if (rps[k].getSpeciesContext() == neededSC[j]) {
+								rps[k].setSpeciesContext(getSpeciesContext(neededSC[j].getSpecies(),destinationFeature));
+							}
 						}
 					}
 				}

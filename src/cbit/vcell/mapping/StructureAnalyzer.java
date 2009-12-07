@@ -3,12 +3,27 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import cbit.vcell.model.*;
-import cbit.vcell.parser.*;
+import java.util.Vector;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.matrix.RationalNumberMatrix;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * class StructureAnalyzer
  * 
@@ -169,24 +184,31 @@ private void refreshFastMatrices() throws Exception {
 				if (reactionSpec.isExcluded()){
 					throw new Exception("expected only included rates");
 				}
-				ReactionParticipant[] rps = fastReactionSteps[j].getReactionParticipants(sc);
+				ReactionParticipant[] rps = fastReactionSteps[j].getReactionParticipants();
+				ReactionParticipant rp0 = null;
+				for (ReactionParticipant rp : rps) {
+					if (rp.getSpeciesContext() == sc) {
+						rp0 = rp;
+						break;
+					}
+				}
 				//
 				// if reaction is on membrane and reactionParticipant isn't, then add flux correction
 				//
-				if (rps.length > 0) {
+				if (rp0 != null) {
 					Structure structure = fastReactionSteps[j].getStructure();
-					if ((structure instanceof Membrane) && (rps[0].getStructure()!=structure)){
+					if ((structure instanceof Membrane) && (rp0.getStructure()!=structure)){
 						Membrane membrane = (Membrane)structure;
 						MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
-						Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)rps[0].getStructure());
-						exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"* ("+fastReactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")"));
+						Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)rp0.getStructure());
+						exp = Expression.add(exp,Expression.mult(new Expression(fluxCorrectionParameter), fastReactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext())));
 					}else{
-						exp = Expression.add(exp,new Expression(fastReactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
+						exp = Expression.add(exp,new Expression(fastReactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext())));
 					}
 				}
 			}
 		}
-		exp.bindExpression(mathMapping);
+//		exp.bindExpression(mathMapping);
 		scm.setFastRate(exp.flatten());
 	}	
 
@@ -355,7 +377,7 @@ private void refreshTotalDependancies() throws Exception {
 		//
 		// store totalMass parameter (e.g. K_xyz_total = xyz_init + wzy_init) 
 		//
-		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS,cbit.vcell.units.VCUnitDefinition.UNIT_uM);
+		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS,VCUnitDefinition.UNIT_uM);
 		//
 		// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 		//
@@ -487,7 +509,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 			dependencyList.add(dependency);
 		}
 	}
-	return (StructureAnalyzer.Dependency[])org.vcell.util.BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
+	return (StructureAnalyzer.Dependency[])BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
 }
 
 
@@ -522,14 +544,21 @@ private void refreshTotalMatrices() throws Exception {
 			
 			if (stoichiometry != 0){
 				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
-					ReactionParticipant[] rps = reactionSteps[j].getReactionParticipants(sc);
+					ReactionParticipant[] rps1 = reactionSteps[j].getReactionParticipants();
+					ReactionParticipant rp0 = null;
+					for (ReactionParticipant rp : rps1) {
+						if (rp.getSpeciesContext() == sc) {
+							rp0 = rp;
+							break;
+						}
+					}
 					Structure structure = reactionSteps[j].getStructure();
 					//
 					// if reaction is in one compartment and reactionParticipant is in another, then add a flux correction.
 					// (e.g. if reaction is on membrane and reactionParticipant is in a feature)
 					//
-					if (rps.length > 0) {
-						Expression reactRateExp = reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext());
+					if (rp0 != null) {
+						Expression reactRateExp = reactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext());
 						if ((structure instanceof Membrane) && (sc.getStructure()!=structure)){
 							Membrane membrane = (Membrane)structure;
 							MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
