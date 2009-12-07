@@ -26,44 +26,60 @@ public SimpleReaction(Structure structure,String name) throws java.beans.Propert
 }   
 public void addProduct(SpeciesContext speciesContext,int stoichiometry) throws Exception {
 
-	ReactionParticipant[] rps = getReactionParticipants(speciesContext);
+	int count = countNumReactionParticipants(speciesContext);
 
 	// NOTE : right now, we are not taking into account the possiblity of allowing 
 	// a speciesContext to be a Catalyst as well as pdt or reactant.
-	if (rps == null || rps.length == 0) {
+	if (count == 0) {
 		// No matching reactionParticipant was found for the speciesContext, hence add it as a Pdt
 		addReactionParticipant(new Product(null,this, speciesContext, stoichiometry));
-	} else if (rps.length == 1) {
+	} else if (count == 1) {
+		ReactionParticipant[] rps = getReactionParticipants();
+		ReactionParticipant rp0 = null;
+		for (ReactionParticipant rp : rps) {
+			if (rp.getSpeciesContext() == speciesContext) {
+				rp0 = rp;
+				break;
+			}
+		}
 		// One matching reactionParticipant was found for the speciesContext, 
 		// if rp[0] is a reactant, add speciesContext as pdt, else throw exception since it is already a pdt (refer NOTE above)
-		if (rps[0] instanceof Reactant){
+		if (rp0 instanceof Reactant){
 			addReactionParticipant(new Product(null,this, speciesContext, stoichiometry));
-		} else if (rps[0] instanceof Product || rps[0] instanceof Catalyst) {
+		} else if (rp0 instanceof Product || rp0 instanceof Catalyst) {
 			throw new Exception("reactionParticipant " + speciesContext.getName() + " already defined as a Product or Catalyst of the reaction.");
 		}
-	} else if (rps.length > 1) {
+	} else if (count > 1) {
 		// if rps.length is > 1, speciesContext occurs both as reactant and pdt, so throw exception
 		throw new Exception("reactionParticipant " + speciesContext.getName() + " already defined as a Reactant and Product of the reaction.");
 	}
 }   
 public void addReactant(SpeciesContext speciesContext,int stoichiometry) throws Exception {
 
-	ReactionParticipant[] rps = getReactionParticipants(speciesContext);
+	int count = countNumReactionParticipants(speciesContext);
 
 	// NOTE : right now, we are not taking into account the possiblity of allowing 
 	// a speciesContext to be a Catalyst as well as pdt or reactant.
-	if (rps == null || rps.length == 0) {
+	if (count == 0) {
 		// No matching reactionParticipant was found for the speciesContext, hence add it as a Pdt
 		addReactionParticipant(new Reactant(null,this, speciesContext, stoichiometry));
-	} else if (rps.length == 1) {
+	} else if (count == 1) {
+		ReactionParticipant[] rps = getReactionParticipants();
+		ReactionParticipant rp0 = null;
+		for (ReactionParticipant rp : rps) {
+			if (rp.getSpeciesContext() == speciesContext) {
+				rp0 = rp;
+				break;
+			}
+		}
 		// One matching reactionParticipant was found for the speciesContext, 
 		// if rp[0] is a product, add speciesContext as reactant, else throw exception since it is already a reactant (refer NOTE above)
-		if (rps[0] instanceof Product){
+		if (rp0 instanceof Product){
 			addReactionParticipant(new Reactant(null,this, speciesContext, stoichiometry));
-		} else if (rps[0] instanceof Reactant || rps[0] instanceof Catalyst) {
+		} else if (rp0 instanceof Reactant || rp0 instanceof Catalyst) {
 			throw new Exception("reactionParticipant " + speciesContext.getName() + " already defined as a Reactant or a Catalyst of the reaction.");
 		}
-	} else if (rps.length > 1) {
+	} else if (count > 1) {
 		// if rps.length is > 1, speciesContext occurs both as reactant and pdt, so throw exception
 		throw new Exception("reactionParticipant " + speciesContext.getName() + " already defined as a Reactant AND Product of the reaction.");
 	}
@@ -176,18 +192,17 @@ public int getNumReactants() {
  * @return double
  * @param speciesContext cbit.vcell.model.SpeciesContext
  */
-public int getStoichiometry(Species species, Structure structure) {
-	ReactionParticipant[] rps = getReactionParticipants(species, structure);
-	if (rps == null || rps.length == 0){
-		return 0;
-	}
+public int getStoichiometry(SpeciesContext speciesContext) {
+	ReactionParticipant[] rps = getReactionParticipants();
 
 	int totalStoich = 0;
-	for (int i = 0; i < rps.length; i++){
-		if (rps[i] instanceof Product){
-			totalStoich += rps[i].getStoichiometry();
-		}else if (rps[i] instanceof Reactant){
-			totalStoich += (-1)*rps[i].getStoichiometry();
+	for (ReactionParticipant rp : rps) {
+		if (rp.getSpeciesContext() == speciesContext) {
+			if (rp instanceof Product){
+				totalStoich += rp.getStoichiometry();
+			}else if (rp instanceof Reactant){
+				totalStoich += (-1)*rp.getStoichiometry();
+			}
 		}
 	}
 	return totalStoich;

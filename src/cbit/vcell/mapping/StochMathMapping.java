@@ -3,8 +3,9 @@ import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -12,12 +13,10 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -333,7 +332,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 /**
  * Basically the function clears the error list and calls to get a new mathdescription.
  */
-private void refresh() throws MappingException, ExpressionException, cbit.vcell.matrix.MatrixException, MathException, ModelException{
+private void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
 	localIssueList.clear();
 	//refreshKFluxParameters();
 	
@@ -349,7 +348,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 	/**
 	 * set up a math description based on current simulationContext.
 	 */
-	private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException
+	private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
 	{
 		//use local variable instead of using getter all the time.
 		SimulationContext simContext = getSimulationContext();
@@ -755,7 +754,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 				if ((isForwardRatePresent) /*|| ((forwardRate == null) && (reverseRate == null))*/)
 				{
 					// get jump process name
-					String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName());
+					String jpName = TokenMangler.mangleToSName(reactionStep.getName());
 					// get probability
 					Expression exp = null;
 									
@@ -809,7 +808,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 				if (isReverseRatePresent) // one more jump process for a reversible reaction
 				{
 					// get jump process name
-					String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
+					String jpName = TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
 					Expression exp = null;
 					
 					// reactions are mass actions
@@ -872,7 +871,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 					if(fluxFunc.getRateToInside() != null && !fluxFunc.getRateToInside().isZero()) 
 					{
 						//jump process name
-						String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
+						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
 											
 						//we do it here instead of fluxsolver, coz we need to use getMathSymbol0(), structuremapping...etc.
 						Expression rate = fluxFunc.getRateToInside();
@@ -927,7 +926,7 @@ private void refresh() throws MappingException, ExpressionException, cbit.vcell.
 					if(fluxFunc.getRateToOutside() != null && !fluxFunc.getRateToOutside().isZero()) 
 					{
 						//jump process name
-						String jpName = org.vcell.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
+						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
 											
 						Expression rate = fluxFunc.getRateToOutside();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
@@ -1159,7 +1158,7 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 				continue;
 			}
 			ReactionStep rs = reactionSpec.getReactionStep();
-			if (rs instanceof SimpleReaction && rs.getReactionParticipants(scs.getSpeciesContext()).length > 0){
+			if (rs instanceof SimpleReaction && rs.countNumReactionParticipants(scs.getSpeciesContext()) > 0){
 				if (reactionSpec.isFast()){
 					scm.setFastParticipant(true);
 				}

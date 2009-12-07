@@ -131,18 +131,25 @@ protected ReactionStep(Structure structure, String name) throws PropertyVetoExce
 
 public void addCatalyst(SpeciesContext speciesContext) throws ModelException, PropertyVetoException {
 
-	ReactionParticipant[] rps = getReactionParticipants(speciesContext);
-
 	// NOTE : Currently, we are not allowing the case where a reactionParticipant is a reactant and/or product AND a catalyst
 	// Hence, if the rps array is not null, throw an exception, since the speciesContext is already a reactionParticipant.
 	
-	if (rps.length == 0){
+	if (countNumReactionParticipants(speciesContext) == 0){
 		addReactionParticipant(new Catalyst(null,this, speciesContext));
 	}else{
 		throw new ModelException("reactionParticipant already defined as Reactant and/or Product in the reaction.");
+	}		
+}  
+
+public int countNumReactionParticipants(SpeciesContext speciesContext) {
+	int count = 0;
+	for (ReactionParticipant rp : fieldReactionParticipants) {
+		if (rp.getSpeciesContext() == speciesContext) {
+			count ++;
+		}
 	}
-		
-}   
+	return count;
+}
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -195,7 +202,7 @@ protected boolean compareEqual0(ReactionStep rs) {
 		return false;
 	}
 	
-	if (!org.vcell.util.Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
+	if (!Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getAnnotation(), rs.getAnnotation())){
@@ -227,11 +234,7 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 /**
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
-public void fireVetoableChange(
-    String propertyName,
-    Object oldValue,
-    Object newValue)
-    throws java.beans.PropertyVetoException {
+public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws java.beans.PropertyVetoException {
     getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 /**
@@ -390,7 +393,7 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 		throw new Exception("Catalyst "+reactionParticipant+" doesn't have a rate for this reaction");
 		//return new Expression(0.0);
 	}	
-	double stoich = getStoichiometry(reactionParticipant.getSpecies(),reactionParticipant.getStructure());
+	double stoich = getStoichiometry(reactionParticipant.getSpeciesContext());
 	if (stoich==0.0){
 		return new Expression(0.0);
 	}
@@ -398,11 +401,9 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 		DistributedKinetics distributedKinetics = (DistributedKinetics)getKinetics();
 		if (stoich!=1){
 			Expression exp = Expression.mult(new Expression(stoich),new Expression(distributedKinetics.getReactionRateParameter()));
-//			exp.bindExpression(this);
 			return exp;
 		}else{
 			Expression exp = new Expression(distributedKinetics.getReactionRateParameter());
-//			exp.bindExpression(this);
 			return exp;
 		}
 	}else if (getKinetics() instanceof LumpedKinetics){
@@ -422,11 +423,9 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 		}
 		if (stoich!=1){
 			Expression exp = Expression.mult(new Expression(stoich),Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter()),factor));
-//			exp.bindExpression(tempSymbolTable);
 			return exp;
 		}else{
 			Expression exp = Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter()),factor);
-//			exp.bindExpression(tempSymbolTable);
 			return exp;
 		}
 	}else{
@@ -462,36 +461,13 @@ public ReactionParticipant[] getReactionParticipants() {
 public ReactionParticipant getReactionParticipants(int index) {
 	return getReactionParticipants()[index];
 }
-public ReactionParticipant[] getReactionParticipants(Species species, Structure structure){
-	ReactionParticipant rpArray[] = getReactionParticipants();
-	Vector<ReactionParticipant> rpVector = new Vector<ReactionParticipant>();
 
-	for (int i = 0; i < rpArray.length; i++) {
-		if (species.compareEqual(rpArray[i].getSpecies()) &&
-			structure.compareEqual(rpArray[i].getStructure())){
-			rpVector.addElement(rpArray[i]);
-		}
-	}
-	
-	return (ReactionParticipant[])BeanUtils.getArray(rpVector, ReactionParticipant.class);
-}         
-public ReactionParticipant[] getReactionParticipants(SpeciesContext speciesContext){
-	return getReactionParticipants(speciesContext.getSpecies(), speciesContext.getStructure());
-}         
 /**
  * This method was created in VisualAge.
  * @return double
  * @param speciesContext cbit.vcell.model.SpeciesContext
  */
-public abstract int getStoichiometry(Species species, Structure structure);
-/**
- * This method was created in VisualAge.
- * @return double
- * @param speciesContext cbit.vcell.model.SpeciesContext
- */
-public int getStoichiometry(SpeciesContext speciesContext) {
-	return getStoichiometry(speciesContext.getSpecies(),speciesContext.getStructure());
-}
+public abstract int getStoichiometry(SpeciesContext speciesContext);
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Reaction
