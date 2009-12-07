@@ -115,7 +115,6 @@ public ModelParameterTableModel(JTable table) {
 	addPropertyChangeListener(this);
 }
 
-
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -123,46 +122,12 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 
 /**
  * Insert the method's description here.
@@ -224,7 +189,7 @@ public String getColumnName(int column) {
  * @return The model property value.
  * @see #setModel
  */
-public cbit.vcell.model.Model getModel() {
+public Model getModel() {
 	return fieldModel;
 }
 
@@ -235,7 +200,7 @@ public cbit.vcell.model.Model getModel() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private cbit.vcell.model.Parameter getParameter(int row) {
+private Parameter getParameter(int row) {
 
 	if (getModel()==null){
 		return null;
@@ -331,7 +296,7 @@ public Object getValueAt(int row, int col) {
 			return parameter.getName();
 		}
 		case COLUMN_SCOPE:{
-			if (parameter instanceof cbit.vcell.model.Kinetics.UnresolvedParameter){
+			if (parameter instanceof Kinetics.UnresolvedParameter){
 				return "unresolved";
 			}else if (parameter.getNameScope()==null){
 				return "null";
@@ -366,10 +331,8 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_ANNOTATION:{
 			if (parameter instanceof ModelParameter) {
-				return
-				(((ModelParameter)parameter).getModelParameterAnnotation() != null
-					? ((ModelParameter)parameter).getModelParameterAnnotation()
-					: "");
+				String modelParameterAnnotation = ((ModelParameter)parameter).getModelParameterAnnotation();
+				return (modelParameterAnnotation != null ? modelParameterAnnotation	: "");
 			} else {
 				ReactionStep rxStep = getEditableAnnotationReactionStep(row);
 				if(rxStep != null && parameter instanceof Kinetics.KineticsParameter){
@@ -427,7 +390,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 
 public ReactionStep getEditableAnnotationReactionStep(int rowIndex){
 
-	cbit.vcell.model.Parameter sortedParameter = (cbit.vcell.model.Parameter)getData().get(rowIndex);
+	Parameter sortedParameter = (Parameter)getData().get(rowIndex);
 	if(sortedParameter instanceof Kinetics.KineticsParameter){
 		KineticsParameter param = (KineticsParameter)sortedParameter;
 		if (param.getKinetics().getAuthoritativeParameter() == param){
@@ -452,7 +415,7 @@ public boolean isSortable(int col) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("model")) {
-		cbit.vcell.model.Model oldValue = (cbit.vcell.model.Model)evt.getOldValue();
+		Model oldValue = (Model)evt.getOldValue();
 		if (oldValue!=null){
 			oldValue.removePropertyChangeListener(this);
 			ReactionStep[] oldRS = oldValue.getReactionSteps();
@@ -470,7 +433,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 		}
-		cbit.vcell.model.Model newValue = (cbit.vcell.model.Model)evt.getNewValue();
+		Model newValue = (Model)evt.getNewValue();
 		if (newValue!=null){
 			newValue.addPropertyChangeListener(this);
 			ReactionStep[] newRS = newValue.getReactionSteps();
@@ -558,7 +521,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		fireTableRowsUpdated(0, getRowCount()-1);
 	}
 
-	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("kineticsParameters")) {
+	if (evt.getSource() instanceof Kinetics && evt.getPropertyName().equals("kineticsParameters")) {
 		KineticsParameter[] old = (KineticsParameter[])evt.getOldValue();
 		for (int i = 0; old!=null && i < old.length; i++){
 			old[i].removePropertyChangeListener(this);
@@ -570,7 +533,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableRowsUpdated(0, getRowCount()-1);
 	}
-	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("proxyParameters")) {
+	if (evt.getSource() instanceof Kinetics && evt.getPropertyName().equals("proxyParameters")) {
 		KineticsProxyParameter[] old = (KineticsProxyParameter[])evt.getOldValue();
 		for (int i = 0; old!=null && i < old.length; i++){
 			old[i].removePropertyChangeListener(this);
@@ -582,7 +545,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableRowsUpdated(0, getRowCount()-1);
 	}
-	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("unresolvedParameters")) {
+	if (evt.getSource() instanceof Kinetics && evt.getPropertyName().equals("unresolvedParameters")) {
 		UnresolvedParameter[] old = (UnresolvedParameter[])evt.getOldValue();
 		for (int i = 0; old!=null && i < old.length; i++){
 			old[i].removePropertyChangeListener(this);

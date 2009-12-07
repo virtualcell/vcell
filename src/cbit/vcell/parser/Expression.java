@@ -40,6 +40,14 @@ public class Expression implements java.io.Serializable, org.vcell.util.Matchabl
  */
 private Expression() {
 }
+
+public Expression(SymbolTableEntry ste) {
+	ASTIdNode idNode = new ASTIdNode(); 
+	idNode.name = ste.getName();
+	idNode.symbolTableEntry = ste;
+	this.rootNode = idNode;
+	this.normalizedInfixString = ste.getName();
+}
 /**
  * This method was created in VisualAge.
  * @param value double

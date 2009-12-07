@@ -913,15 +913,15 @@ private void modelParameterPanel_Initialize() {
 	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
 	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
 	
-	getmodelParameterTableModel().addPropertyChangeListener(
-		new java.beans.PropertyChangeListener(){
-			public void propertyChange(java.beans.PropertyChangeEvent evt){
-				if(evt.getPropertyName().equals("model")){
-					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-				}
-			}
-		}
-	);
+//	getmodelParameterTableModel().addPropertyChangeListener(
+//		new java.beans.PropertyChangeListener(){
+//			public void propertyChange(java.beans.PropertyChangeEvent evt){
+//				if(evt.getPropertyName().equals("model")){
+//					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+//				}
+//			}
+//		}
+//	);
 	getmodelParameterTableModel().addTableModelListener(
 		new javax.swing.event.TableModelListener(){
 			public void tableChanged(javax.swing.event.TableModelEvent e){

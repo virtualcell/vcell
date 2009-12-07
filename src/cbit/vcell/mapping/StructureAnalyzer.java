@@ -529,27 +529,28 @@ private void refreshTotalMatrices() throws Exception {
 					// (e.g. if reaction is on membrane and reactionParticipant is in a feature)
 					//
 					if (rps.length > 0) {
-						String expInfix = reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope());
+						Expression reactRateExp = reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext());
 						if ((structure instanceof Membrane) && (sc.getStructure()!=structure)){
 							Membrane membrane = (Membrane)structure;
 							MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 							Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)sc.getStructure());
-							String fluxCorrectionParameterSymbolName = mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter);
 							if (reactionSteps[j] instanceof FluxReaction){
-								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+expInfix));
+								exp = Expression.add(exp, Expression.mult(new Expression(fluxCorrectionParameter), reactRateExp));
+								//Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+expInfix));
 							}else if (reactionSteps[j] instanceof SimpleReaction){
-								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+ReservedSymbol.KMOLE.getName()+"*"+expInfix));
+								exp = Expression.add(exp, Expression.mult(Expression.mult(new Expression(fluxCorrectionParameter), new Expression(ReservedSymbol.KMOLE)), reactRateExp));
+//								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+ReservedSymbol.KMOLE.getName()+"*"+expInfix));
 							}else{
 								throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");
 							}
 						}else{
-							exp = Expression.add(exp,new Expression(expInfix));
+							exp = Expression.add(exp, reactRateExp);
 						}
 					}
 				}
 			}
 		}
-		exp.bindExpression(mathMapping);
+//		exp.bindExpression(mathMapping);
 		scm.setRate(exp.flatten());
 	}	
 //System.out.println("StructureAnalyzer.refreshTotalMatrices(), reactionSteps");
