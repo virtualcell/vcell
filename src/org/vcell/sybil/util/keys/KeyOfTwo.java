@@ -1,6 +1,6 @@
 package org.vcell.sybil.util.keys;
 
-/*   KeyOfOne  --- by Oliver Ruebenacker, UCHC --- September 2008
+/*   KeyOfOne  --- by Oliver Ruebenacker, UCHC --- September 2008 to November 2009
  *   A constant container of two objects, with equality being defined as equal wrapped objects.
  */
 
@@ -21,7 +21,7 @@ public class KeyOfTwo<A, B> {
 	}
 	
 	public boolean equals(Object o) { 
-		if(o instanceof KeyOfTwo) {
+		if(o instanceof KeyOfTwo<?, ?>) {
 			Object a2 = ((KeyOfTwo<?, ?>) o).a();
 			boolean aEqualsA2 = (a == null && a2 == null) || (a != null && a.equals(a2));
 			Object b2 = ((KeyOfTwo<?, ?>) o).b();
