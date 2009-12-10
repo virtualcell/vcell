@@ -460,7 +460,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
 					constantExp = Expression.mult(Expression.mult(new Expression(coeff.toString()),firstSM.getTotalVolumeCorrection(simContext_temp)),
-																new Expression(mathMapping_temp.getNameScope().getSymbolName(scSTE)));
+																new Expression(scSTE, mathMapping_temp.getNameScope()));
 					bFirst = false;
 				}else{
 					//
@@ -483,7 +483,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					constantExp = Expression.add(constantExp,
 												Expression.mult(new Expression(coeff.toString()),
 																Expression.mult(new Expression(sm.getTotalVolumeCorrection(simContext_temp)),
-																				new Expression(mathMapping_temp.getNameScope().getSymbolName(scSTE)))));
+																				new Expression(scSTE, mathMapping_temp.getNameScope()))));
 				}
 			}
 		}
@@ -729,7 +729,7 @@ private void substituteIntoFastSystem() throws Exception {
 	//
 	for (int j=0;j<speciesContextMappings.length;j++){
 		if (speciesContextMappings[j].getDependencyExpression() != null){
-			Expression dependentVar = new Expression(mathMapping.getNameScope().getSymbolName(speciesContextMappings[j].getSpeciesContext()));
+			Expression dependentVar = new Expression(speciesContextMappings[j].getSpeciesContext(), mathMapping.getNameScope());
 			Expression dependentExp = new Expression(speciesContextMappings[j].getDependencyExpression());
 //System.out.println("trying to substitute '"+dependentExp.toString()+"' for variable '"+dependentVar.toString()+"'"); 
 			for (int i=0;i<fastSpeciesContextMappings.length;i++){

@@ -569,10 +569,10 @@ private static Expression getInsideFluxCorrectionExpression(SimulationContext si
 	//
 	FeatureMapping insideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
 	Expression insideResidualVolFraction = insideFeatureMapping.getResidualVolumeFraction(simulationContext);
-	Expression exp = new Expression(simulationContext.getNameScope().getSymbolName(membraneMapping.getSurfaceToVolumeParameter()));
+	Expression exp = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simulationContext.getNameScope());
 	exp = Expression.mult(exp,Expression.invert(insideResidualVolFraction));
 	exp = exp.flatten();
-	exp.bindExpression(simulationContext);
+//	exp.bindExpression(simulationContext);
 	return exp;
 }
 
@@ -1090,9 +1090,10 @@ private static Expression getOutsideFluxCorrectionExpression(SimulationContext s
 	//
 	FeatureMapping outsideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature());
 	Expression outsideVolFraction = outsideFeatureMapping.getResidualVolumeFraction(simulationContext);
-	Expression exp = new Expression(simulationContext.getNameScope().getSymbolName(membraneMapping.getSurfaceToVolumeParameter()) + "*" + 
-									simulationContext.getNameScope().getSymbolName(membraneMapping.getVolumeFractionParameter()) + "/" + 
-									"(" + outsideVolFraction.infix() + ");");
+	Expression surfaceToVolumeParameter = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simulationContext.getNameScope());
+	Expression volumeFractionParameter = new Expression(membraneMapping.getVolumeFractionParameter(), simulationContext.getNameScope());	
+	Expression exp = Expression.div(Expression.mult(surfaceToVolumeParameter, volumeFractionParameter), outsideVolFraction);
+		
 	return exp;
 }
 
@@ -1860,8 +1861,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 							spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
 						}
 						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
-						Expression scsInitExpr = new Expression(getNameScope().getSymbolName(spCInitParm));
-						scsInitExpr.bindExpression(this);
+						Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
+//						scsInitExpr.bindExpression(this);
 						initExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
 					}
 				}

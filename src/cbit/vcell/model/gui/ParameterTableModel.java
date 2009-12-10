@@ -168,7 +168,7 @@ public Object getValueAt(int row, int col) {
 		Parameter parameter = getParameter(row);
 		switch (col){
 			case COLUMN_NAME:{
-				return getKinetics().getReactionStep().getNameScope().getSymbolName(parameter);
+				return new Expression(parameter, getKinetics().getReactionStep().getNameScope()).infix();
 				//return parameter.getName();
 			}
 			case COLUMN_UNITS:{

@@ -80,14 +80,14 @@ public Expression getExpressionConcToAmt(Expression concExpr, SpeciesContext spe
 	if (speciesContext.getStructure() instanceof Membrane)
 	{
 		// convert concentration(particles/area) to number of particles
-		particlesExpr = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize().getName())); // particles = concentration(molecues/um2) * size(um2)
+		particlesExpr = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize(), getNameScope())); // particles = concentration(molecues/um2) * size(um2)
 	}
 	else
 	{
 		// convert number of particles to concentration(particles/volume)
 		// particles = [iniConcentration(uM)*size(um3)]/KMOLE
-		Expression numeratorExpr = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize().getName()));
-		Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE.getName());
+		Expression numeratorExpr = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize(), getNameScope()));
+		Expression denominatorExpr = new Expression(ReservedSymbol.KMOLE, getNameScope());
 		particlesExpr = Expression.div(numeratorExpr, denominatorExpr);
 	}
 	
@@ -163,8 +163,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 			{
 				KineticsParameter kfp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward); 
-				rateConstantExpr = new Expression(getNameScope().getSymbolName(kfp));
-				rateConstantExpr.bindExpression(this);
+				rateConstantExpr = new Expression(kfp, getNameScope());
+//				rateConstantExpr.bindExpression(this);
 			}
 		    // get convert factor for rate constant( membrane:rateConstant*membrane_Size (factor is membrane_size), feature : rateConstant*(feature_size/KMole)(factor is feature_size/KMOLE)) )
 		    if(sm.getStructure() instanceof Membrane) {
@@ -228,8 +228,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 			{
 				KineticsParameter krp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse); 
-				rateConstantExpr = new Expression(getNameScope().getSymbolName(krp));
-				rateConstantExpr.bindExpression(this);
+				rateConstantExpr = new Expression(krp, getNameScope());
+//				rateConstantExpr.bindExpression(this);
 			}
 		    // get convert factor for rate constant( membrane:rateConstant*membrane_Size (factor is membrane_size), feature : rateConstant*(feature_size/KMole)(factor is feature_size/KMOLE)) ) 
 		    if(sm.getStructure() instanceof Membrane) {
@@ -578,8 +578,8 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 
 				//add function for initial amount
 				SpeciesContextSpec.SpeciesContextSpecParameter initAmountParam = speciesContextSpecs[i].getInitialCountParameter();
-				Expression 	iniAmountExp = getExpressionConcToAmt(new Expression(getNameScope().getSymbolName(initParam)),speciesContextSpecs[i].getSpeciesContext());
-				iniAmountExp.bindExpression(this);
+				Expression 	iniAmountExp = getExpressionConcToAmt(new Expression(initParam, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
+//				iniAmountExp.bindExpression(this);
 				varHash.addVariable(new Function(getMathSymbol(initAmountParam, sm),getIdentifierSubstitutions(iniAmountExp,initAmountParam.getUnitDefinition(),sm)));
 			}
 			else if(speciesContextSpecs[i].getInitialCountParameter() != null && speciesContextSpecs[i].getInitialCountParameter().getExpression() != null)
@@ -1082,8 +1082,8 @@ private Expression getSubstitutedExpr(Expression expr, boolean bConcentration, b
 				spCParm = getSpeciesCountParameter(spC);
 			}
 			// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
-			Expression scsInitExpr = new Expression(getNameScope().getSymbolName(spCParm));
-			scsInitExpr.bindExpression(this);
+			Expression scsInitExpr = new Expression(spCParm, getNameScope());
+//			scsInitExpr.bindExpression(this);
 			expr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
 		}
 	}
@@ -1137,13 +1137,13 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 			//initial condition is concentration
 			if(initConcParm != null && initConcParm.getExpression() != null)
 			{
-				initCondInCount = getExpressionConcToAmt(new Expression(getNameScope().getSymbolName(initConcParm)),speciesContextSpecs[i].getSpeciesContext());
+				initCondInCount = getExpressionConcToAmt(new Expression(initConcParm, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
 			}
 			else
 			{
-				initCondInCount = new Expression(getNameScope().getSymbolName(initCountParm));
+				initCondInCount = new Expression(initCountParm, getNameScope());
 			}
-			initCondInCount.bindExpression(this);
+//			initCondInCount.bindExpression(this);
 			initCondInCount = getSubstitutedExpr(initCondInCount, true, true);
 			scm.setDependencyExpression(initCondInCount);
 		}
