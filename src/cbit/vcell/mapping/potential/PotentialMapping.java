@@ -29,6 +29,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
 
 /**
  * Insert the type's description here.
@@ -208,25 +209,23 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 		Edge cycleEdges[] = graphCycles[i].getEdges();
 		Node nodesTraversed[] = graphCycles[i].getNodesTraversed();
 
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("0.0");
+		Expression exp = new Expression(0.0);
 		//
 		// add potentials that follow cycle.
 		//
 		for (int j = 0; j < cycleEdges.length; j++){
 			int edgeIndex = graph.getIndex(cycleEdges[j]);
+			Expression voltage = new Expression(((ElectricalDevice)cycleEdges[j].getData()).getVoltageSymbol(), fieldMathMapping.getNameScope());
 			if (cycleEdges[j].getNode1().equals(nodesTraversed[j])){
-				buffer.append(" + "); // going same direction
+				exp = Expression.add(exp, voltage); // going same direction
 				voltageMatrix.set_elem(i,edgeIndex,1);
 			}else{
-				buffer.append(" - "); // going opposite direction
+				exp = Expression.add(exp, Expression.negate(voltage)); // going opposite direction
 				voltageMatrix.set_elem(i,edgeIndex,-1);
 			}
-			buffer.append(fieldMathMapping.getNameScope().getSymbolName(((ElectricalDevice)cycleEdges[j].getData()).getVoltageSymbol()));
 		}
-		Expression exp = new Expression(buffer.toString());
 		if (!bSilent){ 
-			System.out.println(exp.flatten() + " = 0.0");
+			System.out.println(exp.flatten().infix() + " = 0.0");
 		}
 	}
 	if (!bSilent){
@@ -281,7 +280,8 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 			for (int j = column+1; j < graph.getNumEdges(); j++){
 				if (!voltageMatrix.get_elem(i,j).isZero()){
 					ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[j].getData();
-					buffer.append(" + "+voltageMatrix.get(i,j).minus().infixString()+'*'+fieldMathMapping.getNameScope().getSymbolName(colDevice.getVoltageSymbol()));
+					Expression voltage = new Expression(colDevice.getVoltageSymbol(), fieldMathMapping.getNameScope());
+					buffer.append(" + "+voltageMatrix.get(i,j).minus().infixString()+'*'+voltage.infix());
 				}	
 			}
 			dependentVoltageExpressions[column] = (new Expression(buffer.toString())).flatten();
@@ -334,25 +334,24 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 	for (int i = 0; i < capacitorGraphCycles.length; i++){
 		Edge cycleEdges[] = capacitorGraphCycles[i].getEdges();
 		Node nodesTraversed[] = capacitorGraphCycles[i].getNodesTraversed();
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("0.0");
+		
+		Expression exp = new Expression(0.0);
 		//
 		// add potentials that follow cycle.
 		//
 		for (int j = 0; j < cycleEdges.length; j++){
 			int edgeIndex = graph.getIndex(cycleEdges[j]);
+			Expression voltage = new Expression(((ElectricalDevice)cycleEdges[j].getData()).getVoltageSymbol(), fieldMathMapping.getNameScope());
 			if (cycleEdges[j].getNode1().equals(nodesTraversed[j])){
-				buffer.append(" + "); // going same direction
+				exp = Expression.add(exp, voltage); // going same direction
 				capacitorGraphVoltageMatrix.set_elem(i,edgeIndex,1);
 			}else{
-				buffer.append(" - "); // going opposite direction
+				exp = Expression.add(exp, Expression.negate(voltage));  // going opposite direction
 				capacitorGraphVoltageMatrix.set_elem(i,edgeIndex,-1);
 			}
-			buffer.append(fieldMathMapping.getNameScope().getSymbolName(((ElectricalDevice)cycleEdges[j].getData()).getVoltageSymbol()));
 		}
-		Expression exp = new Expression(buffer.toString());
 		if (!bSilent){
-			System.out.println(exp.flatten() + " = 0.0");
+			System.out.println(exp.flatten().infix() + " = 0.0");
 		}
 	}
 	if (!bSilent){
@@ -442,7 +441,8 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 	if (!bSilent){
 		System.out.println("reordered devices for current matrix elimination");
 		for (int i = 0; i < cIndex.length; i++){
-			System.out.println(i+") = device["+cIndex[i]+"] = "+fieldMathMapping.getNameScope().getSymbolName(((ElectricalDevice)fieldEdges[cIndex[i]].getData()).getVoltageSymbol()));
+			Expression voltage = new Expression(((ElectricalDevice)fieldEdges[cIndex[i]].getData()).getVoltageSymbol(), fieldMathMapping.getNameScope());
+			System.out.println(i+") = device["+cIndex[i]+"] = "+voltage.infix());
 		}
 	}
 	
@@ -478,7 +478,8 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 				//
 				// replace dVi/dt  with   1000/Ci * Ii  +  1000/Ci * Fi
 				//
-				String Cname = fieldMathMapping.getNameScope().getSymbolName(((MembraneElectricalDevice)device).getCapacitanceSymbol());
+				Expression capacitance = new Expression(((MembraneElectricalDevice)device).getCapacitanceSymbol(), fieldMathMapping.getNameScope());
+				String Cname = capacitance.infix();
 				currentMatrix.set_elem(row,j,coefficient.mult(new RationalExp(BigInteger.valueOf(1000))).div(new RationalExp(Cname)));  // entry for i's
 				currentMatrix.set_elem(row,j+graph.getNumEdges(),coefficient.minus().mult(new RationalExp(BigInteger.valueOf(1000))).div(new RationalExp(Cname))); // entry for F's
 			}else if (device.isVoltageSource()){
@@ -519,7 +520,8 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 			RationalExp coefficient = currentMatrix.get(i,j+graph.getNumEdges());
 			if (!coefficient.isZero()){
 				ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
-				buffer.append(" + "+coefficient.minus()+"*"+fieldMathMapping.getNameScope().getSymbolName(colDevice.getSourceSymbol()));
+				Expression source = new Expression(colDevice.getSourceSymbol(), fieldMathMapping.getNameScope());
+				buffer.append(" + "+coefficient.minus()+"*"+source.infix());
 			}	
 		}
 		//
@@ -561,7 +563,8 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 		ElectricalDevice device = (ElectricalDevice)fieldEdges[i].getData();
 		if (device instanceof MembraneElectricalDevice){
 			MembraneElectricalDevice membraneElectricalDevice = (MembraneElectricalDevice)device;
-			capacitiveCurrents[i] = Expression.add(totalCurrents[i],new Expression("-"+fieldMathMapping.getNameScope().getSymbolName(membraneElectricalDevice.getSourceSymbol())));
+			Expression source = new Expression(membraneElectricalDevice.getSourceSymbol(), fieldMathMapping.getNameScope());
+			capacitiveCurrents[i] = Expression.add(totalCurrents[i], Expression.negate(source));
 			capacitiveCurrents[i].bindExpression(membraneElectricalDevice);
 			//membraneElectricalDevice.setCapacitiveCurrentExpression(capacitiveCurrents[i]);
 		}else{

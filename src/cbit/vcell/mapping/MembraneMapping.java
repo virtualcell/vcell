@@ -228,9 +228,10 @@ public Expression getTotalVolumeCorrection(SimulationContext simulationContext) 
 		//
 		//   SurfToVolRatio * VolFract * KMOLE 
 		//
-		Expression exp = new Expression(simulationContext.getNameScope().getSymbolName(getSurfaceToVolumeParameter())+
-			                            "*"+simulationContext.getNameScope().getSymbolName(getVolumeFractionParameter())+
-			                            "*"+ReservedSymbol.KMOLE.getName());
+		Expression surfaceToVolParameter = new Expression(getSurfaceToVolumeParameter(), simulationContext.getNameScope());
+		Expression volFractionParameter = new Expression(getVolumeFractionParameter(), simulationContext.getNameScope());
+		Expression kmole = new Expression(ReservedSymbol.KMOLE, simulationContext.getNameScope());
+		Expression exp = Expression.mult(Expression.mult(surfaceToVolParameter, volFractionParameter), kmole);
 		//
 		// for all parent volumes (that have distributed membranes), multiply each volume fraction
 		//
@@ -238,7 +239,7 @@ public Expression getTotalVolumeCorrection(SimulationContext simulationContext) 
 		while (membrane!=null){
 			MembraneMapping memMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(membrane);
 			if (memMapping.getResolved(simulationContext)==false){
-				exp = Expression.mult(exp,new Expression(simulationContext.getNameScope().getSymbolName(memMapping.getVolumeFractionParameter())));
+				exp = Expression.mult(exp,volFractionParameter);
 			}else{
 				break;
 			}

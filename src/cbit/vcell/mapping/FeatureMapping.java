@@ -195,7 +195,7 @@ public Expression getResidualVolumeFraction(SimulationContext simulationContext)
 			if (((Membrane) struct).getOutsideFeature() == getFeature()) {
 				MembraneMapping mm = (MembraneMapping) simulationContext.getGeometryContext().getStructureMapping(struct);
 				if (mm.getResolved(simulationContext)==false){
-					exp = Expression.add(exp, Expression.negate(new Expression(simulationContext.getNameScope().getSymbolName(mm.getVolumeFractionParameter()))));
+					exp = Expression.add(exp, Expression.negate(new Expression(mm.getVolumeFractionParameter(), simulationContext.getNameScope())));
 				}
 			}
 		}
@@ -248,7 +248,7 @@ Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws 
 		while (membrane!=null){
 			MembraneMapping memMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(membrane);
 			if (memMapping.getResolved(simulationContext)==false){
-				exp = Expression.mult(exp,new Expression(simulationContext.getNameScope().getSymbolName(memMapping.getVolumeFractionParameter())));
+				exp = Expression.mult(exp,new Expression(memMapping.getVolumeFractionParameter(), simulationContext.getNameScope()));
 			}else{
 				break;
 			}

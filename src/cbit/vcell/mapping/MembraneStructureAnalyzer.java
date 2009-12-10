@@ -161,10 +161,11 @@ private void refreshResolvedFluxes() throws Exception {
 			// add flux term to ResolvedFlux.inFlux
 			//
 			if (fr.getKinetics() instanceof DistributedKinetics){
+				Expression reactionRateParameter = new Expression(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter(), mathMapping.getNameScope());
 				if (rf.inFlux.isZero()){
-					rf.inFlux = Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),insideFluxCorrection).flatten();
+					rf.inFlux = Expression.mult(reactionRateParameter,insideFluxCorrection).flatten();
 				}else{
-					rf.inFlux = Expression.add(rf.inFlux,Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),insideFluxCorrection).flatten());
+					rf.inFlux = Expression.add(rf.inFlux,Expression.mult(reactionRateParameter,insideFluxCorrection).flatten());
 				}
 			}else if (fr.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics for fluxes not yet supported");
@@ -202,10 +203,11 @@ private void refreshResolvedFluxes() throws Exception {
 			// sub flux term to resolvedFlux.outFlux
 			//
 			if (fr.getKinetics() instanceof DistributedKinetics){
+				Expression reactionRateParameter = new Expression(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter(), mathMapping.getNameScope());
 				if (rf.outFlux.isZero()){
-					rf.outFlux = Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),outsideFluxCorrection).flatten();
+					rf.outFlux = Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten();
 				}else{
-					rf.outFlux = Expression.add(rf.outFlux,Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),outsideFluxCorrection).flatten());
+					rf.outFlux = Expression.add(rf.outFlux,Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten());
 				}
 			}else if (fr.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics not yet supported for Flux Reaction: "+fr.getName());
