@@ -28,13 +28,13 @@ public class RationalExpUtils {
 			node instanceof DerivativeNode ||
 			node instanceof ASTLaplacianNode
 			) {
-			throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression");
+			throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression");
 		} else if (node instanceof ASTFuncNode) {
 			if (((ASTFuncNode)node).getFunction()==ASTFuncNode.POW){
 				try {
 					double constantExponent = node.jjtGetChild(1).evaluateConstant();
 					if (constantExponent != Math.floor(constantExponent)){
-						throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression, exponent is not an integer");
+						throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression, exponent is not an integer");
 					}
 					int intExponent = (int)constantExponent;
 					if (intExponent == 0){
@@ -52,16 +52,16 @@ public class RationalExpUtils {
 					}
 					return base;
 				}catch (ExpressionException e){
-					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression, exponent is not constant");
+					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression, exponent is not constant");
 				}
 			}else{
-				throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression");
+				throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression");
 			}
 		} else if (node instanceof ASTPowerNode) {
 			try {
 				double constantExponent = node.jjtGetChild(1).evaluateConstant();
 				if (constantExponent != Math.floor(constantExponent)){
-					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression, exponent is not an integer");
+					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression, exponent is not an integer");
 				}
 				int intExponent = (int)constantExponent;
 				if (intExponent == 0){
@@ -79,7 +79,7 @@ public class RationalExpUtils {
 				}
 				return base;
 			}catch (ExpressionException e){
-				throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT,null)+" cannot be translated to a Rational Expression, exponent is not constant");
+				throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression, exponent is not constant");
 			}
 		} else if (node instanceof ASTAddNode) {
 			RationalExp exp = RationalExp.ZERO;

@@ -225,7 +225,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
  * Creation date: (2/12/2002 2:15:22 PM)
  * @return java.lang.String
  */
-public final SymbolTableEntry getCurrentSymbol() {
+public final SymbolTableEntry getTotalCurrentDensitySymbol() {
 	return getParameterFromRole(ROLE_TotalCurrentDensity);
 }
 

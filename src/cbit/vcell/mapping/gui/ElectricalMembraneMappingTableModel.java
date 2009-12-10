@@ -46,33 +46,9 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
@@ -172,41 +148,46 @@ public int getRowCount() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("ElectricalMembraneMappingTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("ElectricalMembraneMappingTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-
-	MembraneMapping membraneMapping = getMembraneMapping(row);
-	if (membraneMapping == null){
-		return null;
-	}
-	switch (col){
-		case COLUMN_MEMBRANE:{
-			if (membraneMapping.getStructure()!=null){
-				return membraneMapping.getStructure().getName();
-			}else{
-				return null;
-			}
+	try {
+		if (row<0 || row>=getRowCount()){
+			throw new RuntimeException("ElectricalMembraneMappingTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		case COLUMN_CALCULATE_POTENTIAL:{
-			return new Boolean(membraneMapping.getCalculateVoltage());
+		if (col<0 || col>=NUM_COLUMNS){
+			throw new RuntimeException("ElectricalMembraneMappingTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 		}
-		case COLUMN_INITIAL_POTENTIAL:{
-			return new ScopedExpression(membraneMapping.getInitialVoltageParameter().getExpression(),membraneMapping.getInitialVoltageParameter().getNameScope());
-		}
-		case COLUMN_SPECIFIC_CAPACITANCE:{
-			if (membraneMapping.getCalculateVoltage()){
-				return new ScopedExpression(membraneMapping.getSpecificCapacitanceParameter().getExpression(),membraneMapping.getSpecificCapacitanceParameter().getNameScope());
-			}else{
-				return null;
-			}
-		}
-		default:{
+	
+		MembraneMapping membraneMapping = getMembraneMapping(row);
+		if (membraneMapping == null){
 			return null;
 		}
+		switch (col){
+			case COLUMN_MEMBRANE:{
+				if (membraneMapping.getStructure()!=null){
+					return membraneMapping.getStructure().getName();
+				}else{
+					return null;
+				}
+			}
+			case COLUMN_CALCULATE_POTENTIAL:{
+				return new Boolean(membraneMapping.getCalculateVoltage());
+			}
+			case COLUMN_INITIAL_POTENTIAL:{
+				return new ScopedExpression(membraneMapping.getInitialVoltageParameter().getExpression(),membraneMapping.getInitialVoltageParameter().getNameScope());
+			}
+			case COLUMN_SPECIFIC_CAPACITANCE:{
+				if (membraneMapping.getCalculateVoltage()){
+					return new ScopedExpression(membraneMapping.getSpecificCapacitanceParameter().getExpression(),membraneMapping.getSpecificCapacitanceParameter().getNameScope());
+				}else{
+					return null;
+				}
+			}
+			default:{
+				return null;
+			}
+		}
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		return null;
 	}
 }
 /**
@@ -262,12 +243,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-/**
  * Sets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
  * @param geometryContext The new value for the property.
  * @see #getGeometryContext
@@ -318,7 +293,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					String newExpressionString = (String)aValue;
 					newExpression = new Expression(newExpressionString);
 				}else if (aValue instanceof ScopedExpression){
-					newExpression = ((ScopedExpression)aValue).getExpression();
+//					newExpression = ((ScopedExpression)aValue).getExpression();
+					throw new RuntimeException("unexpected value type ScopedExpression");
 				}
 				membraneMapping.getInitialVoltageParameter().setExpression(newExpression);
 				fireTableRowsUpdated(rowIndex,rowIndex);
@@ -338,7 +314,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					String newExpressionString = (String)aValue;
 					newExpression = new Expression(newExpressionString);
 				}else if (aValue instanceof ScopedExpression){
-					newExpression = ((ScopedExpression)aValue).getExpression();
+//					newExpression = ((ScopedExpression)aValue).getExpression();
+					throw new RuntimeException("unexpected value type ScopedExpression");
 				}
 				membraneMapping.getSpecificCapacitanceParameter().setExpression(newExpression);
 				fireTableRowsUpdated(rowIndex,rowIndex);

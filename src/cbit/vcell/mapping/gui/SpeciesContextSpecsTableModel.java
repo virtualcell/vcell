@@ -62,13 +62,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
@@ -176,51 +169,56 @@ private void refreshData() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	
-	if (getData().size() <= row){
-		refreshData();
-	}	
-	SpeciesContextSpec scSpec = getSpeciesContextSpec(row);
-	switch (col){
-		case COLUMN_SPECIESCONTEXT:{
-			return scSpec.getSpeciesContext().getName();
+	try {
+		if (row<0 || row>=getRowCount()){
+			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		case COLUMN_SPECIES:{
-			return scSpec.getSpeciesContext().getSpecies().getCommonName();
+		if (col<0 || col>=NUM_COLUMNS){
+			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 		}
-		case COLUMN_STRUCTURE:{
-			return scSpec.getSpeciesContext().getStructure().getName();
-		}
-		case COLUMN_FIXED:{
-			return new Boolean(scSpec.isConstant());
-		}
-		case COLUMN_INITIAL:{
-			SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
-			if(initialConditionParameter != null) {
-				return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, autoCompleteSymbolFilter);
-			} else	{
+		
+		if (getData().size() <= row){
+			refreshData();
+		}	
+		SpeciesContextSpec scSpec = getSpeciesContextSpec(row);
+		switch (col){
+			case COLUMN_SPECIESCONTEXT:{
+				return scSpec.getSpeciesContext().getName();
+			}
+			case COLUMN_SPECIES:{
+				return scSpec.getSpeciesContext().getSpecies().getCommonName();
+			}
+			case COLUMN_STRUCTURE:{
+				return scSpec.getSpeciesContext().getStructure().getName();
+			}
+			case COLUMN_FIXED:{
+				return new Boolean(scSpec.isConstant());
+			}
+			case COLUMN_INITIAL:{
+				SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
+				if(initialConditionParameter != null) {
+					return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, autoCompleteSymbolFilter);
+				} else	{
+					return null;
+				}
+				
+			}
+			case COLUMN_DIFFUSION:{
+				SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
+				if(diffusionParameter != null) 	{
+					return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, autoCompleteSymbolFilter);
+				} else {
+					return null;
+				}			
+			}
+			default:{
 				return null;
 			}
-			
 		}
-		case COLUMN_DIFFUSION:{
-			SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
-			if(diffusionParameter != null) 	{
-				return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, autoCompleteSymbolFilter);
-			} else {
-				return null;
-			}			
-		}
-		default:{
-			return null;
-		}
-	}
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		return null;
+	}		
 }
 
 /**

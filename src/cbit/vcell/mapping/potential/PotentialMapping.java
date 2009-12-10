@@ -28,6 +28,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
 
 /**
  * Insert the type's description here.
@@ -376,25 +377,23 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 	for (int i = 0; i < nodes.length-1; i++){
 		if (graph.getDegree(nodes[i])>0){
 			Edge adjacentEdges[] = graph.getAdjacentEdges(nodes[i]);
-			StringBuffer buffer = new StringBuffer();
-			buffer.append("0.0");
+			Expression exp = new Expression(0.0);
 			//
 			// add currents that "enter" this node. (sum is zero)
 			//
 			for (int j = 0; j < adjacentEdges.length; j++){
 				int edgeIndex = graph.getIndex(adjacentEdges[j]);
+				Expression totalCurrentDensity = new Expression(((ElectricalDevice)adjacentEdges[j].getData()).getTotalCurrentDensitySymbol(), fieldMathMapping.getNameScope());
 				if (adjacentEdges[j].getNode1().equals(nodes[i])){
-					buffer.append(" - ");
+					exp = Expression.add(exp, Expression.negate(totalCurrentDensity));
 					kclMatrix.set_elem(i,edgeIndex,-1);
 				}else{
-					buffer.append(" + ");
+					exp = Expression.add(exp, totalCurrentDensity);
 					kclMatrix.set_elem(i,edgeIndex,1);
 				}
-				buffer.append(fieldMathMapping.getNameScope().getSymbolName(((ElectricalDevice)adjacentEdges[j].getData()).getCurrentSymbol()));
 			}
-			Expression exp = new Expression(buffer.toString());
 			if (!bSilent){
-				System.out.println(exp.flatten() + " = 0.0");
+				System.out.println(exp.flatten().infix() + " = 0.0");
 			}
 		}else{
 			throw new MappingException("compartment node is isolated in PotentialMapping, not supported");
@@ -513,7 +512,6 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 	for (int i = 0; i < fieldEdges.length; i++){
 		ElectricalDevice device = (ElectricalDevice)fieldEdges[cIndex[i]].getData();
 		StringBuffer buffer = new StringBuffer("0.0");
-		Expression totalCurrExp = new Expression(0);
 		//
 		// include Fi terms
 		//
@@ -521,7 +519,6 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 			RationalExp coefficient = currentMatrix.get(i,j+graph.getNumEdges());
 			if (!coefficient.isZero()){
 				ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
-				totalCurrExp = Expression.add(totalCurrExp, Expression.mult(new Expression(coefficient.minus() + ""), new Expression(colDevice.getSourceSymbol())));  
 				buffer.append(" + "+coefficient.minus()+"*"+fieldMathMapping.getNameScope().getSymbolName(colDevice.getSourceSymbol()));
 			}	
 		}
@@ -535,7 +532,8 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 				Expression timeDeriv = colDevice.getVoltageClampStimulus().getVoltageParameter().getExpression().differentiate("t");
 				timeDeriv = timeDeriv.flatten();
 				timeDeriv.bindExpression(colDevice);
-				buffer.append(" + "+coefficient.minus()+"*"+timeDeriv.infix(colDevice.getNameScope().getParent()));
+				timeDeriv.renameBoundSymbols(colDevice.getNameScope().getParent());
+				buffer.append(" + "+coefficient.minus()+"*"+timeDeriv.infix());
 			}	
 		}
 		totalCurrents[cIndex[i]] = (new Expression(buffer.toString())).flatten();
@@ -699,14 +697,14 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 //			if (!membraneMapping.getResolved()){
 				Node insideNode = graph.getNode(membrane.getInsideFeature().getName());
 				Node outsideNode = graph.getNode(membrane.getOutsideFeature().getName());
-				double capacitance = getTotalMembraneCapacitance(simContext,membrane).evaluateConstant();
+//				double capacitance = getTotalMembraneCapacitance(simContext,membrane).evaluateConstant();
 				//
 				// getTotalMembraneCurrent() already converts to "outwardCurrent" so that same convension as voltage
 				//
 				Expression currentSource = getTotalMembraneCurrent(simContext,membrane,mathMapping);
 				MembraneElectricalDevice device = new MembraneElectricalDevice(membraneMapping,mathMapping);
 				try {
-					device.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrentDensity).setExpression(getTotalMembraneCurrent(simContext,membrane,mathMapping));
+					device.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrentDensity).setExpression(currentSource);
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
 					throw new RuntimeException(e.getMessage());
@@ -820,35 +818,14 @@ public ElectricalDevice[] getElectricalDevices(Membrane membrane) {
  * @param capacitiveDevice cbit.vcell.mapping.potential.ElectricalDevice
  */
 public Expression getOdeRHS(MembraneElectricalDevice capacitiveDevice, MathMapping mathMapping) throws ExpressionException, MappingException {
-	Expression exp = new Expression("1000.0 / "+mathMapping.getNameScope().getSymbolName(capacitiveDevice.getCapacitanceSymbol())+" * ("+mathMapping.getNameScope().getSymbolName(capacitiveDevice.getCurrentSymbol())+" - "+capacitiveDevice.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrentDensity).getExpression().infix(mathMapping.getNameScope())+")");
-	exp.bindExpression(mathMapping); 
+	NameScope nameScope = mathMapping.getNameScope();
+	Expression transMembraneCurrentDensity = capacitiveDevice.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrentDensity).getExpression().renameBoundSymbols(nameScope);
+	Expression capacitance = new Expression(capacitiveDevice.getCapacitanceSymbol(), nameScope);
+	Expression totalCurrentDensity = new Expression(capacitiveDevice.getTotalCurrentDensitySymbol(), nameScope);
+	Expression exp = Expression.mult(Expression.div(new Expression(1000.0), capacitance), Expression.add(totalCurrentDensity, Expression.negate(transMembraneCurrentDensity)));
+//	exp.bindExpression(mathMapping); 
 	return exp;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/19/2002 2:12:28 PM)
- * @return double
- * @param membraneMapping cbit.vcell.mapping.MembraneMapping
- */
-private static double getSurfaceArea(SimulationContext simContext, Membrane membrane) {
-	return 1.0;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/19/2002 12:58:13 PM)
- * @return double
- * @param simContext cbit.vcell.mapping.SimulationContext
- * @param membrane cbit.vcell.model.Membrane
- */
-private static Expression getTotalMembraneCapacitance(SimulationContext simContext, Membrane membrane) throws ExpressionException {
-	MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
-	return Expression.mult(membraneMapping.getSpecificCapacitanceParameter().getExpression(),new Expression(getSurfaceArea(simContext,membrane)));
-}
-
 
 /**
  * Insert the method's description here.
@@ -882,7 +859,7 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 					//
 					// change sign convension from inward current to outward current (which is consistent with voltage convension)
 					//
-					currentExp = Expression.add(currentExp, Expression.negate(new Expression(distributedKinetics.getCurrentDensityParameter())));
+					currentExp = Expression.add(currentExp, Expression.negate(new Expression(distributedKinetics.getCurrentDensityParameter(), mathMapping.getNameScope())));
 				}
 			}
 		}else{
@@ -904,8 +881,8 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 					// translate from total current into current density
 					// @TODO later we will express in terms of total currents where possible.
 					//
-					Expression lumpedCurrentSymbolExp = new Expression(lumpedKinetics.getLumpedCurrentParameter());
-					Expression membraneSizeExp = new Expression(sizeParameter);
+					Expression lumpedCurrentSymbolExp = new Expression(lumpedKinetics.getLumpedCurrentParameter(), mathMapping.getNameScope());
+					Expression membraneSizeExp = new Expression(sizeParameter, mathMapping.getNameScope());
 					currentExp = Expression.add(currentExp, Expression.negate(Expression.mult(lumpedCurrentSymbolExp,Expression.invert(membraneSizeExp))));
 				}
 			}

@@ -426,18 +426,19 @@ public void setValueAt(Object object, int r, int c) {
 			if (object instanceof ConstantArraySpec) {
 				editScanValues(name, r);
 			} else if (object instanceof ScopedExpression) {
-				ScopedExpression inputValue = (ScopedExpression)object;
-				Expression expression = null;
-				if (inputValue == null) {
-					expression = new Expression((String)getValueAt(r, COLUMN_DEFAULT));
-				} else {
-					expression = inputValue.getExpression();
-				}
-				Constant constant = new Constant(name, expression);
-				getMathOverrides().putConstant(constant);
-				fireTableCellUpdated(r, c);
-				this.fireTableDataChanged();
-				setModified(true);
+//				ScopedExpression inputValue = (ScopedExpression)object;
+//				Expression expression = null;
+//				if (inputValue == null) {
+//					expression = new Expression((String)getValueAt(r, COLUMN_DEFAULT));
+//				} else {
+//					expression = inputValue.getExpression();
+//				}
+//				Constant constant = new Constant(name, expression);
+//				getMathOverrides().putConstant(constant);
+//				fireTableCellUpdated(r, c);
+//				this.fireTableDataChanged();
+//				setModified(true);
+				throw new RuntimeException("unexpected value type ScopedExpression");
 			} else if (object instanceof String) {
 				String inputValue = (String)object;
 				Expression expression = null;

@@ -4,15 +4,11 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import java.util.Hashtable;
-
-import org.vcell.util.document.ExternalDataIdentifier;
-
-
+import net.sourceforge.interval.ia_math.IAFunctionDomainException;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.parser.Expression.FunctionFilter;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solvers.CppClassCoder;
-import net.sourceforge.interval.ia_math.*;
 
 public class ASTFuncNode extends SimpleNode {
 	
@@ -1167,10 +1163,10 @@ public double evaluateConstant() throws ExpressionException {
 		
 		if (bExponentConstant && bMantissaConstant){
 			if (mantissa<0.0 && (Math.round(exponent)!=exponent)){
-				throw new FunctionDomainException("pow(u,v) and u<0 and v not an integer: undefined, u="+mantissa+", v="+exponent+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+				throw new FunctionDomainException("pow(u,v) and u<0 and v not an integer: undefined, u="+mantissa+", v="+exponent+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 			}
 			if (mantissa==0.0 && exponent<0){
-				throw new FunctionDomainException("pow(u,v) and u=0 and v<0 divide by zero, u="+mantissa+", v="+exponent+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+				throw new FunctionDomainException("pow(u,v) and u=0 and v<0 divide by zero, u="+mantissa+", v="+exponent+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 			}
 			result = Math.pow(mantissa,exponent);
 		}
@@ -1202,10 +1198,10 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("log() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument == 0.0){
-			throw new FunctionDomainException("log() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' == 0.0");
+			throw new FunctionDomainException("log() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' == 0.0");
 		}
 		if (argument < 0.0){
-			throw new FunctionDomainException("log() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' < 0.0");
+			throw new FunctionDomainException("log() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' < 0.0");
 		}
 		result = Math.log(argument);
 		break;
@@ -1219,7 +1215,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("sqrt() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument<0){
-			throw new FunctionDomainException("sqrt(u) where u<0 is undefined: u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' < 0.0");
+			throw new FunctionDomainException("sqrt(u) where u<0 is undefined: u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"' < 0.0");
 		}
 		result = Math.sqrt(argument);
 		break;
@@ -1243,7 +1239,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("asin() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument)>1.0){
-			throw new FunctionDomainException("asin(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("asin(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = Math.asin(argument);
 		break;
@@ -1252,7 +1248,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acos() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument)>1.0){
-			throw new FunctionDomainException("acos(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acos(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = Math.acos(argument);
 		break;
@@ -1291,7 +1287,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("csc() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument) == 0.0){
-			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.csc(argument);
 		break;
@@ -1310,7 +1306,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acsc() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument) < 1.0){
-			throw new FunctionDomainException("acsc(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acsc(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acsc(argument);
 		break;
@@ -1324,7 +1320,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("asec() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument) < 1.0){
-			throw new FunctionDomainException("asec(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("asec(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.asec(argument);
 		break;
@@ -1348,7 +1344,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("csch() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument == 0.0){
-			throw new FunctionDomainException("csch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("csch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.csch(argument);
 		break;
@@ -1357,7 +1353,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("coth() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument == 0.0){
-			throw new FunctionDomainException("coth(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("coth(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.coth(argument);
 		break;
@@ -1376,7 +1372,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acosh() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument < 1.0){
-			throw new FunctionDomainException("acosh(u) and u < 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acosh(u) and u < 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acosh(argument);
 		break;
@@ -1385,7 +1381,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("atanh() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument) >= 1.0){
-			throw new FunctionDomainException("atanh(u) and |u| >= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("atanh(u) and |u| >= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.atanh(argument);
 		break;
@@ -1394,7 +1390,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acsch() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument == 0.0){
-			throw new FunctionDomainException("acsch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acsch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acsch(argument);
 		break;
@@ -1403,7 +1399,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acoth() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument) <= 1.0){
-			throw new FunctionDomainException("acoth(u) and |u| <= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acoth(u) and |u| <= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acoth(argument);
 		break;
@@ -1412,7 +1408,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("asech() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument <= 0.0 || argument > 1.0){
-			throw new FunctionDomainException("asech(u) and 0.0 <= u  and u > 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("asech(u) and 0.0 <= u  and u > 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.asech(argument);
 		break;
@@ -1421,7 +1417,7 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("factorial() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (Math.abs(argument) < 0.0){
-			throw new FunctionDomainException("factorial(u) and u < 0.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("factorial(u) and u < 0.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.factorial(argument);
 		break;
@@ -1430,10 +1426,10 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("log10() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument == 0.0){
-			throw new FunctionDomainException("log10() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' == 0.0");
+			throw new FunctionDomainException("log10() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' == 0.0");
 		}
 		if (argument < 0.0){
-			throw new FunctionDomainException("log10() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' < 0.0");
+			throw new FunctionDomainException("log10() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' < 0.0");
 		}
 		result = Math.log(argument)/Math.log(10.0);
 		break;
@@ -1442,10 +1438,10 @@ public double evaluateConstant() throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("logbase() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateConstant();
 		if (argument == 0.0){
-			throw new FunctionDomainException("logbase() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' == 0.0");
+			throw new FunctionDomainException("logbase() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' == 0.0");
 		}
 		if (argument < 0.0){
-			throw new FunctionDomainException("logbase() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' < 0.0");
+			throw new FunctionDomainException("logbase() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' < 0.0");
 		}
 		result = 1.0/Math.log(argument);
 		break;
@@ -1461,7 +1457,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	}
 	if (Double.isInfinite(result) || Double.isNaN(result)){
-		System.out.println("ASTFuncNode.evaluateConstant("+getName()+") evaluated to "+result+", exp = "+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT));
+		System.out.println("ASTFuncNode.evaluateConstant("+getName()+") evaluated to "+result+", exp = "+infixString(LANGUAGE_DEFAULT));
 	}
 	return result;
 }      
@@ -1758,7 +1754,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("sqrt() expects 1 arguments");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (argument<0){
-			throw new FunctionDomainException("sqrt(u) where u<0 is undefined: u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' < 0.0");
+			throw new FunctionDomainException("sqrt(u) where u<0 is undefined: u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"' < 0.0");
 		}
 		result = Math.sqrt(argument);
 		break;
@@ -1773,10 +1769,10 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		double u = jjtGetChild(0).evaluateVector(values);
 		double v = jjtGetChild(1).evaluateVector(values);
 		if (u<0 && Math.round(v)!=v){
-			throw new FunctionDomainException("pow(u,v) and u<0 and v not an integer: undefined, u="+u+", v="+v+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("pow(u,v) and u<0 and v not an integer: undefined, u="+u+", v="+v+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		if (u==0.0 && v<0){
-			throw new FunctionDomainException("pow(u,v) and u=0 and v<0 divide by zero, u="+u+", v="+v+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("pow(u,v) and u=0 and v<0 divide by zero, u="+u+", v="+v+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		if (u>=0.0 && v==1.0){
 			return u;
@@ -1788,10 +1784,10 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("log() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (argument == 0.0){
-			throw new FunctionDomainException("log() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' == 0.0");
+			throw new FunctionDomainException("log() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' == 0.0");
 		}
 		if (argument < 0.0){
-			throw new FunctionDomainException("log() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"' < 0.0");
+			throw new FunctionDomainException("log() of a negative number is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' < 0.0");
 		}
 		result = Math.log(argument);
 		break;
@@ -1815,7 +1811,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("asin() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (Math.abs(argument)>1.0){
-			throw new FunctionDomainException("asin(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("asin(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = Math.asin(argument);
 		break;
@@ -1824,7 +1820,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acos() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (Math.abs(argument)>1.0){
-			throw new FunctionDomainException("acos(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acos(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = Math.acos(argument);
 		break;
@@ -1863,7 +1859,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("csc() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (Math.abs(argument) == 0.0){
-			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.csc(argument);
 		break;
@@ -1882,7 +1878,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acsc() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (Math.abs(argument) < 1.0){
-			throw new FunctionDomainException("acsc(u) is undefined in -1<u<1, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acsc(u) is undefined in -1<u<1, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acsc(argument);
 		break;
@@ -1896,7 +1892,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("asec() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (Math.abs(argument) < 1.0){
-			throw new FunctionDomainException("asec(u) is undefined in -1<u<1, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("asec(u) is undefined in -1<u<1, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.asec(argument);
 		break;
@@ -1920,7 +1916,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("csch() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (argument == 0.0){
-			throw new FunctionDomainException("csch(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("csch(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.csch(argument);
 		break;
@@ -1929,7 +1925,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("coth() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (argument == 0.0){
-			throw new FunctionDomainException("coth(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("coth(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.coth(argument);
 		break;
@@ -1948,7 +1944,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acosh() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (argument < 1.0){
-			throw new FunctionDomainException("acosh(u) is not defined for u < 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acosh(u) is not defined for u < 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acosh(argument);
 		break;
@@ -1957,7 +1953,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("atanh() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (Math.abs(argument) >= 1.0){
-			throw new FunctionDomainException("atanh(u) is not defined in |u| >= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("atanh(u) is not defined in |u| >= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.atanh(argument);
 		break;
@@ -1966,7 +1962,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acsch() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (argument == 0.0){
-			throw new FunctionDomainException("acsch(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acsch(u) is not defined for |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acsch(argument);
 		break;
@@ -1975,7 +1971,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("acoth() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (Math.abs(argument) <= 1.0){
-			throw new FunctionDomainException("acoth(u) is not defined in |u| <= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("acoth(u) is not defined in |u| <= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.acoth(argument);
 		break;
@@ -1984,7 +1980,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("asech() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values);
 		if (argument <= 0.0 || argument > 1.0){
-			throw new FunctionDomainException("asech(u) is not defined in 0.0 <= u  and u > 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("asech(u) is not defined in 0.0 <= u  and u > 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.asech(argument);
 		break;
@@ -1993,7 +1989,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("factorial() expects 1 argument");
 		double argument = jjtGetChild(0).evaluateVector(values); 
 		if (Math.abs(argument) < 0.0){
-			throw new FunctionDomainException("factorial(u) and u < 0.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("factorial(u) and u < 0.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		result = flanagan.math.Fmath.factorial(argument);
 		break;
@@ -2014,7 +2010,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 			throw new ExpressionException("grad function expetcs 2 arguments");
 		}
 		Node argNode = jjtGetChild(1);
-		String opName = ((ASTIdNode)jjtGetChild(0)).infixString(LANGUAGE_DEFAULT, null);
+		String opName = ((ASTIdNode)jjtGetChild(0)).infixString(LANGUAGE_DEFAULT);
 		if(((values.length%Expression.GRADIENT_NUM_SPATIAL_ELEMENTS) != 0)){
 			throw new ExpressionException("number of grad values is not an even multiple of "+Expression.GRADIENT_NUM_SPATIAL_ELEMENTS+"\n"+
 											"current point plus 12 spatial neighbors)");
@@ -2463,13 +2459,13 @@ String getName() {
  * This method was created by a SmartGuide.
  * @return java.lang.String[]
  */
-public String[] getSymbols(int language, NameScope nameScope) {
+public String[] getSymbols(int language) {
 	if (getFunction() == FIELD) {
 		return new String[0];
 	}else if (getFunction() == GRAD){
-		return jjtGetChild(jjtGetNumChildren()-1).getSymbols(language, nameScope);
+		return jjtGetChild(jjtGetNumChildren()-1).getSymbols(language);
 	}
-	return super.getSymbols(language, nameScope);
+	return super.getSymbols(language);
 }
 
 
@@ -2490,8 +2486,7 @@ static String getVCellFunctionNameFromMathMLFuncName(String mathMLFunctName) {
 	return null;
 }
 
-
-public String infixString(int lang, NameScope nameScope) {
+public String infixString(int lang) {
 	
 	StringBuffer buffer = new StringBuffer();
 
@@ -2502,21 +2497,21 @@ public String infixString(int lang, NameScope nameScope) {
 	 	case POW: {		      
 			if (lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL){
 				buffer.append("(");
-				buffer.append(jjtGetChild(0).infixString(lang,nameScope));
+				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append(" ^ ");
-				buffer.append(jjtGetChild(1).infixString(lang,nameScope));
+				buffer.append(jjtGetChild(1).infixString(lang));
 				buffer.append(")");
 			} else  if (lang == LANGUAGE_C){
 				buffer.append("pow(");
-				buffer.append("((double)(" + jjtGetChild(0).infixString(lang,nameScope) + "))");
+				buffer.append("((double)(" + jjtGetChild(0).infixString(lang) + "))");
 				buffer.append(",");
-				buffer.append("((double)(" + jjtGetChild(1).infixString(lang,nameScope) + "))");
+				buffer.append("((double)(" + jjtGetChild(1).infixString(lang) + "))");
 				buffer.append(")");
 			} else if (lang == LANGUAGE_DEFAULT){
 				buffer.append("pow(");
-				buffer.append(jjtGetChild(0).infixString(lang,nameScope));
+				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append(",");
-				buffer.append(jjtGetChild(1).infixString(lang,nameScope));
+				buffer.append(jjtGetChild(1).infixString(lang));
 				buffer.append(")");
 			}
 			break;
@@ -2528,7 +2523,7 @@ public String infixString(int lang, NameScope nameScope) {
 				buffer.append(getName() + "(");
 				for (int i=0;i<jjtGetNumChildren();i++){
 					if (i>0) buffer.append(", ");
-					buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+					buffer.append(jjtGetChild(i).infixString(lang));
 				}
 				buffer.append(")");
 		 	}
@@ -2539,9 +2534,9 @@ public String infixString(int lang, NameScope nameScope) {
 			for (int i=0;i<jjtGetNumChildren();i++){
 				if (i>0) buffer.append(", ");
 				if (lang == LANGUAGE_C){
-					buffer.append("((double)(" + jjtGetChild(i).infixString(lang,nameScope) + "))");
+					buffer.append("((double)(" + jjtGetChild(i).infixString(lang) + "))");
 				} else {
-					buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+					buffer.append(jjtGetChild(i).infixString(lang));
 				}
 			}
 			buffer.append(")");

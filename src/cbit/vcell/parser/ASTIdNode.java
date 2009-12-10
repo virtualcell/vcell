@@ -6,7 +6,9 @@ package cbit.vcell.parser;
 ©*/
 /* JJT: 0.2.2 */
 
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.RealInterval;
+
+import org.vcell.util.TokenMangler;
 
 public class ASTIdNode extends SimpleNode {
 
@@ -148,7 +150,7 @@ public boolean equals(Node node) throws ExpressionException {
 public double evaluateConstant() throws ExpressionException {
 
 	if (symbolTableEntry == null){
-		throw new ExpressionException("tryin to evaluate unbound identifier '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+		throw new ExpressionException("tryin to evaluate unbound identifier '"+infixString(LANGUAGE_DEFAULT)+"'");
 	}	
 
 	if (symbolTableEntry.isConstant()){
@@ -251,32 +253,25 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
  * This method was created by a SmartGuide.
  * @return java.lang.String[]
  */
-public String[] getSymbols(int language, NameScope nameScope) {
+@Override
+public String[] getSymbols(int language) {
 	String array[] = new String[1];
-	array[0] = infixString(language,nameScope);
+	array[0] = infixString(language);
 	return array;
 }
-public String infixString(int lang, NameScope nameScope) {
-	String idName;
-	if (nameScope == null){
-		idName = name;
-	}else{
-		if (symbolTableEntry!=null){
-			idName = nameScope.getSymbolName(symbolTableEntry);
-		}else{
-			idName = nameScope.getUnboundSymbolName(name);
-		}
-	}
+
+public String infixString(int lang) {
+	String idName = name;
 	if (lang == LANGUAGE_DEFAULT) {
 		return idName;
 	} else if (lang == LANGUAGE_C){
 		return idName;
 	} else if (lang == LANGUAGE_MATLAB){	
-		return org.vcell.util.TokenMangler.getEscapedTokenMatlab(idName);
+		return TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
-		return org.vcell.util.TokenMangler.getEscapedTokenJSCL(idName);
+		return TokenMangler.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
-		return org.vcell.util.TokenMangler.getEscapedTokenECLiPSe(idName);
+		return TokenMangler.getEscapedTokenECLiPSe(idName);
 	}else{
 		throw new RuntimeException("Lanaguage '"+lang+" not supported");
 	}
@@ -303,18 +298,7 @@ public void setInterval(RealInterval interval, RealInterval intervals[]) throws 
 		throw new ExpressionBindingException("referencing unbound identifier " + name);		
 	}
 }
-public void substituteBoundSymbols() throws ExpressionException {
-	if (symbolTableEntry == null) {
-		throw new ExpressionBindingException("error substituting unbound identifier " + name);
-	}else{
-		String newName = symbolTableEntry.getName();
-		if (newName!=null && !newName.equals("null")){
-			name = newName;
-		}else{
-			throw new ExpressionBindingException("error substituting bound identifier with 'null' syntax");
-		}
-	}
-}
+
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
@@ -322,4 +306,13 @@ public void substituteBoundSymbols() throws ExpressionException {
 public String toString() {
 	return "IdNode (" + name + ")";
 }
+@Override
+public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
+	if (symbolTableEntry == null) {
+		throw new ExpressionBindingException("error renaming unbound identifier " + name);
+	}
+	
+	name = nameScope.getSymbolName(symbolTableEntry);
+}
+
 }

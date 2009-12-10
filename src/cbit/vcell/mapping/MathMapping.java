@@ -500,7 +500,7 @@ public MathMapping.KFluxParameter getFluxCorrectionParameter(MembraneMapping mem
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
 protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefinition desiredExpUnitDef, StructureMapping structureMapping) throws ExpressionException, MappingException {
-	String symbols[] = origExp.getSymbols(null);
+	String symbols[] = origExp.getSymbols();
 	if (symbols == null){
 		return origExp;
 	}
@@ -508,23 +508,29 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 	try {
 		expUnitDef = VCUnitEvaluator.getUnitDefinition(origExp);
 		if (desiredExpUnitDef == null){
-			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are null");
+			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
+			System.out.println("...........exp='"+expStr+"', desiredUnits are null");
 			localIssueList.add(new Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
-			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', evaluated Units are null");
+			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
+			System.out.println("...........exp='"+expStr+"', evaluated Units are null");
 			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
-			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),Issue.SEVERITY_WARNING));
+			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
+			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
-			System.out.println("...........exp='"+origExp.infix(this.getNameScope())+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(this.getNameScope()),Issue.SEVERITY_WARNING));
+			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
+			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+			localIssueList.add(new Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
-		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
+		String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
+		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
 		localIssueList.add(new Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
-		System.out.println(".........exp='"+origExp.infix(this.getNameScope())+"' exception='"+e.getMessage()+"'");
+		String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
+		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
 		localIssueList.add(new Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);

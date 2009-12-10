@@ -54,16 +54,16 @@ public static void testMultiscope() {
 		// print expression for each scope
 		//
 		for (int j = 0; j < scopes.length; j++){
-			System.out.println("\n\nexp = '"+exp+"', wrt "+scopes[j].getName()+" = '"+exp.infix(scopes[j])+"'");
+			System.out.println("\n\nexp = '"+exp+"', wrt "+scopes[j].getName()+" = '"+exp.renameBoundSymbols(scopes[j]).infix()+"'");
 
 			System.out.println("\n--------binding with explicit scoping----------\n");
-			Expression exp2 = new Expression(exp.infix(scopes[j]));
+			Expression exp2 = new Expression(exp.renameBoundSymbols(scopes[j]).infix());
 			for (int i = 0; i < symbolTables.length; i++){
 				try {
 					exp2.bindExpression(symbolTables[j]);
 					System.out.println("exp '"+exp2+"' bound to symbolTable "+i);
 					for (int k = 0; k < scopes.length; k++){
-						System.out.println("\t\texp2 = '"+exp2+"', wrt "+scopes[k].getName()+" = '"+exp.infix(scopes[k])+"'");
+						System.out.println("\t\texp2 = '"+exp2+"', wrt "+scopes[k].getName()+" = '"+exp.renameBoundSymbols(scopes[k]).infix()+"'");
 					}
 				}catch (Throwable e){
 					System.out.print("exp '"+exp2+"' can't bind to symbolTable "+i+":  ");
@@ -77,7 +77,7 @@ public static void testMultiscope() {
 		// print expression for each scope
 		//
 		for (int j = 0; j < scopes.length; j++){
-			System.out.println("exp = '"+exp+"', wrt "+scopes[j].getName()+" = '"+exp.infix(scopes[j])+"'");
+			System.out.println("exp = '"+exp+"', wrt "+scopes[j].getName()+" = '"+exp.renameBoundSymbols(scopes[j]).infix()+"'");
 		}
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
@@ -111,7 +111,7 @@ public static void testSingleScope() {
 			SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols,boundScope);
 			exp.bindExpression(symbolTable);
 			for (int j = 0; j < scopes.length; j++){
-				System.out.println("exp = '"+exp+"', bound to "+boundScope.getName()+", exp wrt "+scopes[j].getName()+" = '"+exp.infix(scopes[j])+"'");
+				System.out.println("exp = '"+exp+"', bound to "+boundScope.getName()+", exp wrt "+scopes[j].getName()+" = '"+exp.renameBoundSymbols(scopes[j]).infix()+"'");
 			}
 		}
 	}catch (Throwable e){

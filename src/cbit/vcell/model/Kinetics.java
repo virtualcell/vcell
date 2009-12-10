@@ -1974,7 +1974,7 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 	try {
 		KineticsParameter newKineticsParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
 		KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
-		String symbols[] = exp.getSymbols(getReactionStep().getNameScope());
+		String symbols[] = exp.getSymbols();
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
 			SymbolTableEntry ste = reactionStep.getEntry(symbols[i]);
 			if (ste==null){
@@ -2001,22 +2001,6 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 		}
 	}
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @param expressionString java.lang.String
- * @exception java.lang.Exception The exception description.
- */
-public void setParameterValue(String parmName, String expressionString) throws ExpressionException, PropertyVetoException {
-	KineticsParameter parm = getKineticsParameter(parmName);
-	if (parm == null){
-		throw new RuntimeException("parameter "+parmName+" not found");
-	}
-	Expression exp = new Expression(expressionString);
-	setParameterValue(parm,exp);
-}
-
 
 /**
  * Sets the unresolvedParameters property (cbit.vcell.model.UnresolvedParameter[]) value.

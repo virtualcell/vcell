@@ -7,9 +7,12 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.MultiPurposeTextPanel;
+import cbit.vcell.client.BNGWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
-import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -27,14 +30,14 @@ import cbit.vcell.xml.sbml_transform.SbmlTransformException;
 public class BNGOutputPanel extends javax.swing.JPanel {
 	private javax.swing.JTabbedPane ivjJTabbedPane1 = null;
 	private BNGOutput fieldBngOutput = null;
-	private cbit.vcell.server.bionetgen.BNGOutput ivjbngOutput1 = null;
+	private BNGOutput ivjbngOutput1 = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.JPanel ivjConsoleOutputPage = null;
 	private javax.swing.JTextArea ivjConsoleTextArea = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JScrollPane ivjConsoleScrollPane = null;
 	private javax.swing.JPanel ivjRuleInputPage = null;
-	private cbit.vcell.server.bionetgen.BNGInput ivjbngInput = null;
+	private BNGInput ivjbngInput = null;
 	private javax.swing.JPanel ivjRulesEditorButtonsPanel1 = null;
 	private javax.swing.JButton ivjRunBNGButton = null;
 	private javax.swing.JPanel ivjOutputChoicesPanel = null;
@@ -49,7 +52,7 @@ public class BNGOutputPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjOutputTextScrollPane = null;
 	private javax.swing.JPanel ivjHelpPanel = null;
 	private javax.swing.JLabel ivjOutputWarningLabel = null;
-	private cbit.vcell.client.BNGWindowManager fieldBngWindowManager = new cbit.vcell.client.BNGWindowManager(null, null);
+	private BNGWindowManager fieldBngWindowManager = new BNGWindowManager(null, null);
 	private javax.swing.JButton ivjHelpButton = null;
 	private javax.swing.JButton ivjOpenFileButton = null;
 	private javax.swing.JButton ivjJButtonManual = null;
@@ -212,7 +215,7 @@ public void changeBNGPanelTab() {
  * @param value cbit.vcell.server.bionetgen.BNGOutput
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.server.bionetgen.BNGOutput value) {
+private void connEtoC1(BNGOutput value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -668,7 +671,7 @@ private void enableSaveOutputButton() {
 private BNGDataPlotPanel getbngDataPlotPanel() {
 	if (ivjbngDataPlotPanel == null) {
 		try {
-			ivjbngDataPlotPanel = new cbit.vcell.client.bionetgen.BNGDataPlotPanel();
+			ivjbngDataPlotPanel = new BNGDataPlotPanel();
 			ivjbngDataPlotPanel.setName("bngDataPlotPanel");
 			// user code begin {1}
 			// user code end
@@ -687,7 +690,7 @@ private BNGDataPlotPanel getbngDataPlotPanel() {
  * @return bngclientserverapi.BNGInput
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.server.bionetgen.BNGInput getbngInput() {
+private BNGInput getbngInput() {
 	// user code begin {1}
 	// user code end
 	return ivjbngInput;
@@ -708,7 +711,7 @@ public BNGOutput getBngOutput() {
  * @return bngclientserverapi.BNGOutput
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.server.bionetgen.BNGOutput getbngOutput1() {
+private BNGOutput getbngOutput1() {
 	// user code begin {1}
 	// user code end
 	return ivjbngOutput1;
@@ -719,7 +722,7 @@ private cbit.vcell.server.bionetgen.BNGOutput getbngOutput1() {
  * @return The bngWindowManager property value.
  * @see #setBngWindowManager
  */
-public cbit.vcell.client.BNGWindowManager getBngWindowManager() {
+public BNGWindowManager getBngWindowManager() {
 	return fieldBngWindowManager;
 }
 
@@ -739,28 +742,28 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 		Vector<SpeciesContext> fwdReactantsVector = new Vector<SpeciesContext>();
 		Vector<SpeciesContext> fwdProductsVector = new Vector<SpeciesContext>();
 		for (int j = 0; j < rps.length; j++){
-			if (rps[j] instanceof cbit.vcell.model.Reactant) {
+			if (rps[j] instanceof Reactant) {
 				fwdReactantsVector.addElement(rps[j].getSpeciesContext());
-			} else if (rps[j] instanceof cbit.vcell.model.Product) {
+			} else if (rps[j] instanceof Product) {
 				fwdProductsVector.addElement(rps[j].getSpeciesContext());
 			}
 		}
-		SpeciesContext[] fwdReactants = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(fwdReactantsVector, SpeciesContext.class);
-		SpeciesContext[] fwdProducts = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(fwdProductsVector, SpeciesContext.class);
+		SpeciesContext[] fwdReactants = (SpeciesContext[])BeanUtils.getArray(fwdReactantsVector, SpeciesContext.class);
+		SpeciesContext[] fwdProducts = (SpeciesContext[])BeanUtils.getArray(fwdProductsVector, SpeciesContext.class);
 
 		boolean bReverseReactionFound = false;
 
 		// Loop through all the reactions to find the corresponding reverse reaction
 		for (int ii = 0; ii < reactionSteps.length; ii++){
-			cbit.vcell.model.ReactionStep revRStep = reactionSteps[ii];
+			ReactionStep revRStep = reactionSteps[ii];
 			// Get the reactionParticipants and the corresponding reactants and products in an array
 			ReactionParticipant[] revRps = revRStep.getReactionParticipants();
 			Vector<SpeciesContext> revReactantsVector = new Vector<SpeciesContext>();
 			Vector<SpeciesContext> revProductsVector = new Vector<SpeciesContext>();
 			for (int j = 0; j < revRps.length; j++){
-				if (revRps[j] instanceof cbit.vcell.model.Reactant) {
+				if (revRps[j] instanceof Reactant) {
 					revReactantsVector.addElement(revRps[j].getSpeciesContext());
-				} else if (revRps[j] instanceof cbit.vcell.model.Product) {
+				} else if (revRps[j] instanceof Product) {
 					revProductsVector.addElement(revRps[j].getSpeciesContext());
 				}
 			}
@@ -773,9 +776,9 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 				MassActionKinetics revMAKinetics = (MassActionKinetics)revRStep.getKinetics(); // inner 'for' loop
 				MassActionKinetics fwdMAKinetics = (MassActionKinetics)fwdRStep.getKinetics();  // outer 'for' loop
 				try {
-					fwdMAKinetics.setParameterValue(fwdMAKinetics.getReverseRateParameter().getName(), revMAKinetics.getForwardRateParameter().getExpression().infix());
-					Parameter param = revMAKinetics.getKineticsParameter(revMAKinetics.getForwardRateParameter().getExpression().infix());
-					fwdMAKinetics.setParameterValue(param.getName(), param.getExpression().infix());
+					fwdMAKinetics.setParameterValue(fwdMAKinetics.getReverseRateParameter(), revMAKinetics.getForwardRateParameter().getExpression());
+					Kinetics.KineticsParameter param = revMAKinetics.getKineticsParameter(revMAKinetics.getForwardRateParameter().getExpression().infix());
+					fwdMAKinetics.setParameterValue(param, param.getExpression());
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException(e.getMessage());
@@ -797,7 +800,7 @@ private ReactionStep[] getCollapsedReactionSteps(ReactionStep[] reactionSteps) {
 	}
 
 	// Convert the vector into an array of reactionSteps and return
-	cbit.vcell.model.ReactionStep[] collapsedRxnSteps = (ReactionStep[])BeanUtils.getArray(collapsedRxnStepsVector, ReactionStep.class);
+	ReactionStep[] collapsedRxnSteps = (ReactionStep[])BeanUtils.getArray(collapsedRxnStepsVector, ReactionStep.class);
 	return collapsedRxnSteps;
 }
 
@@ -1536,7 +1539,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 private MultiPurposeTextPanel getBNGLInputPanel() {
 	if (ivjBNGLInputPanel == null) {
 		try {
-			ivjBNGLInputPanel = new cbit.gui.MultiPurposeTextPanel();
+			ivjBNGLInputPanel = new MultiPurposeTextPanel();
 			ivjBNGLInputPanel.setAutoCompletionWords(getBNGAutoCompletionWords());
 			ivjBNGLInputPanel.setKeywords(getBNGkeywords());
 			// user code begin {1}
@@ -2165,7 +2168,7 @@ private void sbmlImportButton_ActionPerformed() {
  * @param newValue bngclientserverapi.BNGInput
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbngInput(cbit.vcell.server.bionetgen.BNGInput newValue) {
+private void setbngInput(BNGInput newValue) {
 	if (ivjbngInput != newValue) {
 		try {
 			ivjbngInput = newValue;
@@ -2200,10 +2203,10 @@ public void setBngOutput(BNGOutput bngOutput) {
  * @param newValue bngclientserverapi.BNGOutput
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbngOutput1(cbit.vcell.server.bionetgen.BNGOutput newValue) {
+private void setbngOutput1(BNGOutput newValue) {
 	if (ivjbngOutput1 != newValue) {
 		try {
-			cbit.vcell.server.bionetgen.BNGOutput oldValue = getbngOutput1();
+			BNGOutput oldValue = getbngOutput1();
 			ivjbngOutput1 = newValue;
 			connPtoP1SetSource();
 			connEtoC1(ivjbngOutput1);
@@ -2226,8 +2229,8 @@ private void setbngOutput1(cbit.vcell.server.bionetgen.BNGOutput newValue) {
  * @param bngWindowManager The new value for the property.
  * @see #getBngWindowManager
  */
-public void setBngWindowManager(cbit.vcell.client.BNGWindowManager bngWindowManager) {
-	cbit.vcell.client.BNGWindowManager oldValue = fieldBngWindowManager;
+public void setBngWindowManager(BNGWindowManager bngWindowManager) {
+	BNGWindowManager oldValue = fieldBngWindowManager;
 	fieldBngWindowManager = bngWindowManager;
 	firePropertyChange("bngWindowManager", oldValue, bngWindowManager);
 }

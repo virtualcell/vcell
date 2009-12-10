@@ -182,87 +182,92 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 	 * display data in table
 	 */
 	public Object getValueAt(int row, int col) {
-		if (row<0 || row>=getRowCount()){
-			throw new RuntimeException("TransformMassActionTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-		}
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("TransfromMassActionTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-		}
-		
-		Kinetics origKinetics = getModel().getReactionSteps()[row].getKinetics();
-		MassActionSolver.MassActionFunction maFunc = transMAs.getTransformedReactionSteps()[row].getMassActionFunction();
-		switch (col){
-			case COLUMN_REACTION:
-			{
-				return getModel().getReactionSteps()[row].getName();
+		try {
+			if (row<0 || row>=getRowCount()){
+				throw new RuntimeException("TransformMassActionTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 			}
-			case COLUMN_REACTIONTYPE:
-			{
-				if(getModel().getReactionSteps()[row] instanceof SimpleReaction)
-				{
-					return "reaction";
-				}
-				else
-				{
-					return "flux";
-				}
+			if (col<0 || col>=NUM_COLUMNS){
+				throw new RuntimeException("TransfromMassActionTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 			}
-			case COLUMN_KINETICS:
-			{
-				if(origKinetics != null)
+			
+			Kinetics origKinetics = getModel().getReactionSteps()[row].getKinetics();
+			MassActionSolver.MassActionFunction maFunc = transMAs.getTransformedReactionSteps()[row].getMassActionFunction();
+			switch (col){
+				case COLUMN_REACTION:
 				{
-					return origKinetics.getKineticsDescription().getDescription();
+					return getModel().getReactionSteps()[row].getName();
 				}
-				return null;
-			}
-			case COLUMN_RATE:
-			{
-				if(origKinetics != null)
+				case COLUMN_REACTIONTYPE:
 				{
-					Kinetics.KineticsParameter ratePara = origKinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
-					if(ratePara != null && ratePara.getExpression() !=null)
+					if(getModel().getReactionSteps()[row] instanceof SimpleReaction)
 					{
-						return new ScopedExpression(ratePara.getExpression(),ratePara.getNameScope(),false);
+						return "reaction";
+					}
+					else
+					{
+						return "flux";
 					}
 				}
-				return null;
-			}
-			case COLUMN_TRANSFORM:
-			{
-				//we don't tick the checkbox if original reaction is already Mass Action
-				//For flux, we don't tick the checkbox if the flux can be transfomed to Mass Action. It will actually be done in stoch math mapping
-				//so the checkbox will not be ticked for flux regardless it can be transformed or not. 
-				return getIsSelected(row);
-			}
-			case COLUMN_FORWARDRATE:
-			{
-				if(maFunc != null && maFunc.getForwardRate() != null)
+				case COLUMN_KINETICS:
 				{
-					return new ScopedExpression(maFunc.getForwardRate(), null, false);
+					if(origKinetics != null)
+					{
+						return origKinetics.getKineticsDescription().getDescription();
+					}
+					return null;
 				}
-				return null;
-			}
-			case COLUMN_REVERSERATE:
-			{
-				if(maFunc != null && maFunc.getReverseRate() != null)
+				case COLUMN_RATE:
 				{
-					return new ScopedExpression(maFunc.getReverseRate(), null, false);
+					if(origKinetics != null)
+					{
+						Kinetics.KineticsParameter ratePara = origKinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
+						if(ratePara != null && ratePara.getExpression() !=null)
+						{
+							return new ScopedExpression(ratePara.getExpression(),ratePara.getNameScope(),false);
+						}
+					}
+					return null;
 				}
-				return null;
-			}
-			case COLUMN_REMARK:
-			{
-				if(transMAs.getTransformedReactionSteps()[row] != null)
+				case COLUMN_TRANSFORM:
 				{
-					return transMAs.getTransformedReactionSteps()[row].getTransformRemark();
+					//we don't tick the checkbox if original reaction is already Mass Action
+					//For flux, we don't tick the checkbox if the flux can be transfomed to Mass Action. It will actually be done in stoch math mapping
+					//so the checkbox will not be ticked for flux regardless it can be transformed or not. 
+					return getIsSelected(row);
 				}
-				return null;
-    		}
-			default:
-			{
-				return null;
+				case COLUMN_FORWARDRATE:
+				{
+					if(maFunc != null && maFunc.getForwardRate() != null)
+					{
+						return new ScopedExpression(maFunc.getForwardRate(), null, false);
+					}
+					return null;
+				}
+				case COLUMN_REVERSERATE:
+				{
+					if(maFunc != null && maFunc.getReverseRate() != null)
+					{
+						return new ScopedExpression(maFunc.getReverseRate(), null, false);
+					}
+					return null;
+				}
+				case COLUMN_REMARK:
+				{
+					if(transMAs.getTransformedReactionSteps()[row] != null)
+					{
+						return transMAs.getTransformedReactionSteps()[row].getTransformRemark();
+					}
+					return null;
+	    		}
+				default:
+				{
+					return null;
+				}
 			}
-		}
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+			return null;
+		}			
 	}// end of method getValueAt()
 	
 	/**

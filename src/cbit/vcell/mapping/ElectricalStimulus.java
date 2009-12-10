@@ -1305,7 +1305,7 @@ public void setParameterValue(ElectricalStimulusParameter parm, Expression exp) 
 	boolean bBound = false;
 	try {
 		ElectricalStimulusParameter newElectricalStimulusParameters[] = (ElectricalStimulusParameter[])fieldElectricalStimulusParameters.clone();
-		String symbols[] = exp.getSymbols(getNameScope());
+		String symbols[] = exp.getSymbols();
 		Vector<String> symbolsToAdd = new Vector<String>();
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
 			if (getEntry(symbols[i])==null){

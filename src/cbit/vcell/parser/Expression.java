@@ -41,12 +41,12 @@ public class Expression implements java.io.Serializable, org.vcell.util.Matchabl
 private Expression() {
 }
 
-public Expression(SymbolTableEntry ste) {
+public Expression(SymbolTableEntry ste, NameScope nameScope) {
 	ASTIdNode idNode = new ASTIdNode(); 
-	idNode.name = ste.getName();
+	idNode.name = nameScope.getSymbolName(ste);
 	idNode.symbolTableEntry = ste;
 	this.rootNode = idNode;
-	this.normalizedInfixString = ste.getName();
+	this.normalizedInfixString = idNode.name;
 }
 /**
  * This method was created in VisualAge.
@@ -428,31 +428,24 @@ public SymbolTableEntry getSymbolBinding(String symbol) {
  * @exception java.lang.Exception The exception description.
  */
 public String[] getSymbols() {
-	return rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT);
+	return rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT);
 }
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.String[]
  * @exception java.lang.Exception The exception description.
  */
-public String[] getSymbols(int language, NameScope nameScope) {
-	return rootNode.getSymbols(language, nameScope);
+public String[] getSymbols(int language) {
+	return rootNode.getSymbols(language);
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
- */
-public String[] getSymbols(NameScope nameScope) {
-	return rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT, nameScope);
-}
+
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.String[]
  * @exception java.lang.Exception The exception description.
  */
 public Iterator<String> getSymbolsIterator() {
-	return Arrays.asList(rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)).iterator();
+	return Arrays.asList(rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT)).iterator();
 }
 /**
  * This method was created by a SmartGuide.
@@ -468,18 +461,15 @@ public boolean hasSymbol(String symbolName) {
 	}
 	return false;
 }
-   public String infix()
-   {
-	  return infix(SimpleNode.NAMESCOPE_DEFAULT);
-   }   
-   public String infix(NameScope nameScope)
-   {
-	  if (rootNode==null){
-		 return null;
-	  }else{
-		 return rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT,nameScope);
-	  }
-   }   
+
+	public String infix() {
+		if (rootNode == null) {
+			return null;
+		} else {
+			return rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT);
+		}
+	}
+
    /**
  * Insert the method's description here.
  * Creation date: (5/24/2001 10:22:45 PM)
@@ -496,43 +486,31 @@ public int hashCode() {
 	  if (rootNode==null){
 		 return null;
 	  }else{
-		 return rootNode.infixString(SimpleNode.LANGUAGE_C, SimpleNode.NAMESCOPE_DEFAULT);
+		 return rootNode.infixString(SimpleNode.LANGUAGE_C);
 	  }
    }   
    public String infix_ECLiPSe()
    {
-	  return infix_ECLiPSe(SimpleNode.NAMESCOPE_DEFAULT);
-   }   
-   public String infix_ECLiPSe(NameScope nameScope)
-   {
 	  if (rootNode==null){
 		 return null;
 	  }else{
-		 return rootNode.infixString(SimpleNode.LANGUAGE_ECLiPSe,nameScope);
+		 return rootNode.infixString(SimpleNode.LANGUAGE_ECLiPSe);
 	  }
    }   
    public String infix_JSCL()
    {
-	  return infix_JSCL(SimpleNode.NAMESCOPE_DEFAULT);
-   }   
-   public String infix_JSCL(NameScope nameScope)
-   {
 	  if (rootNode==null){
 		 return null;
 	  }else{
-		 return rootNode.infixString(SimpleNode.LANGUAGE_JSCL,nameScope);
+		 return rootNode.infixString(SimpleNode.LANGUAGE_JSCL);
 	  }
    }   
    public String infix_Matlab()
    {
-	  return infix_Matlab(SimpleNode.NAMESCOPE_DEFAULT);
-   }   
-   public String infix_Matlab(NameScope nameScope)
-   {
 	  if (rootNode==null){
 		 return null;
 	  }else{
-		 return rootNode.infixString(SimpleNode.LANGUAGE_MATLAB,nameScope);
+		 return rootNode.infixString(SimpleNode.LANGUAGE_MATLAB);
 	  }
    }   
 /**
@@ -943,4 +921,11 @@ substituteCount++;////////////////////////////////
 	   rootNode.getDiscontinuities(v);	   
 	   return v;
    }
+   
+   public Expression renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
+	   Expression exp = new Expression(this);
+	   exp.rootNode.renameBoundSymbols(nameScope);
+	   return exp;
+   }
 }
+

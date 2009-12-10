@@ -5,7 +5,10 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.IAFunctionDomainException;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTPowerNode extends SimpleNode {
 
@@ -112,14 +115,14 @@ public double evaluateConstant() throws ExpressionException {
 		throw savedException;
 	}else if (baseValue!=null && exponentValue!=null){
 		if (baseValue.doubleValue()==0.0 && exponentValue.doubleValue()<0.0){
-			String childString = infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT);
-			throw new DivideByZeroException("u^v and u=0 and v<0 divides by zero, expression = '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			String childString = infixString(LANGUAGE_DEFAULT);
+			throw new DivideByZeroException("u^v and u=0 and v<0 divides by zero, expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
 		}else if (baseValue.doubleValue()<0.0 && exponentValue.doubleValue()!=Math.round(exponentValue.doubleValue())){
-			throw new FunctionDomainException("u^v and u<0 and v not an integer: undefined, u="+baseValue.doubleValue()+", v="+exponentValue.doubleValue()+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("u^v and u<0 and v not an integer: undefined, u="+baseValue.doubleValue()+", v="+exponentValue.doubleValue()+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}else{
 			double result = Math.pow(baseValue.doubleValue(),exponentValue.doubleValue());
 			if (Double.isInfinite(result) || Double.isNaN(result)){
-				throw new FunctionDomainException("u^v evaluated to "+result+", u="+baseValue.doubleValue()+", v="+exponentValue.doubleValue()+", expression = '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+				throw new FunctionDomainException("u^v evaluated to "+result+", u="+baseValue.doubleValue()+", v="+exponentValue.doubleValue()+", expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
 			}
 			return result;
 		}
@@ -144,16 +147,16 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	double baseValue = jjtGetChild(0).evaluateVector(values);
 	double exponentValue = jjtGetChild(1).evaluateVector(values);
 	if (baseValue==0.0 && exponentValue<0.0){
-		throw new DivideByZeroException("u^v and u=0 and v<0 divides by zero, expression = '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+		throw new DivideByZeroException("u^v and u=0 and v<0 divides by zero, expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
 	}else if (baseValue<0.0 && exponentValue!=Math.round(exponentValue)){
-		throw new FunctionDomainException("u^v and u<0 and v not an integer: undefined, u="+baseValue+", v="+exponentValue+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+		throw new FunctionDomainException("u^v and u<0 and v not an integer: undefined, u="+baseValue+", v="+exponentValue+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 	}else{
 		if (baseValue>=0.0 && exponentValue==1.0){
 			return baseValue;
 		}
 		double result = Math.pow(baseValue,exponentValue);
 		if (Double.isInfinite(result) || Double.isNaN(result)){
-			throw new FunctionDomainException("u^v evaluated to "+result+", u="+baseValue+", v="+exponentValue+", expression = '"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+			throw new FunctionDomainException("u^v evaluated to "+result+", u="+baseValue+", v="+exponentValue+", expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		return result;
 	}
@@ -222,7 +225,8 @@ public Node flatten() throws ExpressionException {
 	return powNode;
 		
 }
-public String infixString(int lang, NameScope nameScope){
+
+public String infixString(int lang){
 
 	if (jjtGetNumChildren()!=2){
 		throw new RuntimeException("there are "+jjtGetNumChildren()+" arguments for the power operator, expecting 2");
@@ -232,15 +236,15 @@ public String infixString(int lang, NameScope nameScope){
 
 	if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL){
 		buffer.append("(");
-		buffer.append(jjtGetChild(0).infixString(lang,nameScope));
+		buffer.append(jjtGetChild(0).infixString(lang));
 		buffer.append(" ^ ");
-		buffer.append(jjtGetChild(1).infixString(lang,nameScope));
+		buffer.append(jjtGetChild(1).infixString(lang));
 		buffer.append(")");
 	}else if (lang == LANGUAGE_C){
 		buffer.append("pow(");
-		buffer.append("((double)(" + jjtGetChild(0).infixString(lang,nameScope) + "))");
+		buffer.append("((double)(" + jjtGetChild(0).infixString(lang) + "))");
 		buffer.append(",");
-		buffer.append("((double)(" + jjtGetChild(1).infixString(lang,nameScope) + "))");
+		buffer.append("((double)(" + jjtGetChild(1).infixString(lang) + "))");
 		buffer.append(")");
 	}
 

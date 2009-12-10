@@ -134,7 +134,7 @@ public class VCUnitEvaluator {
 					if (!accumUnit.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)){
 						//accumUnit.show();
 						//accumUnit.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS);
-						throw new RuntimeException("expression '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)+"' missing factor of '"+accumUnit.getSymbol()+"'");
+						throw new RuntimeException("expression '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' missing factor of '"+accumUnit.getSymbol()+"'");
 					}
 				}else if (unknownChildCount==1){
 					//
@@ -290,7 +290,7 @@ public class VCUnitEvaluator {
 				SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 				VCUnitDefinition childUnit = getUnitDefinition(child,unitsHashMap);
 				if (!childUnit.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)){
-					throw new VCUnitException("argument to boolean expression '"+child.infixString(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)+"' must be dimensionless");
+					throw new VCUnitException("argument to boolean expression '"+child.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' must be dimensionless");
 				}
 			}
 			return VCUnitDefinition.UNIT_DIMENSIONLESS;
@@ -351,7 +351,7 @@ public class VCUnitEvaluator {
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 				VCUnitDefinition unit1 = getUnitDefinition(child1,unitsHashMap);
 				if (!unit1.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) && !unit1.compareEqual(VCUnitDefinition.UNIT_TBD)){
-					throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)+"' has units of "+unit0);
+					throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 				}
 				if (unit0.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) || unit0.isTBD()){
 					return unit0;
@@ -367,7 +367,7 @@ public class VCUnitEvaluator {
 				SimpleNode child0 =  (SimpleNode)node.jjtGetChild(0);
 				VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 				if (!unit0.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) && !unit0.isTBD()){
-					throw new VCUnitException("exponent of exp() '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)+"' has units of "+unit0);
+					throw new VCUnitException("exponent of exp() '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 				}
 				return VCUnitDefinition.UNIT_DIMENSIONLESS;
 			}else if (functionName.equalsIgnoreCase("sqrt")) {       
@@ -390,7 +390,7 @@ public class VCUnitEvaluator {
 			VCUnitDefinition unit0 = getUnitDefinition(child0,unitsHashMap);
 			VCUnitDefinition unit1 = getUnitDefinition(child1,unitsHashMap);
 			if (!unit1.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS) && !unit1.compareEqual(VCUnitDefinition.UNIT_TBD)){
-				throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)+"' has units of "+unit0);
+				throw new VCUnitException("exponent of '"+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+"' has units of "+unit0);
 			}
 			if (unit0.compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)){
 				return VCUnitDefinition.UNIT_DIMENSIONLESS;

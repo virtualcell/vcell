@@ -5,7 +5,10 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.IAFunctionDomainException;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTRelationalNode extends SimpleNode {
 
@@ -289,8 +292,9 @@ public static String getOperationFromMathML(String mathML) {
 		return null;
 	}
 }
-  public String infixString(int lang, NameScope nameScope)
-  {
+
+	public String infixString(int lang)
+	{
 	  StringBuffer buffer = new StringBuffer();
 	 
 	  buffer.append("(");
@@ -333,7 +337,7 @@ public static String getOperationFromMathML(String mathML) {
 				buffer.append(" "+opString+" ");
 			}
 		}
-		buffer.append(jjtGetChild(i).infixString(lang, nameScope));
+		buffer.append(jjtGetChild(i).infixString(lang));
 	  }
 
 	  buffer.append(")");

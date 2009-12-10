@@ -22,11 +22,6 @@ import cbit.vcell.parser.ExpressionException;
  * @author: 
  */
 public class ElectricalStimulusParameterTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
-
-	static {
-		System.out.println("ElectricalStimulusParameterTableModel: artifically filtering out voltage or current parameters that are not applicable");
-	}
-
 	
 	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
@@ -110,33 +105,9 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
@@ -256,39 +227,44 @@ private List<Parameter> getUnsortedParameters() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	Parameter parameter = (Parameter)getData().get(row);
-	switch (col){
-		case COLUMN_NAME:{
-			return parameter.getName();
+	try {
+		if (col<0 || col>=NUM_COLUMNS){
+			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 		}
-		case COLUMN_DESCRIPTION:{
-			return parameter.getDescription();
+		if (row<0 || row>=getRowCount()){
+			throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		case COLUMN_UNIT:{
-			if (parameter.getUnitDefinition()!=null){
-				return parameter.getUnitDefinition().getSymbol();
-			}else{
-				return "null";
+		Parameter parameter = (Parameter)getData().get(row);
+		switch (col){
+			case COLUMN_NAME:{
+				return parameter.getName();
 			}
-		}
-		case COLUMN_VALUE:{
-			if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
-				if (parameter.getExpression()==null){
-					return null;
+			case COLUMN_DESCRIPTION:{
+				return parameter.getDescription();
+			}
+			case COLUMN_UNIT:{
+				if (parameter.getUnitDefinition()!=null){
+					return parameter.getUnitDefinition().getSymbol();
 				}else{
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
+					return "null";
 				}
 			}
+			case COLUMN_VALUE:{
+				if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
+					if (parameter.getExpression()==null){
+						return null;
+					}else{
+						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
+					}
+				}
+			}
+			default:{
+				return null;
+			}
 		}
-		default:{
-			return null;
-		}
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		return null;
 	}
 }
 /**
@@ -305,7 +281,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	cbit.vcell.model.Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getParameter(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
 	}else if (columnIndex == COLUMN_DESCRIPTION){
@@ -331,7 +307,7 @@ public boolean isSortable(int col) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("electricalStimulus")) {
-		cbit.vcell.mapping.ElectricalStimulus oldValue = (cbit.vcell.mapping.ElectricalStimulus)evt.getOldValue();
+		ElectricalStimulus oldValue = (ElectricalStimulus)evt.getOldValue();
 		if (oldValue!=null){
 			oldValue.removePropertyChangeListener(this);
 			Parameter oldParameters[] = oldValue.getElectricalStimulusParameters();
@@ -339,7 +315,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				oldParameters[i].removePropertyChangeListener(this);
 			}
 		}
-		cbit.vcell.mapping.ElectricalStimulus newValue = (cbit.vcell.mapping.ElectricalStimulus)evt.getNewValue();
+		ElectricalStimulus newValue = (ElectricalStimulus)evt.getNewValue();
 		if (newValue!=null){
 			newValue.addPropertyChangeListener(this);
 			Parameter newParameters[] = newValue.getElectricalStimulusParameters();
@@ -350,7 +326,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof cbit.vcell.mapping.ElectricalStimulus && evt.getPropertyName().equals("electricalStimulusParameters")) {
+	if (evt.getSource() instanceof ElectricalStimulus && evt.getPropertyName().equals("electricalStimulusParameters")) {
 		Parameter oldParameters[] = (Parameter[])evt.getOldValue();
 		for (int i = 0; i<oldParameters.length; i++){
 			oldParameters[i].removePropertyChangeListener(this);
@@ -372,12 +348,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
-}
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 /**
  * Sets the electricalStimulus property (cbit.vcell.mapping.ElectricalStimulus) value.
@@ -402,13 +372,14 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		switch (columnIndex){
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.gui.ScopedExpression){
-						Expression exp = ((cbit.gui.ScopedExpression)aValue).getExpression();
-						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
-							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
-							getElectricalStimulus().setParameterValue(scsParm,exp);
-							//fireTableRowsUpdated(rowIndex,rowIndex);
-						}
+					if (aValue instanceof ScopedExpression){
+//						Expression exp = ((ScopedExpression)aValue).getExpression();
+//						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
+//							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
+//							getElectricalStimulus().setParameterValue(scsParm,exp);
+//							//fireTableRowsUpdated(rowIndex,rowIndex);
+//						}
+						throw new RuntimeException("unexpected value type ScopedExpression");
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
@@ -431,9 +402,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 //		e.printStackTrace(System.out);
 //	}
 }
-  public void sortColumn(int col, boolean ascending)
-  {
-    Collections.sort(rows,
-      new ParameterColumnComparator(col, ascending));
-  }
+	public void sortColumn(int col, boolean ascending)
+	{
+		Collections.sort(rows, new ParameterColumnComparator(col, ascending));
+	}
 }

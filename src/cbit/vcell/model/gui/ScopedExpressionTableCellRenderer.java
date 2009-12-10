@@ -9,7 +9,6 @@ import java.util.Hashtable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
-import javax.swing.JViewport;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -248,7 +247,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 		}else{
 			//Create new ImageIcon
 			try{
-				ExpressionPrintFormatter epf = new ExpressionPrintFormatter(((ScopedExpression)value).getExpression());
+				ExpressionPrintFormatter epf = new ExpressionPrintFormatter(((ScopedExpression)value).getRenamedExpression());
 				//
 				//Use graphicsContextProvider BufferedImage to get started because
 				//theTable may have a null GC and epf needs a non-null GC

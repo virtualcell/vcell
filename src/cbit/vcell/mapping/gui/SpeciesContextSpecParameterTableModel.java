@@ -1,22 +1,22 @@
 package cbit.vcell.mapping.gui;
-import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.ScopedExpression;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
+
+import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.ScopedExpression;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.mapping.SpeciesContextSpec;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -113,13 +113,6 @@ public SpeciesContextSpecParameterTableModel(JTable table) {
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
 }
 
 /**
@@ -290,42 +283,47 @@ private List<Parameter> getUnsortedParameters() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (getData().size() <= row){
-		setData(getUnsortedParameters());
-	}
-	Parameter parameter = (Parameter)getData().get(row);
-	switch (col){
-		case COLUMN_NAME:{
-			return parameter.getName();
+	try {
+		if (col<0 || col>=NUM_COLUMNS){
+			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 		}
-		case COLUMN_DESCRIPTION:{
-			return parameter.getDescription();
+		if (row<0 || row>=getRowCount()){
+			throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		case COLUMN_UNIT:{
-			if (parameter.getUnitDefinition()!=null){
-				return parameter.getUnitDefinition().getSymbol();
-			}else{
-				return "null";
+		if (getData().size() <= row){
+			setData(getUnsortedParameters());
+		}
+		Parameter parameter = (Parameter)getData().get(row);
+		switch (col){
+			case COLUMN_NAME:{
+				return parameter.getName();
 			}
-		}
-		case COLUMN_VALUE:{
-			if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-				if (parameter.getExpression()==null){
-					return null;
+			case COLUMN_DESCRIPTION:{
+				return parameter.getDescription();
+			}
+			case COLUMN_UNIT:{
+				if (parameter.getUnitDefinition()!=null){
+					return parameter.getUnitDefinition().getSymbol();
 				}else{
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
+					return "null";
 				}
 			}
+			case COLUMN_VALUE:{
+				if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+					if (parameter.getExpression()==null){
+						return null;
+					}else{
+						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
+					}
+				}
+			}
+			default:{
+				return null;
+			}
 		}
-		default:{
-			return null;
-		}
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		return null;
 	}
 }
 
@@ -493,14 +491,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
@@ -555,21 +545,22 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			case COLUMN_VALUE:{
 				try {
 					if (aValue instanceof ScopedExpression){
-						Expression exp = ((ScopedExpression)aValue).getExpression();
-						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
-								scsParm.setExpression(exp);
-							} else {
-								// scsParam is a velocity parameter
-								if (!exp.compareEqual(new Expression(0.0))) {
-									scsParm.setExpression(exp);
-								} else {
-									scsParm.setExpression(null);
-								}
-							}
-							//fireTableRowsUpdated(rowIndex,rowIndex);
-						}
+//						Expression exp = ((ScopedExpression)aValue).getExpression();
+//						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+//							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
+//							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
+//								scsParm.setExpression(exp);
+//							} else {
+//								// scsParam is a velocity parameter
+//								if (!exp.compareEqual(new Expression(0.0))) {
+//									scsParm.setExpression(exp);
+//								} else {
+//									scsParm.setExpression(null);
+//								}
+//							}
+//							//fireTableRowsUpdated(rowIndex,rowIndex);
+//						}
+						throw new RuntimeException("unexpected value type ScopedExpression");
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){

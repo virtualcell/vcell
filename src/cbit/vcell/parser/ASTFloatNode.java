@@ -5,7 +5,7 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTFloatNode extends SimpleNode {
 
@@ -101,7 +101,8 @@ public double evaluateVector(double values[]) {
 public Node flatten() throws ExpressionException {
 	return copyTree();
 }
-  public String infixString(int lang, NameScope nameScope)
+
+  public String infixString(int lang)
   {
 	  if (value==null){
 		  return "null";

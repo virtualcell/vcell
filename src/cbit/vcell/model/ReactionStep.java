@@ -400,10 +400,10 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 	if (getKinetics() instanceof DistributedKinetics){
 		DistributedKinetics distributedKinetics = (DistributedKinetics)getKinetics();
 		if (stoich!=1){
-			Expression exp = Expression.mult(new Expression(stoich),new Expression(distributedKinetics.getReactionRateParameter()));
+			Expression exp = Expression.mult(new Expression(stoich),new Expression(distributedKinetics.getReactionRateParameter(), getNameScope()));
 			return exp;
 		}else{
-			Expression exp = new Expression(distributedKinetics.getReactionRateParameter());
+			Expression exp = new Expression(distributedKinetics.getReactionRateParameter(), getNameScope());
 			return exp;
 		}
 	}else if (getKinetics() instanceof LumpedKinetics){
@@ -411,21 +411,21 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 		final StructureMappingParameter sizeParameter = structureMapping.getSizeParameter();
 		//
 		// need to put this into concentration/time with respect to structure for reaction.
-		//		
+		//
 		LumpedKinetics lumpedKinetics = (LumpedKinetics)getKinetics();
 		Expression factor = null;
 		if (getStructure() instanceof Feature || ((getStructure() instanceof Membrane) && this instanceof FluxReaction)){
-			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE),Expression.invert(new Expression(sizeParameter)));
+			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE, ReservedSymbol.KMOLE.getNameScope()),Expression.invert(new Expression(sizeParameter, getNameScope())));
 		}else if (getStructure() instanceof Membrane && this instanceof SimpleReaction){
-			factor = Expression.invert(new Expression(sizeParameter));
+			factor = Expression.invert(new Expression(sizeParameter, getNameScope()));
 		}else{
 			throw new RuntimeException("failed to create reaction rate expression for reaction "+getName()+", with kinetic type of "+getKinetics().getClass().getName());
 		}
 		if (stoich!=1){
-			Expression exp = Expression.mult(new Expression(stoich),Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter()),factor));
+			Expression exp = Expression.mult(new Expression(stoich),Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter(), getNameScope()),factor));
 			return exp;
 		}else{
-			Expression exp = Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter()),factor);
+			Expression exp = Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter(), getNameScope()),factor);
 			return exp;
 		}
 	}else{

@@ -5,7 +5,9 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTNotNode extends SimpleNode {
   ASTNotNode() {
@@ -122,7 +124,7 @@ public Node flatten() throws ExpressionException {
  * @return java.lang.String
  * @param language int
  */
-public String infixString(int language, NameScope nameScope) {
+public String infixString(int language) {
 	StringBuffer buffer = new StringBuffer();
 
 	if (language == LANGUAGE_ECLiPSe){
@@ -130,7 +132,7 @@ public String infixString(int language, NameScope nameScope) {
 	}else{
 		buffer.append("!(");
 	}
-	buffer.append(jjtGetChild(0).infixString(language,nameScope));
+	buffer.append(jjtGetChild(0).infixString(language));
 	buffer.append(")");
 
 	return buffer.toString();

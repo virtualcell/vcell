@@ -5,7 +5,7 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTExpression extends SimpleNode {
   ASTExpression() {
@@ -93,11 +93,11 @@ public Node flatten() throws ExpressionException {
  * @return java.lang.String
  * @param language int
  */
-public String infixString(int language, NameScope nameScope) {
+public String infixString(int language) {
 	StringBuffer buffer = new StringBuffer();
 	
 	for (int i=0;i<jjtGetNumChildren();i++){
-		buffer.append(jjtGetChild(i).infixString(language,nameScope));
+		buffer.append(jjtGetChild(i).infixString(language));
 	}
 	return buffer.toString();
 }
