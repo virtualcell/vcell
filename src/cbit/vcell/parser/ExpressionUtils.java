@@ -496,7 +496,7 @@ public static Expression generateExpression(java.util.Random random, int maxDept
 	if (bIsConstraint){
 		node = (SimpleNode)node.copyTreeBinary();
 	}
-	return new Expression(node.infixString(node.LANGUAGE_DEFAULT,node.NAMESCOPE_DEFAULT));
+	return new Expression(node.infixString(SimpleNode.LANGUAGE_DEFAULT));
 }
 /**
  * Insert the method's description here.

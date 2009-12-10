@@ -187,10 +187,11 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		case COLUMN_OUTPUTFN_EXPRESSION:{
 			try {
 				if (aValue instanceof ScopedExpression){
-					Expression exp = ((ScopedExpression)aValue).getExpression();
-					// bind expression to outputFunctionContext
-					exp.bindExpression(outputFunctionContext);
-					outputFunction.setExpression(exp);
+//					Expression exp = ((ScopedExpression)aValue).getExpression();
+//					// bind expression to outputFunctionContext
+//					exp.bindExpression(outputFunctionContext);
+//					outputFunction.setExpression(exp);
+					throw new RuntimeException("unexpected value type ScopedExpression");
 				}else if (aValue instanceof String) {
 					Expression exp = new Expression((String)aValue);
 					exp.bindExpression(outputFunctionContext);

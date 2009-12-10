@@ -9,6 +9,7 @@ import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ModelQuantity;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -18,6 +19,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
  * Insert the type's description here.
@@ -50,12 +52,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
@@ -64,19 +60,7 @@ public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
@@ -94,7 +78,7 @@ public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.gui.ScopedExpression.class;
+			return ScopedExpression.class;
 		}
 		case COLUMN_DESCRIPTION:{
 			return String.class;
@@ -130,13 +114,13 @@ public String getColumnName(int column) {
  * @return The geometry property value.
  * @see #setGeometry
  */
-public cbit.vcell.model.Kinetics getKinetics() {
+public Kinetics getKinetics() {
 	return fieldKinetics;
 }
 /**
  * getValueAt method comment.
  */
-private cbit.vcell.model.Parameter getParameter(int row) {
+private Parameter getParameter(int row) {
 	if (row<0 || row>=getRowCount()){
 		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
@@ -177,60 +161,65 @@ public int getRowCount() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	cbit.vcell.model.Parameter parameter = getParameter(row);
-	switch (col){
-		case COLUMN_NAME:{
-			return getKinetics().getReactionStep().getNameScope().getSymbolName(parameter);
-			//return parameter.getName();
+	try {
+		if (col<0 || col>=NUM_COLUMNS){
+			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 		}
-		case COLUMN_UNITS:{
-			if (parameter.getUnitDefinition() != null){
-				return parameter.getUnitDefinition().getSymbol();
-			}else{
-				return "??";
+		Parameter parameter = getParameter(row);
+		switch (col){
+			case COLUMN_NAME:{
+				return getKinetics().getReactionStep().getNameScope().getSymbolName(parameter);
+				//return parameter.getName();
 			}
-		}
-		case COLUMN_VALUE:{
-			Expression exp = parameter.getExpression();
-			if (exp!=null){
-				if ((parameter instanceof KineticsProxyParameter) && (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol)) {
-					ReservedSymbol rs = (ReservedSymbol)(((KineticsProxyParameter)parameter).getTarget());
-					if (rs.isKMOLE()) {
-						// KMOLE is the only ReservedSymbol that has is expressed as a rational number (1/602). Try printing this expression instead of its double value  
-						try {
-							return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable(), autoCompleteSymbolFilter);
-						} catch (ExpressionException e) {
-							e.printStackTrace();
-							throw new RuntimeException("Error writing expression for KMOLE reserved symbol" + e.getMessage());
+			case COLUMN_UNITS:{
+				if (parameter.getUnitDefinition() != null){
+					return parameter.getUnitDefinition().getSymbol();
+				}else{
+					return "??";
+				}
+			}
+			case COLUMN_VALUE:{
+				Expression exp = parameter.getExpression();
+				if (exp!=null){
+					if ((parameter instanceof KineticsProxyParameter) && (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol)) {
+						ReservedSymbol rs = (ReservedSymbol)(((KineticsProxyParameter)parameter).getTarget());
+						if (rs.isKMOLE()) {
+							// KMOLE is the only ReservedSymbol that has is expressed as a rational number (1/602). Try printing this expression instead of its double value  
+							try {
+								return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable(), autoCompleteSymbolFilter);
+							} catch (ExpressionException e) {
+								e.printStackTrace();
+								throw new RuntimeException("Error writing expression for KMOLE reserved symbol" + e.getMessage());
+							}
+						} else {
+							// if reserved symbol is not KMOLE, print it out like other parameters
+							return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 						}
 					} else {
-						// if reserved symbol is not KMOLE, print it out like other parameters
 						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 					}
-				} else {
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
+				}else{
+					return "Variable"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 				}
-			}else{
-				return "Variable"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			}
+			case COLUMN_DESCRIPTION:{
+				return parameter.getDescription();
+			}
+			case COLUMN_IS_GLOBAL: {
+				if (parameter instanceof KineticsParameter) {
+					return Boolean.FALSE;
+				} else {
+					return Boolean.TRUE;
+				}
+			}
+			default:{
+				return null;
 			}
 		}
-		case COLUMN_DESCRIPTION:{
-			return parameter.getDescription();
-		}
-		case COLUMN_IS_GLOBAL: {
-			if (parameter instanceof KineticsParameter) {
-				return Boolean.FALSE;
-			} else {
-				return Boolean.TRUE;
-			}
-		}
-		default:{
-			return null;
-		}
-	}
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		return null;
+	}		
 }
 /**
  * The hasListeners method was generated to support the propertyChange field.
@@ -246,7 +235,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	cbit.vcell.model.Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getParameter(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
 	}else if (columnIndex == COLUMN_UNITS){
@@ -278,8 +267,8 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("kinetics")) {
-		cbit.vcell.model.Kinetics oldKinetics = (Kinetics)evt.getOldValue();
-		cbit.vcell.model.Kinetics newKinetics = (Kinetics)evt.getNewValue();
+		Kinetics oldKinetics = (Kinetics)evt.getOldValue();
+		Kinetics newKinetics = (Kinetics)evt.getNewValue();
 		if (oldKinetics != null){
 			oldKinetics.removePropertyChangeListener(this);
 			for (int i = 0; i < oldKinetics.getKineticsParameters().length; i++){
@@ -300,10 +289,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && 
+	if (evt.getSource() instanceof Kinetics && 
 			(evt.getPropertyName().equals("kineticsParameters") ||  evt.getPropertyName().equals("proxyParameters"))) {
-		cbit.vcell.model.Parameter oldParams[] = (cbit.vcell.model.Parameter[])evt.getOldValue();
-		cbit.vcell.model.Parameter newParams[] = (cbit.vcell.model.Parameter[])evt.getNewValue();
+		Parameter oldParams[] = (Parameter[])evt.getOldValue();
+		Parameter newParams[] = (Parameter[])evt.getNewValue();
 		for (int i = 0; oldParams!=null && i < oldParams.length; i++){
 			oldParams[i].removePropertyChangeListener(this);
 		}
@@ -312,7 +301,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof cbit.vcell.model.Parameter) {
+	if (evt.getSource() instanceof Parameter) {
 		fireTableDataChanged();
 	}
 }
@@ -344,7 +333,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
 		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	cbit.vcell.model.Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getParameter(rowIndex);
 //	try {
 		switch (columnIndex){
 			case COLUMN_NAME:{
@@ -362,10 +351,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter name:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter name:\n"+e.getMessage());
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter name:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter name:\n"+e.getMessage());
 				}
 				break;
 			}
@@ -439,12 +428,13 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			case COLUMN_VALUE:{
 				try {
 					if (aValue instanceof ScopedExpression){
-						Expression exp = ((ScopedExpression)aValue).getExpression();
-						if (parameter instanceof Kinetics.KineticsParameter){
-							getKinetics().setParameterValue((Kinetics.KineticsParameter)parameter,exp);
-						}else if (parameter instanceof Kinetics.KineticsProxyParameter){
-							parameter.setExpression(exp);
-						}
+//						Expression exp = ((ScopedExpression)aValue).getExpression();
+//						if (parameter instanceof Kinetics.KineticsParameter){
+//							getKinetics().setParameterValue((Kinetics.KineticsParameter)parameter,exp);
+//						}else if (parameter instanceof Kinetics.KineticsProxyParameter){
+//							parameter.setExpression(exp);
+//						}
+						throw new RuntimeException("unexpected value type ScopedExpression");
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof Kinetics.KineticsParameter){
@@ -457,10 +447,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error:\n"+e.getMessage());
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(fieldParentComponentTable, "Expression error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Expression error:\n"+e.getMessage());
 				}
 				break;
 			}
@@ -470,14 +460,14 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newUnitString = (String)aValue;
 						Kinetics.KineticsParameter kineticsParm = (Kinetics.KineticsParameter)parameter;
 						if (!kineticsParm.getUnitDefinition().getSymbol().equals(newUnitString)){
-							kineticsParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.getInstance(newUnitString));
+							kineticsParm.setUnitDefinition(VCUnitDefinition.getInstance(newUnitString));
 							getKinetics().resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}
 				}catch (VCUnitException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter unit:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(fieldParentComponentTable, "Error changing parameter unit:\n"+e.getMessage());
 				}
 				break;
 			}

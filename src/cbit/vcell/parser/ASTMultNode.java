@@ -1,12 +1,11 @@
 package cbit.vcell.parser;
 
 import java.util.Vector;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-/* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+
+import net.sourceforge.interval.ia_math.IAException;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTMultNode extends SimpleNode {
 
@@ -381,7 +380,7 @@ public boolean isBoolean() {
 	  return true;
 }
 
-public String infixString(int lang, NameScope nameScope){
+public String infixString(int lang){
 
 	boolean[] boolChildFlags = new boolean[jjtGetNumChildren()];
 	boolean bAllBoolean = true;
@@ -403,10 +402,10 @@ public String infixString(int lang, NameScope nameScope){
 		for (int i=0;i<jjtGetNumChildren();i++){
 			if (jjtGetChild(i) instanceof ASTInvertTermNode){
 				buffer.append(" / ");
-				buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+				buffer.append(jjtGetChild(i).infixString(lang));
 			}else{
 				if (i>0) buffer.append(" * ");
-				buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+				buffer.append(jjtGetChild(i).infixString(lang));
 			}
 		}		
 	} else {		
@@ -417,7 +416,7 @@ public String infixString(int lang, NameScope nameScope){
 				if (conditionBuffer.length() > 0) {
 					conditionBuffer.append(" && ");
 				}
-				conditionBuffer.append(jjtGetChild(i).infixString(lang,nameScope));
+				conditionBuffer.append(jjtGetChild(i).infixString(lang));
 			} else {
 				if (valueBuffer.length() == 0) {					
 					if (jjtGetChild(i) instanceof ASTInvertTermNode){
@@ -430,7 +429,7 @@ public String infixString(int lang, NameScope nameScope){
 						valueBuffer.append(" * ");
 					}
 				}
-				valueBuffer.append(jjtGetChild(i).infixString(lang,nameScope));
+				valueBuffer.append(jjtGetChild(i).infixString(lang));
 			}
 		}
 		buffer.append("((" + conditionBuffer + ") ? (" + valueBuffer + ") : 0.0)");

@@ -5,7 +5,9 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 public class ASTAddNode extends SimpleNode {
 
 ASTAddNode() {
@@ -173,7 +175,8 @@ public Node flatten() throws ExpressionException {
 
 
 }
-  public String infixString(int lang, NameScope nameScope)
+  
+public String infixString(int lang)
   {
 	  StringBuffer buffer = new StringBuffer();
 	 
@@ -183,11 +186,11 @@ public Node flatten() throws ExpressionException {
 		  if (jjtGetChild(i) instanceof ASTMinusTermNode){
 //			 buffer.append(" - ");
 //             buffer.append("(");
-			 buffer.append(jjtGetChild(i).infixString(lang, nameScope));
+			 buffer.append(jjtGetChild(i).infixString(lang));
 //             buffer.append(")");
 		  }else{
 			 if (i>0) buffer.append(" + ");
-			 buffer.append(jjtGetChild(i).infixString(lang, nameScope));
+			 buffer.append(jjtGetChild(i).infixString(lang));
 		  }
 	  }
 

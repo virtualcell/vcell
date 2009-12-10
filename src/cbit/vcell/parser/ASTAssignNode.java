@@ -5,13 +5,10 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTAssignNode extends SimpleNode {
-
-	static {
-		System.out.println("ASTAssignNode LHS is not bound to symbols, used for display purposes only");
-	};
 
   ASTAssignNode() {
 	super(-1);
@@ -108,19 +105,20 @@ public SymbolTableEntry getBinding(String symbol) {
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
  */
-public String[] getSymbols(int language, NameScope nameScope) {
-	return jjtGetChild(1).getSymbols(language,nameScope);
+public String[] getSymbols(int language) {
+	return jjtGetChild(1).getSymbols(language);
 }
-public String infixString(int lang, NameScope nameScope) {
+
+public String infixString(int lang) {
 	StringBuffer buffer = new StringBuffer();
 	 
-	buffer.append(jjtGetChild(0).infixString(lang, nameScope));
+	buffer.append(jjtGetChild(0).infixString(lang));
 	if (lang == LANGUAGE_ECLiPSe){
 		buffer.append(" $= ");
 	}else{
 		buffer.append(" == ");
 	}
-	buffer.append(jjtGetChild(1).infixString(lang, nameScope));
+	buffer.append(jjtGetChild(1).infixString(lang));
 
 	return buffer.toString();
 }        
@@ -139,12 +137,5 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 			&& jjtGetChild(1).narrow(intervals)
 			&& IANarrow.narrow_colon_equals(getInterval(intervals),jjtGetChild(0).getInterval(intervals),jjtGetChild(1).getInterval(intervals));
 }
-/**
- *
- * ignore symbol info for LHS (assumed only for annotation purposes)
- *
- */
-public void substituteBoundSymbols() throws ExpressionException {
-    jjtGetChild(1).substituteBoundSymbols();
-}
+
 }

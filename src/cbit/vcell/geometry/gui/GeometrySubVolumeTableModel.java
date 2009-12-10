@@ -53,13 +53,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
@@ -146,28 +139,33 @@ public int getRowCount() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(row);
-	switch (col){
-		case COLUMN_NAME:{
-			return subVolume;
+	try {
+		if (row<0 || row>=getRowCount()){
+			throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		case COLUMN_VALUE:{
-			if (subVolume instanceof AnalyticSubVolume){
-				return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedSymbol.X.getNameScope(), true, 
-						autoCompleteSymbolFilter);
-			}else{
+		if (col<0 || col>=NUM_COLUMNS){
+			throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		}
+		SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(row);
+		switch (col){
+			case COLUMN_NAME:{
+				return subVolume;
+			}
+			case COLUMN_VALUE:{
+				if (subVolume instanceof AnalyticSubVolume){
+					return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedSymbol.X.getNameScope(), true, 
+							autoCompleteSymbolFilter);
+				}else{
+					return null;
+				}
+			}
+			default:{
 				return null;
 			}
 		}
-		default:{
-			return null;
-		}
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		return null;
 	}
 }
 
@@ -283,8 +281,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					if (subVolume instanceof AnalyticSubVolume){
 						AnalyticSubVolume analyticSubVolume = (AnalyticSubVolume)subVolume;
 						if (aValue instanceof ScopedExpression){
-							Expression exp = ((ScopedExpression)aValue).getExpression();
-							analyticSubVolume.setExpression(exp);
+//							Expression exp = ((ScopedExpression)aValue).getExpression();
+//							analyticSubVolume.setExpression(exp);
+							throw new RuntimeException("unexpected value type ScopedExpression");
 						}else if (aValue instanceof String) {
 							String newExpressionString = (String)aValue;
 							analyticSubVolume.setExpression(new Expression(newExpressionString));

@@ -11,7 +11,7 @@ package cbit.vcell.parser;
    between nodes. */
 import java.util.Vector;
 
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 interface Node {
 	
@@ -83,9 +83,9 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
  */
-public String[] getSymbols(int language, NameScope nameScope);
+public String[] getSymbols(int language);
   /** infixString method, prints expressions in infix */
-  String infixString(int lang, NameScope nameScope);  
+  String infixString(int lang);  
   /** This method tells the node to add its argument to the node's
 	list of children.  */
    void jjtAddChild(Node n);  
@@ -131,10 +131,8 @@ public void setInterval(RealInterval interval, RealInterval intervals[]) throws 
  * @exception java.lang.Exception The exception description.
  */
 public void substitute(Node origNode, Node newNode) throws ExpressionException;
-/**
- * This method was created in VisualAge.
- */
-void substituteBoundSymbols() throws ExpressionException;
 
 void getDiscontinuities(Vector<Discontinuity> v) throws ExpressionException;
+
+public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException;
 }

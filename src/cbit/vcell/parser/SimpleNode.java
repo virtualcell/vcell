@@ -4,10 +4,7 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import java.util.Hashtable;
 import java.util.Vector;
-
-import org.vcell.util.document.ExternalDataIdentifier;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.parser.Expression.FunctionFilter;
@@ -24,8 +21,6 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   final static int LANGUAGE_MATLAB = 2;
   final static int LANGUAGE_JSCL = 3;
   final static int LANGUAGE_ECLiPSe = 4;
-
-  final static NameScope NAMESCOPE_DEFAULT = null;
 
   public SimpleNode(int i) {
     id = i;
@@ -147,17 +142,13 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
  */
-public String[] getSymbols(int language, NameScope nameScope) {
+public String[] getSymbols(int language) {
 	String[] stringArray = null;
 	for (int i=0;i<jjtGetNumChildren();i++){
-		stringArray = stringArrayMerge(stringArray,jjtGetChild(i).getSymbols(language, nameScope));
+		stringArray = stringArrayMerge(stringArray,jjtGetChild(i).getSymbols(language));
 	}	
 	return stringArray;
 }
-
-
-public abstract String infixString(int lang, NameScope nameScope);
-
 
 public void jjtAddChild(Node n) {
 	jjtAddChild(n,jjtGetNumChildren());
@@ -292,22 +283,13 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException {
 */
 }
 
-
-  public void substituteBoundSymbols() throws ExpressionException
-  {
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		  jjtGetChild(i).substituteBoundSymbols();
-	  }
-  }        
-
-
-  /* You can override these two methods in subclasses of SimpleNode to
+/* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
      your output uses more than one line you should override
      toString(String), otherwise overriding toString() is probably all
      you need to do. */
 
-  public String toString() { return getClass()+"@"+hashCode()+" \"" + infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT) + "\""; }
+  public String toString() { return getClass()+"@"+hashCode()+" \"" + infixString(LANGUAGE_DEFAULT) + "\""; }
 
 
   public String toString(String prefix) { return prefix + toString(); }
@@ -318,11 +300,17 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException {
 	  }
 	  for (Node node : children) {
 		  if (node instanceof ASTRelationalNode) {
-			  Discontinuity od = new Discontinuity(new Expression(node.infixString(LANGUAGE_DEFAULT, NAMESCOPE_DEFAULT)), new Expression(((ASTRelationalNode)node).getRootFindingExpression()));			  
+			  Discontinuity od = new Discontinuity(new Expression(node.infixString(LANGUAGE_DEFAULT)), new Expression(((ASTRelationalNode)node).getRootFindingExpression()));			  
 			  v.add(od);
 		  } else {
 			  node.getDiscontinuities(v);
 		  }
 	  }
   }
+  
+  public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
+	  for (int i=0;i<jjtGetNumChildren();i++){
+		  jjtGetChild(i).renameBoundSymbols(nameScope);
+	  }
+ }
 }

@@ -5,7 +5,7 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTLaplacianNode extends SimpleNode {
 ASTLaplacianNode() {
@@ -71,13 +71,14 @@ public Node flatten() throws ExpressionException {
 	laplacianNode.jjtAddChild(jjtGetChild(0).flatten());	
 	return laplacianNode;
 }
-public String infixString(int lang, NameScope nameScope){
+
+public String infixString(int lang){
 
 	StringBuffer buffer = new StringBuffer();
 	 
 	buffer.append(" laplacian(");
 
-	buffer.append(jjtGetChild(0).infixString(lang,nameScope));
+	buffer.append(jjtGetChild(0).infixString(lang));
 	
 	buffer.append(") ");
 

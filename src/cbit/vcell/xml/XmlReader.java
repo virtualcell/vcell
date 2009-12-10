@@ -218,7 +218,7 @@ public Action getAction(Element param, MathDescription md) throws XmlParseExcept
 	private VolumeGeometricRegion getAdjacentVolumeRegion(ArrayList<GeometricRegion> regions, String regionName) {
 		for (int i = 0; i < regions.size(); i++) {
 			GeometricRegion rvl = regions.get(i);
-			if (rvl instanceof VolumeGeometricRegion || rvl.getName().equals(regionName)) {
+			if (rvl instanceof VolumeGeometricRegion && rvl.getName().equals(regionName)) {
 				return (VolumeGeometricRegion)rvl;
 			}
 		}

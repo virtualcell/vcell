@@ -5,7 +5,7 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class DerivativeNode extends SimpleNode {
 	String independentVar = null;
@@ -75,7 +75,7 @@ public double evaluateConstant() throws ExpressionException {
 			return 0.0;
 		}
 	}		
-	throw new ExpressionBindingException("cannot evaluate derivative, identifier "+childNode.infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+" not bound");
+	throw new ExpressionBindingException("cannot evaluate derivative, identifier "+childNode.infixString(LANGUAGE_DEFAULT)+" not bound");
 }    
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	throw new ExpressionException("cannot call 'evaluateInterval()' on a derivative");
@@ -90,13 +90,14 @@ public double evaluateVector(double values[]) throws ExpressionException {
 public Node flatten() throws ExpressionException {
 	return copyTree();
 }
-public String infixString(int lang, NameScope nameScope){
+
+public String infixString(int lang){
 
 	StringBuffer buffer = new StringBuffer();
 	 
 	buffer.append(" Deriv_"+independentVar+"( ");
 
-	buffer.append(jjtGetChild(0).infixString(lang,nameScope));
+	buffer.append(jjtGetChild(0).infixString(lang));
 	
 	buffer.append(" )");
 

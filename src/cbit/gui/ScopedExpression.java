@@ -1,6 +1,7 @@
 package cbit.gui;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 
@@ -10,53 +11,49 @@ import cbit.vcell.parser.NameScope;
  * @author: Jim Schaff
  */
 public class ScopedExpression {
-	private Expression fieldExpression = null;
+	private Expression fieldRenamedExpression = null;
 	private NameScope fieldNameScope = null;
 	private boolean fieldIsUserEditable = true;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
+	final private String fieldRenamedExpressionInfix;
 	
-	static {
-		System.out.println("ScopedExpression.toString() ignores the scope ... TEMPORARY ...");
-	};
 /**
  * ContextualExpression constructor comment.
+ * @throws ExpressionBindingException 
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope) {
+public ScopedExpression(Expression argExpression, NameScope argNameScope) throws ExpressionBindingException {
 	this(argExpression,argNameScope,true, null);
 }
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable) {
+public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable) throws ExpressionBindingException {
 	this(argExpression, argNameScope, argIsUserEditable, null);
 }
 /**
  * ContextualExpression constructor comment.
+ * @throws ExpressionBindingException 
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable, AutoCompleteSymbolFilter stef) {
+public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable, AutoCompleteSymbolFilter stef) throws ExpressionBindingException {
 	super();
 	if (argExpression == null) {
 		throw new RuntimeException("Expression cannot be null");
 	}
-	this.fieldExpression = argExpression;
 	this.fieldNameScope = argNameScope;
 	this.fieldIsUserEditable = argIsUserEditable;
 	autoCompleteSymbolFilter = stef;
+	if (fieldNameScope == null) {
+		this.fieldRenamedExpression = argExpression;
+	} else {
+		this.fieldRenamedExpression = argExpression.renameBoundSymbols(fieldNameScope);
+	}
+	fieldRenamedExpressionInfix = fieldRenamedExpression.infix();
 }
-/**
- * Insert the method's description here.
- * Creation date: (4/26/2004 6:03:03 PM)
- * @param expressionString java.lang.String
- */
-public ScopedExpression(String expressionString) throws ExpressionException {
-	this.fieldExpression = new Expression(expressionString);
-	this.fieldIsUserEditable = true;
-	this.fieldNameScope = null;
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (9/2/2003 3:27:41 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getExpression() {
-	return fieldExpression;
+public Expression getRenamedExpression() {
+	return fieldRenamedExpression;
 }
 /**
  * Insert the method's description here.
@@ -72,7 +69,7 @@ public NameScope getNameScope() {
  * @return java.lang.String
  */
 public String infix() {
-	return getExpression().infix(getNameScope());
+	return fieldRenamedExpressionInfix;
 }
 /**
  * Insert the method's description here.

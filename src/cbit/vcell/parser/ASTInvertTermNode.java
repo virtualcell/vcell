@@ -5,7 +5,9 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTInvertTermNode extends SimpleNode {
   ASTInvertTermNode() {
@@ -65,7 +67,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 public double evaluateConstant() throws ExpressionException, DivideByZeroException {
 	double childValue = jjtGetChild(0).evaluateConstant();
 	if (childValue==0.0){
-		String childString = infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT);
+		String childString = infixString(LANGUAGE_DEFAULT);
 		throw new DivideByZeroException("divide by zero '"+childString+"'");
 	}else{
 		return (1.0 / childValue);
@@ -81,8 +83,8 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 		//
 		// form error message for user's consumption.
 		//
-		String errorMsg = "divide by zero, divisor is \""+jjtGetChild(0).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"\"";
-		String symbols[] = jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT);
+		String errorMsg = "divide by zero, divisor is \""+jjtGetChild(0).infixString(LANGUAGE_DEFAULT)+"\"";
+		String symbols[] = jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT);
 		if (symbols!=null && symbols.length>0){
 			errorMsg += "\n  where:\n";
 			SymbolTableEntry symbolTableEntries[] = new SymbolTableEntry[symbols.length];
@@ -107,8 +109,8 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
 		//
 		// form error message for user's consumption.
 		//
-		String errorMsg = "divide by zero, divisor is \""+jjtGetChild(0).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"\"";
-		String symbols[] = jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT);
+		String errorMsg = "divide by zero, divisor is \""+jjtGetChild(0).infixString(LANGUAGE_DEFAULT)+"\"";
+		String symbols[] = jjtGetChild(0).getSymbols(LANGUAGE_DEFAULT);
 		if (symbols!=null && symbols.length>0){
 			errorMsg += "\n  where:\n";
 			SymbolTableEntry symbolTableEntries[] = new SymbolTableEntry[symbols.length];
@@ -172,9 +174,9 @@ public Node flatten() throws ExpressionException {
  * @return java.lang.String
  * @param language int
  */
-public String infixString(int language, NameScope nameScope) {
+public String infixString(int language) {
 	// ASTMultNode handles division ... this node just passes it's child through
-	return jjtGetChild(0).infixString(language,nameScope); 
+	return jjtGetChild(0).infixString(language); 
 }
 /**
  * Insert the method's description here.
