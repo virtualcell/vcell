@@ -197,14 +197,14 @@ private void refreshFastMatrices() throws Exception {
 				//
 				if (rp0 != null) {
 					Structure structure = fastReactionSteps[j].getStructure();
+					Expression fastRateExpression = fastReactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext()).renameBoundSymbols(mathMapping.getNameScope());
 					if ((structure instanceof Membrane) && (rp0.getStructure()!=structure)){
 						Membrane membrane = (Membrane)structure;
 						MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
-						Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)rp0.getStructure());
-						exp = Expression.add(exp,Expression.mult(new Expression(fluxCorrectionParameter, mathMapping.getNameScope()), 
-								fastReactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext())));
+						Expression fluxCorrection = new Expression(mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)rp0.getStructure()), mathMapping.getNameScope());
+						exp = Expression.add(exp,Expression.mult(fluxCorrection, fastRateExpression));
 					}else{
-						exp = Expression.add(exp,new Expression(fastReactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext())));
+						exp = Expression.add(exp,new Expression(fastRateExpression));
 					}
 				}
 			}
