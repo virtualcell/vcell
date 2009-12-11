@@ -533,21 +533,16 @@ public void showApplicationFrame(final SimulationContext simContext, final int t
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			try {			
-				BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				if (! getApplicationsHash().containsKey(simContext)) {
-					// create components
-					createAppComponents(simContext);
-				}
-				ApplicationComponents applicationComponents = (ApplicationComponents)getApplicationsHash().get(simContext);
-				if (tabIndex >= 0) {
-					applicationComponents.getAppEditor().setTabIndex(tabIndex);
-				}
-				JInternalFrameEnhanced editorFrame = applicationComponents.getAppEditorFrame();
-				showFrame(editorFrame);
-			} finally {
-				BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			if (! getApplicationsHash().containsKey(simContext)) {
+				// create components
+				createAppComponents(simContext);
 			}
+			ApplicationComponents applicationComponents = (ApplicationComponents)getApplicationsHash().get(simContext);
+			if (tabIndex >= 0) {
+				applicationComponents.getAppEditor().setTabIndex(tabIndex);
+			}
+			JInternalFrameEnhanced editorFrame = applicationComponents.getAppEditorFrame();
+			showFrame(editorFrame);
 		}
 	};
 	ClientTaskDispatcher.dispatch(getJDesktopPane(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });		

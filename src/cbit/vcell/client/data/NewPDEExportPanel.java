@@ -3,22 +3,52 @@ package cbit.vcell.client.data;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.simdata.gui.*;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.util.Comparator;
+import java.util.TreeSet;
 
-import java.awt.*;
-import java.util.*;
-
-import cbit.vcell.export.server.*;
-import cbit.image.*;
-import cbit.vcell.simdata.*;
-
-import javax.swing.*;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.ButtonGroupCivilized;
+import org.vcell.util.gui.DefaultListModelCivilized;
+import org.vcell.util.gui.LineBorderBean;
+import org.vcell.util.gui.TitledBorderBean;
 
-import cbit.util.*;
-import cbit.vcell.client.*;
+import cbit.image.DisplayAdapterService;
+import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.export.ExportSettings;
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.GeometrySpecs;
+import cbit.vcell.export.server.ImageSpecs;
+import cbit.vcell.export.server.MovieSpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.gui.DisplayPreferences;
+import cbit.vcell.simdata.gui.SpatialSelection;
 /**
  * This type was created in VisualAge.
  */
@@ -33,25 +63,25 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JComboBox ivjJComboBox1 = null;
 	private JLabel ivjJLabelFormat = null;
 	private JPanel ivjJPanelExport = null;
-	private cbit.vcell.export.ExportSettings ivjExportSettings1 = null;
+	private ExportSettings ivjExportSettings1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JScrollPane ivjJScrollPane1 = null;
 	private JSlider ivjJSlider1 = null;
 	private JSlider ivjJSlider2 = null;
 	private JTextField ivjJTextField1 = null;
 	private JTextField ivjJTextField2 = null;
-	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
+	private PDEDataContext fieldPdeDataContext = null;
 	private JList ivjJListSelections = null;
 	private JList ivjJListVariables = null;
 	private JRadioButton ivjJRadioButtonSelection = null;
 	private JRadioButton ivjJRadioButtonSlice = null;
 	private JScrollPane ivjJScrollPane2 = null;
-	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilizedSelections = null;
-	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilizedVariables = null;
+	private DefaultListModelCivilized ivjDefaultListModelCivilizedSelections = null;
+	private DefaultListModelCivilized ivjDefaultListModelCivilizedVariables = null;
 //	private cbit.vcell.simdata.gui.SpatialSelection fieldSelectedRegion = null;
 	private int fieldSlice = -1;
 	private int fieldNormalAxis = -1;
-	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private JPanel ivjJPanelRegion = null;
 	private JPanel ivjJPanelTime = null;
 	private JPanel ivjJPanelVariables = null;
@@ -60,13 +90,13 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JPanel ivjJPanelSelections = null;
 	private JPanel ivjJPanelSlice = null;
 	private PDEDataContext ivjpdeDataContext1 = null;
-	private cbit.image.DisplayAdapterService fieldDisplayAdapterService = null;
+	private DisplayAdapterService fieldDisplayAdapterService = null;
 	private JRadioButton ivjJRadioButtonFull = null;
 	private JLabel ivjJLabelFull = null;
 //	private JLabel ivjJLabelCurrentSelection = null;
 	private JLabel ivjJLabelSlice = null;
 	private boolean ivjConnPtoP3Aligning = false;
-	private cbit.vcell.client.DataViewerManager fieldDataViewerManager = null;
+	private DataViewerManager fieldDataViewerManager = null;
 	private ButtonGroup exportVarButtonGroup = new ButtonGroup();
 	private static final String PROP_SELECTEDREGION = "selectedRegion";
 	private SpatialSelection[] spatialSelectionsVolume = null;
@@ -198,7 +228,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoC1(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -419,7 +449,7 @@ private void connEtoC2() {
 	try {
 		// user code begin {1}
 		// user code end
-		this.initFormatChoices_new(/*false*/);
+		this.initFormatChoices_0();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -858,10 +888,10 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -879,7 +909,7 @@ private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
  * @return The dataViewerManager property value.
  * @see #setDataViewerManager
  */
-public cbit.vcell.client.DataViewerManager getDataViewerManager() {
+public DataViewerManager getDataViewerManager() {
 	return fieldDataViewerManager;
 }
 
@@ -889,10 +919,10 @@ public cbit.vcell.client.DataViewerManager getDataViewerManager() {
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilizedSelections() {
+private DefaultListModelCivilized getDefaultListModelCivilizedSelections() {
 	if (ivjDefaultListModelCivilizedSelections == null) {
 		try {
-			ivjDefaultListModelCivilizedSelections = new org.vcell.util.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilizedSelections = new DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -909,10 +939,10 @@ private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilize
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilizedVariables() {
+private DefaultListModelCivilized getDefaultListModelCivilizedVariables() {
 	if (ivjDefaultListModelCivilizedVariables == null) {
 		try {
-			ivjDefaultListModelCivilizedVariables = new org.vcell.util.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilizedVariables = new DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -929,7 +959,7 @@ private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilize
  * @return The displayAdapterService property value.
  * @see #setDisplayAdapterService
  */
-public cbit.image.DisplayAdapterService getDisplayAdapterService() {
+public DisplayAdapterService getDisplayAdapterService() {
 	return fieldDisplayAdapterService;
 }
 
@@ -939,10 +969,10 @@ public cbit.image.DisplayAdapterService getDisplayAdapterService() {
  * @return cbit.vcell.export.ExportSettings
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.export.ExportSettings getExportSettings1() {
+private ExportSettings getExportSettings1() {
 	if (ivjExportSettings1 == null) {
 		try {
-			ivjExportSettings1 = new cbit.vcell.export.ExportSettings();
+			ivjExportSettings1 = new ExportSettings();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1790,7 +1820,7 @@ public int getNormalAxis() {
  * @return The pdeDataContext property value.
  * @see #setPdeDataContext
  */
-public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
+public PDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 
@@ -1800,7 +1830,7 @@ public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
  * @return cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.simdata.PDEDataContext getpdeDataContext1() {
+private PDEDataContext getpdeDataContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjpdeDataContext1;
@@ -1913,25 +1943,6 @@ private void initFormatChoices_0(/*boolean bMembrane*/){
 
 }
 /**
- * Comment
- */
-private void initFormatChoices_new(/*final boolean bMembrane*/){
-	if(SwingUtilities.isEventDispatchThread()){
-		initFormatChoices_0(/*bMembrane*/);
-	}else{
-	try{
-		SwingUtilities.invokeAndWait(new Runnable(){
-			public void run() {
-				initFormatChoices_0(/*bMembrane*/);
-			}});
-	}catch(Exception e){
-		e.printStackTrace();
-	}
-	}
-}
-
-
-/**
  * Initialize the class.
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -1939,11 +1950,11 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
-		ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
+		LineBorderBean ivjLocalBorder1;
+		ivjLocalBorder1 = new LineBorderBean();
 		ivjLocalBorder1.setLineColor(java.awt.Color.blue);
-		org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
-		ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
+		TitledBorderBean ivjLocalBorder;
+		ivjLocalBorder = new TitledBorderBean();
 		ivjLocalBorder.setBorder(ivjLocalBorder1);
 		ivjLocalBorder.setTitle("Specify data to be exported");
 		setName("PDEExportPanel");
@@ -2011,7 +2022,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2036,7 +2046,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
  * @param dataViewerManager The new value for the property.
  * @see #getDataViewerManager
  */
-public void setDataViewerManager(cbit.vcell.client.DataViewerManager dataViewerManager) {
+public void setDataViewerManager(DataViewerManager dataViewerManager) {
 	DataViewerManager oldValue = fieldDataViewerManager;
 	fieldDataViewerManager = dataViewerManager;
 	firePropertyChange("dataViewerManager", oldValue, dataViewerManager);
@@ -2048,7 +2058,7 @@ public void setDataViewerManager(cbit.vcell.client.DataViewerManager dataViewerM
  * @param displayAdapterService The new value for the property.
  * @see #getDisplayAdapterService
  */
-public void setDisplayAdapterService(cbit.image.DisplayAdapterService displayAdapterService) {
+public void setDisplayAdapterService(DisplayAdapterService displayAdapterService) {
 	DisplayAdapterService oldValue = fieldDisplayAdapterService;
 	fieldDisplayAdapterService = displayAdapterService;
 	firePropertyChange("displayAdapterService", oldValue, displayAdapterService);
@@ -2072,7 +2082,7 @@ public void setNormalAxis(int normalAxis) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) {
+public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
@@ -2084,10 +2094,10 @@ public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) 
  * @param newValue cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(cbit.vcell.simdata.PDEDataContext newValue) {
+private void setpdeDataContext1(PDEDataContext newValue) {
 	if (ivjpdeDataContext1 != newValue) {
 		try {
-			cbit.vcell.simdata.PDEDataContext oldValue = getpdeDataContext1();
+			PDEDataContext oldValue = getpdeDataContext1();
 			/* Stop listening for events from the current object */
 			if (ivjpdeDataContext1 != null) {
 				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
@@ -2319,7 +2329,7 @@ private void startExport() {
 /**
  * Comment
  */
-private void updateAllChoices(cbit.vcell.simdata.PDEDataContext pdeDataContext) {
+private void updateAllChoices(PDEDataContext pdeDataContext) {
 	if (pdeDataContext != null) {
 		updateChoiceVariableType(pdeDataContext);
 		updateTimes(pdeDataContext.getTimePoints());
@@ -2419,7 +2429,7 @@ private void updateExportFormat(int exportFormat) {
  * Comment
  */
 private void updateInterface() {
-	initFormatChoices_new(/*getMembVarRadioButton().isSelected()*/);
+	initFormatChoices_0();
 	//
 	if(!getJRadioButtonSelection().isSelected()){
 		getJListSelections().clearSelection();
