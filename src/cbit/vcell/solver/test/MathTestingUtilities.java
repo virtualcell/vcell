@@ -3,11 +3,15 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
 
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -33,19 +37,25 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
+import cbit.vcell.numericstest.SolutionTemplate;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionTerm;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.util.ColumnDescription;
 /**
@@ -119,9 +129,10 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
  * Creation date: (8/20/2003 12:58:10 PM)
  */
 public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTable testSimSymbolTable, 
-		PDEDataManager testDataManager, SimulationSymbolTable refSimSymbolTable, PDEDataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+		PDEDataManager testDataManager, SimulationSymbolTable refSimSymbolTable, PDEDataManager refDataManager, String varsToCompare[],
+		double absErrorThreshold, double relErrorThreshold) throws DataAccessException, ExpressionException {
 
-	java.util.Hashtable tempVarHash = new java.util.Hashtable();
+	java.util.Hashtable<String, DataErrorSummary> tempVarHash = new java.util.Hashtable<String, DataErrorSummary>();
 	boolean bTimesEqual = true;
 	
 	double[] testTimeArray = testDataManager.getDataSetTimes();
@@ -153,12 +164,12 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 			//"VarNotMatch testLength="+(testVars != null?testVars.length+"":"null")+" refLength="+(refVars != null?refVars.length+"":"null"));
 	//}
 		
-	cbit.vcell.solvers.CartesianMesh testMesh = testDataManager.getMesh();
+	CartesianMesh testMesh = testDataManager.getMesh();
 	MathDescription testMathDesc = testSimSymbolTable.getSimulation().getMathDescription();
 	
 	//Variable[] refVars = refSim.getVariables();	
 	MathDescription refMathDesc = refSimSymbolTable.getSimulation().getMathDescription();
-	cbit.vcell.solvers.CartesianMesh refMesh = refDataManager.getMesh();
+	CartesianMesh refMesh = refDataManager.getMesh();
 
 	int[] membraneIndexMapping = null;
 	
@@ -167,7 +178,7 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 	CompartmentSubDomain[] testVolSubDomainLookup = new CompartmentSubDomain[testNumVol];
 	for (int i = 0; i < testNumVol; i++){
 		int subVolumeIndex = testMesh.getSubVolumeFromVolumeIndex(i);
-		cbit.vcell.geometry.SubVolume subVolume = testMathDesc.getGeometry().getGeometrySpec().getSubVolume(subVolumeIndex);
+		SubVolume subVolume = testMathDesc.getGeometry().getGeometrySpec().getSubVolume(subVolumeIndex);
 		CompartmentSubDomain compSubDomain = testMathDesc.getCompartmentSubDomain(subVolume.getName());	
 		testVolSubDomainLookup[i] = compSubDomain;	
 	}
@@ -178,7 +189,6 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 	for (int i = 0; i < testNumMem; i++){
 		int insideVolIndex = testMesh.getMembraneElements()[i].getInsideVolumeIndex();
 		int outsideVolIndex = testMesh.getMembraneElements()[i].getOutsideVolumeIndex();
-		int membraneIndex = testMesh.getMembraneElements()[i].getMembraneIndex();
 		MembraneSubDomain memSubDomain = testMathDesc.getMembraneSubDomain(testVolSubDomainLookup[insideVolIndex],testVolSubDomainLookup[outsideVolIndex]);
 		testMemSubDomainLookup[i] = memSubDomain;	
 	}
@@ -188,7 +198,7 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 	CompartmentSubDomain[] refVolSubDomainLookup = new CompartmentSubDomain[refNumVol];
 	for (int i = 0; i < refNumVol; i++){
 		int subVolumeIndex = refMesh.getSubVolumeFromVolumeIndex(i);
-		cbit.vcell.geometry.SubVolume subVolume = refMathDesc.getGeometry().getGeometrySpec().getSubVolume(subVolumeIndex);
+		SubVolume subVolume = refMathDesc.getGeometry().getGeometrySpec().getSubVolume(subVolumeIndex);
 		CompartmentSubDomain compSubDomain = refMathDesc.getCompartmentSubDomain(subVolume.getName());	
 		refVolSubDomainLookup[i] = compSubDomain;	
 	}
@@ -199,7 +209,6 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 	for (int i = 0; i < refNumMem; i++){
 		int insideVolIndex = refMesh.getMembraneElements()[i].getInsideVolumeIndex();
 		int outsideVolIndex = refMesh.getMembraneElements()[i].getOutsideVolumeIndex();
-		int membraneIndex = refMesh.getMembraneElements()[i].getMembraneIndex();
 		MembraneSubDomain memSubDomain = refMathDesc.getMembraneSubDomain(refVolSubDomainLookup[insideVolIndex],refVolSubDomainLookup[outsideVolIndex]);
 		refMemSubDomainLookup[i] = memSubDomain;	
 	}	
@@ -211,7 +220,7 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 	DataIdentifier[] refDataIDs = refDataManager.getDataIdentifiers();
 	// for each var, do the following :
 	for (int i = 0; i < varsToCompare.length; i++){
-		cbit.vcell.simdata.DataIdentifier refDataID = null;
+		DataIdentifier refDataID = null;
 		for (int j = 0; j < refDataIDs.length; j++){
 			if (refDataIDs[j].getName().equals(varsToCompare[i])){
 				refDataID = refDataIDs[j];
@@ -314,7 +323,7 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 
 				//hashKey = refVar.getName()+":"+testSubDomain.getName();
 				hashKey = refVar.getName()+":"+sn;
-				tempVar = (DataErrorSummary)tempVarHash.get(hashKey);
+				tempVar = tempVarHash.get(hashKey);
 				if (tempVar == null) {
 					tempVar = new DataErrorSummary(null);
 					tempVarHash.put(hashKey, tempVar);
@@ -324,10 +333,10 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 		} // end for (j)
 	} // end for (i)
 
-	Enumeration enumKeys = tempVarHash.keys();
+	Enumeration<String> enumKeys = tempVarHash.keys();
 	while (enumKeys.hasMoreElements()){
-		String key = (String)enumKeys.nextElement();
-		DataErrorSummary tempVarSummary = (DataErrorSummary)tempVarHash.get(key);
+		String key = enumKeys.nextElement();
+		DataErrorSummary tempVarSummary = tempVarHash.get(key);
 		simComparisonSummary.addVariableComparisonSummary(
 			new VariableComparisonSummary(key,
 				tempVarSummary.getMinRef(), tempVarSummary.getMaxRef(), 
@@ -344,13 +353,14 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationSymbolTable simSymbolTable, PDEDataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws org.vcell.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationSymbolTable simSymbolTable, PDEDataManager dataManager,String type,
+		double absErrorThreshold, double relErrorThreshold) throws DataAccessException, ExpressionException {
 
-	java.util.Hashtable tempVarHash = new java.util.Hashtable();
+	java.util.Hashtable<String, DataErrorSummary> tempVarHash = new java.util.Hashtable<String, DataErrorSummary>();
 	
 	double[] timeArray = dataManager.getDataSetTimes();
 	Variable[] vars = simSymbolTable.getVariables();
-	cbit.vcell.solvers.CartesianMesh mesh = dataManager.getMesh();
+	CartesianMesh mesh = dataManager.getMesh();
 	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
 
 	// Get volumeSubdomains from mathDesc/mesh and store in lookupTable
@@ -358,7 +368,7 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationS
 	CompartmentSubDomain[] volSubDomainLookup = new CompartmentSubDomain[numVol];
 	for (int i = 0; i < numVol; i++){
 		int subVolumeIndex = mesh.getSubVolumeFromVolumeIndex(i);
-		cbit.vcell.geometry.SubVolume subVolume = mathDesc.getGeometry().getGeometrySpec().getSubVolume(subVolumeIndex);
+		SubVolume subVolume = mathDesc.getGeometry().getGeometrySpec().getSubVolume(subVolumeIndex);
 		CompartmentSubDomain compSubDomain = mathDesc.getCompartmentSubDomain(subVolume.getName());	
 		volSubDomainLookup[i] = compSubDomain;	
 	}
@@ -369,13 +379,12 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationS
 	for (int i = 0; i < numMem; i++){
 		int insideVolIndex = mesh.getMembraneElements()[i].getInsideVolumeIndex();
 		int outsideVolIndex = mesh.getMembraneElements()[i].getOutsideVolumeIndex();
-		int membraneIndex = mesh.getMembraneElements()[i].getMembraneIndex();
 		MembraneSubDomain memSubDomain = mathDesc.getMembraneSubDomain(volSubDomainLookup[insideVolIndex],volSubDomainLookup[outsideVolIndex]);
 		memSubDomainLookup[i] = memSubDomain;	
 	}
 	
 	double valueArray[] = new double[4];
-	cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(new String[] {"t", "x", "y", "z"});
+	SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] {"t", "x", "y", "z"});
 	int tIndex = symbolTable.getEntry("t").getIndex();
 	int xIndex = symbolTable.getEntry("x").getIndex();
 	int yIndex = symbolTable.getEntry("y").getIndex();
@@ -396,7 +405,7 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationS
 					}
 				}
 				// get data block from varName, data from datablock
-				cbit.vcell.simdata.SimDataBlock simDataBlock = dataManager.getSimDataBlock(vars[i].getName(), timeArray[j]);
+				SimDataBlock simDataBlock = dataManager.getSimDataBlock(vars[i].getName(), timeArray[j]);
 				double[] data = simDataBlock.getData();
 				dataLength = data.length;
 				SubDomain subDomain = null;
@@ -435,10 +444,10 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationS
 			} // end for (j)
 		} // end - if (var)
 	} // end for (i)
-	Enumeration enumKeys = tempVarHash.keys();
+	Enumeration<String> enumKeys = tempVarHash.keys();
 	while (enumKeys.hasMoreElements()){
-		String key = (String)enumKeys.nextElement();
-		DataErrorSummary tempVarSummary = (DataErrorSummary)tempVarHash.get(key);
+		String key = enumKeys.nextElement();
+		DataErrorSummary tempVarSummary = tempVarHash.get(key);
 		simComparisonSummary.addVariableComparisonSummary(
 			new VariableComparisonSummary(key,
 				tempVarSummary.getMinRef(), tempVarSummary.getMaxRef(), 
@@ -458,14 +467,15 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(SimulationS
  * @param testResultSet cbit.vcell.solver.ode.ODESolverResultSet
  * @param referenceResultSet cbit.vcell.solver.ode.ODESolverResultSet
  */
-public static SimulationComparisonSummary compareResultSets(cbit.vcell.solver.ode.ODESolverResultSet testResultSet, cbit.vcell.solver.ode.ODESolverResultSet referenceResultSet, String varsToTest[],String type,double absErrorThreshold, double relErrorThreshold) throws Exception {
+public static SimulationComparisonSummary compareResultSets(ODESolverResultSet testResultSet, ODESolverResultSet referenceResultSet, 
+		String varsToTest[],String type,double absErrorThreshold, double relErrorThreshold) throws Exception {
 
 	if (varsToTest==null){
 		throw new IllegalArgumentException("varsToTest must not be null");
 	}
 	
 	SimulationComparisonSummary simComparisonSummary = new SimulationComparisonSummary();
-	double timeData[] = referenceResultSet.extractColumn(referenceResultSet.findColumn(cbit.vcell.solver.ode.ODESolverResultSet.TIME_COLUMN));
+	double timeData[] = referenceResultSet.extractColumn(referenceResultSet.findColumn(ODESolverResultSet.TIME_COLUMN));
 	
 	for (int i = 0; i < varsToTest.length; i++){
 		int refRSIndex = referenceResultSet.findColumn(varsToTest[i]);
@@ -572,9 +582,14 @@ public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResu
 	
 	SimulationComparisonSummary simComparisonSummary = new SimulationComparisonSummary();
 
-	double[] testRSTimes = testResultSet.extractColumn(testResultSet.findColumn("t"));
-	double[] refRSTimes = referenceResultSet.extractColumn(referenceResultSet.findColumn("t"));
-
+	int testTimeOrHistogramIndex = testResultSet.findColumn(ReservedSymbol.TIME.getName());
+	int refTimeOrHistogramIndex = referenceResultSet.findColumn(ReservedSymbol.TIME.getName());
+	if (testTimeOrHistogramIndex < 0 && refTimeOrHistogramIndex < 0){
+		testTimeOrHistogramIndex = testResultSet.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME);
+		refTimeOrHistogramIndex = referenceResultSet.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME);
+	}
+	double[] testRSTimes = testResultSet.extractColumn(testTimeOrHistogramIndex);
+	double[] refRSTimes = referenceResultSet.extractColumn(refTimeOrHistogramIndex);
 	for (int i = 0; i < varsToTest.length; i++){
 		int refRSIndex = referenceResultSet.findColumn(varsToTest[i]);
 		if (refRSIndex==-1){
@@ -636,13 +651,14 @@ public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResu
  * @return cbit.vcell.math.MathDescription
  * @param mathDesc cbit.vcell.math.MathDescription
  */
-public static MathDescription constructExactMath(MathDescription mathDesc, java.util.Random random, ConstructedSolutionTemplate constructedSolutionTemplate) throws ExpressionException, MathException, cbit.vcell.mapping.MappingException {
+public static MathDescription constructExactMath(MathDescription mathDesc, java.util.Random random, 
+		ConstructedSolutionTemplate constructedSolutionTemplate) throws ExpressionException, MathException, MappingException {
 	if (mathDesc.hasFastSystems()){
 		throw new RuntimeException("SolverTest.constructExactMath() suppport for fastSystems not yet implemented.");
 	}
 	MathDescription exactMath = null;
 	try {
-		exactMath = (MathDescription)org.vcell.util.BeanUtils.cloneSerializable(mathDesc);
+		exactMath = (MathDescription)BeanUtils.cloneSerializable(mathDesc);
 		exactMath.setDescription("constructed exact solution from MathDescription ("+mathDesc.getName()+")");
 		exactMath.setName("exact from "+mathDesc.getName());
 	}catch (Throwable e){
@@ -652,17 +668,17 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 	//
 	// preload the VariableHash with existing Variables (and Constants,Functions,etc) and then sort all at once.
 	//
-	cbit.vcell.mapping.VariableHash varHash = new cbit.vcell.mapping.VariableHash();
-	Enumeration enumVar = exactMath.getVariables();
+	VariableHash varHash = new VariableHash();
+	Enumeration<Variable> enumVar = exactMath.getVariables();
 	while (enumVar.hasMoreElements()){
-		varHash.addVariable((Variable)enumVar.nextElement());
+		varHash.addVariable(enumVar.nextElement());
 	}
 	
 	
-	java.util.Enumeration subDomainEnum = exactMath.getSubDomains();
+	java.util.Enumeration<SubDomain> subDomainEnum = exactMath.getSubDomains();
 	while (subDomainEnum.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)subDomainEnum.nextElement();
-		java.util.Enumeration equationEnum = subDomain.getEquations();
+		SubDomain subDomain = subDomainEnum.nextElement();
+		java.util.Enumeration<Equation> equationEnum = subDomain.getEquations();
 		if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain memSubDomain = (MembraneSubDomain)subDomain;
 			AnalyticSubVolume insideAnalyticSubVolume = (AnalyticSubVolume)exactMath.getGeometry().getGeometrySpec().getSubVolume(memSubDomain.getInsideCompartment().getName());
@@ -672,7 +688,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 			}
 		}
 		while (equationEnum.hasMoreElements()){
-			Equation equation = (Equation)equationEnum.nextElement();
+			Equation equation = equationEnum.nextElement();
 			if (equation.getExactSolution()!=null){
 				throw new RuntimeException("exact solution already exists");
 			}
@@ -680,7 +696,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				OdeEquation odeEquation = (OdeEquation)equation;
 				Expression substitutedRateExp = substituteWithExactSolution(odeEquation.getRateExpression(),(CompartmentSubDomain)subDomain,exactMath);
 
-				cbit.vcell.numericstest.SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
+				SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
 				
 				String varName = odeEquation.getVariable().getName();
 				String initName = varName+"_"+subDomain.getName()+"_init";
@@ -717,9 +733,8 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 			}else if (equation instanceof PdeEquation){
 				PdeEquation pdeEquation = (PdeEquation)equation;
 				Expression substitutedRateExp = substituteWithExactSolution(pdeEquation.getRateExpression(),(CompartmentSubDomain)subDomain,exactMath);
-				Expression origInitExp = pdeEquation.getInitialExpression();
 				
-				cbit.vcell.numericstest.SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
+				SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
 				
 				String varName = pdeEquation.getVariable().getName();
 				String initName = varName+"_"+subDomain.getName()+"_init";
@@ -904,18 +919,15 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 		}
 		if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain;
-			Enumeration enumJumpConditions = membraneSubDomain.getJumpConditions();
+			Enumeration<JumpCondition> enumJumpConditions = membraneSubDomain.getJumpConditions();
 			while (enumJumpConditions.hasMoreElements()){
-				JumpCondition jumpCondition = (JumpCondition)enumJumpConditions.nextElement();
+				JumpCondition jumpCondition = enumJumpConditions.nextElement();
 				Expression origInfluxExp = jumpCondition.getInFluxExpression();
 				Expression origOutfluxExp = jumpCondition.getOutFluxExpression();
 				Expression substitutedInfluxExp = substituteWithExactSolution(origInfluxExp,membraneSubDomain,exactMath);
 				Expression substitutedOutfluxExp = substituteWithExactSolution(origOutfluxExp,membraneSubDomain,exactMath);
 				
 				String varName = jumpCondition.getVariable().getName();
-				String exactInsideName = varName+"_"+membraneSubDomain.getInsideCompartment().getName()+"_exact";
-				String exactOutsideName = varName+"_"+membraneSubDomain.getOutsideCompartment().getName()+"_exact";
-				String errorName = varName+"_"+subDomain.getName()+"_error";
 				String origInfluxName = "_"+varName+"_"+subDomain.getName()+"_origInflux";
 				String origOutfluxName = "_"+varName+"_"+subDomain.getName()+"_origOutflux";
 				String substitutedInfluxName = "_"+varName+"_"+subDomain.getName()+"_substitutedInflux";
@@ -971,7 +983,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 // New variables and ODEs are constructed according to the rule listed below and are added to the mathDescription.
 // The method returns the modified mathDescription.
 //
-public static MathDescription constructOdesForSensitivity(MathDescription mathDesc, Constant sensParam) throws ExpressionException, MathException, cbit.vcell.mapping.MappingException {
+public static MathDescription constructOdesForSensitivity(MathDescription mathDesc, Constant sensParam) throws ExpressionException, MathException, MappingException {
 	//
 	// For each ODE :
 	//  	
@@ -1012,9 +1024,9 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 	}
 
 	VariableHash varHash = new VariableHash();
-	Enumeration enumVar = mathDesc.getVariables();
+	Enumeration<Variable> enumVar = mathDesc.getVariables();
 	while (enumVar.hasMoreElements()){
-		varHash.addVariable((Variable)enumVar.nextElement());
+		varHash.addVariable(enumVar.nextElement());
 	}
 
 	//
@@ -1028,22 +1040,22 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 	//
 	// Iterate through each subdomain (only 1 in compartmental case), and each equation in the subdomain
 	// 
-	Enumeration subDomainEnum = mathDesc.getSubDomains();
+	Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
 	//
 	// Create a vector of equations to store the 2 equations for each ODE variable in the subdomain.
 	// Later, add it to the equations list in the subdomain.
 	//
-	Vector equnsVector = new Vector();
-	Vector varsVector = new Vector();
-	Vector var1s = new Vector();
-	Vector var2s = new Vector();
+	Vector<Equation> equnsVector = new Vector<Equation>();
+	Vector<Variable> varsVector = new Vector<Variable>();
+	Vector<Variable> var1s = new Vector<Variable>();
+	Vector<Variable> var2s = new Vector<Variable>();
 	
 	while (subDomainEnum.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)subDomainEnum.nextElement();
-		Enumeration equationEnum = subDomain.getEquations();
+		SubDomain subDomain = subDomainEnum.nextElement();
+		Enumeration<Equation> equationEnum = subDomain.getEquations();
 		
 		while (equationEnum.hasMoreElements()){
-			Equation equation = (Equation)equationEnum.nextElement();
+			Equation equation = equationEnum.nextElement();
 
 			if (equation instanceof OdeEquation){
 				OdeEquation odeEquation = (OdeEquation)equation;
@@ -1110,13 +1122,13 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 		// Substitute the rate expressions for the newly added ODEs in equnsVector.
 		//
 
-		Variable vars[] = (Variable[])org.vcell.util.BeanUtils.getArray(varsVector, Variable.class);		
-		Variable var_1s[] = (Variable[])org.vcell.util.BeanUtils.getArray(var1s, Variable.class);
-		Variable var_2s[] = (Variable[])org.vcell.util.BeanUtils.getArray(var2s, Variable.class);
+		Variable vars[] = (Variable[])BeanUtils.getArray(varsVector, Variable.class);		
+		Variable var_1s[] = (Variable[])BeanUtils.getArray(var1s, Variable.class);
+		Variable var_2s[] = (Variable[])BeanUtils.getArray(var2s, Variable.class);
 
-		Vector newEqunsVector = new Vector();
+		Vector<Equation> newEqunsVector = new Vector<Equation>();
 		for (int i = 0; i < equnsVector.size(); i++) {
-			Equation equn = (Equation)equnsVector.elementAt(i);
+			Equation equn = equnsVector.elementAt(i);
 			Expression initEx = equn.getInitialExpression();
 			Expression rateEx = equn.getRateExpression();
 			for (int j = 0; j < vars.length ; j++){
@@ -1143,10 +1155,10 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 		// If the subdomain has a fast system, create a new fast system by substituting the high-low variables/parameters
 		// in the expressions for the fastInvariants and fastRates and adding them to the fast system.
 		//
-		Vector invarsVector = new Vector();
-		Vector ratesVector = new Vector();
-		Enumeration fastInvarsEnum = null;
-		Enumeration fastRatesEnum = null;
+		Vector<FastInvariant> invarsVector = new Vector<FastInvariant>();
+		Vector<FastRate> ratesVector = new Vector<FastRate>();
+		Enumeration<FastInvariant> fastInvarsEnum = null;
+		Enumeration<FastRate> fastRatesEnum = null;
 
 		// Get the fast invariants and fast rates in the system.	
 		FastSystem fastSystem = subDomain.getFastSystem();
@@ -1159,7 +1171,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 			// and sensitivity parameter (P) with its high and low values (P_1 & P_2) to get 2 new fast invariants. 
 			//
 			while (fastInvarsEnum.hasMoreElements()) {
-				FastInvariant fastInvar = (FastInvariant)fastInvarsEnum.nextElement();
+				FastInvariant fastInvar = fastInvarsEnum.nextElement();
 				Expression fastInvarExpr = fastInvar.getFunction();
 				fastInvarExpr = MathUtilities.substituteFunctions(fastInvarExpr, mathDesc);
 
@@ -1191,7 +1203,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 			// and sensitivity parameter (P) with its high and low values (P_1 & P_2) to get 2 new fast rates. 
 			//
 			while (fastRatesEnum.hasMoreElements()) {
-				FastRate fastRate = (FastRate)fastRatesEnum.nextElement();
+				FastRate fastRate = fastRatesEnum.nextElement();
 				Expression fastRateExpr = fastRate.getFunction();
 				fastRateExpr = MathUtilities.substituteFunctions(fastRateExpr, mathDesc);
 
@@ -1315,7 +1327,7 @@ public static ODESolverResultSet getExactResultSet(MathDescription mathDesc, dou
 					exactSensitivity = exactSensitivity.differentiate(sensitivityParam.getName());
 					exactSensitivity = exactSensitivity.flatten();
 					VolVariable volVar = (VolVariable)equation.getVariable();
-					String sensName = cbit.vcell.solver.ode.SensVariable.getSensName(volVar, sensitivityParam);
+					String sensName = SensVariable.getSensName(volVar, sensitivityParam);
 					resultSet.addFunctionColumn(new FunctionColumnDescription(exactSensitivity, sensName, null, sensName, false));
 				}
 					
@@ -1334,19 +1346,18 @@ public static ODESolverResultSet getExactResultSet(MathDescription mathDesc, dou
  * @return cbit.vcell.parser.Expression
  * @param analyticSubDomainExp cbit.vcell.parser.Expression
  */
-public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomainExp) throws ExpressionException, cbit.vcell.mapping.MappingException {
+public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomainExp) throws ExpressionException, MappingException {
 	
-	java.util.Vector varList = new java.util.Vector();
 	Expression analyticExp = new Expression(analyticSubDomainExp);
 	analyticExp.bindExpression(null);
 	analyticExp = analyticExp.flatten();
-	java.util.Stack unparsedExpressionStack = new java.util.Stack();
-	java.util.Vector expList = new java.util.Vector();
+	java.util.Stack<Expression> unparsedExpressionStack = new java.util.Stack<Expression>();
+	java.util.Vector<Expression> expList = new java.util.Vector<Expression>();
 	unparsedExpressionStack.push(analyticExp);
 	while (unparsedExpressionStack.size()>0){
-		Expression exp = (Expression)unparsedExpressionStack.pop();
+		Expression exp = unparsedExpressionStack.pop();
 		if (exp.isRelational()){
-			cbit.vcell.parser.ExpressionTerm expTerm = exp.extractTopLevelTerm();
+			ExpressionTerm expTerm = exp.extractTopLevelTerm();
 			if (expTerm.getOperator().equals("<") || expTerm.getOperator().equals("<=")){
 				expList.add(new Expression(expTerm.getOperands()[0].infix()+"-"+expTerm.getOperands()[1].infix()));
 			}else if (expTerm.getOperator().equals(">") || expTerm.getOperator().equals(">=")){
@@ -1355,7 +1366,7 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
 				throw new ExpressionException("relational expression '"+exp+"' is not an inequality");
 			}
 		}else if (exp.isLogical()){
-			cbit.vcell.parser.ExpressionTerm expTerm = exp.extractTopLevelTerm();
+			ExpressionTerm expTerm = exp.extractTopLevelTerm();
 			for (int i = 0; i < expTerm.getOperands().length; i++){
 				unparsedExpressionStack.push(expTerm.getOperands()[i]);
 			}
@@ -1363,7 +1374,7 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
 			throw new ExpressionException("expression '"+exp+"' is neither relational nor logical, bad analytic geometry");
 		}
 	}
-	return (Expression[])org.vcell.util.BeanUtils.getArray(expList,Expression.class);
+	return (Expression[])BeanUtils.getArray(expList,Expression.class);
 }
 
 
@@ -1373,9 +1384,9 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
  * @return cbit.vcell.parser.Expression
  * @param analyticSubDomainExp cbit.vcell.parser.Expression
  */
-public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, cbit.vcell.mapping.MappingException {
+public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MappingException {
 
-	cbit.vcell.mapping.VariableHash varHash = new cbit.vcell.mapping.VariableHash();
+	VariableHash varHash = new VariableHash();
 	
 	Expression insideOutsideFunctions[] = getInsideOutsideFunctions(analyticSubVolume);
 	StringBuffer normalBufferX = new StringBuffer("0.0");
@@ -1408,8 +1419,8 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
 
 	
 	Variable vars[] = varHash.getAlphabeticallyOrderedVariables();
-	java.util.Vector varList = new java.util.Vector(java.util.Arrays.asList(vars));
-	return (Function[])org.vcell.util.BeanUtils.getArray(varList,Function.class);
+	java.util.Vector<Variable> varList = new java.util.Vector<Variable>(java.util.Arrays.asList(vars));
+	return (Function[])BeanUtils.getArray(varList,Function.class);
 }
 
 
@@ -1419,7 +1430,7 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
  * @return cbit.vcell.parser.Expression
  * @param analyticSubDomainExp cbit.vcell.parser.Expression
  */
-public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression insideOutsideFunction, String baseName) throws ExpressionException, cbit.vcell.mapping.MappingException {
+public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression insideOutsideFunction, String baseName) throws ExpressionException, MappingException {
 	
 	java.util.Vector<Function> varList = new java.util.Vector<Function>();
 	Expression F = new Expression(insideOutsideFunction);
@@ -1457,7 +1468,7 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression in
 	varList.add(new Function(normalZName,normalZ));
 	varList.add(new Function(distanceToSurfaceName,distanceToSurface));
 
-	return (Function[])org.vcell.util.BeanUtils.getArray(varList,Function.class);
+	return (Function[])BeanUtils.getArray(varList,Function.class);
 }
 
 
@@ -1472,7 +1483,6 @@ private static Variable getSimVar(SimulationSymbolTable refSimSymbolTable, Strin
 
 	Variable[] refSimVars = refSimSymbolTable.getVariables();
 
-	boolean bEqual = false;
 	for (int i = 0; i < refSimVars.length; i++) {
 		if (refSimVars[i].getName().equals(testSimVarName)) {
 			return refSimVars[i];

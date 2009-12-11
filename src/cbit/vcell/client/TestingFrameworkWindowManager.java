@@ -123,6 +123,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
@@ -1134,8 +1135,15 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
 			DataManager simDataManager = getRequestManager().getDataManager(vcdID, sim.isSpatial());
 			
-			double timeArray[] = simDataManager.getDataSetTimes();
-			if (timeArray == null || timeArray.length == 0) {
+			double timeArray[] = null;
+			// can be histogram, so there won't be time array
+			try {
+				timeArray = simDataManager.getDataSetTimes();
+			} catch (Exception ex) {
+				ex.printStackTrace(System.out);
+			}
+			StochSimOptions stochOpt = sim.getSolverTaskDescription().getStochOpt();
+			if ((stochOpt == null || stochOpt.getNumOfTrials() == 1)  && (timeArray == null || timeArray.length == 0)) {
 				reportTCBuffer.append("\t\t\tNO DATA : Simulation not run yet.\n");
 				simReportStatus = TestCriteriaNew.TCRIT_STATUS_NODATA;
 			} else {
