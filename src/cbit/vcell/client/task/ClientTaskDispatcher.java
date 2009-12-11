@@ -1,8 +1,10 @@
 package cbit.vcell.client.task;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
@@ -85,6 +87,8 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				} else {
 					pp.start();
 				}
+			} else {
+				BeanUtils.setCursorThroughout(JOptionPane.getFrameForComponent(requester), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			}
 			for (int i = 0; i < taskList.size(); i++){
 				// run all tasks
@@ -163,6 +167,8 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 //System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
 			if (pp != null) {
 				pp.stop();
+			} else {
+				BeanUtils.setCursorThroughout(JOptionPane.getFrameForComponent(requester), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong
