@@ -158,6 +158,7 @@ if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFun
   /** Bind method, identifiers bind themselves to ValueObjects */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	if (getFunction() == FIELD){
+		jjtGetChild(2).bind(symbolTable);
 		return;
 	}else if (getFunction() == GRAD){
 		jjtGetChild(jjtGetNumChildren()-1).bind(symbolTable);
@@ -2825,5 +2826,18 @@ void setName(String name) {
 
 public static String[] getFunctionNames() {
 	return functionNamesVCML;
+}
+
+
+@Override
+public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
+	if (getFunction() == FIELD){
+		jjtGetChild(2).renameBoundSymbols(nameScope);
+		return;
+	}else if (getFunction() == GRAD){
+		jjtGetChild(jjtGetNumChildren()-1).renameBoundSymbols(nameScope);
+		return;
+	}
+	super.renameBoundSymbols(nameScope);
 }
 }
