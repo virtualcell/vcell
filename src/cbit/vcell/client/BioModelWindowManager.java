@@ -1,12 +1,13 @@
 package cbit.vcell.client;
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -16,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
@@ -844,4 +844,32 @@ public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
 	}
 }
 
+@Override
+public void prepareDocumentToLoad(VCDocument doc) throws Exception {
+	ArrayList<Simulation> simulations = new ArrayList<Simulation>();
+	BioModel bioModel = (BioModel)doc;
+	if (!doc.getName().equals(getVCDocument().getName())) {
+		return;
+	}
+	SimulationContext[] simContexts = bioModel.getSimulationContexts();
+	Enumeration<SimulationContext> openApps = applicationsHash.keys();
+	while (openApps.hasMoreElements()) {
+		SimulationContext openApp = openApps.nextElement();
+		for (SimulationContext simContext : simContexts) {
+			if (openApp.getName().equals(simContext.getName())) {// same application
+				simContext.getGeometry().precomputeAll();
+				simulations.addAll(Arrays.asList(simContext.getSimulations()));
+			}
+		}
+	}
+	
+	if (simulations.size() > 0) {	
+		// preload simulation status
+		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.size()];
+		for (int i = 0; i < simulations.size(); i++){
+			simIDs[i] = simulations.get(i).getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		}
+		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
+	}
+}
 }

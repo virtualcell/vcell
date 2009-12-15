@@ -329,5 +329,5 @@ void updateStatusNow();
 
 void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff comparePanel, String baselineDesc, String modifiedDesc);
 
-void prepareDocumentToLoad(VCDocument doc) throws Exception;
+//void prepareDocumentToLoad(VCDocument doc) throws Exception;
 }

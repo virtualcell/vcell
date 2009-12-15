@@ -22,6 +22,7 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.PerformanceMonitorListener;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
@@ -30,6 +31,9 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.xml.merge.XmlTreeDiff;
@@ -934,6 +938,32 @@ public void tileWindows(boolean horizontal) {
 	for (int i=0;i<iframes.length;i++) {
 		iframes[i].setBounds(bounds[i]);
 		iframes[i].show();
+	}
+}
+
+public void prepareDocumentToLoad(VCDocument doc) throws Exception {
+	Simulation[] simulations = null;
+	if (doc instanceof MathModel) {
+		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
+		geometry.precomputeAll();
+		simulations = ((MathModel)doc).getSimulations();		
+	} else if (doc instanceof Geometry) {
+		((Geometry)doc).precomputeAll();		
+	} else if (doc instanceof BioModel) {
+		BioModel bioModel = (BioModel)doc;
+		SimulationContext[] simContexts = bioModel.getSimulationContexts();
+		for (SimulationContext simContext : simContexts) {
+			simContext.getGeometry().precomputeAll();
+		}
+		simulations = ((BioModel)doc).getSimulations();		
+	}
+	if (simulations != null) {	
+		// preload simulation status
+		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+		for (int i = 0; i < simulations.length; i++){
+			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		}
+		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
 	}
 }
 }

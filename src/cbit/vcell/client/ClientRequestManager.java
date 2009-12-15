@@ -1626,7 +1626,7 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester, final VCD
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocument doc = (VCDocument)hashTable.get("doc");
-			prepareDocumentToLoad(doc);
+//			prepareDocumentToLoad(doc);
 		}
 	};
 	AsynchClientTask taskNew2 = new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
@@ -1723,9 +1723,10 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}
 			}
-//			if (inNewWindow) {
-//				prepareDocumentToLoad(doc);
-//			}
+			if (!inNewWindow) {
+				DocumentWindowManager windowManager = (DocumentWindowManager)requester;
+				windowManager.prepareDocumentToLoad(doc);
+			}
 			hashTable.put("doc", doc);
 		}
 	};
@@ -1748,8 +1749,8 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					} else {
 						// request was to replace the document in an existing window
 						windowManager = (DocumentWindowManager)requester;
-						windowManager.resetDocument(doc);
 						getMdiManager().setCanonicalTitle(requester.getManagerID());
+						windowManager.resetDocument(doc);
 					}
 				}
 			} finally {
@@ -2528,31 +2529,31 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 	}
 }
 
-public void prepareDocumentToLoad(VCDocument doc) throws Exception {
-	Simulation[] simulations = null;
-	if (doc instanceof MathModel) {
-		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
-		geometry.precomputeAll();
-		simulations = ((MathModel)doc).getSimulations();		
-	} else if (doc instanceof Geometry) {
-		((Geometry)doc).precomputeAll();		
-	} else if (doc instanceof BioModel) {
-		BioModel bioModel = (BioModel)doc;
-		SimulationContext[] simContexts = bioModel.getSimulationContexts();
-		for (SimulationContext simContext : simContexts) {
-			simContext.getGeometry().precomputeAll();
-		}
-		simulations = ((BioModel)doc).getSimulations();		
-	}
-	if (simulations != null) {	
-		// preload simulation status
-		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
-		for (int i = 0; i < simulations.length; i++){
-			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-		}
-		getDocumentManager().preloadSimulationStatus(simIDs);
-	}
-}
+//public void prepareDocumentToLoad(VCDocument doc) throws Exception {
+//	Simulation[] simulations = null;
+//	if (doc instanceof MathModel) {
+//		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
+//		geometry.precomputeAll();
+//		simulations = ((MathModel)doc).getSimulations();		
+//	} else if (doc instanceof Geometry) {
+//		((Geometry)doc).precomputeAll();		
+//	} else if (doc instanceof BioModel) {
+//		BioModel bioModel = (BioModel)doc;
+//		SimulationContext[] simContexts = bioModel.getSimulationContexts();
+//		for (SimulationContext simContext : simContexts) {
+//			simContext.getGeometry().precomputeAll();
+//		}
+//		simulations = ((BioModel)doc).getSimulations();		
+//	}
+//	if (simulations != null) {	
+//		// preload simulation status
+//		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+//		for (int i = 0; i < simulations.length; i++){
+//			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+//		}
+//		getDocumentManager().preloadSimulationStatus(simIDs);
+//	}
+//}
 
 
 public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,boolean bCropOutBlack) throws DataFormatException,ImageException{
