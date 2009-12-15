@@ -3,6 +3,8 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.Arrays;
+
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
@@ -63,6 +65,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
 public void constantAdded(MathOverridesEvent event) {
+	updateKeys(getMathOverrides());
 	fireTableDataChanged();
 }
 
@@ -72,6 +75,7 @@ public void constantAdded(MathOverridesEvent event) {
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
 public void constantChanged(MathOverridesEvent event) {
+	updateKeys(getMathOverrides());
 	fireTableDataChanged();
 }
 
@@ -81,6 +85,7 @@ public void constantChanged(MathOverridesEvent event) {
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
 public void constantRemoved(MathOverridesEvent event) {
+	updateKeys(getMathOverrides());
 	fireTableDataChanged();
 }
 
@@ -109,31 +114,7 @@ private void editScanValues(String name, int r) throws DivideByZeroException, Ex
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
@@ -352,14 +333,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Sets the editable property (boolean) value.
  * @param editable The new value for the property.
  * @see #getEditable
@@ -377,14 +350,25 @@ public void setEditable(boolean editable) {
  * @see #getMathOverrides
  */
 public void setMathOverrides(MathOverrides mathOverrides) {
-	MathOverrides oldValue = fieldMathOverrides;
-	if (oldValue!=null){
-		oldValue.removeMathOverridesListener(this);
+	if (mathOverrides != fieldMathOverrides) {	
+		MathOverrides oldValue = fieldMathOverrides;
+		if (oldValue!=null){
+			oldValue.removeMathOverridesListener(this);
+		}
+		fieldMathOverrides = mathOverrides;
+		if (fieldMathOverrides!=null){
+			fieldMathOverrides.addMathOverridesListener(this);
+		}
+		updateKeys(mathOverrides);
+		
+		firePropertyChange("mathOverrides", oldValue, mathOverrides);
 	}
-	fieldMathOverrides = mathOverrides;
-	if (fieldMathOverrides!=null){
-		fieldMathOverrides.addMathOverridesListener(this);
-	}
+	//  Or should this only be fireTableDataChanged()???
+	fireTableDataChanged();
+}
+
+
+private void updateKeys(MathOverrides mathOverrides) {
 	fieldKeys = new String[0];
 	if (mathOverrides != null) {
 		if (getEditable()) {
@@ -394,13 +378,9 @@ public void setMathOverrides(MathOverrides mathOverrides) {
 			// summary, show only overriden ones
 			fieldKeys = mathOverrides.getOverridenConstantNames();
 		}
-		sort(fieldKeys, 0, fieldKeys.length-1);
+		Arrays.sort(fieldKeys);
 		simSymbolTable = new SimulationSymbolTable(getMathOverrides().getSimulation(), 0);
 	}
-	
-	firePropertyChange("mathOverrides", oldValue, mathOverrides);
-	//  Or should this only be fireTableDataChanged()???
-	fireTableDataChanged();
 }
 
 
@@ -426,18 +406,6 @@ public void setValueAt(Object object, int r, int c) {
 			if (object instanceof ConstantArraySpec) {
 				editScanValues(name, r);
 			} else if (object instanceof ScopedExpression) {
-//				ScopedExpression inputValue = (ScopedExpression)object;
-//				Expression expression = null;
-//				if (inputValue == null) {
-//					expression = new Expression((String)getValueAt(r, COLUMN_DEFAULT));
-//				} else {
-//					expression = inputValue.getExpression();
-//				}
-//				Constant constant = new Constant(name, expression);
-//				getMathOverrides().putConstant(constant);
-//				fireTableCellUpdated(r, c);
-//				this.fireTableDataChanged();
-//				setModified(true);
 				throw new RuntimeException("unexpected value type ScopedExpression");
 			} else if (object instanceof String) {
 				String inputValue = (String)object;
@@ -467,26 +435,4 @@ public void setValueAt(Object object, int r, int c) {
 	}
 }
 
-
-private static void sort(String arr[], int left, int right) {
-	if (left < right) {
-		swap(arr, left, (left + right) / 2);
-		int last = left;
-		for (int i = left + 1; i <= right; i++) {
-			if (arr[i].compareTo(arr[left]) < 0) {
-				swap(arr, ++last, i);
-			}
-		}
-		swap(arr, left, last);
-		sort(arr, left, last - 1);
-		sort(arr, last + 1, right);
-	}
-}
-
-
-private static void swap(String arr[], int i, int j) {
-    String tmp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = tmp;
-}
 }

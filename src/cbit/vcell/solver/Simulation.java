@@ -614,6 +614,7 @@ public void refreshDependencies() {
 		getMeshSpecification().refreshDependencies();
 	}
 	getSolverTaskDescription().refreshDependencies();
+	getMathOverrides().refreshDependencies();
 }
 
 /**

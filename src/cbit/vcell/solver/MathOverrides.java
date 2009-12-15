@@ -4,6 +4,7 @@ package cbit.vcell.solver;
  * All rights reserved.
 ©*/
 import java.util.Enumeration;
+import java.util.Iterator;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -18,6 +19,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
 /**
  * Constant expressions that override those specified in the MathDescription
  * for a given Simulation.  These expressions are to be bound to the Simulation
@@ -48,6 +50,11 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 			// replace expressions with clones (so that they may be separately bound/resolved/evaluated).
 			this.name = argName;
 			this.spec = ConstantArraySpec.clone(argSpec);
+		}
+		public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
+			if (actualValue != null) {
+				actualValue.bindExpression(symbolTable);
+			}
 		}
 		public boolean compareEqual(Matchable obj){
 			if (obj instanceof MathOverrides.Element){
@@ -146,7 +153,8 @@ private void checkUnresolved(Expression exp, MathDescription mathDescription, St
 			bExpressionBad = true;
 			break;
 		}
-		if (getOverridesHash().get(symbols[i])==null){
+		Variable symbolVar = mathDescription.getVariable(symbols[i]);
+		if (symbolVar == null || !(symbolVar instanceof Constant)) {
 			bExpressionBad = true;
 			break;
 		}
@@ -154,7 +162,7 @@ private void checkUnresolved(Expression exp, MathDescription mathDescription, St
 	if (bExpressionBad){
 		Constant mathConstant = (Constant)mathDescription.getVariable(name);
 		if (mathConstant!=null){
-			getOverridesHash().remove(name);
+			removeConstant(name);
 		}else{
 			throw new RuntimeException("Constant \""+name+"\" not found in MathDescription");
 		}
@@ -496,7 +504,10 @@ public void putConstant(Constant value) throws ExpressionException {
 	putConstant(value, true);
 }
 
-
+private void removeConstant(String name) {
+	getOverridesHash().remove(name);	
+	fireConstantRemoved(new MathOverridesEvent(name));
+}
 /**
  * Maps the specified <code>key</code> to the specified 
  * <code>value</code> . Neither the key nor the 
@@ -522,7 +533,7 @@ private void putConstant(Constant value, boolean bFireEvent) throws ExpressionEx
 	}
 	if (act.compareEqual(def)) {
 		if (getOverridesHash().containsKey(name)) {
-			getOverridesHash().remove(name);
+			removeConstant(name);
 		}
 	} else {
 		getOverridesHash().put(name, new MathOverrides.Element(name, act));
@@ -722,7 +733,7 @@ void updateFromMathDescription () {
 	while (mathOverrideNamesEnum.hasMoreElements()){
 		String name = mathOverrideNamesEnum.nextElement();
 		if (!mathDescriptionHash.contains(name)){
-			getOverridesHash().remove(name);
+			removeConstant(name);
 		}
 	}
 	//
@@ -739,30 +750,41 @@ void updateFromMathDescription () {
 private void verifyExpression(Constant value, boolean checkScan) throws ExpressionBindingException {
 	Expression exp = value.getExpression();
 	String symbols[] = exp.getSymbols();
-	for (int i = 0; symbols!=null && i < symbols.length; i++){
-		if (cbit.vcell.math.ReservedVariable.fromString(symbols[i])!=null){
-			//
-			// expression is a function of x,y,z,t (OK)
-			//
-		}else{
+	MathDescription mathDescription = getSimulation().getMathDescription();
+	exp.bindExpression(mathDescription);
+	if (symbols != null) {
+		for (int i = 0; i < symbols.length; i++){
 			//
 			// expression must be a function of another Simulation parameter
 			//
-			MathDescription mathDescription = getSimulation().getMathDescription();
 			Variable variable = mathDescription.getVariable(symbols[i]);
 			if (!(variable != null && variable instanceof Constant)){
-				throw new ExpressionBindingException("identifier "+symbols[i]+" not found");
+				throw new ExpressionBindingException("identifier " + symbols[i] + " is not a constant. " +
+						"Parameter overrides should only refer to constants.");
 			}
 			if (checkScan && isScan(symbols[i])) {
-				throw new ExpressionBindingException("cannot depend on another scanned parameter "+symbols[i]);
+				throw new ExpressionBindingException("Parameter overrides cannot depend on another scanned parameter "+symbols[i]);
 			}
 			//
 			// look for trivial algebraic loops (x = f(x)).
 			//
 			if (symbols[i].equals(value.getName())){
-				throw new ExpressionBindingException("recursive definition, can't use identifier "+value.getName()+" in expression for "+value.getName());
+				throw new ExpressionBindingException("Parameter overrides can not be recursive definition, can't use identifier "+value.getName()+" in expression for "+value.getName());
 			}
 		}
 	}
+}
+
+
+public void refreshDependencies() {
+	try {
+		Iterator<MathOverrides.Element> iter = getOverridesHash().values().iterator();
+		while (iter.hasNext()){
+			iter.next().bind(getSimulation().getMathDescription());
+		}
+	} catch (ExpressionBindingException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage());
+	}	
 }
 }
