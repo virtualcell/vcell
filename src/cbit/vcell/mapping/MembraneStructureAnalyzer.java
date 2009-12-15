@@ -278,7 +278,7 @@ private void refreshResolvedFluxes() throws Exception {
 								if (bResolvedFluxCorrectionBug && !residualVolumeFraction.compareEqual(new Expression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									insideFluxCorrection = new Expression(ReservedSymbol.KMOLE.getName());
+									insideFluxCorrection = new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope());
 								}
 								if (rf.inFlux.isZero()){
 									rf.inFlux = Expression.mult(insideFluxCorrection, reactionRateExpression);
@@ -299,7 +299,7 @@ private void refreshResolvedFluxes() throws Exception {
 								if (bResolvedFluxCorrectionBug && !residualVolumeFraction.compareEqual(new Expression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									outsideFluxCorrection = new Expression(ReservedSymbol.KMOLE.getName());
+									outsideFluxCorrection = new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope());
 								}
 								if (rf.outFlux.isZero()){
 									rf.outFlux = Expression.mult(outsideFluxCorrection, reactionRateExpression);

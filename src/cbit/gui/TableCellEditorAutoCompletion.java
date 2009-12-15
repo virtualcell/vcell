@@ -75,8 +75,10 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 		if (value instanceof ScopedExpression) {
 			ScopedExpression scopedExpression = (ScopedExpression)value;
-			textFieldAutoCompletion.setSymbolTable(scopedExpression.getNameScope().getScopedSymbolTable());
-			textFieldAutoCompletion.setAutoCompleteSymbolFilter(scopedExpression.getAutoCompleteSymbolFilter());
+			if (scopedExpression.getNameScope() != null) {
+				textFieldAutoCompletion.setSymbolTable(scopedExpression.getNameScope().getScopedSymbolTable());
+				textFieldAutoCompletion.setAutoCompleteSymbolFilter(scopedExpression.getAutoCompleteSymbolFilter());
+			}
 		}
 		((JComponent)getComponent()).setBorder(null);
 		return super.getTableCellEditorComponent(table, value, isSelected, row, column);

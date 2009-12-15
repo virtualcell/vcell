@@ -564,12 +564,13 @@ private void refreshTotalMatrices() throws Exception {
 							Membrane membrane = (Membrane)structure;
 							MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 							Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)sc.getStructure());
+							Expression fluxCorrection = new Expression(fluxCorrectionParameter, mathMapping.getNameScope());
 							if (reactionSteps[j] instanceof FluxReaction){
-								exp = Expression.add(exp, Expression.mult(new Expression(fluxCorrectionParameter, mathMapping.getNameScope()), reactRateExp));
+								exp = Expression.add(exp, Expression.mult(fluxCorrection, reactRateExp));
 								//Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+expInfix));
 							}else if (reactionSteps[j] instanceof SimpleReaction){
-								exp = Expression.add(exp, Expression.mult(Expression.mult(new Expression(fluxCorrectionParameter, mathMapping.getNameScope()), 
-										new Expression(ReservedSymbol.KMOLE, ReservedSymbol.KMOLE.getNameScope())), reactRateExp));
+								exp = Expression.add(exp, Expression.mult(Expression.mult(fluxCorrection, 
+									new Expression(ReservedSymbol.KMOLE, ReservedSymbol.KMOLE.getNameScope())), reactRateExp));
 //								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+ReservedSymbol.KMOLE.getName()+"*"+expInfix));
 							}else{
 								throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");
