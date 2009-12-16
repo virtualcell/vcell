@@ -1,24 +1,35 @@
 package cbit.vcell.model.gui;
 
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.net.URI;
+import java.net.URL;
 import java.util.Hashtable;
+import java.util.Iterator;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 
+import org.vcell.sybil.gui.pcsearch.test.PCKeywordQueryPanel;
+import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -27,6 +38,13 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.xml.XMLTags;
+
+import com.hp.hpl.jena.rdf.model.Statement;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
@@ -48,7 +66,7 @@ public class EditSpeciesDialog extends JDialog {
 	private javax.swing.JButton ivjDBLinkJButton = null;
 	private javax.swing.JButton ivjDBUnlinkJButton = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JPanel ivjJPanel2 = null;
+	private javax.swing.JPanel ivjJButtonsPanel2 = null;
 	private javax.swing.JLabel ivjNameJLabel = null;
 	private javax.swing.JTextField ivjNameValueJTextField = null;
 	private javax.swing.JButton ivjOKJButton = null;
@@ -68,9 +86,48 @@ public class EditSpeciesDialog extends JDialog {
 	private boolean ivjConnPtoP2Aligning = false;
 	private javax.swing.text.Document ivjdocument2 = null;
 	private Model fieldModel = null;
-	private JTextArea annotationTextField = null;
+	private JTextArea annotationTextArea;
+	private JButton pathwayDBJButton = null;
+	private XRef selectedXRef = null;
+	private JLabel PCLinkJlabel = null;
+	private JEditorPane PCLinkValueEditorPane = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.DocumentListener {
+public XRef getSelectedXRef() {
+		return selectedXRef;
+	}
+
+	public void setSelectedXRef(XRef selectedXRef) {
+		this.selectedXRef = selectedXRef;
+		getOKJButton().setEnabled(true);
+		updatePCLink();
+	}
+
+	private void updatePCLink() {
+		String pcLinkStr = null;
+		if (getSelectedXRef() != null) {
+			pcLinkStr = getSelectedXRef().url();
+		} else {
+			pcLinkStr = getPCLink();
+		}
+		if (pcLinkStr != null) {
+			getPCLinkValueEditorPane().setText("<html> <a href=\"" + pcLinkStr + "\">" + pcLinkStr + "</a></html>");
+		}
+	}
+
+	private String getPCLink() {
+		String pcLinkStr = null;
+		java.util.List<Statement> statements = getModel().getVcMetaData().getStatements(getSpeciesContext().getSpecies());
+		if (statements != null && statements.size() > 0) {
+			Iterator<Statement> stmtIter = statements.iterator();
+			while (stmtIter.hasNext()) {
+				Statement stmt = stmtIter.next();
+				pcLinkStr = stmt.asTriple().getObject().getURI();
+			}
+		}
+		return pcLinkStr;
+	}
+
+class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.DocumentListener, HyperlinkListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == EditSpeciesDialog.this.getCancelJButton()) 
 				connEtoC1(e);
@@ -80,16 +137,18 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC4(e);
 			if (e.getSource() == EditSpeciesDialog.this.getDBLinkJButton()) 
 				connEtoM4(e);
+			if (e.getSource() == EditSpeciesDialog.this.getPathwayDBbutton()) 
+				showPCKeywordQueryPanel();
 			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
 				connEtoC10(e);
 		};
 		private void onDocumentChanged(DocumentEvent e) {
 			if (e.getDocument() == EditSpeciesDialog.this.getdocument1()) 
-				connEtoC6(e);
-			if (e.getDocument() == EditSpeciesDialog.this.getdocument2()) 
-				connEtoC11(e);
-			if (e.getDocument() == EditSpeciesDialog.this.annotationTextField.getDocument()) 
 				updateInterface();
+			if (e.getDocument() == EditSpeciesDialog.this.getdocument2()) 
+				updateOKButton();
+			if (e.getDocument() == EditSpeciesDialog.this.annotationTextArea.getDocument()) 
+				updateOKButton();
 		}
 		public void changedUpdate(javax.swing.event.DocumentEvent e) {
 			onDocumentChanged(e);
@@ -113,6 +172,15 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
 				connEtoM9(e);
+		}
+		@Override
+		public void hyperlinkUpdate(HyperlinkEvent e) {
+			if (e.getEventType() == EventType.ACTIVATED) {
+				URL link = e.getURL();
+				if (link != null) {
+					DialogUtils.browserLauncher(EditSpeciesDialog.this, link.toExternalForm(), "failed to launch", false);
+				}
+			}
 		};
 	};
 
@@ -137,17 +205,10 @@ private void cancel(java.awt.event.ActionEvent actionEvent) {
  * connEtoC1:  (CancelJButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditSpeciesDialog.cancel(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC1(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.cancel(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -157,37 +218,10 @@ private void connEtoC1(java.awt.event.ActionEvent arg1) {
  * connEtoC10:  (JCheckBoxHasOverride.action.actionPerformed(java.awt.event.ActionEvent) --> EditSpeciesDialog.updateInterface()V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC10(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
-		this.updateInterface();
-		// user code begin {2}
-		// user code end
+		this.updateOKButton();
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC11:  (document2.document. --> EditSpeciesDialog.updateInterface()V)
- * @param evt javax.swing.event.DocumentEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(javax.swing.event.DocumentEvent evt) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateInterface();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -197,17 +231,10 @@ private void connEtoC11(javax.swing.event.DocumentEvent evt) {
  * connEtoC2:  (OKJButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditSpeciesDialog.oK(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC2(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.oK(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -217,17 +244,10 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
  * connEtoC3:  (AnnotationString.this --> EditSpeciesDialog.updateInterface()V)
  * @param value java.lang.String
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC3(java.lang.String value) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.updateInterface();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -237,57 +257,22 @@ private void connEtoC3(java.lang.String value) {
  * connEtoC4:  (DBUnlinkJButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditSpeciesDialog.unlink(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC4(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.unlink(arg1);
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC6:  (document1.document. --> EditSpeciesDialog.updateInterface()V)
- * @param evt javax.swing.event.DocumentEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(javax.swing.event.DocumentEvent evt) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateInterface();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC7:  (DBFormalSpecies.this --> EditSpeciesDialog.updateInterface()V)
  * @param value cbit.vcell.dictionary.DBFormalSpecies
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC7(DBFormalSpecies value) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.updateInterface();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -297,17 +282,10 @@ private void connEtoC7(DBFormalSpecies value) {
  * connEtoC8:  (EditSpeciesDialog.userDictionaryDbServer --> EditSpeciesDialog.updateInterface()V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC8(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.updateInterface();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -317,19 +295,12 @@ private void connEtoC8(java.beans.PropertyChangeEvent arg1) {
  * connEtoM1:  (speciesContext1.this --> ContextNameValueTextField.text)
  * @param value cbit.vcell.model.SpeciesContext
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM1(SpeciesContext value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getspeciesContext1() != null)) {
 			getContextNameValueTextField().setText(getspeciesContext1().getName());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -339,19 +310,12 @@ private void connEtoM1(SpeciesContext value) {
  * connEtoM2:  (species1.this --> NameValueJTextField.text)
  * @param value cbit.vcell.model.Species
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(Species value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getspecies1() != null)) {
 			getNameValueJTextField().setText(getspecies1().getCommonName());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -360,20 +324,13 @@ private void connEtoM2(Species value) {
  * connEtoM3:  (species1.this --> AnnotationString.this)
  * @param value cbit.vcell.model.Species
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM3(Species value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getspecies1() != null)) {
 			// setAnnotationString(getspecies1().getAnnotation());
 			setAnnotationString(getModel().getVcMetaData().getFreeTextAnnotation(getspecies1()));
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -382,17 +339,10 @@ private void connEtoM3(Species value) {
  * connEtoM4:  (DBLinkJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBFormalSpecies.this)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM4(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		setDBFormalSpecies(this.getDBFormalSpeciesFromDialog());
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -401,19 +351,12 @@ private void connEtoM4(java.awt.event.ActionEvent arg1) {
  * connEtoM5:  (species1.this --> DBFormalSpecies.this)
  * @param value cbit.vcell.model.Species
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM5(Species value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getspecies1() != null)) {
 			setDBFormalSpecies(getspecies1().getDBSpecies());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -422,19 +365,12 @@ private void connEtoM5(Species value) {
  * connEtoM6:  (speciesContext1.this --> species1.this)
  * @param value cbit.vcell.model.SpeciesContext
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM6(SpeciesContext value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getspeciesContext1() != null)) {
 			setspecies1(getspeciesContext1().getSpecies());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -444,19 +380,12 @@ private void connEtoM6(SpeciesContext value) {
  * connEtoM7:  (speciesContext1.this --> JCheckBoxHasOverride.selected)
  * @param value cbit.vcell.model.SpeciesContext
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM7(SpeciesContext value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getspeciesContext1() != null)) {
 			getJCheckBoxHasOverride().setSelected(getspeciesContext1().getHasOverride());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -466,17 +395,10 @@ private void connEtoM7(SpeciesContext value) {
  * connEtoM9:  (JCheckBoxHasOverride.change.stateChanged(javax.swing.event.ChangeEvent) --> ContextNameValueJLabel.enabled)
  * @param arg1 javax.swing.event.ChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM9(javax.swing.event.ChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		getContextNameValueTextField().setEditable(getJCheckBoxHasOverride().isSelected());
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -484,25 +406,18 @@ private void connEtoM9(javax.swing.event.ChangeEvent arg1) {
 /**
  * connPtoP1SetSource:  (EditSpeciesDialog.speciesContext <--> speciesContext1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP1Aligning = true;
 			if ((getspeciesContext1() != null)) {
 				this.setSpeciesContext(getspeciesContext1());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -511,23 +426,16 @@ private void connPtoP1SetSource() {
 /**
  * connPtoP1SetTarget:  (EditSpeciesDialog.speciesContext <--> speciesContext1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP1Aligning = true;
 			setspeciesContext1(this.getSpeciesContext());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -536,25 +444,18 @@ private void connPtoP1SetTarget() {
 /**
  * connPtoP2SetSource:  (ContextNameValueTextField.document <--> document2.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getdocument2() != null)) {
 				getContextNameValueTextField().setDocument(getdocument2());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -563,23 +464,16 @@ private void connPtoP2SetSource() {
 /**
  * connPtoP2SetTarget:  (ContextNameValueTextField.document <--> document2.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			setdocument2(getContextNameValueTextField().getDocument());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -588,25 +482,18 @@ private void connPtoP2SetTarget() {
 /**
  * connPtoP3SetSource:  (NameValueJTextField.document <--> document1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP3SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP3Aligning = true;
 			if ((getdocument1() != null)) {
 				getNameValueJTextField().setDocument(getdocument1());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP3Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -615,23 +502,16 @@ private void connPtoP3SetSource() {
 /**
  * connPtoP3SetTarget:  (NameValueJTextField.document <--> document1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP3SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP3Aligning = true;
 			setdocument1(getNameValueJTextField().getDocument());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP3Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -640,10 +520,7 @@ private void connPtoP3SetTarget() {
  * Return the AnnotationString property value.
  * @return java.lang.String
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private java.lang.String getAnnotationString() {
-	// user code begin {1}
-	// user code end
 	return ivjAnnotationString;
 }
 
@@ -652,18 +529,13 @@ private java.lang.String getAnnotationString() {
  * Return the CancelJButton property value.
  * @return javax.swing.JButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JButton getCancelJButton() {
 	if (ivjCancelJButton == null) {
 		try {
 			ivjCancelJButton = new javax.swing.JButton();
 			ivjCancelJButton.setName("CancelJButton");
 			ivjCancelJButton.setText("Cancel");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -675,7 +547,6 @@ private javax.swing.JButton getCancelJButton() {
  * Return the ContextNameJLabel property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getContextNameJLabel() {
 	if (ivjContextNameJLabel == null) {
 		try {
@@ -683,11 +554,7 @@ private javax.swing.JLabel getContextNameJLabel() {
 			ivjContextNameJLabel.setName("ContextNameJLabel");
 			ivjContextNameJLabel.setText("Context Name");
 			ivjContextNameJLabel.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -698,7 +565,6 @@ private javax.swing.JLabel getContextNameJLabel() {
  * Return the ContextNameValueJLabel property value.
  * @return javax.swing.JTextField
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextField getContextNameValueTextField() {
 	if (ivjContextNameValueTextField == null) {
 		try {
@@ -706,11 +572,7 @@ private javax.swing.JTextField getContextNameValueTextField() {
 			ivjContextNameValueTextField.setName("ContextNameValueTextField");
 			ivjContextNameValueTextField.setText("ContextName");
 			ivjContextNameValueTextField.setEditable(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -721,10 +583,7 @@ private javax.swing.JTextField getContextNameValueTextField() {
  * Return the DBFormalSpecies property value.
  * @return cbit.vcell.dictionary.DBFormalSpecies
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private DBFormalSpecies getDBFormalSpecies() {
-	// user code begin {1}
-	// user code end
 	return ivjDBFormalSpecies;
 }
 
@@ -745,7 +604,6 @@ private DBFormalSpecies getDBFormalSpeciesFromDialog() {
  * Return the DBLinkJButton property value.
  * @return javax.swing.JButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JButton getDBLinkJButton() {
 	if (ivjDBLinkJButton == null) {
 		try {
@@ -753,22 +611,18 @@ private javax.swing.JButton getDBLinkJButton() {
 			ivjDBLinkJButton.setName("DBLinkJButton");
 			ivjDBLinkJButton.setText("Add DB Link...");
 			ivjDBLinkJButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjDBLinkJButton;
 }
 
+
 /**
  * Return the DBUnlinkJButton property value.
  * @return javax.swing.JButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JButton getDBUnlinkJButton() {
 	if (ivjDBUnlinkJButton == null) {
 		try {
@@ -776,11 +630,7 @@ private javax.swing.JButton getDBUnlinkJButton() {
 			ivjDBUnlinkJButton.setName("DBUnlinkJButton");
 			ivjDBUnlinkJButton.setText("Unlink");
 			ivjDBUnlinkJButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -791,10 +641,7 @@ private javax.swing.JButton getDBUnlinkJButton() {
  * Return the document1 property value.
  * @return javax.swing.text.Document
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.text.Document getdocument1() {
-	// user code begin {1}
-	// user code end
 	return ivjdocument1;
 }
 
@@ -803,10 +650,7 @@ private javax.swing.text.Document getdocument1() {
  * Return the document2 property value.
  * @return javax.swing.text.Document
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.text.Document getdocument2() {
-	// user code begin {1}
-	// user code end
 	return ivjdocument2;
 }
 
@@ -825,18 +669,13 @@ public DocumentManager getDocumentManager() {
  * Return the JCheckBoxHasOverride property value.
  * @return javax.swing.JCheckBox
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JCheckBox getJCheckBoxHasOverride() {
 	if (ivjJCheckBoxHasOverride == null) {
 		try {
 			ivjJCheckBoxHasOverride = new javax.swing.JCheckBox();
 			ivjJCheckBoxHasOverride.setName("JCheckBoxHasOverride");
 			ivjJCheckBoxHasOverride.setText("Override");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -848,7 +687,6 @@ private javax.swing.JCheckBox getJCheckBoxHasOverride() {
  * Return the JInternalFrameEnhancedContentPane property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getJDialogContentPane() {
 	if (ivjJContentPane == null) {
 		try {
@@ -858,58 +696,78 @@ private javax.swing.JPanel getJDialogContentPane() {
 			java.awt.GridBagConstraints constraintsNameJLabel = new java.awt.GridBagConstraints();
 			constraintsNameJLabel.gridx = 0; constraintsNameJLabel.gridy = 0;
 			constraintsNameJLabel.anchor = java.awt.GridBagConstraints.EAST;
-			constraintsNameJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsNameJLabel.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getNameJLabel(), constraintsNameJLabel);
 
 			java.awt.GridBagConstraints constraintsNameValueJTextField = new java.awt.GridBagConstraints();
 			constraintsNameValueJTextField.gridx = 1; constraintsNameValueJTextField.gridy = 0;
 			constraintsNameValueJTextField.gridwidth = 2;
 			constraintsNameValueJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsNameValueJTextField.weightx = 1.0;
-			constraintsNameValueJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+//			constraintsNameValueJTextField.weightx = 1.0;
+			constraintsNameValueJTextField.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getNameValueJTextField(), constraintsNameValueJTextField);
+			
+			GridBagConstraints gbc_1 = new GridBagConstraints();
+			gbc_1.gridwidth = 2;
+//			gbc_1.weightx = 1.0;
+			gbc_1.fill = GridBagConstraints.BOTH;
+			gbc_1.anchor = GridBagConstraints.WEST;
+			gbc_1.gridx = 1;
+			gbc_1.gridy = 7;
+			gbc_1.insets = new Insets(0, 4, 0, 5);
+			JScrollPane scollPane = new JScrollPane(getPCLinkValueEditorPane());
+			ivjJContentPane.add(scollPane, gbc_1);
 
 			java.awt.GridBagConstraints constraintsContextNameJLabel = new java.awt.GridBagConstraints();
 			constraintsContextNameJLabel.gridx = 0; constraintsContextNameJLabel.gridy = 1;
-			constraintsContextNameJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsContextNameJLabel.insets = new Insets(4, 4, 5, 5);
+			constraintsContextNameJLabel.anchor = GridBagConstraints.EAST;
 			getJDialogContentPane().add(getContextNameJLabel(), constraintsContextNameJLabel);
 			
 			java.awt.GridBagConstraints constraintsContextNameValueTextField = new java.awt.GridBagConstraints();
 			constraintsContextNameValueTextField.gridx = 1; constraintsContextNameValueTextField.gridy = 1;
 			constraintsContextNameValueTextField.gridwidth = 2;
 			constraintsContextNameValueTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsContextNameValueTextField.weightx = 1.0;
-			constraintsContextNameValueTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+//			constraintsContextNameValueTextField.weightx = 1.0;
+			constraintsContextNameValueTextField.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getContextNameValueTextField(), constraintsContextNameValueTextField);
 
 			java.awt.GridBagConstraints constraintsJCheckBoxHasOverride = new java.awt.GridBagConstraints();
 			constraintsJCheckBoxHasOverride.gridx = 3; constraintsJCheckBoxHasOverride.gridy = 1;
-			constraintsJCheckBoxHasOverride.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsJCheckBoxHasOverride.insets = new Insets(4, 4, 5, 4);
 			getJDialogContentPane().add(getJCheckBoxHasOverride(), constraintsJCheckBoxHasOverride);
 
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = 2;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.insets = new Insets(4, 4, 5, 5);
 			gbc.anchor = GridBagConstraints.NORTHEAST;
 			getJDialogContentPane().add(new JLabel("Annotatation"), gbc);
 
-			annotationTextField = new javax.swing.JTextArea("", 4, 30);
-			annotationTextField.setLineWrap(true);
-			annotationTextField.setWrapStyleWord(true);
-			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextField);
+			annotationTextArea = new javax.swing.JTextArea("", 4, 30);
+			annotationTextArea.setLineWrap(true);
+			annotationTextArea.setWrapStyleWord(true);
+			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+			
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 1; gbc.gridy = 2;
 			gbc.gridwidth = 2;
 			gbc.gridheight = 4;
 			gbc.fill = java.awt.GridBagConstraints.BOTH;
-			gbc.weightx = 1.0;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+//			gbc.weightx = 1.0;
+			gbc.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(jsp, gbc);
+			
+			GridBagConstraints gbc_2 = new GridBagConstraints();
+			gbc_2.anchor = GridBagConstraints.EAST;
+			gbc_2.insets = new Insets(0, 0, 5, 5);
+			gbc_2.gridx = 0;
+			gbc_2.gridy = 7;
+			ivjJContentPane.add(getPCLinkJlabel(), gbc_2);
 			
 			java.awt.GridBagConstraints constraintsLinkJLabel = new java.awt.GridBagConstraints();
 			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 6;
 			constraintsLinkJLabel.anchor = java.awt.GridBagConstraints.EAST;
-			constraintsLinkJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsLinkJLabel.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getLinkJLabel(), constraintsLinkJLabel);
 
 			java.awt.GridBagConstraints constraintsLinkValueJLabel = new java.awt.GridBagConstraints();
@@ -917,36 +775,30 @@ private javax.swing.JPanel getJDialogContentPane() {
 			constraintsLinkValueJLabel.gridwidth = 2;
 			constraintsLinkValueJLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsLinkValueJLabel.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsLinkValueJLabel.weightx = 1.0;
-			constraintsLinkValueJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+//			constraintsLinkValueJLabel.weightx = 1.0;
+			constraintsLinkValueJLabel.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getLinkValueJLabel(), constraintsLinkValueJLabel);
 
 			java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 7;
-			constraintsJPanel2.gridwidth = 3;
-			constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getJPanel2(), constraintsJPanel2);
+			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 8;
+			constraintsJPanel2.gridwidth = 4;
+			constraintsJPanel2.insets = new Insets(4, 4, 5, 5);
+			getJDialogContentPane().add(getJButtonsPanel2(), constraintsJPanel2);
 
 			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; gbc.gridy = 8;
+			gbc.gridx = 0; gbc.gridy = 9;
 			gbc.gridwidth = 4;
 			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.insets = new Insets(4, 4, 5, 4);
 			ivjJContentPane.add(new JSeparator(), gbc);
 
 			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 9;
+			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 10;
 			constraintsJPanel1.gridwidth = 4;
-			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel1.weightx = 1.0;
-//			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			getJDialogContentPane().add(getJPanel1(), constraintsJPanel1);
 			
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -957,7 +809,6 @@ private javax.swing.JPanel getJDialogContentPane() {
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
@@ -975,11 +826,7 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsCancelJButton.gridx = 1; constraintsCancelJButton.gridy = 1;
 			constraintsCancelJButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getCancelJButton(), constraintsCancelJButton);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -990,50 +837,33 @@ private javax.swing.JPanel getJPanel1() {
  * Return the JPanel2 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
+private javax.swing.JPanel getJButtonsPanel2() {
+	if (ivjJButtonsPanel2 == null) {
 		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsDBLinkJButton = new java.awt.GridBagConstraints();
-			constraintsDBLinkJButton.gridx = 0; constraintsDBLinkJButton.gridy = 0;
-			constraintsDBLinkJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getDBLinkJButton(), constraintsDBLinkJButton);
-
-			java.awt.GridBagConstraints constraintsDBUnlinkJButton = new java.awt.GridBagConstraints();
-			constraintsDBUnlinkJButton.gridx = 1; constraintsDBUnlinkJButton.gridy = 0;
-			constraintsDBUnlinkJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getDBUnlinkJButton(), constraintsDBUnlinkJButton);
-			// user code begin {1}
-			// user code end
+			ivjJButtonsPanel2 = new javax.swing.JPanel();
+			ivjJButtonsPanel2.setName("JPanel2");
+			ivjJButtonsPanel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+			ivjJButtonsPanel2.add(getDBLinkJButton());
+			ivjJButtonsPanel2.add(getDBUnlinkJButton());
+			ivjJButtonsPanel2.add(getPathwayDBbutton());
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel2;
+	return ivjJButtonsPanel2;
 }
 
 /**
  * Return the LinkJLabel property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getLinkJLabel() {
 	if (ivjLinkJLabel == null) {
 		try {
 			ivjLinkJLabel = new javax.swing.JLabel();
 			ivjLinkJLabel.setName("LinkJLabel");
 			ivjLinkJLabel.setText("DB Link");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1045,7 +875,6 @@ private javax.swing.JLabel getLinkJLabel() {
  * Return the LinkValueJLabel property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getLinkValueJLabel() {
 	if (ivjLinkValueJLabel == null) {
 		try {
@@ -1053,11 +882,7 @@ private javax.swing.JLabel getLinkValueJLabel() {
 			ivjLinkValueJLabel.setName("LinkValueJLabel");
 			ivjLinkValueJLabel.setText("LinkValueJLabel");
 			ivjLinkValueJLabel.setBorder(getNameValueJTextField().getBorder());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1079,7 +904,6 @@ public Model getModel() {
  * Return the NameJLabel property value.
  * @return javax.swing.JLabel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JLabel getNameJLabel() {
 	if (ivjNameJLabel == null) {
 		try {
@@ -1087,11 +911,7 @@ private javax.swing.JLabel getNameJLabel() {
 			ivjNameJLabel.setName("NameJLabel");
 			ivjNameJLabel.setText("Name");
 			ivjNameJLabel.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1102,18 +922,13 @@ private javax.swing.JLabel getNameJLabel() {
  * Return the NameValueJTextField property value.
  * @return javax.swing.JTextField
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTextField getNameValueJTextField() {
 	if (ivjNameValueJTextField == null) {
 		try {
 			ivjNameValueJTextField = new javax.swing.JTextField();
 			ivjNameValueJTextField.setName("NameValueJTextField");
 			ivjNameValueJTextField.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1124,7 +939,6 @@ private javax.swing.JTextField getNameValueJTextField() {
  * Return the OKJButton property value.
  * @return javax.swing.JButton
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JButton getOKJButton() {
 	if (ivjOKJButton == null) {
 		try {
@@ -1133,11 +947,7 @@ private javax.swing.JButton getOKJButton() {
 			ivjOKJButton.setText("OK");
 			ivjOKJButton.setPreferredSize(getCancelJButton().getPreferredSize());
 			ivjOKJButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1148,10 +958,7 @@ private javax.swing.JButton getOKJButton() {
  * Return the species1 property value.
  * @return cbit.vcell.model.Species
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private Species getspecies1() {
-	// user code begin {1}
-	// user code end
 	return ivjspecies1;
 }
 
@@ -1169,10 +976,7 @@ public SpeciesContext getSpeciesContext() {
  * Return the speciesContext1 property value.
  * @return cbit.vcell.model.SpeciesContext
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private SpeciesContext getspeciesContext1() {
-	// user code begin {1}
-	// user code end
 	return ivjspeciesContext1;
 }
 
@@ -1184,8 +988,8 @@ private SpeciesContext getspeciesContext1() {
 private void handleException(java.lang.Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	// System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-	// exception.printStackTrace(System.out);
+	System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+	exception.printStackTrace(System.out);
 }
 
 
@@ -1222,20 +1026,19 @@ public void initAddSpecies(
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	getNameValueJTextField().addPropertyChangeListener(ivjEventHandler);
 	getCancelJButton().addActionListener(ivjEventHandler);
 	getOKJButton().addActionListener(ivjEventHandler);
 	getDBUnlinkJButton().addActionListener(ivjEventHandler);
 	getDBLinkJButton().addActionListener(ivjEventHandler);
+	getPathwayDBbutton().addActionListener(ivjEventHandler);
+	getPCLinkValueEditorPane().addHyperlinkListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJCheckBoxHasOverride().addChangeListener(ivjEventHandler);
 	getJCheckBoxHasOverride().addActionListener(ivjEventHandler);
 	getContextNameValueTextField().addPropertyChangeListener(ivjEventHandler);
-	annotationTextField.getDocument().addDocumentListener(ivjEventHandler);
+	annotationTextArea.getDocument().addDocumentListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
@@ -1264,20 +1067,15 @@ public void initEditSpecies(SpeciesContext argSpeciesContext, Model argModel, Do
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("EditSpeciesDialog");
 		add(getJDialogContentPane());
 		initConnections();
-		setSize(480,300);
+		setSize(480,325);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -1328,7 +1126,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 				getSpeciesContext().getSpecies().setCommonName(getNameValueJTextField().getText());				
 
 				// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
-				setAnnotationString(annotationTextField.getText());
+				setAnnotationString(annotationTextArea.getText());
 				// old ---- getSpeciesContext().getSpecies().setAnnotation(getAnnotationString());
 				VCMetaData vcMetaData = getModel().getVcMetaData();
 				vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), getAnnotationString());
@@ -1337,7 +1135,8 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 				if (getJCheckBoxHasOverride().isSelected()){
 					getSpeciesContext().setName(getContextNameValueTextField().getText());
 				}
-				//
+				// if there is a Pathway commons reference to this species, add it as an RDF statement to VCMetadata
+				savePCLink();
 				if(mode == ADD_SPECIES_MODE && getModel() != null){
 					Species existingSpecies = getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName());
 					if (existingSpecies==null){
@@ -1400,22 +1199,15 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
  * Set the AnnotationString to a new value.
  * @param newValue java.lang.String
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setAnnotationString(java.lang.String newValue) {
 	if (ivjAnnotationString != newValue) {
 		try {
 			ivjAnnotationString = newValue;
 			connEtoC3(ivjAnnotationString);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 
@@ -1423,29 +1215,21 @@ private void setAnnotationString(java.lang.String newValue) {
  * Set the DBFormalSpecies to a new value.
  * @param newValue cbit.vcell.dictionary.DBFormalSpecies
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setDBFormalSpecies(DBFormalSpecies newValue) {
 	if (ivjDBFormalSpecies != newValue) {
 		try {
 			ivjDBFormalSpecies = newValue;
 			connEtoC7(ivjDBFormalSpecies);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**
  * Set the document1 to a new value.
  * @param newValue javax.swing.text.Document
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setdocument1(javax.swing.text.Document newValue) {
 	if (ivjdocument1 != newValue) {
 		try {
@@ -1460,23 +1244,16 @@ private void setdocument1(javax.swing.text.Document newValue) {
 				ivjdocument1.addDocumentListener(ivjEventHandler);
 			}
 			connPtoP3SetSource();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**
  * Set the document2 to a new value.
  * @param newValue javax.swing.text.Document
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setdocument2(javax.swing.text.Document newValue) {
 	if (ivjdocument2 != newValue) {
 		try {
@@ -1491,16 +1268,10 @@ private void setdocument2(javax.swing.text.Document newValue) {
 				ivjdocument2.addDocumentListener(ivjEventHandler);
 			}
 			connPtoP2SetSource();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 
@@ -1532,7 +1303,6 @@ public void setModel(Model model) {
  * Set the species1 to a new value.
  * @param newValue cbit.vcell.model.Species
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setspecies1(Species newValue) {
 	if (ivjspecies1 != newValue) {
 		try {
@@ -1540,16 +1310,10 @@ private void setspecies1(Species newValue) {
 			connEtoM5(ivjspecies1);
 			connEtoM2(ivjspecies1);
 			connEtoM3(ivjspecies1);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**
@@ -1568,7 +1332,6 @@ public void setSpeciesContext(SpeciesContext speciesContext) {
  * Set the speciesContext1 to a new value.
  * @param newValue cbit.vcell.model.SpeciesContext
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setspeciesContext1(SpeciesContext newValue) {
 	if (ivjspeciesContext1 != newValue) {
 		try {
@@ -1578,18 +1341,12 @@ private void setspeciesContext1(SpeciesContext newValue) {
 			connEtoM7(ivjspeciesContext1);
 			connEtoM6(ivjspeciesContext1);
 			connEtoM1(ivjspeciesContext1);
-			annotationTextField.setText(getAnnotationString());
+			annotationTextArea.setText(getAnnotationString());
 			firePropertyChange("speciesContext", oldValue, newValue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**
@@ -1610,8 +1367,19 @@ private DBFormalSpecies showDatabaseBindingDialog() {
 	}
 	
 	return dbfs;
-	
 }
+
+private void showPCKeywordQueryPanel() {
+
+	 PCKeywordQueryPanel aPCKeywordQueryPanel = new PCKeywordQueryPanel();
+	 aPCKeywordQueryPanel.setSize(500,500);
+	 int returnVal = DialogUtils.showComponentOKCancelDialog(this, aPCKeywordQueryPanel, "Pathway Commons Database ...");
+	 
+	 if (returnVal == JOptionPane.OK_OPTION) {
+		 setSelectedXRef(aPCKeywordQueryPanel.getSelectedXRef());
+	 }
+}
+
 
 /**
  * Comment
@@ -1666,27 +1434,79 @@ private void updateInterface() {
 		);
 
 	
-	getLinkValueJLabel().setText((getDBFormalSpecies() != null?getDBFormalSpecies().getFormalSpeciesInfo().getFormalID()+" - "+getDBFormalSpecies().getFormalSpeciesInfo().getPreferredName():" "));	
+	getLinkValueJLabel().setText((getDBFormalSpecies() != null?getDBFormalSpecies().getFormalSpeciesInfo().getFormalID()+" - "+getDBFormalSpecies().getFormalSpeciesInfo().getPreferredName():" "));
+	updatePCLink();
 	
 	getDBLinkJButton().setEnabled(true);
 	getDBLinkJButton().setText((getDBFormalSpecies() != null?"Change DB Link...":"Add DB Link..."));
 	getDBLinkJButton().setEnabled(getDocumentManager() != null);
 	
 	getDBUnlinkJButton().setEnabled(getDBFormalSpecies() != null);
-	getOKJButton().setEnabled(
-			(getSpeciesContext() != null) && (mode == EDIT_SPECIES_MODE || (mode == ADD_SPECIES_MODE && getModel() != null)) &&
-			(getNameValueJTextField().getText() != null) && (getNameValueJTextField().getText().length() > 0) && 
-			(getContextNameValueTextField().getText() != null) && (getContextNameValueTextField().getText().length() > 0) && 
-				(
-					mode == ADD_SPECIES_MODE ||
-					!Compare.isEqualOrNull(getNameValueJTextField().getText(),getSpeciesContext().getSpecies().getCommonName()) ||
-					!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getDBSpecies(),getDBFormalSpecies()) ||
-					!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getAnnotation(),getAnnotationString()) ||
-					getSpeciesContext().getHasOverride() != getJCheckBoxHasOverride().isSelected() ||
-					!Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText()) ||
-					!Compare.isEqualOrNull(getAnnotationString(),annotationTextField.getText())
-				)
-			);
+	updateOKButton();
 }
 
+private void updateOKButton() {
+	boolean bEnabled = (getSpeciesContext() != null) && (mode == EDIT_SPECIES_MODE || (mode == ADD_SPECIES_MODE && getModel() != null)) &&
+	(getNameValueJTextField().getText() != null) && (getNameValueJTextField().getText().length() > 0) && 
+	(getContextNameValueTextField().getText() != null) && (getContextNameValueTextField().getText().length() > 0) && 
+		(
+			mode == ADD_SPECIES_MODE ||
+			!Compare.isEqualOrNull(getNameValueJTextField().getText(),getSpeciesContext().getSpecies().getCommonName()) ||
+			!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getDBSpecies(),getDBFormalSpecies()) ||
+//			!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getAnnotation(),getAnnotationString()) ||
+			getSpeciesContext().getHasOverride() != getJCheckBoxHasOverride().isSelected() ||
+			!Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText()) ||
+			!Compare.isEqualOrNull(getAnnotationString(),annotationTextArea.getText()) 
+//			!Compare.isEqualOrNull(getPCLink(),getPCLinkValueEditorPane().getText())
+		);
+	getOKJButton().setEnabled(bEnabled);
+}
+
+private JButton getPathwayDBbutton() {
+	if (pathwayDBJButton == null) {
+		try {
+			pathwayDBJButton = new javax.swing.JButton();
+			pathwayDBJButton.setName("pathwayDBJButton");
+			pathwayDBJButton.setText("Link to Pathway Commons DB");
+			// pathwayDBJButton.setEnabled(false);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return pathwayDBJButton;
+}
+	private JLabel getPCLinkJlabel() {
+		if (PCLinkJlabel == null) {
+			PCLinkJlabel = new JLabel();
+			PCLinkJlabel.setText("Pathway Commons Link");
+			PCLinkJlabel.setName("LinkJLabel");
+		}
+		return PCLinkJlabel;
+	}
+	private JEditorPane getPCLinkValueEditorPane() {
+		if (PCLinkValueEditorPane == null) {
+			PCLinkValueEditorPane = new JEditorPane();
+			PCLinkValueEditorPane.setContentType("text/html");
+			//PCLinkValueEditorPane.gett
+			PCLinkValueEditorPane.setEditable(false);
+			PCLinkValueEditorPane.setBackground(getBackground());
+			PCLinkValueEditorPane.setText(null);
+			// PCLinkValueEditorPane.setBorder(UIManager.getBorder("ComboBox.border"));
+		}
+		return PCLinkValueEditorPane;
+	}
+
+	private void savePCLink() {
+		if (getSelectedXRef() != null) {
+			try {
+				String propertyID = XMLTags.PROPERTY_ISVERSIONOF;	
+				URI propertyNamespace = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
+				// String selectedURNStr = XRefToURN.createURN(selectedXRef.db(), selectedXRef.id());
+				getModel().getVcMetaData().addRDFStatement(getSpeciesContext().getSpecies(),new URI(propertyNamespace+propertyID),new URI(selectedXRef.url()));
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+				// DialogUtils.showErrorDialog("Error setting vcMetadata for species - URN Problem : " + e.toString());
+			}
+		}
+	}
 }

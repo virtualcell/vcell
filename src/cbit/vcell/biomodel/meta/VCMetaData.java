@@ -65,9 +65,11 @@ public class VCMetaData implements RDFBox {
 	}
 	
 	private Property getProperty(URI propertyURI){
-		Property property = getRdf().getProperty(propertyURI.getPath());
+		// Property property = getRdf().getProperty(propertyURI.getPath());
+		Property property = getRdf().getProperty(propertyURI.toString());
 		if (property == null){
-			property = getRdf().createProperty(propertyURI.getPath());
+			// property = getRdf().createProperty(propertyURI.getPath());
+			property = getRdf().createProperty(propertyURI.toString());
 		}
 		// statement
 		return property;
@@ -89,7 +91,7 @@ public class VCMetaData implements RDFBox {
 			public boolean test(Statement arg0) {
 				Resource subject = arg0.getSubject();
 				if (subject.getNameSpace()!=null && !subject.getNameSpace().toString().equals("#") && !subject.getNameSpace().equals(resource.getNameSpace())){
-					System.out.println("resouce mismatch: "+subject+"/"+resource+":   namespace "+subject.getNameSpace()+" differs from "+resource.getNameSpace());
+					System.out.println("resouce mismatch: "+subject+" :: "+resource+":   namespace S: "+subject.getNameSpace()+" differs from R: "+resource.getNameSpace());
 					return false;
 				}
 				if (subject.toString().startsWith("#") && resource.getNameSpace().equals("http://vcell.org/data/")){
@@ -98,17 +100,28 @@ public class VCMetaData implements RDFBox {
 						return true;
 					}
 				}
+				if (subject != null && subject.equals(resource)) {
+					return true;
+				}
 				return false;
 			}
-			
 		};
+		
+//		Selector selector = new Selector() {
+//			public RDFNode getObject() {return null;}
+//			public Property getPredicate() {return null;}
+//			public Resource getSubject() {return resource;}
+//			public boolean isSimple() {return true;}
+//			public boolean test(Statement arg0) {
+//				throw new RuntimeException("TEST Should never get called");
+//				// return false;
+//			}
+//		};
+
 		StmtIterator stmtIter = getRdf().listStatements(selector);
 //		StmtIterator stmtIter = getRdf().listStatements(resource,null,(RDFNode)null);
 //		StmtIterator stmtIter = getRdf().listStatements(null,null,(RDFNode)null);
 		List<Statement> statements = new ArrayList<Statement>();
-if (statements.size()==0){
-	System.out.println(".....no statements found");
-}
 		while (stmtIter.hasNext()){
 			Statement statement = stmtIter.nextStatement();
 			System.out.println("....."+statement.getSubject()+"("+statement.getSubject().hashCode()+")"+
@@ -136,7 +149,9 @@ if (statements.size()==0){
 		RDFNode object = getProperty(objectURI);
 		Statement statement = getRdf().createStatement(resource, predicate, object);
 		System.out.println("VCMetaData.addRDFStatement(): "+statement.toString());
+		System.out.println("RDF contains statement before adding: " + getRdf().contains(statement));
 		getRdf().add(statement);
+		System.out.println("RDF contains statement after adding: " + getRdf().contains(statement));
 	}
 
 	public NonRDFAnnotation getNonRDFAnnotation(Identifiable identifiable){

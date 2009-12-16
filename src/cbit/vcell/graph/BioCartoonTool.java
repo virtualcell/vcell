@@ -522,6 +522,7 @@ protected void showEditSpeciesDialog(GraphPane myGraphPane, Model model, Species
 	editSpeciesDialog.initEditSpecies(speciesContext, model, getDocumentManager());
 	//
 	ZEnforcer.showModalDialogOnTop(editSpeciesDialog, getJDesktopPane());
+	getGraphModel().fireGraphChanged();
 }
 
 
