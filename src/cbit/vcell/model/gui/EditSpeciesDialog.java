@@ -173,7 +173,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
 				connEtoM9(e);
 		}
-		@Override
+		// @Override
 		public void hyperlinkUpdate(HyperlinkEvent e) {
 			if (e.getEventType() == EventType.ACTIVATED) {
 				URL link = e.getURL();
