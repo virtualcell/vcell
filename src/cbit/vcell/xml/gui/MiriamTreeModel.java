@@ -209,6 +209,13 @@ public class MiriamTreeModel extends DefaultTreeModel {
 							objectRDFNode = stmt.getObject();
 						}
 					}
+				} else {
+					// the object node is a URI, so separate it to a 'link' component and a 'text' component to display in the tree.
+					String link = objectNode.getURI();
+					String text = link.substring(link.lastIndexOf("/")+1); 
+					LinkNode linkNode = new LinkNode(predicateStr, link, text);
+					modelComponentNode.add(linkNode);
+					bHasLinkNode = true;
 				}
 				if (!bHasLinkNode){
 					modelComponentNode.add(new IdentifiableNode(identifiable, predicateStr + "  :  " + objectNode.toString()));

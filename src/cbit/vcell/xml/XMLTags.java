@@ -59,10 +59,19 @@ public class XMLTags {
 	public static final String DUBCORETERMS_NAMESPACE_URI	= "http://purl.org/dc/terms/";						//xmlns:dcterms="http://purl.org/dc/terms/" 
 	public static final String DUBCORETERMS_NAMESPACE_PREFIX= "dcterms"; 
 	public static final String DUBCORETERMS_W3CDTF_NAME_TAG = "W3CDTF"; 
-	public static final String BMBIOQUAL_NAMESPACE_URI	 	= "http://biomodels.net/biology-qualifiers/";		//xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" 
+	public static final String BMBIOQUAL_NAMESPACE_URI	 	= "http://biomodels.net/biology-qualifiers#";		//xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" 
 	public static final String BMBIOQUAL_NAMESPACE_PREFIX 	= "bqbiol";
-	public static final String BMMODELQUAL_NAMESPACE_URI 	= "http://biomodels.net/model-qualifiers/";			//xmlns:bqmodel="http://biomodels.net/model-qualifiers/"
+	public static final String BMMODELQUAL_NAMESPACE_URI 	= "http://biomodels.net/model-qualifiers#";			//xmlns:bqmodel="http://biomodels.net/model-qualifiers/"
 	public static final String BMMODELQUAL_NAMESPACE_PREFIX = "bqmodel";
+	
+	// VCMEtaData/MIRIAM properties
+	public static final String PROPERTY_ISVERSIONOF 		= "isVersionOf";
+	public static final String PROPERTY_HASPART 			= "hasPart";
+	public static final String PROPERTY_HASVERSION 			= "hasVersion";
+	public static final String PROPERTY_IS					= "is";
+	public static final String PROPERTY_ISDESCRIBEDBY	 	= "isDescribedBy";
+	public static final String PROPERTY_ISHOMOLOGTO			= "isHomologTo";
+	public static final String PROPERTY_ISPARTOF 			= "isPartOf";
 	
 	//END
 	
