@@ -532,7 +532,7 @@ public class MultiPurposeTextPanel extends JPanel implements DocumentListener, A
 	 *            java.lang.String
 	 */
 	public void showTextContent() {
-		if (textPane.getText() != null && !textPane.getText().isEmpty()) {
+		if (textPane.getText() != null && textPane.getText().length()>0) {
 			return;
 		}
 		textPane.setText(textContent);
