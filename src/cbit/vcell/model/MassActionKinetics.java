@@ -161,64 +161,65 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	if (getReactionStep().getStructure() instanceof Membrane){
 		V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
 	}
-			
+	
 	ReactionParticipant rp_Array[] = getReactionStep().getReactionParticipants();
-	Expression forwardRateTerm = new Expression(kf.getName());
-	Expression reverseRateTerm = new Expression(kr.getName());
+	Expression kf_exp = getSymbolExpression(kf);
+	Expression kr_exp = getSymbolExpression(kr);
 	int reactantCount = 0;
 	int productCount = 0;
 	for (int i = 0; i < rp_Array.length; i++) {
 		Expression term = null;
+		Expression speciesContext = getSymbolExpression(rp_Array[i].getSpeciesContext());
+		int stoichiometry = rp_Array[i].getStoichiometry();
 		if (rp_Array[i] instanceof Reactant){
-			String speciesContextName = rp_Array[i].getName();
 			reactantCount++;
-			if (rp_Array[i].getStoichiometry() < 1){
+			if (stoichiometry < 1){
 				throw new ExpressionException("reactant must have stoichiometry of at least 1");
-			}else if (rp_Array[i].getStoichiometry() == 1){
-				term = new Expression(speciesContextName);
+			}else if (stoichiometry == 1){
+				term = speciesContext;
 			}else{
-				term = Expression.power(new Expression(speciesContextName),new Expression(rp_Array[i].getStoichiometry()));
+				term = Expression.power(speciesContext,new Expression(stoichiometry));
 			}	
-			forwardRateTerm = Expression.mult(forwardRateTerm,term);	
+			kf_exp = Expression.mult(kf_exp,term);	
 		}else if (rp_Array[i] instanceof Product){
-			String speciesContextName = rp_Array[i].getName();
 			productCount++;
-			if (rp_Array[i].getStoichiometry() < 1){
+			if (stoichiometry < 1){
 				throw new RuntimeException("product must have stoichiometry of at least 1");
-			}else if (rp_Array[i].getStoichiometry() == 1){
-				term = new Expression(speciesContextName);
+			}else if (stoichiometry == 1){
+				term = speciesContext;
 			}else{
-				term = Expression.power(new Expression(speciesContextName),new Expression(rp_Array[i].getStoichiometry()));
+				term = Expression.power(speciesContext,new Expression(stoichiometry));
 			}	
-			reverseRateTerm = Expression.mult(reverseRateTerm,term);	
+			kr_exp = Expression.mult(kr_exp,term);	
 		}	
 	}
 
 	Expression newRateExp = null;
 	if (reactantCount > 0 && productCount > 0){
-		newRateExp = Expression.add(forwardRateTerm,Expression.negate(reverseRateTerm));
+		newRateExp = Expression.add(kf_exp,Expression.negate(kr_exp));
 	}else if (reactantCount > 0){
-		newRateExp = forwardRateTerm;
+		newRateExp = kf_exp;
 	}else if (productCount > 0){
-		newRateExp = Expression.negate(reverseRateTerm);
+		newRateExp = Expression.negate(kr_exp);
 	}else{
 		newRateExp = new Expression(0.0);
 	}
-	newRateExp.bindExpression(getReactionStep());
 	rateParm.setExpression(newRateExp);
 	
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		Expression tempCurrentExpression = null;
-		int z = (int)getReactionStep().getChargeCarrierValence().getConstantValue();
-		ReservedSymbol F = ReservedSymbol.FARADAY_CONSTANT;
-		ReservedSymbol F_nmol = ReservedSymbol.FARADAY_CONSTANT_NMOLE;
-		ReservedSymbol N_PMOLE = ReservedSymbol.N_PMOLE;
+		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		Expression J = getSymbolExpression(rateParm);
 		if (getReactionStep() instanceof SimpleReaction){
-			tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(rateParm.getName()));
+			Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
+			Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+//			tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(rateParm.getName()));
+			tempCurrentExpression = Expression.mult(Expression.div(Expression.mult(z, F), N_PMOLE), J);
 		}else{
-			tempCurrentExpression = Expression.mult(new Expression(z+"*"+F_nmol.getName()), new Expression(rateParm.getName()));
+			Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
+//			tempCurrentExpression = Expression.mult(new Expression(z+"*"+F_nmol.getName()), new Expression(rateParm.getName()));
+			tempCurrentExpression = Expression.mult(z, F_nmol, J);
 		}
-		tempCurrentExpression.bindExpression(getReactionStep());
 		if (currentParm == null){
 			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),tempCurrentExpression,ROLE_CurrentDensity,cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2));
 		}else{

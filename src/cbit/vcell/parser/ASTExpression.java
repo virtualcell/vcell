@@ -7,14 +7,17 @@ package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 import net.sourceforge.interval.ia_math.RealInterval;
 
-public class ASTExpression extends SimpleNode {
-  ASTExpression() {
-    super(ExpressionParserTreeConstants.JJTEXPRESSION);
-  }
-ASTExpression(int id) {
-	super(id);
-if (id != ExpressionParserTreeConstants.JJTEXPRESSION){ System.out.println("ASTExpressionNode(), i = "+id); }
-}
+class ASTExpression extends SimpleNode {
+	private ASTExpression() {
+		super(ExpressionParserTreeConstants.JJTEXPRESSION);
+	}
+
+	ASTExpression(int id) {
+		super(id);
+		if (id != ExpressionParserTreeConstants.JJTEXPRESSION) {
+			System.out.println("ASTExpressionNode(), i = " + id);
+		}
+	}
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node

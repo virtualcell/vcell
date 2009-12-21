@@ -183,18 +183,7 @@ public Object getValueAt(int row, int col) {
 				if (exp!=null){
 					if ((parameter instanceof KineticsProxyParameter) && (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol)) {
 						ReservedSymbol rs = (ReservedSymbol)(((KineticsProxyParameter)parameter).getTarget());
-						if (rs.isKMOLE()) {
-							// KMOLE is the only ReservedSymbol that has is expressed as a rational number (1/602). Try printing this expression instead of its double value  
-							try {
-								return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable(), autoCompleteSymbolFilter);
-							} catch (ExpressionException e) {
-								e.printStackTrace();
-								throw new RuntimeException("Error writing expression for KMOLE reserved symbol" + e.getMessage());
-							}
-						} else {
-							// if reserved symbol is not KMOLE, print it out like other parameters
-							return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
-						}
+						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);						
 					} else {
 						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 					}

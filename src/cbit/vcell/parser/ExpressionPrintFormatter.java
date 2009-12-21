@@ -192,11 +192,6 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 
 		return sumBound;
 		
-	}else if (node instanceof ASTExpression){
-		if (node.jjtGetNumChildren()!=1){
-			throw new ExpressionException("Expression node should have 1 child");
-		}	
-		return getSize((SimpleNode)node.jjtGetChild(0));
 	}else if (node instanceof ASTFloatNode){
 		FormatSize size = new FormatSize();
 		size.width = fm.stringWidth(node.infixString(node.LANGUAGE_DEFAULT));
@@ -627,12 +622,6 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 			}	
 		}	
 		g.drawString(rightParenString,x+posX,y+posY);
-					
-	}else if (node instanceof ASTExpression){
-		if (node.jjtGetNumChildren()!=1){
-			throw new ExpressionException("Expression node should have 1 child");
-		}	
-		paint(g,(SimpleNode)node.jjtGetChild(0),x,y);
 	}else if (node instanceof ASTFloatNode){
 		g.drawString(node.infixString(node.LANGUAGE_DEFAULT),x,y);
 	}else if (node instanceof ASTNotNode){

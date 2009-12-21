@@ -2,22 +2,30 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.event.ActionEvent;
 import java.util.Hashtable;
 
-import cbit.vcell.biomodel.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.mapping.*;
-
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import cbit.vcell.client.*;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelTreePanel;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 2:55:18 PM)
@@ -414,7 +422,7 @@ private void copyApplication(ActionEvent evt) {
 				//check validity if selected application is a stochastic application
 				if(((SimulationContext)selection).isStoch())
 				{
-					String message = getBioModel().isValidForStochApp();
+					String message = getBioModel().getModel().isValidForStochApp();
 					if(!message.equals(""))
 					{
 						throw new Exception(message);
@@ -438,7 +446,7 @@ private void copyApplication(ActionEvent evt) {
 			else if(actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION))
 			{
 				//check validity if copy to stochastic application
-				String message = getBioModel().isValidForStochApp();
+				String message = getBioModel().getModel().isValidForStochApp();
 				if(!message.equals(""))
 				{
 					throw new Exception(message);
@@ -1076,7 +1084,7 @@ private void newApplication(java.awt.event.ActionEvent event) {
 	if (event.getActionCommand().equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION))
 	{
 		isStoch = true;
-		String message = getBioModel().isValidForStochApp();
+		String message = getBioModel().getModel().isValidForStochApp();
 		if(!message.equals(""))
 		{
 			PopupGenerator.showErrorDialog(this, "Error creating stochastic application:\n" + message);

@@ -77,7 +77,7 @@ public abstract class DistributedKinetics extends Kinetics {
 				if (origLumpedKinetics.getReactionStep().getStructure() instanceof Membrane){
 					if (origLumpedKinetics.getReactionStep() instanceof FluxReaction){
 						// KMOLE/size  (from molecules.s-1 to uM.um.s-1)
-						distributionFactor = Expression.mult(new Expression(ReservedSymbol.KMOLE.getName()),Expression.invert(new Expression(size)));
+						distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(ReservedSymbol.KMOLE),Expression.invert(new Expression(size)));
 					}else if (origLumpedKinetics.getReactionStep() instanceof SimpleReaction){
 						// 1/size (from molecules.s-1 to molecules.um-2.s-1)
 						distributionFactor = Expression.invert(new Expression(size));
@@ -86,7 +86,7 @@ public abstract class DistributedKinetics extends Kinetics {
 					}
 				}else if (origLumpedKinetics.getReactionStep().getStructure() instanceof Feature){
 					// KMOLE/size (from molecules.s-1 to uM.s-1)
-					distributionFactor = Expression.mult(new Expression(ReservedSymbol.KMOLE.getName()),Expression.invert(new Expression(size)));
+					distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(ReservedSymbol.KMOLE),Expression.invert(new Expression(size)));
 				}else{
 					throw new RuntimeException("unexpected structure type "+origLumpedKinetics.getReactionStep().getStructure().getClass().getName());
 				}

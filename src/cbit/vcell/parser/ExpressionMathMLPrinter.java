@@ -4,9 +4,6 @@ package cbit.vcell.parser;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.*;
-import java.util.*;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -204,11 +201,6 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 			applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.REAL));	
 		}
 		return castChild(applyNode, desiredMathType, MathType.REAL);
-	}else if (node instanceof ASTExpression){
-		if (node.jjtGetNumChildren()!=1){
-			throw new ExpressionException("Expression node should have 1 child");
-		}	
-		return castChild(getMathML(node.jjtGetChild(0), desiredMathType), desiredMathType, desiredMathType);
 	}else if (node instanceof ASTFloatNode){
 		org.jdom.Element floatNode = new org.jdom.Element(MathMLTags.CONSTANT);
 		Double value = ((ASTFloatNode)node).value;

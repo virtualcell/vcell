@@ -16,14 +16,14 @@ public class VCUnitEvaluator {
 
 	public static class UnitsHashMap {
 		boolean bDirty = false;
-		java.util.HashMap hashMap = new java.util.HashMap();
+		java.util.HashMap<SymbolTableEntry, VCUnitDefinition> hashMap = new java.util.HashMap<SymbolTableEntry, VCUnitDefinition>();
 		public UnitsHashMap() {
 		}
 		public VCUnitDefinition put(SymbolTableEntry keySTE, VCUnitDefinition unitDefinition){
 			if (unitDefinition==null){
 				throw new RuntimeException(keySTE.getName()+" has a null unit definition");
 			}
-			VCUnitDefinition oldUnit = (VCUnitDefinition)hashMap.put(keySTE,unitDefinition);
+			VCUnitDefinition oldUnit = hashMap.put(keySTE,unitDefinition);
 			if (oldUnit==null){
 				bDirty = true;
 			}else if (!oldUnit.isTBD() && !unitDefinition.compareEqual(oldUnit)){
@@ -32,7 +32,7 @@ public class VCUnitEvaluator {
 			return oldUnit;
 		}
 		public VCUnitDefinition get(SymbolTableEntry keySTE){
-			return (VCUnitDefinition)hashMap.get(keySTE);
+			return hashMap.get(keySTE);
 		}
 		public void clearAll() {
 			clearDirty();
@@ -158,8 +158,6 @@ public class VCUnitEvaluator {
 		//} else if (node instanceof ASTLaplacianNode) {
 			//unit = ReservedSymbol.X.getUnitDefinition(); 
 			//return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap).divideBy(unit).divideBy(unit);
-	    } else if (node instanceof ASTExpression) {
-			assignAndVerify(nodeUnit,(SimpleNode)node.jjtGetChild(0),unitsHashMap);
 		} else if (node instanceof ASTFloatNode) {          //return TBD instead of dimensionless.
 			// do nothing
 		} else if (node instanceof ASTFuncNode) {   
@@ -285,7 +283,6 @@ public class VCUnitEvaluator {
 			return null;
 		}
 		if (node instanceof ASTAndNode || node instanceof ASTOrNode || node instanceof ASTNotNode) {
-			ArrayList units = new ArrayList();
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 				VCUnitDefinition childUnit = getUnitDefinition(child,unitsHashMap);
@@ -295,14 +292,14 @@ public class VCUnitEvaluator {
 			}
 			return VCUnitDefinition.UNIT_DIMENSIONLESS;
 		} else if (node instanceof ASTRelationalNode) {
-			ArrayList units = new ArrayList();
+			ArrayList<VCUnitDefinition> units = new ArrayList<VCUnitDefinition>();
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				units.add(getUnitDefinition((SimpleNode)node.jjtGetChild(i),unitsHashMap));
 			}
 			computeUnit((VCUnitDefinition [])units.toArray(new VCUnitDefinition[units.size()]), true); // looking for imcompatabilities
 			return VCUnitDefinition.UNIT_DIMENSIONLESS;
 		} else if (node instanceof ASTAddNode || node instanceof ASTMinusTermNode) {
-			ArrayList units = new ArrayList();
+			ArrayList<VCUnitDefinition> units = new ArrayList<VCUnitDefinition>();
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				units.add(getUnitDefinition((SimpleNode)node.jjtGetChild(i),unitsHashMap));
 			}
@@ -339,8 +336,6 @@ public class VCUnitEvaluator {
 		} else if (node instanceof ASTLaplacianNode) {
 			unit = defaultLengthUnit;
 			return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap).divideBy(unit).divideBy(unit);
-	    } else if (node instanceof ASTExpression) {
-			return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap);
 		} else if (node instanceof ASTFloatNode) {          //return TBD instead of dimensionless. 
 			return VCUnitDefinition.UNIT_TBD;
 		} else if (node instanceof ASTFuncNode) {   
