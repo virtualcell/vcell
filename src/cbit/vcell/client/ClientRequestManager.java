@@ -659,7 +659,7 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 		}		
 	};
 	
-	AsynchClientTask task2 = new AsynchClientTask("Creating MathModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	AsynchClientTask task2 = new AsynchClientTask("Creating MathModel from BioModel Application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathModel newMathModel = (MathModel)hashTable.get("newMathModel");
@@ -2032,7 +2032,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		if(vcd instanceof BioModel)
 		{
 			//we want to check when there is stochastic application if the rate laws set in model can be automatically transformed.
-			String stochChkMsg =((BioModel)vcd).isValidForStochApp();
+			String stochChkMsg =((BioModel)vcd).getModel().isValidForStochApp();
 			for(int i=0; i<simulations.length; i++)
 			{
 				if(simulations[i].getMathDescription().isStoch())

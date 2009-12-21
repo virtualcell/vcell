@@ -23,6 +23,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -617,6 +618,9 @@ public void setKinetics(Kinetics kinetics) {
 		kinetics.addPropertyChangeListener(this);
 		removePropertyChangeListener(kinetics);
 		addPropertyChangeListener(kinetics);
+		if (getChargeCarrierValence() != null){
+			getChargeCarrierValence().addPropertyChangeListener(kinetics);
+		}
 	}
 
 	//
@@ -852,6 +856,37 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 		}
 	};
 	return stef;
+}
+
+public Expression substitueKineticParameter(Expression exp, boolean substituteConst) throws MappingException, ExpressionException
+{
+	Expression result = new Expression(exp);
+	boolean bSubstituted = true;
+	while(bSubstituted)
+	{
+		bSubstituted = false;
+		String symbols[] = result.getSymbols();
+		if (symbols!=null) {
+			for (int k = 0; k < symbols.length; k++){
+				Kinetics.KineticsParameter kp = getKinetics().getKineticsParameter(symbols[k]);
+				if (kp != null)
+				{
+					try{
+						Expression expKP = substitueKineticParameter(kp.getExpression(), true);
+						if(!expKP.flatten().isNumeric()||substituteConst)
+						{
+							result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
+							bSubstituted = true;
+						}
+					}catch(ExpressionException e1){
+						e1.printStackTrace();
+						throw new ExpressionException(e1.getMessage());
+					}
+				}
+			}
+		}		
+	}
+	return result;
 }
 
 }

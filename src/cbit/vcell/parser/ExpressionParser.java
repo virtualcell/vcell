@@ -25,7 +25,7 @@ public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeCon
       return;
     }
     try {
-      ASTExpression n = parser.Expression();
+      SimpleNode n = parser.Expression();
       n.dump("");
       System.out.println("Java Parser Version 0.2:  Java program parsed successfully.");
     } catch (Exception e) {

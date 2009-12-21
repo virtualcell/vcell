@@ -1,8 +1,11 @@
 package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 
-import cbit.vcell.model.Kinetics.KineticsParameter;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -15,7 +18,7 @@ public class GeneralLumpedKinetics extends LumpedKinetics {
  * @param name java.lang.String
  * @param reactionStep cbit.vcell.model.ReactionStep
  */
-public GeneralLumpedKinetics(ReactionStep reactionStep) throws cbit.vcell.parser.ExpressionException {
+public GeneralLumpedKinetics(ReactionStep reactionStep) throws ExpressionException {
 	super(KineticsDescription.GeneralLumped.getName(), reactionStep);
 	try {
 		KineticsParameter lumpedCurrentParm = new KineticsParameter(getDefaultParameterName(ROLE_LumpedCurrent),new Expression(0.0),ROLE_LumpedCurrent,null);
@@ -40,7 +43,7 @@ public GeneralLumpedKinetics(ReactionStep reactionStep) throws cbit.vcell.parser
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (obj == this){
 		return true;
 	}
@@ -102,7 +105,7 @@ protected void refreshUnits() {
  * Creation date: (8/9/2006 5:45:48 PM)
  * @exception cbit.vcell.parser.ExpressionException The exception description.
  */
-protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+protected void updateGeneratedExpressions() throws ExpressionException, java.beans.PropertyVetoException {
 	KineticsParameter lumpedCurrentParm = getLumpedCurrentParameter();
 	KineticsParameter lumpedReactionRate = getLumpedReactionRateParameter();
 	
@@ -112,14 +115,15 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		Expression tempCurrentExpression = null;
-		int z = (int)getReactionStep().getChargeCarrierValence().getConstantValue();
-		ReservedSymbol F = ReservedSymbol.FARADAY_CONSTANT;
-		ReservedSymbol N_PMOLE = ReservedSymbol.N_PMOLE;
+		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
+		Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+		Expression lumpledJ = getSymbolExpression(lumpedReactionRate); 
 
-		tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(lumpedReactionRate.getName()));
-		tempCurrentExpression.bindExpression(getReactionStep());
+//		tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(lumpedReactionRate.getName()));
+		tempCurrentExpression = Expression.mult(Expression.div(Expression.mult(z, F), N_PMOLE), lumpledJ);
 		if (lumpedCurrentParm == null){
-			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_LumpedCurrent),tempCurrentExpression,ROLE_LumpedCurrent,cbit.vcell.units.VCUnitDefinition.UNIT_pA));
+			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_LumpedCurrent),tempCurrentExpression,ROLE_LumpedCurrent,VCUnitDefinition.UNIT_pA));
 		}else{
 			lumpedCurrentParm.setExpression(tempCurrentExpression);
 		}

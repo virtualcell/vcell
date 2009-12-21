@@ -2,6 +2,7 @@ package cbit.vcell.model;
 
 import org.vcell.util.Issue;
 
+import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -146,12 +147,6 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	if (currentParm==null && rateParm==null){
 		return;
 	}
-	int z = (int)getReactionStep().getChargeCarrierValence().getConstantValue();
-	ReservedSymbol F = ReservedSymbol.FARADAY_CONSTANT;
-	ReservedSymbol F_nmol = ReservedSymbol.FARADAY_CONSTANT_NMOLE;
-	ReservedSymbol R = ReservedSymbol.GAS_CONSTANT;
-	ReservedSymbol T = ReservedSymbol.TEMPERATURE;
-	ReservedSymbol N_PMOLE = ReservedSymbol.N_PMOLE;
 	
 	Membrane.MembraneVoltage V = null;
 	if (getReactionStep().getStructure() instanceof Membrane){
@@ -174,21 +169,37 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 		}
 	}
 	
-
 	if (R0!=null && P0!=null){
+		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		NameScope nameScope = getReactionStep().getNameScope();
+		Expression F = new Expression(ReservedSymbol.FARADAY_CONSTANT, nameScope);
+		Expression R = new Expression(ReservedSymbol.GAS_CONSTANT, nameScope);
+		Expression T = new Expression(ReservedSymbol.TEMPERATURE, nameScope);
+		Expression P0_exp = new Expression(P0.getSpeciesContext(), nameScope);
+		Expression R0_exp = new Expression(R0.getSpeciesContext(), nameScope);
+		Expression V_exp = new Expression(V, nameScope);
+		Expression conductivity_exp = new Expression(conductivity, nameScope);
+		
 		// 	new Expression("A0*(("+R+"*"+T+"/("+VALENCE_SYMBOL+"*"+F+"))*log(P0/R0)-"+VOLTAGE_SYMBOL+")"),
-		Expression newCurrExp = new Expression(conductivity.getName()+"*(("+R.getName()+"*"+T.getName()+"/("+z+"*"+F.getName()+"))*log("+P0.getName()+"/"+R0.getName()+") - "+V.getName()+")");
-		newCurrExp.bindExpression(getReactionStep());
+//		Expression newCurrExp = new Expression(conductivity.getName()+"*(("+R.getName()+"*"+T.getName()+"/("+z+"*"+F.getName()+"))*log("+P0.getName()+"/"+R0.getName()+") - "+V.getName()+")");
+		Expression logterm = Expression.log(Expression.div(P0_exp, R0_exp));      // log(P/R)
+		Expression term1 = Expression.div(Expression.mult(R, T), Expression.mult(z, F));  // (R * T / (z * F))
+		// C * (term1 * logterm - V)
+		Expression newCurrExp = Expression.mult(conductivity_exp, Expression.add(Expression.mult(term1, logterm), Expression.negate(V_exp)));		
 		currentParm.setExpression(newCurrExp);
 
 		if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 			Expression tempRateExpression = null;
+			Expression current = new Expression(currentParm, nameScope);
 			if (getReactionStep() instanceof SimpleReaction){
-				tempRateExpression = Expression.mult(new Expression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), new Expression(currentParm.getName()));
+				Expression N_PMOLE = new Expression(ReservedSymbol.N_PMOLE, nameScope);
+//				tempRateExpression = Expression.mult(new Expression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), new Expression(currentParm.getName()));
+				tempRateExpression = Expression.mult(Expression.div(N_PMOLE, Expression.mult(z, F)), current);
 			}else{
-				tempRateExpression = new Expression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
+				Expression F_nmol = new Expression(ReservedSymbol.FARADAY_CONSTANT_NMOLE, nameScope);
+//				tempRateExpression = new Expression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
+				tempRateExpression = Expression.div(current, Expression.mult(z, F_nmol));
 			}
-			tempRateExpression.bindExpression(getReactionStep());
 			if (rateParm == null){
 				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),tempRateExpression,ROLE_ReactionRate,null));
 			}else{

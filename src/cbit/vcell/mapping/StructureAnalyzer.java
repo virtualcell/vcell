@@ -393,7 +393,8 @@ private void refreshTotalDependancies() throws Exception {
  * @param b cbit.vcell.math.Matrix
  * @param vars java.lang.String[]
  */
-public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings, MathMapping mathMapping_temp, boolean bFast) throws Exception {
+public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings, 
+		MathMapping mathMapping_temp, boolean bFast) throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalDependancies()");
 	SimulationContext simContext_temp = mathMapping_temp.getSimulationContext();
@@ -459,7 +460,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.mult(Expression.mult(new Expression(coeff.toString()),firstSM.getTotalVolumeCorrection(simContext_temp)),
+					constantExp = Expression.mult(new Expression(coeff.toString()),firstSM.getTotalVolumeCorrection(simContext_temp),
 																new Expression(scSTE, mathMapping_temp.getNameScope()));
 					bFirst = false;
 				}else{
@@ -470,7 +471,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					SpeciesContext sc = scm.getSpeciesContext();
 					StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(sc.getStructure());
 					SpeciesContextSpec scs = simContext_temp.getReactionContext().getSpeciesContextSpec(sc);
-					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()),Expression.mult(new Expression(sm.getTotalVolumeCorrection(simContext_temp)),new Expression(sc.getName())))));
+					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()), 
+							sm.getTotalVolumeCorrection(simContext_temp), new Expression(sc, mathMapping_temp.getNameScope()))));
 					//
 					// add term to K expression
 					//
@@ -480,10 +482,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp,
-												Expression.mult(new Expression(coeff.toString()),
-																Expression.mult(new Expression(sm.getTotalVolumeCorrection(simContext_temp)),
-																				new Expression(scSTE, mathMapping_temp.getNameScope()))));
+					constantExp = Expression.add(constantExp, Expression.mult(new Expression(coeff.toString()), sm.getTotalVolumeCorrection(simContext_temp),
+																				new Expression(scSTE, mathMapping_temp.getNameScope())));
 				}
 			}
 		}
@@ -569,8 +569,7 @@ private void refreshTotalMatrices() throws Exception {
 								exp = Expression.add(exp, Expression.mult(fluxCorrection, reactRateExp));
 								//Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+expInfix));
 							}else if (reactionSteps[j] instanceof SimpleReaction){
-								exp = Expression.add(exp, Expression.mult(Expression.mult(fluxCorrection, 
-									new Expression(ReservedSymbol.KMOLE, ReservedSymbol.KMOLE.getNameScope())), reactRateExp));
+								exp = Expression.add(exp, Expression.mult(fluxCorrection, new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope()), reactRateExp));
 //								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+ReservedSymbol.KMOLE.getName()+"*"+expInfix));
 							}else{
 								throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");

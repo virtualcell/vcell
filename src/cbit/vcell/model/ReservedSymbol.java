@@ -3,14 +3,17 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.vcell.parser.*;
-
 import java.beans.PropertyVetoException;
-import java.io.*;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
@@ -20,15 +23,26 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
    public final static ReservedSymbol Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
    public final static ReservedSymbol Z    	 = new ReservedSymbol("z","z coord",VCUnitDefinition.UNIT_um,null);
    public final static ReservedSymbol TEMPERATURE = new ReservedSymbol("_T_","temperature",VCUnitDefinition.UNIT_K,null);
-   public final static ReservedSymbol FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday const",VCUnitDefinition.UNIT_C_per_mol,new Double(9.648e4));
-   public final static ReservedSymbol FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday const",VCUnitDefinition.UNIT_C_per_nmol,new Double(9.648e-5));
-   public final static ReservedSymbol N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Double(6.02e11));
-   public final static ReservedSymbol K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Double(1e-9));
-   public final static ReservedSymbol GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Double(8314.0));
-   public final static ReservedSymbol KMOLE = new ReservedSymbol("KMOLE","Flux unit conversion",VCUnitDefinition.UNIT_uM_um3_per_molecules,new Double(1.0/602.0));
-   public final static ReservedSymbol KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Double(1000));
+   public final static ReservedSymbol FARADAY_CONSTANT = new ReservedSymbol("_F_","Faraday const",VCUnitDefinition.UNIT_C_per_mol,new Expression(9.648e4));
+   public final static ReservedSymbol FARADAY_CONSTANT_NMOLE = new ReservedSymbol("_F_nmol_","Faraday const",VCUnitDefinition.UNIT_C_per_nmol,new Expression(9.648e-5));
+   public final static ReservedSymbol N_PMOLE = new ReservedSymbol("_N_pmol_","Avagadro Num (scaled)",VCUnitDefinition.UNIT_molecules_per_pmol,new Expression(6.02e11));
+   public final static ReservedSymbol K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
+   public final static ReservedSymbol GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
+   public final static ReservedSymbol KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Expression(1000));
+
+   public final static ReservedSymbol KMOLE;
+   static {
+	   ReservedSymbol temp = null;
+	   try {
+		   temp = new ReservedSymbol("KMOLE","Flux unit conversion",VCUnitDefinition.UNIT_uM_um3_per_molecules,Expression.div(new Expression(1.0), new Expression(602.0)));
+	   } catch (Throwable e){
+		   e.printStackTrace(System.out);
+	   }
+	   KMOLE = temp;
+   }
+   
    private String name = null;
-   private Double constantValue = null;
+   private Expression constantValue = null;
    private String description = null;
    private VCUnitDefinition unitDefinition = null;
 
@@ -112,7 +126,7 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 		}
 	}
 
-private ReservedSymbol(String argName, String argDescription, VCUnitDefinition argUnitDefinition, Double argConstantValue){
+private ReservedSymbol(String argName, String argDescription, VCUnitDefinition argUnitDefinition, Expression argConstantValue){
 	this.name = argName;
 	this.unitDefinition = argUnitDefinition;
 	this.constantValue = argConstantValue;
@@ -219,11 +233,7 @@ public double getConstantValue() throws ExpressionException {
  * @exception java.lang.Exception The exception description.
  */
 public Expression getExpression() {
-	if (constantValue!=null){
-		return new Expression(constantValue.doubleValue());
-	}else{
-		return null;
-	}
+	return constantValue;
 }
 
 

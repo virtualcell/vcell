@@ -230,12 +230,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	KineticsParameter vMaxFwd = getKineticsParameterFromRole(ROLE_VmaxFwd);
 	KineticsParameter kmRev = getKineticsParameterFromRole(ROLE_KmRev);
 	KineticsParameter vMaxRev = getKineticsParameterFromRole(ROLE_VmaxRev);
-	
-	Membrane.MembraneVoltage V = null;
-	if (getReactionStep().getStructure() instanceof Membrane){
-		V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
-	}
-	
+		
 	ReactionParticipant reactionParticipants[] = getReactionStep().getReactionParticipants();
 	Reactant R0 = null;
 	Product P0 = null;
@@ -259,23 +254,36 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	}
 	
 	//	new Expression("(A0*R0/A1 - A2*P0/A3)/(1 + R0/A1 + P0/A3)"),  where Ai = { "VmaxFwd","KmFwd", "VmaxRev", "KmRev" }
-	Expression newRateExp = new Expression("("+vMaxFwd.getName()+"*"+R0.getName()+"/"+kmFwd.getName()+" - "+vMaxRev.getName()+"*"+P0.getName()+"/"+kmRev.getName()+")/"+
-											"(1.0 + "+R0.getName()+"/"+kmFwd.getName()+" + "+P0.getName()+"/"+kmRev.getName()+")");
-	newRateExp.bindExpression(getReactionStep());
+	Expression vMaxFwd_Exp = getSymbolExpression(vMaxFwd);
+	Expression vMaxRev_Exp = getSymbolExpression(vMaxRev);
+	Expression kmFwd_Exp = getSymbolExpression(kmFwd);
+	Expression kmRev_Exp = getSymbolExpression(kmRev);
+	Expression R0_exp = getSymbolExpression(R0.getSpeciesContext());
+	Expression P0_exp = getSymbolExpression(P0.getSpeciesContext());
+	
+	Expression R_over_fwd = Expression.div(R0_exp, kmFwd_Exp);
+	Expression P_over_rev = Expression.div(P0_exp, kmRev_Exp);
+	
+	Expression numerator = Expression.add(Expression.mult(R_over_fwd, vMaxFwd_Exp), Expression.negate(Expression.mult(P_over_rev, vMaxRev_Exp)));
+	Expression denominator = Expression.add(new Expression(1.0), R_over_fwd, P_over_rev);
+	
+	Expression newRateExp = Expression.div(numerator, denominator).flatten();	
+//	Expression newRateExp = new Expression("("+vMaxFwd.getName()+"*"+R0.getName()+"/"+kmFwd.getName()+" - "+vMaxRev.getName()+"*"+P0.getName()+"/"+kmRev.getName()+")/"+
+//			"(1.0 + "+R0.getName()+"/"+kmFwd.getName()+" + "+P0.getName()+"/"+kmRev.getName()+")");
 	rateParm.setExpression(newRateExp);
 
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		Expression tempCurrentExpression = null;
-		int z = (int)getReactionStep().getChargeCarrierValence().getConstantValue();
-		ReservedSymbol F = ReservedSymbol.FARADAY_CONSTANT;
-		ReservedSymbol F_nmol = ReservedSymbol.FARADAY_CONSTANT_NMOLE;
-		ReservedSymbol N_PMOLE = ReservedSymbol.N_PMOLE;
+		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		Expression J = getSymbolExpression(rateParm);
 		if (getReactionStep() instanceof SimpleReaction){
-			tempCurrentExpression = Expression.mult(new Expression("("+z+"*"+F.getName()+"/"+N_PMOLE.getName()+")"), new Expression(rateParm.getName()));
+			Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
+			Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
+			tempCurrentExpression = Expression.mult(Expression.div(Expression.mult(z, F), N_PMOLE), J);
 		}else{
-			tempCurrentExpression = Expression.mult(new Expression(z+"*"+F_nmol.getName()), new Expression(rateParm.getName()));
+			Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
+			tempCurrentExpression = Expression.mult(z, F_nmol, J);
 		}
-		tempCurrentExpression.bindExpression(getReactionStep());
 		if (currentParm == null){
 			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),tempCurrentExpression,ROLE_CurrentDensity,cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2));
 		}else{

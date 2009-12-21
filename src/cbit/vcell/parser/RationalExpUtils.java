@@ -101,8 +101,6 @@ public class RationalExpUtils {
 		} else if (node instanceof ASTInvertTermNode) {
 			SimpleNode child = (SimpleNode)node.jjtGetChild(0);
 			return getRationalExp(child).inverse();
-	    } else if (node instanceof ASTExpression) {
-			return getRationalExp((SimpleNode)node.jjtGetChild(0));
 		} else if (node instanceof ASTFloatNode) {          //return TBD instead of dimensionless.
 			RationalNumber r = RationalNumber.getApproximateFraction(((ASTFloatNode)node).value.doubleValue());
 			return new RationalExp(r);

@@ -69,7 +69,7 @@ public Expression (Expression exp) {
  * @param rootNode cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
  */
-Expression ( SimpleNode rootNode ) {
+Expression (SimpleNode rootNode) {
    this.rootNode = rootNode;
 }
 /**
@@ -77,7 +77,7 @@ Expression ( SimpleNode rootNode ) {
  * @param expString java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Expression ( String expString ) throws ExpressionException {
+public Expression(String expString) throws ExpressionException {
 	//
 	// first see if it is a number (should be must faster not to invoke the expression parser).
 	//
@@ -108,29 +108,14 @@ public Expression(CommentStringTokenizer tokens) throws ExpressionException {
  * @param expression2 cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression add(Expression expression1, Expression expression2) throws ExpressionException {
+public static Expression add(Expression... expressions) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTAddNode addNode = new ASTAddNode();
 
-	SimpleNode termNode = (SimpleNode)expression1.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
-	addNode.jjtAddChild(termNode);
-	
-   	
-	termNode = (SimpleNode)expression2.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
-	addNode.jjtAddChild(termNode);
-	
+	for (Expression expression1 : expressions) {
+		Node termNode = expression1.rootNode.copyTree();
+		addNode.jjtAddChild(termNode);
+	}
    	
 	exp.rootNode = addNode;
 	return exp;
@@ -146,23 +131,11 @@ public static Expression assign(Expression lvalueExp, Expression rvalueExp) thro
 	Expression exp = new Expression();
 	ASTAssignNode assignNode = new ASTAssignNode();
 
-	SimpleNode termNode = (SimpleNode)lvalueExp.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
+	Node termNode = lvalueExp.rootNode.copyTree();
 	assignNode.jjtAddChild(termNode);
 	
    	
-	termNode = (SimpleNode)rvalueExp.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
+	termNode = rvalueExp.rootNode.copyTree();
 	assignNode.jjtAddChild(termNode);
 	
    	
@@ -198,13 +171,7 @@ derivativeCount++;
 	Expression exp = new Expression();
 	DerivativeNode derivNode = new DerivativeNode(variable);
 
-	SimpleNode termNode = expression.rootNode;
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
+	Node termNode = expression.rootNode.copyTree();
 	derivNode.jjtAddChild(termNode);	
    	
 	exp.rootNode = derivNode;
@@ -264,8 +231,6 @@ public ExpressionTerm extractTopLevelTerm() {
 		operator = "&&";
 	}else if (rootNode instanceof ASTAssignNode){
 		operator = "=";
-	}else if (rootNode instanceof ASTExpression){
-		operator = "";
 	}else if (rootNode instanceof ASTFloatNode){
 		operator = "number";
 	}else if (rootNode instanceof ASTFuncNode){
@@ -394,15 +359,7 @@ SimpleNode getRootNode() {
 public Expression getSubstitutedExpression(Expression origExp, Expression newExp) throws ExpressionException {
 substituteCount++;////////////////////////////////
 	SimpleNode origNode = origExp.rootNode;
-	if (origNode instanceof ASTExpression){
-		origNode = (SimpleNode)origNode.jjtGetChild(0);
-	}	
 	SimpleNode newNode = (SimpleNode)newExp.rootNode.copyTree();
-	if (newNode instanceof ASTExpression){
-		newNode = (SimpleNode)newNode.jjtGetChild(0).copyTree();
-	}else{
-		newNode = (SimpleNode)newNode.copyTree();
-	}
 	//
 	// first check if must replace entire tree, if not then leaves can deal with it
 	//
@@ -522,16 +479,8 @@ public int hashCode() {
 public static Expression invert(Expression expression) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTInvertTermNode invertNode = new ASTInvertTermNode();
-	//
-	// get rid of ExpressionNode (worthless for evaluation)
-	//
-	SimpleNode termNode = (SimpleNode)expression.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}	
+	
+	Node termNode = expression.rootNode.copyTree();
 	//
 	// get rid of double invert
 	//
@@ -607,16 +556,7 @@ public boolean isZero() {
 public static Expression laplacian(Expression expression) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTLaplacianNode laplacianNode = new ASTLaplacianNode();
-	//
-	// get rid of ExpressionNode (worthless for evaluation)
-	//
-	SimpleNode termNode = expression.rootNode;
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}	
+	Node termNode = expression.rootNode.copyTree();
 	laplacianNode.jjtAddChild(termNode);
 	exp.rootNode = laplacianNode;
 	return exp;
@@ -628,29 +568,14 @@ public static Expression laplacian(Expression expression) throws ExpressionExcep
  * @param expression2 cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression mult(Expression expression1, Expression expression2) throws ExpressionException {
+public static Expression mult(Expression... expressions) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTMultNode multNode = new ASTMultNode();
 
-	SimpleNode termNode = (SimpleNode)expression1.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
-	multNode.jjtAddChild(termNode);
-	
-   	
-	termNode = (SimpleNode)expression2.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
-	multNode.jjtAddChild(termNode);
-	
+	for (Expression expression1 : expressions) {
+		Node termNode = expression1.rootNode.copyTree();
+		multNode.jjtAddChild(termNode);
+	}
    	
 	exp.rootNode = multNode;
 	return exp;
@@ -660,23 +585,11 @@ public static Expression div(Expression expression1, Expression expression2) thr
 	Expression exp = new Expression();
 	ASTMultNode multNode = new ASTMultNode();
 
-	SimpleNode termNode = (SimpleNode)expression1.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
+	Node termNode = expression1.rootNode.copyTree();
 	multNode.jjtAddChild(termNode);
 	
    	
-	termNode = (SimpleNode)expression2.rootNode.copyTree();
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}		
+	termNode = expression2.rootNode.copyTree();
 	ASTInvertTermNode inverseNode = new ASTInvertTermNode();
 	inverseNode.jjtAddChild(termNode);
 	multNode.jjtAddChild(inverseNode);
@@ -698,16 +611,7 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionException {
 public static Expression negate(Expression expression) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTMinusTermNode minusNode = new ASTMinusTermNode();
-	SimpleNode termNode = (SimpleNode)expression.rootNode.copyTree();
-	//
-	// get rid of ExpressionNode (worthless for evaluation)
-	//
-	if (termNode instanceof ASTExpression){
-		if (termNode.jjtGetNumChildren() == 1){
-			termNode = (SimpleNode)termNode.jjtGetChild(0);
-			termNode.jjtSetParent(null);
-		}
-	}	
+	Node termNode = expression.rootNode.copyTree();
 	//
 	// get rid of double negative
 	//
@@ -727,12 +631,15 @@ parseCount++;
 		parser = new ExpressionParser(new java.io.ByteArrayInputStream(exp.getBytes()));
 		rootNode = parser.Expression();
 
+		//
+		// get rid of ExpressionNode (worthless for evaluation), artifact of parsing
+		//
 		if (rootNode instanceof ASTExpression){
 			if (rootNode.jjtGetNumChildren() == 1){
 				rootNode = (SimpleNode)rootNode.jjtGetChild(0);
 				rootNode.jjtSetParent(null);
 			}
-		}		
+		}
 	} catch (ParseException e) {
 		throw new ParserException("Parse Error while parsing expression " + exp);
 	}
@@ -745,29 +652,30 @@ parseCount++;
  * @exception java.lang.Exception The exception description.
  */
 public static Expression power(Expression expression1, Expression expression2) throws ExpressionException {
+	return function(ASTFuncNode.POW, expression1, expression2);
+}
+
+public static Expression power(Expression expression1, double exponent) throws ExpressionException {
+	return function(ASTFuncNode.POW, expression1, new Expression(exponent));
+}
+
+public static Expression log(Expression expression1) throws ExpressionException {
+	return function(ASTFuncNode.LOG, expression1);
+}
+
+public static Expression exp(Expression expression1) throws ExpressionException {
+	return function(ASTFuncNode.EXP, expression1);
+}
+
+private static Expression function(int funcType, Expression... expressions) {
 	Expression exp = new Expression();
 	ASTFuncNode funcNode = new ASTFuncNode();
-	funcNode.setFunction(ASTFuncNode.POW);
+	funcNode.setFunction(funcType);
 
-	SimpleNode baseNode = (SimpleNode)expression1.rootNode.copyTree();
-	if (baseNode instanceof ASTExpression){
-		if (baseNode.jjtGetNumChildren() == 1){
-			baseNode = (SimpleNode)baseNode.jjtGetChild(0);
-			baseNode.jjtSetParent(null);
-		}
-	}		
-	funcNode.jjtAddChild(baseNode);
-	
-   	
-	SimpleNode expNode = (SimpleNode)expression2.rootNode.copyTree();
-	if (expNode instanceof ASTExpression){
-		if (expNode.jjtGetNumChildren() == 1){
-			expNode = (SimpleNode)expNode.jjtGetChild(0);
-			expNode.jjtSetParent(null);
-		}
-	}		
-	funcNode.jjtAddChild(expNode);
-	
+	for (Expression expression1 : expressions) {
+		Node termNode = expression1.rootNode.copyTree();
+		funcNode.jjtAddChild(termNode);
+	}
    	
 	exp.rootNode = funcNode;
 	return exp;
@@ -892,15 +800,7 @@ System.out.println("bind("+bindCount+")");
 public void substituteInPlace(Expression origExp, Expression newExp) throws ExpressionException {
 substituteCount++;////////////////////////////////
 	SimpleNode origNode = origExp.rootNode;
-	if (origNode instanceof ASTExpression){
-		origNode = (SimpleNode)origNode.jjtGetChild(0);
-	}	
 	SimpleNode newNode = (SimpleNode)newExp.rootNode.copyTree();
-	if (newNode instanceof ASTExpression){
-		newNode = (SimpleNode)newNode.jjtGetChild(0).copyTree();
-	}else{
-		newNode = (SimpleNode)newNode.copyTree();
-	}
 	//
 	// first check if must replace entire tree, if not then leaves can deal with it
 	//

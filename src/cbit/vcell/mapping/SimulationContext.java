@@ -243,7 +243,7 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 	
 	if(arg_isStoch)
 	{
-		String msg = simulationContext.getBioModel().isValidForStochApp();
+		String msg = simulationContext.getModel().isValidForStochApp();
 		if(!msg.equals(""))
 		{
 			throw new RuntimeException("Error constructing a new simulation context:\n" + msg); //no need to show popup here, the exception passes to upper level.
@@ -251,7 +251,7 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 		if(simulationContext.getGeometry().getDimension() > 0)
 		{
 			Geometry geo = new Geometry("non-spatial",0);
-			this.geoContext = new GeometryContext(simulationContext.getBioModel().getModel(),geo,this);
+			this.geoContext = new GeometryContext(simulationContext.getModel(),geo,this);
 		}
 		else
 		{

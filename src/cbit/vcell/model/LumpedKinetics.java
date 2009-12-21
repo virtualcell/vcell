@@ -64,35 +64,38 @@ public abstract class LumpedKinetics extends Kinetics {
 
 	public static LumpedKinetics toLumpedKinetics(DistributedKinetics distributedKinetics, double size){
 		KineticsParameter[] distKineticsParms = distributedKinetics.getKineticsParameters();
+		ReactionStep reactionStep = distributedKinetics.getReactionStep();
 		try {
 			Vector<KineticsParameter> parmsToAdd = new Vector<KineticsParameter>();
 			
 			LumpedKinetics lumpedKinetics = null;
+			Expression sizeExpr = new Expression(size);
 			if (distributedKinetics.getKineticsDescription().isElectrical()){
-				lumpedKinetics = new GeneralCurrentLumpedKinetics(distributedKinetics.getReactionStep());
-				Expression lumpingFactor = new Expression(size); // from pA.um-2 to pA (current density to current)
+				lumpedKinetics = new GeneralCurrentLumpedKinetics(reactionStep);
+				Expression lumpingFactor = sizeExpr; // from pA.um-2 to pA (current density to current)
 				KineticsParameter distCurrentDensityParam = distributedKinetics.getCurrentDensityParameter();
 				KineticsParameter lumpedCurrentParam = lumpedKinetics.getLumpedCurrentParameter();
 				Expression newLumpedCurrentExp = Expression.mult(lumpingFactor,distCurrentDensityParam.getExpression()).flatten();
 				parmsToAdd.add(lumpedKinetics.new KineticsParameter(lumpedCurrentParam.getName(),newLumpedCurrentExp,lumpedCurrentParam.getRole(),lumpedCurrentParam.getUnitDefinition()));
 			}else{
-				lumpedKinetics = new GeneralLumpedKinetics(distributedKinetics.getReactionStep());
+				lumpedKinetics = new GeneralLumpedKinetics(reactionStep);
 				Expression lumpingFactor = null;
-				if (distributedKinetics.getReactionStep().getStructure() instanceof Membrane){
-					if (distributedKinetics.getReactionStep() instanceof FluxReaction){
+				Expression kmole = distributedKinetics.getSymbolExpression(ReservedSymbol.KMOLE);
+				if (reactionStep.getStructure() instanceof Membrane){
+					if (reactionStep instanceof FluxReaction){
 						// size/KMOLE  (from uM.um.s-1 to molecules.s-1)
-						lumpingFactor = Expression.mult(new Expression(size),Expression.invert(new Expression(ReservedSymbol.KMOLE.getName())));
-					}else if (distributedKinetics.getReactionStep() instanceof SimpleReaction){
+						lumpingFactor = Expression.div(sizeExpr, kmole);
+					}else if (reactionStep instanceof SimpleReaction){
 						// size (from molecules.um-2.s-1 to molecules.s-1)
-						lumpingFactor = new Expression(size);
+						lumpingFactor = sizeExpr;
 					}else{
-						throw new RuntimeException("unexpected ReactionStep type "+distributedKinetics.getReactionStep().getClass().getName());
+						throw new RuntimeException("unexpected ReactionStep type "+reactionStep.getClass().getName());
 					}
-				}else if (distributedKinetics.getReactionStep().getStructure() instanceof Feature){
+				}else if (reactionStep.getStructure() instanceof Feature){
 					// size/KMOLE (from uM.s-1 to molecules.s-1)
-					lumpingFactor = Expression.mult(new Expression(size),Expression.invert(new Expression(ReservedSymbol.KMOLE.getName())));
+					lumpingFactor = Expression.div(sizeExpr, kmole);
 				}else{
-					throw new RuntimeException("unexpected structure type "+distributedKinetics.getReactionStep().getStructure().getClass().getName());
+					throw new RuntimeException("unexpected structure type "+reactionStep.getStructure().getClass().getName());
 				}
 				KineticsParameter distReactionRateParam = distributedKinetics.getReactionRateParameter();
 				KineticsParameter lumpedReactionRateParm = lumpedKinetics.getLumpedReactionRateParameter();
@@ -109,10 +112,10 @@ public abstract class LumpedKinetics extends Kinetics {
 			return lumpedKinetics;
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
-			throw new RuntimeException("failed to create lumped Kinetics for reaction: \""+distributedKinetics.getReactionStep().getName()+"\": "+e.getMessage());
+			throw new RuntimeException("failed to create lumped Kinetics for reaction: \""+reactionStep.getName()+"\": "+e.getMessage());
 		} catch (ExpressionException e) {
 			e.printStackTrace();
-			throw new RuntimeException("failed to create lumped Kinetics for reaction: \""+distributedKinetics.getReactionStep().getName()+"\": "+e.getMessage());
+			throw new RuntimeException("failed to create lumped Kinetics for reaction: \""+reactionStep.getName()+"\": "+e.getMessage());
 		}
 	}
 
