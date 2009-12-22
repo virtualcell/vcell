@@ -76,13 +76,13 @@ public class VCMetaData implements RDFBox {
 	}
 	
 	public List<Statement> getStatements(Identifiable identifiable){
-		System.out.println("looking for statements for identifiable : "+VCID.getVCID(bioModel, identifiable).toASCIIString());
+//		System.out.println("looking for statements for identifiable : "+VCID.getVCID(bioModel, identifiable).toASCIIString());
 		final Resource resource = getResource(identifiable);
 		if (resource==null){
-			System.out.println(".....no resouce found");
+//			System.out.println(".....no resouce found");
 			return null;
 		}
-		System.out.println(".....resouce \""+resource+"\" ("+resource.hashCode()+")");
+//		System.out.println(".....resouce \""+resource+"\" ("+resource.hashCode()+")");
 		Selector selector = new Selector() {
 			public RDFNode getObject() {return null;}
 			public Property getPredicate() {return null;}

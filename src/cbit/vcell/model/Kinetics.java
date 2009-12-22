@@ -566,7 +566,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-public void addUnresolvedParameter(String parameterName) {
+public UnresolvedParameter addUnresolvedParameter(String parameterName) {
 	if (getKineticsParameter(parameterName)!=null){
 		throw new RuntimeException("local parameter '"+parameterName+"' already exists");
 	}
@@ -576,8 +576,11 @@ public void addUnresolvedParameter(String parameterName) {
 	if (getUnresolvedParameter(parameterName)!=null){
 		throw new RuntimeException("unresolved parameter '"+parameterName+"' already exists");
 	}
-	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.addElement(fieldUnresolvedParameters,new UnresolvedParameter(parameterName));
+	UnresolvedParameter newParameter = new UnresolvedParameter(parameterName);
+	UnresolvedParameter newUnresolvedParameters[] = (UnresolvedParameter[])BeanUtils.addElement(fieldUnresolvedParameters,newParameter);
 	setUnresolvedParameters(newUnresolvedParameters);
+	
+	return newParameter;
 }
 
 
@@ -2145,7 +2148,8 @@ public final String writeTokensWithReplacingProxyParams(Hashtable<String, Expres
 protected Expression getSymbolExpression(SymbolTableEntry ste) throws ExpressionBindingException {
 	SymbolTableEntry entry = getReactionStep().getEntry(ste.getName());
 	if (getReactionStep().getModel() == null && entry == null) {
-		return new Expression(ste, ste.getNameScope());
+		UnresolvedParameter newParameter = addUnresolvedParameter(ste.getName());
+		return new Expression(newParameter, getReactionStep().getNameScope());
 	} else {
 		return new Expression(entry, getReactionStep().getNameScope());
 	}
