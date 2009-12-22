@@ -2,11 +2,8 @@ package cbit.vcell.model;
 
 import org.vcell.util.Issue;
 
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/18/2002 5:07:08 PM)
@@ -171,14 +168,13 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	
 	if (R0!=null && P0!=null){
 		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
-		NameScope nameScope = getReactionStep().getNameScope();
-		Expression F = new Expression(ReservedSymbol.FARADAY_CONSTANT, nameScope);
-		Expression R = new Expression(ReservedSymbol.GAS_CONSTANT, nameScope);
-		Expression T = new Expression(ReservedSymbol.TEMPERATURE, nameScope);
-		Expression P0_exp = new Expression(P0.getSpeciesContext(), nameScope);
-		Expression R0_exp = new Expression(R0.getSpeciesContext(), nameScope);
-		Expression V_exp = new Expression(V, nameScope);
-		Expression conductivity_exp = new Expression(conductivity, nameScope);
+		Expression F = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT);
+		Expression R = getSymbolExpression(ReservedSymbol.GAS_CONSTANT);
+		Expression T = getSymbolExpression(ReservedSymbol.TEMPERATURE);
+		Expression P0_exp = getSymbolExpression(P0.getSpeciesContext());
+		Expression R0_exp = getSymbolExpression(R0.getSpeciesContext());
+		Expression V_exp = getSymbolExpression(V);
+		Expression conductivity_exp = getSymbolExpression(conductivity);
 		
 		// 	new Expression("A0*(("+R+"*"+T+"/("+VALENCE_SYMBOL+"*"+F+"))*log(P0/R0)-"+VOLTAGE_SYMBOL+")"),
 //		Expression newCurrExp = new Expression(conductivity.getName()+"*(("+R.getName()+"*"+T.getName()+"/("+z+"*"+F.getName()+"))*log("+P0.getName()+"/"+R0.getName()+") - "+V.getName()+")");
@@ -190,13 +186,13 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 
 		if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 			Expression tempRateExpression = null;
-			Expression current = new Expression(currentParm, nameScope);
+			Expression current = getSymbolExpression(currentParm);
 			if (getReactionStep() instanceof SimpleReaction){
-				Expression N_PMOLE = new Expression(ReservedSymbol.N_PMOLE, nameScope);
+				Expression N_PMOLE = getSymbolExpression(ReservedSymbol.N_PMOLE);
 //				tempRateExpression = Expression.mult(new Expression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), new Expression(currentParm.getName()));
 				tempRateExpression = Expression.mult(Expression.div(N_PMOLE, Expression.mult(z, F)), current);
 			}else{
-				Expression F_nmol = new Expression(ReservedSymbol.FARADAY_CONSTANT_NMOLE, nameScope);
+				Expression F_nmol = getSymbolExpression(ReservedSymbol.FARADAY_CONSTANT_NMOLE);
 //				tempRateExpression = new Expression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
 				tempRateExpression = Expression.div(current, Expression.mult(z, F_nmol));
 			}
