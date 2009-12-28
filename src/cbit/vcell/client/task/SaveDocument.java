@@ -99,7 +99,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			break;
 		}
 	}
-	documentWindowManager.prepareDocumentToLoad(savedDocument);
+	documentWindowManager.prepareDocumentToLoad(savedDocument, false);
 	
 	hashTable.put("savedDocument", savedDocument);
 	
