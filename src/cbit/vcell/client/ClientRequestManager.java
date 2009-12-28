@@ -1723,10 +1723,8 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}
 			}
-			if (!inNewWindow) {
-				DocumentWindowManager windowManager = (DocumentWindowManager)requester;
-				windowManager.prepareDocumentToLoad(doc);
-			}
+			DocumentWindowManager windowManager = (DocumentWindowManager)requester;
+			windowManager.prepareDocumentToLoad(doc, inNewWindow);
 			hashTable.put("doc", doc);
 		}
 	};

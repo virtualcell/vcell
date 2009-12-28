@@ -750,7 +750,7 @@ private javax.swing.JPanel getQueryInputPanel() {
 			
 			JPanel panel4 = new javax.swing.JPanel();
 			panel4.setLayout(new FlowLayout(FlowLayout.LEFT));			
-			JLabel label3 = new javax.swing.JLabel("Simulaiton ID");
+			JLabel label3 = new javax.swing.JLabel("Simulation ID");
 			label3.setMaximumSize(new java.awt.Dimension(70, 14));
 			label3.setPreferredSize(new java.awt.Dimension(70, 14));
 			label3.setMinimumSize(new java.awt.Dimension(70, 14));

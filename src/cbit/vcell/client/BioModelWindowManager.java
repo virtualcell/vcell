@@ -28,6 +28,7 @@ import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -38,6 +39,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.opt.solvers.LocalOptimizationService;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
@@ -223,7 +226,7 @@ private void checkValidSimulationDataViewerFrames(ApplicationComponents appCompo
 	Simulation[] sims = found.getSimulations();
 	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<VCSimulationIdentifier, Simulation>();
 	for (int i = 0; i < sims.length; i++){
-		cbit.vcell.solver.SimulationInfo simInfo = sims[i].getSimulationInfo();
+		SimulationInfo simInfo = sims[i].getSimulationInfo();
 		if (simInfo != null) {
 			VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
 			hash.put(vcSimulationIdentifier, sims[i]);
@@ -260,7 +263,7 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
 	getBioModelEditor().setDocumentManager(getRequestManager().getDocumentManager());
-	org.vcell.util.gui.JInternalFrameEnhanced editorFrame = new org.vcell.util.gui.JInternalFrameEnhanced("Model", true, false, true, true);
+	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("Model", true, false, true, true);
 	editorFrame.setContentPane(bioModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.show();
@@ -615,7 +618,7 @@ private void showSurfaceViewerFrame(SimulationContext simContext) {
 	//Generate surfaces if necessary
 	if(editorFrame != null){
 		try{
-			cbit.vcell.client.desktop.geometry.SurfaceViewerPanel surfaceViewerPanel = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewer();
+			SurfaceViewerPanel surfaceViewerPanel = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewer();
 
 			if(simContext.getGeometry().getGeometrySurfaceDescription() != null &&
 				simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceCollection() == null){
@@ -696,7 +699,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	simManager.updateStatusFromServer(simulation);
 	// is there new data?
 	if (simStatusEvent.isNewDataEvent()) {
-		fireNewData(new DataEvent(this, new cbit.vcell.solver.VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simStatusEvent.getJobIndex())));
+		fireNewData(new DataEvent(this, new VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simStatusEvent.getJobIndex())));
 	}
 }
 
@@ -844,13 +847,15 @@ public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
 	}
 }
 
-@Override
-public void prepareDocumentToLoad(VCDocument doc) throws Exception {
-	ArrayList<Simulation> simulations = new ArrayList<Simulation>();
-	BioModel bioModel = (BioModel)doc;
+void prepareToLoad(BioModel doc) throws Exception {
+	if (applicationsHash.size() == 0) {
+		return;
+	}
 	if (!doc.getName().equals(getVCDocument().getName())) {
 		return;
 	}
+	ArrayList<Simulation> simulations = new ArrayList<Simulation>();
+	BioModel bioModel = (BioModel)doc;
 	SimulationContext[] simContexts = bioModel.getSimulationContexts();
 	Enumeration<SimulationContext> openApps = applicationsHash.keys();
 	while (openApps.hasMoreElements()) {
@@ -859,6 +864,7 @@ public void prepareDocumentToLoad(VCDocument doc) throws Exception {
 			if (openApp.getName().equals(simContext.getName())) {// same application
 				simContext.getGeometry().precomputeAll();
 				simulations.addAll(Arrays.asList(simContext.getSimulations()));
+				break;
 			}
 		}
 	}
