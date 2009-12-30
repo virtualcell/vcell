@@ -107,7 +107,8 @@ private void apply() {
 		}
 		dispose();
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(this, e.getMessage());
+		e.printStackTrace();
+		PopupGenerator.showErrorDialog(this, "failed to apply changes: " + e.getMessage());
 	}
 }
 /**

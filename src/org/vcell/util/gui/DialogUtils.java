@@ -236,7 +236,7 @@ private static void browserLauncherError(Component requester, Throwable e, Strin
 
 private static JPanel createMessagePanel(final String message) {
 	JTextPane textArea = new JTextPane();
-	if (message.contains("<html>")) {
+	if (message != null && message.contains("<html>")) {
 		textArea.setContentType("text/html");
 	}
 	textArea.setText(message);

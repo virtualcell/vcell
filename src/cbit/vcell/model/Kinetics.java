@@ -20,9 +20,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import sun.security.action.GetLongAction;
-
-import cbit.vcell.client.data.NewPDEExportPanel;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -366,9 +363,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 				String oldName = (String)evt.getOldValue();
 				String newName = (String)evt.getNewValue();
 				try {
+					onProxyParameterNameChange(oldName, newName);
 					
-					onSymbolNameChange(oldName, newName);
-
 					//
 					// clean up dangling parameters (those not reachable from the 'required' parameters).
 					//
@@ -1538,7 +1534,7 @@ public void propertyChange(PropertyChangeEvent event) {
 			if (event.getPropertyName().equals("name")){
 				String oldName = (String)event.getOldValue();
 				String newName = (String)event.getNewValue();
-				renameParameterExpressions(oldName,newName);
+				onProxyParameterNameChange(oldName,newName);
 			}
 			refreshUnits();
 			cleanupParameters();
@@ -1731,7 +1727,42 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 	}
 	KineticsParameter parameter = getKineticsParameter(oldName);
 	if (parameter!=null){
-		onSymbolNameChange(oldName, newName);
+		//
+		// must change name in KineticsParameter directly
+		// then change all references to this name in the other parameter's expressions.
+		//
+		KineticsParameter newParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
+		//
+		// replaces parameter with name 'oldName' with new parameter with name 'newName' and original expression.
+		//
+		for (int i = 0; i < newParameters.length; i++){
+			if (newParameters[i] == parameter){
+				newParameters[i] = new KineticsParameter(newName,parameter.getExpression(),parameter.getRole(),parameter.getUnitDefinition());
+			}
+		}
+		//
+		// go through all parameters' expressions and replace references to 'oldName' with 'newName'
+		//
+		for (int i = 0; i < newParameters.length; i++){
+			Expression exp = newParameters[i].getExpression();
+			if (exp.getSymbolBinding(oldName) != null) {
+				Expression newExp = new Expression(exp);
+			
+				newExp.substituteInPlace(new Expression(oldName), new Expression(newName));
+				//
+				// if expression changed, create a new KineticsParameter
+				//
+				newParameters[i] = new KineticsParameter(newParameters[i].getName(),newExp,newParameters[i].getRole(),newParameters[i].getUnitDefinition());
+			}
+		}
+		setKineticsParameters(newParameters);
+
+		// 
+		// rebind all expressions
+		//
+		for (int i = 0; i < fieldKineticsParameters.length; i++){
+			fieldKineticsParameters[i].getExpression().bindExpression(getReactionStep());
+		}
 
 		//
 		// clean up dangling parameters (those not reachable from the 'required' parameters).
@@ -1742,46 +1773,6 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/24/01 4:08:07 PM)
- */
-private void renameParameterExpressions(java.lang.String oldName, java.lang.String newName) throws ExpressionException, PropertyVetoException {
-	KineticsParameter newParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
-	for (int i = 0; i < newParameters.length; i++){
-		Expression newExp = new Expression(newParameters[i].getExpression());
-		newExp.substituteInPlace(new Expression(oldName),new Expression(newName));
-		newExp.bindExpression(reactionStep);
-		newParameters[i].setExpression(newExp);
-	}
-	setKineticsParameters(newParameters);
-
-	//
-	// could possibly rename a SpeciesContext over a parameter name
-	//
-	//  for example:   a = b + c
-	//                 b = 2
-	//                 c = 1
-	//
-	//   now rename "Calcium" to c
-	//
-	//                 a = b + c
-	//                 b = 2
-	//
-	// so "c" is no longer a parameter and must be cleaned up.
-	//
-	try {
-		cleanupParameters();
-	}catch (ModelException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
 	}
 }
 
@@ -2158,35 +2149,17 @@ protected Expression getSymbolExpression(SymbolTableEntry ste) throws Expression
 public abstract KineticsParameter getAuthoritativeParameter();
 
 
-private void onSymbolNameChange(String oldName, String newName) throws ExpressionBindingException, PropertyVetoException {	
-	KineticsParameter newParameters[] = null;
-	
-	KineticsParameter parameter = getKineticsParameter(oldName);
-	if (parameter!=null){
-		//
-		// must change name in KineticsParameter directly
-		// then change all references to this name in the other parameter's expressions.
-		//
-		newParameters = (KineticsParameter[])getKineticsParameters().clone();
-		//
-		// replaces parameter with name 'oldName' with new parameter with name 'newName' and original expression.
-		//
-		for (int i = 0; i < newParameters.length; i++){
-			if (newParameters[i] == parameter){
-				newParameters[i] = new KineticsParameter(newName,parameter.getExpression(),parameter.getRole(),parameter.getUnitDefinition());
-				break;
-			}
-		}
-	}
+private void onProxyParameterNameChange(String oldName, String newName) throws PropertyVetoException, ModelException, ExpressionException {
 	//
 	// go through all parameters' expressions and replace references to 'oldName' with 'newName'
 	//
-	for (int i = 0; i < newParameters.length; i++){ 
-		Expression exp = getKineticsParameters()[i].getExpression();
+	KineticsParameter newParameters[] = null;
+	for (int i = 0; i < fieldKineticsParameters.length; i++){ 
+		Expression exp = fieldKineticsParameters[i].getExpression();
 		
 		if (exp.getSymbolBinding(oldName) != null) {
 			if (newParameters == null) {
-				newParameters = (KineticsParameter[])getKineticsParameters().clone();
+				newParameters = fieldKineticsParameters.clone();
 			}
 			exp = exp.renameBoundSymbols(getReactionStep().getNameScope());		
 			newParameters[i] = new KineticsParameter(newParameters[i].getName(),exp,newParameters[i].getRole(),newParameters[i].getUnitDefinition());
