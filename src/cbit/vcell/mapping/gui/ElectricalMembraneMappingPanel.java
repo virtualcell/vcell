@@ -3,11 +3,11 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Component;
-
 import org.vcell.util.gui.JTableFixed;
 
 import cbit.gui.ScopedExpression;
+import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
@@ -15,11 +15,9 @@ import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
  * This type was created in VisualAge.
  */
 public class ElectricalMembraneMappingPanel extends javax.swing.JPanel {
-	private cbit.vcell.geometry.Geometry ivjGeometry = null;
+	private Geometry ivjGeometry = null;
 	private GeometryContext ivjgeometryContext1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private Component ivjComponent1 = null;
-	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;
 	private JTableFixed ivjScrollPaneTable1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ElectricalMembraneMappingTableModel ivjElectricalMembraneMappingTableModel1 = null;
@@ -27,20 +25,13 @@ public class ElectricalMembraneMappingPanel extends javax.swing.JPanel {
 	private SimulationContext ivjsimulationContext1 = null;
 	private javax.swing.JLabel ivjJLabel1 = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
 
-class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
-		public void focusGained(java.awt.event.FocusEvent e) {};
-		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == ElectricalMembraneMappingPanel.this.getComponent1()) 
-				connEtoC2(e);
-		};
+class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ElectricalMembraneMappingPanel.this.getgeometryContext1() && (evt.getPropertyName().equals("geometry"))) 
 				connEtoM3(evt);
-			if (evt.getSource() == ElectricalMembraneMappingPanel.this.getScrollPaneTable1() && (evt.getPropertyName().equals("cellEditor"))) 
-				connEtoM7(evt);
 			if (evt.getSource() == ElectricalMembraneMappingPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
 				connPtoP2SetTarget();
 		};
@@ -54,17 +45,6 @@ public ElectricalMembraneMappingPanel() {
 	super();
 	initialize();
 }
-
-
-/**
- * Comment
- */
-private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
-	if(getDefaultCellEditor1() != null){
-		getDefaultCellEditor1().stopCellEditing();
-	}
-}
-
 
 /**
  * connEtoC1:  (ElectricalMembraneMappingPanel.initialize() --> ElectricalMembraneMappingPanel.electricalMembraneMappingPanel_Initialize()V)
@@ -83,27 +63,6 @@ private void connEtoC1() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC2:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> ElectricalMembraneMappingPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.FocusEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.component1_FocusLost(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoM1:  (simulationContext1.this --> geometryContext1.this)
@@ -209,49 +168,6 @@ private void connEtoM6(SimulationContext value) {
 	}
 }
 
-
-/**
- * connEtoM7:  (ScrollPaneTable1.cellEditor --> DefaultCellEditor1.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setDefaultCellEditor1((javax.swing.DefaultCellEditor)getScrollPaneTable1().getCellEditor());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM8:  (DefaultCellEditor1.this --> Component1.this)
- * @param value javax.swing.DefaultCellEditor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(javax.swing.DefaultCellEditor value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getDefaultCellEditor1() != null)) {
-			setComponent1(getDefaultCellEditor1().getComponent());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connPtoP1SetTarget:  (ScrollPaneTable.model <--> StructureMappingTableModel.this)
  */
@@ -261,6 +177,7 @@ private void connPtoP1SetTarget() {
 	try {
 		getScrollPaneTable1().setModel(getElectricalMembraneMappingTableModel1());
 		getScrollPaneTable1().createDefaultColumnsFromModel();
+		getScrollPaneTable1().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable1(), true));
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -342,31 +259,6 @@ private void electricalMembraneMappingPanel_Initialize() {
 	);
 }
 
-
-/**
- * Return the Component1 property value.
- * @return java.awt.Component
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.awt.Component getComponent1() {
-	// user code begin {1}
-	// user code end
-	return ivjComponent1;
-}
-
-
-/**
- * Return the DefaultCellEditor1 property value.
- * @return javax.swing.DefaultCellEditor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.DefaultCellEditor getDefaultCellEditor1() {
-	// user code begin {1}
-	// user code end
-	return ivjDefaultCellEditor1;
-}
-
-
 /**
  * Return the StructureMappingTableModel1 property value.
  * @return cbit.vcell.mapping.gui.ElectricalMembraneMappingTableModel
@@ -413,7 +305,7 @@ private ElectricalStimulusPanel getElectricalStimuliPanel() {
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getgeometryContext1() {
+private GeometryContext getgeometryContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjgeometryContext1;
@@ -495,10 +387,10 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JTableFixed getScrollPaneTable1() {
+private JTableFixed getScrollPaneTable1() {
 	if (ivjScrollPaneTable1 == null) {
 		try {
-			ivjScrollPaneTable1 = new org.vcell.util.gui.JTableFixed();
+			ivjScrollPaneTable1 = new JTableFixed();
 			ivjScrollPaneTable1.setName("ScrollPaneTable1");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable1.getTableHeader());
 			ivjScrollPaneTable1.setBounds(0, 0, 450, 400);
@@ -519,7 +411,7 @@ private org.vcell.util.gui.JTableFixed getScrollPaneTable1() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -529,7 +421,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -634,66 +526,12 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-
-/**
- * Set the Component1 to a new value.
- * @param newValue java.awt.Component
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setComponent1(java.awt.Component newValue) {
-	if (ivjComponent1 != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjComponent1 != null) {
-				ivjComponent1.removeFocusListener(ivjEventHandler);
-			}
-			ivjComponent1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjComponent1 != null) {
-				ivjComponent1.addFocusListener(ivjEventHandler);
-			}
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
- * Set the DefaultCellEditor1 to a new value.
- * @param newValue javax.swing.DefaultCellEditor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setDefaultCellEditor1(javax.swing.DefaultCellEditor newValue) {
-	if (ivjDefaultCellEditor1 != newValue) {
-		try {
-			ivjDefaultCellEditor1 = newValue;
-			connEtoM8(ivjDefaultCellEditor1);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-
 /**
  * Set the Geometry to a new value.
  * @param newValue java.lang.Object
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
+private void setGeometry(Geometry newValue) {
 	if (ivjGeometry != newValue) {
 		try {
 			ivjGeometry = newValue;
@@ -714,7 +552,7 @@ private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext1(GeometryContext newValue) {
 	if (ivjgeometryContext1 != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -746,12 +584,12 @@ private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 
-	cbit.vcell.model.gui.ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+	ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
 }
 
 
@@ -760,10 +598,10 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			SimulationContext oldValue = getsimulationContext1();
 			ivjsimulationContext1 = newValue;
 			connPtoP2SetSource();
 			connEtoM1(ivjsimulationContext1);
