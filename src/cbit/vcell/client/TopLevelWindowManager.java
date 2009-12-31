@@ -2,21 +2,29 @@ package cbit.vcell.client;
 
 import java.awt.Component;
 import java.util.Vector;
+
 import org.vcell.util.document.VCDocument;
+
+import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 12:53:14 AM)
  * @author: Ion Moraru
  */
 public abstract class TopLevelWindowManager {
-	private cbit.vcell.client.RequestManager requestManager = null;
+	private RequestManager requestManager = null;
 	protected transient Vector<DataListener> aDataListener = null;
 	protected transient Vector<ExportListener> aExportListener = null;	
 	protected transient Vector<DataJobListener> aDataJobListener = null;
@@ -34,7 +42,7 @@ public TopLevelWindowManager(RequestManager requestManager) {
 /**
  * Add a cbit.vcell.desktop.controls.ExportListener.
  */
-public void addDataJobListener(cbit.rmi.event.DataJobListener newListener) {
+public void addDataJobListener(DataJobListener newListener) {
 	if (aDataJobListener == null) {
 		aDataJobListener = new Vector<DataJobListener>();
 	};
@@ -94,14 +102,14 @@ public void exportDocument() {
 /**
  * Method to support listener events.
  */
-protected void fireDataJobMessage(cbit.rmi.event.DataJobEvent event) {
+protected void fireDataJobMessage(DataJobEvent event) {
 	if (aDataJobListener == null) {
 		return;
 	};
 	int currentSize = aDataJobListener.size();
-	cbit.rmi.event.DataJobListener tempListener = null;
+	DataJobListener tempListener = null;
 	for (int index = 0; index < currentSize; index++){
-		tempListener = (cbit.rmi.event.DataJobListener)aDataJobListener.elementAt(index);
+		tempListener = aDataJobListener.elementAt(index);
 		if (tempListener != null) {
 			tempListener.dataJobMessage(event);
 		};
@@ -119,7 +127,7 @@ protected void fireExportMessage(ExportEvent event) {
 	int currentSize = aExportListener.size();
 	ExportListener tempListener = null;
 	for (int index = 0; index < currentSize; index++){
-		tempListener = (ExportListener)aExportListener.elementAt(index);
+		tempListener = aExportListener.elementAt(index);
 		if (tempListener != null) {
 			tempListener.exportMessage(event);
 		};
@@ -135,9 +143,9 @@ protected void fireNewData(DataEvent event) {
 		return;
 	};
 	int currentSize = aDataListener.size();
-	cbit.vcell.desktop.controls.DataListener tempListener = null;
+	DataListener tempListener = null;
 	for (int index = 0; index < currentSize; index++){
-		tempListener = (cbit.vcell.desktop.controls.DataListener)aDataListener.elementAt(index);
+		tempListener = aDataListener.elementAt(index);
 		if (tempListener != null) {
 			tempListener.newData(event);
 		};
@@ -164,7 +172,7 @@ public abstract String getManagerID();
  * Creation date: (5/21/2004 2:45:48 AM)
  * @return cbit.vcell.client.RequestManager
  */
-public cbit.vcell.client.RequestManager getRequestManager() {
+public RequestManager getRequestManager() {
 	return requestManager;
 }
 
@@ -200,7 +208,7 @@ public abstract boolean isRecyclable();
 /**
  * Remove a cbit.vcell.desktop.controls.DataListener.
  */
-public void removeDataJobListener(cbit.rmi.event.DataJobListener djListener) {
+public void removeDataJobListener(DataJobListener djListener) {
 	if (aDataJobListener != null) {
 		aDataJobListener.removeElement(djListener);
 	};
@@ -232,5 +240,29 @@ public void removeExportListener(ExportListener newListener) {
  */
 public AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCreationInfo) {
 	return getRequestManager().newDocument(this, documentCreationInfo);
+}
+
+public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws Exception {
+	if (doc instanceof BioModel) {
+		if (!bInNewWindow) {
+			// don't have to preload when opening a biomodel.			
+			// only preload when there are open applications which could only happen 
+			// when the document is loaded into the same window 
+			// for saveAs, save, save new edition and revert to saved
+			((BioModelWindowManager)this).prepareToLoad((BioModel)doc); 
+			return;
+		}
+	} else if (doc instanceof MathModel) {
+		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
+		geometry.precomputeAll();
+		Simulation[] simulations = ((MathModel)doc).getSimulations();
+		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+		for (int i = 0; i < simulations.length; i++){
+			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		}
+		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
+	} else if (doc instanceof Geometry) {
+		((Geometry)doc).precomputeAll();		
+	}
 }
 }
