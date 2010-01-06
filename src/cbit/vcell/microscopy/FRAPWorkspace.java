@@ -6,10 +6,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 
-import org.vcell.util.Extent;
-
 import loci.formats.FormatException;
-
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
@@ -76,9 +73,7 @@ public class FRAPWorkspace implements PropertyChangeListener{
 		if(fData != null)
 		{
 			ImageDataset oldImageSet = fData.getImageDataset();
-			Extent oldExtent = oldImageSet.getExtent();
 			
-			double[] timeSteps = oldImageSet.getImageTimeStamps();
 			UShortImage[] images = oldImageSet.getAllImages();
 			boolean isChanged = false;
 			if(dataVerifyInfo.getStartTimeIndex() > 0 || dataVerifyInfo.getEndTimeIndex() < (images.length-1))

@@ -44,6 +44,7 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
+import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 
 
@@ -80,7 +81,7 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
 	private static final String UNDO_ACTION_COMMAND = "Undo";
 	private static final String PREFERENCE_ACTION_COMMAND = "Preference";
-	
+	private static final String BATCH_RUN_ACTION_COMMAND = "Batch Run";
 	//used for work flow buttons
 	public static final String LOAD_IMAGE_COMMAND = "Load FRAP images";
 	public static final String DEFINE_ROI_COMMAND = "Define ROIs";
@@ -100,6 +101,7 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
 	private static final JMenuItem mUndo = new JMenuItem(UNDO_ACTION_COMMAND);
 	private static final JMenuItem mPreference = new JMenuItem(PREFERENCE_ACTION_COMMAND);
+	private static final JMenuItem mBatchRun = new JMenuItem(BATCH_RUN_ACTION_COMMAND);
 
   public static JMenuBar mb = null;
   private static StatusBar statusBarNew = new StatusBar();
@@ -109,7 +111,7 @@ public class VirtualFrapMainFrame extends JFrame
   private UndoableEdit lastUndoableEdit;
   private PreferencePanel preferencePanel = null;
   private LoadFRAPData_MultiFilePanel multiFileDialog = null;
-  
+  private VirtualFrapBatchRunFrame batchRunFrame = null;
   //Inner class AFileFilter
   //This class implements both ava.io.FileFilter and javax.swing.filechooser.FileFilter.
   public static class AFileFilter extends FileFilter  implements java.io.FileFilter {
@@ -300,9 +302,24 @@ public class VirtualFrapMainFrame extends JFrame
 		    		  VFRAPPreference.putValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, panel.getROIAssistType());
 		    	  }
 		      }
+		      else if(arg.equals(BATCH_RUN_ACTION_COMMAND))
+		      {
+		    	  System.out.println("Batch run command clicked.");
+		    	  getBatchRunFrame().setBatchRunTitle("");
+		    	  getBatchRunFrame().setVisible(true);
+		      }
 		  }
 	  }
   }// end of inner class MenuHandler
+  
+  public VirtualFrapBatchRunFrame getBatchRunFrame()
+  {
+	  if(batchRunFrame == null)
+	  {
+		  batchRunFrame = new VirtualFrapBatchRunFrame(localWorkspace);
+	  }
+	  return batchRunFrame;
+  }
   
   public PreferencePanel getPreferencePanel()
   {
@@ -414,6 +431,7 @@ public class VirtualFrapMainFrame extends JFrame
   {
 //      statusBar = new StatusBar();
       toolBar = new ToolBar();
+      toolBar.setRunButtonVisible(false);
       ToolBarHandler th = new ToolBarHandler();
       toolBar.addToolBarHandler(th);
       mb = new JMenuBar();
@@ -507,6 +525,9 @@ public class VirtualFrapMainFrame extends JFrame
     mPreference.addActionListener(menuHandler);
     toolsMenu.add(mPreference);
     
+    mBatchRun.addActionListener(menuHandler);
+    toolsMenu.add(mBatchRun);
+    
     //Help Menu
     JMenu helpMenu =new JMenu("Help");
     helpMenu.setMnemonic('H');
@@ -524,12 +545,6 @@ public class VirtualFrapMainFrame extends JFrame
     setJMenuBar(mb);
   } // end of setup menu
 
-  public JMenuItem getSaveMenuItem()
-  {
-	  return msave;
-  }
-  
-  
   /**
   * Before shuting down the running application, a good
   * implementation would at least check to see if a save

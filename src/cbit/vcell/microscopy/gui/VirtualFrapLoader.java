@@ -2,9 +2,6 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.Font;
 import java.io.File;
-import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -12,7 +9,6 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -96,7 +92,7 @@ public class VirtualFrapLoader {
 			}
 			File wd = null;
 			if (args.length == 0) {
-				wd = ResourceUtil.userHome;
+				wd = ResourceUtil.getUserHomeDir();
 			} else {
 				wd = new File(args[0]);
 			}

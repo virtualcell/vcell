@@ -24,12 +24,14 @@ public class ToolBar extends JToolBar {
 	public final static int BUT_SAVE = 1;
 //	public final static int BUT_PRINT = 2;
 	public final static int BUT_HELP = 2;
+	public final static int BUT_RUN = 3;
     private URL[] iconFiles = {getClass().getResource("/images/open.gif"),
 							   getClass().getResource("/images/save.gif"),
 //							   getClass().getResource("/images/printer.gif"),
-							   getClass().getResource("/images/help.gif")};
+							   getClass().getResource("/images/help.gif"),
+							   getClass().getResource("/images/run.gif")};
 
-    private String[] buttonLabels = {"Open File", "Save File", /*"Print",*/"Help"};
+    private String[] buttonLabels = {"Open File", "Save File", /*"Print",*/"Help","Run batch files"};
     //icon objects for initializing the image button
     private ImageIcon[] icons = new ImageIcon[iconFiles.length];
     private JButton[] buttons = new JButton[iconFiles.length];
@@ -38,16 +40,18 @@ public class ToolBar extends JToolBar {
     public ToolBar() {
         // add short cut bottons on toolbar
         for (int i = 0; i < buttonLabels.length; ++i) {
-            //icons[i] = JarReader.getJarImage(iconFiles[i].toString());
             icons[i] = new ImageIcon(iconFiles[i]);
             buttons[i] = new JButton(icons[i]);
             buttons[i].setMargin(new Insets(0, 0, 0, 0));
             buttons[i].setSize(100, 100);
             buttons[i].setToolTipText(buttonLabels[i]);
-//            if (i == BUT_PRINT) buttons[i].setEnabled(false);
-            if (i == BUT_HELP) addSeparator();
-            add(buttons[i]);
-            if(i == BUT_SAVE){
+            if(i == BUT_HELP || i == BUT_RUN)
+            {
+            	addSeparator();
+            }
+            add(buttons[i]);            
+            if(i == BUT_SAVE)
+            {
             	buttons[i].setEnabled(false);
             }
         }
@@ -70,6 +74,14 @@ public class ToolBar extends JToolBar {
         }
         return -1;
     }// end of method findIndex()
+    
+    public void setRunButtonVisible(boolean bVisible)
+    {
+    	if(buttons != null && buttons.length == buttonLabels.length)
+    	{
+    		buttons[BUT_RUN].setVisible(bVisible);
+    	}
+    }
     
     public void addToolBarHandler(ActionListener th)
     {
