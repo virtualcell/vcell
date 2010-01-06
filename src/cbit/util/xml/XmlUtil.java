@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -206,6 +207,14 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 //utility method with default settings. 
 	public static String xmlToString(Element root) {		
 		return xmlToString(root,false);		        
+	}
+	
+	public static void writeXmlToStream(Element root, boolean bTrimAllWhiteSpace, OutputStream outStream) throws IOException
+	{
+		XMLOutputter xmlOut = new XMLOutputter("   ");
+	    xmlOut.setNewlines(true);
+		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);
+		xmlOut.output(root, outStream);
 	}
 	
 	public static String xmlToString(Element root,boolean bTrimAllWhiteSpace) {

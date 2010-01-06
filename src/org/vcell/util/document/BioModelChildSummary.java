@@ -13,7 +13,7 @@ import cbit.vcell.solver.Simulation;
  * @author: Jim Schaff
  */
 public class BioModelChildSummary implements java.io.Serializable {
-//	public static final boolean debug =false;
+//	public static final boolean debug = true;
 	private String scNames[] = new String[0];
 	private String scAnnots[] = new String[0];
 	private String geoNames[] = new String[0];

@@ -197,10 +197,6 @@ protected final String getBaseName() {
 public abstract double getCurrentTime();
 protected abstract void initialize() throws SolverException;
 
-public final FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
-	return simulationJob.getFieldDataIdentifierSpecs();
-}
-
 /**
  * This method was created by a SmartGuide.
  * @return double[]
