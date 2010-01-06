@@ -20,12 +20,12 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VersionFlag;
 
 import cbit.image.ImageException;
@@ -59,6 +59,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
@@ -314,9 +315,9 @@ public class FRAPStudy implements Matchable{
 			scs.getInitialConditionParameter().setExpression(initialConditions[i]);
 			scs.getDiffusionParameter().setExpression(diffusionConstants[i]);
 		}
-
 		MathMapping mathMapping = new MathMapping(simContext);
 		MathDescription mathDesc = mathMapping.getMathDescription();
+		
 		simContext.setMathDescription(mathDesc);
 				
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
@@ -1163,7 +1164,7 @@ public class FRAPStudy implements Matchable{
 	public void setXmlFilename(String xmlFilename) {
 		String oldValue = this.xmlFilename;
 		this.xmlFilename = xmlFilename;
-		propertyChangeSupport.firePropertyChange("xmlFilename", oldValue, xmlFilename);
+//		propertyChangeSupport.firePropertyChange("xmlFilename", oldValue, xmlFilename);
 	}
 
 	public String getName() {

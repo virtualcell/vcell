@@ -7,13 +7,18 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Hashtable;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -21,7 +26,10 @@ import javax.swing.JRadioButton;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
+import org.jdom.CDATA;
+import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ISize;
 import org.vcell.util.Range;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
@@ -31,6 +39,8 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.FRAPData;
@@ -41,14 +51,20 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.NativeFVSolver;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solvers.FiniteVolumeFileWriter;
 
 public class EstParams_ReacBindingPanel extends JPanel {
 	
@@ -62,29 +78,22 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	
 	private FRAPStudy fStudy = null;
 	private MultisourcePlotPane multisourcePlotPane;
+	private ChooseModel_RoiForErrorPanel roiPanel;
 	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentSimResults = null; //a data structure used to store results according to the current params.
 	private double[] currentSimTimePoints = null; //used to store simulation time points according to the current params.
-	
-	private JRadioButton diffOneRadioButton = null;
-	private JRadioButton diffTwoRadioButton = null;
-	private JPanel questionPanel = null;
 	
 	public EstParams_ReacBindingPanel() {
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowHeights = new int[] {7,7,7,0,7};
 		gridBagLayout.columnWidths = new int[] {7};
 		setLayout(gridBagLayout);
-		
-		JPanel topPanel = new JPanel(new BorderLayout());
-		JPanel buttonPanel = new JPanel(new FlowLayout());
 				
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel();
 		paramPanel.setForeground(new Color(0,0,244));
 		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		paramPanel.setLayout(new GridBagLayout());
-//		paramPanel.addTab(STR_PURE_DIFFUSION, null, panel_2, null);
 	
 		//card panel for reaction diffusion
 		JLabel reactionDiffPanelLabel = new JLabel();
@@ -96,7 +105,6 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		reactionDiffPanelLabel.setText("Analysis on Reaction Diffusion Model using FRAP Simulation Results");
 		
 		reactionDiffusionPanel = new FRAPReactionDiffusionParamPanel();
-//		reactionDiffusionPanel.setButtonsEnabled(false);
 		final GridBagConstraints gridBagConstraints_rdp = new GridBagConstraints();
 		gridBagConstraints_rdp.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_rdp.gridy = 1;
@@ -123,15 +131,12 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				}
 		);
 		
-		topPanel.add(buttonPanel, BorderLayout.NORTH);
-		topPanel.add(paramPanel, BorderLayout.CENTER);
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_9.gridy = 0;
 		gridBagConstraints_9.gridx = 0;
-		add(topPanel, gridBagConstraints_9);
-		
+		add(paramPanel, gridBagConstraints_9);
 		
 		final JPanel panel_3 = new JPanel();
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
@@ -149,7 +154,25 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
-		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
+		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time          ");
+
+		final JButton showRoisButton = new JButton();
+		showRoisButton.setFont(new Font("", Font.PLAIN, 11));
+		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
+		showRoisButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				if(frapWorkspace != null && frapWorkspace.getFrapStudy() != null &&
+				   frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation() != null)
+				{
+					getROIPanel().setFrapWorkspace(frapWorkspace);
+					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					getROIPanel().refreshROIImageForDisplay();
+				}
+				JOptionPane.showMessageDialog(EstParams_ReacBindingPanel.this, getROIPanel());
+			}
+		});
+		showRoisButton.setText("Show ROIs");
+		panel_3.add(showRoisButton, new GridBagConstraints());
 
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));
@@ -173,13 +196,17 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagConstraints_2.weighty = 1;
 		gridBagConstraints_2.weightx = 1;
 		panel.add(multisourcePlotPane, gridBagConstraints_2);
-		
-//		init();
 	}
-//	private void init(){
-//		
-//	}
 
+	private ChooseModel_RoiForErrorPanel getROIPanel()
+	{
+		if(roiPanel == null)
+		{
+			roiPanel = new ChooseModel_RoiForErrorPanel();
+		}
+		return roiPanel;
+	}
+	
 	private void plotDerivedSimulationResults(AnalysisParameters[] anaParams)
 	{
 		try{
@@ -436,25 +463,6 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		getReactionDiffusionPanel().setParameters(parameters);
 	}
 	
-	public JPanel getQuestionPanel()
-	{
-		if(questionPanel == null)
-		{
-			questionPanel = new JPanel();
-			questionPanel.setLayout(new BoxLayout(questionPanel, BoxLayout.Y_AXIS));
-			questionPanel.add(new JLabel("Choose a model that the estimation is based on."));
-			ButtonGroup bg = new ButtonGroup();
-			diffOneRadioButton = new JRadioButton("Diffusion with one diffusing component");
-			diffTwoRadioButton = new JRadioButton("Diffusion with two diffusing components");
-			bg.add(diffOneRadioButton);
-			bg.add(diffTwoRadioButton);
-			diffTwoRadioButton.setSelected(true);
-			questionPanel.add(diffOneRadioButton);
-			questionPanel.add(diffTwoRadioButton);
-		}
-		return questionPanel;
-	}
-	
 	public void activateReacDiffEstPanel()
 	{
 		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
@@ -619,14 +627,31 @@ public class EstParams_ReacBindingPanel extends JPanel {
 						fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
 						this.getClientTaskStatusSupport(), false);
 					
-		//			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
-		//			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
-		//			//we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
-		//			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
-		//			if(oldRefDataInfo != null && oldRefDataInfo.getExternalDataIdentifier() != null)
-		//			{
-		//				FRAPStudy.removeExternalDataAndSimulationFiles(oldRefDataInfo.getExternalDataIdentifier().getKey(), null, null, getLocalWorkspace());
-		//			}
+					/*//prepare to run native FV solver
+					Simulation simulation = bioModel.getSimulations()[0];
+					// clone and resample geometry
+					Geometry resampledGeometry = null;
+					try {
+						resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
+						GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+						ISize newSize = simulation.getMeshSpecification().getSamplingSize();
+						geoSurfaceDesc.setVolumeSampleSize(newSize);
+						geoSurfaceDesc.updateAll();		
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new SolverException(e.getMessage());
+					}	
+					
+					SimulationJob simJob = new SimulationJob(simulation, 0, null); //fielddata ID?
+					
+					StringWriter simulationInputStringWriter = new StringWriter();
+					FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new PrintWriter(simulationInputStringWriter,true), simJob, resampledGeometry, new File(getLocalWorkspace().getDefaultSimDataDirectory())); //need dir?		
+					fvFileWriter.write(null); //what are parameter names?
+					simulationInputStringWriter.close();
+					String fvInputStr = simulationInputStringWriter.getBuffer().toString();
+					
+					//run simulation with native FV solver
+					double[][][] rawSimResults = new NativeFVSolver().solve(fvInputStr);*/
 					
 					simKey = bioModel.getSimulations()[0].getVersion().getVersionKey();
 				}catch(Exception e){
