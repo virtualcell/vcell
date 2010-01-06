@@ -403,7 +403,7 @@ protected void initStep1() throws SolverException {
 			GeometryFileWriter.write(pw, getResampledGeometry());
 		pw.close();
 		
-		FieldDataIdentifierSpec[] argFieldDataIDSpecs = getFieldDataIdentifierSpecs();
+		FieldDataIdentifierSpec[] argFieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
 		if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
 			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_RESAMPLE_FD);
 			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {

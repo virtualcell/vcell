@@ -28,22 +28,23 @@ public class ResourceUtil {
 	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
-	public static File userHome = null;
+	private static File userHome = null;
 	private static File vcellHome = null;
 	private static File libDir = null;
 	
 	private static List<String> libList = null;
 
-	static {
-		userHome = new File(System.getProperty("user.home"));
-		if (!userHome.exists()) {
-			userHome = new File(".");		
+	public static File getUserHomeDir()
+	{
+		if(userHome != null)
+		{
+			userHome = new File(System.getProperty("user.home"));
+			if (!userHome.exists()) {
+				userHome = new File(".");
+			}
 		}
-	
-		vcellHome = new File(userHome, ".vcell");
-		if (!vcellHome.exists()) {
-			vcellHome.mkdirs();
-		}
+		
+		return userHome; 
 	}
 	
 	public static void writeFileFromResource(String resname, File file) throws IOException {
@@ -109,9 +110,18 @@ public class ResourceUtil {
 		}		
 	}
 
-	public static File getVcellHome() {
+	public static File getVcellHome() 
+	{
+		if(vcellHome != null)
+		{
+			vcellHome = new File(getUserHomeDir(), ".vcell");
+			if (!vcellHome.exists()) {
+				vcellHome.mkdirs();
+			}
+		}
 		return vcellHome;
 	}
+	
 	
 	public static void loadNativeSolverLibrary () {
 		try {
