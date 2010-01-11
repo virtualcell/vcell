@@ -1335,7 +1335,7 @@ private javax.swing.JMenuItem getJMenuItemPermission() {
 			ivjJMenuItemPermission = new javax.swing.JMenuItem();
 			ivjJMenuItemPermission.setName("JMenuItemPermission");
 			ivjJMenuItemPermission.setMnemonic('p');
-			ivjJMenuItemPermission.setText("Permission");
+			ivjJMenuItemPermission.setText("Permissions...");
 			ivjJMenuItemPermission.setActionCommand("Permission");
 			// user code begin {1}
 			// user code end

@@ -1,14 +1,28 @@
 package cbit.vcell.client.desktop;
-import cbit.vcell.client.*;
-import java.text.*;
-import cbit.vcell.client.server.*;
-import java.awt.*;
-import javax.swing.*;
-
-import org.vcell.util.BeanUtils;
-
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.DecimalFormat;
+
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JSeparator;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.document.VersionInfo;
+
+import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.server.ConnectionStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/13/2004 12:29:37 PM)
@@ -344,7 +358,7 @@ private void connEtoC9(java.awt.event.ItemEvent arg1) {
  * @param value cbit.vcell.client.DatabaseWindowManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.client.DatabaseWindowManager value) {
+private void connEtoM1(DatabaseWindowManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -439,7 +453,7 @@ private javax.swing.JMenuItem getACLMenuItem() {
 		try {
 			ivjACLMenuItem = new javax.swing.JMenuItem();
 			ivjACLMenuItem.setName("ACLMenuItem");
-			ivjACLMenuItem.setText("Access Permissions");
+			ivjACLMenuItem.setText("Permissions...");
 			ivjACLMenuItem.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -515,7 +529,7 @@ public DatabaseWindowManager getDatabaseWindowManager() {
  * @return cbit.vcell.client.DatabaseWindowManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.client.DatabaseWindowManager getdatabaseWindowManager1() {
+private DatabaseWindowManager getdatabaseWindowManager1() {
 	// user code begin {1}
 	// user code end
 	return ivjdatabaseWindowManager1;
@@ -1289,10 +1303,10 @@ public void setDatabaseWindowManager(DatabaseWindowManager databaseWindowManager
  * @param newValue cbit.vcell.client.DatabaseWindowManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdatabaseWindowManager1(cbit.vcell.client.DatabaseWindowManager newValue) {
+private void setdatabaseWindowManager1(DatabaseWindowManager newValue) {
 	if (ivjdatabaseWindowManager1 != newValue) {
 		try {
-			cbit.vcell.client.DatabaseWindowManager oldValue = getdatabaseWindowManager1();
+			DatabaseWindowManager oldValue = getdatabaseWindowManager1();
 			ivjdatabaseWindowManager1 = newValue;
 			connPtoP1SetSource();
 			connEtoM1(ivjdatabaseWindowManager1);
