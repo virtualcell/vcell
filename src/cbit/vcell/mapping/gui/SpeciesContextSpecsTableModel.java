@@ -35,7 +35,7 @@ public class SpeciesContextSpecsTableModel extends ManageTableModel implements j
 	public static final int COLUMN_FIXED = 3;
 	public static final int COLUMN_INITIAL = 4;
 	public static final int COLUMN_DIFFUSION = 5;
-	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Conditions", "Diffusion Constant"};
+	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition", "Diffusion Constant"};
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
