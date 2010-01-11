@@ -3,17 +3,26 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingUtilities;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -77,8 +86,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
 		public void mousePressed(java.awt.event.MouseEvent e) {
-			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
-				connEtoC3(e);
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
 			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
@@ -108,25 +115,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 public InitialConditionsPanel() {
 	super();
 	initialize();
-}
-
-/**
- * connEtoC3:  (ScrollPaneTable.mouse.mouseClicked(java.awt.event.MouseEvent) --> InitialConditionsPanel.scrollPaneTable_MouseClicked(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.scrollPaneTable_MouseButton(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -1110,7 +1098,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1124,16 +1111,38 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-private void scrollPaneTable_MouseButton(java.awt.event.MouseEvent mouseEvent) {
+private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEvent) {
+	if (!getScrollPaneTable().hasFocus()) {
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			public void run() {
+				if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
+					getScrollPaneTable().addFocusListener(new FocusListener() {
+						
+						public void focusLost(FocusEvent e) {
+						}
+						
+						public void focusGained(FocusEvent e) {
+							getScrollPaneTable().removeFocusListener(this);
+							Robot robot;
+							try {
+								robot = new Robot();
+								robot.mousePress(InputEvent.BUTTON1_MASK);
+								robot.mouseRelease(InputEvent.BUTTON1_MASK);
+							} catch (AWTException ex) {
+								ex.printStackTrace();
+							}													
+						}
+					});
+				}
+				getScrollPaneTable().requestFocus();
+			}
+		});	
+	}
 	if(mouseEvent.isPopupTrigger()){
 		Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 
-		boolean bPastable =
-			//obj instanceof cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection ||
-			//obj instanceof cbit.vcell.desktop.VCellTransferable.InitialConditionsSelection ||
-			obj instanceof VCellTransferable.ResolvedValuesSelection;
-			//||
-			//obj instanceof cbit.vcell.desktop.VCellTransferable.OptimizationParametersSelection;
+		boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
 			
 		boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
 		getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
