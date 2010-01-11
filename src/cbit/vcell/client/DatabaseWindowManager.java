@@ -26,12 +26,15 @@ import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
@@ -50,6 +53,7 @@ import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
 import cbit.vcell.desktop.MathModelDbTreePanel;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.xml.XMLInfo;
 import cbit.xml.merge.XmlTreeDiff;
 /**
  * Insert the type's description here.
@@ -105,13 +109,15 @@ public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestMan
 
 }
 
-
+public void accessPermissions()  {
+	VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
+	accessPermissions(getComponent(), selectedVersionInfo);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public void accessPermissions()  {
-	final VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
+public void accessPermissions(final Component requester, final VersionInfo selectedVersionInfo)  {
 	final GroupAccess groupAccess = selectedVersionInfo.getVersion().getGroupAccess();
 	final DocumentManager docManager = getRequestManager().getDocumentManager();
 	
@@ -121,7 +127,7 @@ public void accessPermissions()  {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			getAclEditor().clearACLList();	
 			getAclEditor().setACLState(new ACLEditor.ACLState(groupAccess));
-			Object choice = showAccessPermissionDialog(getAclEditor(), getDatabaseWindowPanel());
+			Object choice = showAccessPermissionDialog(getAclEditor(), requester);
 			if (choice != null) {
 				hashTable.put("choice", choice);
 			}		
@@ -197,7 +203,7 @@ public void accessPermissions()  {
 								}else if(selectedVersionInfo instanceof GeometryInfo){
 									vInfo = docManager.addUserToGroup((GeometryInfo)selectedVersionInfo, needToAddUsers[i]);
 								}else if(selectedVersionInfo instanceof VCImageInfo){
-									vInfo = docManager.addUserToGroup((cbit.image.VCImageInfo)selectedVersionInfo, needToAddUsers[i]);
+									vInfo = docManager.addUserToGroup((VCImageInfo)selectedVersionInfo, needToAddUsers[i]);
 								}
 							} catch (ObjectNotFoundException e) {
 								errorNames += "Error changing permissions.\n" + selectedVersionInfo.getVersionType().getTypeName() 
@@ -218,7 +224,7 @@ public void accessPermissions()  {
 								}else if(selectedVersionInfo instanceof GeometryInfo){
 									vInfo = docManager.removeUserFromGroup((GeometryInfo)selectedVersionInfo, needToRemoveUsers[i]);
 								}else if(selectedVersionInfo instanceof VCImageInfo){
-									vInfo = docManager.removeUserFromGroup((cbit.image.VCImageInfo)selectedVersionInfo, needToRemoveUsers[i]);
+									vInfo = docManager.removeUserFromGroup((VCImageInfo)selectedVersionInfo, needToRemoveUsers[i]);
 								}
 							} catch (DataAccessException e) {
 								errorNames += "Error Removing user '"+needToRemoveUsers[i]+"'\n  -----"+e.getMessage()+"\n";
@@ -226,7 +232,7 @@ public void accessPermissions()  {
 						}
 						if (errorNames.length() > 0) {
 							PopupGenerator.showErrorDialog(DatabaseWindowManager.this, errorNames);
-							accessPermissions();
+							accessPermissions(requester, selectedVersionInfo);
 						}
 					}
 		
@@ -235,7 +241,7 @@ public void accessPermissions()  {
 		}
 	};
 	
-	ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
+	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
 }
 
 
@@ -547,9 +553,9 @@ public void findModelsUsingSelectedGeometry() {
 
 	ReferenceQuerySpec rqs = new ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
 	try{
-		org.vcell.util.document.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
+		ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
 		//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
-		org.vcell.util.document.VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
+		VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
 		//System.out.println("\n");
 		//if(children != null){
 			//for(int i=0;i<children.length;i+= 1){
@@ -584,7 +590,7 @@ public void findModelsUsingSelectedGeometry() {
 				boolean isBioModel = dependants[i].getVType().equals(VersionableType.BioModelMetaData);
 				boolean isTop = isBioModel || dependants[i].getVType().equals(VersionableType.MathModelMetaData);
 				if(isTop){
-					org.vcell.util.document.VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
+					VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
 					for(int j=0;j<vrArr2.length;j+= 1){
 						if( (vrArr2[j].from() == dependants[i]) &&
 							vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){
@@ -610,7 +616,7 @@ public void findModelsUsingSelectedGeometry() {
 			Object[] listObj = choices.keySet().toArray();
 			Object o = DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
 			if(o != null){
-				org.vcell.util.document.VersionableTypeVersion v = (org.vcell.util.document.VersionableTypeVersion)choices.get(o);
+				VersionableTypeVersion v = (VersionableTypeVersion)choices.get(o);
 				//System.out.println(v);
 				if(v.getVType().equals(VersionableType.BioModelMetaData)){
 					BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());
@@ -658,7 +664,7 @@ private ACLEditor getAclEditor() {
  * Creation date: (5/14/2004 5:39:00 PM)
  * @return cbit.vcell.desktop.BioModelDbTreePanel
  */
-public cbit.vcell.desktop.BioModelDbTreePanel getBioModelDbTreePanel() {
+public BioModelDbTreePanel getBioModelDbTreePanel() {
 	return bioModelDbTreePanel;
 }
 
@@ -748,7 +754,7 @@ private VCDocumentInfo[] getDocumentVersionDates(VCDocumentInfo thisDocumentInfo
  * Creation date: (5/14/2004 5:39:00 PM)
  * @return cbit.vcell.desktop.GeometryTreePanel
  */
-public cbit.vcell.desktop.GeometryTreePanel getGeometryTreePanel() {
+public GeometryTreePanel getGeometryTreePanel() {
 	return geometryTreePanel;
 }
 
@@ -779,7 +785,7 @@ public java.lang.String getManagerID() {
  * Creation date: (5/14/2004 5:39:00 PM)
  * @return cbit.vcell.desktop.MathModelDbTreePanel
  */
-public cbit.vcell.desktop.MathModelDbTreePanel getMathModelDbTreePanel() {
+public MathModelDbTreePanel getMathModelDbTreePanel() {
 	return MathModelDbTreePanel;
 }
 
@@ -949,7 +955,7 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 		case VCDocument.XML_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
 			File xmlFile = showFileChooserDialog(requester, FileFilters.FILE_FILTER_XML);
-			return new cbit.vcell.xml.XMLInfo(xmlFile);
+			return new XMLInfo(xmlFile);
 		}		
 		default: {
 			throw new RuntimeException("ERROR: Unknown document type: " + documentType);
@@ -1015,7 +1021,7 @@ private Object showAccessPermissionDialog(final JComponent aclEditor,final Compo
 	accessPermissionDialog.setValue(null);
 	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+	ZEnforcer.showModalDialogOnTop(d,requester);
 	return accessPermissionDialog.getValue();
 }
 
@@ -1075,7 +1081,7 @@ public Object showImageSelectorDialog() {
 	imageSelectDialog.setMessage(imageBrowser);
 	JDialog d = imageSelectDialog.createDialog(null, "Select Image:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,null);
+	ZEnforcer.showModalDialogOnTop(d,null);
 	return imageSelectDialog.getValue();
 }
 /**
@@ -1156,7 +1162,7 @@ public String showSaveDialog(final int documentType, final Component requester, 
 	final Timer getFocus = new Timer(100, al);
 	getFocus.setRepeats(false);
 	getFocus.start();	
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+	ZEnforcer.showModalDialogOnTop(d,requester);
 	if ("Save".equals(saveDialog.getValue())) {
 		return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
 	} else {

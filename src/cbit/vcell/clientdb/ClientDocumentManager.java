@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
@@ -22,17 +23,32 @@ import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.ReferenceQueryResult;
+import org.vcell.util.document.ReferenceQuerySpec;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+
+import cbit.image.BrowseImage;
+import cbit.image.GIFImage;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.PerformanceData;
+import cbit.rmi.event.PerformanceDataEntry;
+import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationResults;
@@ -48,15 +64,25 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.model.Structure;
+import cbit.vcell.modeldb.ReactionQuerySpec;
+import cbit.vcell.modeldb.VCInfoContainer;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOP;
+import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.publish.ITextWriter;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:08:30 AM)
@@ -87,7 +113,7 @@ public class ClientDocumentManager implements DocumentManager{
 	
 	private Preference preferences[] = null;
 	
-	protected transient cbit.vcell.clientdb.DatabaseListener aDatabaseListener = null;
+	protected transient DatabaseListener aDatabaseListener = null;
 	private transient HashSet<FieldDataDBEventListener> fieldDataDBEventListenerH = null;
 	
 	static final String FAIL_LOAD_MESSAGE = "Failed to load document. Possible reasons :\n" +
@@ -109,8 +135,8 @@ public ClientDocumentManager(SessionManager argSessionManager, long cacheSize) {
  * 
  * @param newListener cbit.vcell.clientdb.DatabaseListener
  */
-public void addDatabaseListener(cbit.vcell.clientdb.DatabaseListener newListener) {
-	aDatabaseListener = cbit.vcell.clientdb.DatabaseEventMulticaster.add(aDatabaseListener, newListener);
+public void addDatabaseListener(DatabaseListener newListener) {
+	aDatabaseListener = DatabaseEventMulticaster.add(aDatabaseListener, newListener);
 	return;
 }
 
@@ -307,7 +333,7 @@ private void cacheSimulations(Simulation[] sims) throws DataAccessException{
 public void curate(CurateSpec curateSpec) throws DataAccessException{
 	
 	try{
-		org.vcell.util.document.VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
+		VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
 		
 		xmlHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
 		
@@ -335,7 +361,7 @@ public void curate(CurateSpec curateSpec) throws DataAccessException{
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void delete(cbit.image.VCImageInfo vcImageInfo) throws org.vcell.util.DataAccessException {
+public void delete(VCImageInfo vcImageInfo) throws DataAccessException {
 
 	try {
 		//
@@ -474,7 +500,7 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws org.vcell.util.DataAccessException {
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
 
 	try{
 		return sessionManager.getUserMetaDbServer().fieldDataDBOperation(fieldDataDBOperationSpec);	
@@ -484,7 +510,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	}
 }
 
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws org.vcell.util.DataAccessException {
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 
 	return sessionManager.fieldDataFileOperation(fieldDataFileOperationSpec);	
 }
@@ -494,12 +520,12 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
  * Insert the method's description here.
  * Creation date: (10/17/2004 11:27:37 AM)
  */
-public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws org.vcell.util.DataAccessException {
+public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException {
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
 	}
 	try {
-		cbit.vcell.numericstest.TestSuiteOPResults tsopr = getSessionManager().getUserMetaDbServer().doTestSuiteOP(tsop);
+		TestSuiteOPResults tsopr = getSessionManager().getUserMetaDbServer().doTestSuiteOP(tsop);
 		//fireDatabaseRefresh(new DatabaseEvent(this, DatabaseEvent.REFRESH, null, null));
 		return tsopr;
 	}catch (RemoteException e){
@@ -516,7 +542,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.document.ReferenceQuerySpec rqs) throws org.vcell.util.DataAccessException {
+public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException {
 
 	try{
 		return getSessionManager().getUserMetaDbServer().findReferences(rqs);
@@ -531,14 +557,14 @@ public org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.uti
  * Method to support listener events.
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-protected void fireDatabaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+protected void fireDatabaseDelete(DatabaseEvent event) {
 	if (aDatabaseListener == null) {
 		return;
 	};
 	if (javax.swing.SwingUtilities.isEventDispatchThread()){
 		aDatabaseListener.databaseDelete(event);
 	}else{
-		final cbit.vcell.clientdb.DatabaseEvent evt = event;
+		final DatabaseEvent evt = event;
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				aDatabaseListener.databaseDelete(evt);
@@ -552,14 +578,14 @@ protected void fireDatabaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
  * Method to support listener events.
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-protected void fireDatabaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {
+protected void fireDatabaseInsert(DatabaseEvent event) {
 	if (aDatabaseListener == null) {
 		return;
 	};
 	if (javax.swing.SwingUtilities.isEventDispatchThread()){
 		aDatabaseListener.databaseInsert(event);
 	}else{
-		final cbit.vcell.clientdb.DatabaseEvent evt = event;
+		final DatabaseEvent evt = event;
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				aDatabaseListener.databaseInsert(evt);
@@ -573,14 +599,14 @@ protected void fireDatabaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {
  * Method to support listener events.
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-protected void fireDatabaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+protected void fireDatabaseRefresh(DatabaseEvent event) {
 	if (aDatabaseListener == null) {
 		return;
 	};
 	if (javax.swing.SwingUtilities.isEventDispatchThread()){
 		aDatabaseListener.databaseRefresh(event);
 	}else{
-		final cbit.vcell.clientdb.DatabaseEvent evt = event;
+		final DatabaseEvent evt = event;
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				aDatabaseListener.databaseRefresh(evt);
@@ -594,14 +620,14 @@ protected void fireDatabaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
  * Method to support listener events.
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-protected void fireDatabaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+protected void fireDatabaseUpdate(DatabaseEvent event) {
 	if (aDatabaseListener == null) {
 		return;
 	};
 	if (javax.swing.SwingUtilities.isEventDispatchThread()){
 		aDatabaseListener.databaseUpdate(event);
 	}else{
-		final cbit.vcell.clientdb.DatabaseEvent evt = event;
+		final DatabaseEvent evt = event;
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				aDatabaseListener.databaseUpdate(evt);
@@ -638,7 +664,7 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 
 	public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
 
-		cbit.vcell.publish.ITextWriter pdfWriter = cbit.vcell.publish.ITextWriter.getInstance(cbit.vcell.publish.ITextWriter.PDF_WRITER);
+		ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
 		pdfWriter.writeBioModel(biomodel, fos, pageFormat);
 	}
 
@@ -653,7 +679,7 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 
 	public void generatePDF(Geometry geom, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
 
-		cbit.vcell.publish.ITextWriter pdfWriter = cbit.vcell.publish.ITextWriter.getInstance(cbit.vcell.publish.ITextWriter.PDF_WRITER);
+		ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
 		pdfWriter.writeGeometry(geom, fos, pageFormat);
 	}
 
@@ -668,14 +694,14 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 
 	public void generatePDF(MathModel mathmodel, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
 
-		cbit.vcell.publish.ITextWriter pdfWriter = cbit.vcell.publish.ITextWriter.getInstance(cbit.vcell.publish.ITextWriter.PDF_WRITER);
+		ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
 		pdfWriter.writeMathModel(mathmodel, fos, pageFormat);
 	}
 
 
 	public void generateReactionsImage(Model model, Structure struct, String resolution, java.io.FileOutputStream fos) throws Exception {
 
-		java.io.ByteArrayOutputStream bos = cbit.vcell.publish.ITextWriter.generateReactionsImage(model, struct, resolution);
+		java.io.ByteArrayOutputStream bos = ITextWriter.generateReactionsImage(model, struct, resolution);
 		try {
 			bos.flush();
 			bos.writeTo(fos);
@@ -692,7 +718,7 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 
 	public void generateStructureImage(Model model, String resolution, java.io.FileOutputStream fos) throws Exception {
 		
-		java.io.ByteArrayOutputStream bos = cbit.vcell.publish.ITextWriter.generateStructureImage(model, resolution);
+		java.io.ByteArrayOutputStream bos = ITextWriter.generateStructureImage(model, resolution);
 		try {
 			bos.flush();
 			bos.writeTo(fos);
@@ -755,12 +781,12 @@ public BioModel getBioModel(BioModelInfo bioModelInfo) throws DataAccessExceptio
 private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAccessException{
 
 	try{
-		BioModel bm = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
+		BioModel bm = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
 		cacheSimulations(bm.getSimulations());
 		// XmlHelper.XMLToBioModel() already calls BioModel.refreshDependencies()
 		//bm.refreshDependencies(); 
 		return bm;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getMessage());
 	}
@@ -811,7 +837,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getBioModelInfo("+key+")")
  * Creation date: (11/14/00 5:33:21 PM)
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
-public BioModelInfo[] getBioModelInfos() throws DataAccessException {
+public BioModelInfo[] getBioModelInfos() {
 	ArrayList<BioModelInfo> arrayList = new ArrayList<BioModelInfo>(bioModelInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (BioModelInfo[])arrayList.toArray(new BioModelInfo[bioModelInfoHash.size()]);
@@ -855,7 +881,7 @@ private String getBioModelXML(KeyValue vKey) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (4/8/2003 4:55:39 PM)
  */
-public cbit.vcell.dictionary.DBSpecies getBoundSpecies(cbit.vcell.dictionary.DBFormalSpecies dbfs) throws DataAccessException {
+public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getBoundSpecies(dbfs);
 	}catch (RemoteException e){
@@ -884,7 +910,7 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, 
  * Insert the method's description here.
  * Creation date: (4/30/2003 10:26:17 PM)
  */
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+public ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getDictionaryReactions(reactionQuerySpec);
 	}catch (RemoteException e){
@@ -921,8 +947,8 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 	Geometry geometry = null;
 	try {
 		XMLSource geomSource = new XMLSource(getGeometryXML(geometryInfo.getVersion().getVersionKey()));
-		geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(geomSource);
-	}catch (cbit.vcell.xml.XmlParseException e){
+		geometry = XmlHelper.XMLToGeometry(geomSource);
+	}catch (XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -949,7 +975,7 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAccessException{
 
 	try{
-		Geometry geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
+		Geometry geometry = XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
 		geometry.refreshDependencies();
 
 		try {
@@ -962,7 +988,7 @@ private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAcces
 		}
 
 		return geometry;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
@@ -1013,7 +1039,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getGeometryInfo("+key+")")
  * Creation date: (11/14/00 5:33:21 PM)
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
-public GeometryInfo[] getGeometryInfos() throws DataAccessException {
+public GeometryInfo[] getGeometryInfos() {
 	ArrayList<GeometryInfo> arrayList = new ArrayList<GeometryInfo>(geoInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (GeometryInfo[])arrayList.toArray(new GeometryInfo[geoInfoHash.size()]);
@@ -1063,8 +1089,8 @@ public VCImage getImage(VCImageInfo vcImageInfo) throws DataAccessException {
 	
 	VCImage vcImage = null;
 	try {
-		vcImage = cbit.vcell.xml.XmlHelper.XMLToImage(getImageXML(vcImageInfo.getVersion().getVersionKey()));
-	}catch (cbit.vcell.xml.XmlParseException e){
+		vcImage = XmlHelper.XMLToImage(getImageXML(vcImageInfo.getVersion().getVersionKey()));
+	}catch (XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1116,7 +1142,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getImageInfo("+key+")");
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public VCImageInfo[] getImageInfos() throws org.vcell.util.DataAccessException {
+public VCImageInfo[] getImageInfos() throws DataAccessException {
 	ArrayList<VCImageInfo> arrayList = new ArrayList<VCImageInfo>(imgInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (VCImageInfo[])arrayList.toArray(new VCImageInfo[imgInfoHash.size()]);
@@ -1200,7 +1226,7 @@ public MathModel getMathModel(MathModelInfo mathModelInfo) throws DataAccessExce
 private MathModel getMathModelFromDatabaseXML(String mathModelXML) throws DataAccessException{
 
 	try{
-		MathModel mm = cbit.vcell.xml.XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
+		MathModel mm = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
 		cacheSimulations(mm.getSimulations());
 		mm.refreshDependencies();
 
@@ -1214,7 +1240,7 @@ private MathModel getMathModelFromDatabaseXML(String mathModelXML) throws DataAc
 		}
 
 		return mm;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
@@ -1269,7 +1295,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo("+key+")"
  * Creation date: (11/14/00 5:33:21 PM)
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
-public MathModelInfo[] getMathModelInfos() throws DataAccessException {
+public MathModelInfo[] getMathModelInfos() {
 	ArrayList<MathModelInfo> arrayList = new ArrayList<MathModelInfo>(mathModelInfoHash.values());
 	Collections.sort(arrayList,new VersionInfoComparator());
 	return (MathModelInfo[])arrayList.toArray(new MathModelInfo[mathModelInfoHash.size()]);
@@ -1316,7 +1342,7 @@ private String getMathModelXML(KeyValue vKey) throws DataAccessException {
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public Preference[] getPreferences() throws org.vcell.util.DataAccessException{
+public Preference[] getPreferences() throws DataAccessException{
 
 	System.out.println("ClientDocumentManager.getPreferences()");
 	if (preferences!=null){
@@ -1337,7 +1363,7 @@ public Preference[] getPreferences() throws org.vcell.util.DataAccessException{
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:10:41 PM)
  */
-public cbit.vcell.model.ReactionStep getReactionStep(org.vcell.util.document.KeyValue reactionStepKey) throws org.vcell.util.DataAccessException {
+public ReactionStep getReactionStep(KeyValue reactionStepKey) throws DataAccessException {
 	try {
 		ReactionStep rStep = sessionManager.getUserMetaDbServer().getReactionStep(reactionStepKey);
 		if(rStep != null){
@@ -1400,8 +1426,8 @@ public Simulation getSimulation(SimulationInfo simulationInfo) throws DataAccess
 	
 	Simulation simulation = null;
 	try {
-		simulation = cbit.vcell.xml.XmlHelper.XMLToSim(getSimulationXML(simulationInfo.getVersion().getVersionKey()));
-	}catch (cbit.vcell.xml.XmlParseException e){
+		simulation = XmlHelper.XMLToSim(getSimulationXML(simulationInfo.getVersion().getVersionKey()));
+	}catch (XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1419,11 +1445,11 @@ public Simulation getSimulation(SimulationInfo simulationInfo) throws DataAccess
 private Simulation getSimulationFromDatabaseXML(String simulationXML) throws DataAccessException{
 
 	try{
-		Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simulationXML);
+		Simulation sim = XmlHelper.XMLToSim(simulationXML);
 		cacheSimulations(new Simulation[] {sim});
 		sim.refreshDependencies();
 		return sim;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
@@ -1466,7 +1492,7 @@ private String getSimulationXML(KeyValue vKey) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/17/2004 11:27:37 AM)
  */
-public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws org.vcell.util.DataAccessException {
+public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException {
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
 	}
@@ -1483,7 +1509,7 @@ public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal ge
  * Insert the method's description here.
  * Creation date: (10/17/2004 11:27:37 AM)
  */
-public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org.vcell.util.DataAccessException {
+public TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException {
 	
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
@@ -1501,7 +1527,7 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org
  * Insert the method's description here.
  * Creation date: (1/19/01 10:54:29 AM)
  */
-public org.vcell.util.document.User getUser() {
+public User getUser() {
 	return sessionManager.getUser();
 }
 
@@ -1510,7 +1536,7 @@ public org.vcell.util.document.User getUser() {
  * Insert the method's description here.
  * Creation date: (9/15/2003 3:33:10 PM)
  */
-public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws org.vcell.util.DataAccessException {
+public ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getUserReactionDescriptions(reactionQuerySpec);
 	}catch (RemoteException e){
@@ -1524,7 +1550,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(c
  * Insert the method's description here.
  * Creation date: (9/15/2003 3:33:10 PM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws org.vcell.util.DataAccessException {
+public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
 	}catch (RemoteException e){
@@ -1534,12 +1560,12 @@ public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(org.vcell.ut
 }
 
 
-public String getXML(BioModelInfo bmInfo) throws org.vcell.util.DataAccessException, cbit.vcell.xml.XmlParseException{
+public String getXML(BioModelInfo bmInfo) throws DataAccessException, XmlParseException{
 	return getBioModelXML(bmInfo.getVersion().getVersionKey()); // faster ... this is how it's cached.
 }
 
 
-public String getXML(MathModelInfo mmInfo) throws org.vcell.util.DataAccessException, cbit.vcell.xml.XmlParseException{
+public String getXML(MathModelInfo mmInfo) throws DataAccessException, XmlParseException{
 	
 	return getMathModelXML(mmInfo.getVersion().getVersionKey());
 	
@@ -1565,7 +1591,7 @@ private void handleRemoteException(RemoteException e) {
  */
 public synchronized void initAllDatabaseInfos() throws DataAccessException {
 
-	cbit.vcell.modeldb.VCInfoContainer vcInfoContainer = null;
+	VCInfoContainer vcInfoContainer = null;
 	try{
 		System.out.println("ClientDocumentManager.initAllDatabaseInfos()");
 		long time1 = System.currentTimeMillis();
@@ -1578,15 +1604,15 @@ public synchronized void initAllDatabaseInfos() throws DataAccessException {
 //		bBioModelInfosDirty = false;
 //		bGeometryInfosDirty = false;
 
-		cbit.rmi.event.PerformanceMonitorEvent pme = new cbit.rmi.event.PerformanceMonitorEvent(this,getUser(),
-			new cbit.rmi.event.PerformanceData("ClientDocumentManager.initAllDatabaseInfos()",
-			    cbit.rmi.event.MessageEvent.LOGON_STAT,
-			    new cbit.rmi.event.PerformanceDataEntry[] {
-				    new cbit.rmi.event.PerformanceDataEntry("remote call duration", Double.toString(((double)System.currentTimeMillis()-time1)/1000.0))
+		PerformanceMonitorEvent pme = new PerformanceMonitorEvent(this,getUser(),
+			new PerformanceData("ClientDocumentManager.initAllDatabaseInfos()",
+			    MessageEvent.LOGON_STAT,
+			    new PerformanceDataEntry[] {
+				    new PerformanceDataEntry("remote call duration", Double.toString(((double)System.currentTimeMillis()-time1)/1000.0))
 				    }
 		    )
     	);
-		((cbit.vcell.client.server.ClientServerManager)getSessionManager()).getAsynchMessageManager().performanceMonitorEvent(pme);
+		((ClientServerManager)getSessionManager()).getAsynchMessageManager().performanceMonitorEvent(pme);
 
 	}catch (RemoteException e){
 		handleRemoteException(e);
@@ -1651,7 +1677,7 @@ public synchronized void initAllDatabaseInfos() throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public boolean isChanged(cbit.image.VCImage vcImage, String vcImageXML) throws org.vcell.util.DataAccessException {
+public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessException {
 	//
 	// get versionable from database or from cache (should be in cache)
 	//
@@ -1685,10 +1711,10 @@ public boolean isChanged(cbit.image.VCImage vcImage, String vcImageXML) throws o
 		if (vcImageXML==null){
 			vcImageXML = XmlHelper.imageToXML(vcImage);
 		}
-		if (!cbit.vcell.xml.VCMLComparator.compareEquals(savedImageXML,vcImageXML)){
+		if (!VCMLComparator.compareEquals(savedImageXML,vcImageXML)){
 			return true;
 		}
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1757,12 +1783,12 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 			if (bioModelXML==null){
 				bioModelXML = XmlHelper.bioModelToXML(bioModel);
 			}
-			if (cbit.vcell.xml.VCMLComparator.compareEquals(savedBioModelXML,bioModelXML)){
+			if (VCMLComparator.compareEquals(savedBioModelXML,bioModelXML)){
 				return false;
 			}else{
 				return true;
 			}
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -1777,7 +1803,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
  * @return boolean
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public boolean isChanged(org.vcell.util.document.VCDocument vcDocument) throws DataAccessException {
+public boolean isChanged(VCDocument vcDocument) throws DataAccessException {
 	if (vcDocument instanceof BioModel) {
 		return isChanged((BioModel)vcDocument,null);
 	} else if (vcDocument instanceof MathModel) {
@@ -1830,10 +1856,10 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
 		if (geometryXML==null){
 			geometryXML = XmlHelper.geometryToXML(geometry);
 		}
-		if (!cbit.vcell.xml.VCMLComparator.compareEquals(savedGeometryXML,geometryXML)){
+		if (!VCMLComparator.compareEquals(savedGeometryXML,geometryXML)){
 			return true;
 		}
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1897,12 +1923,12 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 			if (mathModelXML==null){
 				mathModelXML = XmlHelper.mathModelToXML(mathModel);
 			}
-			if (cbit.vcell.xml.VCMLComparator.compareEquals(savedMathModelXML,mathModelXML)){
+			if (VCMLComparator.compareEquals(savedMathModelXML,mathModelXML)){
 				return false;
 			}else{
 				return true;
 			}
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -1933,8 +1959,8 @@ public boolean isChanged(Simulation sim) throws DataAccessException{
 	}
 
 	try{
-		return !cbit.vcell.xml.VCMLComparator.compareEquals(cbit.vcell.xml.XmlHelper.simToXML(sim),loadedSimXML);
-	}catch (cbit.vcell.xml.XmlParseException e){
+		return !VCMLComparator.compareEquals(XmlHelper.simToXML(sim),loadedSimXML);
+	}catch (XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -2098,8 +2124,8 @@ private void reloadVCImageInfos() throws DataAccessException {
  * 
  * @param newListener cbit.vcell.clientdb.DatabaseListener
  */
-public void removeDatabaseListener(cbit.vcell.clientdb.DatabaseListener newListener) {
-	aDatabaseListener = cbit.vcell.clientdb.DatabaseEventMulticaster.remove(aDatabaseListener, newListener);
+public void removeDatabaseListener(DatabaseListener newListener) {
+	aDatabaseListener = DatabaseEventMulticaster.remove(aDatabaseListener, newListener);
 	return;
 }
 
@@ -2275,7 +2301,7 @@ private VersionInfo removeUserFromGroup0(VersionInfo versionInfo, VersionableTyp
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(Preference[] argPreferences) throws org.vcell.util.DataAccessException{
+public void replacePreferences(Preference[] argPreferences) throws DataAccessException{
 
 	if (argPreferences==null){
 		throw new IllegalArgumentException("preferences were null");
@@ -2297,12 +2323,12 @@ public void replacePreferences(Preference[] argPreferences) throws org.vcell.uti
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws org.vcell.util.DataAccessException {
+public VCImage save(VCImage vcImage) throws DataAccessException {
 	try {
 		String vcImageXML = null;
 		try {
-			vcImageXML = cbit.vcell.xml.XmlHelper.imageToXML(vcImage);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			vcImageXML = XmlHelper.imageToXML(vcImage);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2311,8 +2337,8 @@ public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws org.vcell.util
 
 		VCImage savedVCImage = null;
 		try {
-			savedVCImage = cbit.vcell.xml.XmlHelper.XMLToImage(savedVCImageXML);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2326,7 +2352,7 @@ public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws org.vcell.util
 
 		try {
 			ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
-			cbit.image.GIFImage browseData = cbit.image.BrowseImage.makeBrowseGIFImage(savedVCImage);
+			GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
 			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData);
 			imgInfoHash.put(savedKey,savedVCImageInfo);
 			
@@ -2352,8 +2378,8 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 	try {
 		String bioModelXML = null;
 		try {
-			bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			bioModelXML = XmlHelper.bioModelToXML(bioModel);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2388,8 +2414,8 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 	try {
 		String geometryXML = null;
 		try {
-			geometryXML = cbit.vcell.xml.XmlHelper.geometryToXML(geometry);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			geometryXML = XmlHelper.geometryToXML(geometry);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2427,8 +2453,8 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 	try {
 		String mathModelXML = null;
 		try {
-			mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			mathModelXML = XmlHelper.mathModelToXML(mathModel);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2466,8 +2492,8 @@ public Simulation save(Simulation simulation, boolean bForceIndependent) throws 
 	try {
 		String simulationXML = null;
 		try {
-			simulationXML = cbit.vcell.xml.XmlHelper.simToXML(simulation);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			simulationXML = XmlHelper.simToXML(simulation);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2488,12 +2514,12 @@ public Simulation save(Simulation simulation, boolean bForceIndependent) throws 
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String newName) throws org.vcell.util.DataAccessException {
+public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataAccessException {
 	try {		
 		String vcImageXML = null;
 		try {
-			vcImageXML = cbit.vcell.xml.XmlHelper.imageToXML(vcImage);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			vcImageXML = XmlHelper.imageToXML(vcImage);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2502,8 +2528,8 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
 
 		VCImage savedVCImage = null;
 		try {
-			savedVCImage = cbit.vcell.xml.XmlHelper.XMLToImage(savedVCImageXML);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2517,7 +2543,7 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
 
 		try {
 			ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
-			cbit.image.GIFImage browseData = cbit.image.BrowseImage.makeBrowseGIFImage(savedVCImage);
+			GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
 			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData);
 			imgInfoHash.put(savedKey,savedVCImageInfo);
 			
@@ -2538,14 +2564,14 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
  * Insert the method's description here.
  * Creation date: (1/19/01 11:27:52 AM)
  */
-public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioModel, java.lang.String newName, String independentSims[]) throws org.vcell.util.DataAccessException {
+public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String independentSims[]) throws DataAccessException {
 	
 	try {
 
 		String bioModelXML = null;
 		try {
-			bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			bioModelXML = XmlHelper.bioModelToXML(bioModel);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2577,12 +2603,12 @@ public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioMo
  * Insert the method's description here.
  * Creation date: (1/19/01 11:27:52 AM)
  */
-public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geometry, java.lang.String newName) throws org.vcell.util.DataAccessException {
+public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws DataAccessException {
 	try {
 		String geometryXML = null;
 		try {
-			geometryXML = cbit.vcell.xml.XmlHelper.geometryToXML(geometry);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			geometryXML = XmlHelper.geometryToXML(geometry);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2620,13 +2646,13 @@ public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geome
  * Insert the method's description here.
  * Creation date: (1/19/01 11:27:52 AM)
  */
-public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel mathModel, java.lang.String newName, String independentSims[]) throws org.vcell.util.DataAccessException {
+public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String independentSims[]) throws DataAccessException {
 	try {
 		
 		String mathModelXML = null;
 		try {
-			mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+			mathModelXML = XmlHelper.mathModelToXML(mathModel);
+		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -3069,7 +3095,7 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
  * @param jobEvent cbit.rmi.event.SimulationJobStatusEvent
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void updateServerSimulationStatusFromJobEvent(cbit.rmi.event.SimulationJobStatusEvent jobEvent) throws org.vcell.util.DataAccessException {
+public void updateServerSimulationStatusFromJobEvent(SimulationJobStatusEvent jobEvent) throws DataAccessException {
 	simulationStatusHash.put(jobEvent.getVCSimulationIdentifier().getSimulationKey(), SimulationStatus.updateFromJobEvent(getServerSimulationStatus(jobEvent.getVCSimulationIdentifier()), jobEvent));
 }
 }

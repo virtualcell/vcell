@@ -5,14 +5,12 @@ package cbit.vcell.clientdb;
  * All rights reserved.
 ©*/
 import org.vcell.util.document.VersionInfo;
-
-import cbit.sql.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/01 3:55:18 PM)
  * @author: Jim Schaff
  */
-public class VersionInfoComparator implements java.util.Comparator {
+public class VersionInfoComparator implements java.util.Comparator<VersionInfo> {
 	/**
 	 * Compares its two arguments for order.  Returns a negative integer,
 	 * zero, or a positive integer as the first argument is less than, equal
@@ -43,9 +41,7 @@ public class VersionInfoComparator implements java.util.Comparator {
 	 * @throws ClassCastException if the arguments' types prevent them from
 	 * 	       being compared by this Comparator.
 	 */
-public int compare(Object o1, Object o2) {
-	VersionInfo v1 = (VersionInfo)o1;
-	VersionInfo v2 = (VersionInfo)o2;
+public int compare(VersionInfo v1, VersionInfo v2) {
 	//
 	// first, compare by names
 	//

@@ -44,6 +44,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.AsynchGuiUpdater;
@@ -2604,5 +2605,41 @@ public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,
 	fdos.isize = imagedataSet.getISize();
 	
 	return fdos;
+}
+
+
+public void accessPermissions(Component requester, VCDocument vcDoc) {
+	VersionInfo selectedVersionInfo = null;
+	switch (vcDoc.getDocumentType()) {
+		case VCDocument.BIOMODEL_DOC:
+			BioModelInfo[] bioModelInfos = getDocumentManager().getBioModelInfos();
+			for (BioModelInfo bioModelInfo : bioModelInfos) {
+				if (bioModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+					selectedVersionInfo = bioModelInfo;
+					break;
+				}
+			}
+			break;
+		case VCDocument.MATHMODEL_DOC:
+			MathModelInfo[] mathModelInfos = getDocumentManager().getMathModelInfos();
+			for (MathModelInfo mathModelInfo : mathModelInfos) {
+				if (mathModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+					selectedVersionInfo = mathModelInfo;
+					break;
+				}
+			}
+			break;
+		case VCDocument.GEOMETRY_DOC:
+			GeometryInfo[] geoInfos = getDocumentManager().getGeometryInfos();
+			for (GeometryInfo geoInfo : geoInfos) {
+				if (geoInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+					selectedVersionInfo = geoInfo;
+					break;
+				}
+			}
+			break;
+	}
+	getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo);
+	
 }
 }
