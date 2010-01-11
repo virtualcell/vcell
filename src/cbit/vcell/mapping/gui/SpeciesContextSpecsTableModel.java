@@ -26,7 +26,7 @@ public class SpeciesContextSpecsTableModel extends javax.swing.table.AbstractTab
 	public static final int COLUMN_STRUCTURE = 2;
 	public static final int COLUMN_FIXED = 3;
 	public static final int COLUMN_INITIAL = 4;
-	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Conditions" };
+	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition" };
 	
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
