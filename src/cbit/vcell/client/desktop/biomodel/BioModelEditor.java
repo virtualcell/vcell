@@ -1,4 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.Hashtable;
 
@@ -703,7 +704,7 @@ public JInternalFrameEnhanced getjInternalFrameApplication() {
 			ivjjInternalFrameApplication.setVisible(true);
 			ivjjInternalFrameApplication.setStripped(true);
 			ivjjInternalFrameApplication.setJMenuBar(getjInternalFrameApplicationJMenuBar());
-			getjInternalFrameApplication().setContentPane(getJInternalFrameEnhancedContentPane());
+			getjInternalFrameApplication().add(getJInternalFrameEnhancedContentPane());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -770,7 +771,8 @@ private javax.swing.JLabel getJLabel2() {
 		try {
 			ivjJLabel2 = new javax.swing.JLabel();
 			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Physiology:");
+			ivjJLabel2.setText("Physiology");
+			ivjJLabel2.setFont(ivjJLabel2.getFont().deriveFont(Font.BOLD));
 			ivjJLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}
 			// user code end

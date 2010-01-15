@@ -126,8 +126,13 @@ public StructureCartoon getStructureCartoon() {
  * @param menuAction java.lang.String
  */
 protected void menuAction(Shape shape, String menuAction) {
+	if (menuAction.equals(SHOW_PARAMETERS_MENU_ACTION)){
+		showParametersDialog();
+	}
 	//
-	if(shape == null){return;}
+	if(shape == null){
+		return;
+	}
 	//
 	if(menuAction.equals(COPY_MENU_ACTION)){
 		if (shape instanceof SpeciesContextShape){
@@ -831,7 +836,7 @@ public void showReactionCartoonEditorPanel(final StructureShape structureShape) 
 	//
 	ReactionCartoonEditorDialog rced = (ReactionCartoonEditorDialog)reactionEditorHash.get(structureShape.getStructure());
 	if(rced == null){
-		final ReactionCartoonEditorDialog reactionCartoonEditorDialog = new ReactionCartoonEditorDialog();
+		final ReactionCartoonEditorDialog reactionCartoonEditorDialog = new ReactionCartoonEditorDialog(this);
 		reactionCartoonEditorDialog.setIconifiable(true);
 		reactionCartoonEditorDialog.init(structureShape.getModel(),structureShape.getStructure(),getDocumentManager());
 		

@@ -413,43 +413,46 @@ public class PSLIDPanel extends JPanel{
 	
 	
 	private TreeSet<String[]> readCellProteinListGenerated(ClientTaskStatusSupport pp) throws IOException{
-
-		WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,pp);
-		wci.requestCellProteinListGenerated();
-		wci.handshake();
-		if(wci.isExpired()) {
-			System.out.println("Fetch request has expired");
-			return null;
-		}
-		Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null).getRootElement();
-		JDOMTreeWalker jdtw = new JDOMTreeWalker(
-					element, new Filter() {
-						public boolean matches(java.lang.Object obj) {
-							//System.out.println(obj);
-							if (obj instanceof org.jdom.Element && ((Element) obj).getName().equals("gen_model_result")) {
-								return true;
+	try {
+			WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,pp);
+			wci.requestCellProteinListGenerated();
+			wci.handshake();
+			if(wci.isExpired()) {
+				System.out.println("Fetch request has expired");
+				return null;
+			}
+			Element element = XmlUtil.stringToXML(wci.getDoc().toString(), null).getRootElement();
+			JDOMTreeWalker jdtw = new JDOMTreeWalker(
+						element, new Filter() {
+							public boolean matches(java.lang.Object obj) {
+								//System.out.println(obj);
+								if (obj instanceof org.jdom.Element && ((Element) obj).getName().equals("gen_model_result")) {
+									return true;
+								}
+								return false;
 							}
-							return false;
-						}
-					});
-		TreeSet<String[]> sortedGeneratedModelTreeSet = new TreeSet<String[]>(
-					new Comparator<String[]>() {
-						public int compare(String[] o1, String[] o2) {
-							if (o1[0].equals(o2[0])) {
-								return o1[1].compareToIgnoreCase(o2[1]);
+						});
+			TreeSet<String[]> sortedGeneratedModelTreeSet = new TreeSet<String[]>(
+						new Comparator<String[]>() {
+							public int compare(String[] o1, String[] o2) {
+								if (o1[0].equals(o2[0])) {
+									return o1[1].compareToIgnoreCase(o2[1]);
+								}
+								return o1[0].compareToIgnoreCase(o2[0]);
 							}
-							return o1[0].compareToIgnoreCase(o2[0]);
-						}
-					});
-		while (jdtw.hasNext()) {
-				Element ele = (Element) jdtw.next();
-				String[] cellProteinPair = new String[] {
-						"Cell",
-						ele.getChild("gen_model").getTextTrim(),
-						CELL_PROTEIN_GENERATED};
-				sortedGeneratedModelTreeSet.add(cellProteinPair);
+						});
+			while (jdtw.hasNext()) {
+					Element ele = (Element) jdtw.next();
+					String[] cellProteinPair = new String[] {
+							"Cell",
+							ele.getChild("gen_model").getTextTrim(),
+							CELL_PROTEIN_GENERATED};
+					sortedGeneratedModelTreeSet.add(cellProteinPair);
+			}
+			return sortedGeneratedModelTreeSet;
+		} catch (Exception e) {			 
+			throw new IOException("Models couldn't be retrieved from PSLID database at this time. \n\n"+e.getMessage());
 		}
-		return sortedGeneratedModelTreeSet;
 	}
 
 	private void initCellProteinImageInfo(){
@@ -561,9 +564,9 @@ public class PSLIDPanel extends JPanel{
 				} catch (Exception e) {
 					lastQueriedPSLIDCellProteinSeries = null;
 					 
-					throw new Exception("Error getting Image information for cell/protein pair\n"+
-							(cell_proteinArr!= null?"\""+cell_proteinArr[0]+"\"":"?")
-							+"/"+(cell_proteinArr!= null?"\""+cell_proteinArr[1]+"\"":"?")+"\n"+e.getMessage());
+					throw new Exception("Image information for cell/protein pair \""+
+							(cell_proteinArr!= null?cell_proteinArr[0]:"?")
+							+", "+(cell_proteinArr!= null?cell_proteinArr[1]:"?")+"\" couldn't be retrieved from PSLID database at this time. \n\n"+e.getMessage());
 				} finally {
 					if(is != null){
 						try {
@@ -581,11 +584,13 @@ public class PSLIDPanel extends JPanel{
 				imageIDcomboBox.removeAllItems();
 				Set<Integer> idSet = imageID_ProteinImageURL_Hash.keySet();
 				Iterator<Integer> idIter = idSet.iterator();
-				while(idIter.hasNext()){
-					imageIDcomboBox.addItem(idIter.next());
+				if (idSet.size() > 0) {
+					while(idIter.hasNext()){
+						imageIDcomboBox.addItem(idIter.next());
+					}
+					imageIDcomboBox.setSelectedIndex(0);
+					lastQueriedPSLIDCellProteinSeries = proteinCellcomboBox.getSelectedItem();
 				}
-				imageIDcomboBox.setSelectedIndex(0);
-				lastQueriedPSLIDCellProteinSeries = proteinCellcomboBox.getSelectedItem();
 				guiState();					
 			}
 		};

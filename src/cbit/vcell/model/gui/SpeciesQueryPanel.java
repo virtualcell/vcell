@@ -6,9 +6,18 @@ import java.util.Hashtable;
 import javax.swing.ButtonModel;
 import javax.swing.JList;
 
-import cbit.vcell.dictionary.*;
+import org.vcell.util.gui.TitledBorderBean;
+
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.dictionary.CompoundInfo;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.DictionaryQueryResults;
+import cbit.vcell.dictionary.EnzymeInfo;
+import cbit.vcell.dictionary.FormalSpeciesInfo;
+import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.dictionary.ProteinInfo;
 /**
  * Insert the type's description here.
  * Creation date: (2/4/2003 6:52:51 PM)
@@ -1172,7 +1181,7 @@ private javax.swing.JLabel getJLabel1() {
 		try {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setText("Enter Text to Search For - *(star) matches any character  (Press  Search to Execute)");
+			ivjJLabel1.setText("Species name containing text (* = any string):");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1227,8 +1236,7 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPanel getJPanel2() {
 	if (ivjJPanel2 == null) {
 		try {
-			org.vcell.util.gui.TitledBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
+			TitledBorderBean ivjLocalBorder1 = new TitledBorderBean();
 			ivjLocalBorder1.setTitle("Restrict Search for Formal Species To");
 			ivjJPanel2 = new javax.swing.JPanel();
 			ivjJPanel2.setName("JPanel2");
@@ -1381,7 +1389,6 @@ private javax.swing.JButton getSearchJButton() {
 			ivjSearchJButton = new javax.swing.JButton();
 			ivjSearchJButton.setName("SearchJButton");
 			ivjSearchJButton.setText("Search");
-			ivjSearchJButton.setContentAreaFilled(false);
 			ivjSearchJButton.setEnabled(false);
 			// user code begin {1}
 			// user code end

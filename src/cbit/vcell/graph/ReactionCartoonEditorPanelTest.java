@@ -1,10 +1,12 @@
 package cbit.vcell.graph;
-import cbit.vcell.clientdb.DocumentManager;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.model.*;
+import org.vcell.util.gui.WindowCloser;
+
+import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.clientdb.ClientDocumentManager;
+import cbit.vcell.model.Diagram;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelTest;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */
@@ -18,14 +20,14 @@ public static void main(java.lang.String[] args) {
       	java.awt.Frame frame = new java.awt.Frame();
 		Model model = ModelTest.getExample2();
 		Structure structure = (Structure)model.getStructure("Cytosol");
-		ReactionCartoonEditorPanel aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
+		ReactionCartoonEditorPanel aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel(null);
 		frame.add("Center", aReactionCartoonEditorPanel);
 		frame.setSize(aReactionCartoonEditorPanel.getSize());
 		frame.setVisible(true);
-		new org.vcell.util.gui.WindowCloser(frame,true);
+		new WindowCloser(frame,true);
 
-		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args,"ReactionCartoonEditorPanelTest",frame);
-		cbit.vcell.clientdb.ClientDocumentManager docManager = (cbit.vcell.clientdb.ClientDocumentManager)managerManager.getDocumentManager();
+		ClientServerManager managerManager = mainInit(args,"ReactionCartoonEditorPanelTest",frame);
+		ClientDocumentManager docManager = (ClientDocumentManager)managerManager.getDocumentManager();
 
 		aReactionCartoonEditorPanel.setModel(model);
 		aReactionCartoonEditorPanel.setStructure(structure);
