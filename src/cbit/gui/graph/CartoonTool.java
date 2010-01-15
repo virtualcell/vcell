@@ -296,16 +296,8 @@ public final void actionPerformed(ActionEvent event) {
 	if(getGraphModel() == null){
 		return;
 	}
-//	try {
-		Shape popupMenuShape = getGraphModel().getSelectedShape();
-		if ((event.getSource() instanceof JMenuItem)){
-			//if (popupMenuShape!=null){
-				menuAction(popupMenuShape,event.getActionCommand());		
-			//}
-		}
-	//}catch (Exception e){
-		//e.printStackTrace(System.out);
-	//}		
+	Shape popupMenuShape = getGraphModel().getSelectedShape();
+	menuAction(popupMenuShape,event.getActionCommand());
 }
 
 

@@ -1,28 +1,52 @@
 package cbit.vcell.graph;
+
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.border.BevelBorder;
+
+import org.vcell.util.gui.ButtonGroupCivilized;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JToolBarToggleButton;
+
+import cbit.gui.graph.CartoonTool;
+import cbit.gui.graph.GraphPane;
+import cbit.gui.graph.Shape;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.clientdb.DocumentManager;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/19/2005 9:34:21 AM)
  * @author: Frank Morgan
  */
 public class CartoonEditorPanelFixed extends javax.swing.JPanel {
-	private org.vcell.util.gui.JToolBarToggleButton ivjFeatureButton = null;
+	private JToolBarToggleButton ivjFeatureButton = null;
 	private javax.swing.JToolBar ivjJToolBar = null;
-	private org.vcell.util.gui.JToolBarToggleButton ivjSelectButton = null;
-	private org.vcell.util.gui.JToolBarToggleButton ivjSpeciesButton = null;
+	private JToolBarToggleButton ivjSelectButton = null;
+	private JToolBarToggleButton ivjSpeciesButton = null;
+	
+	private JButton reactionButton = null;	
+	private JButton parameterButton = null;
+	
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private StructureCartoon ivjStructureCartoon1 = null;
 	private StructureCartoonTool ivjStructureCartoonTool1 = null;
-	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.ButtonModel ivjselection1 = null;
-	private cbit.gui.graph.GraphPane ivjGraphPane1 = null;
-	private cbit.vcell.biomodel.BioModel fieldBioModel = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
-	private cbit.vcell.biomodel.BioModel ivjbioModel1 = null;
+	private GraphPane ivjGraphPane1 = null;
+	private BioModel fieldBioModel = null;
+	private DocumentManager fieldDocumentManager = null;
+	private BioModel ivjbioModel1 = null;
 	private boolean ivjConnPtoP3Aligning = false;
 
-class IvjEventHandler implements java.beans.PropertyChangeListener {
+class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == CartoonEditorPanelFixed.this.getButtonGroupCivilized1() && (evt.getPropertyName().equals("selection"))) 
 				connPtoP1SetTarget();
@@ -30,6 +54,20 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				connEtoM1(evt);
 			if (evt.getSource() == CartoonEditorPanelFixed.this && (evt.getPropertyName().equals("bioModel"))) 
 				connPtoP3SetTarget();
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == reactionButton) {
+				Shape selectedShape = getStructureCartoonTool1().getGraphModel().getSelectedShape();
+				if (selectedShape == null || !(selectedShape instanceof FeatureShape || selectedShape instanceof MembraneShape)) {
+					DialogUtils.showErrorDialog(JOptionPane.getFrameForComponent(CartoonEditorPanelFixed.this), "Please select a " +
+							"Feature or Membrane where reactions are defined!");					
+				} else {
+					getStructureCartoonTool1().actionPerformed(e);
+				}
+			} else if (e.getSource() == parameterButton) {			
+				getStructureCartoonTool1().actionPerformed(e);
+			}
 		};
 	};
 
@@ -298,10 +336,10 @@ private cbit.vcell.biomodel.BioModel getbioModel1() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -358,10 +396,10 @@ private org.vcell.util.gui.JToolBarToggleButton getFeatureButton() {
  * @return cbit.gui.graph.GraphPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.graph.GraphPane getGraphPane1() {
+private GraphPane getGraphPane1() {
 	if (ivjGraphPane1 == null) {
 		try {
-			ivjGraphPane1 = new cbit.gui.graph.GraphPane();
+			ivjGraphPane1 = new GraphPane();
 			ivjGraphPane1.setName("GraphPane1");
 			ivjGraphPane1.setBounds(0, 0, 150, 150);
 			// user code begin {1}
@@ -416,6 +454,10 @@ private javax.swing.JToolBar getJToolBar() {
 			getJToolBar().add(getSelectButton(), getSelectButton().getName());
 			getJToolBar().add(getFeatureButton(), getFeatureButton().getName());
 			getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
+			getJToolBar().addSeparator(new Dimension(5,30));
+			getJToolBar().add(getReactionButton());
+			getJToolBar().addSeparator();
+			getJToolBar().add(getParameterButton());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -433,10 +475,10 @@ private javax.swing.JToolBar getJToolBar() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JToolBarToggleButton getSelectButton() {
+private JToolBarToggleButton getSelectButton() {
 	if (ivjSelectButton == null) {
 		try {
-			ivjSelectButton = new org.vcell.util.gui.JToolBarToggleButton();
+			ivjSelectButton = new JToolBarToggleButton();
 			ivjSelectButton.setName("SelectButton");
 			ivjSelectButton.setToolTipText("Select Tool");
 			ivjSelectButton.setText("");
@@ -498,6 +540,53 @@ private org.vcell.util.gui.JToolBarToggleButton getSpeciesButton() {
 	return ivjSpeciesButton;
 }
 
+private JButton getReactionButton() {
+	if (reactionButton == null) {
+		try {
+			reactionButton = new JButton();
+			reactionButton.setToolTipText(CartoonTool.REACTIONS_MENU_TEXT);
+			reactionButton.setText("");
+			reactionButton.setActionCommand(CartoonTool.REACTIONS_MENU_ACTION);
+			reactionButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+			reactionButton.setBorder(new BevelBorder(BevelBorder.RAISED));
+			reactionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/step.gif")));
+			reactionButton.setPreferredSize(new java.awt.Dimension(28, 28));
+			reactionButton.setMinimumSize(new java.awt.Dimension(28, 28));
+			reactionButton.setMaximumSize(new java.awt.Dimension(28, 28));
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return reactionButton;
+}
+
+private JButton getParameterButton() {
+	if (parameterButton == null) {
+		try {
+			parameterButton = new JButton();
+			parameterButton.setToolTipText(CartoonTool.SHOW_PARAMETERS_MENU_TEXT);
+			parameterButton.setText("");
+			parameterButton.setActionCommand(CartoonTool.SHOW_PARAMETERS_MENU_ACTION);
+			parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
+			parameterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+			parameterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/parameter.gif")));
+			parameterButton.setPreferredSize(new java.awt.Dimension(28, 28));
+			parameterButton.setMinimumSize(new java.awt.Dimension(28, 28));
+			parameterButton.setMaximumSize(new java.awt.Dimension(28, 28));
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return parameterButton;
+}
 
 /**
  * Return the StructureCartoon1 property value.
@@ -566,6 +655,9 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
+	
+	getReactionButton().addActionListener(ivjEventHandler);
+	getParameterButton().addActionListener(ivjEventHandler);
 }
 
 /**

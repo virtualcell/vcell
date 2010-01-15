@@ -369,7 +369,7 @@ private void initialize() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setSize(587, 369);
 		setTitle("Search For Formal Species Definitions");
-		setContentPane(getJDialogContentPane());
+		add(getJDialogContentPane());
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
