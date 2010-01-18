@@ -157,47 +157,9 @@ public class MiriamTreeModel extends DefaultTreeModel {
 						int bagCount=0;
 						while (bagIter.hasNext()){							
 							Statement stmt = bagIter.nextStatement();
-							String urn = stmt.getObject().toString();
-							String link = null;
-							String text = null;
-							if (urn.startsWith("urn:miriam:biomodels.db:")) {
-								link = urn.replaceFirst("urn:miriam:biomodels.db:", "http://www.ebi.ac.uk/biomodels-main/");
-								text = urn.replaceFirst("urn:miriam:biomodels.db:", "");
-							} else if (urn.startsWith("urn:miriam:pubmed:")){
-								link = urn.replaceFirst("urn:miriam:pubmed:", "http://www.ncbi.nlm.nih.gov/pubmed/");
-								text = urn.replaceFirst("urn:miriam:", "");
-							} else if (urn.startsWith("urn:miriam:obo.go:")) {
-								link = urn.replaceFirst("urn:miriam:obo.go:", "http://www.ebi.ac.uk/ego/GTerm?id=");
-								text = urn.replaceFirst("urn:miriam:obo.go:", "");
-							} else if (urn.startsWith("urn:miriam:reactome:")) {
-								link = urn.replaceFirst("urn:miriam:reactome:", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?FROM_REACTOME=1&ST_ID=");
-								text = urn.replaceFirst("urn:miriam:reactome:", "");
-							} else if (urn.startsWith("urn:miriam:ec-code:")) {
-								link = urn.replaceFirst("urn:miriam:ec-code:", "http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&ec=");
-								text = urn.replaceFirst("urn:miriam:", "");
-							} else if (urn.startsWith("urn:miriam:taxonomy:")) {
-								link = urn.replaceFirst("urn:miriam:taxonomy:", "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=");
-								text = urn.replaceFirst("urn:miriam:", "");
-							} else if (urn.startsWith("urn:miriam:interpro:")) {
-								link = urn.replaceFirst("urn:miriam:interpro:", "http://www.ebi.ac.uk/interpro/DisplayIproEntry?ac=");
-								text = urn.replaceFirst("urn:miriam:", "");
-							} else if (urn.startsWith("urn:miriam:kegg.pathway:")) {
-								link = urn.replaceFirst("urn:miriam:kegg.pathway:", "http://www.genome.ad.jp/dbget-bin/www_bget?pathway+");
-								text = urn.replaceFirst("urn:miriam:", "");
-							} else if (urn.startsWith("urn:miriam:kegg.compound:")) {
-								link = urn.replaceFirst("urn:miriam:kegg.compound:", "http://www.genome.jp/dbget-bin/www_bget?cpd:");
-								text = urn.replaceFirst("urn:miriam:", "");
-							} else if (urn.startsWith("urn:miriam:uniprot:")) {
-								link = urn.replaceFirst("urn:miriam:uniprot:", "http://www.ebi.uniprot.org/entry/");
-								text = urn.replaceFirst("urn:miriam:", "");
-							} else if (urn.startsWith("urn:miriam:obo.chebi:")) {
-								link = urn.replaceFirst("urn:miriam:obo.chebi:", "http://www.ebi.ac.uk/chebi/searchFreeText.do?searchString=");
-								text = urn.replaceFirst("urn:miriam:obo.chebi:", "");
-							} else {
-								text = urn;
-							}
+							String urn = stmt.getObject().toString();							
 							bagCount++;
-							LinkNode linkNode = new LinkNode(predicateStr, link, text);
+							LinkNode linkNode = createLinkNode(predicateStr, urn);
 							modelComponentNode.add(linkNode);
 							bHasLinkNode = true;
 						}
@@ -211,9 +173,9 @@ public class MiriamTreeModel extends DefaultTreeModel {
 					}
 				} else {
 					// the object node is a URI, so separate it to a 'link' component and a 'text' component to display in the tree.
-					String link = objectNode.getURI();
-					String text = link.substring(link.lastIndexOf("/")+1); 
-					LinkNode linkNode = new LinkNode(predicateStr, link, text);
+//					String link = objectNode.getURI();
+//					String text = link.substring(link.lastIndexOf("/")+1); 
+					LinkNode linkNode = createLinkNode(predicateStr, statement.getObject().toString());
 					modelComponentNode.add(linkNode);
 					bHasLinkNode = true;
 				}
@@ -225,4 +187,46 @@ public class MiriamTreeModel extends DefaultTreeModel {
 		}
 	}
 
+	private LinkNode createLinkNode(String predicateStr, String urn) {
+		String link = null;
+		String text = null;
+		if (urn.startsWith("urn:miriam:biomodels.db:")) {
+			link = urn.replaceFirst("urn:miriam:biomodels.db:", "http://www.ebi.ac.uk/biomodels-main/");
+			text = urn.replaceFirst("urn:miriam:biomodels.db:", "");
+		} else if (urn.startsWith("urn:miriam:pubmed:")){
+			link = urn.replaceFirst("urn:miriam:pubmed:", "http://www.ncbi.nlm.nih.gov/pubmed/");
+			text = urn.replaceFirst("urn:miriam:", "");
+		} else if (urn.startsWith("urn:miriam:obo.go:")) {
+			link = urn.replaceFirst("urn:miriam:obo.go:", "http://www.ebi.ac.uk/ego/GTerm?id=");
+			text = urn.replaceFirst("urn:miriam:obo.go:", "");
+		} else if (urn.startsWith("urn:miriam:reactome:")) {
+			link = urn.replaceFirst("urn:miriam:reactome:", "http://www.reactome.org/cgi-bin/eventbrowser_st_id?FROM_REACTOME=1&ST_ID=");
+			text = urn.replaceFirst("urn:miriam:reactome:", "");
+		} else if (urn.startsWith("urn:miriam:ec-code:")) {
+			link = urn.replaceFirst("urn:miriam:ec-code:", "http://www.ebi.ac.uk/intenz/query?cmd=SearchEC&ec=");
+			text = urn.replaceFirst("urn:miriam:", "");
+		} else if (urn.startsWith("urn:miriam:taxonomy:")) {
+			link = urn.replaceFirst("urn:miriam:taxonomy:", "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=");
+			text = urn.replaceFirst("urn:miriam:", "");
+		} else if (urn.startsWith("urn:miriam:interpro:")) {
+			link = urn.replaceFirst("urn:miriam:interpro:", "http://www.ebi.ac.uk/interpro/DisplayIproEntry?ac=");
+			text = urn.replaceFirst("urn:miriam:", "");
+		} else if (urn.startsWith("urn:miriam:kegg.pathway:")) {
+			link = urn.replaceFirst("urn:miriam:kegg.pathway:", "http://www.genome.ad.jp/dbget-bin/www_bget?pathway+");
+			text = urn.replaceFirst("urn:miriam:", "");
+		} else if (urn.startsWith("urn:miriam:kegg.compound:")) {
+			link = urn.replaceFirst("urn:miriam:kegg.compound:", "http://www.genome.jp/dbget-bin/www_bget?cpd:");
+			text = urn.replaceFirst("urn:miriam:", "");
+		} else if (urn.startsWith("urn:miriam:uniprot:")) {
+			link = urn.replaceFirst("urn:miriam:uniprot:", "http://www.ebi.uniprot.org/entry/");
+			text = urn.replaceFirst("urn:miriam:", "");
+		} else if (urn.startsWith("urn:miriam:obo.chebi:")) {
+			link = urn.replaceFirst("urn:miriam:obo.chebi:", "http://www.ebi.ac.uk/chebi/searchFreeText.do?searchString=");
+			text = urn.replaceFirst("urn:miriam:obo.chebi:", "");
+		} else {
+			text = urn;
+		}
+		LinkNode linkNode = new LinkNode(predicateStr, link, text);
+		return linkNode;
+	}
 }
