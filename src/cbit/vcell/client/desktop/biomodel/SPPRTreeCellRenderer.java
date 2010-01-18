@@ -4,6 +4,7 @@ package cbit.vcell.client.desktop.biomodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.Icon;
@@ -31,10 +32,6 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 
 
     public boolean initializeIcons() {
-//	    ImageIcon speciesIcon = new ImageIcon("C:/dan/work images/icons/species1.gif");
-//	    ImageIcon gParamIcon = new ImageIcon("C:/dan/work images/icons/gparam3.gif");
-//	    ImageIcon aParamIcon = new ImageIcon("C:/dan/work images/icons/aparam2.gif");
-//	    ImageIcon reactionsIcon = new ImageIcon("C:/dan/work images/icons/reactions2.gif");
 	    ImageIcon speciesIcon = new ImageIcon(getClass().getResource("/images/speciesItem.gif"));
 	    ImageIcon gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
 	    ImageIcon aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));
@@ -51,16 +48,6 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
     	return true;
     }
 
-//    private ImageIcon createImageIcon(String path) {
-//    	java.net.URL imgURL = getClass().getResource(path);
-//        if (imgURL != null) {
-//            return new ImageIcon(imgURL);
-//        } else {
-//            System.err.println("Couldn't find file: " + path);
-//            return null;
-//        }
-//	}
-
 
 	public Component getTreeCellRendererComponent(
                         JTree tree,
@@ -70,31 +57,51 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
                         boolean leaf,
                         int row,
                         boolean hasFocus) {
+    	Color dkRed = new Color(128, 0, 0);		// fiziology
+    	Color dkBlue = new Color(0, 0, 128);
+    	Color dkGreen = new Color(0, 128, 0);
+    	Color dkBlack = new Color(0, 0, 0);		// application
 
 		JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-        if (value instanceof SimulationContext) {
+        if (value instanceof SimulationContext) {		// --- not implemented
         	component.setText("SimulationContext : " + ((SimulationContext)value).getName());
         	component.setToolTipText("SimulationContext");
-        } else if (leaf && isSpecies(value)) {
+        } else if (leaf && isSpecies(value)) {			// --- species context
         	component.setIcon(speciesIcon);
+        	if(sel) {
+            	component.setForeground(Color.white);
+        	} else {
+            	component.setForeground(dkRed);
+        	}
         	component.setText((String)((BioModelNode)value).getUserObject());
-            System.out.println((String)((BioModelNode)value).getUserObject());
-        	component.setToolTipText("Your usual species");
-        } else if (leaf && isGlobalParam(value)) {
+//            System.out.println((String)((BioModelNode)value).getUserObject());
+        	component.setToolTipText("Species context");
+        } else if (leaf && isGlobalParam(value)) {		// --- global parameter
         	component.setIcon(gParamIcon);
+        	if(sel) {
+            	component.setForeground(Color.white);
+        	} else {
+            	component.setForeground(dkBlack);
+        	}
         	component.setText((String)((BioModelNode)value).getUserObject());
-        	component.setToolTipText("Your usual global");
-        } else if (leaf && isApplicationParam(value)) {
+        	component.setToolTipText("Global variable");
+        } else if (leaf && isApplicationParam(value)) {	// --- not implemented
         	component.setIcon(aParamIcon);
         	component.setText((String)((BioModelNode)value).getUserObject());
-        	component.setToolTipText("Your usual param");
-        } else if (leaf && isReaction(value)) {
+        	component.setToolTipText("Application parameter");
+        } else if (leaf && isReaction(value)) {			// --- reaction
         	component.setIcon(reactionsIcon);
+        	if(sel) {
+            	component.setForeground(Color.white);
+        	} else {
+            	component.setForeground(dkRed);
+        	}
         	component.setText((String)((BioModelNode)value).getUserObject());
-        	component.setToolTipText("Your usual reaction");
+        	component.setToolTipText("Reaction");
         } else {
         	Object obj = ((BioModelNode)value).getUserObject(); 
         	if (obj instanceof String) {
+//            	component.setForeground(Color.black);
         		component.setText((String)obj);
         	} else {
         		System.err.println(obj.toString());
@@ -109,6 +116,15 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	        if(name.equals(SPPRTreeModel.RATERULES_FOLDER)) {   // disabled entry for now
 	        	component.setEnabled(false);
 	        	component.setDisabledIcon(this.getClosedIcon());
+	        	component.setToolTipText("Rate rules folder");
+	        } else if(name.equals(SPPRTreeModel.SPECIES_FOLDER)) {
+	        	component.setToolTipText("Species folder");
+	        } else if(name.equals(SPPRTreeModel.APPLICATIONP_FOLDER)) {
+	        	component.setToolTipText("Appl. param. folder");
+	        } else if(name.equals(SPPRTreeModel.GLOBALP_FOLDER)) {
+	        	component.setToolTipText("Global param. folder");
+	        } else if(name.equals(SPPRTreeModel.REACTIONS_FOLDER)) {
+	        	component.setToolTipText("Reactions folder");
 	        }
         }
         return component;

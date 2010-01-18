@@ -41,12 +41,13 @@ import org.vcell.util.gui.UtilCancelException;
  */
 public class ApplicationEditor extends JPanel {
 	public static final int TAB_IDX_STRUCTURE_MAPPING = 0;
-	public static final int TAB_IDX_INITIAL_CONDITIONS = 1;
-	public static final int TAB_IDX_REACTION_MAPPING = 2;
-	public static final int TAB_IDX_ELECTRICAL_MAPPING = 3;
-	public static final int TAB_IDX_VIEW_MATH = 4;
-	public static final int TAB_IDX_SIMULATION = 5;
-	public static final int TAB_IDX_ANALYSIS = 6;
+//	public static final int TAB_IDX_INITIAL_CONDITIONS = 1;
+//	public static final int TAB_IDX_REACTION_MAPPING = 2;
+	public static final int TAB_IDX_ELECTRICAL_MAPPING = 1;
+	public static final int TAB_IDX_VIEW_MATH = 2;
+	public static final int TAB_IDX_SIMULATION = 3;
+	public static final int TAB_IDX_ANALYSIS = 4;
+	public static final int TAB_IDX_SPPR = 5;
 	
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -1382,13 +1383,13 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.setPreferredSize(new java.awt.Dimension(682, 640));
 			ivjJTabbedPane1.setFont(new java.awt.Font("dialog", 0, 14));
 			ivjJTabbedPane1.insertTab("Structure Mapping", null, getStructureMappingPanel(), null, TAB_IDX_STRUCTURE_MAPPING);
-			ivjJTabbedPane1.insertTab("Initial Conditions", null, getInitialConditionsPanel(), null, TAB_IDX_INITIAL_CONDITIONS);
-			ivjJTabbedPane1.insertTab("Reaction Mapping", null, getReactionSpecsPanel(), null, TAB_IDX_REACTION_MAPPING);
+//			ivjJTabbedPane1.insertTab("Initial Conditions", null, getInitialConditionsPanel(), null, TAB_IDX_INITIAL_CONDITIONS);
+//			ivjJTabbedPane1.insertTab("Reaction Mapping", null, getReactionSpecsPanel(), null, TAB_IDX_REACTION_MAPPING);
 			ivjJTabbedPane1.insertTab("Electrical Mapping", null, getElectricalMembraneMappingPanel(), null, TAB_IDX_ELECTRICAL_MAPPING);
 			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, TAB_IDX_VIEW_MATH);
 			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, TAB_IDX_SIMULATION);
 			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, TAB_IDX_ANALYSIS);
-			ivjJTabbedPane1.insertTab("SPPR", null, getSPPRPanel(), null, 7);
+			ivjJTabbedPane1.insertTab("Parameters", null, getSPPRPanel(), null, TAB_IDX_SPPR);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

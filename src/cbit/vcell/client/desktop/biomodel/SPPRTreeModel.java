@@ -1,5 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+
 import javax.swing.tree.DefaultTreeModel;
 
 import cbit.vcell.biomodel.BioModel;
@@ -27,7 +31,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	static final String REACTIONS_FOLDER = "Reactions";
 	static final String APPLICATIONP_FOLDER = "Application Parameters";
 	static final String GLOBALP_FOLDER = "Global Parameters";
-	static final String SPECIES_FOLDER = "Species Contexts";
+	static final String SPECIES_FOLDER = "Initial Conditions";
 	
 	
 	public SPPRTreeModel() {
@@ -79,19 +83,35 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	    rootNode.add(categoryNode);
 	    BioModelNode speciesNode = null;
 	    SpeciesContext[] speciesContexts = getSimulationContext().getModel().getSpeciesContexts();
+    	ArrayList <String> aList = new ArrayList<String>();
 	    for (int i = 0; i < speciesContexts.length; i++) {
-			speciesNode = new BioModelNode(speciesContexts[i].getName(), false);
-			categoryNode.add(speciesNode);
+	    	aList.add(speciesContexts[i].getName());
 		}
+	    if(aList != null) {
+	    	Collections.sort(aList);
+	    	Iterator<String> iterator = aList.iterator();
+	    	while(iterator.hasNext()) {
+	    		speciesNode = new BioModelNode(iterator.next(), false);
+	    		categoryNode.add(speciesNode);
+	    	}
+	    }
 	    
 	    categoryNode = new BioModelNode(SPPRTreeModel.GLOBALP_FOLDER, true);
 	    rootNode.add(categoryNode);
 	    BioModelNode globalParamNode = null;
 	    ModelParameter[] modelParameters = getSimulationContext().getModel().getModelParameters();
+	    aList = new ArrayList<String>();
 	    for (int i = 0; i < modelParameters.length; i++) {
-			globalParamNode = new BioModelNode(modelParameters[i].getName(), false);
-			categoryNode.add(globalParamNode);
+	    	aList.add(modelParameters[i].getName());
 		}
+	    if(aList != null) {
+	    	Collections.sort(aList);
+	    	Iterator<String> iterator = aList.iterator();
+	    	while(iterator.hasNext()) {
+	    		globalParamNode = new BioModelNode(iterator.next(), false);
+	    		categoryNode.add(globalParamNode);
+	    	}
+	    }
 
 //	    categoryNode = new BioModelNode(SPPRTreeModel.APPLICATIONP_FOLDER, true);
 //	    rootNode.add(categoryNode);
@@ -107,10 +127,18 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	    rootNode.add(categoryNode);
 	    BioModelNode reactionsNode = null;
 	    ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps();
+	    aList = new ArrayList<String>();
 	    for (int i = 0; i < reactionSteps.length; i++) {
-			reactionsNode = new BioModelNode(reactionSteps[i].getName(), false);
-			categoryNode.add(reactionsNode);
+	    	aList.add(reactionSteps[i].getName());
 		}
+	    if(aList != null) {
+	    	Collections.sort(aList);
+	    	Iterator<String> iterator = aList.iterator();
+	    	while(iterator.hasNext()) {
+				reactionsNode = new BioModelNode(iterator.next(), false);
+				categoryNode.add(reactionsNode);
+	    	}
+	    }
 	    
 //	    categoryNode = new BioModelNode(SPPRTreeModel.RATERULES_FOLDER, true);
 //	    BioModelNode rateRules = null;
@@ -175,11 +203,6 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 				
 				getSimulationContext().getModel().getReactionSteps()[i].getKinetics().addPropertyChangeListener(this);
 				getSimulationContext().getModel().getReactionSteps()[i].addPropertyChangeListener(this);
-//				try {	// ???
-//					getSimulationContext().getModel().getReactionSteps()[i].rebindAllToModel(getSimulationContext().getModel());
-//				}catch (Exception e){
-//					e.printStackTrace(System.out);
-//				}
 				if(getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants() != null) {
 					for (int j=0; j<getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants().length; j++) {
 						getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants()[j].removePropertyChangeListener(this);
@@ -207,7 +230,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
 			if (evt.getPropertyName().equals("species")){
-	            System.out.println("TreeModel event: species");
+//	            System.out.println("TreeModel event: species");
 				refreshTree();
 				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
 				Species oldValue[] = (Species[])evt.getOldValue();
@@ -223,7 +246,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 			} else if (evt.getPropertyName().equals("speciesContexts")){
-	            System.out.println("TreeModel event: speciesContexts");
+//	            System.out.println("TreeModel event: speciesContexts");
 				refreshTree();
 				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
 				SpeciesContext oldValue[] = (SpeciesContext[])evt.getOldValue();
@@ -239,7 +262,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 			} else if (evt.getPropertyName().equals("reactionSteps")){
-	            System.out.println("TreeModel event: reactionSteps");
+//	            System.out.println("TreeModel event: reactionSteps");
 				refreshTree();
 				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
 				ReactionStep oldValue[] = (ReactionStep[])evt.getOldValue();
@@ -255,7 +278,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 			} else if (evt.getPropertyName().equals("reactionParticipants")){
-	            System.out.println("TreeModel event: reactionParticipants");
+//	            System.out.println("TreeModel event: reactionParticipants");
 				refreshTree();
 				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
 				ReactionParticipant oldValue[] = (ReactionParticipant[])evt.getOldValue();
@@ -271,7 +294,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 			} else if (evt.getPropertyName().equals("modelParameters")){
-	            System.out.println("TreeModel event: modelParameter");
+//	            System.out.println("TreeModel event: modelParameter");
 				refreshTree();
 				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
 				ModelParameter oldValue[] = (ModelParameter[])evt.getOldValue();
@@ -287,7 +310,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 			} else if (evt.getPropertyName().equals("name")){
-	            System.out.println("TreeModel event: name");
+//	            System.out.println("TreeModel event: name");
 				refreshTree();
 				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
 			} else {

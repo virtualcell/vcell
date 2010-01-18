@@ -43,7 +43,7 @@ public class SPPRPanel extends JPanel {
 	private TreeSelectionModel treeSelectionModel = null;
 
 	class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener, MouseListener, 
-		javax.swing.event.TreeExpansionListener, javax.swing.event.TreeModelListener {
+		javax.swing.event.TreeExpansionListener {
 		
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == SPPRPanel.this.getSpprTree() && (evt.getPropertyName().equals("selectionModel"))) 
@@ -53,8 +53,7 @@ public class SPPRPanel extends JPanel {
 			if (e.getSource() == SPPRPanel.this.getSelectionModel()) 
 				treeValueChanged(e);
 		}
-		public void mouseClicked(MouseEvent e) {
-		}
+		public void mouseClicked(MouseEvent e) {}
 		public void mouseEntered(MouseEvent e) {}
 		public void mouseExited(MouseEvent e) {}
 		public void mousePressed(MouseEvent e) {}
@@ -67,23 +66,20 @@ public class SPPRPanel extends JPanel {
 			if (e.getSource() == spprTree) 
 				spprTreeExpanded(e);
 		}
-		public void treeNodesChanged(TreeModelEvent e) {
-//			restoreTreeExpansion(getSpprTree());
-		}
-		public void treeNodesInserted(TreeModelEvent e) {
-		}
-		public void treeNodesRemoved(TreeModelEvent e) {
-		}
-		public void treeStructureChanged(TreeModelEvent e) {
-//			restoreTreeExpansion(getSpprTree());
-		};
 	};
 	
 	public static void main(String[] args) {
 	}
 	
 	public class FolderStatus {
-		static final int numFolders = 5;
+		static final int RATERULES_FOLDER = 0;
+		static final int REACTIONS_FOLDER = 1;
+		static final int APPLICATIONP_FOLDER = 2;
+		static final int GLOBALP_FOLDER = 3;
+		static final int SPECIES_FOLDER = 4;
+		static final int LAST_FOLDER = 4;		// make sure this is equal with the highest folder index
+		static final int numFolders = LAST_FOLDER + 1;
+		
 		private boolean[] collapsedStatus = new boolean[numFolders];
 		
 		FolderStatus() {
@@ -93,23 +89,23 @@ public class SPPRPanel extends JPanel {
 			setGlobalParametersFolderCollapsed();
 			setSpeciesContextsFolderCollapsed();
 		}
-		public boolean isRateRulesFolderCollapsed()				{ return collapsedStatus[0]; }
-		public boolean isReactionFolderCollapsed()				{ return collapsedStatus[1]; }
-		public boolean isApplicationParametersFolderCollapsed() { return collapsedStatus[2]; }
-		public boolean isGlobalParametersFolderCollapsed()		{ return collapsedStatus[3]; }
-		public boolean isSpeciesContextsFolderCollapsed()		{ return collapsedStatus[4]; }
+		public boolean isRateRulesFolderCollapsed()				{ return collapsedStatus[RATERULES_FOLDER]; }
+		public boolean isReactionFolderCollapsed()				{ return collapsedStatus[REACTIONS_FOLDER]; }
+		public boolean isApplicationParametersFolderCollapsed() { return collapsedStatus[APPLICATIONP_FOLDER]; }
+		public boolean isGlobalParametersFolderCollapsed()		{ return collapsedStatus[GLOBALP_FOLDER]; }
+		public boolean isSpeciesContextsFolderCollapsed()		{ return collapsedStatus[SPECIES_FOLDER]; }
 		
-		public void setRateRulesFolderCollapsed()				{ collapsedStatus[0] = true; }
-		public void setReactionFolderCollapsed()				{ collapsedStatus[1] = true; }
-		public void setApplicationParametersFolderCollapsed() 	{ collapsedStatus[2] = true; }
-		public void setGlobalParametersFolderCollapsed()		{ collapsedStatus[3] = true; }
-		public void setSpeciesContextsFolderCollapsed()			{ collapsedStatus[4] = true; }
+		public void setRateRulesFolderCollapsed()				{ collapsedStatus[RATERULES_FOLDER] = true; }
+		public void setReactionFolderCollapsed()				{ collapsedStatus[REACTIONS_FOLDER] = true; }
+		public void setApplicationParametersFolderCollapsed() 	{ collapsedStatus[APPLICATIONP_FOLDER] = true; }
+		public void setGlobalParametersFolderCollapsed()		{ collapsedStatus[GLOBALP_FOLDER] = true; }
+		public void setSpeciesContextsFolderCollapsed()			{ collapsedStatus[SPECIES_FOLDER] = true; }
 
-		public void setRateRulesFolderExpanded()				{ collapsedStatus[0] = false; }
-		public void setReactionFolderExpanded()					{ collapsedStatus[1] = false; }
-		public void setApplicationParametersFolderExpanded() 	{ collapsedStatus[2] = false; }
-		public void setGlobalParametersFolderExpanded()			{ collapsedStatus[3] = false; }
-		public void setSpeciesContextsFolderExpanded()			{ collapsedStatus[4] = false; }
+		public void setRateRulesFolderExpanded()				{ collapsedStatus[RATERULES_FOLDER] = false; }
+		public void setReactionFolderExpanded()					{ collapsedStatus[REACTIONS_FOLDER] = false; }
+		public void setApplicationParametersFolderExpanded() 	{ collapsedStatus[APPLICATIONP_FOLDER] = false; }
+		public void setGlobalParametersFolderExpanded()			{ collapsedStatus[GLOBALP_FOLDER] = false; }
+		public void setSpeciesContextsFolderExpanded()			{ collapsedStatus[SPECIES_FOLDER] = false; }
 	}
 	public FolderStatus getFolderStatus() {
 		return folderStatus;
@@ -129,7 +125,7 @@ public class SPPRPanel extends JPanel {
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
 		add(getOuterSplitPane(), gridBagConstraints);
-		System.out.println("Test");
+		System.out.println("SPPRPanel constructor");
 	}
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
@@ -206,7 +202,7 @@ public class SPPRPanel extends JPanel {
 				spprTree.addTreeSelectionListener((TreeSelectionListener) ivjEventHandler);
 				spprTree.addTreeExpansionListener((TreeExpansionListener) ivjEventHandler);
 				spprTree.setModel(getSpprTreeModel());
-				spprTree.getModel().addTreeModelListener((TreeModelListener) ivjEventHandler);
+//				spprTree.getModel().addTreeModelListener((TreeModelListener) ivjEventHandler);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -271,42 +267,49 @@ public class SPPRPanel extends JPanel {
 				return;
 			}
 		    Object nodeInfo = node.getUserObject();
-		    if (!node.getAllowsChildren()) {
-		        String component = (String)nodeInfo;
-				System.out.println("   leaf: " + component);
+		    if (!node.getAllowsChildren()) {			// it's a leaf, no children
+		        String leaf = (String)nodeInfo;
+				System.out.print("   leaf: " + leaf);
 				BioModelNode parentNode = (BioModelNode) node.getParent();
 				nodeInfo =  parentNode.getUserObject();
-				component = (String)nodeInfo;
-				System.out.println("Folder: " + component);
-				if(component == SPPRTreeModel.SPECIES_FOLDER) {
-					outerSplitPane.setRightComponent(getInitialConditionsPanel());
-				} else if(component == SPPRTreeModel.GLOBALP_FOLDER) {
-					outerSplitPane.setRightComponent(getModelParameterPanel());
-				} else if(component == SPPRTreeModel.APPLICATIONP_FOLDER) {
-					outerSplitPane.setRightComponent(getModelParameterPanel());
-				} else if(component == SPPRTreeModel.REACTIONS_FOLDER) {
-					outerSplitPane.setRightComponent(getReactionSpecsPanel());
-				} else if(component == SPPRTreeModel.RATERULES_FOLDER) {
-					outerSplitPane.setRightComponent(null);
-				}
-
-		    } else {
-		        String component = (String)nodeInfo;
-				System.out.println("Folder: " + component);
-				if(component == SPPRTreeModel.SPECIES_FOLDER) {
-					outerSplitPane.setRightComponent(getInitialConditionsPanel());
-				} else if(component == SPPRTreeModel.GLOBALP_FOLDER) {
-					outerSplitPane.setRightComponent(getModelParameterPanel());
-				} else if(component == SPPRTreeModel.APPLICATIONP_FOLDER) {
-					outerSplitPane.setRightComponent(getModelParameterPanel());
-				} else if(component == SPPRTreeModel.REACTIONS_FOLDER) {
-					outerSplitPane.setRightComponent(getReactionSpecsPanel());
-				} else if(component == SPPRTreeModel.RATERULES_FOLDER) {
-					outerSplitPane.setRightComponent(null);
-				}
+				String parent = (String)nodeInfo;
+				System.out.println("   ... of folder: " + parent);
+		        setupRightComponent(parent, leaf);
+		    } else {								// it's a folder
+		    	String leaf = "";
+		        String folder = (String)nodeInfo;
+				System.out.println("Folder: " + folder);
+		        setupRightComponent(folder, leaf);
 		    }
 		}catch (Exception ex){
 			ex.printStackTrace(System.out);
+		}
+	}
+	
+	private void setupRightComponent(String folder, String leaf) {
+		if(folder == SPPRTreeModel.SPECIES_FOLDER) {
+			//  replace right-side panel only if the correct one is not there already
+			if(outerSplitPane.getRightComponent() != getInitialConditionsPanel()) {
+				outerSplitPane.setRightComponent(getInitialConditionsPanel());
+			}
+			getSpprTreeModel().firePropertyChange("spprSpeciesSelection", "", leaf);
+		} else if(folder == SPPRTreeModel.GLOBALP_FOLDER) {
+			if(outerSplitPane.getRightComponent() != getModelParameterPanel()) {
+				outerSplitPane.setRightComponent(getModelParameterPanel());
+			}
+			getSpprTreeModel().firePropertyChange("spprGlobalSelection", "", leaf);
+		} else if(folder == SPPRTreeModel.APPLICATIONP_FOLDER) {
+			if(outerSplitPane.getRightComponent() != getModelParameterPanel()) {
+				outerSplitPane.setRightComponent(getModelParameterPanel());
+			}
+			getSpprTreeModel().firePropertyChange("spprApplicationSelection", "", leaf);
+		} else if(folder == SPPRTreeModel.REACTIONS_FOLDER) {
+			if(outerSplitPane.getRightComponent() != getReactionSpecsPanel()) {
+				outerSplitPane.setRightComponent(getReactionSpecsPanel());
+			}
+			getSpprTreeModel().firePropertyChange("spprReactionsSelection", "", leaf);
+		} else if(folder == SPPRTreeModel.RATERULES_FOLDER) {
+			outerSplitPane.setRightComponent(null);
 		}
 	}
 	
