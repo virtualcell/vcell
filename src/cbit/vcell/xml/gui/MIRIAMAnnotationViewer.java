@@ -10,23 +10,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.ScrollPaneConstants;
 
 import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.VCMetaData;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFWriter;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.biomodel.meta.VCID;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.registry.OpenRegistry;
-import cbit.vcell.xml.gui.MIRIAMAnnotationEditor;
 
 public class MIRIAMAnnotationViewer extends JPanel {
 	private JTextArea LoStextArea;
@@ -128,7 +123,7 @@ public class MIRIAMAnnotationViewer extends JPanel {
 			strBuffer.append(rsc.getURI());
 			Object object = biomodel.getVCMetaData().getRegistry().forResource(rsc).object();
 			if (object instanceof Identifiable) {
-				strBuffer.append(" ============= " + VCID.getVCID(biomodel, (Identifiable)object).toASCIIString());
+				strBuffer.append(" ============= " + biomodel.getVCID((Identifiable)object).toASCIIString());
 			}
 			strBuffer.append("\n");
 		}

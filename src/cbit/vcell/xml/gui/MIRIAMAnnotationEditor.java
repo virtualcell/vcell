@@ -808,8 +808,8 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			new TreeMap<Identifiable, List<Statement>>(
 					new Comparator<Identifiable>(){
 						public int compare(Identifiable o1, Identifiable o2) {
-							VCID vcid1 = VCID.getVCID(bioModel, o1);
-							VCID vcid2 = VCID.getVCID(bioModel, o2);
+							VCID vcid1 = bioModel.getVCID(o1);
+							VCID vcid2 = bioModel.getVCID(o2);
 							return vcid1.toASCIIString().compareTo(vcid2.toASCIIString());
 						}}
 			);

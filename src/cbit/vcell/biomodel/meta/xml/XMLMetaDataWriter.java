@@ -9,8 +9,8 @@ import org.jdom.Text;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.NonRDFAnnotation;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -25,7 +25,7 @@ import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 
 public class XMLMetaDataWriter extends XMLMetaData {
 	
-	public static Element getElement(VCMetaData metaData, cbit.vcell.biomodel.BioModel bioModel) {
+	public static Element getElement(VCMetaData metaData, IdentifiableProvider identifiableProvider) {
 		Element element = new Element(XMLMetaData.VCMETADATA_TAG, VCMetaData.nsVCML);
 		Element elementRDF = XMLRDFWriter.createElement(metaData);
 		// add RDF data
@@ -33,7 +33,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 			element.addContent(elementRDF);
 		}
 
-		Element elementNonRDFList = createNonRDFAnnotationElement(metaData,bioModel);
+		Element elementNonRDFList = createNonRDFAnnotationElement(metaData,identifiableProvider);
 		element.addContent(elementNonRDFList);
 
 /*		Set<Entry<OpenEntry, NonRDFAnnotation>> allNonRdfAnnotations = metaData.getAllNonRDFAnnotations();
@@ -78,7 +78,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 			OpenEntry entry = metaData.getRegistry().forResource(uri);
 			Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG, VCMetaData.nsVCML);
 			entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, uri.getURI(), VCMetaData.nsVCML);
-			VCID vcid = VCID.getVCID(bioModel, (Identifiable)entry.object());
+			VCID vcid = identifiableProvider.getVCID((Identifiable)entry.object());
 			entryElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString(), VCMetaData.nsVCML);
 			bindingListElement.addContent(entryElement);
 		}
@@ -92,7 +92,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 	 * 
 	 * @return the created NonRDFAnnotationListElement
 	 */
-	private static Element createNonRDFAnnotationElement(VCMetaData metaData, BioModel bioModel) {
+	private static Element createNonRDFAnnotationElement(VCMetaData metaData, IdentifiableProvider identifiableProvider) {
 		Set<Entry<OpenEntry, NonRDFAnnotation>> allNonRdfAnnotations = metaData.getAllNonRDFAnnotations();
 		Element nonRDFAnnotationListElement = new Element(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG);
 		Iterator<Entry<OpenEntry, NonRDFAnnotation>> iter = allNonRdfAnnotations.iterator();
@@ -102,7 +102,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 			NonRDFAnnotation nonRDFAnnotation = entry.getValue();
 			if (!nonRDFAnnotation.isEmpty()){
 				Element nonRDFAnnotationElement = new Element(XMLMetaData.NONRDF_ANNOTATION_TAG);
-				nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, VCID.getVCID(bioModel,(Identifiable)openEntry.object()).toASCIIString(), VCMetaData.nsVCML);
+				nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, identifiableProvider.getVCID((Identifiable)openEntry.object()).toASCIIString(), VCMetaData.nsVCML);
 				nonRDFAnnotationListElement.addContent(nonRDFAnnotationElement);
 				String freeTextAnnotation = nonRDFAnnotation.getFreeTextAnnotation();
 				if (freeTextAnnotation!=null && freeTextAnnotation.length()>0){
@@ -128,28 +128,5 @@ public class XMLMetaDataWriter extends XMLMetaData {
 		}
 		return nonRDFAnnotationListElement;
 	}
-
-//	public static Element getRDFElement(VCMetaData metaData, cbit.vcell.biomodel.BioModel bioModel, Identifiable identifiable) {
-//		Element element = new Element(XMLMetaData.VCMETADATA_TAG, nsVCML);
-//		Element elementRDF = XMLRDFWriter.createElement(metaData);
-//		// add RDF data
-//		if(elementRDF != null) {
-//			element.addContent(elementRDF);
-//		}
-//		// add resource binding table
-//		Element bindingListElement = new Element(XMLMetaData.URI_BINDING_LIST_TAG,nsVCML);
-//		URI uri = metaData.registry().forObject(identifiable).uri();
-//		if (uri!=null){
-//			OpenEntry entry = metaData.registry().forURI(uri);
-//			Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG, nsVCML);
-//			entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, uri.toASCIIString(), nsVCML);
-//			VCID vcid = VCID.getVCID(bioModel, (Identifiable)entry.object());
-//			entryElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString(), nsVCML);
-//			bindingListElement.addContent(entryElement);
-//		}
-//		element.addContent(bindingListElement);
-//		
-//		return element;
-//	}
 	
 }
