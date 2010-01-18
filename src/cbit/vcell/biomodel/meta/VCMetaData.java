@@ -21,7 +21,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Selector;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-import cbit.vcell.biomodel.BioModel;
+
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.xml.XMLTags;
@@ -37,7 +37,7 @@ public class VCMetaData implements RDFBox {
 	
 	public static final Namespace nsVCML = Namespace.getNamespace("vcml",XMLTags.VCML_NS);
 
-	protected BioModel bioModel;
+	protected IdentifiableProvider identifiableProvider;
 	protected RDFBox rdfBox = new RDFBox.Default();
 	protected String baseURI;
 	protected OpenRegistry registry = new OpenRegistry();
@@ -45,8 +45,8 @@ public class VCMetaData implements RDFBox {
 				new IdentityHashMap<OpenEntry, NonRDFAnnotation>();
 	private KeyValue keyValue = null;
 	
-	public VCMetaData(BioModel bioModel, String baseURI, KeyValue key){
-		this.bioModel = bioModel;
+	public VCMetaData(IdentifiableProvider arg_IdentifiableProvider, String baseURI, KeyValue key){
+		this.identifiableProvider = arg_IdentifiableProvider;
 		this.baseURI = baseURI;
 		this.keyValue = key;
 	}
@@ -76,7 +76,7 @@ public class VCMetaData implements RDFBox {
 	}
 	
 	public List<Statement> getStatements(Identifiable identifiable){
-//		System.out.println("looking for statements for identifiable : "+VCID.getVCID(bioModel, identifiable).toASCIIString());
+		//System.out.println("looking for statements for identifiable : "+identifiableProvider.getVCID(identifiable).toASCIIString());
 		final Resource resource = getResource(identifiable);
 		if (resource==null){
 //			System.out.println(".....no resouce found");
@@ -90,13 +90,16 @@ public class VCMetaData implements RDFBox {
 			public boolean isSimple() {return false;}
 			public boolean test(Statement arg0) {
 				Resource subject = arg0.getSubject();
-				if (subject.getNameSpace()!=null && !subject.getNameSpace().toString().equals("#") && !subject.getNameSpace().equals(resource.getNameSpace())){
-					System.out.println("resouce mismatch: "+subject+" :: "+resource+":   namespace S: "+subject.getNameSpace()+" differs from R: "+resource.getNameSpace());
+				String nameSpace = subject.getNameSpace();
+				if (nameSpace!=null && !nameSpace.toString().equals("#") && !nameSpace.equals(resource.getNameSpace())){
+					System.out.println("resouce mismatch: "+subject+" :: "+resource+":   namespace S: "+nameSpace+" differs from R: "+resource.getNameSpace());
 					return false;
 				}
-				if (subject.toString().startsWith("#") && resource.getNameSpace().equals("http://vcell.org/data/")){
-					String rest = subject.toString().substring(1);
-					if (resource.toString().endsWith(rest)){
+				String resourceString = resource.toString();
+				String subjectString = subject.toString();
+				if (subjectString.startsWith("#") && resource.getNameSpace().equals("http://vcell.org/data/")){
+					String rest = subjectString.substring(1);
+					if (resourceString.endsWith(rest)){
 						return true;
 					}
 				}
@@ -124,12 +127,12 @@ public class VCMetaData implements RDFBox {
 		List<Statement> statements = new ArrayList<Statement>();
 		while (stmtIter.hasNext()){
 			Statement statement = stmtIter.nextStatement();
-			System.out.println("....."+statement.getSubject()+"("+statement.getSubject().hashCode()+")"+
-								" : "+statement.getPredicate()+"("+statement.getPredicate().hashCode()+")"+
-								" : "+statement.getObject()+"("+statement.getObject().hashCode()+")");
+//			System.out.println("....."+statement.getSubject()+"("+statement.getSubject().hashCode()+")"+
+//								" : "+statement.getPredicate()+"("+statement.getPredicate().hashCode()+")"+
+//								" : "+statement.getObject()+"("+statement.getObject().hashCode()+")");
 			statements.add(statement);
 		}
-		System.out.println("");
+//		System.out.println("");
 		return statements;
 	}
 	

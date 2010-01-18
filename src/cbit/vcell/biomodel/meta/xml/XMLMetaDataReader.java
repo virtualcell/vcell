@@ -8,6 +8,8 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.xml.sax.SAXParseException;
 
+import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.VCID.InvalidVCIDException;
@@ -15,8 +17,6 @@ import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDF;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFReader;
 import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.biomodel.BioModel;
 
 /**
  * Turns a JDOM Element into meta data 
@@ -27,7 +27,7 @@ import cbit.vcell.biomodel.BioModel;
 public class XMLMetaDataReader extends XMLMetaData {
 	
 	@SuppressWarnings("unchecked")
-	public static void readFromElement(VCMetaData metaData, BioModel bioModel, Element metadataElement) throws XmlParseException {
+	public static void readFromElement(VCMetaData metaData, IdentifiableProvider identifiableProvider, Element metadataElement) throws XmlParseException {
 		Element bindingElement = metadataElement.getChild(XMLMetaData.URI_BINDING_LIST_TAG, VCMetaData.nsVCML);
 		if (bindingElement!=null){
 			// read binding
@@ -42,7 +42,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 					// create VCID
 					VCID vcid = VCID.fromString(vcidString);
 					// lookup Identifiable object using VCID ... add to entry.
-					openEntry.setObject(VCID.getIdentifiableObject(bioModel, vcid));
+					openEntry.setObject(identifiableProvider.getIdentifiableObject(vcid));
 				} catch (VCID.InvalidVCIDException e){
 					e.printStackTrace();
 					throw new XmlParseException(e.getMessage());
@@ -74,7 +74,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 					e.printStackTrace();
 					throw new XmlParseException(e.getMessage());
 				}
-				Identifiable identifiable = VCID.getIdentifiableObject(bioModel, vcid);
+				Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
 				
 				// populate the annotation
 				Element freeTextAnnotationElement = nonRDFAnnotationElement.getChild(XMLMetaData.FREETEXT_TAG);

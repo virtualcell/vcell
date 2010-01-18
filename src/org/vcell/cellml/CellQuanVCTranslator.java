@@ -1,45 +1,31 @@
 package org.vcell.cellml;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.dictionary.MolMassTable;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryTest;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.VariableHash;
-import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.OdeEquation;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLParser;
-import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.xml.XmlParseException;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.xml.XMLTags;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
-import org.jdom.Comment;
-import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.VCDocument;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import cbit.util.xml.JDOMTreeWalker;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.VariableHash;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionMathMLParser;
+import cbit.vcell.parser.MathMLTags;
 
 /**
  * Implementation of the translation from a CellML Quantitative model to a VCML math model. The actual mapping is (ignoring possible mangling):
@@ -119,7 +105,6 @@ public class CellQuanVCTranslator extends Translator {
 	
 	public CellQuanVCTranslator() { 
 //		sNamespace = Namespace.getNamespace(CELLML_NS_PREFIX, CELLML_NS);
-//		tNamespace = Namespace.getNamespace(XMLTags.VCML_NS);
 		sNamespace = Namespace.getNamespace(CELLMLTags.CELLML_NS);
 		sAttNamespace = Namespace.getNamespace("");                   //dummy NS  
 		mathns = Namespace.getNamespace(MATHML_NS);

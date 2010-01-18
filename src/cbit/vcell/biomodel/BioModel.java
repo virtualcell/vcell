@@ -17,30 +17,25 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.VCellNames;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.stoch.FluxSolver;
-import cbit.vcell.solver.stoch.MassActionSolver;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
+public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, IdentifiableProvider
 {
 	private Version fieldVersion = null;
 	private String fieldName = null;
@@ -94,14 +89,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (1/19/01 3:31:00 PM)
  * @param simulationContext cbit.vcell.mapping.SimulationContext
@@ -143,14 +130,6 @@ public void addSimulationContext(SimulationContext simulationContext) throws jav
  */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
-}
-
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 
 
@@ -302,48 +281,8 @@ public BioModelChildSummary createBioModelChildSummary() {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
 
@@ -351,14 +290,6 @@ public void fireVetoableChange(java.lang.String propertyName, int oldValue, int 
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
@@ -716,14 +647,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (1/19/01 3:31:00 PM)
  * @param simulationContext cbit.vcell.mapping.SimulationContext
@@ -756,14 +679,6 @@ public void removeSimulationContext(SimulationContext simulationContext) throws 
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
-}
-
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
 
@@ -1025,6 +940,57 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 			fieldModel.populateVCMetadata(bMetadataPopulated);
 		}
 	}
+}
+
+public Identifiable getIdentifiableObject(VCID vcid) {
+	if (vcid.getClassName().equals("Species")){
+		String localName = vcid.getLocalName();
+		return getModel().getSpecies(localName);
+	}
+	if (vcid.getClassName().equals("Structure")){
+		String localName = vcid.getLocalName();
+		return getModel().getStructure(localName);
+	}
+	if (vcid.getClassName().equals("ReactionStep")){
+		String localName = vcid.getLocalName();
+		return getModel().getReactionStep(localName);
+	}
+	if (vcid.getClassName().equals("BioModel")){
+		return this;
+	}
+	return null;
+}
+
+public VCID getVCID(Identifiable identifiable) {
+	String localName;
+	String className;
+	if (identifiable instanceof Species){
+		localName = ((Species)identifiable).getCommonName();
+		className = "Species";
+	}else if (identifiable instanceof Structure){
+		localName = ((Structure)identifiable).getName();
+		className = "Structure";
+	}else if (identifiable instanceof ReactionStep){
+		localName = ((ReactionStep)identifiable).getName();
+		className = "ReactionStep";
+	}else if (identifiable instanceof BioModel){
+		localName = ((BioModel)identifiable).getName();
+		className = "BioModel";
+	}else{
+		throw new RuntimeException("unsupported Identifiable class");
+	}
+	
+	localName = TokenMangler.mangleVCId(localName);
+		
+	VCID vcid;
+	try {
+		vcid = VCID.fromString(className+"("+localName+")");
+	} catch (VCID.InvalidVCIDException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage());
+	}
+
+	return vcid;
 }
 
 }

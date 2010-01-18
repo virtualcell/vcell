@@ -1,18 +1,16 @@
 package org.vcell.cellml;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.parser.MathMLTags;
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.filter.ContentFilter;
-import org.jdom.filter.ElementFilter;
-import org.vcell.util.TokenMangler;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.jdom.filter.ElementFilter;
+
+import cbit.util.xml.JDOMTreeWalker;
+import cbit.vcell.parser.MathMLTags;
 /**
  * Utility translation class, mainly trims the source XML document to the required elements that are of interest in the
  translation.
@@ -105,9 +103,9 @@ private void filterTree(Element e) {
 		//also works for the CellML mathML.
 		/*if (child.getName().equals(CELLMLTags.MATH) || child.getName().equals(CELLMLTags.ANNOTATION) ||
 			child.getName().equals(SBMLTags.NOTES) || child.getName().equals(XMLTags.AnnotationTag))             */
-		if (child.getName().equals(XMLTags.AnnotationTag)) {
-			continue;
-		}
+//		if (child.getName().equals(XMLTags.AnnotationTag)) {
+//			continue;
+//		}
 		if (matchesElement(child)) {
 			filterTree(child);
 		} else { 
@@ -170,8 +168,6 @@ private void filterTree(Element e) {
 
 		if (mangleType.equals(QUANCELLVC_MANGLE) || mangleType.equals(QUALCELLVC_MANGLE))
 			mangleCELLVC(att);
-		else if (mangleType.equals(VCQUANCELL_MANGLE) || mangleType.equals(VCQUALCELL_MANGLE))
-			mangleVCCELL(att);
 		else
 			return;
 	}
@@ -183,8 +179,6 @@ private void filterTree(Element e) {
 
     	if (mangleType.equals(QUANCELLVC_MANGLE) || mangleType.equals(QUALCELLVC_MANGLE))
 			mangleCELLVC(e);
-		else if (mangleType.equals(VCQUANCELL_MANGLE) || mangleType.equals(VCQUALCELL_MANGLE))
-			mangleVCCELL(e);
 		else
 			return;	
 	}
@@ -227,51 +221,6 @@ private void filterTree(Element e) {
       			if (temp.getTextTrim().equals(key))     
 					temp.setText(value);
 			}
-    	}
-	}
-
-
-	private void mangleVCCELL(Attribute att) {
-
-		//do not mangle unit symbols, since they will be not be translated. Also, allow spaces in param roles. 
-		if (att.getName().equals(XMLTags.VCUnitDefinitionAttrTag) || att.getName().equals(XMLTags.ParamRoleAttrTag)) {
-			return;
-		}
-		String value = att.getValue();
-		if (value.length() == 0)
-			return;
-		if (isFloat(value))
-			return;
-		TokenMangler tm = new TokenMangler();
-		String nvalue = tm.mangleToSName(value);
-		if (nvalue.equals(value))
-			return;
-		else {
-			att.setValue(nvalue);
-			hash.put(value, nvalue);
-			//System.out.println("TransFilter mangle:" + att.getName() + " " + value + " " + nvalue);
-		}
-	}
-
-
-	private void mangleVCCELL(Element e) {
-
-		String mangleE[] = { XMLTags.ParameterTag, XMLTags.RateTag, XMLTags.InitialTag, XMLTags.VolumeVariableTag, 
-							 XMLTags.ConstantTag, XMLTags.FunctionTag};
-    	JDOMTreeWalker walker;
-    	Element temp;
-    	String key, value;
-    	Iterator i = hash.keySet().iterator();
-    	while (i.hasNext()) {
-	    	key = (String)i.next();
-	    	value = (String)hash.get(key);
-    		for (int j = 0; j < mangleE.length; j++) {
-    			walker = new JDOMTreeWalker(e, new ElementFilter(mangleE[j]));
-    			while (walker.hasNext()) {
-					temp = (Element)walker.next();
-					temp.setText(replaceString(temp.getText(), key, value));
-    			}
-    		}
     	}
 	}
 

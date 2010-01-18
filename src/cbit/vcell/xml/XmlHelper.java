@@ -9,7 +9,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.cellml.CellQuanVCTranslator;
-import org.vcell.cellml.Translator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.util.BeanUtils;
@@ -371,7 +370,7 @@ public static VCDocument importMathCellML(VCLogger vcLogger, XMLSource xmlSource
 	}
 	Document xmlDoc = xmlSource.getXmlDoc();
 	String xmlString = XmlUtil.xmlToString(xmlDoc, false);
-	Translator cellmlTranslator = new CellQuanVCTranslator();
+	CellQuanVCTranslator cellmlTranslator = new CellQuanVCTranslator();
 	VCDocument vcDoc = cellmlTranslator.translate(new StringReader(xmlString), false);
 	vcDoc.refreshDependencies();
     return vcDoc;

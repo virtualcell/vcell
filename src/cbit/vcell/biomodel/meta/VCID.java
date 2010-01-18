@@ -4,10 +4,6 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.Structure;
 
 public class VCID {
 	private String id;
@@ -47,10 +43,7 @@ public class VCID {
 			throw new InvalidVCIDException("illegal syntax");
 		}
 		this.localName = name;
-		if (!class_Name.equals("Species") &&
-			!class_Name.equals("Structure") &&
-			!class_Name.equals("ReactionStep") &&
-			!class_Name.equals("BioModel")){
+		if (class_Name.length()<1){
 			throw new InvalidVCIDException("Invalid VCID: unable to parse class");
 		}
 		this.className = class_Name;
@@ -64,53 +57,6 @@ public class VCID {
 		return localName;
 	}
 	
-	public static Identifiable getIdentifiableObject(BioModel bioModel, VCID vcid) {
-		if (vcid.getClassName().equals("Species")){
-			String localName = vcid.getLocalName();
-			return bioModel.getModel().getSpecies(localName);
-		}
-		if (vcid.getClassName().equals("Structure")){
-			String localName = vcid.getLocalName();
-			return bioModel.getModel().getStructure(localName);
-		}
-		if (vcid.getClassName().equals("ReactionStep")){
-			String localName = vcid.getLocalName();
-			return bioModel.getModel().getReactionStep(localName);
-		}
-		if (vcid.getClassName().equals("BioModel")){
-			return bioModel;
-		}
-		return null;
-	}
-
-	public static VCID getVCID(BioModel bioModel, Identifiable identifiable) {
-		String localName;
-		String className;
-		if (identifiable instanceof Species){
-			localName = ((Species)identifiable).getCommonName();
-			className = "Species";
-		}else if (identifiable instanceof Structure){
-			localName = ((Structure)identifiable).getName();
-			className = "Structure";
-		}else if (identifiable instanceof ReactionStep){
-			localName = ((ReactionStep)identifiable).getName();
-			className = "ReactionStep";
-		}else if (identifiable instanceof BioModel){
-			localName = ((BioModel)identifiable).getName();
-			className = "BioModel";
-		}else{
-			throw new RuntimeException("unsupported Identifiable class");
-		}
-		
-		localName = TokenMangler.mangleVCId(localName);
-			
-		VCID vcid = new VCID(className+"("+localName+")");
-		vcid.className = className;
-		vcid.localName = localName;
-
-		return vcid;
-	}
-
 	public int hashCode(){
 		return id.hashCode();
 	}

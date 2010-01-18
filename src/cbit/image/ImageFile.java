@@ -3,16 +3,27 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.zip.ZipInputStream;
+import java.awt.Color;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Toolkit;
+import java.awt.image.ImageObserver;
+import java.awt.image.PixelGrabber;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import java.lang.*;
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import cbit.image.gui.DisplayImage;
+import java.util.zip.ZipInputStream;
+
+import org.vcell.util.Extent;
 
 
 public class ImageFile
@@ -63,24 +74,6 @@ public ImageFile(byte data[]) throws ImageException, IOException {
 		}
 	}
 	
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @param rgb int[]
- * @param x int
- * @param y int
- * @param z int
- * @exception java.lang.Exception The exception description.
- */
-public ImageFile (DisplayImage displayImage) throws ImageException {
-	originalRGB = displayImage.getRGB();
-	sizeX = displayImage.getSizeX();
-	sizeY = displayImage.getSizeY();
-	sizeZ = displayImage.getSizeZ();
-	bValid = true;
-	imageName = displayImage.getName();
 }
 
 
@@ -200,19 +193,6 @@ private void createFromVCImage(VCImage vcImage) throws ImageException {
 	}
 	bValid = true;
 	imageName = (vcImage.getVersion()!=null)?vcImage.getVersion().getName():"unnamedImage";	
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.image.DisplayImage
- */
-public DisplayImage getDisplayImage() throws ImageException {
-	if (originalDouble!=null){
-		return new DisplayImage(originalDouble,sizeX,sizeY,sizeZ);
-	}else{
-		return new DisplayImage(originalRGB,sizeX,sizeY,sizeZ);
-	}
 }
 
 
@@ -389,7 +369,7 @@ public VCImage getVCImage() throws ImageException {
 			bytepix[i] = (byte)(0xff&(int)originalDouble[i]);
 		}
 	}
-	VCImageUncompressed vci = new VCImageUncompressed(null,bytepix,new org.vcell.util.Extent(getSizeX(),getSizeY(),getSizeZ()),getSizeX(),getSizeY(),getSizeZ());
+	VCImageUncompressed vci = new VCImageUncompressed(null,bytepix,new Extent(getSizeX(),getSizeY(),getSizeZ()),getSizeX(),getSizeY(),getSizeZ());
 	return vci;
 }
 
@@ -399,22 +379,22 @@ public VCImage getVCImage() throws ImageException {
  * @return VCImage
  * @param zSections java.util.Vector
  */
-private cbit.image.VCImage getVCImageFromZSeries(byte[][] zSections) throws ImageException {
-	Vector images = new Vector();
+private VCImage getVCImageFromZSeries(byte[][] zSections) throws ImageException {
+	Vector<VCImage> images = new Vector<VCImage>();
 	try {
 		for (int i = 0; i < zSections.length; i++){
 			byte imageData[] = zSections[i];
-			ImageFile imageFile = new cbit.image.ImageFile(imageData);
+			ImageFile imageFile = new ImageFile(imageData);
 			images.addElement(imageFile.getVCImage());
 		}
 	} catch (Exception e) {
 		throw new ImageException("Error reading images from archive: " + e.getMessage());
 	}
-	cbit.image.VCImage imagesArray[] = new cbit.image.VCImage[images.size()];
+	VCImage imagesArray[] = new VCImage[images.size()];
 	images.copyInto(imagesArray);
-	cbit.image.VCImage newVCImage;
+	VCImage newVCImage;
 	try {
-		newVCImage = cbit.image.VCImage.concatenateZSeries(imagesArray);
+		newVCImage = VCImage.concatenateZSeries(imagesArray);
 	} catch (Exception e) {
 		throw new ImageException("Error constructing 3D image from Z series: " + e.getMessage());
 	}
@@ -432,8 +412,8 @@ private byte[][] getZipFileEntries(byte[] imageData) throws ImageException {
 		throw new IllegalArgumentException("imageData length = 0");
 	}
 	try {
-		Vector keyVector = new Vector();
-		Hashtable hash = new Hashtable();
+		Vector<String> keyVector = new Vector<String>();
+		Hashtable<String, byte[]> hash = new Hashtable<String, byte[]>();
 		ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(imageData));
 		ZipEntry ze = null;
 		while ((ze = zis.getNextEntry()) != null) {
@@ -459,10 +439,11 @@ private byte[][] getZipFileEntries(byte[] imageData) throws ImageException {
 					//
 					// if string[i] > string[j] then swap
 					//
-					if (((String)keyVector.elementAt(i)).compareTo((String)keyVector.elementAt(i)) > 0){
-						Object temp = keyVector.elementAt(i);
-						keyVector.setElementAt(keyVector.elementAt(j),i);
-						keyVector.setElementAt(temp,j);
+					String element_i = keyVector.elementAt(i);
+					String element_j = keyVector.elementAt(j);
+					if (element_i.compareTo(element_j) > 0){
+						keyVector.setElementAt(element_j,i);
+						keyVector.setElementAt(element_i,j);
 					}
 				}
 			}
@@ -472,7 +453,7 @@ private byte[][] getZipFileEntries(byte[] imageData) throws ImageException {
 			byte entries[][] = new byte[keyVector.size()][];
 			
 			for (int i=0;i<keyVector.size();i++){
-				entries[i] = (byte[])hash.get(keyVector.elementAt(i));
+				entries[i] = hash.get(keyVector.elementAt(i));
 			}
 
 			return entries;

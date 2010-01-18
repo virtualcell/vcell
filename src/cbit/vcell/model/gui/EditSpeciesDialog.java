@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -30,6 +31,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
 
+import uk.ac.ebi.miriam.lib.MiriamLink;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -44,6 +46,10 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.xml.XMLTags;
 
+import com.hp.hpl.jena.rdf.model.Bag;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 /**
  * Insert the type's description here.
@@ -91,8 +97,9 @@ public class EditSpeciesDialog extends JDialog {
 	private XRef selectedXRef = null;
 	private JLabel PCLinkJlabel = null;
 	private JEditorPane PCLinkValueEditorPane = null;
-
-public XRef getSelectedXRef() {
+	private URI selectedURI = null;
+	
+	public XRef getSelectedXRef() {
 		return selectedXRef;
 	}
 
@@ -103,28 +110,72 @@ public XRef getSelectedXRef() {
 	}
 
 	private void updatePCLink() {
-		String pcLinkStr = null;
-		if (getSelectedXRef() != null) {
-			pcLinkStr = getSelectedXRef().url();
-		} else {
-			pcLinkStr = getPCLink();
-		}
-		if (pcLinkStr != null) {
-			getPCLinkValueEditorPane().setText("<html> <a href=\"" + pcLinkStr + "\">" + pcLinkStr + "</a></html>");
-		}
+		AsynchClientTask task1 = new AsynchClientTask("retrieving metadata", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				String htmlText = null;
+				MiriamLink link = new MiriamLink();
+				if (!link.isLibraryUpdated()) {
+					System.err.println("MirianLink library is not up to date!");
+				}
+				ArrayList<String> pcLinkStr = getPCLinks();
+				if (getSelectedXRef() != null) {
+					String uriText = link.getURI(getSelectedXRef().db(), getSelectedXRef().id());
+					selectedURI = new URI(uriText);
+					pcLinkStr.add(uriText);
+				}
+				if (pcLinkStr != null) {
+					StringBuffer buffer = new StringBuffer("<html>");
+					for(String pcLink : pcLinkStr){
+						buffer.append("&#x95;&nbsp;" + pcLink + "<br>");
+						for(String url : link.getLocations(pcLink)) {
+							buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url + "\">" + url + "</a><br>");
+						}
+					}
+
+					buffer.append("</html>");
+					htmlText = buffer.toString();
+					hashTable.put("htmlText", htmlText);
+				}
+				
+			}
+		};
+
+		AsynchClientTask task2 = new AsynchClientTask("displaying metadata", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				String htmlText = (String)hashTable.get("htmlText");			
+				getPCLinkValueEditorPane().setText(htmlText);
+				getPCLinkValueEditorPane().setCaretPosition(0);
+			};
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 	}
 
-	private String getPCLink() {
-		String pcLinkStr = null;
+	private ArrayList<String> getPCLinks() {
+		ArrayList<String> pcLinkStrings = new ArrayList<String>();
 		java.util.List<Statement> statements = getModel().getVcMetaData().getStatements(getSpeciesContext().getSpecies());
 		if (statements != null && statements.size() > 0) {
 			Iterator<Statement> stmtIter = statements.iterator();
 			while (stmtIter.hasNext()) {
 				Statement stmt = stmtIter.next();
-				pcLinkStr = stmt.asTriple().getObject().getURI();
+				com.hp.hpl.jena.rdf.model.Model rdfModel = getModel().getVcMetaData().getRdf();
+				RDFNode object = stmt.getObject();
+				if (object.isURIResource()) {
+					pcLinkStrings.add(stmt.asTriple().getObject().getURI());
+				} else if (object.isResource()){
+					Bag bag = rdfModel.getBag((Resource)object); 
+					if (bag != null) { // not sure
+						NodeIterator nodeIterator = bag.iterator();
+						while (nodeIterator.hasNext()){
+							RDFNode node = nodeIterator.next();
+							pcLinkStrings.add(((Resource)node).getURI());
+						}
+					}
+				}
 			}
 		}
-		return pcLinkStr;
+		return pcLinkStrings;
 	}
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.DocumentListener, HyperlinkListener {
@@ -708,12 +759,14 @@ private javax.swing.JPanel getJDialogContentPane() {
 			getJDialogContentPane().add(getNameValueJTextField(), constraintsNameValueJTextField);
 			
 			GridBagConstraints gbc_1 = new GridBagConstraints();
+			gbc_1.weighty = 1.0;
+			gbc_1.weightx = 1.0;
 			gbc_1.gridwidth = 2;
 //			gbc_1.weightx = 1.0;
 			gbc_1.fill = GridBagConstraints.BOTH;
 			gbc_1.anchor = GridBagConstraints.WEST;
 			gbc_1.gridx = 1;
-			gbc_1.gridy = 7;
+			gbc_1.gridy = 4;
 			gbc_1.insets = new Insets(0, 4, 0, 5);
 			JScrollPane scollPane = new JScrollPane(getPCLinkValueEditorPane());
 			ivjJContentPane.add(scollPane, gbc_1);
@@ -743,15 +796,16 @@ private javax.swing.JPanel getJDialogContentPane() {
 			gbc.anchor = GridBagConstraints.NORTHEAST;
 			getJDialogContentPane().add(new JLabel("Annotatation"), gbc);
 
-			annotationTextArea = new javax.swing.JTextArea("", 4, 30);
+			annotationTextArea = new javax.swing.JTextArea("", 2, 30);
 			annotationTextArea.setLineWrap(true);
 			annotationTextArea.setWrapStyleWord(true);
 			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 			
 			gbc = new java.awt.GridBagConstraints();
+//			gbc.weighty = 0.8;
+			gbc.weightx = 1.0;
 			gbc.gridx = 1; gbc.gridy = 2;
 			gbc.gridwidth = 2;
-			gbc.gridheight = 4;
 			gbc.fill = java.awt.GridBagConstraints.BOTH;
 //			gbc.weightx = 1.0;
 			gbc.insets = new Insets(4, 4, 5, 5);
@@ -761,17 +815,17 @@ private javax.swing.JPanel getJDialogContentPane() {
 			gbc_2.anchor = GridBagConstraints.EAST;
 			gbc_2.insets = new Insets(0, 0, 5, 5);
 			gbc_2.gridx = 0;
-			gbc_2.gridy = 7;
+			gbc_2.gridy = 4;
 			ivjJContentPane.add(getPCLinkJlabel(), gbc_2);
 			
 			java.awt.GridBagConstraints constraintsLinkJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 6;
+			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 3;
 			constraintsLinkJLabel.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsLinkJLabel.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getLinkJLabel(), constraintsLinkJLabel);
 
 			java.awt.GridBagConstraints constraintsLinkValueJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkValueJLabel.gridx = 1; constraintsLinkValueJLabel.gridy = 6;
+			constraintsLinkValueJLabel.gridx = 1; constraintsLinkValueJLabel.gridy = 3;
 			constraintsLinkValueJLabel.gridwidth = 2;
 			constraintsLinkValueJLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsLinkValueJLabel.anchor = java.awt.GridBagConstraints.WEST;
@@ -780,20 +834,20 @@ private javax.swing.JPanel getJDialogContentPane() {
 			getJDialogContentPane().add(getLinkValueJLabel(), constraintsLinkValueJLabel);
 
 			java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 8;
+			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 5;
 			constraintsJPanel2.gridwidth = 4;
 			constraintsJPanel2.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getJButtonsPanel2(), constraintsJPanel2);
 
 			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; gbc.gridy = 9;
+			gbc.gridx = 0; gbc.gridy = 6;
 			gbc.gridwidth = 4;
 			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(4, 4, 5, 4);
 			ivjJContentPane.add(new JSeparator(), gbc);
 
 			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 10;
+			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 7;
 			constraintsJPanel1.gridwidth = 4;
 			constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			getJDialogContentPane().add(getJPanel1(), constraintsJPanel1);
@@ -1072,7 +1126,7 @@ private void initialize() {
 		setName("EditSpeciesDialog");
 		add(getJDialogContentPane());
 		initConnections();
-		setSize(480,325);
+		setSize(580,404);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1370,9 +1424,7 @@ private DBFormalSpecies showDatabaseBindingDialog() {
 }
 
 private void showPCKeywordQueryPanel() {
-
 	 PCKeywordQueryPanel aPCKeywordQueryPanel = new PCKeywordQueryPanel();
-	 aPCKeywordQueryPanel.setSize(500,500);
 	 int returnVal = DialogUtils.showComponentOKCancelDialog(this, aPCKeywordQueryPanel, "Pathway Commons Database ...");
 	 
 	 if (returnVal == JOptionPane.OK_OPTION) {
@@ -1397,6 +1449,9 @@ private void unlink(java.awt.event.ActionEvent actionEvent) {
  */
 private void updateInterface() {
 
+	if (fieldSpeciesContext == null || fieldModel == null || fieldDocumentManager == null) {
+		return;
+	}
 	getNameJLabel().setEnabled(getSpeciesContext() != null);
 	
 	getNameValueJTextField().setEnabled(true);
@@ -1487,11 +1542,9 @@ private JButton getPathwayDBbutton() {
 		if (PCLinkValueEditorPane == null) {
 			PCLinkValueEditorPane = new JEditorPane();
 			PCLinkValueEditorPane.setContentType("text/html");
-			//PCLinkValueEditorPane.gett
 			PCLinkValueEditorPane.setEditable(false);
 			PCLinkValueEditorPane.setBackground(getBackground());
 			PCLinkValueEditorPane.setText(null);
-			// PCLinkValueEditorPane.setBorder(UIManager.getBorder("ComboBox.border"));
 		}
 		return PCLinkValueEditorPane;
 	}
@@ -1501,8 +1554,8 @@ private JButton getPathwayDBbutton() {
 			try {
 				String propertyID = XMLTags.PROPERTY_ISVERSIONOF;	
 				URI propertyNamespace = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
-				// String selectedURNStr = XRefToURN.createURN(selectedXRef.db(), selectedXRef.id());
-				getModel().getVcMetaData().addRDFStatement(getSpeciesContext().getSpecies(),new URI(propertyNamespace+propertyID),new URI(selectedXRef.url()));
+				getModel().getVcMetaData().addRDFStatement(getSpeciesContext().getSpecies(),
+						new URI(propertyNamespace+propertyID),selectedURI);
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
 				// DialogUtils.showErrorDialog("Error setting vcMetadata for species - URN Problem : " + e.toString());

@@ -2,6 +2,8 @@ package org.vcell.sybil.gui.pcsearch.test;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -52,10 +54,16 @@ public class PCKeywordQueryPanel extends JPanel {
 
 	private void initialize(){
 		JPanel mainPanel = this;
-		JPanel topPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
+		
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
+		keywordTextField.setColumns(30);
+		keywordTextField.addActionListener(queryAction);
+		topPanel.add(keywordTextField);
+		topPanel.add(queryButton);
 		mainPanel.add(topPanel, BorderLayout.NORTH);
-		mainPanel.add(xRefLabel, BorderLayout.SOUTH);
+
 		JTree responseTree = new JTree(treeMgr.tree());
 		XRefTreeSelectionListener xRefTreeSelectionListener = new XRefTreeSelectionListener(xRefLabel);
 		responseTree.getSelectionModel().addTreeSelectionListener(xRefTreeSelectionListener);
@@ -66,15 +74,11 @@ public class PCKeywordQueryPanel extends JPanel {
 		};
 		responseTree.getSelectionModel().addTreeSelectionListener(new XRefTreeSelectionListener(thisXrefAccepter));
 		responseTree.expandRow(0);
-		JScrollPane scrollPane = new JScrollPane(responseTree);
-		mainPanel.add(scrollPane);
-		keywordTextField.addActionListener(queryAction);
-		topPanel.setLayout(new BorderLayout());
-		topPanel.add(keywordTextField);
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(queryButton);
-		topPanel.add(buttonPanel, BorderLayout.EAST);
-		setPreferredSize(new Dimension(700, 500));
+		JScrollPane scrollPane = new JScrollPane(responseTree, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		mainPanel.add(scrollPane, BorderLayout.CENTER);
+		
+		mainPanel.add(xRefLabel, BorderLayout.SOUTH);
+		setPreferredSize(new Dimension(500, 400));
 	}
 	
 	public static void main(String[] args){
