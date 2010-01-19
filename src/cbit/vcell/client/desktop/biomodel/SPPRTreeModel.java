@@ -6,19 +6,13 @@ import java.util.Iterator;
 
 import javax.swing.tree.DefaultTreeModel;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.Product;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.solver.Simulation;
 
 public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.PropertyChangeListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -33,15 +27,10 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	static final String GLOBALP_FOLDER = "Global Parameters";
 	static final String SPECIES_FOLDER = "Initial Conditions";
 	
-	
-	public SPPRTreeModel() {
-		super(new BioModelNode("blabla",true),true);
-		System.out.println("SPPRTreeModel:  constructor");
-	}
 	public SPPRTreeModel(SPPRPanel host) {
 		super(new BioModelNode("blabla",true),true);
 		this.hostPanel = host;
-		System.out.println("SPPRTreeModel:  param constructor");
+//		System.out.println("SPPRTreeModel:  param constructor");
 	}
 	
 	public SimulationContext getSimulationContext() {
@@ -53,21 +42,20 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		refreshTree();
 		hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
 	}
-
 	
 	private void refreshTree() {
 		if (getSimulationContext()!=null){
 			if(rootNode == null) {
 				rootNode = new BioModelNode(getSimulationContext().getName(),true);
-				System.out.println("SPPRTreeModel:  refreshTree()  - NEW root node!!!");
+//				System.out.println("SPPRTreeModel:  refreshTree()  - NEW root node!!!");
 				BioModelNode root = populateTree();
 				setRoot(root);
 			} else {
-				System.out.println("SPPRTreeModel:  refreshTree()  - same root");
+//				System.out.println("SPPRTreeModel:  refreshTree()  - same root");
 				BioModelNode root = populateTree();
 			}
 			nodeStructureChanged(root);
-			
+			hostPanel.getSpprTree().setSelectionRow(1);
 		} else {
 			setRoot(new BioModelNode("empty"));
 		}
@@ -159,30 +147,15 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	public synchronized boolean hasListeners(java.lang.String propertyName) {
 		return getPropertyChange().hasListeners(propertyName);
 	}
-	public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-		getPropertyChange().firePropertyChange(evt);
-	}
-	public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-	}
 	public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-	}
-	public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().addPropertyChangeListener(listener);
 	}
-	public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-		getPropertyChange().addPropertyChangeListener(propertyName, listener);
-	}
 	public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().removePropertyChangeListener(listener);
 	}
-	public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-		getPropertyChange().removePropertyChangeListener(propertyName, listener);
-	}	
 	private void refreshListeners(){
 //		getSimulationContext().getModel().addTreeModelListener(this);
 		// Look at cbit.vcell.model.Model.refreshDependencies().
@@ -196,34 +169,38 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			}
 		}
 		
-		if(getSimulationContext().getModel().getReactionSteps() != null) {
-			for (int i=0;i<getSimulationContext().getModel().getReactionSteps().length;i++){
-				getSimulationContext().getModel().getReactionSteps()[i].removePropertyChangeListener(this);
-				getSimulationContext().getModel().getReactionSteps()[i].getKinetics().removePropertyChangeListener(this);
+		ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps();
+		if(reactionSteps != null) {
+			for (int i=0;i<reactionSteps.length;i++){
+				reactionSteps[i].removePropertyChangeListener(this);
+				reactionSteps[i].getKinetics().removePropertyChangeListener(this);
 				
-				getSimulationContext().getModel().getReactionSteps()[i].getKinetics().addPropertyChangeListener(this);
-				getSimulationContext().getModel().getReactionSteps()[i].addPropertyChangeListener(this);
-				if(getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants() != null) {
-					for (int j=0; j<getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants().length; j++) {
-						getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants()[j].removePropertyChangeListener(this);
-						getSimulationContext().getModel().getReactionSteps()[i].getReactionParticipants()[j].addPropertyChangeListener(this);
+				reactionSteps[i].getKinetics().addPropertyChangeListener(this);
+				reactionSteps[i].addPropertyChangeListener(this);
+				ReactionParticipant[] reactionParticipants = reactionSteps[i].getReactionParticipants();
+				if(reactionParticipants != null) {
+					for (int j=0; j<reactionParticipants.length; j++) {
+						reactionParticipants[j].removePropertyChangeListener(this);
+						reactionParticipants[j].addPropertyChangeListener(this);
 					}
 				}
 			}
 		}
 
 				
-		if(getSimulationContext().getModel().getSpeciesContexts() != null) {
-			for (int i=0;i<getSimulationContext().getModel().getSpeciesContexts().length;i++){
-				getSimulationContext().getModel().getSpeciesContexts()[i].removePropertyChangeListener(this);
-				getSimulationContext().getModel().getSpeciesContexts()[i].addPropertyChangeListener(this);
+		SpeciesContext[] speciesContexts = getSimulationContext().getModel().getSpeciesContexts();
+		if(speciesContexts != null) {
+			for (int i=0;i<speciesContexts.length;i++){
+				speciesContexts[i].removePropertyChangeListener(this);
+				speciesContexts[i].addPropertyChangeListener(this);
 			}
 		}
 		
-		if(getSimulationContext().getModel().getSpecies() != null) {
-			for (int i=0;i<getSimulationContext().getModel().getSpecies().length;i++){
-				getSimulationContext().getModel().getSpecies()[i].removePropertyChangeListener(this);
-				getSimulationContext().getModel().getSpecies()[i].addPropertyChangeListener(this);
+		Species[] species = getSimulationContext().getModel().getSpecies();
+		if(species != null) {
+			for (int i=0;i<species.length;i++){
+				species[i].removePropertyChangeListener(this);
+				species[i].addPropertyChangeListener(this);
 			}
 		}
 	}

@@ -1,7 +1,30 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.AWTEventMulticaster;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.util.Hashtable;
+
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTabbedPane;
+
+import org.vcell.util.Issue;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
+
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.vcell.solver.*;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
@@ -10,7 +33,10 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
@@ -23,17 +49,7 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.Hashtable;
-
-import javax.swing.*;
-
-import org.vcell.util.Issue;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -41,13 +57,11 @@ import org.vcell.util.gui.UtilCancelException;
  */
 public class ApplicationEditor extends JPanel {
 	public static final int TAB_IDX_STRUCTURE_MAPPING = 0;
-//	public static final int TAB_IDX_INITIAL_CONDITIONS = 1;
-//	public static final int TAB_IDX_REACTION_MAPPING = 2;
-	public static final int TAB_IDX_ELECTRICAL_MAPPING = 1;
-	public static final int TAB_IDX_VIEW_MATH = 2;
-	public static final int TAB_IDX_SIMULATION = 3;
-	public static final int TAB_IDX_ANALYSIS = 4;
-	public static final int TAB_IDX_SPPR = 5;
+	public static final int TAB_IDX_SPPR = 1;
+	public static final int TAB_IDX_ELECTRICAL_MAPPING = 2;
+	public static final int TAB_IDX_VIEW_MATH = 3;
+	public static final int TAB_IDX_SIMULATION = 4;
+	public static final int TAB_IDX_ANALYSIS = 5;
 	
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -136,8 +150,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			{	
 				connPtoP3SetSource();
 			}
-			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
+			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) {
 				connPtoP4SetTarget();
+				refreshSPPRTab();
+			}
 			if (evt.getSource() == ApplicationEditor.this.getInitialConditionsPanel() && (evt.getPropertyName().equals("simulationContext"))) 
 			{
 				connPtoP4SetSource();
@@ -1383,13 +1399,11 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.setPreferredSize(new java.awt.Dimension(682, 640));
 			ivjJTabbedPane1.setFont(new java.awt.Font("dialog", 0, 14));
 			ivjJTabbedPane1.insertTab("Structure Mapping", null, getStructureMappingPanel(), null, TAB_IDX_STRUCTURE_MAPPING);
-//			ivjJTabbedPane1.insertTab("Initial Conditions", null, getInitialConditionsPanel(), null, TAB_IDX_INITIAL_CONDITIONS);
-//			ivjJTabbedPane1.insertTab("Reaction Mapping", null, getReactionSpecsPanel(), null, TAB_IDX_REACTION_MAPPING);
+			ivjJTabbedPane1.insertTab("Parameters", null, getSPPRPanel(), null, TAB_IDX_SPPR);
 			ivjJTabbedPane1.insertTab("Electrical Mapping", null, getElectricalMembraneMappingPanel(), null, TAB_IDX_ELECTRICAL_MAPPING);
 			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, TAB_IDX_VIEW_MATH);
 			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, TAB_IDX_SIMULATION);
 			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, TAB_IDX_ANALYSIS);
-			ivjJTabbedPane1.insertTab("Parameters", null, getSPPRPanel(), null, TAB_IDX_SPPR);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2306,7 +2320,7 @@ private void setsimulationWorkspace1(SimulationWorkspace newValue) {
 			connPtoP5SetTarget();
 			connPtoP6SetTarget();
 			connEtoM3(ivjsimulationWorkspace1);
-			firePropertyChange("simulationWorkspace", oldValue, newValue);
+//			firePropertyChange("simulationWorkspace", oldValue, newValue);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
