@@ -125,7 +125,7 @@ public class SPPRPanel extends JPanel {
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
 		add(getOuterSplitPane(), gridBagConstraints);
-		System.out.println("SPPRPanel constructor");
+//		System.out.println("SPPRPanel constructor");
 	}
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
@@ -146,14 +146,14 @@ public class SPPRPanel extends JPanel {
 	}	
 
 	private void initConnections() throws java.lang.Exception {
-		System.out.println("SPPRPanel:  initConnections()");
+//		System.out.println("SPPRPanel:  initConnections()");
 		getSpprTree().setModel(getSpprTreeModel());
 		setSelectionModel(getSpprTree().getSelectionModel());
 	}	
 
 	private void initialize() {
 		try {
-			System.out.println("SPPRPanel:  initialize()");
+//			System.out.println("SPPRPanel:  initialize()");
 			setName("SPPRPanel");
 			setSize(750, 560);
 			initConnections();
@@ -193,7 +193,7 @@ public class SPPRPanel extends JPanel {
 		if (spprTree == null) {
 			try {
 				spprTree = new javax.swing.JTree();
-				System.out.println("SPPRPanel:  getSpprTree() - NEW tree");
+//				System.out.println("SPPRPanel:  getSpprTree() - NEW tree");
 				spprTree.setName("JParameterTree");
 				ToolTipManager.sharedInstance().registerComponent(spprTree);
 			    spprTree.setCellRenderer(new SPPRTreeCellRenderer());				
@@ -214,7 +214,7 @@ public class SPPRPanel extends JPanel {
 		if (spprTreeModel == null) {
 			try {
 				spprTreeModel = new SPPRTreeModel(this);
-				System.out.println("SPPRPanel:  getSpprTreeModel()  - NEW model");
+//				System.out.println("SPPRPanel:  getSpprTreeModel()  - NEW model");
 				FolderStatus fs = new FolderStatus();
 				setFolderStatus(fs);
 			} catch (java.lang.Throwable ivjExc) {
@@ -229,33 +229,35 @@ public class SPPRPanel extends JPanel {
 		return true;
 	}
 	public void spprTreeCollapsed(TreeExpansionEvent e) {
-		System.out.println("Collapsed: " + e.getPath());
+//		System.out.println("Collapsed: " + e.getPath());
 		if(!isCategoryFolder(e.getPath())) {
 			return;		// not one of the hardcoded folders (whose partent is root)
 		}
-		if(e.getPath().toString().contains(SPPRTreeModel.RATERULES_FOLDER)) {
+		String pathStr = e.getPath().toString();
+		if(pathStr.contains(SPPRTreeModel.RATERULES_FOLDER)) {
 			getFolderStatus().setRateRulesFolderCollapsed();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.REACTIONS_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.REACTIONS_FOLDER)) {
 			getFolderStatus().setReactionFolderCollapsed();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.APPLICATIONP_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.APPLICATIONP_FOLDER)) {
 			getFolderStatus().setApplicationParametersFolderCollapsed();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.GLOBALP_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.GLOBALP_FOLDER)) {
 			getFolderStatus().setGlobalParametersFolderCollapsed();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.SPECIES_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.SPECIES_FOLDER)) {
 			getFolderStatus().setSpeciesContextsFolderCollapsed();
 		}
 	}
 	public void spprTreeExpanded(TreeExpansionEvent e) {
-		System.out.println("Expanded: " + e.getPath());
-		if(e.getPath().toString().contains(SPPRTreeModel.RATERULES_FOLDER)) {
+//		System.out.println("Expanded: " + e.getPath());
+		String pathStr = e.getPath().toString();
+		if(pathStr.contains(SPPRTreeModel.RATERULES_FOLDER)) {
 			getFolderStatus().setRateRulesFolderExpanded();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.REACTIONS_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.REACTIONS_FOLDER)) {
 			getFolderStatus().setReactionFolderExpanded();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.APPLICATIONP_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.APPLICATIONP_FOLDER)) {
 			getFolderStatus().setApplicationParametersFolderExpanded();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.GLOBALP_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.GLOBALP_FOLDER)) {
 			getFolderStatus().setGlobalParametersFolderExpanded();
-		} else if(e.getPath().toString().contains(SPPRTreeModel.SPECIES_FOLDER)) {
+		} else if(pathStr.contains(SPPRTreeModel.SPECIES_FOLDER)) {
 			getFolderStatus().setSpeciesContextsFolderExpanded();
 		}
 	}
@@ -269,16 +271,16 @@ public class SPPRPanel extends JPanel {
 		    Object nodeInfo = node.getUserObject();
 		    if (!node.getAllowsChildren()) {			// it's a leaf, no children
 		        String leaf = (String)nodeInfo;
-				System.out.print("   leaf: " + leaf);
+//				System.out.print("   leaf: " + leaf);
 				BioModelNode parentNode = (BioModelNode) node.getParent();
 				nodeInfo =  parentNode.getUserObject();
 				String parent = (String)nodeInfo;
-				System.out.println("   ... of folder: " + parent);
+//				System.out.println("   ... of folder: " + parent);
 		        setupRightComponent(parent, leaf);
 		    } else {								// it's a folder
 		    	String leaf = "";
 		        String folder = (String)nodeInfo;
-				System.out.println("Folder: " + folder);
+//				System.out.println("Folder: " + folder);
 		        setupRightComponent(folder, leaf);
 		    }
 		}catch (Exception ex){
@@ -314,36 +316,37 @@ public class SPPRPanel extends JPanel {
 	}
 	
 	public void restoreTreeExpansion(JTree tree) {
-		System.out.println("restoreTreeExpansion()");
+//		System.out.println("restoreTreeExpansion()");
 		DefaultMutableTreeNode start = (DefaultMutableTreeNode)tree.getModel().getRoot();
 		for (Enumeration children = start.children(); children.hasMoreElements();) {
 			DefaultMutableTreeNode dtm = (DefaultMutableTreeNode) children.nextElement();
 			if (!dtm.isLeaf()) {
 				TreePath tp = new TreePath( dtm.getPath() );
-				if(tp.toString().contains(SPPRTreeModel.RATERULES_FOLDER)) {
+				String treePathStr = tp.toString();
+				if(treePathStr.contains(SPPRTreeModel.RATERULES_FOLDER)) {
 					if(!getFolderStatus().isRateRulesFolderCollapsed()) {
 						tree.expandPath(tp);
-						System.out.println("     expand RATERULES_FOLDER");
+//						System.out.println("     expand RATERULES_FOLDER");
 					}
-				} else if(tp.toString().contains(SPPRTreeModel.REACTIONS_FOLDER)) {
+				} else if(treePathStr.contains(SPPRTreeModel.REACTIONS_FOLDER)) {
 					if(!getFolderStatus().isReactionFolderCollapsed()) {
 						tree.expandPath(tp);
-						System.out.println("     expand REACTIONS_FOLDER");
+//						System.out.println("     expand REACTIONS_FOLDER");
 					}
-				} else if(tp.toString().contains(SPPRTreeModel.APPLICATIONP_FOLDER)) {
+				} else if(treePathStr.contains(SPPRTreeModel.APPLICATIONP_FOLDER)) {
 					if(!getFolderStatus().isApplicationParametersFolderCollapsed()) {
 						tree.expandPath(tp);
-						System.out.println("     expand APPLICATIONP_FOLDER");
+//						System.out.println("     expand APPLICATIONP_FOLDER");
 					}
-				} else if(tp.toString().contains(SPPRTreeModel.GLOBALP_FOLDER)) {
+				} else if(treePathStr.contains(SPPRTreeModel.GLOBALP_FOLDER)) {
 					if(!getFolderStatus().isGlobalParametersFolderCollapsed()) {
 						tree.expandPath(tp);
-						System.out.println("     expand GLOBALP_FOLDER");
+//						System.out.println("     expand GLOBALP_FOLDER");
 					}
-				} else if(tp.toString().contains(SPPRTreeModel.SPECIES_FOLDER)) {
+				} else if(treePathStr.contains(SPPRTreeModel.SPECIES_FOLDER)) {
 					if(!getFolderStatus().isSpeciesContextsFolderCollapsed()) {
 						tree.expandPath(tp);
-						System.out.println("     expand SPECIES_FOLDER");
+//						System.out.println("     expand SPECIES_FOLDER");
 					}
 				}
 			}
