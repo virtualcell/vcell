@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
@@ -44,6 +45,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	}
 	
 	private void refreshTree() {
+		TreePath tp = hostPanel.getSpprTree().getSelectionPath();
 		if (getSimulationContext()!=null){
 			if(rootNode == null) {
 				rootNode = new BioModelNode(getSimulationContext().getName(),true);
@@ -55,7 +57,9 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 				BioModelNode root = populateTree();
 			}
 			nodeStructureChanged(root);
-			hostPanel.getSpprTree().setSelectionRow(1);
+			if (tp == null) {
+				hostPanel.getSpprTree().setSelectionRow(1);
+			}
 		} else {
 			setRoot(new BioModelNode("empty"));
 		}
@@ -206,6 +210,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	}
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
+			int[] rows = hostPanel.getSpprTree().getSelectionRows();
 			if (evt.getPropertyName().equals("species")){
 //	            System.out.println("TreeModel event: species");
 				refreshTree();
@@ -294,6 +299,13 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 				// System.out.println("TreeModel untreated event:   " + evt.getPropertyName());
 				// + ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue());
 			}
+			if (rows == null) {
+				hostPanel.getSpprTree().setSelectionRow(1);
+			} else {
+				int rowCount = hostPanel.getSpprTree().getRowCount();
+				hostPanel.getSpprTree().setSelectionRow(Math.min(rows[0],  rowCount - 1));
+			}
+//			hostPanel.getSpprTree().setSelectionPath(tp);
 		} catch (Exception e){
 			e.printStackTrace(System.out);
 		}
