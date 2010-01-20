@@ -22,11 +22,13 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	SPPRPanel hostPanel = null;
 	
 	// ATTENTION: make sure that one folder name is not contained in another
-	static final String RATERULES_FOLDER = "Rate Rules";
+	static final String RATERULES_FOLDER = "Rate Rules";					// not functional
 	static final String REACTIONS_FOLDER = "Reactions";
-	static final String APPLICATIONP_FOLDER = "Application Parameters";
+	static final String APPLICATIONP_FOLDER = "Application Parameters";		// not functional
 	static final String GLOBALP_FOLDER = "Global Parameters";
 	static final String SPECIES_FOLDER = "Initial Conditions";
+	static final String APP_FUNCTIONS_FOLDER = "Application Functions";		// not yet implemented
+	static final String APP_EQUATIONS_FOLDER = "Application Equations";		// not yet inplemented
 	
 	public SPPRTreeModel(SPPRPanel host) {
 		super(new BioModelNode("blabla",true),true);
@@ -135,6 +137,13 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 //	    categoryNode = new BioModelNode(SPPRTreeModel.RATERULES_FOLDER, true);
 //	    BioModelNode rateRules = null;
 //	    rootNode.add(categoryNode);
+	    
+	    categoryNode = new BioModelNode(SPPRTreeModel.APP_FUNCTIONS_FOLDER, true);
+	    BioModelNode applicationFunctions = null;
+	    rootNode.add(categoryNode);
+	    categoryNode = new BioModelNode(SPPRTreeModel.APP_EQUATIONS_FOLDER, true);
+	    BioModelNode applicationEquations = null;
+	    rootNode.add(categoryNode);
 
 	    refreshListeners();
 		return rootNode;

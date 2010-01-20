@@ -71,7 +71,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
         	if(sel) {
             	component.setForeground(Color.white);
         	} else {
-            	component.setForeground(dkRed);
+            	component.setForeground(dkBlack);
         	}
         	component.setText((String)((BioModelNode)value).getUserObject());
 //            System.out.println((String)((BioModelNode)value).getUserObject());
@@ -94,10 +94,18 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
         	if(sel) {
             	component.setForeground(Color.white);
         	} else {
-            	component.setForeground(dkRed);
+            	component.setForeground(dkBlack);
         	}
         	component.setText((String)((BioModelNode)value).getUserObject());
         	component.setToolTipText("Reaction");
+        } else if (leaf && isApplicationFunction(value)) {	// --- not implemented
+        	component.setIcon(aParamIcon);
+        	component.setText((String)((BioModelNode)value).getUserObject());
+        	component.setToolTipText("Application Function");
+        } else if (leaf && isApplicationEquation(value)) {	// --- not implemented
+        	component.setIcon(aParamIcon);
+        	component.setText((String)((BioModelNode)value).getUserObject());
+        	component.setToolTipText("Application Equation");
         } else {
         	Object obj = ((BioModelNode)value).getUserObject(); 
         	if (obj instanceof String) {
@@ -125,6 +133,14 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	        	component.setToolTipText("Global param. folder");
 	        } else if(name.equals(SPPRTreeModel.REACTIONS_FOLDER)) {
 	        	component.setToolTipText("Reactions folder");
+	        } else if(name.equals(SPPRTreeModel.APP_FUNCTIONS_FOLDER)) {
+	        	component.setEnabled(false);
+	        	component.setDisabledIcon(this.getClosedIcon());
+	        	component.setToolTipText("Application Functions folder");
+	        } else if(name.equals(SPPRTreeModel.APP_EQUATIONS_FOLDER)) {
+	        	component.setEnabled(false);
+	        	component.setDisabledIcon(this.getClosedIcon());
+	        	component.setToolTipText("Application Equations folder");
 	        }
         }
         return component;
@@ -163,6 +179,24 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
         BioModelNode parent = (BioModelNode)node.getParent();
         String parentName = (String)(parent.getUserObject());
         if (parentName == SPPRTreeModel.REACTIONS_FOLDER) {
+            return true;
+        }
+        return false;
+    }
+    protected boolean isApplicationFunction(Object value) {
+        BioModelNode node = (BioModelNode)value;
+        BioModelNode parent = (BioModelNode)node.getParent();
+        String parentName = (String)(parent.getUserObject());
+        if (parentName == SPPRTreeModel.APP_FUNCTIONS_FOLDER) {
+            return true;
+        }
+        return false;
+    }
+    protected boolean isApplicationEquation(Object value) {
+        BioModelNode node = (BioModelNode)value;
+        BioModelNode parent = (BioModelNode)node.getParent();
+        String parentName = (String)(parent.getUserObject());
+        if (parentName == SPPRTreeModel.APP_EQUATIONS_FOLDER) {
             return true;
         }
         return false;

@@ -410,6 +410,17 @@ private void initialize() {
 	// user code end
 }
 
+public void setScrollPaneTableCurrentRow(String selection) {
+	
+	int numRows = getScrollPaneTable().getRowCount();
+	for(int i=0; i<numRows; i++) {
+		Object valueAt = getScrollPaneTable().getValueAt(i, ReactionSpecsTableModel.COLUMN_NAME);
+		if(valueAt.toString().equals(selection)) {
+			getScrollPaneTable().changeSelection(i, 0, false, false);
+		}
+	}
+}
+
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]

@@ -22,6 +22,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.mapping.gui.ReactionSpecsTableModel;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelQuantity;
@@ -61,6 +62,7 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
 	private JSortTable ivjthis12 = null;
+	private boolean filterFlag = false;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -121,10 +123,17 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 /**
  * ModelParameterPanel constructor comment.
  */
-public ModelParameterPanel() {
-	super();
-	initialize();
-}
+		public ModelParameterPanel() {
+			super();
+			filterFlag = false;
+			initialize();
+		}
+		
+		public ModelParameterPanel(boolean filter) {
+			super();
+			filterFlag = filter;
+			initialize();
+		}
 
 /**
  * Insert the method's description here.
@@ -385,7 +394,7 @@ private Model getmodel1() {
 private ModelParameterTableModel getmodelParameterTableModel() {
 	if (ivjmodelParameterTableModel == null) {
 		try {
-			ivjmodelParameterTableModel = new ModelParameterTableModel(getScrollPaneTable());
+			ivjmodelParameterTableModel = new ModelParameterTableModel(getScrollPaneTable(), filterFlag);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -477,6 +486,16 @@ private void initialize() {
 	}
 }
 
+public void setScrollPaneTableCurrentRow(String selection) {
+	
+	int numRows = getScrollPaneTable().getRowCount();
+	for(int i=0; i<numRows; i++) {
+		Object valueAt = getScrollPaneTable().getValueAt(i, ModelParameterTableModel.COLUMN_NAME);
+		if(valueAt.toString().equals(selection)) {
+			getScrollPaneTable().changeSelection(i, 0, false, false);
+		}
+	}
+}
 private void jMenuItemAdd_ActionPerformed(ActionEvent actionEvent) throws Exception {
 	if(actionEvent.getSource() == getJMenuItemAdd()){
 		AddModelParamDialog createGlobalParamDialog = new AddModelParamDialog();

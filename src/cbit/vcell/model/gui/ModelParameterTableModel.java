@@ -94,24 +94,26 @@ public class ModelParameterTableModel extends ManageTableModel implements java.b
 			return 1;
 		}
 	}
-	private final int NUM_COLUMNS = 6;
-	private final int COLUMN_SCOPE = 0;
-	private final int COLUMN_NAME = 1;
-	private final int COLUMN_DESCRIPTION = 2;
+	public static final int NUM_COLUMNS = 6;
+	public static final int COLUMN_SCOPE = 0;
+	public static final int COLUMN_NAME = 1;
+	public static final int COLUMN_DESCRIPTION = 2;
 	public static final int COLUMN_VALUE = 3;
-	private final int COLUMN_UNIT = 4;
+	public static final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
 	private String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Model fieldModel = null;
 	private JTable ownerTable = null;
+	private boolean filterFlag;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ModelParameterTableModel(JTable table) {
+public ModelParameterTableModel(JTable table, boolean flag) {
 	super();
 	ownerTable = table;
+	filterFlag = flag;
 	addPropertyChangeListener(this);
 }
 
@@ -273,7 +275,14 @@ public List<Parameter> getUnsortedParameters() {
 
 	ArrayList<Parameter> list = new ArrayList<Parameter>();
 	for (int i = 0; i < count; i++){
-		list.add(getParameter(i));
+		Parameter parameter = getParameter(i);
+		if(filterFlag == false) {
+			list.add(parameter);
+		} else {
+			if(parameter instanceof ModelParameter) {
+				list.add(parameter);
+			}
+		}
 	}
 	return list;
 }

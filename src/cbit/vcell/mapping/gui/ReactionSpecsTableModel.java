@@ -15,11 +15,11 @@ import cbit.vcell.mapping.ReactionSpec;
  * @author: 
  */
 public class ReactionSpecsTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	private final int NUM_COLUMNS = 4;
-	private final int COLUMN_NAME = 0;
-	private final int COLUMN_TYPE = 1;
-	private final int COLUMN_ENABLED = 2;
-	private final int COLUMN_FAST = 3;
+	public static final int NUM_COLUMNS = 4;
+	public static final int COLUMN_NAME = 0;
+	public static final int COLUMN_TYPE = 1;
+	public static final int COLUMN_ENABLED = 2;
+	public static final int COLUMN_FAST = 3;
 	private String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
 	
 	

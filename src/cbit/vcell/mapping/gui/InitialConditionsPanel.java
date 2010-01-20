@@ -869,6 +869,17 @@ private void initialize() {
 	// user code end
 }
 
+public void setScrollPaneTableCurrentRow(String selection) {
+	
+	int numRows = getScrollPaneTable().getRowCount();
+	for(int i=0; i<numRows; i++) {
+		Object valueAt = getScrollPaneTable().getValueAt(i, SpeciesContextSpecsTableModel.COLUMN_SPECIESCONTEXT);
+		if(valueAt.toString().equals(selection)) {
+			getScrollPaneTable().changeSelection(i, 0, false, false);
+		}
+	}
+}
+
 /**
  * Comment
  */
