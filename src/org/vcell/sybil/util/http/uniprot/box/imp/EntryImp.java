@@ -27,18 +27,18 @@ public class EntryImp extends ThingImp implements UniProtBox.Entry {
 	
 	public int hashCode() { return id.hashCode(); }
 
-	@Override public void addReplacedEntry(Entry entry) { box().setReplaces(this, entry); }
-	@Override public void removeReplacedEntry(Entry entry) { box().unsetReplaces(this, entry); }
-	@Override public void removeAllReplacedEntries() { box().removeEntriesReplacedBy(this); }
-	@Override public Set<Entry> replacedEntries() { return box().entriesReplacedBy(this); }
-	@Override public boolean replaces(Entry entry) { return box().replaces(this, entry); }
-	@Override public void addReplacingEntry(Entry entry) { box().setReplaces(entry, this); }
-	@Override public void removeReplacingEntry(Entry entry) { box().unsetReplaces(entry, this); }
-	@Override public void removeAllReplacingEntries() { box().removeEntriesReplacing(this); }
-	@Override public Set<Entry> replacingEntries() { return box().entriesReplacing(this); }
-	@Override public boolean replacedBy(Entry entry) { return box().replaces(entry, this); }
-	@Override public boolean isObsolete() { return box().entryIsObsolete(this); }
-	@Override public String recommendedName() { return box().recommendedName(this); }
-	@Override public void setRecommendedName(String name) { box().setRecommendedName(this, name); }
+	public void addReplacedEntry(Entry entry) { box().setReplaces(this, entry); }
+	public void removeReplacedEntry(Entry entry) { box().unsetReplaces(this, entry); }
+	public void removeAllReplacedEntries() { box().removeEntriesReplacedBy(this); }
+	public Set<Entry> replacedEntries() { return box().entriesReplacedBy(this); }
+	public boolean replaces(Entry entry) { return box().replaces(this, entry); }
+	public void addReplacingEntry(Entry entry) { box().setReplaces(entry, this); }
+	public void removeReplacingEntry(Entry entry) { box().unsetReplaces(entry, this); }
+	public void removeAllReplacingEntries() { box().removeEntriesReplacing(this); }
+	public Set<Entry> replacingEntries() { return box().entriesReplacing(this); }
+	public boolean replacedBy(Entry entry) { return box().replaces(entry, this); }
+	public boolean isObsolete() { return box().entryIsObsolete(this); }
+	public String recommendedName() { return box().recommendedName(this); }
+	public void setRecommendedName(String name) { box().setRecommendedName(this, name); }
 
 }
