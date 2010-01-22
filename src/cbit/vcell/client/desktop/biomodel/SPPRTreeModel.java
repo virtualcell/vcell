@@ -1,39 +1,94 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Comparator;
 
+import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.ModelParameter;
 
-public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.PropertyChangeListener {
+public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.PropertyChangeListener, TreeExpansionListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext simulationContext = null;
 	BioModelNode rootNode = null;
-	SPPRPanel hostPanel = null;
+	JTree spprTree = null;
 	
-	// ATTENTION: make sure that one folder name is not contained in another
-	static final String RATERULES_FOLDER = "Rate Rules";					// not functional
-	static final String REACTIONS_FOLDER = "Reactions";
-	static final String APPLICATIONP_FOLDER = "Application Parameters";		// not functional
-	static final String GLOBALP_FOLDER = "Global Parameters";
-	static final String SPECIES_FOLDER = "Initial Conditions";
-	static final String APP_FUNCTIONS_FOLDER = "Application Functions";		// not yet implemented
-	static final String APP_EQUATIONS_FOLDER = "Application Equations";		// not yet inplemented
+	public static class SPPRTreeFolderNode {
+		private int id;
+		private String name;
+		boolean bExpanded = false;
+		public SPPRTreeFolderNode(int arg_id, String arg_name) {
+			id = arg_id;
+			name = arg_name;
+		}
+		public final int getId() {
+			return id;
+		}
+		public final String getName() {
+			return name;
+		}
+		public void setExpanded(boolean expanded) {
+			bExpanded = expanded;
+		}
+		public boolean isExpanded() {
+			return bExpanded;
+		}
+	}
+	static final int ROOT_NODE = 100;
+	static final int INITIAL_CONDITIONS_NODE = 0;
+	static final int GLOBAL_PARAMETER_NODE = 1;
+	static final int REACTIONS_NODE = 2;
+	static final int RATE_RULES_NODE = 3;
+	static final int APP_PARAMETERS_NODE = 4;		// not functional
+	static final int APP_FUNCTIONS_NODE = 5;		// not yet implemented
+	static final int APP_EQUATIONS_NODE = 6;		// not yet inplemented
 	
-	public SPPRTreeModel(SPPRPanel host) {
-		super(new BioModelNode("blabla",true),true);
-		this.hostPanel = host;
-//		System.out.println("SPPRTreeModel:  param constructor");
+	BioModelNode[] folderNodes = null;
+	static final int FOLDER_NODE_IDS[] = {
+		INITIAL_CONDITIONS_NODE, 
+		GLOBAL_PARAMETER_NODE,
+		REACTIONS_NODE,
+		RATE_RULES_NODE,
+		APP_PARAMETERS_NODE,
+		APP_FUNCTIONS_NODE,
+		APP_EQUATIONS_NODE,
+	};
+	static final String FOLDER_NODE_NAMES[] = {
+		"Initial Conditions", 
+		"Global Parameters",
+		"Reactions",
+		"Rate Rules",
+		"Application Parameters",
+		"Application Functions",
+		"Application Equations"
+	};
+		
+	static final boolean FOLDER_NODE_IMPLEMENTED[] = {
+		true,
+		true,
+		true,
+		false,
+		false,
+		false,
+		false
+	};
+	
+	public SPPRTreeModel(JTree tree) {
+		super(new BioModelNode("empty",true),true);
+		this.spprTree = tree;
 	}
 	
 	public SimulationContext getSimulationContext() {
@@ -42,111 +97,93 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 
 	public void setSimulationContext(SimulationContext simulationContext) {
 		this.simulationContext = simulationContext;
-		refreshTree();
-		hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
+	    refreshListeners();
+		createTree();
+		nodeStructureChanged(root);
 	}
 	
-	private void refreshTree() {
-		TreePath tp = hostPanel.getSpprTree().getSelectionPath();
-		if (getSimulationContext()!=null){
-			if(rootNode == null) {
-				rootNode = new BioModelNode(getSimulationContext().getName(),true);
-//				System.out.println("SPPRTreeModel:  refreshTree()  - NEW root node!!!");
-				BioModelNode root = populateTree();
-				setRoot(root);
-			} else {
-//				System.out.println("SPPRTreeModel:  refreshTree()  - same root");
-				BioModelNode root = populateTree();
-			}
-			nodeStructureChanged(root);
-			if (tp == null) {
-				hostPanel.getSpprTree().setSelectionRow(1);
-			}
-		} else {
-			setRoot(new BioModelNode("empty"));
+	private void createTree() {
+		if (getSimulationContext()==null){
+			return;
 		}
+		if(rootNode == null) {
+			rootNode = new BioModelNode(getSimulationContext(),true);
+			setRoot(rootNode);
+			folderNodes = new BioModelNode[FOLDER_NODE_NAMES.length];
+			for (int i = 0; i < folderNodes.length; i ++) {
+				folderNodes[i] = new BioModelNode(new SPPRTreeFolderNode(FOLDER_NODE_IDS[i], FOLDER_NODE_NAMES[i]), true);
+				rootNode.add(folderNodes[i]);
+			}
+		}
+		populateTree(ROOT_NODE);
 	}
 
-	private BioModelNode populateTree() {
-		//  Root - simulationContext?
-//		rootNode = new BioModelNode(getSimulationContext().getName(),true);
-	    BioModelNode categoryNode = null;
-	    rootNode.removeAllChildren();
-	    
-	    categoryNode = new BioModelNode(SPPRTreeModel.SPECIES_FOLDER, true);
-	    rootNode.add(categoryNode);
-	    BioModelNode speciesNode = null;
-	    SpeciesContext[] speciesContexts = getSimulationContext().getModel().getSpeciesContexts();
-    	ArrayList <String> aList = new ArrayList<String>();
-	    for (int i = 0; i < speciesContexts.length; i++) {
-	    	aList.add(speciesContexts[i].getName());
+	private void populateTree(int nodeId) {
+		boolean bSelected = false;
+		if (nodeId != ROOT_NODE) {
+			BioModelNode selectedNode = (BioModelNode)spprTree.getSelectionPath().getLastPathComponent();
+			if (selectedNode.getUserObject() == folderNodes[nodeId].getUserObject() 
+					|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[nodeId].getUserObject()) {
+				bSelected = true;
+			}
 		}
-	    if(aList != null) {
-	    	Collections.sort(aList);
-	    	Iterator<String> iterator = aList.iterator();
-	    	while(iterator.hasNext()) {
-	    		speciesNode = new BioModelNode(iterator.next(), false);
-	    		categoryNode.add(speciesNode);
-	    	}
-	    }
-	    
-	    categoryNode = new BioModelNode(SPPRTreeModel.GLOBALP_FOLDER, true);
-	    rootNode.add(categoryNode);
-	    BioModelNode globalParamNode = null;
-	    ModelParameter[] modelParameters = getSimulationContext().getModel().getModelParameters();
-	    aList = new ArrayList<String>();
-	    for (int i = 0; i < modelParameters.length; i++) {
-	    	aList.add(modelParameters[i].getName());
+		
+		if (nodeId == ROOT_NODE || nodeId == INITIAL_CONDITIONS_NODE) {
+			folderNodes[INITIAL_CONDITIONS_NODE].removeAllChildren();
+		    SpeciesContext[] speciesContexts = getSimulationContext().getModel().getSpeciesContexts().clone();
+		    if(speciesContexts.length > 0) {
+		    	Arrays.sort(speciesContexts, new Comparator<SpeciesContext>() {
+					public int compare(SpeciesContext o1, SpeciesContext o2) {
+						return o1.getName().compareToIgnoreCase(o2.getName());
+					}
+				});
+		    	for (SpeciesContext sc : speciesContexts) {
+		    		BioModelNode node = new BioModelNode(sc, false);
+		    		folderNodes[INITIAL_CONDITIONS_NODE].add(node);
+		    	}
+		    }
 		}
-	    if(aList != null) {
-	    	Collections.sort(aList);
-	    	Iterator<String> iterator = aList.iterator();
-	    	while(iterator.hasNext()) {
-	    		globalParamNode = new BioModelNode(iterator.next(), false);
-	    		categoryNode.add(globalParamNode);
-	    	}
-	    }
-
-//	    categoryNode = new BioModelNode(SPPRTreeModel.APPLICATIONP_FOLDER, true);
-//	    rootNode.add(categoryNode);
-//	    BioModelNode applnParamNode = null;
-//	    applnParamNode = new BioModelNode("an appl param", false);
-//	    categoryNode.add(applnParamNode);
-//	    applnParamNode = new BioModelNode("a param", false);
-//	    categoryNode.add(applnParamNode);
-//	    applnParamNode = new BioModelNode("appl param", false);
-//	    categoryNode.add(applnParamNode);
-
-	    categoryNode = new BioModelNode(SPPRTreeModel.REACTIONS_FOLDER, true);
-	    rootNode.add(categoryNode);
-	    BioModelNode reactionsNode = null;
-	    ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps();
-	    aList = new ArrayList<String>();
-	    for (int i = 0; i < reactionSteps.length; i++) {
-	    	aList.add(reactionSteps[i].getName());
+		
+		if (nodeId == ROOT_NODE || nodeId == GLOBAL_PARAMETER_NODE) {
+			folderNodes[GLOBAL_PARAMETER_NODE].removeAllChildren();
+		    ModelParameter[] modelParameters = getSimulationContext().getModel().getModelParameters().clone();
+		    if(modelParameters.length != 0) {
+		    	Arrays.sort(modelParameters, new Comparator<ModelParameter>() {
+					public int compare(ModelParameter o1, ModelParameter o2) {
+						return o1.getName().compareToIgnoreCase(o2.getName());
+					}
+				});
+		    	for (ModelParameter mp : modelParameters) {
+		    		BioModelNode node = new BioModelNode(mp, false);
+		    		folderNodes[GLOBAL_PARAMETER_NODE].add(node);
+		    	}
+		    }
 		}
-	    if(aList != null) {
-	    	Collections.sort(aList);
-	    	Iterator<String> iterator = aList.iterator();
-	    	while(iterator.hasNext()) {
-				reactionsNode = new BioModelNode(iterator.next(), false);
-				categoryNode.add(reactionsNode);
-	    	}
-	    }
-	    
-//	    categoryNode = new BioModelNode(SPPRTreeModel.RATERULES_FOLDER, true);
-//	    BioModelNode rateRules = null;
-//	    rootNode.add(categoryNode);
-	    
-	    categoryNode = new BioModelNode(SPPRTreeModel.APP_FUNCTIONS_FOLDER, true);
-	    BioModelNode applicationFunctions = null;
-	    rootNode.add(categoryNode);
-	    categoryNode = new BioModelNode(SPPRTreeModel.APP_EQUATIONS_FOLDER, true);
-	    BioModelNode applicationEquations = null;
-	    rootNode.add(categoryNode);
 
-	    refreshListeners();
-		return rootNode;
+		if (nodeId == ROOT_NODE || nodeId == REACTIONS_NODE) {
+			folderNodes[REACTIONS_NODE].removeAllChildren();
+		    ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps().clone();
+		    if(reactionSteps.length != 0) {
+		    	Arrays.sort(reactionSteps, new Comparator<ReactionStep>() {
+					public int compare(ReactionStep o1, ReactionStep o2) {
+						return o1.getName().compareToIgnoreCase(o2.getName());
+					}
+				});
+		    	for (ReactionStep rs : reactionSteps) {
+		    		BioModelNode node = new BioModelNode(rs, false);;
+		    		folderNodes[REACTIONS_NODE].add(node);
+		    	}
+		    }
+		}
+		if (nodeId == ROOT_NODE) {
+			nodeStructureChanged(rootNode);
+		} else {
+			nodeStructureChanged(folderNodes[nodeId]); 
+			restoreTreeExpansion();
+			if (bSelected) {
+				spprTree.setSelectionPath(new TreePath(new Object[] {rootNode, folderNodes[nodeId]}));
+			}
+		}
 	}
 
 	
@@ -170,19 +207,19 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		getPropertyChange().removePropertyChangeListener(listener);
 	}
 	private void refreshListeners(){
-//		getSimulationContext().getModel().addTreeModelListener(this);
-		// Look at cbit.vcell.model.Model.refreshDependencies().
-		getSimulationContext().getModel().removePropertyChangeListener(this);
-		getSimulationContext().getModel().addPropertyChangeListener(this);
+		Model model = getSimulationContext().getModel();
+		model.removePropertyChangeListener(this);
+		model.addPropertyChangeListener(this);
 		
-		if(getSimulationContext().getModel().getStructures() != null) {
-			for (int i=0;i<getSimulationContext().getModel().getStructures().length;i++){
-				getSimulationContext().getModel().getStructures()[i].removePropertyChangeListener(this);
-				getSimulationContext().getModel().getStructures()[i].addPropertyChangeListener(this);
+		Structure[] structures = model.getStructures();
+		if(structures != null) {
+			for (int i=0;i<structures.length;i++){
+				structures[i].removePropertyChangeListener(this);
+				structures[i].addPropertyChangeListener(this);
 			}
 		}
 		
-		ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps();
+		ReactionStep[] reactionSteps = model.getReactionSteps();
 		if(reactionSteps != null) {
 			for (int i=0;i<reactionSteps.length;i++){
 				reactionSteps[i].removePropertyChangeListener(this);
@@ -199,9 +236,8 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 				}
 			}
 		}
-
 				
-		SpeciesContext[] speciesContexts = getSimulationContext().getModel().getSpeciesContexts();
+		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
 		if(speciesContexts != null) {
 			for (int i=0;i<speciesContexts.length;i++){
 				speciesContexts[i].removePropertyChangeListener(this);
@@ -209,21 +245,27 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			}
 		}
 		
-		Species[] species = getSimulationContext().getModel().getSpecies();
+		Species[] species = model.getSpecies();
 		if(species != null) {
 			for (int i=0;i<species.length;i++){
 				species[i].removePropertyChangeListener(this);
 				species[i].addPropertyChangeListener(this);
 			}
 		}
+		
+		ModelParameter[] modelParameters = model.getModelParameters();
+		if(modelParameters != null) {
+			for (int i=0;i<modelParameters.length;i++){
+				modelParameters[i].removePropertyChangeListener(this);
+				modelParameters[i].addPropertyChangeListener(this);
+			}
+		}
 	}
+	
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
-			int[] rows = hostPanel.getSpprTree().getSelectionRows();
 			if (evt.getPropertyName().equals("species")){
-//	            System.out.println("TreeModel event: species");
-				refreshTree();
-				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
+				populateTree(INITIAL_CONDITIONS_NODE);
 				Species oldValue[] = (Species[])evt.getOldValue();
 				if (oldValue!=null){
 					for (int i = 0; i < oldValue.length; i++){
@@ -237,9 +279,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 			} else if (evt.getPropertyName().equals("speciesContexts")){
-//	            System.out.println("TreeModel event: speciesContexts");
-				refreshTree();
-				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
+				populateTree(INITIAL_CONDITIONS_NODE);
 				SpeciesContext oldValue[] = (SpeciesContext[])evt.getOldValue();
 				if (oldValue!=null){
 					for (int i = 0; i < oldValue.length; i++){
@@ -253,9 +293,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 			} else if (evt.getPropertyName().equals("reactionSteps")){
-//	            System.out.println("TreeModel event: reactionSteps");
-				refreshTree();
-				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
+				populateTree(REACTIONS_NODE);
 				ReactionStep oldValue[] = (ReactionStep[])evt.getOldValue();
 				if (oldValue!=null){
 					for (int i = 0; i < oldValue.length; i++){
@@ -268,56 +306,62 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 						newValue[i].addPropertyChangeListener(this);
 					}
 				}
-			} else if (evt.getPropertyName().equals("reactionParticipants")){
-//	            System.out.println("TreeModel event: reactionParticipants");
-				refreshTree();
-				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
-				ReactionParticipant oldValue[] = (ReactionParticipant[])evt.getOldValue();
-				if (oldValue!=null){
-					for (int i = 0; i < oldValue.length; i++){
-						oldValue[i].removePropertyChangeListener(this);
-					}
-				}
-				ReactionParticipant newValue[] = (ReactionParticipant[])evt.getNewValue();
-				if (newValue!=null){
-					for (int i = 0; i < newValue.length; i++){
-						newValue[i].addPropertyChangeListener(this);
-					}
-				}
 			} else if (evt.getPropertyName().equals("modelParameters")){
-//	            System.out.println("TreeModel event: modelParameter");
-				refreshTree();
-				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
+				populateTree(GLOBAL_PARAMETER_NODE);
 				ModelParameter oldValue[] = (ModelParameter[])evt.getOldValue();
 				if (oldValue!=null){
 					for (int i = 0; i < oldValue.length; i++){
 						oldValue[i].removePropertyChangeListener(this);
 					}
 				}
-				ReactionStep newValue[] = (ReactionStep[])evt.getNewValue();
+				ModelParameter newValue[] = (ModelParameter[])evt.getOldValue();
 				if (newValue!=null){
 					for (int i = 0; i < newValue.length; i++){
 						newValue[i].addPropertyChangeListener(this);
 					}
 				}
 			} else if (evt.getPropertyName().equals("name")){
-//	            System.out.println("TreeModel event: name");
-				refreshTree();
-				hostPanel.restoreTreeExpansion(hostPanel.getSpprTree());
-			} else {
-				// System.out.println("TreeModel untreated event:   " + evt.getPropertyName());
-				// + ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue());
+				Object source = evt.getSource();
+				if (source instanceof SpeciesContext || source instanceof ReactionStep
+						|| source instanceof Parameter) {
+					nodeChanged(rootNode);
+				}
 			}
-			if (rows == null) {
-				hostPanel.getSpprTree().setSelectionRow(1);
-			} else {
-				int rowCount = hostPanel.getSpprTree().getRowCount();
-				hostPanel.getSpprTree().setSelectionRow(Math.min(rows[0],  rowCount - 1));
-			}
-//			hostPanel.getSpprTree().setSelectionPath(tp);
 		} catch (Exception e){
 			e.printStackTrace(System.out);
 		}
 	}
 
+	public void treeCollapsed(TreeExpansionEvent e) {
+		if (e.getSource() == spprTree) 
+			spprTreeCollapsed(e);
+	}
+	public void treeExpanded(TreeExpansionEvent e) {
+		if (e.getSource() == spprTree) 
+			spprTreeExpanded(e);
+	}
+	
+	public void spprTreeCollapsed(TreeExpansionEvent e) {
+		TreePath path = e.getPath();
+		Object lastComp = ((BioModelNode)path.getLastPathComponent()).getUserObject();
+		if (lastComp instanceof SPPRTreeFolderNode) {
+			((SPPRTreeFolderNode)lastComp).setExpanded(false);
+		}
+	}
+	
+	public void spprTreeExpanded(TreeExpansionEvent e) {
+		TreePath path = e.getPath();
+		Object lastComp = ((BioModelNode)path.getLastPathComponent()).getUserObject();
+		if (lastComp instanceof SPPRTreeFolderNode) {
+			((SPPRTreeFolderNode)lastComp).setExpanded(true);
+		}
+	}
+	
+	public void restoreTreeExpansion() {
+		for (int i = 0; i < folderNodes.length; i ++) {
+			if (((SPPRTreeFolderNode)folderNodes[i].getUserObject()).isExpanded()) {
+				spprTree.expandPath(new TreePath(new Object[]{rootNode, folderNodes[i]}));
+			}
+		} 
+	}
 }

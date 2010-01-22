@@ -1,5 +1,6 @@
 package cbit.vcell.model.gui;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -9,7 +10,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JDesktopPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
@@ -22,7 +27,6 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.mapping.gui.ReactionSpecsTableModel;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelQuantity;
@@ -486,16 +490,21 @@ private void initialize() {
 	}
 }
 
-public void setScrollPaneTableCurrentRow(String selection) {
-	
+public void setScrollPaneTableCurrentRow(ModelParameter selection) {
+	if (selection == null) {
+		return;
+	}
+
 	int numRows = getScrollPaneTable().getRowCount();
 	for(int i=0; i<numRows; i++) {
-		Object valueAt = getScrollPaneTable().getValueAt(i, ModelParameterTableModel.COLUMN_NAME);
-		if(valueAt.toString().equals(selection)) {
+		String valueAt = (String)getScrollPaneTable().getValueAt(i, ModelParameterTableModel.COLUMN_NAME);
+		if(valueAt.equals(selection.getName())) {
 			getScrollPaneTable().changeSelection(i, 0, false, false);
+			return;
 		}
 	}
 }
+
 private void jMenuItemAdd_ActionPerformed(ActionEvent actionEvent) throws Exception {
 	if(actionEvent.getSource() == getJMenuItemAdd()){
 		AddModelParamDialog createGlobalParamDialog = new AddModelParamDialog();
