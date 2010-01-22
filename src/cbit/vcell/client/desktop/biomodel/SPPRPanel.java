@@ -73,6 +73,7 @@ public class SPPRPanel extends JPanel {
 		getReactionSpecsPanel().setSimulationContext(fieldSimulationContext);
 		getSpprTreeModel().setSimulationContext(fieldSimulationContext);
 		getSpprTree().setSelectionRow(1);
+		getSpprTree().expandRow(1);
 	}
 	
 	private void handleException(java.lang.Throwable exception) {
@@ -236,7 +237,7 @@ public class SPPRPanel extends JPanel {
 	private ReactionSpecsPanel getReactionSpecsPanel() {
 		if (reactionSpecsPanel == null) {
 			try {
-				reactionSpecsPanel = new ReactionSpecsPanel();
+				reactionSpecsPanel = new ReactionSpecsPanel(true);
 				reactionSpecsPanel.setName("ReactionSpecsPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);

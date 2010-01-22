@@ -49,6 +49,7 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 	private JButton jToggleButton = null;
 	private JTextArea annotationTextArea = null;
 	private JLabel reactoinElectrialPropertiesLabel = null;
+	private boolean subset = false;
 	
 	private final static KineticsDescription[] kineticTypes = {
 		KineticsDescription.MassAction,
@@ -95,38 +96,17 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 /**
  * SimpleReactionPanel constructor comment.
  */
-public SimpleReactionPanel() {
-	super();
-	initialize();
-}
+	public SimpleReactionPanel() {
+		super();
+		subset = false;
+		initialize();
+	}
 
-/**
- * SimpleReactionPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public SimpleReactionPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * SimpleReactionPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public SimpleReactionPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * SimpleReactionPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public SimpleReactionPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
+	public SimpleReactionPanel(boolean pSubset) {
+		super();
+		subset = pSubset;
+		initialize();		// only draw a subset of the panel
+	}
 
 /**
  * Insert the method's description here.
@@ -783,7 +763,9 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJComboBox1().addActionListener(ivjEventHandler);
-	annotationTextArea.addFocusListener(ivjEventHandler);
+	if (annotationTextArea != null) {
+		annotationTextArea.addFocusListener(ivjEventHandler);
+	}
 	getSimpleReactionNameTextField().addFocusListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
@@ -795,90 +777,95 @@ private void initConnections() throws java.lang.Exception {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("SimpleReactionPanel");
 		setLayout(new java.awt.GridBagLayout());
 
-		// stoichiometry
-		java.awt.GridBagConstraints constraintsStoichiometryLabel = new java.awt.GridBagConstraints();
-		constraintsStoichiometryLabel.gridx = 0; constraintsStoichiometryLabel.gridy = 0;
-		constraintsStoichiometryLabel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsStoichiometryLabel.insets = new java.awt.Insets(4, 10, 4, 0);
-		add(getStoichiometryLabel(), constraintsStoichiometryLabel);
-
-		java.awt.GridBagConstraints constraintsReactionScrollPane = new java.awt.GridBagConstraints();
-		constraintsReactionScrollPane.gridx = 1; constraintsReactionScrollPane.gridy = 0;
-		constraintsReactionScrollPane.gridwidth = 2;
-		constraintsReactionScrollPane.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsReactionScrollPane.weightx = 1.0;
-		constraintsReactionScrollPane.weighty = 0.5;
-		constraintsReactionScrollPane.insets = new java.awt.Insets(4, 4, 4, 10);
-		add(getReactionScrollPane(), constraintsReactionScrollPane);
-
-		// Name
-		java.awt.GridBagConstraints constraintsNameLabel = new java.awt.GridBagConstraints();
-		constraintsNameLabel.gridx = 0; constraintsNameLabel.gridy = 1;
-		constraintsNameLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsNameLabel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsNameLabel.insets = new java.awt.Insets(4, 10, 4, 4);
-		add(getNameLabel(), constraintsNameLabel);
-
-		java.awt.GridBagConstraints constraintsSimpleReactionNameLabel = new java.awt.GridBagConstraints();
-		constraintsSimpleReactionNameLabel.gridx = 1; constraintsSimpleReactionNameLabel.gridy = 1;
-		constraintsSimpleReactionNameLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsSimpleReactionNameLabel.weightx = 1.0;
-		constraintsSimpleReactionNameLabel.insets = new java.awt.Insets(4, 5, 4, 5);
-		add(getSimpleReactionNameTextField(), constraintsSimpleReactionNameLabel);
-
-		// Electrical Properties
-		GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 2;
-		gbc.anchor = java.awt.GridBagConstraints.EAST;
-		gbc.insets = new java.awt.Insets(4, 10, 4, 4);
-		add(getReactionElectricalPropertiesLabel(), gbc);
-		
-		java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
-		constraintsReactionElectricalPropertiesPanel1.gridx = 1; constraintsReactionElectricalPropertiesPanel1.gridy = 2;
-		constraintsReactionElectricalPropertiesPanel1.gridwidth = 2;
-		constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
-		constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
-		
-		// Annotation
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 3;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.NORTHEAST;
-		JLabel label = new JLabel("Annotatation");
-		label.setHorizontalAlignment(SwingConstants.RIGHT);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		add(label, gbc);
-		
-		annotationTextArea = new javax.swing.JTextArea();
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; gbc.gridy = 3;
-		gbc.gridwidth = 2;
-		gbc.weightx = 1.0;
-		gbc.weighty = 0.1;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new java.awt.Insets(5, 4, 5, 10);
-		add(jsp, gbc);
+		int gridy = 0;
+		if(!subset) {	// draw full table
+			// stoichiometry
+			java.awt.GridBagConstraints constraintsStoichiometryLabel = new java.awt.GridBagConstraints();
+			constraintsStoichiometryLabel.gridx = 0; constraintsStoichiometryLabel.gridy = gridy;
+			constraintsStoichiometryLabel.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsStoichiometryLabel.insets = new java.awt.Insets(4, 10, 4, 0);
+			add(getStoichiometryLabel(), constraintsStoichiometryLabel);
+	
+			java.awt.GridBagConstraints constraintsReactionScrollPane = new java.awt.GridBagConstraints();
+			constraintsReactionScrollPane.gridx = 1; constraintsReactionScrollPane.gridy = gridy;
+			constraintsReactionScrollPane.gridwidth = 2;
+			constraintsReactionScrollPane.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsReactionScrollPane.weightx = 1.0;
+			constraintsReactionScrollPane.weighty = 0.5;
+			constraintsReactionScrollPane.insets = new java.awt.Insets(4, 4, 4, 10);
+			add(getReactionScrollPane(), constraintsReactionScrollPane);
+			gridy ++;
+	
+			// Name
+			java.awt.GridBagConstraints constraintsNameLabel = new java.awt.GridBagConstraints();
+			constraintsNameLabel.gridx = 0; constraintsNameLabel.gridy = gridy;
+			constraintsNameLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsNameLabel.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsNameLabel.insets = new java.awt.Insets(4, 10, 4, 4);
+			add(getNameLabel(), constraintsNameLabel);
+	
+			java.awt.GridBagConstraints constraintsSimpleReactionNameLabel = new java.awt.GridBagConstraints();
+			constraintsSimpleReactionNameLabel.gridx = 1; constraintsSimpleReactionNameLabel.gridy = gridy;
+			constraintsSimpleReactionNameLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsSimpleReactionNameLabel.weightx = 1.0;
+			constraintsSimpleReactionNameLabel.insets = new java.awt.Insets(4, 5, 4, 5);
+			add(getSimpleReactionNameTextField(), constraintsSimpleReactionNameLabel);
+			gridy ++;
+	
+			// Electrical Properties
+			GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = gridy;
+			gbc.anchor = java.awt.GridBagConstraints.EAST;
+			gbc.insets = new java.awt.Insets(4, 10, 4, 4);
+			add(getReactionElectricalPropertiesLabel(), gbc);
+			
+			java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
+			constraintsReactionElectricalPropertiesPanel1.gridx = 1; constraintsReactionElectricalPropertiesPanel1.gridy = gridy;
+			constraintsReactionElectricalPropertiesPanel1.gridwidth = 2;
+			constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
+			constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+			add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
+			gridy ++;
+			
+			// Annotation
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.NORTHEAST;
+			JLabel label = new JLabel("Annotatation");
+			label.setHorizontalAlignment(SwingConstants.RIGHT);
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			add(label, gbc);
+			
+			annotationTextArea = new javax.swing.JTextArea();
+			annotationTextArea.setLineWrap(true);
+			annotationTextArea.setWrapStyleWord(true);
+			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; gbc.gridy = gridy;
+			gbc.gridwidth = 2;
+			gbc.weightx = 1.0;
+			gbc.weighty = 0.1;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new java.awt.Insets(5, 4, 5, 10);
+			add(jsp, gbc);
+			gridy ++;
+		}
 		
 		// Kinetic Type
 		java.awt.GridBagConstraints constraintsKineticTypeTitleLabel = new java.awt.GridBagConstraints();
-		constraintsKineticTypeTitleLabel.gridx = 0; constraintsKineticTypeTitleLabel.gridy = 4;
+		constraintsKineticTypeTitleLabel.gridx = 0; constraintsKineticTypeTitleLabel.gridy = gridy;
 		constraintsKineticTypeTitleLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsKineticTypeTitleLabel.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsKineticTypeTitleLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getKineticTypeTitleLabel(), constraintsKineticTypeTitleLabel);
 
 		java.awt.GridBagConstraints constraintsJComboBox1 = new java.awt.GridBagConstraints();
-		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = 4;
+		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = gridy;
 		constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJComboBox1.weightx = 1.0;
 		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -886,13 +873,14 @@ private void initialize() {
 		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 4;
+		gridBagConstraints.gridy = gridy;
 		gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
 		this.add(getJToggleButton(), gridBagConstraints);
+		gridy ++;
 		
 		// Kinetic Parameters
 		java.awt.GridBagConstraints constraintsKineticsTypeTemplatePanel = new java.awt.GridBagConstraints();
-		constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = 5;
+		constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = gridy;
 		constraintsKineticsTypeTemplatePanel.gridwidth = 3;
 		constraintsKineticsTypeTemplatePanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsKineticsTypeTemplatePanel.anchor = java.awt.GridBagConstraints.EAST;
@@ -900,14 +888,13 @@ private void initialize() {
 		constraintsKineticsTypeTemplatePanel.weighty = 1.0;
 		constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(5, 10, 5, 10);
 		add(getKineticsTypeTemplatePanel(), constraintsKineticsTypeTemplatePanel);
+		gridy ++;
 
 		initConnections();
 		connEtoC9();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 private JLabel getReactionElectricalPropertiesLabel() {
@@ -1144,12 +1131,18 @@ private JButton getJToggleButton() {
 }
 
 private void refreshAnnotationTextField() {
+	if(subset) {
+		return;
+	}
 	annotationTextArea.setText(getSimpleReaction().getModel().getVcMetaData().getFreeTextAnnotation(getSimpleReaction()));
 	annotationTextArea.setCaretPosition(0);
 }
 
 
 private void refreshNameTextField() {
+	if(subset) {
+		return;
+	}
 	getSimpleReactionNameTextField().setText(getSimpleReaction().getName());	
 }
 }
