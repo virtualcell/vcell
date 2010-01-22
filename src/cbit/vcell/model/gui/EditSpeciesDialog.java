@@ -25,6 +25,7 @@ import javax.swing.event.HyperlinkEvent.EventType;
 
 import org.vcell.sybil.gui.pcsearch.test.PCKeywordQueryPanel;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
+import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.TokenMangler;
@@ -120,24 +121,38 @@ public class EditSpeciesDialog extends JDialog {
 				}
 				ArrayList<String> pcLinkStr = getPCLinks();
 				if (getSelectedXRef() != null) {
-					String uriText = link.getURI(getSelectedXRef().db(), getSelectedXRef().id());
+					String dbName = getSelectedXRef().db();
+					if (dbName.contains("RefSeq Protein")) {
+						dbName = "refseq";
+					} else if (dbName.contains("Gene Symbol")) {
+						dbName = "gene.symbol";
+					}
+					String uriText = link.getURI(dbName, getSelectedXRef().id());
 					selectedURI = new URI(uriText);
-					pcLinkStr.add(uriText);
+					if (!uriText.equals("")) {
+						pcLinkStr.add(uriText);
+					}
 				}
-				if (pcLinkStr != null) {
+				if (pcLinkStr != null && pcLinkStr.size() > 0) {
 					StringBuffer buffer = new StringBuffer("<html>");
 					for(String pcLink : pcLinkStr){
-						buffer.append("&#x95;&nbsp;" + pcLink + "<br>");
-						for(String url : link.getLocations(pcLink)) {
-							buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url + "\">" + url + "</a><br>");
+						String preferredName = " "; 
+						if (pcLink.toLowerCase().contains("uniprot")) {
+							preferredName = "[" + UniProtConstants.getNameFromID(pcLink) + "]";	
+						}
+						
+						String prettyResourceName = pcLink.replaceFirst("urn:miriam:", "");
+						if (pcLink != null && pcLink.length() > 0) {
+							buffer.append("&#x95;&nbsp;" + prettyResourceName + "  <b>" + preferredName + "</b><br>");
+							for(String url : link.getLocations(pcLink)) {
+								buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url + "\">" + url + "</a><br>");
+							}
 						}
 					}
-
 					buffer.append("</html>");
 					htmlText = buffer.toString();
 					hashTable.put("htmlText", htmlText);
 				}
-				
 			}
 		};
 
@@ -1550,7 +1565,7 @@ private JButton getPathwayDBbutton() {
 	}
 
 	private void savePCLink() {
-		if (getSelectedXRef() != null) {
+		if (getSelectedXRef() != null && (selectedURI != null && selectedURI.getScheme() != null && selectedURI.getSchemeSpecificPart().length() > 0)) {
 			try {
 				String propertyID = XMLTags.PROPERTY_ISVERSIONOF;	
 				URI propertyNamespace = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
