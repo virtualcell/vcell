@@ -1,6 +1,14 @@
 package cbit.vcell.mapping.gui;
 
+import java.awt.Component;
+import java.awt.Dimension;
+
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.ReactionStep;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -12,17 +20,13 @@ import cbit.vcell.mapping.SimulationContext;
  * @author: 
  */
 public class ReactionSpecsPanel extends javax.swing.JPanel {
-	private javax.swing.table.TableColumn ivjEnabledColumn = null;
-	private javax.swing.table.TableColumn ivjFastColumn = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private javax.swing.table.TableColumn ivjNameColumn = null;
 	private javax.swing.JTable ivjScrollPaneTable = null;
-	private javax.swing.table.TableColumn ivjTypeColumn = null;
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.mapping.SimulationContext ivjsimulationContext1 = null;
+	private SimulationContext ivjsimulationContext1 = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -146,9 +150,10 @@ private void connPtoP2SetTarget() {
 			//amended on 14th June, 2007. fast column in reactionSpecTable is not needed for stochastic applications.
 			if(getsimulationContext1() != null && getsimulationContext1().isStoch())
 			{
-				getFastColumn().setMaxWidth(0);
-				getFastColumn().setMinWidth(0);
-				getFastColumn().setPreferredWidth(0);
+				TableColumn fastColumn = getScrollPaneTable().getColumn(getScrollPaneTable().getModel().getColumnName(ReactionSpecsTableModel.COLUMN_FAST));
+				fastColumn.setMaxWidth(0);
+				fastColumn.setMinWidth(0);
+				fastColumn.setPreferredWidth(0);
 			}
 			// user code begin {2}
 			// user code end
@@ -160,56 +165,6 @@ private void connPtoP2SetTarget() {
 		// user code end
 		handleException(ivjExc);
 	}
-}
-
-
-/**
- * Return the EnabledColumn property value.
- * @return javax.swing.table.TableColumn
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.table.TableColumn getEnabledColumn() {
-	if (ivjEnabledColumn == null) {
-		try {
-			ivjEnabledColumn = new javax.swing.table.TableColumn();
-			ivjEnabledColumn.setIdentifier("Enabled");
-			ivjEnabledColumn.setWidth(50);
-			ivjEnabledColumn.setModelIndex(2);
-			ivjEnabledColumn.setHeaderValue("Enabled");
-			ivjEnabledColumn.setMinWidth(15);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjEnabledColumn;
-}
-
-/**
- * Return the FastColumn property value.
- * @return javax.swing.table.TableColumn
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.table.TableColumn getFastColumn() {
-	if (ivjFastColumn == null) {
-		try {
-			ivjFastColumn = new javax.swing.table.TableColumn();
-			ivjFastColumn.setIdentifier("Fast");
-			ivjFastColumn.setWidth(50);
-			ivjFastColumn.setModelIndex(3);
-			ivjFastColumn.setHeaderValue("Fast");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFastColumn;
 }
 
 /**
@@ -236,32 +191,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
 	return ivjJScrollPane1;
 }
 
-
-/**
- * Return the NameColumn property value.
- * @return javax.swing.table.TableColumn
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.table.TableColumn getNameColumn() {
-	if (ivjNameColumn == null) {
-		try {
-			ivjNameColumn = new javax.swing.table.TableColumn();
-			ivjNameColumn.setIdentifier("Name");
-			ivjNameColumn.setWidth(120);
-			ivjNameColumn.setHeaderValue("Name");
-			ivjNameColumn.setMinWidth(30);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjNameColumn;
-}
-
-/**
+/*
  * Return the ReactionSpecsTableModel property value.
  * @return cbit.vcell.mapping.gui.ReactionSpecsTableModel
  */
@@ -293,13 +223,7 @@ private javax.swing.JTable getScrollPaneTable() {
 			ivjScrollPaneTable = new javax.swing.JTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
-			ivjScrollPaneTable.addColumn(getNameColumn());
-			ivjScrollPaneTable.addColumn(getTypeColumn());
-			ivjScrollPaneTable.addColumn(getEnabledColumn());
-			ivjScrollPaneTable.addColumn(getFastColumn());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -332,32 +256,6 @@ private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
 	return ivjsimulationContext1;
 }
 
-
-/**
- * Return the TypeColumn property value.
- * @return javax.swing.table.TableColumn
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.table.TableColumn getTypeColumn() {
-	if (ivjTypeColumn == null) {
-		try {
-			ivjTypeColumn = new javax.swing.table.TableColumn();
-			ivjTypeColumn.setIdentifier("Type");
-			ivjTypeColumn.setWidth(75);
-			ivjTypeColumn.setModelIndex(1);
-			ivjTypeColumn.setHeaderValue("Type");
-			ivjTypeColumn.setMinWidth(30);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTypeColumn;
-}
-
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -381,6 +279,16 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
+	getScrollPaneTable().setDefaultRenderer(ReactionStep.class, new DefaultTableCellRenderer() {
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+		{
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (value instanceof ReactionStep) {
+				setText(((ReactionStep)value).getName());
+			}
+			return this;
+		}
+	});
 }
 
 /**
@@ -410,13 +318,17 @@ private void initialize() {
 	// user code end
 }
 
-public void setScrollPaneTableCurrentRow(String selection) {
-	
+public void setScrollPaneTableCurrentRow(ReactionStep selection) {
+	if (selection == null) {
+		return;
+	}
+
 	int numRows = getScrollPaneTable().getRowCount();
 	for(int i=0; i<numRows; i++) {
-		Object valueAt = getScrollPaneTable().getValueAt(i, ReactionSpecsTableModel.COLUMN_NAME);
-		if(valueAt.toString().equals(selection)) {
+		ReactionStep valueAt = (ReactionStep)getScrollPaneTable().getValueAt(i, ReactionSpecsTableModel.COLUMN_NAME);
+		if(valueAt.equals(selection)) {
 			getScrollPaneTable().changeSelection(i, 0, false, false);
+			return;
 		}
 	}
 }

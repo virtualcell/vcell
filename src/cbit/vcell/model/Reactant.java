@@ -64,7 +64,7 @@ public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model
  */
 public String toString() {
 	String scName = (getSpeciesContext()!=null)?(getSpeciesContext().getName()):"null";
-	return "Reactant(id="+getKey()+", speciesContext="+scName+"')";
+	return "Reactant(id="+getKey()+", speciesContext="+scName+")";
 }
 
 

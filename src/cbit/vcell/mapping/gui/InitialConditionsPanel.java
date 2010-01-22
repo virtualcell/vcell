@@ -5,6 +5,7 @@ package cbit.vcell.mapping.gui;
 ©*/
 import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
@@ -21,7 +22,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
@@ -40,7 +43,9 @@ import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -840,6 +845,24 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
+	
+	DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+		{
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (value instanceof Species) {
+				setText(((Species)value).getCommonName());
+			} else if (value instanceof SpeciesContext) {
+				setText(((SpeciesContext)value).getName());
+			} else if (value instanceof Structure) {
+				setText(((Structure)value).getName());
+			}
+			return this;
+		}
+	};
+	getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
+	getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
+	getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
 }
 
 /**
@@ -869,13 +892,16 @@ private void initialize() {
 	// user code end
 }
 
-public void setScrollPaneTableCurrentRow(String selection) {
-	
+public void setScrollPaneTableCurrentRow(SpeciesContext selection) {
+	if (selection == null) {
+		return;
+	}
 	int numRows = getScrollPaneTable().getRowCount();
 	for(int i=0; i<numRows; i++) {
-		Object valueAt = getScrollPaneTable().getValueAt(i, SpeciesContextSpecsTableModel.COLUMN_SPECIESCONTEXT);
-		if(valueAt.toString().equals(selection)) {
+		SpeciesContext valueAt = (SpeciesContext)getScrollPaneTable().getValueAt(i, SpeciesContextSpecsTableModel.COLUMN_SPECIESCONTEXT);
+		if(valueAt.equals(selection)) {
 			getScrollPaneTable().changeSelection(i, 0, false, false);
+			return;
 		}
 	}
 }

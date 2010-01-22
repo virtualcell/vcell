@@ -3,6 +3,7 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
@@ -43,7 +44,7 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
+public void fromTokens(CommentStringTokenizer tokens, Model model) throws Exception {
 
 	String scName = tokens.nextToken();				// read speciesContext name
 	String speciesName = tokens.nextToken();		// read species name
@@ -74,7 +75,7 @@ public static String getTerm() {
  */
 public String toString() {
 	String scName = (getSpeciesContext()!=null)?(getSpeciesContext().getName()):"null";
-	return "Catalyst(id="+getKey()+", speciesContext="+scName+"')";
+	return "Catalyst(id="+getKey()+", speciesContext="+scName+")";
 }
 
 

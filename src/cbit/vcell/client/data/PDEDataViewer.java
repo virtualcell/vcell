@@ -1,16 +1,47 @@
 package cbit.vcell.client.data;
 
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.render.Vect3d;
-import cbit.vcell.simdata.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Vector;
+import java.util.Map.Entry;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.InternalFrameAdapter;
@@ -18,6 +49,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -38,29 +70,16 @@ import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.image.DisplayAdapterService;
-import cbit.plot.*;
+import cbit.plot.Plot2D;
+import cbit.plot.PlotData;
+import cbit.plot.PlotPane;
+import cbit.plot.SingleXPlot2D;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
-import cbit.vcell.simdata.gui.*;
-import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solvers.MembraneElement;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.*;
-import java.util.Map.Entry;
-import cbit.vcell.client.*;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -83,6 +102,28 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.render.Vect3d;
+import cbit.vcell.simdata.ClientPDEDataContext;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.gui.MeshDisplayAdapter;
+import cbit.vcell.simdata.gui.PDEDataContextPanel;
+import cbit.vcell.simdata.gui.PDEPlotControlPanel;
+import cbit.vcell.simdata.gui.PdeTimePlotPanel;
+import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
+import cbit.vcell.simdata.gui.SpatialSelectionVolume;
+import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.MembraneElement;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -713,7 +754,7 @@ private void roiAction(){
 	
 		ScopedExpressionTableCellRenderer.formatTableCellSizes(roiTable, null, null);
 		
-		JScrollPane scrollPane = new JScrollPane(roiTable);
+		JScrollPane scrollPane = new JScrollPane(roiTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		roiTable.setPreferredScrollableViewportSize(new Dimension(500, 250));
 	
 		final JPanel mainJPanel = new JPanel();
@@ -721,23 +762,20 @@ private void roiAction(){
 		mainJPanel.setLayout(mainBL);
 		
 		JPanel timeJPanel = new JPanel();
-		BoxLayout timeBL = new BoxLayout(timeJPanel,BoxLayout.X_AXIS);
-		timeJPanel.setLayout(timeBL);
+		timeJPanel.setLayout(new FlowLayout());
 		double[] timePoints = getPdeDataContext().getTimePoints();
 		Double[] timePointsD = new Double[timePoints.length];
 		for(int i=0;i<timePoints.length;i+= 1){
 			timePointsD[i] = new Double(timePoints[i]);
 		}
 		final JComboBox jcb_time_begin = new JComboBox(timePointsD);
-		jcb_time_begin.setMaximumSize(new Dimension(100, 25));
 		final JComboBox jcb_time_end = new JComboBox(timePointsD);
 		jcb_time_end.setSelectedIndex(timePointsD.length-1);
-		jcb_time_end.setMaximumSize(new Dimension(100, 25));
 		timeJPanel.add(new JLabel("Begin Time:"));
 		timeJPanel.add(jcb_time_begin);
+		timeJPanel.add(Box.createHorizontalStrut(30));
 		timeJPanel.add(new JLabel("End Time:"));
 		timeJPanel.add(jcb_time_end);
-		timeJPanel.setBorder(new EmptyBorder(4,4,4,4));
 		
 		JPanel okCancelJPanel = new JPanel();
 		BoxLayout okCancelBL = new BoxLayout(okCancelJPanel,BoxLayout.X_AXIS);
@@ -829,7 +867,6 @@ private void roiAction(){
 			}
 		});
 		okCancelJPanel.add(cancelButton);
-		okCancelJPanel.setBorder(new EmptyBorder(4,4,4,4));
 	
 		mainJPanel.add(timeJPanel);
 		mainJPanel.add(scrollPane);
@@ -1994,7 +2031,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

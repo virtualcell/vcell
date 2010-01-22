@@ -10,18 +10,21 @@ import java.util.Comparator;
 import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -75,13 +78,13 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
 public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_SPECIESCONTEXT:{
-			return String.class;
+			return SpeciesContext.class;
 		}
 		case COLUMN_SPECIES:{
-			return String.class;
+			return Species.class;
 		}
 		case COLUMN_STRUCTURE:{
-			return String.class;
+			return Structure.class;
 		}
 		case COLUMN_FIXED:{
 			return Boolean.class;
@@ -183,13 +186,13 @@ public Object getValueAt(int row, int col) {
 		SpeciesContextSpec scSpec = getSpeciesContextSpec(row);
 		switch (col){
 			case COLUMN_SPECIESCONTEXT:{
-				return scSpec.getSpeciesContext().getName();
+				return scSpec.getSpeciesContext();
 			}
 			case COLUMN_SPECIES:{
-				return scSpec.getSpeciesContext().getSpecies().getCommonName();
+				return scSpec.getSpeciesContext().getSpecies();
 			}
 			case COLUMN_STRUCTURE:{
-				return scSpec.getSpeciesContext().getStructure().getName();
+				return scSpec.getSpeciesContext().getStructure();
 			}
 			case COLUMN_FIXED:{
 				return new Boolean(scSpec.isConstant());
