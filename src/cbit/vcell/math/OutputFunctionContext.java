@@ -76,6 +76,15 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	public void refreshDependencies() {
 		removeVetoableChangeListener(this);
 		addVetoableChangeListener(this);
+		try {
+			for (int i = 0; i < outputFunctionsList.size(); i++) {
+				outputFunctionsList.get(i).getExpression().bindExpression(this);
+			}
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
+
 	}
 	
 	public void addOutputFunction(AnnotatedFunction obsFunction) throws PropertyVetoException {
