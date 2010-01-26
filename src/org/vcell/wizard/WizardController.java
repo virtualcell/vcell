@@ -67,11 +67,11 @@ public class WizardController implements ActionListener {
         AsynchClientTask[] taskArray = new AsynchClientTask[totalTasks.size()];
         if(descriptor.isProgressPopupShown())
         {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), descriptor.isTaskProgressKnown());
+        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), descriptor.isTaskProgressKnown(), false, null, true);
         }
         else
         {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), false, false/*doesn't show popup, we don't need progress*/, false, null, false);
+        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray));
         }
     }
 

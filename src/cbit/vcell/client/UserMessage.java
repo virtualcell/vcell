@@ -19,6 +19,7 @@ public class UserMessage {
 	public final static String OPTION_OK = "Ok";
 	public final static String OPTION_CANCEL = "Cancel";
 	public final static String OPTION_DISCARD_CHANGES = "Discard changes";
+	public final static String OPTION_EXIT = "Exit";
 	public final static String OPTION_OVERWRITE_FILE = "Overwrite file";
 	public final static String OPTION_SAVE_AS_NEW_EDITION = "Create new edition";
 	public final static String OPTION_DELETE = "Delete";
