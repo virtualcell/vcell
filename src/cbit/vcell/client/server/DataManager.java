@@ -1,17 +1,11 @@
 package cbit.vcell.client.server;
-import cbit.plot.PlotData;
-import cbit.vcell.math.Function;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.ParticleDataBlock;
-import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.solver.DataProcessingOutput;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solvers.CartesianMesh;
-
-import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.VCDataIdentifier;
+
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
+import cbit.vcell.simdata.DataIdentifier;
 
 public interface DataManager {
 
@@ -22,7 +16,7 @@ public interface DataManager {
  * 
  * @throws org.vcell.util.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
  */
-void addFunctions(cbit.vcell.math.AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException;
+void addFunctions(AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException;
 
 /**
  * retrieves a list of data names (state variables and functions) defined for this Simulation.
@@ -33,7 +27,7 @@ void addFunctions(cbit.vcell.math.AnnotatedFunction[] functions,boolean[] bRepla
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers() throws DataAccessException;
+DataIdentifier[] getDataIdentifiers() throws DataAccessException;
 
 
 /**
@@ -55,7 +49,7 @@ double[] getDataSetTimes() throws DataAccessException;
  * 
  * @see Function
  */
-cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAccessException;
+AnnotatedFunction[] getFunctions() throws DataAccessException;
 
 
 /**
@@ -85,5 +79,7 @@ VCDataIdentifier getVCDataIdentifier();
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * @throws org.vcell.util.PermissionException if not the owner of this dataset.
  */
-void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws DataAccessException, PermissionException;
+void removeFunction(AnnotatedFunction function) throws DataAccessException, PermissionException;
+
+VCDataManager getVCDataManager();
 }

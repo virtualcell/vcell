@@ -158,7 +158,7 @@ SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException;
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-DataViewerController getDataViewerController(Simulation simulation) throws DataAccessException;
+DataViewerController getDataViewerController(Simulation simulation, int jobIndex) throws DataAccessException;
 
 
 /**

@@ -1,6 +1,15 @@
 package cbit.vcell.client.data;
-import java.awt.event.*;
-import java.awt.*;
+import java.awt.AWTEventMulticaster;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import org.vcell.util.document.VCDataIdentifier;
+
+import cbit.plot.PlotPane;
+import cbit.vcell.export.ExportMonitorPanel;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)
@@ -9,16 +18,12 @@ import java.awt.*;
 public class ODEDataViewer extends DataViewer {
     protected transient ActionListener actionListener = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
-	private cbit.plot.PlotPane ivjPlotPane1 = null;
-	private cbit.vcell.solver.ode.ODESolverResultSet fieldOdeSolverResultSet = null;
+	private ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
+	private PlotPane ivjPlotPane1 = null;
+	private ODESolverResultSet fieldOdeSolverResultSet = null;
 	private boolean ivjConnPtoP1Aligning = false;
-	private javax.swing.JTabbedPane ivjJTabbedPane1 = null;
 	private javax.swing.JPanel ivjViewData = null;
-	private boolean ivjConnPtoP2Aligning = false;
-	private boolean ivjConnPtoP3Aligning = false;
-	private org.vcell.util.document.VCDataIdentifier fieldVcDataIdentifier = null;
-	private boolean ivjConnPtoP4Aligning = false;
+	private VCDataIdentifier fieldVcDataIdentifier = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -40,7 +45,7 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				connEtoM2(evt);
 		};
 	};
-	private cbit.vcell.solver.Simulation fieldSimulation =null;
+	private Simulation fieldSimulation =null;
 
 public ODEDataViewer() {
 	super();
@@ -117,26 +122,8 @@ protected void fireActionPerformed(ActionEvent e) {
  * Method generated to support the promotion of the exportMonitorPanel attribute.
  * @return cbit.vcell.export.ExportMonitorPanel
  */
-public cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel() {
+public ExportMonitorPanel getExportMonitorPanel() {
 	return null;
-}
-
-
-/**
- * Return the JTabbedPane1 property value.
- * @return javax.swing.JTabbedPane
- */
-private javax.swing.JTabbedPane getJTabbedPane1() {
-	if (ivjJTabbedPane1 == null) {
-		try {
-			ivjJTabbedPane1 = new javax.swing.JTabbedPane();
-			ivjJTabbedPane1.setName("JTabbedPane1");
-			ivjJTabbedPane1.insertTab("View Data", null, getViewData(), null, 0);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJTabbedPane1;
 }
 
 
@@ -144,10 +131,10 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
  * Return the ODESolverPlotSpecificationPanel1 property value.
  * @return cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel
  */
-private cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel getODESolverPlotSpecificationPanel1() {
+private ODESolverPlotSpecificationPanel getODESolverPlotSpecificationPanel1() {
 	if (ivjODESolverPlotSpecificationPanel1 == null) {
 		try {
-			ivjODESolverPlotSpecificationPanel1 = new cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel();
+			ivjODESolverPlotSpecificationPanel1 = new ODESolverPlotSpecificationPanel();
 			ivjODESolverPlotSpecificationPanel1.setName("ODESolverPlotSpecificationPanel1");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -162,7 +149,7 @@ private cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel getODESolverPl
  * @return The odeSolverResultSet property value.
  * @see #setOdeSolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
+public ODESolverResultSet getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
 
@@ -171,10 +158,10 @@ public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
  * Return the PlotPane1 property value.
  * @return cbit.plot.PlotPane
  */
-private cbit.plot.PlotPane getPlotPane1() {
+private PlotPane getPlotPane1() {
 	if (ivjPlotPane1 == null) {
 		try {
-			ivjPlotPane1 = new cbit.plot.PlotPane();
+			ivjPlotPane1 = new PlotPane();
 			ivjPlotPane1.setName("PlotPane1");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -189,7 +176,7 @@ private cbit.plot.PlotPane getPlotPane1() {
  * @return The simulation property value.
  * @see #setSimulation
  */
-public cbit.vcell.solver.Simulation getSimulation() {
+public Simulation getSimulation() {
 	return fieldSimulation;
 }
 
@@ -199,7 +186,7 @@ public cbit.vcell.solver.Simulation getSimulation() {
  * @return The vcDataIdentifier property value.
  * @see #setVcDataIdentifier
  */
-public org.vcell.util.document.VCDataIdentifier getVcDataIdentifier() {
+public VCDataIdentifier getVcDataIdentifier() {
 	return fieldVcDataIdentifier;
 }
 
@@ -254,7 +241,7 @@ private void initialize() {
 		setName("ODEDataViewer");
 		setLayout(new java.awt.BorderLayout());
 		setSize(720, 548);
-		add(getJTabbedPane1(), "Center");
+		add(getViewData(), "Center");
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -277,7 +264,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -285,12 +271,6 @@ public static void main(java.lang.String[] args) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
 		exception.printStackTrace(System.out);
 	}
-}
-
-
-private void refireActionPerformed(ActionEvent e) {
-	// relays an action event with this as the source
-	fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
 }
 
 
@@ -304,8 +284,8 @@ public synchronized void removeActionListener(ActionListener l) {
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet) {
-	cbit.vcell.solver.ode.ODESolverResultSet oldValue = fieldOdeSolverResultSet;
+public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
+	ODESolverResultSet oldValue = fieldOdeSolverResultSet;
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
 }
@@ -316,8 +296,8 @@ public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSo
  * @param simulation The new value for the property.
  * @see #getSimulation
  */
-public void setSimulation(cbit.vcell.solver.Simulation simulation) {
-	cbit.vcell.solver.Simulation oldValue = fieldSimulation;
+public void setSimulation(Simulation simulation) {
+	Simulation oldValue = fieldSimulation;
 	fieldSimulation = simulation;
 	firePropertyChange("simulation", oldValue, simulation);
 
@@ -331,8 +311,8 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  * @param vcDataIdentifier The new value for the property.
  * @see #getVcDataIdentifier
  */
-public void setVcDataIdentifier(org.vcell.util.document.VCDataIdentifier vcDataIdentifier) {
-	org.vcell.util.document.VCDataIdentifier oldValue = fieldVcDataIdentifier;
+public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
+	VCDataIdentifier oldValue = fieldVcDataIdentifier;
 	fieldVcDataIdentifier = vcDataIdentifier;
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
 }
