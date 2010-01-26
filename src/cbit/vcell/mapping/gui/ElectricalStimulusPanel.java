@@ -1,10 +1,15 @@
 package cbit.vcell.mapping.gui;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
+import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.plot.TimeFunctionPanel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.mapping.CurrentClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -14,8 +19,27 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import javax.swing.JButton;
+import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
+import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.InternalFrameListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 /**
  * Insert the type's description here.
  * Creation date: (10/26/2004 9:58:14 PM)
@@ -41,6 +65,8 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjpatchElectrodeLabel = null;
 	private ElectrodePanel ivjpatchElectrodePanel = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
+	private JButton btnGraphElectricalStimulus;
+	private TimeFunctionPanel timeFunctionPanel = null;
 
 class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -949,6 +975,7 @@ private javax.swing.JPanel getJPanel2() {
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintspatchElectrodeLabel = new java.awt.GridBagConstraints();
+			constraintspatchElectrodeLabel.insets = new Insets(0, 0, 5, 0);
 			constraintspatchElectrodeLabel.gridx = 0; constraintspatchElectrodeLabel.gridy = 0;
 			getJPanel2().add(getpatchElectrodeLabel(), constraintspatchElectrodeLabel);
 
@@ -957,12 +984,12 @@ private javax.swing.JPanel getJPanel2() {
 			constraintspatchElectrodePanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintspatchElectrodePanel.weightx = 1.0;
 			constraintspatchElectrodePanel.weighty = 1.0;
-			constraintspatchElectrodePanel.insets = new java.awt.Insets(0, 4, 4, 4);
+			constraintspatchElectrodePanel.insets = new Insets(0, 4, 5, 4);
 			getJPanel2().add(getpatchElectrodePanel(), constraintspatchElectrodePanel);
 
 			java.awt.GridBagConstraints constraintsgroundElectrodeLabel = new java.awt.GridBagConstraints();
 			constraintsgroundElectrodeLabel.gridx = 0; constraintsgroundElectrodeLabel.gridy = 2;
-			constraintsgroundElectrodeLabel.insets = new java.awt.Insets(4, 4, 0, 4);
+			constraintsgroundElectrodeLabel.insets = new Insets(4, 4, 5, 4);
 			getJPanel2().add(getgroundElectrodeLabel(), constraintsgroundElectrodeLabel);
 
 			java.awt.GridBagConstraints constraintsgroundElectrodePanel = new java.awt.GridBagConstraints();
@@ -970,11 +997,16 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsgroundElectrodePanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsgroundElectrodePanel.weightx = 1.0;
 			constraintsgroundElectrodePanel.weighty = 1.0;
-			constraintsgroundElectrodePanel.insets = new java.awt.Insets(0, 4, 4, 4);
+			constraintsgroundElectrodePanel.insets = new Insets(0, 4, 5, 4);
 			getJPanel2().add(getgroundElectrodePanel(), constraintsgroundElectrodePanel);
+			GridBagConstraints gbc_btnGraphElectricalStimulus = new GridBagConstraints();
+			gbc_btnGraphElectricalStimulus.insets = new Insets(4, 4, 4, 4);
+			gbc_btnGraphElectricalStimulus.gridx = 0;
+			gbc_btnGraphElectricalStimulus.gridy = 4;
+			ivjJPanel2.add(getBtnGraphElectricalStimulus(), gbc_btnGraphElectricalStimulus);
 
 			java.awt.GridBagConstraints constraintsparameterTable = new java.awt.GridBagConstraints();
-			constraintsparameterTable.gridx = 0; constraintsparameterTable.gridy = 4;
+			constraintsparameterTable.gridx = 0; constraintsparameterTable.gridy = 5;
 			constraintsparameterTable.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsparameterTable.weightx = 1.0;
 			constraintsparameterTable.weighty = 1.0;
@@ -1193,7 +1225,7 @@ private void initialize() {
 		// user code end
 		setName("CurrentClampStimulusPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(567, 393);
+		setSize(567, 430);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 0;
@@ -1215,6 +1247,22 @@ private void initialize() {
 		connEtoM15();
 		connEtoM17();
 		connEtoC3();
+		
+		getScrollPaneTable().getSelectionModel().addListSelectionListener(
+				new ListSelectionListener() {
+					public void valueChanged(ListSelectionEvent e) {
+						if(!e.getValueIsAdjusting()){
+							if(getScrollPaneTable().getSelectionModel().isSelectionEmpty()){
+//								getBtnGraphElectricalStimulus().setEnabled(false);
+							}else{
+//								getBtnGraphElectricalStimulus().setEnabled(true);
+								setGraphExpression();
+							}
+						}
+					}
+				}
+			);
+
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1501,4 +1549,144 @@ private void setsimulationContext1(SimulationContext newValue) {
 	// user code end
 }
 
+	private JButton getBtnGraphElectricalStimulus() {
+		if (btnGraphElectricalStimulus == null) {
+			btnGraphElectricalStimulus = new JButton("Graph Electrical Stimulus Function...");
+			btnGraphElectricalStimulus.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					graphElectricalStimulusFunction();
+				}
+			});
+		}
+		return btnGraphElectricalStimulus;
+	}
+	
+	private static int DEFAULT_ElectStimFuncRow = 0;
+	private void graphElectricalStimulusFunction(){
+		if(timeFunctionPanel != null){
+			return;
+		}
+
+		int row = getScrollPaneTable().getSelectedRow();
+		if(row < 0){
+			if(getScrollPaneTable().getRowCount() > 0){
+				DialogUtils.showInfoDialog(this, "No Electrical Stimulus Function selected.  Displaying '"+getScrollPaneTable().getModel().getValueAt(DEFAULT_ElectStimFuncRow, 0).toString()+"'");
+			}else{
+				DialogUtils.showInfoDialog(this, "No Electrical Stimulus Function selected.  Displaying arbitrary function 't'.");
+			}
+		}
+
+		timeFunctionPanel = new TimeFunctionPanel();
+    	setGraphExpression();
+    	
+		JDesktopPaneEnhanced jDesktopPaneEnhanced = (JDesktopPaneEnhanced)BeanUtils.findTypeParentOfComponent(this, JDesktopPaneEnhanced.class);
+		if(jDesktopPaneEnhanced != null){
+	    	JInternalFrame jif = new JInternalFrame();
+	    	jif.setClosable(true);
+	    	jif.addInternalFrameListener(new InternalFrameListener() {
+				
+				public void internalFrameOpened(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void internalFrameIconified(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void internalFrameDeiconified(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void internalFrameDeactivated(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void internalFrameClosing(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void internalFrameClosed(InternalFrameEvent e) {
+					timeFunctionPanel = null;
+					
+				}
+				
+				public void internalFrameActivated(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+	    	jif.getContentPane().add(timeFunctionPanel);
+	    	jif.pack();
+	    	BeanUtils.centerOnComponent(jif, jDesktopPaneEnhanced);
+	    	DocumentWindowManager.showFrame(jif,jDesktopPaneEnhanced);
+
+		}else{
+	    	JDialog jdialog = new JDialog(JOptionPane.getRootFrame(),true);
+	    	jdialog.addWindowListener(new WindowListener() {
+				
+				public void windowOpened(WindowEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void windowIconified(WindowEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void windowDeiconified(WindowEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void windowDeactivated(WindowEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public void windowClosing(WindowEvent e) {
+					timeFunctionPanel = null;
+					
+				}
+				
+				public void windowClosed(WindowEvent e) {
+					timeFunctionPanel = null;
+				}
+				
+				public void windowActivated(WindowEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+	    	jdialog.setContentPane(timeFunctionPanel);
+	    	jdialog.pack();
+//	    	BeanUtils.centerOnComponent(jdialog, this);
+	    	ZEnforcer.showModalDialogOnTop(jdialog, this);
+//	    	jdialog.setVisible(true);
+
+		}
+	}
+	private void setGraphExpression(){
+		int row = getScrollPaneTable().getSelectedRow();
+		String expr = null;
+		if(row < 0){//no row selected
+			if(getScrollPaneTable().getRowCount() > 0){//use default row if exist
+				row = DEFAULT_ElectStimFuncRow;
+			}
+		}
+		if(row < 0){//no rows exist in table.  Use arbitrary function
+			expr = "t";
+		}else{
+			ScopedExpression scopedExpression = (ScopedExpression)getScrollPaneTable().getModel().getValueAt(row, 2);
+			expr = scopedExpression.infix();			
+		}
+		if(timeFunctionPanel != null){
+			timeFunctionPanel.setTimeFunction(expr);
+		}
+	}
 }
