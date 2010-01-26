@@ -9,15 +9,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.gui.EmptyBorderBean;
 
 import cbit.rmi.event.DataJobEvent;
+import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.solver.Simulation;
@@ -35,7 +38,7 @@ public class SimResultsViewer extends DataViewer {
 	private PDEDataViewer pdeDataViewer = null;
 	private boolean isODEData;
 	private Hashtable<String, JTable> choicesHash = new Hashtable<String, JTable>();
-	private VCDataManager vcDataManager = null;
+	private DataManager dataManager = null;
 
 /**
  * Insert the method's description here.
@@ -43,11 +46,11 @@ public class SimResultsViewer extends DataViewer {
  * @param simulation cbit.vcell.solver.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
-public SimResultsViewer(Simulation simulation, VCDataManager vcDataManager) throws DataAccessException {
+public SimResultsViewer(Simulation simulation, DataManager arg_dataManager) throws DataAccessException {
 	super();
 	setSimulation(simulation);
 	this.isODEData = !simulation.isSpatial();
-	this.vcDataManager = vcDataManager;
+	this.dataManager = arg_dataManager;
 	initialize();
 }
 
@@ -58,13 +61,11 @@ public SimResultsViewer(Simulation simulation, VCDataManager vcDataManager) thro
  * @return javax.swing.JPanel
  * @throws DataAccessException 
  */
-private DataViewer createODEDataViewer(int jobIndex) throws DataAccessException {
-	VCDataIdentifier vcdid = new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
-	ODEDataManager odeDataManager = new ODEDataManager(vcDataManager, vcdid);
+private DataViewer createODEDataViewer() throws DataAccessException {
 	odeDataViewer = new ODEDataViewer();
 	odeDataViewer.setSimulation(getSimulation());
-	odeDataViewer.setOdeSolverResultSet(odeDataManager.getODESolverResultSet());
-	odeDataViewer.setVcDataIdentifier(vcdid);
+	odeDataViewer.setOdeSolverResultSet(((ODEDataManager)dataManager).getODESolverResultSet());
+	odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());
 	return odeDataViewer;
 }
 
@@ -74,12 +75,10 @@ private DataViewer createODEDataViewer(int jobIndex) throws DataAccessException 
  * Creation date: (6/11/2004 2:33:44 PM)
  * @return javax.swing.JPanel
  */
-private DataViewer createPDEDataViewer(int jobIndex) throws DataAccessException {
-	VCDataIdentifier vcdid = new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), jobIndex);
-	PDEDataManager pdeDataManager = new PDEDataManager(vcDataManager, vcdid);
+private DataViewer createPDEDataViewer() throws DataAccessException {
 	pdeDataViewer = new PDEDataViewer();
 	pdeDataViewer.setSimulation(getSimulation());
-	pdeDataViewer.setPdeDataContext(pdeDataManager.getPDEDataContext());
+	pdeDataViewer.setPdeDataContext(((PDEDataManager)dataManager).getPDEDataContext());
 	return pdeDataViewer;
 }
 
@@ -91,7 +90,7 @@ public void dataJobMessage(DataJobEvent dje) {
  * Method generated to support the promotion of the exportMonitorPanel attribute.
  * @return cbit.vcell.export.ExportMonitorPanel
  */
-public cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel() {
+public ExportMonitorPanel getExportMonitorPanel() {
 	return getMainViewer().getExportMonitorPanel();
 }
 
@@ -121,7 +120,7 @@ private javax.swing.JPanel getParamChoicesPanel() {
  * Creation date: (10/17/2005 11:36:17 PM)
  * @return cbit.vcell.solver.Simulation
  */
-private cbit.vcell.solver.Simulation getSimulation() {
+private Simulation getSimulation() {
 	return simulation;
 }
 
@@ -130,13 +129,13 @@ private cbit.vcell.solver.Simulation getSimulation() {
  * Creation date: (10/17/2005 11:37:52 PM)
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void initialize() throws org.vcell.util.DataAccessException {
+private void initialize() throws DataAccessException {
 	
 	// create main viewer for jobIndex 0 and wire it up
 	if (isODEData) {
-		setMainViewer(createODEDataViewer(0));
+		setMainViewer(createODEDataViewer());
 	} else {
-		setMainViewer(createPDEDataViewer(0));
+		setMainViewer(createPDEDataViewer());
 	}
 	java.beans.PropertyChangeListener pcl = new java.beans.PropertyChangeListener() {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -159,7 +158,7 @@ private void initialize() throws org.vcell.util.DataAccessException {
 	if (getSimulation().getScanCount() > 1) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		org.vcell.util.gui.EmptyBorderBean ebb = new org.vcell.util.gui.EmptyBorderBean();
+		EmptyBorderBean ebb = new EmptyBorderBean();
 		ebb.setInsets(new java.awt.Insets(4,2,4,2));
 		JLabel label = new JLabel("View data for parameter values: ");
 		label.setBorder(ebb);
@@ -204,7 +203,7 @@ private void initialize() throws org.vcell.util.DataAccessException {
 			JScrollPane scr = new JScrollPane(table);
 			JPanel p = new JPanel();
 			scr.setPreferredSize(new java.awt.Dimension (100, Math.min(150, table.getPreferredSize().height + table.getTableHeader().getPreferredSize().height + 5)));
-			ebb = new org.vcell.util.gui.EmptyBorderBean();
+			ebb = new EmptyBorderBean();
 			ebb.setInsets(new java.awt.Insets(4,2,4,2));
 			p.setBorder(ebb);
 			p.setLayout(new java.awt.BorderLayout());
@@ -227,7 +226,7 @@ private void initialize() throws org.vcell.util.DataAccessException {
  * Creation date: (6/11/2004 2:43:49 PM)
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void refreshData() throws org.vcell.util.DataAccessException {
+public void refreshData() throws DataAccessException {
 	if (isODEData) {
 		updateScanParamChoices(); // this takes care of all logic to get the fresh data
 	} else {
@@ -260,7 +259,7 @@ private void setParamChoicesPanel(javax.swing.JPanel newParamChoicesPanel) {
  * Creation date: (10/17/2005 11:36:17 PM)
  * @param newSimulation cbit.vcell.solver.Simulation
  */
-private void setSimulation(cbit.vcell.solver.Simulation newSimulation) {
+private void setSimulation(Simulation newSimulation) {
 	simulation = newSimulation;
 }
 
@@ -282,7 +281,7 @@ private void updateScanParamChoices(){
 	}
 	int jobIndex = -1;
 	try {
-		jobIndex = org.vcell.util.BeanUtils.coordinateToIndex(indices, bounds);
+		jobIndex = BeanUtils.coordinateToIndex(indices, bounds);
 	} catch (RuntimeException exc) {}
 	
 	// update viewer
@@ -300,7 +299,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get ode results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ODEDataManager odeDatamanager = new ODEDataManager(vcDataManager, vcdid);
+				ODEDataManager odeDatamanager = new ODEDataManager(dataManager.getVCDataManager(), vcdid);
 				hashTable.put("odeDatamanager", odeDatamanager);
 			}
 		};
@@ -322,7 +321,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				PDEDataManager pdeDatamanager = new PDEDataManager(vcDataManager, vcdid);
+				PDEDataManager pdeDatamanager = new PDEDataManager(dataManager.getVCDataManager(), vcdid);
 			
 				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
 				if (currentContext == null || currentContext.getDataIdentifier() == null) {

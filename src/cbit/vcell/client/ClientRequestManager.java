@@ -77,6 +77,7 @@ import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.SimResultsViewerController;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.CheckBeforeDelete;
@@ -120,6 +121,7 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
@@ -1468,10 +1470,11 @@ public DataManager getDataManager(VCDataIdentifier vcDataId, boolean isSpatial) 
 	// Create ODE or PDE or Merged Datamanager depending on ODE or PDE or Merged data.
 	//
 	DataManager dataManager = null;
-	if (!isSpatial) {
-		dataManager = new ODEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
+	VCDataManager vcDataManager = getClientServerManager().getVCDataManager();
+	if (isSpatial) {
+		dataManager = new PDEDataManager(vcDataManager, vcDataId);
 	} else {
-		dataManager = new PDEDataManager(getClientServerManager().getVCDataManager(), vcDataId);
+		dataManager = new ODEDataManager(vcDataManager, vcDataId);
 	}
 //	dataManager.connect();
 	return dataManager;
@@ -1511,8 +1514,11 @@ public MergedDatasetViewerController getMergedDatasetViewerController(VCDataIden
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-public DataViewerController getDataViewerController(Simulation simulation) throws DataAccessException {
-	return new SimResultsViewerController(getClientServerManager().getVCDataManager(), simulation);
+public DataViewerController getDataViewerController(Simulation simulation, int jobIndex) throws DataAccessException {
+	VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+	final VCDataIdentifier vcdataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);	
+	DataManager dataManager = getDataManager(vcdataIdentifier, simulation.isSpatial());
+	return new SimResultsViewerController(dataManager, simulation);
 }
 
 
@@ -1620,17 +1626,10 @@ public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
 public AsynchClientTask[] newDocument(TopLevelWindowManager requester, final VCDocument.DocumentCreationInfo documentCreationInfo) {
 	/* asynchronous and not blocking any window */
 	AsynchClientTask[] taskArray1 =  createNewDocument(requester, documentCreationInfo);
-	AsynchClientTask[] taskArray = new AsynchClientTask[taskArray1.length + 2];
+	AsynchClientTask[] taskArray = new AsynchClientTask[taskArray1.length + 1];
 	System.arraycopy(taskArray1, 0, taskArray, 0, taskArray1.length);
 	
-	AsynchClientTask taskNew1 = new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			VCDocument doc = (VCDocument)hashTable.get("doc");
-//			prepareDocumentToLoad(doc);
-		}
-	};
-	AsynchClientTask taskNew2 = new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+	AsynchClientTask taskNew1 = new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocument doc = (VCDocument)hashTable.get("doc");			
@@ -1639,7 +1638,6 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester, final VCD
 		}
 	};
 	taskArray[taskArray1.length] = taskNew1;
-	taskArray[taskArray1.length + 1] = taskNew2;
 	return taskArray;
 }
 

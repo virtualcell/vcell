@@ -1,5 +1,4 @@
 package cbit.vcell.client.desktop.simulation;
-import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -32,7 +31,7 @@ public class SimulationWindow {
  * @param simOwner cbit.vcell.document.SimulationOwner
  * @param dataViewer cbit.vcell.client.data.DataViewer
  */
-public SimulationWindow(final VCSimulationIdentifier vcSimulationIdentifier,final Simulation simulation,final SimulationOwner simOwner,final DataViewer dataViewer) {
+public SimulationWindow(VCSimulationIdentifier vcSimulationIdentifier, Simulation simulation, SimulationOwner simOwner, DataViewer dataViewer) {
 	setVcSimulationIdentifier(vcSimulationIdentifier);
 	setSimulation(simulation);
 	setSimOwner(simOwner);
@@ -89,13 +88,7 @@ private void initialize(DataViewer dataViewer) {
 	// create frame
 	setFrame(new JInternalFrameEnhanced("SIMULATION: " + getSimulation().getName(), true, true, true, true));
 	getFrame().setContentPane(dataViewer);
-	if (!getSimulation().isSpatial()) {
-		getFrame().setSize(450, 450);
-		getFrame().setMinimumSize(new Dimension(400, 400));
-	} else {
-		getFrame().setSize(850, 650);
-		getFrame().setMinimumSize(new Dimension(800, 600));
-	}
+	getFrame().setSize(850, 650);
 	getSimulation().addPropertyChangeListener(pcl);
 }
 

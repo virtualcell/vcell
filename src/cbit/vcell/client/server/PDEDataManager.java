@@ -1,11 +1,21 @@
 package cbit.vcell.client.server;
 
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.TimeSeriesJobResults;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.client.data.*;
-import cbit.vcell.desktop.controls.*;
+import cbit.plot.PlotData;
+import cbit.vcell.client.data.NewClientPDEDataContext;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.solver.DataProcessingOutput;
+import cbit.vcell.simdata.ParticleDataBlock;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 5:35:12 AM)
@@ -36,8 +46,8 @@ public PDEDataManager(VCDataManager vcDataManager, VCDataIdentifier vcDataIdenti
  * 
  * @throws org.vcell.util.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
  */
-public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functions,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
-	getVcDataManager().addFunctions(getVcDataIdentifier(), functions,bReplaceArr);
+public void addFunctions(AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException {
+	getVCDataManager().addFunctions(getVcDataIdentifier(), functions,bReplaceArr);
 }
 
 
@@ -50,8 +60,8 @@ public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functions,boolean[]
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers() throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getDataIdentifiers(getVcDataIdentifier());
+public DataIdentifier[] getDataIdentifiers() throws DataAccessException {
+	return getVCDataManager().getDataIdentifiers(getVcDataIdentifier());
 }
 
 
@@ -62,8 +72,8 @@ public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers() throws org.vcell
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public double[] getDataSetTimes() throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getDataSetTimes(getVcDataIdentifier());
+public double[] getDataSetTimes() throws DataAccessException {
+	return getVCDataManager().getDataSetTimes(getVcDataIdentifier());
 }
 
 
@@ -76,8 +86,8 @@ public double[] getDataSetTimes() throws org.vcell.util.DataAccessException {
  * 
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getFunctions(getVcDataIdentifier());
+public AnnotatedFunction[] getFunctions() throws DataAccessException {
+	return getVCDataManager().getFunctions(getVcDataIdentifier());
 }
 
 
@@ -90,7 +100,7 @@ public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.
  * 
  * @see Function
  */
-public boolean getIsODEData() throws org.vcell.util.DataAccessException {
+public boolean getIsODEData() throws DataAccessException {
 	return false;
 }
 
@@ -109,8 +119,8 @@ public boolean getIsODEData() throws org.vcell.util.DataAccessException {
  * 
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(String variable, double time, org.vcell.util.CoordinateIndex begin, org.vcell.util.CoordinateIndex end) throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getLineScan(getVcDataIdentifier(), variable, time, begin, end);
+public PlotData getLineScan(String variable, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException {
+	return getVCDataManager().getLineScan(getVcDataIdentifier(), variable, time, begin, end);
 }
 
 
@@ -127,8 +137,8 @@ public cbit.plot.PlotData getLineScan(String variable, double time, org.vcell.ut
  * 
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getLineScan(getVcDataIdentifier(), variable, time, spatialSelection);
+public PlotData getLineScan(String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
+	return getVCDataManager().getLineScan(getVcDataIdentifier(), variable, time, spatialSelection);
 }
 
 
@@ -141,8 +151,8 @@ public cbit.plot.PlotData getLineScan(String variable, double time, cbit.vcell.s
  * 
  * @see CartesianMesh
  */
-public cbit.vcell.solvers.CartesianMesh getMesh() throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getMesh(getVcDataIdentifier());
+public CartesianMesh getMesh() throws DataAccessException {
+	return getVCDataManager().getMesh(getVcDataIdentifier());
 }
 
 
@@ -155,8 +165,8 @@ public cbit.vcell.solvers.CartesianMesh getMesh() throws org.vcell.util.DataAcce
  * 
  * @see ParticleDataBlock
  */
-public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getParticleDataBlock(getVcDataIdentifier(), time);
+public ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException {
+	return getVCDataManager().getParticleDataBlock(getVcDataIdentifier(), time);
 }
 
 /**
@@ -166,8 +176,8 @@ public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(double time) th
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public boolean getParticleDataExists() throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getParticleDataExists(getVcDataIdentifier());
+public boolean getParticleDataExists() throws DataAccessException {
+	return getVCDataManager().getParticleDataExists(getVcDataIdentifier());
 }
 
 
@@ -192,8 +202,8 @@ public PDEDataContext getPDEDataContext() {
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double time) throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getSimDataBlock(getVcDataIdentifier(), varName, time);
+public SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException {
+	return getVCDataManager().getSimDataBlock(getVcDataIdentifier(), varName, time);
 }
 
 
@@ -209,8 +219,8 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double ti
  * 
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
-	return getVcDataManager().getTimeSeriesValues(getVcDataIdentifier(),timeSeriesJobSpec);
+public TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+	return getVCDataManager().getTimeSeriesValues(getVcDataIdentifier(),timeSeriesJobSpec);
 }
 
 
@@ -219,7 +229,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcel
  * Creation date: (6/11/2004 3:53:21 PM)
  * @return cbit.vcell.server.VCDataIdentifier
  */
-private org.vcell.util.document.VCDataIdentifier getVcDataIdentifier() {
+private VCDataIdentifier getVcDataIdentifier() {
 	return vcDataIdentifier;
 }
 
@@ -228,7 +238,7 @@ private org.vcell.util.document.VCDataIdentifier getVcDataIdentifier() {
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
+public VCDataIdentifier getVCDataIdentifier() {
 	return getVcDataIdentifier();
 }
 
@@ -238,7 +248,7 @@ public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
  * Creation date: (6/11/2004 3:53:21 PM)
  * @return cbit.vcell.client.server.VCDataManager
  */
-private VCDataManager getVcDataManager() {
+public VCDataManager getVCDataManager() {
 	return vcDataManager;
 }
 
@@ -251,8 +261,8 @@ private VCDataManager getVcDataManager() {
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * @throws org.vcell.util.PermissionException if not the owner of this dataset.
  */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException {
-	getVcDataManager().removeFunction(function, getVcDataIdentifier());
+public void removeFunction(AnnotatedFunction function) throws DataAccessException {
+	getVCDataManager().removeFunction(function, getVcDataIdentifier());
 }
 
 
@@ -261,7 +271,7 @@ public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws or
  * Creation date: (6/11/2004 3:53:21 PM)
  * @param newVcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-private void setVcDataIdentifier(org.vcell.util.document.VCDataIdentifier newVcDataIdentifier) {
+private void setVcDataIdentifier(VCDataIdentifier newVcDataIdentifier) {
 	vcDataIdentifier = newVcDataIdentifier;
 }
 

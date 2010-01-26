@@ -2856,7 +2856,7 @@ public void viewResults(TestCriteriaNew testCriteria) {
 	try {
 		Simulation sim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(testCriteria.getSimInfo());
 		
-		DataViewerController dynamicDataMgr = getRequestManager().getDataViewerController(sim);
+		DataViewerController dynamicDataMgr = getRequestManager().getDataViewerController(sim, 0);
 		addDataListener(dynamicDataMgr);
 		// make the viewer
 		DataViewer viewer = dynamicDataMgr.createViewer();
