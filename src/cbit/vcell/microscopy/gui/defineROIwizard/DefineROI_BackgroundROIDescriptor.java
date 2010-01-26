@@ -61,7 +61,7 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			{
 				//save current ROI and load ROI in the panel it goes next to
 				((DefineROI_Panel)imgPanel).setCurrentROI(nextROIStr, true);
-				FRAPData fData = ((DefineROI_Panel)imgPanel).getFrapWorkspace().getFrapStudy().getFrapData();
+				FRAPData fData = ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData();
 				fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()), true);
 			}
 		};
@@ -97,7 +97,7 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
-				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
 				{
 					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 				}

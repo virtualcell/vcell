@@ -17,7 +17,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
@@ -31,7 +31,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     //    private FRAPStudy localFrapStudy = null;
     private LoadFRAPData_SingleFilePanel singleFilePanel = new LoadFRAPData_SingleFilePanel();
     private boolean isFileLoaded = false;
-    private FRAPWorkspace frapWorkspace = null;
+    private FRAPSingleWorkspace frapWorkspace = null;
     
 	public LoadFRAPData_SingleFileDescriptor() {
     	super();
@@ -137,11 +137,11 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 		return taskArrayList;
     } 
     
-    public FRAPWorkspace getFrapWorkspace() {
+    public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
 	}
 }

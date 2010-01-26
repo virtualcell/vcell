@@ -18,14 +18,14 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
 
 public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 	public static final String IDENTIFIER = "DefineROI_Summary";
 	private JPanel imgPanel = null;
-	FRAPWorkspace frapWorkspace = null;
+	FRAPSingleWorkspace frapWorkspace = null;
 	
     public DefineROI_SummaryDescriptor (JPanel imagePanel) {
         super(IDENTIFIER, new DefineROI_SummaryPanel());
@@ -44,7 +44,7 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 
     public void aboutToDisplayPanel() 
     {
-    	((DefineROI_SummaryPanel)getPanelComponent()).setLoadInfo(getFrapWorkspace().getFrapStudy());
+    	((DefineROI_SummaryPanel)getPanelComponent()).setLoadInfo(getFrapWorkspace().getWorkingFrapStudy());
 	} 
     
 	public ArrayList<AsynchClientTask> preBackProcess()
@@ -79,7 +79,7 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 				if(msg.equals(""))
 				{
 					int startIndex = ((DefineROI_SummaryPanel)getPanelComponent()).getStartingIndex();
-					FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+					FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 					
 					//check ROI void/discontinuous location
 					Point internalVoidLocation = ROI.findInternalVoid(fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
@@ -108,11 +108,11 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 		return taskArrayList;
     }
 	
-    public FRAPWorkspace getFrapWorkspace() {
+    public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
 	}
 }

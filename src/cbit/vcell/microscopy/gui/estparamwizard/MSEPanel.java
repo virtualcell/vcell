@@ -4,12 +4,12 @@ import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
 
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 public class MSEPanel extends BoxPanel
 {
 	private MSETablePanel mseTablePanel;
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	public MSEPanel() {
 		super("Squared Error among Available Models under Selected ROIs");
 			mseTablePanel = new MSETablePanel(this);
@@ -17,12 +17,12 @@ public class MSEPanel extends BoxPanel
 	        contentPane.add(mseTablePanel);
 	}
 	
-	public FRAPWorkspace getFrapWorkspace()
+	public FRAPSingleWorkspace getFrapWorkspace()
     {
     	return frapWorkspace;
     }
     
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
 		mseTablePanel.setFrapWorkspace(frapWorkspace);

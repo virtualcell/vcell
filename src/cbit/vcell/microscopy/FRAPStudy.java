@@ -849,7 +849,7 @@ public class FRAPStudy implements Matchable{
 	{
 		Integer oldModelIndex  = this.bestModelIndex;
 		this.bestModelIndex = bestModelIdx;
-		propertyChangeSupport.firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_BEST_MODEL, oldModelIndex, bestModelIdx);
+		propertyChangeSupport.firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL, oldModelIndex, bestModelIdx);
 	}
 	
 	

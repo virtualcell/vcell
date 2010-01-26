@@ -5,7 +5,7 @@ import javax.help.Map;
 import javax.swing.*;
 
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.modelopt.gui.DataSource;
 
 import java.awt.*;
@@ -28,9 +28,9 @@ public class EstParams_CompareResultsPanel extends JPanel {
     private SummaryPlotPanel sumPlotPanel;
     private MSEPanel msePanel;
     private FitModelPanel radioButtonPanel;
-    private JScrollPane scroPane;
+    private JScrollPane scrollPane;
     private JPanel innerPanel;//put in the scroPane
-    private FRAPWorkspace frapWorkspace;
+    private FRAPSingleWorkspace frapWorkspace;
     
     public EstParams_CompareResultsPanel() 
     {
@@ -44,12 +44,12 @@ public class EstParams_CompareResultsPanel extends JPanel {
     	innerPanel.add(getRadioButtonPanel());
     	
     	//make innerPanel scrollable
-    	scroPane = new JScrollPane(innerPanel);
-    	scroPane.setAutoscrolls(true);
-    	scroPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    	scroPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    	scrollPane = new JScrollPane(innerPanel);
+    	scrollPane.setAutoscrolls(true);
+    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     	//add scrollpane to the panel
-    	add(scroPane, BorderLayout.CENTER);
+    	add(scrollPane, BorderLayout.CENTER);
     }
 
     public FitModelPanel getRadioButtonPanel()
@@ -93,12 +93,12 @@ public class EstParams_CompareResultsPanel extends JPanel {
 		sumPlotPanel.setPlotData(argDataSources);
     }
     
-    public FRAPWorkspace getFrapWorkspace()
+    public FRAPSingleWorkspace getFrapWorkspace()
     {
     	return frapWorkspace;
     }
     
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
 		getAnalysisResultsPanel().setFrapWorkspace(frapWorkspace);

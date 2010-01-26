@@ -10,7 +10,7 @@ import javax.xml.transform.TransformerException;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
@@ -33,8 +33,6 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
     private HyperLinkLabel hypDetail;
 
     private JScrollPane scrTable;
-
-    JPopupMenu popupMenu;
 
     float[] prefColumnWidth = new float[]{0.25f, 0.5f, 0.5f, 0.15f};
 
@@ -140,9 +138,7 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
         table = new StyleTable();
         table.setAutoCreateColumnsFromModel(false);
         table.setModel(anaTableModel);
-//        StyleTableEditor errEditor = new StyleTableEditor();
-//        errEditor.setErrorListener(this);
-//        DefaultCellEditor  txtEditor = new DefaultCellEditor(errEditor);
+
         DefaultCellEditor  anaEditor = new DefaultCellEditor(new JTextField());
         TableCellRenderer anaRenderer = new  AnalysisTableRenderer(8); //double precision 8 digits
         for (int i = 0; i < anaTableModel.getColumnCount(); i++) {
@@ -155,10 +151,10 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
         scrTable = new JScrollPane(table);
     }
 
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		anaTableModel.setFrapWorkspace(frapWorkspace);
-		lessLable.setText(frapWorkspace.getFrapStudy().getSelectedModels().size() + " Models");
+		lessLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
 	}
 }
 

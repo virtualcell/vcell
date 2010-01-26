@@ -9,7 +9,7 @@ import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BleachedROIDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
@@ -25,7 +25,7 @@ import org.vcell.wizard.WizardPanelDescriptor;
 public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 {
 	public static final String IDENTIFIER = "EstimateParameters_CompareResultsAmongSelectedModels";
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	
     public EstParams_CompareResultsDescriptor () {
         super(IDENTIFIER, new EstParams_CompareResultsPanel());
@@ -37,7 +37,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 
     public void aboutToDisplayPanel() 
     {
-    	FRAPStudy fStudy = frapWorkspace.getFrapStudy();
+    	FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
     	//create Mean square error for different models under different ROIs
 //    	if(fStudy.getAnalysisMSESummaryData() == null)
 //    	{
@@ -150,7 +150,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				int bestModelIndex = getBestModelIndex();
-				getFrapWorkspace().getFrapStudy().setBestModelIndex(new Integer(bestModelIndex));
+				getFrapWorkspace().getWorkingFrapStudy().setBestModelIndex(new Integer(bestModelIndex));
 			}
 		};
 		
@@ -163,11 +163,11 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	return ((EstParams_CompareResultsPanel)this.getPanelComponent()).getRadioButtonPanel().getBestModelIndex();
     }
     
-    public FRAPWorkspace getFrapWorkspace() {
+    public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
 		((EstParams_CompareResultsPanel)getPanelComponent()).setFrapWorkspace(frapWorkspace);
 	}

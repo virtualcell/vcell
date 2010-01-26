@@ -7,7 +7,7 @@ import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.opt.Parameter;
 
 public class BestParameterTableModel extends AbstractTableModel implements PropertyChangeListener
@@ -18,7 +18,7 @@ public class BestParameterTableModel extends AbstractTableModel implements Prope
 	public final static int COLUMN_UNITS = 2;
 	public final static String COL_LABELS[] = {"Parameter Name",/* "Description",*/ "Expression", "Unit"};
 	
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	Integer bestModelIndex = null;
 	Parameter[] parameters = null;
 	
@@ -127,7 +127,7 @@ public class BestParameterTableModel extends AbstractTableModel implements Prope
     {
     	if( bestModelIndex != null && -1 < bestModelIndex.intValue() && bestModelIndex.intValue() < FRAPModel.NUM_MODEL_TYPES)
     	{
-	    	FRAPModel bestModel = getFrapWorkspace().getFrapStudy().getModels()[bestModelIndex.intValue()];
+	    	FRAPModel bestModel = getFrapWorkspace().getWorkingFrapStudy().getModels()[bestModelIndex.intValue()];
 	    	parameters = bestModel.getModelParameters();
 	        return parameters;
     	}
@@ -149,18 +149,18 @@ public class BestParameterTableModel extends AbstractTableModel implements Prope
     	}
     }
     
-    public FRAPWorkspace getFrapWorkspace()
+    public FRAPSingleWorkspace getFrapWorkspace()
     {
         return frapWorkspace;
     }
    
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
     {
     	this.frapWorkspace = frapWorkspace;
     }
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_BEST_MODEL))
+		if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL))
 		{
 			if(evt.getNewValue() instanceof Integer)
 			{

@@ -4,7 +4,7 @@ import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.opt.Parameter;
 
 public class AnalysisTableModel extends AbstractTableModel 
@@ -19,7 +19,7 @@ public class AnalysisTableModel extends AbstractTableModel
 	public final static int COLUMN_REAC_BINDING = 3;
 	public final static String COL_LABELS[] = { "Parameter Name", "Diffusion with 1 component (DF1)", "Diffusion with 2 components (DF2)", "Diffusion with binding reaction (DB)"};
 	
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	private FRAPModel[] frapModels = null;
 	
     public AnalysisTableModel() {
@@ -43,7 +43,7 @@ public class AnalysisTableModel extends AbstractTableModel
     		throw new RuntimeException("AnalysisTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(NUM_ROWS-1)+"]");
     	}
     	
-    	frapModels = frapWorkspace.getFrapStudy().getModels();
+    	frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
     	if (frapModels == null)
     	{
     		return null;
@@ -200,12 +200,12 @@ public class AnalysisTableModel extends AbstractTableModel
     {
     }
      
-    public FRAPWorkspace getFrapWorkspace()
+    public FRAPSingleWorkspace getFrapWorkspace()
     {
         return frapWorkspace;
     }
    
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
     {
     	this.frapWorkspace = frapWorkspace;
     	fireTableDataChanged();

@@ -32,7 +32,7 @@ import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
@@ -53,7 +53,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 	private FRAPDiffTwoParamPanel diffTwoPanel;
 		
 	private FRAPOptData frapOptData;
-	private FRAPWorkspace frapWorkspace;
+	private FRAPSingleWorkspace frapWorkspace;
 	
 	private MultisourcePlotPane multisourcePlotPane;
 	private ChooseModel_RoiForErrorPanel roiPanel;
@@ -94,7 +94,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
 						if(evt.getSource() == diffTwoPanel){
-							if((evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE)))
+							if((evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE)))
 							{
 								plotDerivedSimulationResults(spatialAnalysisResults.getAnalysisParameters());
 							}
@@ -136,11 +136,11 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		final JButton showRoisButton = new JButton();
 		showRoisButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				if(frapWorkspace != null && frapWorkspace.getFrapStudy() != null &&
-				   frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation() != null)
+				if(frapWorkspace != null && frapWorkspace.getWorkingFrapStudy() != null &&
+				   frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation() != null)
 				{
 					getROIPanel().setFrapWorkspace(frapWorkspace);
-					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation());
 					getROIPanel().refreshROIImageForDisplay();
 				}
 				JOptionPane.showMessageDialog(EstParams_TwoDiffComponentPanel.this, getROIPanel());
@@ -190,7 +190,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 			String description = null;
 			int totalROIlen = FRAPData.VFRAP_ROI_ENUM.values().length;
 			boolean[] wantsROITypes = new boolean[totalROIlen];
-			System.arraycopy(frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation(), 0, wantsROITypes, 0, totalROIlen);
+			System.arraycopy(frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation(), 0, wantsROITypes, 0, totalROIlen);
 			
 			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
 			fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
@@ -313,7 +313,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		return getPureDiffusionPanel().getCurrentParameters();
 	}
 	
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
 		getPureDiffusionPanel().setFrapWorkspace(frapWorkspace);

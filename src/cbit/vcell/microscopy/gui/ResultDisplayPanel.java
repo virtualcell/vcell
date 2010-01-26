@@ -30,7 +30,7 @@ import cbit.vcell.mapping.gui.StructureMappingTableRenderer;
 import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.ResultPanelButtonHandler;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
@@ -50,7 +50,7 @@ public class ResultDisplayPanel extends JPanel
 	private JButton show2DResultButton = null;
 	private JButton runSimButton = null;
 	
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	BestParameterTableModel tableModel = null;
 	
 	ResultDisplayPanel()
@@ -329,7 +329,7 @@ public class ResultDisplayPanel extends JPanel
 			highLightReacBindingLabel();
 		}
 		//refresh parameter table and buttons
-		FRAPStudy fStudy = getFRAPWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFRAPWorkspace().getWorkingFrapStudy();
 		setRunSimButtonEnable(false);
 		setResultsButtonEnabled(false);
 		if(fStudy.getModels()[bestModelIndex].getModelParameters() != null && fStudy.getModels()[bestModelIndex].getModelParameters().length > 0)
@@ -349,11 +349,11 @@ public class ResultDisplayPanel extends JPanel
 		}
 	}
 	
-	public FRAPWorkspace getFRAPWorkspace() {
+	public FRAPSingleWorkspace getFRAPWorkspace() {
 		return frapWorkspace;
 	}
-	public void setFRAPWorkspace(FRAPWorkspace frapWorkspace) {
-		FRAPWorkspace oldFrapWorkspace = this.frapWorkspace;
+	public void setFRAPWorkspace(FRAPSingleWorkspace frapWorkspace) {
+		FRAPSingleWorkspace oldFrapWorkspace = this.frapWorkspace;
 		if(oldFrapWorkspace != null)
 		{
 			oldFrapWorkspace.removePropertyChangeListener(tableModel);

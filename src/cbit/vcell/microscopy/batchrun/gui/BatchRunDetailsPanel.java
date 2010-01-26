@@ -1,35 +1,49 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
-import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.wizard.Wizard;
+import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.batchrun.TreeHandler;
-
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.BackgroundROIDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.BatchRunROIImgPanel;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.BleachedROIDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.CellROIDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.CropDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSaveDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSummaryDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileTypeDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.MultiFileDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.ROISummaryDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.SingleFileDescriptor;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
 
 
 public class BatchRunDetailsPanel extends JPanel implements ActionListener
@@ -37,9 +51,13 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	public URL[] iconFiles = {getClass().getResource("/images/add.gif"),
 							  getClass().getResource("/images/delete.gif"),
 							  getClass().getResource("/images/deleteAll.gif")};
-	public String[] buttonLabels = {"Add a file to batch run", "Delete a file from batch run", "Delete all batch run files"};
+	public String[] buttonLabels = {"Add a file to batch run", "Delete a file from batch run", "Delete all"};
 	private ImageIcon[] icons = new ImageIcon[iconFiles.length];
 	private JButton addButton, deleteButton, delAllButton;
+	
+	private Wizard batchRunAddDataWizard = null;
+//	private Wizard batchRunDefineROIWizard = null;
+	private BatchRunROIImgPanel imgPanel = null;
 	
 	private JSplitPane leftSplit = null;
 	// bottom component definition
@@ -48,22 +66,24 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	private JScrollPane tascrollPane = null;
 	
 	// top component definition
-	private JPanel frapDocViewPanel= null; 
+	private JPanel frapBatchRunViewPanel= null; 
 	private JToolBar toolbar = null;
-	private JTree frapDocViewTree= null;
+	private BatchRunTree frapBatchRunViewTree= null;
 	private JScrollPane treeScrollPane = null;
 	
-	private DefaultMutableTreeNode frapDocTreeNode = null;
-	
 	//tree handler
-	private TreeHandler th=new TreeHandler();
+	private TreeHandler treeHandler = null;
+	//batch run workspace
+	private FRAPBatchRunWorkspace batchRunWorkspace = null;
+	//local workspace
+	private LocalWorkspace localWorkspace = null;
 
 	//constructor
 	public BatchRunDetailsPanel()
 	{
 		super();
 	    //topTabPane.addMouseListener(th);
-	    leftSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,getFrapDocViewPanel(), getBottomPanel());
+	    leftSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,getFrapBatchRunViewPanel(), getBottomPanel());
 	    leftSplit.setDividerSize(2);
 	    leftSplit.setDividerLocation(Math.round(Toolkit.getDefaultToolkit().getScreenSize().height*1/2));
 	    setLayout(new BorderLayout());
@@ -74,20 +94,19 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	}
 
 	// set up top component function
-	public JPanel getFrapDocViewPanel()
+	public JPanel getFrapBatchRunViewPanel()
 	{
-		if(frapDocViewPanel == null)
+		if(frapBatchRunViewPanel == null)
 		{
-			frapDocViewPanel = new JPanel();
-	//	    frapDocViewPanel.setFont(new Font("Tahoma", Font.PLAIN, 11));
+			frapBatchRunViewPanel = new JPanel();
 			
-		    frapDocViewPanel.setLayout(new BorderLayout());
-		    frapDocViewPanel.add(getTreeScrollPane(),BorderLayout.CENTER);
+		    frapBatchRunViewPanel.setLayout(new BorderLayout());
+		    frapBatchRunViewPanel.add(getTreeScrollPane(),BorderLayout.CENTER);
 		    
 		    //add toolbar
-		    frapDocViewPanel.add(getToolBar(), BorderLayout.SOUTH);
+		    frapBatchRunViewPanel.add(getToolBar(), BorderLayout.SOUTH);
 		}
-	    return frapDocViewPanel;
+	    return frapBatchRunViewPanel;
 	}
 	
 	public JScrollPane getTreeScrollPane()
@@ -95,16 +114,14 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		if(treeScrollPane == null)
 		{
 			treeScrollPane = new JScrollPane();
-			frapDocTreeNode = new DefaultMutableTreeNode("FRAP Batch-run Docs");
-		    frapDocViewTree = new JTree(frapDocTreeNode);
-		    //set font for treenodes
-		    frapDocViewTree.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		    frapDocViewTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		    frapDocViewTree.addTreeSelectionListener(th);
-		    frapDocViewTree.addMouseListener(th);
-	//	    frapDocViewTree.setCellRenderer(new MyTreeRenderer());
+			frapBatchRunViewTree = new BatchRunTree();
+		    frapBatchRunViewTree.setCellRenderer(new BatchRunTreeRenderer());
+		    //set action listener
+		    treeHandler = new TreeHandler();
+		    frapBatchRunViewTree.addTreeSelectionListener(treeHandler);
+		    frapBatchRunViewTree.addMouseListener(treeHandler);
 	
-		    treeScrollPane.getViewport().add(frapDocViewTree);
+		    treeScrollPane.getViewport().add(frapBatchRunViewTree);
 		}
 		return treeScrollPane;
 	}
@@ -131,13 +148,14 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	        deleteButton.addActionListener(this);
 	        delAllButton=new JButton(icons[2]);
 	        delAllButton.setMargin(new Insets(0, 0, 0, 0));
-	        delAllButton.setToolTipText(buttonLabels[1]);
+	        delAllButton.setToolTipText(buttonLabels[2]);
 	        delAllButton.setBorderPainted(false);
 	        delAllButton.addActionListener(this);
 	        
 	        toolbar.add(addButton);
 	        toolbar.add(deleteButton);
 	        toolbar.add(delAllButton);
+	        toolbar.setFloatable(false);
     	}
     	return toolbar;
        
@@ -167,63 +185,6 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		}
 		return tascrollPane;
 	}
-	
-	public void clearFRAPViewTree()
-	{
-	    if (frapDocTreeNode != null)
-		{
-	    	frapDocTreeNode.clone();//TODO: find out why need clone first?
-	    	frapDocTreeNode.removeAllChildren();
-	    	frapDocViewTree.updateUI();
-		}
-	}
-	// for initating cellWareViewTree
-	public void initiateFrapViewTree(FRAPBatchRunWorkspace brWorkSpace)
-	{
-		if(true)//TODO: put condition
-		{
-			frapDocTreeNode.removeAllChildren();
-//	    	  frapDocTreeNode.add  //TODO: add children
-
-			expendFRAPViewTree();
-			frapDocViewTree.updateUI();
-		}
-	}// end of method initiateCellWareViewTree
-
-	protected void expendFRAPViewTree()
-	{
-		DefaultMutableTreeNode node=frapDocTreeNode.getFirstLeaf();
-		while (node != null)
-		{
-	        DefaultMutableTreeNode parentNode=(DefaultMutableTreeNode)node.getParent();
-	         if (parentNode == null) return; 
-	        TreeNode[] treeNodeArray = parentNode.getPath();
-	        TreePath path = new TreePath(treeNodeArray);
-
-	        if (path != null)
-	            frapDocViewTree.expandPath(path);
-	        // and get the next sibling
-	        node = node.getNextLeaf();
-		}
-	}
-
-	// for updating cellWareViewTree
-	public void updateFRAPViewTree(FRAPBatchRunWorkspace brWorkSpace)
-	{
-		if(brWorkSpace!=null)
-		{
-			initiateFrapViewTree(brWorkSpace);
-
-			//TODO: add tree nodes
-			
-			expendFRAPViewTree();
-		}
-		else
-		{
-			frapDocTreeNode.removeAllChildren();
-		}
-		frapDocViewTree.updateUI();
-	}// end of method initiateCellWareViewTree
 
 	public static void main(java.lang.String[] args) {
 		try {
@@ -253,68 +214,212 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		Object source = e.getSource();
   	    if (source == addButton)
 	    {
-            System.out.println("Add button pressed.");
+  	    	final Wizard loadWizard = getAddFRAPDataWizard();
+   			if(loadWizard != null)
+   			{
+//   				ArrayList<AsynchClientTask> totalTasks = new ArrayList<AsynchClientTask>();
+   				//check if save is needed before loading data
+//	   				if(getBatchRunWorkspace().isSaveNeeded())
+//	   				{
+//	   					String choice = DialogUtils.showWarningDialog(this.getParent(), "There are unsaved changes. Save current document before loading new data?", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+//	   					if(choice.equals(UserMessage.OPTION_OK))
+//	   					{
+//	   						AsynchClientTask[] saveTasks = save();
+//	   						for(int i=0; i<saveTasks.length; i++)
+//	   						{
+//	   							totalTasks.add(saveTasks[i]);
+//	   						}
+//	   					}
+//	   				}
+	   				
+//  	   			AsynchClientTask showLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+//  	    		{
+//  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
+//  	    			{
+  	    				loadWizard.showModalDialog(new Dimension(550,640));
+//  	    			}
+//  	    		};
+  	    		
+//  	    		AsynchClientTask afterCloseLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+//  	    		{
+//  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
+//  	    			{
+//  	    				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
+//	  	   				{
+////	  	   					getAnalysisProcedurePanel().setWorkFlowStage(AnalysisProcedurePanel.STAGE_DEFINE_ROIS);
+//	  	   					//set need save flag
+////	  	   					getFrapWorkspace().getFrapStudy().setSaveNeeded(true);
+//	  	   				}
+//  	    			}
+//  	    		};
+  	    		
+//  	    		totalTasks.add(showLoadWizardTask);
+//  	    		totalTasks.add(afterCloseLoadWizardTask);
+  	    		//dispatch
+//  	    		ClientTaskDispatcher.dispatch(this.getParent(), new Hashtable<String, Object>(), totalTasks.toArray(new AsynchClientTask[totalTasks.size()]), false);;
+  	    		//code return 
+				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
+   				{
+					//add to frapList in batchrunworkspace
+					getBatchRunWorkspace().addFrapStudy(getBatchRunWorkspace().getWorkingFrapStudy());
+					//update tree
+					DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunDocNode(new File(getBatchRunWorkspace().getWorkingFrapStudy().getXmlFilename()));
+					frapBatchRunViewTree.setSelectionPath(new TreePath(newNode.getPath()));
+   				}
+				else
+				{
+					//load data unsuccessfully, remove the displayed image
+					getBatchRunWorkspace().clearWorkingSingleWorkspace();
+					//clear tree selection
+					frapBatchRunViewTree.clearSelection();
+				}
+   			}
+   			
         }
         else if(source == deleteButton)
         {
-        	System.out.println("Delete button pressed.");
+        	//remove tree node
+        	frapBatchRunViewTree.removeCurrentNode();
+        	//remove the data & displayed image
+        	getBatchRunWorkspace().clearWorkingSingleWorkspace();
+			//clear tree selection
+			frapBatchRunViewTree.clearSelection();
         }
         else if(source == delAllButton)
         {
         	System.out.println("Delete all button pressed.");
+        	frapBatchRunViewTree.clear();
         }
 	}
-}//end of class DetailsFrame
+	
+	public Wizard getAddFRAPDataWizard()
+	{   // single/multipanel fires property change to frapstudyPanel after loaded a new exp dataset
+		// it also fires property change to summaryPanel to varify info and modify frapstudy in frapstudypanel
+		// then summarypanel fires varify change to frapstudypanel to set frapstudy(already changed in frapstudypanel when passing as paramter to 
+		// summarypanel) to frapdatapanel.
+		if(batchRunAddDataWizard == null)
+		{
+			batchRunAddDataWizard = new Wizard(JOptionPane.getFrameForComponent(this));
+			batchRunAddDataWizard.getDialog().setTitle("Load FRAP Data");
+	        
+	        WizardPanelDescriptor fTypeDescriptor = new FileTypeDescriptor();
+	        fTypeDescriptor.setNextPanelDescriptorID(SingleFileDescriptor.IDENTIFIER); //goes next to single file input by default
+	        batchRunAddDataWizard.registerWizardPanel(FileTypeDescriptor.IDENTIFIER, fTypeDescriptor);
+	        
+	        WizardPanelDescriptor singleFileDescriptor = new SingleFileDescriptor();
+	        batchRunAddDataWizard.registerWizardPanel(SingleFileDescriptor.IDENTIFIER, singleFileDescriptor);
+	        ((SingleFileDescriptor)singleFileDescriptor).setBatchRunWorkspace(getBatchRunWorkspace());
+	
+	        WizardPanelDescriptor multiFileDescriptor = new MultiFileDescriptor();
+	        batchRunAddDataWizard.registerWizardPanel(MultiFileDescriptor.IDENTIFIER, multiFileDescriptor);
+	        ((MultiFileDescriptor)multiFileDescriptor).setBatchRunWorkspace(getBatchRunWorkspace());
+	        
+	        FileSummaryDescriptor fSummaryDescriptor = new FileSummaryDescriptor();
+	        fSummaryDescriptor.setBackPanelDescriptorID(SingleFileDescriptor.IDENTIFIER); //goes back to single file input by default
+	        batchRunAddDataWizard.registerWizardPanel(FileSummaryDescriptor.IDENTIFIER, fSummaryDescriptor);
+	        fSummaryDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
+	        
+	        final WizardPanelDescriptor fileTypeDescriptor =  fTypeDescriptor;
+	        final WizardPanelDescriptor fileSummaryDescriptor = fSummaryDescriptor;
+	        //actionListener to single file input radio button
+	        //this radio button affects the wizard series. especially on the next of file type and the back of summary 
+	        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getSingleFileButton().addActionListener(new ActionListener(){
+	        	public void actionPerformed(ActionEvent e) 
+	        	{
+	        		if(e.getSource() instanceof JRadioButton)
+	        		{
+	        			if(((JRadioButton)e.getSource()).isSelected())
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(SingleFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(SingleFileDescriptor.IDENTIFIER);
+	        			}
+	        			else
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(MultiFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(MultiFileDescriptor.IDENTIFIER);
+	        			}
+	        		}
+				}
+	        	
+	        });
+	        //actionListener to multiple file input radio button
+	        //this radio button affects the wizard series. especially on the next of file type and the back of summary
+	        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getMultipleFileButton().addActionListener(new ActionListener(){
+	        	public void actionPerformed(ActionEvent e) 
+	        	{
+	        		if(e.getSource() instanceof JRadioButton)
+	        		{
+	        			if(((JRadioButton)e.getSource()).isSelected())
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(MultiFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(MultiFileDescriptor.IDENTIFIER);
+	        			}
+	        			else
+	        			{
+	        				fileTypeDescriptor.setNextPanelDescriptorID(SingleFileDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(SingleFileDescriptor.IDENTIFIER);
+	        			}
+	        		}
+				}
+	        	
+	        });
+		}
+		
+		//use one panel for all the steps through out defining ROIs.
+		imgPanel = new BatchRunROIImgPanel();
+		imgPanel.setBatchRunWorkspace(getBatchRunWorkspace()); //batch run work space, no data yet.
+		
+		CropDescriptor cropDescriptor = new CropDescriptor(imgPanel);
+		batchRunAddDataWizard.registerWizardPanel(CropDescriptor.IDENTIFIER, cropDescriptor);
+		cropDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
+        
+        CellROIDescriptor cellROIDescriptor = new CellROIDescriptor(imgPanel);
+        batchRunAddDataWizard.registerWizardPanel(CellROIDescriptor.IDENTIFIER, cellROIDescriptor);
+        cellROIDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
+        
+        BleachedROIDescriptor bleachedROIDescriptor = new BleachedROIDescriptor(imgPanel);
+        batchRunAddDataWizard.registerWizardPanel(BleachedROIDescriptor.IDENTIFIER, bleachedROIDescriptor);
+        bleachedROIDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
+        
+        BackgroundROIDescriptor backgroundROIDescriptor = new BackgroundROIDescriptor(imgPanel);
+        batchRunAddDataWizard.registerWizardPanel(BackgroundROIDescriptor.IDENTIFIER, backgroundROIDescriptor);
+        backgroundROIDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
+        
+        ROISummaryDescriptor roiSummaryDescriptor = new ROISummaryDescriptor(imgPanel);
+        batchRunAddDataWizard.registerWizardPanel(ROISummaryDescriptor.IDENTIFIER, roiSummaryDescriptor);
+        roiSummaryDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
+		
+        FileSaveDescriptor fileSaveDescriptor = new FileSaveDescriptor();
+        batchRunAddDataWizard.registerWizardPanel(FileSaveDescriptor.IDENTIFIER, fileSaveDescriptor);
+        fileSaveDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
+        fileSaveDescriptor.setLocalWorkspace(localWorkspace);
+        
+        imgPanel.refreshUI();
+        
+		batchRunAddDataWizard.setCurrentPanel(FileTypeDescriptor.IDENTIFIER);//always start from the first page
+        return batchRunAddDataWizard;
+	}
+	
+	//set and get BatchRun Workspace
+	public FRAPBatchRunWorkspace getBatchRunWorkspace() {
+		return batchRunWorkspace;
+	}
+
+	public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace) {
+		this.batchRunWorkspace = batchRunWorkspace;
+	}
+	
+	//set and get Local Workspace
+	public LocalWorkspace getLocalWorkspace() {
+		return localWorkspace;
+	}
+
+	public void setLocalWorkspace(LocalWorkspace localWorkspace) {
+		this.localWorkspace = localWorkspace;
+		treeHandler.setBatchRunWorkspace(getBatchRunWorkspace());
+	}
+
+}//end of class BatchRunDetailsFrame
 
 
-/**
- * The class MyTreeRenderer is written for customize the tree cell renderers.
- */
-class MyTreeRenderer extends DefaultTreeCellRenderer
-{
-    protected ImageIcon batchRunViewIcon = new ImageIcon(getClass().getResource("/images/open.gif"));
-    protected ImageIcon treeLeafIcon = new ImageIcon(getClass().getResource("images/treeLeaf.gif"));
-    protected ImageIcon rootIcon = new ImageIcon(getClass().getResource("images/project.gif"));
 
-    public MyTreeRenderer()
-    {
-    }
-    public Component getTreeCellRendererComponent(JTree tree,
-                                                  Object value,
-                                                  boolean sel,
-                                                  boolean expanded,
-                                                  boolean leaf,
-                                                  int row,
-                                                  boolean hasFocus)
-    {
-        super.getTreeCellRendererComponent( tree, value, sel,expanded, leaf, row,hasFocus);
-        if(isLeaf(value)) setIcon(treeLeafIcon);
-        else
-        {
-            //System.out.println("cellwareviewtree: " +cellWareViewTree);
-            if((value.toString()).compareTo("FRAP Batch-run Docs")==0)
-            {
-                setIcon(rootIcon);
-            }
-            
-//	            else if (isSecondToRoot(value)) setIcon(null);
-        }
-        /*else
-        {
-            if (isLeaf(value)) setIcon(treeLeafIcon);
-            else if (isSecondToRoot(value)) setIcon(null);
-        } */
-        return this;
-    }
-
-    protected boolean isLeaf(Object value)
-    {
-        DefaultMutableTreeNode node =(DefaultMutableTreeNode)value;
-        DefaultMutableTreeNode parent=(DefaultMutableTreeNode)node.getParent();
-        if (parent!=null)
-            if(!(((String)parent.getUserObject()).compareTo("FRAP Batch-run Docs")==0))
-               return true;
-        return false;
-    }
-
-}

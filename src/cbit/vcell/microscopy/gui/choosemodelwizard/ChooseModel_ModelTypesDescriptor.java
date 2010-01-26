@@ -7,14 +7,14 @@ import java.util.Vector;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
     
     public static final String IDENTIFIER = "ChooseModel_ModelTypes";
-    private FRAPWorkspace frapWorkspace = null;
+    private FRAPSingleWorkspace frapWorkspace = null;
     private ChooseModel_ModelTypesPanel modelTypesPanel = new ChooseModel_ModelTypesPanel();
     
     public ChooseModel_ModelTypesDescriptor () {
@@ -31,14 +31,14 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
         return null;
     }  
     
-    public void setFrapWorkspace(FRAPWorkspace arg_FrapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace arg_FrapWorkspace)
     {
     	frapWorkspace = arg_FrapWorkspace;
     }
     
     public void aboutToDisplayPanel() 
     {
-    	FRAPStudy fStudy = frapWorkspace.getFrapStudy();
+    	FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
     	//if there are models selected and saved, load the model types. otherwise, apply default(diffusion with one component is selected).
     	if(fStudy.getModels() != null && fStudy.getModels().length > 0 && fStudy.getSelectedModels().size() > 0)
     	{
@@ -72,7 +72,7 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				FRAPStudy fStudy = frapWorkspace.getFrapStudy();
+				FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
 				if(fStudy != null)
 		    	{
 					boolean[] models = modelTypesPanel.getModelTypes();
@@ -105,7 +105,7 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				FRAPStudy fStudy = frapWorkspace.getFrapStudy();
+				FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
 				if(fStudy != null)
 		    	{
 	    			fStudy.refreshDependentROIs();

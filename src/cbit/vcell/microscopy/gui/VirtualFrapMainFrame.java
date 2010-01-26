@@ -41,9 +41,10 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 
@@ -60,7 +61,8 @@ public class VirtualFrapMainFrame extends JFrame
 {
 	//the application has one local workspace and one FRAP workspace
 	private LocalWorkspace localWorkspace = null;
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
+	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	
 	public static final boolean SAVE_COMPRESSED = true;
 	
@@ -258,11 +260,11 @@ public class VirtualFrapMainFrame extends JFrame
 		      else if(arg.equals(EXIT_ACTION_COMMAND))
 			  {
 		    	  String text = "";
-		    	  if (frapWorkspace != null && frapWorkspace.getFrapStudy() != null && frapWorkspace.getFrapStudy().isSaveNeeded()) {
+		    	  if (frapWorkspace != null && frapWorkspace.getWorkingFrapStudy() != null && frapWorkspace.getWorkingFrapStudy().isSaveNeeded()) {
 		    		  text = "UnSaved changes will be lost!";
 		    	  }
-		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
-		    	  if (result == UserMessage.OPTION_CLOSE)
+		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_EXIT, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_EXIT); 
+		    	  if (result == UserMessage.OPTION_EXIT)
 	    	      {
 	    	    	  System.exit(0);
 	    	      }
@@ -306,7 +308,9 @@ public class VirtualFrapMainFrame extends JFrame
 		      {
 		    	  System.out.println("Batch run command clicked.");
 		    	  getBatchRunFrame().setBatchRunTitle("");
-		    	  getBatchRunFrame().setVisible(true);
+	    		  getBatchRunFrame().setVisible(true);
+		    	  getBatchRunFrame().setState(JFrame.NORMAL);
+		    	  
 		      }
 		  }
 	  }
@@ -316,7 +320,7 @@ public class VirtualFrapMainFrame extends JFrame
   {
 	  if(batchRunFrame == null)
 	  {
-		  batchRunFrame = new VirtualFrapBatchRunFrame(localWorkspace);
+		  batchRunFrame = new VirtualFrapBatchRunFrame(localWorkspace, batchRunWorkspace);
 	  }
 	  return batchRunFrame;
   }
@@ -382,11 +386,12 @@ public class VirtualFrapMainFrame extends JFrame
   
   
   // constructor
-  public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPWorkspace frapWorkspace)
+  public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace)
   {
     super();
     this.localWorkspace = localWorkspace;
     this.frapWorkspace = frapWorkspace;
+    this.batchRunWorkspace = batchRunWorkspace;
     //showing the splash window for VirtualFrap
     final URL splashImage = getClass().getResource("/images/splash.jpg");
     new SplashWindow(splashImage,this,3500);
@@ -407,8 +412,24 @@ public class VirtualFrapMainFrame extends JFrame
 	
     //to handle the close button of the frame
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-    addWindowListener(createAppCloser());
-    
+    addWindowListener(new WindowAdapter() {
+		@Override
+		public void windowClosing(WindowEvent arg0) {
+			if(!getBatchRunFrame().isVisible())
+			{
+				menuHandler.actionPerformed(new ActionEvent(menuExit,0,EXIT_ACTION_COMMAND));
+			}
+			else
+			{
+				String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Virtual Frap Batch Run frame is still open. Please close Batch Run Frame first! ", new String[]{UserMessage.OPTION_OK}, UserMessage.OPTION_OK); 
+				if (result == UserMessage.OPTION_OK)
+				{
+					return;
+				}
+			}
+		}
+    });
+		  
     setVisible(true);
   }// end of constructor
 
@@ -549,7 +570,7 @@ public class VirtualFrapMainFrame extends JFrame
   * Before shuting down the running application, a good
   * implementation would at least check to see if a save
   * is needed.
-  */
+  *//*
   protected WindowAdapter createAppCloser()
   {
       return new AppCloser();
@@ -561,7 +582,7 @@ public class VirtualFrapMainFrame extends JFrame
       {
 	  		menuHandler.actionPerformed(new ActionEvent(menuExit,0,EXIT_ACTION_COMMAND));
 	  }
-  }
+  }*/
   
   //setTitle overrides the orginal function in java.awt.Frame
   //to show the software name and version.

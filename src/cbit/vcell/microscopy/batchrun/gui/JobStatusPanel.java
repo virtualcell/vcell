@@ -59,7 +59,7 @@ public class JobStatusPanel extends JPanel implements ActionListener
 	       
 	        toolbar.add(closeButton);
 	        toolbar.add(clearButton);
-	       
+	        toolbar.setFloatable(false);
     	}
     	return toolbar;
        

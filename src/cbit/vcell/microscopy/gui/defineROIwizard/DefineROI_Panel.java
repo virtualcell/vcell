@@ -25,7 +25,7 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.geometry.gui.ROISourceData;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
@@ -38,7 +38,7 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 {
 	DefineROITopTitlePanel topPanel = null;
 	FRAPDataPanel centerPanel = null;
-	FRAPWorkspace frapWorkspace = null;
+	FRAPSingleWorkspace frapWorkspace = null;
 	
 	public DefineROI_Panel() {
 		super();
@@ -76,13 +76,13 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 	
 	public void refreshUI()
 	{
-		FRAPData fData = getFrapWorkspace().getFrapStudy().getFrapData();
+		FRAPData fData = getFrapWorkspace().getWorkingFrapStudy().getFrapData();
 		centerPanel.getOverlayEditorPanelJAI().setImages(
 				(fData==null?null:fData.getImageDataset()),true,
 				(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
 				(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
 		centerPanel.getOverlayEditorPanelJAI().setRoiSouceData(fData);
-		centerPanel.getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+		centerPanel.getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 	}
 	
 	public void adjustComponents(int choice)
@@ -93,10 +93,10 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 	
 	public void setCurrentROI(String roiName, boolean bSave)
 	{
-		if(getFrapWorkspace() != null && getFrapWorkspace().getFrapStudy() != null &&
-		   getFrapWorkspace().getFrapStudy().getFrapData() != null)
+		if(getFrapWorkspace() != null && getFrapWorkspace().getWorkingFrapStudy() != null &&
+		   getFrapWorkspace().getWorkingFrapStudy().getFrapData() != null)
 		{
-			FRAPData fData = getFrapWorkspace().getFrapStudy().getFrapData();
+			FRAPData fData = getFrapWorkspace().getWorkingFrapStudy().getFrapData();
 			fData.setCurrentlyDisplayedROI(fData.getRoi(roiName), bSave);
 		}
 	}
@@ -107,14 +107,14 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 		}
 	}
 	
-	public FRAPWorkspace getFrapWorkspace() {
+	public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
-		frapWorkspace.getFrapStudy().getFrapData().removePropertyChangeListener(centerPanel);
-		frapWorkspace.getFrapStudy().getFrapData().addPropertyChangeListener(centerPanel);
+		frapWorkspace.getWorkingFrapStudy().getFrapData().removePropertyChangeListener(centerPanel);
+		frapWorkspace.getWorkingFrapStudy().getFrapData().addPropertyChangeListener(centerPanel);
 		centerPanel.setFRAPWorkspace(frapWorkspace);
 	}
 }

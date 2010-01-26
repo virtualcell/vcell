@@ -6,7 +6,7 @@ import javax.swing.table.AbstractTableModel;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 public class MSETableModel extends AbstractTableModel {
 
@@ -27,7 +27,7 @@ public class MSETableModel extends AbstractTableModel {
 	public final static int COLUMN_SUM_ERROR = 10;
 	
 	private double[][] mseSummaryData = null;
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	
     public MSETableModel() {
     	super();
@@ -43,7 +43,7 @@ public class MSETableModel extends AbstractTableModel {
 
     public Object getValueAt(int row, int col) 
     {
-    	mseSummaryData = getFrapWorkspace().getFrapStudy().getAnalysisMSESummaryData();
+    	mseSummaryData = getFrapWorkspace().getWorkingFrapStudy().getAnalysisMSESummaryData();
     	
     	if (col<0 || col>=NUM_COLUMNS){
     		throw new RuntimeException("MSETableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
@@ -98,12 +98,12 @@ public class MSETableModel extends AbstractTableModel {
     {
     }
     
-    public FRAPWorkspace getFrapWorkspace()
+    public FRAPSingleWorkspace getFrapWorkspace()
     {
         return frapWorkspace;
     }
    
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
     {
     	this.frapWorkspace = frapWorkspace;
     	fireTableDataChanged();

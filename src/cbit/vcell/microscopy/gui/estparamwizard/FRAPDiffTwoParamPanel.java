@@ -32,7 +32,7 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.model.gui.ParameterPanel;
 import cbit.vcell.opt.Parameter;
 
@@ -61,7 +61,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 //	private final JCheckBox secondDiffRateCheckBox = new JCheckBox();
 	
 	private FRAPOptData frapOptData;
-	private FRAPWorkspace frapWorkspace;
+	private FRAPSingleWorkspace frapWorkspace;
 
 	private boolean B_HOLD_FIRE = false;
 	private boolean isExecuting = false;//for control whether a paragraph should execute in OPTIMIZER_SLIDER_CHANGE_LISTENER or not, when getValueIsAdjusting() is false.
@@ -179,7 +179,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 						}
 					}
 					
-					firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
+					firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
 				}
 			}
 		};
@@ -313,7 +313,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 						setAllTextFieldsPosition(0);
 //					}
 					if(!B_HOLD_FIRE){
-						firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
+						firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
 					}
 				}catch (Exception e2){
 					e2.printStackTrace();
@@ -756,7 +756,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 				public void run(Hashtable<String, Object> hashTable) throws Exception
 				{
 					frapOptData.setNumEstimatedParams(getCurrentParameters().length);
-					final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation());
 					hashTable.put("bestParameters", bestParameters);
 				}
 			};
@@ -774,7 +774,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 							new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
 							new Double(bestParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()),
 							new Double(bestParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()));
-						firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
+						firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
 					}
 				}
 			};
@@ -963,7 +963,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 	}
 
 
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
 	}
