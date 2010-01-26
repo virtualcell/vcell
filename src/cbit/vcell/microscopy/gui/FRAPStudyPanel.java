@@ -88,7 +88,7 @@ import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
@@ -136,6 +136,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String VFRAP_PREFIX_MASK = "Mask";
 	public static final String VFRAP_PREFIX_SIM = "Sim";
 	public static final String[] VFRAP_DS_PREFIX = {VFRAP_PREFIX_EXP, VFRAP_PREFIX_MASK, VFRAP_PREFIX_SIM};
+	public static final String NO_THANKS_MSG = "NO, Thanks";
+	public static final String SAVE_CONTINUE_MSG = "Save and Continue";
 	
 	//properties
 	public static final String NEW_FRAPSTUDY_KEY = "NEW_FRAPSTUDY";
@@ -161,7 +163,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private static final String NORM_FLUOR_VAR = "Exp_norm_fluor";
 	private static final String NORM_SIM_VAR = "Sim_norm_fluor";
 		
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	private FRAPDataPanel frapDataPanel = null;
 	private LocalWorkspace localWorkspace = null;
 	private JPanel leftPanel = null;
@@ -209,7 +211,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   			{
 	  	   				ArrayList<AsynchClientTask> totalTasks = new ArrayList<AsynchClientTask>();
 	  	   				//check if save is needed before loading data
-	  	   				if(getFrapWorkspace().getFrapStudy().isSaveNeeded())
+	  	   				if(getFrapWorkspace().getWorkingFrapStudy().isSaveNeeded())
 	  	   				{
 	  	   					String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new data?", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 	  	   					if(choice.equals(UserMessage.OPTION_OK))
@@ -238,7 +240,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			  	   				{
 			  	   					getAnalysisProcedurePanel().setWorkFlowStage(AnalysisProcedurePanel.STAGE_DEFINE_ROIS);
 			  	   					//set need save flag
-			  	   					getFrapWorkspace().getFrapStudy().setSaveNeeded(true);
+			  	   					getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
 			  	   				}
 		  	    			}
 		  	    		};
@@ -255,7 +257,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   			if(roiWizard != null)
 	  	   			{
 	  	   				//get old rois, image size and start index before showing wizard
-		  	   			FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		  	   			FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		  	   			//rois
 		  	   			ROI tempROI = null;
 		  	   			ROI lastCellROI = null;
@@ -282,7 +284,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   			    
 		  	   			if(roiWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
 	  	   				{
-		  	   				FRAPStudy newFrapStudy = getFrapWorkspace().getFrapStudy();
+		  	   				FRAPStudy newFrapStudy = getFrapWorkspace().getWorkingFrapStudy();
 		  	   				//check if one of images/rois/starting index for recovery is chaged. if so, rerun ref simulation by setting frapoptdata and storedrefdata to null.
 	  	   					if(!Compare.isEqualOrNull(lastCellROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastBleachROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())) ||
@@ -291,16 +293,16 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   					   !Compare.isEqualOrNull(oldStartIndexForRecovery, newFrapStudy.getStartingIndexForRecovery()))
 	  	   					{
 	  	   						//set need save flag
-	  	   						getFrapWorkspace().getFrapStudy().setSaveNeeded(true);
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
 	  	   						//reset work flow stage if the last step has changed
 	  	   						getAnalysisProcedurePanel().setWorkFlowStage(AnalysisProcedurePanel.STAGE_MODEL_TYPE);
 	  	   						//reset data for reference simulation
-	  	   						getFrapWorkspace().getFrapStudy().setRoiExternalDataInfo(null);
-	  	   						getFrapWorkspace().getFrapStudy().setFrapOptData(null);
-	  	   						getFrapWorkspace().getFrapStudy().setStoredRefData(null);
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setRoiExternalDataInfo(null);
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(null);
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setStoredRefData(null);
 	  	   						//reset best model and updateUI
-	  	   						getFrapWorkspace().getFrapStudy().setBestModelIndex(null);
-	  	   						updateAnalysisResult(getFrapWorkspace().getFrapStudy());
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setBestModelIndex(null);
+	  	   						updateAnalysisResult(getFrapWorkspace().getWorkingFrapStudy());
 	  	   					}
 	  	   				}
 	  	   			}
@@ -308,7 +310,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   		else if(commandStr.equals(VirtualFrapMainFrame.CHOOSE_MODEL_COMMAND))
 	  	   		{
 	  	   			Wizard modelTypeWizard = getChooseModelTypeWizard();
-	  	   			FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+	  	   			FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 	  	   			if(modelTypeWizard != null)
 	  	   			{
 	  	   				//get old best model before the wizard runs. 
@@ -621,8 +623,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			areSimFilesOK = areSimulationFilesOK(getLocalWorkspace(),null);
 			areExtDataFileOK =
 				areExternalDataOK(getLocalWorkspace(),
-				getFrapWorkspace().getFrapStudy().getFrapDataExternalDataInfo(),
-				getFrapWorkspace().getFrapStudy().getRoiExternalDataInfo());
+				getFrapWorkspace().getWorkingFrapStudy().getFrapDataExternalDataInfo(),
+				getFrapWorkspace().getWorkingFrapStudy().getRoiExternalDataInfo());
 //			isRefDataFileOK = areReferenceDataOK(getLocalWorkspace(), getFrapStudy().getRefExternalDataInfo());
 		}
 		public boolean isDataInvalidBecauseModelChanged(){
@@ -895,7 +897,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),null);
 						VirtualFrapMainFrame.updateProgress(0);
-						ROI roi = getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI();
+						ROI roi = getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI();
 						ROI[] importedROIs = importedFrapStudy.getFrapData().getRois();
 						if(importedFrapStudy.getFrapData() != null && importedROIs != null){
 							if(!importedROIs[0].getISize().compareEqual(roi.getISize())){
@@ -911,7 +913,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 										")");
 							}
 							for (int i = 0; i < importedROIs.length; i++) {
-								getFrapWorkspace().getFrapStudy().getFrapData().addReplaceRoi(importedROIs[i]);
+								getFrapWorkspace().getWorkingFrapStudy().getFrapData().addReplaceRoi(importedROIs[i]);
 							}
 							undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
 						}
@@ -954,7 +956,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	private void checkROIExsitence()throws Exception
 	{
-		FRAPData frapData = getFrapWorkspace().getFrapStudy().getFrapData();
+		FRAPData frapData = getFrapWorkspace().getWorkingFrapStudy().getFrapData();
 		ROI cellROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		ROI bleachROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		ROI bgROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
@@ -979,7 +981,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 	
 	private boolean checkROIConstraints() throws Exception{
-		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		short[] cellPixels = fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
 		short[] bleachPixels = fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getPixelsXYZ();
 		short[] backgroundPixels = fStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getPixelsXYZ();
@@ -1033,7 +1035,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 	
 	private void checkStartIndexforRecovery() throws Exception{
-		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 	}
 	
 	
@@ -1094,12 +1096,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				if(getFrapWorkspace().getFrapStudy() == null || getFrapWorkspace().getFrapStudy().getFrapData() == null)
+				if(getFrapWorkspace().getWorkingFrapStudy() == null || getFrapWorkspace().getWorkingFrapStudy().getFrapData() == null)
 				{
 					throw new Exception("No FRAP Data exists to save");
 				}else{
 					File outputFile = null;
-					String saveFileName = getFrapWorkspace().getFrapStudy().getXmlFilename();
+					String saveFileName = getFrapWorkspace().getWorkingFrapStudy().getXmlFilename();
 		    		if(saveFileName == null)
 		    		{
 		    			int choice = VirtualFrapLoader.saveFileChooser.showSaveDialog(FRAPStudyPanel.this);
@@ -1192,7 +1194,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				if(getFrapWorkspace().getFrapStudy() == null || getFrapWorkspace().getFrapStudy().getFrapData() == null)
+				if(getFrapWorkspace().getWorkingFrapStudy() == null || getFrapWorkspace().getWorkingFrapStudy().getFrapData() == null)
 				{
 					throw new Exception("No FRAP Data exists to save");
 				}else{
@@ -1283,7 +1285,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getFRAPDataPanel().saveROI();
 		}
 		if((applyUserChangeFlags&USER_CHANGES_FLAG_INI_PARAMS) != 0){
-			getFRAPParametersPanel().insertFRAPIniModelParametersIntoFRAPStudy(getFrapWorkspace().getFrapStudy());	
+			getFRAPParametersPanel().insertFRAPIniModelParametersIntoFRAPStudy(getFrapWorkspace().getWorkingFrapStudy());	
 		}
 		if((applyUserChangeFlags&USER_CHANGES_FLAG_ADJUST_PARAMS) != 0){
 //			getResultsSummaryPanel().insertPureDiffusionParametersIntoFRAPStudy(getFrapWorkspace().getFrapStudy());
@@ -1357,7 +1359,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		if(bSaveAs)
 		{
 			//remove simulation key from simulation, save as doesn't copy simulation files over
-			FRAPStudy fStudy = getFrapWorkspace().getFrapStudy(); 
+			FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy(); 
 			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
 			   fStudy.getBioModel().getSimulations()[0] != null)
 			{
@@ -1366,9 +1368,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			}
 		}
 		//save
-		MicroscopyXmlproducer.writeXMLFile(getFrapWorkspace().getFrapStudy(), xmlFrapFile, true,progressListener,VirtualFrapMainFrame.SAVE_COMPRESSED);
-		getFrapWorkspace().getFrapStudy().setXmlFilename(xmlFrapFile.getAbsolutePath());
-		getFrapWorkspace().getFrapStudy().setSaveNeeded(false);
+		MicroscopyXmlproducer.writeXMLFile(getFrapWorkspace().getWorkingFrapStudy(), xmlFrapFile, true,progressListener,VirtualFrapMainFrame.SAVE_COMPRESSED);
+		getFrapWorkspace().getWorkingFrapStudy().setXmlFilename(xmlFrapFile.getAbsolutePath());
+		getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(false);
 	}
 	
 	private boolean cleanupSavedSimDataFilesIfNotOK() throws Exception{
@@ -1377,11 +1379,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		if(!currentSimulationDataState.isDataValid()){
 			//remove saved simulation files (they no longer apply to this model)
 			ExternalDataIdentifier frapDataExtDataId =
-				(getFrapWorkspace().getFrapStudy() != null && getFrapWorkspace().getFrapStudy().getFrapDataExternalDataInfo() != null
-					?getFrapWorkspace().getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier():null);
+				(getFrapWorkspace().getWorkingFrapStudy() != null && getFrapWorkspace().getWorkingFrapStudy().getFrapDataExternalDataInfo() != null
+					?getFrapWorkspace().getWorkingFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier():null);
 			ExternalDataIdentifier roiExtDataId =
-				(getFrapWorkspace().getFrapStudy() != null && getFrapWorkspace().getFrapStudy().getRoiExternalDataInfo() != null
-					?getFrapWorkspace().getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier():null);
+				(getFrapWorkspace().getWorkingFrapStudy() != null && getFrapWorkspace().getWorkingFrapStudy().getRoiExternalDataInfo() != null
+					?getFrapWorkspace().getWorkingFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier():null);
 			KeyValue simulationKeyValue =
 				(getSavedFrapModelInfo() != null?getSavedFrapModelInfo().savedSimKeyValue:null);
 			FRAPStudy.removeExternalDataAndSimulationFiles(simulationKeyValue,frapDataExtDataId,roiExtDataId,getLocalWorkspace());
@@ -1397,10 +1399,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		ArrayList<AsynchClientTask> totalTasks = new ArrayList<AsynchClientTask>(); 
 				 
 	    //check if save is needed before loading data
-	    if(getFrapWorkspace().getFrapStudy().isSaveNeeded())
+	    if(getFrapWorkspace().getWorkingFrapStudy().isSaveNeeded())
 	    {
-			String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new document?", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-			if(choice.equals(UserMessage.OPTION_OK))
+			String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new document?", new String[]{SAVE_CONTINUE_MSG, NO_THANKS_MSG}, SAVE_CONTINUE_MSG);
+			if(choice.equals(SAVE_CONTINUE_MSG))
 			{
 				AsynchClientTask[] saveTasks = save();
 				for(int i=0; i<saveTasks.length; i++)
@@ -1539,7 +1541,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 				if(fStudy.hasOptModel())
 				{
 					//create optdata
@@ -1547,7 +1549,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					{
 						if(fStudy.getStoredRefData() != null)
 						{
-							getFrapWorkspace().getFrapStudy().setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), fStudy.getStoredRefData()));
+							getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), fStudy.getStoredRefData()));
 						}
 						else
 						{
@@ -1574,7 +1576,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 				if(fStudy.hasOptModel())
 				{
 					ArrayList<Integer> models = fStudy.getSelectedModels();
@@ -1653,15 +1655,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				FRAPModel[] oldFrapModels = (FRAPModel[])hashTable.get(FRAPMODELS_KEY);
 				Integer oldBestModelIndex = (Integer)hashTable.get(BEST_MODEL_KEY);
 				//get new values
-				Integer newBestModelIndex = getFrapWorkspace().getFrapStudy().getBestModelIndex();
+				Integer newBestModelIndex = getFrapWorkspace().getWorkingFrapStudy().getBestModelIndex();
 				if(estParamWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
 				{
-					if(!getFrapWorkspace().getFrapStudy().areFRAPModelsEqual(oldFrapModels) ||
+					if(!getFrapWorkspace().getWorkingFrapStudy().areFRAPModelsEqual(oldFrapModels) ||
 					   (oldBestModelIndex == null && newBestModelIndex != null) ||
 					   (oldBestModelIndex != null && newBestModelIndex == null) ||
 					   (oldBestModelIndex != null && newBestModelIndex != null && oldBestModelIndex.intValue() != newBestModelIndex.intValue()))
 					{
-						getFrapWorkspace().getFrapStudy().setSaveNeeded(true);
+						getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
 					}
 				}
 			}
@@ -1684,7 +1686,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 				//create export specs
 				Simulation sim = null;
-				FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 				if (fStudy==null || fStudy.getBioModel()==null || fStudy.getBioModel().getSimulations()==null || fStudy.getBioModel().getSimulations().length < 1 ){
 					return;
 				}else{
@@ -1756,13 +1758,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				JMFPlayer.showMovieInDialog(get2DResultDialog(),movieURLString, movieFileString);
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, false, false, null, true);
 	}
 	
 	
 	protected void refreshPDEDisplay(DisplayChoice choice) throws Exception {
 		Simulation sim = null;
-		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		if (fStudy==null || fStudy.getBioModel()==null || fStudy.getBioModel().getSimulations()==null || fStudy.getBioModel().getSimulations().length < 1){
 			return;
 		}else{
@@ -1892,14 +1894,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 		boolean bROISameSize =
 			Compare.isEqualOrNull(
-					getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getISize(),
+					getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getISize(),
 				(lastCellROI == null?null:lastCellROI.getISize()));
 		boolean bCellROISame =
-			Compare.isEqualOrNull(lastCellROI,getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+			Compare.isEqualOrNull(lastCellROI,getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
 		boolean bBleachROISame =
-			Compare.isEqualOrNull(lastBleachROI,getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()));
+			Compare.isEqualOrNull(lastBleachROI,getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()));
 		boolean bBackgroundROISame =
-			Compare.isEqualOrNull(lastBackgroundROI,getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()));
+			Compare.isEqualOrNull(lastBackgroundROI,getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()));
 		
 		String userStartingIndexForRecovery = getFRAPParametersPanel().getUserStartIndexForRecoveryString();
 		
@@ -1912,7 +1914,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			//check if all the data for generating spatial model are ready.
 //			FrapChangeInfo frapChangeInfo = getChangesSinceLastSave();
 			
-			FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+			FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 			
 			if (fStudy == null){
 				throw new Exception("No FrapStudy is defined");
@@ -2046,7 +2048,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
 		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
-			fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],getFrapWorkspace().getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier());
+			fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],getFrapWorkspace().getWorkingFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier());
 		}		
 		int jobIndex = 0;
 		SimulationJob simJob = new SimulationJob(sim,jobIndex,fieldDataIdentifierSpecs);
@@ -2058,7 +2060,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public void propertyChange(PropertyChangeEvent evt) 
 	{
 		
-		if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW) || evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE))
+		if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW) || evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE))
 		{
 			if(evt.getNewValue() instanceof FRAPStudy)
 			{
@@ -2076,7 +2078,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 			}
 		}
-		if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_BEST_MODEL))
+		if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL))
 		{
 			if(evt.getNewValue() instanceof Integer)
 			{
@@ -2104,7 +2106,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-					FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+					FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 										
 					boolean bExtDataOK = !areExternalDataOK(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo(),fStudy.getRoiExternalDataInfo());
 					{
@@ -2164,7 +2166,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 				Parameter[] bestParams = fStudy.getModels()[fStudy.getBestModelIndex().intValue()].getModelParameters();
 				if(bestParams.length < 3)
 				{
@@ -2456,7 +2458,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 	public Wizard getEstimateParametersWizard()
 	{
-		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		if(fStudy == null || fStudy.getSelectedModels().size() ==0)
 		{
 			return null;
@@ -2641,8 +2643,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 	}
 	
-	public void setFRAPWorkspace(FRAPWorkspace arg_frapWorkspace) {
-		FRAPWorkspace oldWorkspace = frapWorkspace;
+	public void setFRAPWorkspace(FRAPSingleWorkspace arg_frapWorkspace) {
+		FRAPSingleWorkspace oldWorkspace = frapWorkspace;
 		if(oldWorkspace != null)
 		{
 			oldWorkspace.removePropertyChangeListener(this);
@@ -2654,7 +2656,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		getAnalysisResultsPanel().setFRAPWorkspace(arg_frapWorkspace);
 	}
 	
-	public FRAPWorkspace getFrapWorkspace() {
+	public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
 }

@@ -22,7 +22,7 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.SavedFrapModelInfo;
@@ -69,7 +69,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			public void actionPerformed(final ActionEvent e) {
 				if(checkParameters())
 				{
-					firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_RUN_BINDING_SIMULATION, null,null);
+					firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_RUN_BINDING_SIMULATION, null,null);
 				}
 			}
 		});
@@ -86,7 +86,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		add(estFromDiffParamButton, gridBagConstraints_20);
 		estFromDiffParamButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
-				firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_EST_BINDING_PARAMETERS, null, null);				
+				firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_EST_BINDING_PARAMETERS, null, null);				
 			}
 		});
 

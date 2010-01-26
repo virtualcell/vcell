@@ -1,13 +1,17 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Cursor;
 import java.awt.Toolkit;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Hashtable;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
@@ -17,22 +21,29 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 
-public class BatchRunDisplayPanel extends JPanel
+public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListener
 {
+	public final static String DISPLAY_PARAM_ID = "DISPLAY_PARAM";
+	public final static String DISPLAY_IMG_ID = "DISPLAY_IMG";
 	private JSplitPane rightSplit = null;
 	private FRAPDataPanel frapDataPanel = null;
+	private JPanel topDisplayPanel = null;
+	private BatchRunResultsPanel resultsPanel = null;
 	private JobStatusPanel jobStatusPanel = null;
+	//batch run workspace
+	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	
 	//constructor
 	public BatchRunDisplayPanel()
 	{
 		super();
-	    rightSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getFRAPDataPanel(), getJobStatusPanel());
+	    rightSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getTopDisplayPanel(), getJobStatusPanel());
 	    rightSplit.setDividerSize(2);
 	    rightSplit.setDividerLocation(Math.round(Toolkit.getDefaultToolkit().getScreenSize().height*1/2));
 	    setLayout(new BorderLayout());
@@ -42,14 +53,79 @@ public class BatchRunDisplayPanel extends JPanel
 	    setVisible(true);
 	}
 
+	public JPanel getTopDisplayPanel()
+	{
+		if(topDisplayPanel == null)
+		{
+			topDisplayPanel = new JPanel(new CardLayout());
+			topDisplayPanel.add(getFRAPDataPanel(), DISPLAY_IMG_ID);
+			topDisplayPanel.add(getBatchRunResultsPanel(), DISPLAY_PARAM_ID);
+		}
+		return topDisplayPanel;
+	}
+	
 	public FRAPDataPanel getFRAPDataPanel() {
 		if (frapDataPanel == null) 
 		{
 			frapDataPanel = new FRAPDataPanel(false);//the frap data panel in the main frame is not editable
 			//set display mode
 			frapDataPanel.adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
+			
+			Hashtable<String, Cursor> cursorsForROIsHash = new Hashtable<String, Cursor>();
+			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_CELLROI]);
+			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BLEACHROI]);
+			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI]);
+			frapDataPanel.getOverlayEditorPanelJAI().setCursorsForROIs(cursorsForROIsHash);
+			
+			OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new OverlayEditorPanelJAI.CustomROIImport(){
+				public boolean importROI(File inputFile) throws Exception{
+					try{
+						if(!VirtualFrapLoader.filter_vfrap.accept(inputFile)){
+							return false;
+						}
+						String xmlString = XmlUtil.getXMLString(inputFile.getAbsolutePath());
+						MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+
+						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),null);
+						VirtualFrapMainFrame.updateProgress(0);
+						ROI roi = getBatchRunWorkspace().getWorkingSingleWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI();
+						ROI[] importedROIs = importedFrapStudy.getFrapData().getRois();
+						if(importedFrapStudy.getFrapData() != null && importedROIs != null){
+							if(!importedROIs[0].getISize().compareEqual(roi.getISize())){
+								throw new Exception(
+										"Imported ROI mask size ("+
+										importedROIs[0].getISize().getX()+","+
+										importedROIs[0].getISize().getY()+","+
+										importedROIs[0].getISize().getZ()+")"+
+										" does not match current Frap DataSet size ("+
+										roi.getISize().getX()+","+
+										roi.getISize().getY()+","+
+										roi.getISize().getZ()+
+										")");
+							}
+							for (int i = 0; i < importedROIs.length; i++) {
+								getBatchRunWorkspace().getWorkingSingleWorkspace().getWorkingFrapStudy().getFrapData().addReplaceRoi(importedROIs[i]);
+							}
+//							undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
+						}
+						return true;
+					} catch (Exception e1) {
+						throw new Exception("VFRAP ROI Import - "+e1.getMessage());
+					}
+				}
+			};
+			frapDataPanel.getOverlayEditorPanelJAI().setCustomROIImport(importVFRAPROI);
 		}
 		return frapDataPanel;
+	}
+	
+	public BatchRunResultsPanel getBatchRunResultsPanel()
+	{
+		if(resultsPanel == null)
+		{
+			resultsPanel = new BatchRunResultsPanel();
+		}
+		return resultsPanel;
 	}
 	
 	public JobStatusPanel getJobStatusPanel()
@@ -59,6 +135,34 @@ public class BatchRunDisplayPanel extends JPanel
 			jobStatusPanel = new JobStatusPanel();
 		}
 		return jobStatusPanel;
+	}
+	
+	public FRAPBatchRunWorkspace getBatchRunWorkspace() {
+		return batchRunWorkspace;
+	}
+
+	public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace) {
+		//remove old property change listener
+		if(getBatchRunWorkspace() != null)
+		{
+			getBatchRunWorkspace().removePropertyChangeListener(this);
+		}
+		this.batchRunWorkspace = batchRunWorkspace;
+		getFRAPDataPanel().setFRAPWorkspace(batchRunWorkspace.getWorkingSingleWorkspace());
+		//add new property change listener
+		getBatchRunWorkspace().addPropertyChangeListener(this);
+	}
+
+	public void propertyChange(PropertyChangeEvent evt) 
+	{
+		if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DISPLAY_IMG))
+		{
+			((CardLayout)topDisplayPanel.getLayout()).show(topDisplayPanel, DISPLAY_IMG_ID);
+		}
+		else if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM))
+		{
+			((CardLayout)topDisplayPanel.getLayout()).show(topDisplayPanel, DISPLAY_PARAM_ID);
+		}
 	}
 	
 	public static void main(java.lang.String[] args) {
@@ -83,5 +187,4 @@ public class BatchRunDisplayPanel extends JPanel
 			exception.printStackTrace(System.out);
 		}
 	}
-	
 }

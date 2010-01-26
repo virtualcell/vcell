@@ -7,7 +7,7 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -224,7 +224,7 @@ public class FRAPEstimationPanel extends JPanel {
 								selectedStartTimeRecovery,
 								bleachWhileMonitoringRate
 							);
-						firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES, null, frapParameterEstimateValues);
+						firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES, null, frapParameterEstimateValues);
 					}
 				}catch(UserCancelException e2){
 					//ignore

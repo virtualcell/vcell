@@ -47,7 +47,7 @@ import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
@@ -56,7 +56,6 @@ import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.NativeFVSolver;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverException;
@@ -73,7 +72,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	private FRAPReactionDiffusionParamPanel reactionDiffusionPanel;
 	private FRAPReacDiffEstimationGuidePanel estGuidePanel;
 	
-	private FRAPWorkspace frapWorkspace;
+	private FRAPSingleWorkspace frapWorkspace;
 	private LocalWorkspace localWorkspace;
 	
 	private FRAPStudy fStudy = null;
@@ -115,15 +114,15 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
 						if(evt.getSource() == reactionDiffusionPanel){
-							FRAPStudy frapStudy = getFrapWorkspace().getFrapStudy();
-							if((evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_EST_BINDING_PARAMETERS))){
+							FRAPStudy frapStudy = getFrapWorkspace().getWorkingFrapStudy();
+							if((evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_EST_BINDING_PARAMETERS))){
 								activateReacDiffEstPanel();
-							}else if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_EST_BS_CONCENTRATION)){
+							}else if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_EST_BS_CONCENTRATION)){
 								if(frapStudy != null && frapStudy.getFrapData() != null)
 								{
-									reactionDiffusionPanel.calBSConcentration(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getFrapStudy().getStartingIndexForRecovery()));
+									reactionDiffusionPanel.calBSConcentration(FRAPStudy.calculatePrebleachAvg_oneValue(frapStudy.getFrapData(), getFrapWorkspace().getWorkingFrapStudy().getStartingIndexForRecovery()));
 								}
-							}else if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_RUN_BINDING_SIMULATION)){
+							}else if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_RUN_BINDING_SIMULATION)){
 								simulateWithCurrentParameters();
 							}
 						}
@@ -161,11 +160,11 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
 		showRoisButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				if(frapWorkspace != null && frapWorkspace.getFrapStudy() != null &&
-				   frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation() != null)
+				if(frapWorkspace != null && frapWorkspace.getWorkingFrapStudy() != null &&
+				   frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation() != null)
 				{
 					getROIPanel().setFrapWorkspace(frapWorkspace);
-					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation());
 					getROIPanel().refreshROIImageForDisplay();
 				}
 				JOptionPane.showMessageDialog(EstParams_ReacBindingPanel.this, getROIPanel());
@@ -219,7 +218,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 			String description = null;
 			int totalROIlen = FRAPData.VFRAP_ROI_ENUM.values().length;
 			boolean[] wantsROITypes = new boolean[totalROIlen];
-			System.arraycopy(frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation(), 0, wantsROITypes, 0, totalROIlen);
+			System.arraycopy(frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation(), 0, wantsROITypes, 0, totalROIlen);
 			
 			ODESolverResultSet simSolverResultSet = new ODESolverResultSet();
 			simSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
@@ -239,7 +238,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				}
 			}
 			
-			FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+			FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 			//
 			// populate time
 			//
@@ -430,11 +429,11 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	}
 	
 
-	public FRAPWorkspace getFrapWorkspace() {
+	public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
 //		getReactionDiffusionPanel().setFrapWorkspace(frapWorkspace);
 	}
@@ -465,7 +464,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	
 	public void activateReacDiffEstPanel()
 	{
-		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		//check if we can do auto estimation on reaction binding papameters
 		Parameter[] params = null;
 		if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
@@ -551,7 +550,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	
 	private void simulateWithCurrentParameters() 
 	{
-		fStudy = getFrapWorkspace().getFrapStudy();
+		fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		//save external files if needed
 		AsynchClientTask saveTask = new AsynchClientTask("Preparing to run simulation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
@@ -716,7 +715,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 				try {
 					setData(fStudy.getFrapData(), 
 							getCurrentParameters(), 

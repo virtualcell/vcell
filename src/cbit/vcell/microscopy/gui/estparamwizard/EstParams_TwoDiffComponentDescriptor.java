@@ -6,7 +6,7 @@ import java.util.Hashtable;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.opt.Parameter;
 
 import org.vcell.util.gui.DialogUtils;
@@ -15,7 +15,7 @@ import org.vcell.wizard.WizardPanelDescriptor;
 public class EstParams_TwoDiffComponentDescriptor extends WizardPanelDescriptor
 {
 	public static final String IDENTIFIER = "EstimateParameters_DiffusionWithTwoDiffusingComponents";
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	
     public EstParams_TwoDiffComponentDescriptor () {
         super(IDENTIFIER, new EstParams_TwoDiffComponentPanel());
@@ -23,7 +23,7 @@ public class EstParams_TwoDiffComponentDescriptor extends WizardPanelDescriptor
 
     public void aboutToDisplayPanel() 
     {
-    	FRAPStudy fStudy = frapWorkspace.getFrapStudy();
+    	FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
     	Parameter[] params = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
     	try{
 	    	if(params == null)
@@ -77,16 +77,16 @@ public class EstParams_TwoDiffComponentDescriptor extends WizardPanelDescriptor
     private void saveModelParameters()
     {
     	Parameter[] params = ((EstParams_TwoDiffComponentPanel)getPanelComponent()).getCurrentParameters();
-		FRAPModel  frapModel = getFrapWorkspace().getFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS);
+		FRAPModel  frapModel = getFrapWorkspace().getWorkingFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS);
 		frapModel.setModelParameters(params);
 		frapModel.setData(((EstParams_TwoDiffComponentPanel)getPanelComponent()).getCurrentEstimationResults());
     }
     
-    public FRAPWorkspace getFrapWorkspace() {
+    public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
 		((EstParams_TwoDiffComponentPanel)getPanelComponent()).setFrapWorkspace(frapWorkspace);
 	}

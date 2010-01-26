@@ -6,7 +6,7 @@ import java.util.Hashtable;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.opt.Parameter;
 
@@ -16,7 +16,7 @@ import org.vcell.wizard.WizardPanelDescriptor;
 public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 {
 	public static final String IDENTIFIER = "EstimateParameters_ReactionPlusBinding";
-	private FRAPWorkspace frapWorkspace = null;
+	private FRAPSingleWorkspace frapWorkspace = null;
 	private LocalWorkspace localWorkspace = null;
     
     public EstParams_ReacBindingDescriptor () {
@@ -25,7 +25,7 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 
     public void aboutToDisplayPanel() 
     {
-    	FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+    	FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		FRAPModel[] frapModels = fStudy.getModels();
 		Parameter[] params = null;
 		//get parameters to display in reaction binding panel
@@ -105,17 +105,17 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
     private void saveModelParameters()
     {
     	Parameter[] params = ((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentParameters();
-		FRAPModel  frapModel = getFrapWorkspace().getFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_BINDING);
+		FRAPModel  frapModel = getFrapWorkspace().getWorkingFrapStudy().getFrapModel(FRAPModel.IDX_MODEL_DIFF_BINDING);
 		frapModel.setModelParameters(params);
 		frapModel.setData(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentSimResults());
 		frapModel.setTimepoints(((EstParams_ReacBindingPanel)getPanelComponent()).getCurrentRawSimTimePoints());
     }
     
-    public FRAPWorkspace getFrapWorkspace() {
+    public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
 		((EstParams_ReacBindingPanel)getPanelComponent()).setFrapWorkspace(frapWorkspace);
 	}

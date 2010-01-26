@@ -4,7 +4,7 @@ import java.awt.Color;
 
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -69,7 +69,7 @@ public class FRAPParametersPanel extends JPanel {
 		estimationPanel.addPropertyChangeListener(
 			new PropertyChangeListener(){
 				public void propertyChange(PropertyChangeEvent evt) {
-					if(evt.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES)){
+					if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_PARAMETER_ESTIMATE_VALUES)){
 						FRAPEstimationPanel.FRAPParameterEstimateValues frapParamEstVals = (FRAPEstimationPanel.FRAPParameterEstimateValues)evt.getNewValue();
 						
 						if(frapParamEstVals.startTimeRecovery != null){

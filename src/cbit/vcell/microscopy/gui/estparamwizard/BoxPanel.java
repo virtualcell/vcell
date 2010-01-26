@@ -53,25 +53,21 @@ public abstract class BoxPanel extends JPanel {
 
         BorderFactory.createEmptyBorder(1,1,1,1);
 
-//        titlePanel.setBackground(Color.white);
         setLayout(new BorderLayout());
         contentPane = new JPanel();
-//        contentPane.setBackground(Color.white);
         super.add(titlePanel, BorderLayout.NORTH);
         super.add(contentPane, BorderLayout.CENTER);
     }
 
     private class LinePanel extends JPanel {
         public LinePanel() {
-//            setBackground(Color.white);
             setBorder(new Border() {
                 public boolean isBorderOpaque() {
                     return true;
                 }
 
                 public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-                    // g.setColor((Color) Report.SETTING.get("report.color"));
-                    g.setColor(/*(Color)VirtualFrapLoader.loadProperty("report.separateLine.color")*/Color.red);
+                    g.setColor(Color.red);
                     g.fillRect(0, 2, width, 1);
                 }
 
@@ -116,6 +112,4 @@ public abstract class BoxPanel extends JPanel {
     }
     final static private Insets borderInset = new Insets(5, 5, 5, 5);
     final static private Color borderColor = new Color(166, 166, 255);
-
-
 }

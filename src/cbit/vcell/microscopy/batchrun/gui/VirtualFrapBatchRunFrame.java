@@ -37,7 +37,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
@@ -79,23 +79,22 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	private static final String OPEN_ACTION_COMMAND = "Open vfbatch";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
-	private static final String EXIT_ACTION_COMMAND = "Exit";
+	private static final String CLOSE_ACTION_COMMAND = "Close";
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
-	private static final String MAIN_WINDOW_ACTION_COMMAND = "Main Window";
+//	private static final String MAIN_WINDOW_ACTION_COMMAND = "Main Window";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
-	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
+	private static final JMenuItem menuClose= new JMenuItem(CLOSE_ACTION_COMMAND,'C');
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
 	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
-	private static final JMenuItem mMainWin = new JMenuItem(MAIN_WINDOW_ACTION_COMMAND);
+//	private static final JMenuItem mMainWin = new JMenuItem(MAIN_WINDOW_ACTION_COMMAND);
 
 	public static JMenuBar mb = null;
 	private static StatusBar statusBarNew = new StatusBar();
 	public static ToolBar toolBar = null;
-    public static FRAPStudyPanel frapStudyPanel = null;
 	private HelpViewer hviewer = null;
 	  
     public class BatchRunMenuHandler implements ActionListener
@@ -121,15 +120,15 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				if(arg.equals(OPEN_ACTION_COMMAND))
 			    {
 					File inputFile = null;
-		  			int option = VirtualFrapLoader.openVFRAPFileChooser.showOpenDialog(frapStudyPanel);
-		  			if (option == JFileChooser.APPROVE_OPTION){
-		  				inputFile = VirtualFrapLoader.openVFRAPFileChooser.getSelectedFile();
-		  			}else{
-		  				return;
-		  			}
-		  			  
-		  	  		AsynchClientTask[] openTasks = frapStudyPanel.open(inputFile);
-		    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), openTasks, true);
+//		  			int option = VirtualFrapLoader.openVFRAPFileChooser.showOpenDialog(frapStudyPanel);
+//		  			if (option == JFileChooser.APPROVE_OPTION){
+//		  				inputFile = VirtualFrapLoader.openVFRAPFileChooser.getSelectedFile();
+//		  			}else{
+//		  				return;
+//		  			}
+//		  			  
+//		  	  		AsynchClientTask[] openTasks = frapStudyPanel.open(inputFile);
+//		    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), openTasks, true);
 			    }
 				else if(arg.equals(SAVE_ACTION_COMMAND))
 			    {
@@ -139,17 +138,17 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				{
 					saveAndSaveAs(true);
 				}
-				else if(arg.equals(EXIT_ACTION_COMMAND))
+				else if(arg.equals(CLOSE_ACTION_COMMAND))
 				{
 					String text = "";
 					if (batchRunWorkspace != null)//TODO: need to check save flag
 					{
 						text = "UnSaved changes will be lost!";
 					}
-					String result = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
+					String result = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "Do you want to CLOSE Virtual Frap Batch Run? " + text, new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
 					if (result == UserMessage.OPTION_CLOSE)
 					{
-						System.exit(0);
+						VirtualFrapBatchRunFrame.this.dispose();
 					}
 				}
 				// Help menu
@@ -168,13 +167,13 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				{
 					new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapBatchRunFrame.this);
 				}
-				else if(arg.equals(MAIN_WINDOW_ACTION_COMMAND))
-				{
-					System.out.println("MAIN_WINDOW_ACTION_COMMAND command clicked.");
-				}
+//				else if(arg.equals(MAIN_WINDOW_ACTION_COMMAND))
+//				{
+//					System.out.println("MAIN_WINDOW_ACTION_COMMAND command clicked.");
+//				}
 		    }
 	 	}
-	 }// end of inner class BatchRunMenuHandler
+	}// end of inner class BatchRunMenuHandler
 	  
     //Inner class ToolBarHandler
     public class ToolBarHandler implements ActionListener
@@ -212,10 +211,12 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	  
 	  
 	  // constructor
-	  public VirtualFrapBatchRunFrame(LocalWorkspace localWorkspace)
+	  public VirtualFrapBatchRunFrame(LocalWorkspace localWorkspace, FRAPBatchRunWorkspace batchRunWorkspace)
 	  {
 	    super();
 	    this.localWorkspace = localWorkspace;
+	    this.batchRunWorkspace = batchRunWorkspace;
+	    
 	    setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
 	    //initialize components
 	    initiateComponents();
@@ -232,8 +233,6 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    //to handle the close button of the frame
 	    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 	    addWindowListener(createAppCloser());
-	    
-	    setVisible(true);
 	  }// end of constructor
 
 	  public static void updateStatus(final String newStatusMessage){
@@ -288,6 +287,8 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  if(detailsPanel == null)
 		  {
 			  detailsPanel = new BatchRunDetailsPanel();
+			  detailsPanel.setBatchRunWorkspace(batchRunWorkspace);
+			  detailsPanel.setLocalWorkspace(localWorkspace);
 		  }
 		  return detailsPanel;
 	  }
@@ -297,6 +298,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  if(displayPanel == null)
 		  {
 			  displayPanel = new BatchRunDisplayPanel();
+			  displayPanel.setBatchRunWorkspace(batchRunWorkspace);
 		  }
 		  return displayPanel;
 	  }
@@ -324,16 +326,16 @@ public class VirtualFrapBatchRunFrame extends JFrame
 
 	    fileMenu.addSeparator();
 	    
-	    menuExit.addActionListener(menuHandler);
-	    fileMenu.add(menuExit);
+	    menuClose.addActionListener(menuHandler);
+	    fileMenu.add(menuClose);
 
 	    //Tools Menu
-	    JMenu toolsMenu =new JMenu("Tools");
-	    toolsMenu.setMnemonic('T');
-	    mb.add(toolsMenu);
-
-	    mMainWin.addActionListener(menuHandler);
-	    toolsMenu.add(mMainWin);
+//	    JMenu toolsMenu =new JMenu("Tools");
+//	    toolsMenu.setMnemonic('T');
+//	    mb.add(toolsMenu);
+//
+//	    mMainWin.addActionListener(menuHandler);
+//	    toolsMenu.add(mMainWin);
 	    
 	    //Help Menu
 	    JMenu helpMenu =new JMenu("Help");
@@ -366,7 +368,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	  {
 	      public void windowClosing(WindowEvent e)
 	      {
-		  		menuHandler.actionPerformed(new ActionEvent(menuExit,0,EXIT_ACTION_COMMAND));
+		  		menuHandler.actionPerformed(new ActionEvent(menuClose,0,CLOSE_ACTION_COMMAND));
 		  }
 	  }
 	  

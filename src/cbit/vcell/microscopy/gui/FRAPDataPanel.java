@@ -33,7 +33,7 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -45,7 +45,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 
 	private static final long serialVersionUID = 1L;
 	private OverlayEditorPanelJAI overlayEditorPanel = null;
-	private FRAPWorkspace frapWorkspace = null;  
+	private FRAPSingleWorkspace frapWorkspace = null;  
 //	private EventHandler eventHandler = new EventHandler();
 	private LocalWorkspace localWorkspace = null;
 	//The frap data panel can be editable or not. e.g. the frapData panel in the main frame is not editable.
@@ -66,7 +66,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+ex.getMessage());
 			}
 		}
-		else if (e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE)){
+		else if (e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE)){
 			//Save user changes from viewer to ROI
 			//To save only when the image is editable in this panel
 			if(isEditable)
@@ -74,14 +74,14 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				getOverlayEditorPanelJAI().saveUserChangesToROI();
 			}
 			//Set new ROI on viewer
-			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 		}
-		else if (e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE)){
+		else if (e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE)){
 			//Set new ROI on viewer
-			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 		}
-		else if (e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW) ||
-				e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE))
+		else if (e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW) ||
+				e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE))
 		{
 			if(e.getNewValue() instanceof FRAPStudy)
 			{
@@ -99,7 +99,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					fData.addPropertyChangeListener(this);
 				}
 				
-				if(e.getPropertyName().equals(FRAPWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW))
+				if(e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW))
 				{
 					overlayEditorPanel.setImages(
 						(fData==null?null:fData.getImageDataset()),true,
@@ -120,7 +120,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				}
 			}
 		}
-		else if (e.getPropertyName().equals(FRAPWorkspace.FRAPDATA_VERIFY_INFO_PROPERTY))
+		else if (e.getPropertyName().equals(FRAPSingleWorkspace.FRAPDATA_VERIFY_INFO_PROPERTY))
 		{
 			FRAPData fData = (FRAPData)e.getNewValue();
 			overlayEditorPanel.setImages(
@@ -136,7 +136,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	//FRAPDataPanel in DefineROIWizard. The newFrapStudy will only be set to FrapdataPanel in Mainframe
 	//when FINISH button is pressed.
 	protected void crop(Rectangle cropRectangle) throws ImageException {
-		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		if (fStudy == null || fStudy.getFrapData()==null){
 			return;
 		}
@@ -201,7 +201,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 //							saveROI();
 							if(roiName != null)
 							{
-								getFrapWorkspace().getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapWorkspace().getFrapStudy().getFrapData().getRoi(roiName), false);
+								getFrapWorkspace().getWorkingFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(roiName), false);
 							}
 						} catch (Exception e) {
 							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
@@ -209,7 +209,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
 						try {
 							ROI undoableROI = (ROI)evt.getNewValue();
-							getFrapWorkspace().getFrapStudy().getFrapData().addReplaceRoi(undoableROI);
+							getFrapWorkspace().getWorkingFrapStudy().getFrapData().addReplaceRoi(undoableROI);
 //							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 						} catch (Exception e) {
 							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
@@ -246,7 +246,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 
 	protected void plotROI()
 	{
-		FRAPStudy fStudy = getFrapWorkspace().getFrapStudy();
+		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		if (fStudy == null || fStudy.getFrapData() == null){
 			return;
 		}
@@ -282,8 +282,8 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		this.localWorkspace = localWorkspace;
 	}
 	
-	public void setFRAPWorkspace(FRAPWorkspace arg_frapWorkspace) {
-		FRAPWorkspace oldWorkspace = frapWorkspace;
+	public void setFRAPWorkspace(FRAPSingleWorkspace arg_frapWorkspace) {
+		FRAPSingleWorkspace oldWorkspace = frapWorkspace;
 		if(oldWorkspace != null)
 		{
 			oldWorkspace.removePropertyChangeListener(this);
@@ -292,7 +292,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		frapWorkspace.addPropertyChangeListener(this);
 	}
 	
-	public FRAPWorkspace getFrapWorkspace() {
+	public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
 	

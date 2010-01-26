@@ -81,7 +81,7 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
 					JOptionPane.showMessageDialog(imgPanel, assistPanel);
 					VFRAPPreference.putValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, assistPanel.getRequireAssistType());
 					if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
-						((DefineROI_Panel)imgPanel).getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+						((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
 					{
 						((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 					}
@@ -89,7 +89,7 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
 				else
 				{
 					if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
-					   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+					   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
 					{
 						((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 					}

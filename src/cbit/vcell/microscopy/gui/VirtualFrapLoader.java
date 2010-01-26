@@ -10,8 +10,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.resource.ResourceUtil;
 
 public class VirtualFrapLoader {
@@ -101,7 +102,8 @@ public class VirtualFrapLoader {
 
 			SwingUtilities.invokeLater(new Runnable(){public void run(){
 				LocalWorkspace localWorkspace = new LocalWorkspace(workingDirectory);
-			    FRAPWorkspace frapWorkspace = new FRAPWorkspace();
+			    FRAPSingleWorkspace frapWorkspace = new FRAPSingleWorkspace();
+			    FRAPBatchRunWorkspace batchRunWorkspace = new FRAPBatchRunWorkspace();
 			    
 			    //Check swing availability 
 			    String vers = System.getProperty("java.version"); 
@@ -156,7 +158,7 @@ public class VirtualFrapLoader {
 		        UIManager.put ("OptionPane.font",defaultFont);
 		        UIManager.put ("FileChooser.font", defaultFont);
 							
-				mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace);
+				mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace);
 				mf.setMainFrameTitle("");
 				mf.setVisible(true);
 			

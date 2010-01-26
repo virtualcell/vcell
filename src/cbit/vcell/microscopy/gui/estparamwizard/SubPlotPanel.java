@@ -20,7 +20,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
@@ -34,7 +34,7 @@ public class SubPlotPanel extends JPanel
 
     private MultisourcePlotPane plotPane;
     
-    private FRAPWorkspace frapWorkspace;
+    private FRAPSingleWorkspace frapWorkspace;
 
     public SubPlotPanel(SummaryPlotPanel arg_parent) 
     {
@@ -132,9 +132,9 @@ public class SubPlotPanel extends JPanel
     	plotPane.selectAll();
     }
     
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
-		lessLable.setText(frapWorkspace.getFrapStudy().getSelectedModels().size() + " Models");
+		lessLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
 	}
 }

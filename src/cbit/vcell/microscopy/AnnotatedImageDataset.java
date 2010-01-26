@@ -317,11 +317,11 @@ public abstract class AnnotatedImageDataset {
 		this.currentlyDisplayedROI = argCurrentlyDisplayedROI;
 		if(bSave)
 		{
-			propertyChangeSupport.firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE, oldDisplayedROI, currentlyDisplayedROI);
+			propertyChangeSupport.firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE, oldDisplayedROI, currentlyDisplayedROI);
 		}
 		else
 		{
-			propertyChangeSupport.firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE, oldDisplayedROI, currentlyDisplayedROI);
+			propertyChangeSupport.firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE, oldDisplayedROI, currentlyDisplayedROI);
 		}
 	}
 

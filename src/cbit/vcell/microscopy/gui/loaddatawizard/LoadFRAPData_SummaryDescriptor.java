@@ -12,7 +12,7 @@ import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 
@@ -22,7 +22,7 @@ import org.vcell.wizard.WizardPanelDescriptor;
 public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor{
     
     public static final String IDENTIFIER = "LoadFRAPData_Summary";
-    private FRAPWorkspace frapWorkspace = null;
+    private FRAPSingleWorkspace frapWorkspace = null;
     
     public LoadFRAPData_SummaryDescriptor() {
         super(IDENTIFIER, new LoadFRAPData_SummaryPanel());
@@ -35,7 +35,7 @@ public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor{
     }
     
 	public void aboutToDisplayPanel() {
-		((LoadFRAPData_SummaryPanel)getPanelComponent()).setLoadInfo(getFrapWorkspace().getFrapStudy());
+		((LoadFRAPData_SummaryPanel)getPanelComponent()).setLoadInfo(getFrapWorkspace().getWorkingFrapStudy());
 	}
 	
 	//save the data before the panel disappears
@@ -65,11 +65,11 @@ public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor{
 		return taskArrayList;
     }
     
-    public FRAPWorkspace getFrapWorkspace() {
+    public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
-	public void setFrapWorkspace(FRAPWorkspace frapWorkspace) {
+	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
 	}
 }

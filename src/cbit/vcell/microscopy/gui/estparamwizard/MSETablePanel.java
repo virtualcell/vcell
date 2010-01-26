@@ -5,7 +5,7 @@ import javax.swing.table.*;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
-import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 
 import java.awt.*;
@@ -145,10 +145,10 @@ public class MSETablePanel extends JPanel
         scrTable.setAutoscrolls(true);
     }
 
-    public void setFrapWorkspace(FRAPWorkspace frapWorkspace)
+    public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		mseTableModel.setFrapWorkspace(frapWorkspace);
-		lessLable.setText(frapWorkspace.getFrapStudy().getSelectedModels().size() + " Models");
+		lessLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
 	}
 }
 
