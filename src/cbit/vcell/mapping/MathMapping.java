@@ -1344,10 +1344,12 @@ private Expression substituteGlobalParameters(Expression exp) throws ExpressionE
 		//
 		String[] symbols = exp2.getSymbols();
 		Vector<ModelParameter> globalsVector = new Vector<ModelParameter>();
-		for (int i = 0; i < symbols.length; i++) {
-			for (int j = 0; j < modelParams.length; j++) {
-				if (symbols[i].equals(modelParams[j].getName())) {
-					globalsVector.addElement(modelParams[j]);
+		if (symbols != null) {
+			for (int i = 0; i < symbols.length; i++) {
+				for (int j = 0; j < modelParams.length; j++) {
+					if (symbols[i].equals(modelParams[j].getName())) {
+						globalsVector.addElement(modelParams[j]);
+					}
 				}
 			}
 		}
@@ -1442,42 +1444,44 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 					String[] symbols = modelParamExpr.getSymbols();
 					boolean bValid = true;
 					Structure sm_struct = structureMappings[k].getStructure();
-					for (int ii = 0; ii < symbols.length; ii++) {
-						SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[ii]); 
-						if (sc != null) {
-							// symbol[ii] is a speciesContext, check its structure with structureMapping[k].structure. If they are the same or
-							// if it is the adjacent membrane(s), allow variant expression to be created. Else, continue.
-							Structure sp_struct = sc.getStructure();
-							if (sp_struct.compareEqual(sm_struct)) {
-								bValid = bValid && true;
-							} else {
-								// if the 2 structures are not the same, are they adjacent? then 'bValid' is true, else false.
-								if ((sm_struct instanceof Feature) && (sp_struct instanceof Membrane)) {
-									Feature sm_feature = (Feature)sm_struct;
-									Membrane sp_mem = (Membrane)sp_struct;
-									if (sp_mem.compareEqual(sm_feature.getParentStructure()) || (sp_mem.getInsideFeature().compareEqual(sm_feature) || 
-											sp_mem.getOutsideFeature().compareEqual(sm_feature))) {
-										bValid = bValid && true;
-									} else {
-										bValid = bValid && false;
-										break;
-									}
-								} else if ((sm_struct instanceof Membrane) && (sp_struct instanceof Feature)) {
-									Feature sp_feature = (Feature)sp_struct;
-									Membrane sm_mem = (Membrane)sm_struct;
-									if (sm_mem.compareEqual(sp_feature.getParentStructure()) || (sm_mem.getInsideFeature().compareEqual(sp_feature) || 
-											sm_mem.getOutsideFeature().compareEqual(sp_feature))) {
-										bValid = bValid && true;
-									} else {
-										bValid = bValid && false;
-										break;
-									}
+					if (symbols != null) {
+						for (int ii = 0; ii < symbols.length; ii++) {
+							SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[ii]); 
+							if (sc != null) {
+								// symbol[ii] is a speciesContext, check its structure with structureMapping[k].structure. If they are the same or
+								// if it is the adjacent membrane(s), allow variant expression to be created. Else, continue.
+								Structure sp_struct = sc.getStructure();
+								if (sp_struct.compareEqual(sm_struct)) {
+									bValid = bValid && true;
 								} else {
-									bValid = bValid && false;
-									break;
+									// if the 2 structures are not the same, are they adjacent? then 'bValid' is true, else false.
+									if ((sm_struct instanceof Feature) && (sp_struct instanceof Membrane)) {
+										Feature sm_feature = (Feature)sm_struct;
+										Membrane sp_mem = (Membrane)sp_struct;
+										if (sp_mem.compareEqual(sm_feature.getParentStructure()) || (sp_mem.getInsideFeature().compareEqual(sm_feature) || 
+												sp_mem.getOutsideFeature().compareEqual(sm_feature))) {
+											bValid = bValid && true;
+										} else {
+											bValid = bValid && false;
+											break;
+										}
+									} else if ((sm_struct instanceof Membrane) && (sp_struct instanceof Feature)) {
+										Feature sp_feature = (Feature)sp_struct;
+										Membrane sm_mem = (Membrane)sm_struct;
+										if (sm_mem.compareEqual(sp_feature.getParentStructure()) || (sm_mem.getInsideFeature().compareEqual(sp_feature) || 
+												sm_mem.getOutsideFeature().compareEqual(sp_feature))) {
+											bValid = bValid && true;
+										} else {
+											bValid = bValid && false;
+											break;
+										}
+									} else {
+										bValid = bValid && false;
+										break;
+									}
 								}
-							}
-						} 
+							} 
+						}
 					}
 					if (bValid) {
 						paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), structureMappings[k]);
