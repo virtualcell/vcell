@@ -2,6 +2,7 @@ package cbit.vcell.document;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 /**
@@ -24,5 +25,7 @@ public interface SimulationOwner {
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;
 	
 	OutputFunctionContext getOutputFunctionContext();
+	
+	MathDescription getMathDescription();
 }
 

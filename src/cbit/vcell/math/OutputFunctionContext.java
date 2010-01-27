@@ -1,5 +1,6 @@
 package cbit.vcell.math;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
@@ -13,13 +14,14 @@ import java.util.Vector;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener {
+public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
 	
 	public class OutputFunctionNameScope extends AbstractNameScope  {
 		public OutputFunctionNameScope(){
@@ -49,14 +51,20 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	}
 
 	private ArrayList<AnnotatedFunction> outputFunctionsList = new ArrayList<AnnotatedFunction>();
-	private transient MathDescription mathDescription = null;
+	private SimulationOwner simulationOwner = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoPropertyChange;
 	private OutputFunctionNameScope nameScope = new OutputFunctionNameScope();
 	
-	public OutputFunctionContext() {
+	public OutputFunctionContext(SimulationOwner argSimOwner) {
 		super();
 		addVetoableChangeListener(this);
+		if (argSimOwner != null) {
+			simulationOwner = argSimOwner;
+		} else {
+			throw new RuntimeException("SimulationOwner cannot be null for outputFunctionContext.");
+		}
+		simulationOwner.addPropertyChangeListener(this);
 	}
 
 	public ArrayList<AnnotatedFunction> getOutputFunctionsList() {
@@ -73,9 +81,19 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		return false;
 	}
 
+	public SimulationOwner getSimulationOwner() {
+		return simulationOwner;
+	}
+
 	public void refreshDependencies() {
 		removeVetoableChangeListener(this);
 		addVetoableChangeListener(this);
+		simulationOwner.removePropertyChangeListener(this);
+		simulationOwner.addPropertyChangeListener(this);
+		rebindAll();
+	}
+	
+	public void rebindAll() {
 		try {
 			for (int i = 0; i < outputFunctionsList.size(); i++) {
 				outputFunctionsList.get(i).getExpression().bindExpression(this);
@@ -84,13 +102,19 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
-
 	}
-	
+
 	public void addOutputFunction(AnnotatedFunction obsFunction) throws PropertyVetoException {
 		if (obsFunction == null){
 			return;
 		}	
+		try {
+			obsFunction.getExpression().bindExpression(this);
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
+
 		ArrayList<AnnotatedFunction> newFunctionsList = new ArrayList<AnnotatedFunction>(outputFunctionsList);
 		newFunctionsList.add(obsFunction);
 		setOutputFunctionsList(newFunctionsList);
@@ -118,6 +142,9 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	}
 	
 	public void propertyChange(java.beans.PropertyChangeEvent event) {
+		if (event.getSource() == simulationOwner && event.getPropertyName().equals("mathDescription")) {
+			rebindAll();
+		}
 	}
 	
 	public void setOutputFunctionsList(ArrayList<AnnotatedFunction> outputFunctions) throws java.beans.PropertyVetoException {
@@ -269,6 +296,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 
 	public void getEntries(Map<String, SymbolTableEntry> entryMap) {	
 		// add all valid entries (variables) from mathdescription
+		MathDescription mathDescription = simulationOwner.getMathDescription();
 		if (mathDescription != null) {
 			Enumeration<Variable> varEnum = mathDescription.getVariables();
 			while(varEnum.hasMoreElements()) {
@@ -304,6 +332,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
 		//
 		SymbolTableEntry ste = null;
+		MathDescription mathDescription = simulationOwner.getMathDescription();
 		if (mathDescription != null) {
 			ste = mathDescription.getEntry(identifierString);
 			if (ste != null) {
@@ -315,15 +344,4 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		return ste;
 	}
 
-	/** @deprecated
-	 * 
-	 * @return
-	 */
-	public MathDescription getMathDescription() {
-		return mathDescription;
-	}
-
-	public void setMathDescription(MathDescription newValue) {
-		mathDescription =  newValue;
-	}
 }

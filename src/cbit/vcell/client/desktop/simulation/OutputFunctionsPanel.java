@@ -38,10 +38,12 @@ import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
@@ -75,8 +77,9 @@ public class OutputFunctionsPanel extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == OutputFunctionsPanel.this && (evt.getPropertyName().equals("outputFunctionContext"))) {
 				// disable add/delete function buttons
-				if (outputFunctionContext != null && outputFunctionContext.getMathDescription() != null) { 
-					if (outputFunctionContext.getMathDescription().isSpatial() || outputFunctionContext.getMathDescription().isStoch()) {
+				if (outputFunctionContext != null && outputFunctionContext.getSimulationOwner() != null) { 
+					MathDescription mathDescription = outputFunctionContext.getSimulationOwner().getMathDescription();
+					if (mathDescription.isSpatial() || mathDescription.isStoch()) {
 						getAddFnButton().setEnabled(false);
 						getDeleteFnButton().setEnabled(false);
 					}
