@@ -309,7 +309,7 @@ public String toString() {
 @Override
 public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
 	if (symbolTableEntry == null) {
-		throw new ExpressionBindingException("error renaming unbound identifier " + name);
+		throw new ExpressionBindingException("error renaming unbound identifier '" + name + "'");
 	}
 	
 	name = nameScope.getSymbolName(symbolTableEntry);

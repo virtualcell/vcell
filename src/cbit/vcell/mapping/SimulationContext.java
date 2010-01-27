@@ -218,7 +218,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private Version version = null;
 	private GeometryContext geoContext = null;
 	private ReactionContext reactionContext = null;
-	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext();
+	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
 	private MathDescription mathDesc = null;
 	private Double characteristicSize = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -1201,10 +1201,6 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])event.getNewValue());
 		firePropertyChange("simulations",oldSimulations,newSimulations);
 	}
-	
-	if (event.getSource() == this && event.getPropertyName().equals("mathDescription")) {
-		getOutputFunctionContext().setMathDescription((MathDescription)event.getNewValue());
-	}
 }
 
 
@@ -1309,7 +1305,7 @@ public void refreshDependencies() {
 	getGeometry().refreshDependencies();
 	if (getMathDescription()!=null){
 		getMathDescription().refreshDependencies();
-		getOutputFunctionContext().setMathDescription(getMathDescription());
+		getOutputFunctionContext().refreshDependencies();
 	}
 	getOutputFunctionContext().refreshDependencies();
 	getModel().removePropertyChangeListener(this);

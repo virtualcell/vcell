@@ -30,7 +30,7 @@ public class MathModel implements VCDocument, SimulationOwner, Matchable, Vetoab
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private MathDescription fieldMathDescription = new MathDescription("unnamed");
-	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext();
+	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
 	private cbit.vcell.solver.Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
 
@@ -41,7 +41,6 @@ public MathModel(Version version) {
 	super();
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
-	outputFunctionContext.setMathDescription(fieldMathDescription);
 	try {
 		setVersion(version);
 	} catch (PropertyVetoException e) {
@@ -522,7 +521,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 		}
-		outputFunctionContext.setMathDescription((MathDescription)evt.getNewValue());
 	}
 
 	//
