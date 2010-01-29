@@ -1,5 +1,6 @@
 package cbit.vcell.math;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,8 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldDescription = new String();
 	private transient java.lang.String fieldWarning = null;
+	
+	private ArrayList<Event> eventList = new ArrayList<Event>();
 
 	public final static String MATH_DIFFERENT = "different";
 	public final static String MATH_EQUIVALENT = "equivalent";
@@ -215,6 +218,7 @@ private void clearAll() {
 	subDomainList.clear();
 	variableList.clear();
 	variableHashTable.clear();
+	eventList.clear();
 }
 
 
@@ -266,6 +270,13 @@ public boolean compareEqual(Matchable object) {
 	// compare geometry
 	//
 	if (!Compare.isEqualOrNull(geometry, mathDesc.geometry)) {
+		return false;
+	}
+
+	//
+	// compare events
+	//
+	if (!Compare.isEqual(eventList, mathDesc.eventList)) {
 		return false;
 	}
 
@@ -1415,6 +1426,13 @@ public Enumeration<Variable> getVariables() {
 	return variableList.elements();
 }
 
+public Iterator<Event> getEvents() {
+	return eventList.iterator();
+}
+
+public int getNumEvents() {
+	return eventList.size();
+}
 
 /**
  * Insert the method's description here.
@@ -1561,6 +1579,14 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	for (Event event : eventList) {
+		buffer.append(event.getVCML() + "\n");
+	}
+	if (eventList.size() > 0) {
+		buffer.append("\n");
+	}
+	
 	Enumeration<SubDomain> enum2 = getSubDomains();
 	while (enum2.hasMoreElements()){
 		SubDomain subDomain = enum2.nextElement();
@@ -1931,12 +1957,12 @@ public boolean isValid() {
 				Enumeration<FastRate> frEnum = fastSystem.getFastRates();
 				while (frEnum.hasMoreElements()){
 					FastRate fr = frEnum.nextElement();
-					fr.getFunction().bindExpression(this);
+					fr.bind(this);
 				}
 				Enumeration<FastInvariant> fiEnum = fastSystem.getFastInvariants();
 				while (fiEnum.hasMoreElements()){
 					FastInvariant fi = fiEnum.nextElement();
-					fi.getFunction().bindExpression(this);
+					fi.bind(this);
 				}
 			}
 		}
@@ -2013,7 +2039,6 @@ public boolean isValid() {
 				return false;
 			}
 		}
-		return true;	
 	//
 	// spatial (PDE and ODE)
 	//
@@ -2219,10 +2244,10 @@ public boolean isValid() {
 		//
 		for (int i=0;i<variableList.size();i++){
 			Variable var = variableList.elementAt(i);
-			int pdeRefCount = 0;
-			int odeRefCount = 0;
-			int steadyPdeCount = 0;
 			if (var instanceof VolVariable){
+				int pdeRefCount = 0;
+				int odeRefCount = 0;
+				int steadyPdeCount = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
 					Equation equ = subDomain.getEquation(var);
@@ -2297,16 +2322,14 @@ public boolean isValid() {
 					return false;
 				}
 			}
-		}
-		//
-		// Check that there is an equation (OdeEquation) for a given MembraneVariable on each membrane.
-		//
-		for (int i=0;i<variableList.size();i++){
-			Variable var = variableList.elementAt(i);
-			int pdeRefCount = 0;
-			int odeRefCount = 0;
-			int steadyPdeCount = 0;
-			if (var instanceof MemVariable){
+		
+			//
+			// Check that there is an equation (OdeEquation) for a given MembraneVariable on each membrane.
+			//
+			else if (var instanceof MemVariable){
+				int pdeRefCount = 0;
+				int odeRefCount = 0;
+				int steadyPdeCount = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
 					Equation equ = subDomain.getEquation(var);
@@ -2333,13 +2356,10 @@ public boolean isValid() {
 					return false;
 				}
 			}
-		}
-		//
-		// Check that there is an equation (OdeEquation) for a given FilamentVariable on each FilamentSubDomain.
-		//
-		for (int i=0;i<variableList.size();i++){
-			Variable var = variableList.elementAt(i);
-			if (var instanceof FilamentVariable){
+			//
+			// Check that there is an equation (OdeEquation) for a given FilamentVariable on each FilamentSubDomain.
+			//
+			else if (var instanceof FilamentVariable){
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof FilamentSubDomain){
@@ -2351,13 +2371,10 @@ public boolean isValid() {
 					}
 				}
 			}
-		}
-		//
-		// Check that there is a region equation (VolumeRegionEquation) for a given VolumeRegionVariable on each CompartmentSubDomain.
-		//
-		for (int i=0;i<variableList.size();i++){
-			Variable var = variableList.elementAt(i);
-			if (var instanceof VolumeRegionVariable){
+			//
+			// Check that there is a region equation (VolumeRegionEquation) for a given VolumeRegionVariable on each CompartmentSubDomain.
+			//
+			else if (var instanceof VolumeRegionVariable){
 				int count = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
@@ -2373,13 +2390,10 @@ public boolean isValid() {
 					return false;
 				}
 			}
-		}
-		//
-		// Check that there is a region equation (MembraneRegionEquation) for a given MembraneRegionVariable on each MembraneSubDomain.
-		//
-		for (int i=0;i<variableList.size();i++){
-			Variable var = variableList.elementAt(i);
-			if (var instanceof MembraneRegionVariable){
+			//
+			// Check that there is a region equation (MembraneRegionEquation) for a given MembraneRegionVariable on each MembraneSubDomain.
+			//
+			else if (var instanceof MembraneRegionVariable){
 				int count = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
@@ -2395,13 +2409,10 @@ public boolean isValid() {
 					return false;
 				}
 			}
-		}
-		//
-		// Check that there is a region equation (FilamentRegionEquation) for a given FilamentRegionVariable on each FilamentSubDomain.
-		//
-		for (int i=0;i<variableList.size();i++){
-			Variable var = variableList.elementAt(i);
-			if (var instanceof FilamentRegionVariable){
+			//
+			// Check that there is a region equation (FilamentRegionEquation) for a given FilamentRegionVariable on each FilamentSubDomain.
+			//
+			else if (var instanceof FilamentRegionVariable){
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof FilamentSubDomain){
@@ -2414,12 +2425,16 @@ public boolean isValid() {
 				}
 			}
 		}
-//		if (volVarCount==0){
-//			setWarning("Spatial Model, there are no "+VCML.VolumeVariable+"'s defined");
-//			return false;
-//		}
-		return true;
 	}
+	try {
+		for (Event event : eventList) {
+			event.bind(this);
+		}
+	}catch (ExpressionBindingException e){
+		setWarning("error binding identifier: "+e.getMessage());
+		return false;
+	}		
+	return true;	
 }
 
 
@@ -2611,7 +2626,6 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			if (token.equalsIgnoreCase(VCML.Constant)){
 				token = tokens.nextToken();
 				Expression exp = new Expression(tokens);
-				//exp.bindExpression(this);
 				Constant constant = new Constant(token,exp);
 				varHash.addVariable(constant);
 				continue;
@@ -2633,7 +2647,6 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
 				Expression exp = new Expression(tokens);
-				//exp.bindExpression(this);
 				Function function = new Function(token,exp);
 				varHash.addVariable(function);
 				continue;
@@ -2687,7 +2700,16 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 					}			
 				}
 				continue;
-			}			
+			}
+			
+			if (token.equalsIgnoreCase(VCML.Event)) {
+				if (variableList.size() == 0) {
+					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+				}
+				Event event = new Event(this, tokens);
+				eventList.add(event);
+				continue;
+			}
 			throw new MathFormatException("unexpected identifier "+token);
 		}		
 	}catch (Throwable e){
@@ -2736,7 +2758,7 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  */
 public void setAllVariables(Variable vars[]) throws MathException, ExpressionBindingException, MappingException {
 	// make sure it's OK
-	cbit.vcell.mapping.VariableHash hash = new cbit.vcell.mapping.VariableHash();
+	VariableHash hash = new VariableHash();
 	for (int i = 0; i < vars.length; i++){
 		hash.addVariable(vars[i]);
 	}	
@@ -2770,7 +2792,32 @@ public void setAllVariables(Variable vars[]) throws MathException, ExpressionBin
 	Iterator<Variable> iter = variableList.iterator();
 	while (iter.hasNext()) {
 		iter.next().bind(this);
-	}	
+	}
+	
+	for (int i = 0; i < subDomainList.size(); i++){
+		SubDomain subDomain = subDomainList.elementAt(i);
+		Enumeration<Equation> equEnum = subDomain.getEquations();
+		while (equEnum.hasMoreElements()){
+			Equation equ = equEnum.nextElement();
+			equ.bind(this);
+		}
+		FastSystem fastSystem = subDomain.getFastSystem();
+		if (fastSystem!=null){
+			Enumeration<FastRate> frEnum = fastSystem.getFastRates();
+			while (frEnum.hasMoreElements()){
+				FastRate fr = frEnum.nextElement();
+				fr.bind(this);
+			}
+			Enumeration<FastInvariant> fiEnum = fastSystem.getFastInvariants();
+			while (fiEnum.hasMoreElements()){
+				FastInvariant fi = fiEnum.nextElement();
+				fi.bind(this);
+			}
+		}
+	}
+	for (Event event : eventList) {
+		event.bind(this);
+	}
 	fireStateChanged();
 }
 
@@ -3026,6 +3073,14 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (Variable v : variableList) {
 		entryMap.put(v.getName(), v);
 	}
+}
+
+public void addEvent(Event event) {
+	eventList.add(event);
+}
+
+public boolean hasEvents() {
+	return eventList.size() > 0;
 }
 
 }

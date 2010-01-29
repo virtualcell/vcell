@@ -409,10 +409,11 @@ public class XMLTags {
 	public static final String AnalysisTaskListTag = "AnalysisTaskList";
 	public static final String ParameterEstimationTaskTag = "ParameterEstimationTask";
 
-/**
- * XMLTags default constructor.
- */
-public XMLTags() {
-	super();
-}
+	public final static String EventTag = "Event";
+	public final static String UseValuesFromTriggerTimeAttrTag = "UseValuesFromTriggerTime";
+	public final static String TriggerTag = "Trigger";
+	public final static String DelayTag = "Delay";
+	public final static String EventAssignmentTag = "EventAssignment";
+	public final static String EventAssignmentVariableAttrTag = "Variable";
+	
 }
