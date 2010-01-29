@@ -276,7 +276,7 @@ private String writeEvents(HashMap<Discontinuity, String> discontinuityNameMap) 
 			triggerExpression.substituteInPlace(od.getDiscontinuityExp(), new Expression("(" + dname + "==1)"));
 		}
 		
-		sb.append("TRIGGER " + triggerExpression.infix() + "\n");
+		sb.append("TRIGGER " + triggerExpression.infix() + ";\n");
   		Delay delay = event.getDelay();
   		if (delay != null) {
 	  		Expression durationExpression = delay.getDurationExpression();
