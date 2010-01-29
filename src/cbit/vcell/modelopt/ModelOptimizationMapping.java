@@ -1,18 +1,39 @@
 package cbit.vcell.modelopt;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Issue;
+
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.ParameterVariable;
+import cbit.vcell.math.Variable;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.opt.OdeObjectiveFunction;
+import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)
@@ -22,7 +43,7 @@ public class ModelOptimizationMapping {
 	private ModelOptimizationSpec modelOptimizationSpec = null;
 	private OptimizationSpec optimizationSpec = null;
 	private ParameterMapping[] parameterMappings = null;
-	private cbit.vcell.mapping.MathSymbolMapping mathSymbolMapping = null;
+	private MathSymbolMapping mathSymbolMapping = null;
 
 /**
  * ModelOptimizationMapping constructor comment.
@@ -39,7 +60,7 @@ public ModelOptimizationMapping(ModelOptimizationSpec argModelOptimizationSpec) 
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param optResultSet cbit.vcell.opt.OptimizationResultSet
  */
-public void applySolutionToMathOverrides(cbit.vcell.solver.Simulation simulation, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
+public void applySolutionToMathOverrides(Simulation simulation, OptimizationResultSet optResultSet) throws ExpressionException {
 	if (simulation==null){
 		throw new RuntimeException("simulation is null");
 	}
@@ -50,19 +71,19 @@ public void applySolutionToMathOverrides(cbit.vcell.solver.Simulation simulation
 	if (mathSymbolMapping==null){
 		try {
 			computeOptimizationSpec();
-		}catch (cbit.vcell.mapping.MappingException e){
+		}catch (MappingException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException("couldn't generate math to map parameters to simulation");
-		}catch (cbit.vcell.math.MathException e){
+		}catch (MathException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException("couldn't generate math to map parameters to simulation");
 		}
 	}
 	ParameterMappingSpec[] parameterMappingSpecs = getModelOptimizationSpec().getParameterMappingSpecs();
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
-		cbit.vcell.math.Variable var = mathSymbolMapping.getVariable(parameterMappingSpecs[i].getModelParameter());
-		if (var instanceof cbit.vcell.math.Constant){
-			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(var.getName(),new cbit.vcell.parser.Expression(parameterMappingSpecs[i].getCurrent())));
+		Variable var = mathSymbolMapping.getVariable(parameterMappingSpecs[i].getModelParameter());
+		if (var instanceof Constant){
+			simulation.getMathOverrides().putConstant(new Constant(var.getName(),new Expression(parameterMappingSpecs[i].getCurrent())));
 		}
 	}
 
@@ -76,7 +97,7 @@ public void applySolutionToMathOverrides(cbit.vcell.solver.Simulation simulation
 			// correct math overrides with parameter solution
 			//
 			for (int i = 0; i < optResultSet.getParameterNames().length; i++){
-				simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(optResultSet.getParameterNames()[i],new cbit.vcell.parser.Expression(optResultSet.getParameterValues()[i])));
+				simulation.getMathOverrides().putConstant(new Constant(optResultSet.getParameterNames()[i],new Expression(optResultSet.getParameterValues()[i])));
 			}
 		}
 	}
@@ -89,7 +110,7 @@ public void applySolutionToMathOverrides(cbit.vcell.solver.Simulation simulation
  * @return cbit.vcell.opt.OptimizationSpec
  * @param modelOptimizationSpec cbit.vcell.modelopt.ModelOptimizationSpec
  */
-cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell.math.MathException, cbit.vcell.mapping.MappingException {
+MathSymbolMapping computeOptimizationSpec() throws MathException, MappingException {
 
 	if (getModelOptimizationSpec().getReferenceData()==null){
 		System.out.println("no referenced data defined");
@@ -101,22 +122,22 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	//
 	// get original MathDescription (later to be substituted for local/global parameters).
 	//
-	cbit.vcell.mapping.SimulationContext simContext = modelOptimizationSpec.getSimulationContext();
-	cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
+	SimulationContext simContext = modelOptimizationSpec.getSimulationContext();
+	MathMapping mathMapping = new MathMapping(simContext);
 	MathDescription origMathDesc = null;
 	mathSymbolMapping = null;
 	try {
 		origMathDesc = mathMapping.getMathDescription();
 		mathSymbolMapping = mathMapping.getMathSymbolMapping();
-	}catch (cbit.vcell.matrix.MatrixException e){
+	}catch (MatrixException e){
 		e.printStackTrace(System.out);
-		throw new cbit.vcell.mapping.MappingException(e.getMessage());
-	}catch (cbit.vcell.model.ModelException e){
+		throw new MappingException(e.getMessage());
+	}catch (ModelException e){
 		e.printStackTrace(System.out);
-		throw new cbit.vcell.mapping.MappingException(e.getMessage());
-	}catch (cbit.vcell.parser.ExpressionException e){
+		throw new MappingException(e.getMessage());
+	}catch (ExpressionException e){
 		e.printStackTrace(System.out);
-		throw new cbit.vcell.math.MathException(e.getMessage());
+		throw new MathException(e.getMessage());
 	}
 
 	//
@@ -127,20 +148,20 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	if (referenceData==null){
 		throw new RuntimeException("no referenced data defined");
 	}
-	cbit.vcell.opt.OdeObjectiveFunction odeObjectiveFunction = new cbit.vcell.opt.OdeObjectiveFunction(origMathDesc,referenceData);
+	OdeObjectiveFunction odeObjectiveFunction = new OdeObjectiveFunction(origMathDesc,referenceData);
 	optSpec.setObjectiveFunction(odeObjectiveFunction);
 
 	//
 	// get parameter mappings
 	//
 	ParameterMappingSpec[] parameterMappingSpecs = modelOptimizationSpec.getParameterMappingSpecs();
-	Vector parameterMappingList = new Vector();
-	cbit.vcell.math.Variable allVars[] = (cbit.vcell.math.Variable[])org.vcell.util.BeanUtils.getArray(origMathDesc.getVariables(),cbit.vcell.math.Variable.class);
+	Vector<ParameterMapping> parameterMappingList = new Vector<ParameterMapping>();
+	Variable allVars[] = (Variable[])BeanUtils.getArray(origMathDesc.getVariables(),Variable.class);
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		cbit.vcell.model.Parameter modelParameter = parameterMappingSpecs[i].getModelParameter();
 		String mathSymbol = mathMapping.getMathSymbol(modelParameter,structureMapping);
-		cbit.vcell.math.Variable mathVariable = origMathDesc.getVariable(mathSymbol);
-		cbit.vcell.opt.Parameter optParameter = new cbit.vcell.opt.Parameter(
+		Variable mathVariable = origMathDesc.getVariable(mathSymbol);
+		Parameter optParameter = new Parameter(
 								mathSymbol,
 								parameterMappingSpecs[i].getLow(),
 								parameterMappingSpecs[i].getHigh(),
@@ -150,15 +171,16 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 		//
 		// replace constant values with "initial guess"
 		//
-		if (mathVariable instanceof cbit.vcell.math.Constant){
-			cbit.vcell.math.Constant origConstant = (cbit.vcell.math.Constant)mathVariable;
+		if (mathVariable instanceof Constant){
+			Constant origConstant = (Constant)mathVariable;
 			for (int j = 0; j < allVars.length; j++){
 				if (allVars[j].equals(origConstant)){
 					if (parameterMappingSpecs[i].isSelected()) {
-						allVars[j] = new cbit.vcell.math.ParameterVariable(origConstant.getName());
+						allVars[j] = new ParameterVariable(origConstant.getName());
 					} else {
-						allVars[j] = new cbit.vcell.math.Constant(origConstant.getName(),new cbit.vcell.parser.Expression(optParameter.getInitialGuess()));
+						allVars[j] = new Constant(origConstant.getName(),new Expression(optParameter.getInitialGuess()));
 					}
+					break;
 				}
 			}
 		}
@@ -169,12 +191,12 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 			parameterMappingList.add(parameterMapping);
 		}
 	}
-	parameterMappings = (ParameterMapping[])org.vcell.util.BeanUtils.getArray(parameterMappingList,ParameterMapping.class);
+	parameterMappings = (ParameterMapping[])BeanUtils.getArray(parameterMappingList,ParameterMapping.class);
 	try {
 		origMathDesc.setAllVariables(allVars);
-	}catch (cbit.vcell.parser.ExpressionBindingException e){
+	}catch (ExpressionBindingException e){
 		e.printStackTrace(System.out);
-		throw new cbit.vcell.math.MathException(e.getMessage());
+		throw new MathException(e.getMessage());
 	}
 
 	//
@@ -184,12 +206,12 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 		optSpec.addParameter(parameterMappings[i].getOptParameter());
 	}
 
-	Vector issueList = new Vector();
+	Vector<Issue> issueList = new Vector<Issue>();
 	optSpec.gatherIssues(issueList);
 	for (int i = 0; i < issueList.size(); i++){
-		org.vcell.util.Issue issue = (org.vcell.util.Issue)issueList.elementAt(i);
+		Issue issue = issueList.elementAt(i);
 		System.out.println(issue.toString());
-		if (issue.getSeverity()==org.vcell.util.Issue.SEVERITY_ERROR){
+		if (issue.getSeverity()==Issue.SEVERITY_ERROR){
 			throw new RuntimeException(issue.getMessage());
 		}
 	}
@@ -217,7 +239,7 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param optResultSet cbit.vcell.opt.OptimizationResultSet
  */
-public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
+public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws ExpressionException {
 	if (optResultSet==null || optResultSet.getParameterNames()==null || optResultSet.getSolutionNames()==null){
 		return null;
 	}
@@ -240,14 +262,14 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(Opt
 		//
 		// make temporary simulation (with overrides for parameter values)
 		//
-		MathDescription mathDesc = ((cbit.vcell.opt.OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
+		MathDescription mathDesc = ((OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
 		Simulation simulation = new Simulation(mathDesc);
 		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
 		//
 		// set math overrides with initial guess
 		//
 		for (int i = 0; i < optSpec.getParameters().length; i++){
-			cbit.vcell.opt.Parameter parameter = optSpec.getParameters()[i];
+			Parameter parameter = optSpec.getParameters()[i];
 			simulation.getMathOverrides().putConstant(new Constant(parameter.getName(),new Expression(parameter.getInitialGuess())));
 		}
 		
@@ -294,7 +316,7 @@ public OptimizationSpec getOptimizationSpec() {
  * Creation date: (8/25/2005 10:26:34 AM)
  * @return cbit.vcell.modelopt.ParameterMapping[]
  */
-public cbit.vcell.modelopt.ParameterMapping[] getParameterMappings() {
+public ParameterMapping[] getParameterMappings() {
 	return parameterMappings;
 }
 
@@ -304,7 +326,7 @@ public cbit.vcell.modelopt.ParameterMapping[] getParameterMappings() {
  * @return The constraintData property value.
  * @see #setConstraintData
  */
-private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping.MathMapping mathMapping, StructureMapping structureMapping) throws cbit.vcell.mapping.MappingException {
+private ReferenceData getRemappedReferenceData(MathMapping mathMapping, StructureMapping structureMapping) throws MappingException {
 	if (modelOptimizationSpec.getReferenceData()==null){
 		return null;
 	}
@@ -313,19 +335,19 @@ private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping
 	//
 	ReferenceData refData = modelOptimizationSpec.getReferenceData();
 	ReferenceDataMappingSpec refDataMappingSpecs[] = modelOptimizationSpec.getReferenceDataMappingSpecs();
-	cbit.vcell.util.RowColumnResultSet rowColResultSet = new cbit.vcell.util.RowColumnResultSet();
-	Vector modelObjectList = new Vector();
-	Vector dataList = new Vector();
+	RowColumnResultSet rowColResultSet = new RowColumnResultSet();
+	Vector<SymbolTableEntry> modelObjectList = new Vector<SymbolTableEntry>();
+	Vector<double[]> dataList = new Vector<double[]>();
 	
 	//
 	// find bound columns, (time is always mapped to the first column)
 	//
 	int mappedColumnCount=0;
 	for (int i = 0; i < refDataMappingSpecs.length; i++){
-		cbit.vcell.parser.SymbolTableEntry modelObject = refDataMappingSpecs[i].getModelObject();
+		SymbolTableEntry modelObject = refDataMappingSpecs[i].getModelObject();
 		if (modelObject!=null){
 			int mappedColumnIndex = mappedColumnCount;
-			if (modelObject.equals(cbit.vcell.model.ReservedSymbol.TIME)){
+			if (modelObject.equals(ReservedSymbol.TIME)){
 				mappedColumnIndex = 0;
 			}
 			String origRefDataColumnName = refDataMappingSpecs[i].getReferenceDataColumnName();
@@ -352,7 +374,7 @@ private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping
 	if (modelObjectList.size()==1){
 		throw new RuntimeException("reference data was not associated with model, must map time and at least one other column");
 	}
-	if (!modelObjectList.contains(cbit.vcell.model.ReservedSymbol.TIME)){
+	if (!modelObjectList.contains(ReservedSymbol.TIME)){
 		throw new RuntimeException("must map time column of reference data to model");
 	}
 
@@ -360,9 +382,9 @@ private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping
 	// create data columns (time and rest)
 	//
 	for (int i = 0; i < modelObjectList.size(); i++){
-		cbit.vcell.parser.SymbolTableEntry modelObject = (cbit.vcell.parser.SymbolTableEntry)modelObjectList.elementAt(i);
+		SymbolTableEntry modelObject = (SymbolTableEntry)modelObjectList.elementAt(i);
 		String symbol = mathMapping.getMathSymbol(modelObject,structureMapping);
-		rowColResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(symbol));
+		rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
 	}
 
 	//
@@ -392,7 +414,7 @@ private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping
 		}
 	}
 	
-	cbit.vcell.opt.SimpleReferenceData remappedRefData = new cbit.vcell.opt.SimpleReferenceData(rowColResultSet,weights);
+	SimpleReferenceData remappedRefData = new SimpleReferenceData(rowColResultSet,weights);
 	return remappedRefData;
 }
 

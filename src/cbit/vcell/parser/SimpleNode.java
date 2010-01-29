@@ -299,12 +299,7 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException {
 		  return;
 	  }
 	  for (Node node : children) {
-		  if (node instanceof ASTRelationalNode) {
-			  Discontinuity od = new Discontinuity(new Expression(node.infixString(LANGUAGE_DEFAULT)), new Expression(((ASTRelationalNode)node).getRootFindingExpression()));			  
-			  v.add(od);
-		  } else {
-			  node.getDiscontinuities(v);
-		  }
+		  node.getDiscontinuities(v);
 	  }
   }
   

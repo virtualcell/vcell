@@ -5,35 +5,111 @@
 
 package cbit.vcell.xml;
 
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
-import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException; 
-import cbit.vcell.units.VCUnitDefinition;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
 import org.jdom.Element;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-import cbit.vcell.math.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.*;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.geometry.ControlPointCurve;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.Filament;
+import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.Line;
+import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.geometry.Spline;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.Electrode;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ReactionContext;
+import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.math.Action;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.Event;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FilamentRegionVariable;
+import cbit.vcell.math.FilamentSubDomain;
+import cbit.vcell.math.FilamentVariable;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.StochVolVariable;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionEquation;
+import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.math.Event.Delay;
+import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.Diagram;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Flux;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.GHKKinetics;
+import cbit.vcell.model.GeneralCurrentKinetics;
+import cbit.vcell.model.GeneralCurrentLumpedKinetics;
+import cbit.vcell.model.GeneralKinetics;
+import cbit.vcell.model.GeneralLumpedKinetics;
+import cbit.vcell.model.HMM_IRRKinetics;
+import cbit.vcell.model.HMM_REVKinetics;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.MassActionKinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.NernstKinetics;
+import cbit.vcell.model.NodeReference;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.ModelParameter;
-import java.util.Enumeration;
-import cbit.util.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.stoch.StochHybridOptions;
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * This class concentrates all the XML production code from Java objects.
@@ -1575,7 +1651,7 @@ public Element getXML(JumpProcess param)
  * @return org.jdom.Element
  * @param mathdes cbit.vcell.math.MathDescription
  */
-public org.jdom.Element getXML(cbit.vcell.math.MathDescription mathdes) throws XmlParseException {
+public org.jdom.Element getXML(MathDescription mathdes) throws XmlParseException {
     org.jdom.Element math = new org.jdom.Element(XMLTags.MathDescriptionTag);
 
     //Add atributes
@@ -1664,6 +1740,10 @@ public org.jdom.Element getXML(cbit.vcell.math.MathDescription mathdes) throws X
     //Add Metadata (Version) if there is!
     if (mathdes.getVersion() != null) {
         math.addContent(getXML(mathdes.getVersion(), mathdes));
+    }
+    Iterator<Event> iter = mathdes.getEvents();
+    while (iter.hasNext()) {
+    	math.addContent(getXML(iter.next()));
     }
 
     return math;
@@ -3126,7 +3206,7 @@ public org.jdom.Element getXML(SolverTaskDescription param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.TimeBounds
  */
-public org.jdom.Element getXML(cbit.vcell.solver.TimeBounds param) {
+public org.jdom.Element getXML(TimeBounds param) {
 	org.jdom.Element timebounds = new org.jdom.Element(XMLTags.TimeBoundTag);
 
 	timebounds.setAttribute(XMLTags.StartTimeAttrTag, String.valueOf(param.getStartingTime()));
@@ -3142,7 +3222,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.TimeBounds param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.TimeStep
  */
-public org.jdom.Element getXML(cbit.vcell.solver.TimeStep param) {
+public org.jdom.Element getXML(TimeStep param) {
 	org.jdom.Element timestep = new org.jdom.Element(XMLTags.TimeStepTag);
 
 	timestep.setAttribute(XMLTags.DefaultTimeAttrTag, String.valueOf(param.getDefaultTimeStep()));
@@ -3152,4 +3232,30 @@ public org.jdom.Element getXML(cbit.vcell.solver.TimeStep param) {
 	return timestep;
 }
 
+
+public org.jdom.Element getXML(Event event) throws XmlParseException{
+	org.jdom.Element eventElement = new org.jdom.Element(XMLTags.EventTag);
+
+	Element element = new org.jdom.Element(XMLTags.TriggerTag);
+	element.addContent(event.getTriggerExpression().infix());
+	eventElement.addContent(element);
+
+	Delay delay = event.getDelay();
+	if (delay != null) {
+		element = new org.jdom.Element(XMLTags.DelayTag);		
+		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
+		element.addContent(delay.getDurationExpression().infix());
+		eventElement.addContent(element);
+	}
+	Iterator<EventAssignment> iter = event.getEventAssignments();
+	while (iter.hasNext()) {
+		EventAssignment eventAssignment = iter.next();
+		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
+		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getVariable().getName());
+		element.addContent(eventAssignment.getAssignmentExpression().infix());
+		eventElement.addContent(element);
+	}
+
+	return eventElement;
+}
 }

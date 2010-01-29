@@ -4,11 +4,16 @@ package cbit.vcell.solver.ode;
  * All rights reserved.
 ©*/
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
+import cbit.vcell.math.Event;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -18,8 +23,11 @@ import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.Event.Delay;
+import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.VariableSymbolTable;
@@ -44,20 +52,13 @@ public abstract class OdeFileWriter extends SolverFileWriter {
 	protected String ROOT_VARIABLE_PREFIX = "__D_B_";
 	private transient RateSensitivity rateSensitivity = null;
 	private transient Jacobian jacobian = null;
+	protected VariableSymbolTable varsSymbolTable = null;
 
 /**
  * OdeFileCoder constructor comment.
  */
 public OdeFileWriter(PrintWriter pw, SimulationJob simJob, boolean messaging) {
 	super(pw, simJob, messaging);
-}
-
-
-/**
- * OdeFileCoder constructor comment.
- */
-private void addStateVariable (StateVariable variable) {
-	fieldStateVariables.addElement(variable);
 }
 
 public Discontinuity getSubsitutedAndFlattened(Discontinuity discontinuity, SymbolTable st) throws ExpressionException {		
@@ -68,29 +69,21 @@ public Discontinuity getSubsitutedAndFlattened(Discontinuity discontinuity, Symb
 
 /**
  * OdeFileCoder constructor comment.
+ * @throws Exception 
  */
-protected VariableSymbolTable createSymbolTable() {
+private void createSymbolTable() throws Exception {
 	
-	// Get the vector of sensVariables, needed for creating SensStateVariables 
-	Vector<SensStateVariable> sensVars = new Vector<SensStateVariable>();
-	for (int i = 0; i < getStateVariableCount(); i++) {
-		if (simulationJob.getSimulation().getSolverTaskDescription().getSensitivityParameter() != null) {
-			if (getStateVariable(i) instanceof SensStateVariable) {
-				sensVars.addElement((SensStateVariable)getStateVariable(i));
-			}
-		}
-	}
-
 	//
 	// Create symbol table for binding sensitivity variable expressions. (Cannot bind to simulation, 
 	// since it does not have the sensitivity variables corresponding to the volume variables).
 	//
 
-	VariableSymbolTable varsSymbolTable = new VariableSymbolTable();
+	varsSymbolTable = new VariableSymbolTable();
 	varsSymbolTable.addVar(ReservedVariable.TIME); // SymbolTableEntry.index doesn't matter ... just code generating binding by var names not index.
 	int count = 0;
 	
 	Variable variables[] = simulationJob.getSimulationSymbolTable().getVariables();
+	
 	for (int i = 0; i < variables.length; i++) {
 		if (variables[i] instanceof VolVariable) {
 			VolVariable vVar = (VolVariable)variables[i];
@@ -114,20 +107,27 @@ protected VariableSymbolTable createSymbolTable() {
 			count ++;
 		}
 	}
+	// Get the vector of sensVariables, needed for creating SensStateVariables 
+	Vector<SensStateVariable> sensVars = new Vector<SensStateVariable>();
+	for (int i = 0; i < getStateVariableCount(); i++) {
+		if (simulationJob.getSimulation().getSolverTaskDescription().getSensitivityParameter() != null) {
+			if (getStateVariable(i) instanceof SensStateVariable) {
+				sensVars.addElement((SensStateVariable)getStateVariable(i));
+			}
+		}
+	}
 	for (int j = count; j < (count+sensVars.size()); j++) {
 		SensVariable sVar = (SensVariable)(sensVars.elementAt(j-count).getVariable());
 		sVar.setIndex(j);
 		varsSymbolTable.addVar(sVar);		
 	}
-	
-	return varsSymbolTable;
 }
 
 /**
  * OdeFileCoder constructor comment.
  */
 public StateVariable getStateVariable (int i) {
-	return ((StateVariable) fieldStateVariables.elementAt(i));
+	return fieldStateVariables.elementAt(i);
 }
 
 
@@ -139,22 +139,11 @@ public int getStateVariableCount () {
 }
 
 
-private void initialize() throws Exception {
+private void createStateVariables() throws Exception {
 	Simulation simulation = simulationJob.getSimulation();
-	if (!simulation.getIsValid()) {
-		throw new MathException("invalid simulation : "+simulation.getWarning());
-	}
-	if (simulation.isSpatial()) {
-		throw new MathException("solver does not support spatial models. Please change the solver.");
-	}
+
 	MathDescription mathDescription = simulation.getMathDescription();
 	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
-	if (mathDescription.hasFastSystems()) {
-		if (!solverTaskDescription.getSolverDescription().solvesFastSystem()) {
-			throw new MathException("solver does not support models containing fast system (algebraic constraints). Please change the solver.");
-		}
-	}
-
 
 	// get Ode's from MathDescription and create ODEStateVariables
 	Enumeration<Equation> enum1 = mathDescription.getSubDomains().nextElement().getEquations();
@@ -162,7 +151,7 @@ private void initialize() throws Exception {
 	while (enum1.hasMoreElements()) {
 		Equation equation = enum1.nextElement();
 		if (equation instanceof OdeEquation) {
-			addStateVariable(new ODEStateVariable((OdeEquation) equation, simSymbolTable));
+			fieldStateVariables.addElement(new ODEStateVariable((OdeEquation) equation, simSymbolTable));
 		} else {
 			throw new MathException("encountered non-ode equation, unsupported");
 		}
@@ -191,12 +180,8 @@ private void initialize() throws Exception {
 	}
 	// get Jacobian and RateSensitivities from MathDescription and create SensStateVariables
 	for (int v = 0; v < sensVariables.size(); v++) {
-		addStateVariable(
-			new SensStateVariable((SensVariable) sensVariables.elementAt(v),
-					rateSensitivity, 
-					jacobian,
-					sensVariables, 
-					simSymbolTable));
+		fieldStateVariables.addElement(
+			new SensStateVariable(sensVariables.elementAt(v), rateSensitivity, jacobian, sensVariables, simSymbolTable));
 	}
 }
 
@@ -205,14 +190,15 @@ private void initialize() throws Exception {
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-protected abstract void writeEquations() throws MathException, ExpressionException;
+protected abstract String writeEquations(HashMap<Discontinuity, String> discontinuityNameMap) throws MathException, ExpressionException;
 
 /**
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
 public void write(String[] parameterNames) throws Exception {
-	initialize();
+	createStateVariables();
+	createSymbolTable();
 	
 	Simulation simulation = simulationJob.getSimulation();
 	
@@ -245,10 +231,74 @@ public void write(String[] parameterNames) throws Exception {
 	  	for (int i = 0; i < parameterNames.length; i ++) {
 		  	printWriter.println(parameterNames[i]);
 	  	}
-  	}
-	writeEquations();
+  	} 
+  	
+  	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();
+  	String eventString = null;
+  	if (simulation.getMathDescription().hasEvents()) {
+  		eventString = writeEvents(discontinuityNameMap);
+  	}  	
+	String equationString = writeEquations(discontinuityNameMap);
 	
-	printWriter.flush();
+	if (discontinuityNameMap.size() > 0) {
+		printWriter.println("DISCONTINUITIES " + discontinuityNameMap.size());
+		for (Discontinuity od : discontinuityNameMap.keySet()) {
+			printWriter.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
+		}
+	}
+	if (eventString != null) {
+  		printWriter.print(eventString);
+	}
+	printWriter.println("NUM_EQUATIONS " + getStateVariableCount());
+	printWriter.println(equationString);
+}
+
+private String writeEvents(HashMap<Discontinuity, String> discontinuityNameMap) throws ExpressionException {
+	Simulation simulation = simulationJob.getSimulation();
+	
+	StringBuffer sb = new StringBuffer();
+	MathDescription mathDescription = simulation.getMathDescription();
+	Iterator<Event> iter = mathDescription.getEvents();
+	sb.append("EVENTS " + mathDescription.getNumEvents() + "\n");
+  	while (iter.hasNext()) {
+  		Event event = iter.next();
+  		Expression triggerExpression = event.getTriggerExpression();
+  		triggerExpression = MathUtilities.substituteFunctions(triggerExpression, varsSymbolTable).flatten();
+  		
+  		Vector<Discontinuity> v = triggerExpression.getDiscontinuities();
+		for (Discontinuity od : v) {
+			od = getSubsitutedAndFlattened(od,varsSymbolTable);
+			String dname = discontinuityNameMap.get(od);
+			if (dname == null) {
+				dname = ROOT_VARIABLE_PREFIX + discontinuityNameMap.size();
+				discontinuityNameMap.put(od, dname);
+			}
+			triggerExpression.substituteInPlace(od.getDiscontinuityExp(), new Expression("(" + dname + "==1)"));
+		}
+		
+		sb.append("TRIGGER " + triggerExpression.infix() + "\n");
+  		Delay delay = event.getDelay();
+  		if (delay != null) {
+	  		Expression durationExpression = delay.getDurationExpression();
+	  		durationExpression = MathUtilities.substituteFunctions(durationExpression, varsSymbolTable).flatten();
+	  		sb.append("DELAY " + delay.useValuesFromTriggerTime() + " " + durationExpression.infix() + "\n");
+  		}
+  		sb.append("EVENTASSIGNMENTS " + event.getNumEventAssignments() + "\n");
+  		Iterator<EventAssignment> iter2 = event.getEventAssignments();
+  		while (iter2.hasNext()) {
+  			EventAssignment eventAssignment = iter2.next();
+			Expression assignmentExpression = eventAssignment.getAssignmentExpression();
+  			assignmentExpression = MathUtilities.substituteFunctions(assignmentExpression, varsSymbolTable).flatten();
+  			Variable assignmentTarget = eventAssignment.getVariable();
+  			for (int i = 0; i < fieldStateVariables.size(); i ++) {
+  				if (assignmentTarget.getName().equals(fieldStateVariables.get(i).getVariable().getName())) {
+  					sb.append(i + " " + assignmentExpression.infix() + "\n");
+  					break;
+  				}
+  			}
+  		}
+  	}
+  	return sb.toString();
 }
 
 abstract String getSolverName();

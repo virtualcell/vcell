@@ -78,6 +78,7 @@ import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.Event;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -105,6 +106,8 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.math.Event.Delay;
+import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
@@ -2172,9 +2175,59 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		}
 	}
 	
+	iterator = param.getChildren(XMLTags.EventTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		tempelement = (Element)iterator.next();
+		Event event = getEvent(mathdes, tempelement);
+		mathdes.addEvent(event);
+	}
 	return mathdes;
 }
 
+
+private Event getEvent(MathDescription mathdesc, Element eventElement) throws XmlParseException  {
+
+	Element element = eventElement.getChild(XMLTags.TriggerTag, vcNamespace);
+	Expression triggerExp = null;
+	try {
+		triggerExp = new Expression(element.getText());
+	} catch (ExpressionException e) {
+		e.printStackTrace();
+		throw new XmlParseException(e.getMessage());
+	}
+	
+	element = eventElement.getChild(XMLTags.DelayTag, vcNamespace);
+	Delay delay = null;
+	if (element != null) {
+		try {			
+			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+			Expression durationExp = new Expression(element.getText());
+			delay = new Delay(useValuesFromTriggerTime, durationExp);
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	
+	ArrayList<EventAssignment> eventAssignmentList = new ArrayList<EventAssignment>();
+	Iterator<Element> iter = eventElement.getChildren(XMLTags.EventAssignmentTag, vcNamespace).iterator();
+	while (iter.hasNext()) {
+		element = iter.next();
+		try {
+			String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
+			Expression assignExp = new Expression(element.getText());
+			Variable var = mathdesc.getVariable(varname);
+			EventAssignment eventAssignment = new EventAssignment(var, assignExp);
+			eventAssignmentList.add(eventAssignment);
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	
+	Event event = new Event(triggerExp, delay, eventAssignmentList);
+	return event;
+}
 
 /**
  * This method returns a MathModel object from a XML Element.

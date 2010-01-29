@@ -12,7 +12,6 @@ import cbit.vcell.math.MathUtilities;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.solver.SimulationJob;
 /**
  * Insert the type's description here.
@@ -33,27 +32,13 @@ public CVodeFileWriter(PrintWriter pw, SimulationJob simJob, boolean bUseMessagi
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-protected void writeEquations() throws MathException, ExpressionException {		
-	VariableSymbolTable varsSymbolTable = createSymbolTable();
-	
-	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();	
+protected String writeEquations(HashMap<Discontinuity, String> discontinuityNameMap) throws MathException, ExpressionException {	
 	
 	StringBuffer sb = new StringBuffer();
-	sb.append("NUM_EQUATIONS " + getStateVariableCount() + "\n");
 	for (int i = 0; i < getStateVariableCount(); i++) {
-		StateVariable stateVar = (StateVariable)getStateVariable(i);
-		Expression rateExpr = null;
-		if (stateVar instanceof ODEStateVariable) {
-			rateExpr = new Expression(((ODEStateVariable)stateVar).getRateExpression());
-		} else if (stateVar instanceof SensStateVariable) {
-			rateExpr = new Expression(((SensStateVariable)stateVar).getRateExpression());
-		}
-		Expression initExpr = null;
-		if (stateVar instanceof ODEStateVariable) {
-			initExpr = new Expression(((ODEStateVariable)stateVar).getInitialRateExpression());
-		} else if (stateVar instanceof SensStateVariable) {
-			initExpr = new Expression(((SensStateVariable)stateVar).getInitialRateExpression());
-		}
+		StateVariable stateVar = getStateVariable(i);
+		Expression rateExpr = new Expression(stateVar.getRateExpression());
+		Expression initExpr = new Expression(stateVar.getInitialRateExpression());
 		
 		initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable).flatten();
 		initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
@@ -72,14 +57,8 @@ protected void writeEquations() throws MathException, ExpressionException {
 
 		sb.append("ODE "+stateVar.getVariable().getName()+" INIT "+ initExpr.flatten().infix() + ";\n\t RATE " + rateExpr.flatten().infix() + ";\n");
 	}
-	
-	if (discontinuityNameMap.size() > 0) {
-		printWriter.println("DISCONTINUITIES " + discontinuityNameMap.size());
-		for (Discontinuity od : discontinuityNameMap.keySet()) {
-			printWriter.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
-		}
-	}
-	printWriter.print(sb);
+
+	return sb.toString();
 }
 
 

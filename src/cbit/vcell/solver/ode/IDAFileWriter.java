@@ -51,16 +51,10 @@ public IDAFileWriter(PrintWriter pw, SimulationJob simJob, boolean bUseMessaging
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-protected void writeEquations() throws MathException, ExpressionException {
+protected String writeEquations(HashMap<Discontinuity, String> discontinuityNameMap) throws MathException, ExpressionException {
 	Simulation simulation = simulationJob.getSimulation();
-	
-	VariableSymbolTable varsSymbolTable = createSymbolTable();
-
-	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();
 		
 	StringBuffer sb = new StringBuffer();
-	sb.append("NUM_EQUATIONS " + getStateVariableCount() + "\n");
-	
 	MathDescription mathDescription = simulation.getMathDescription();
 	if (mathDescription.hasFastSystems()){
 		//
@@ -228,14 +222,8 @@ protected void writeEquations() throws MathException, ExpressionException {
 		}
 	} else {
 		for (int i = 0; i < getStateVariableCount(); i++) {
-			StateVariable stateVar = (StateVariable)getStateVariable(i);
-			Expression initExpr = null;
-			if (stateVar instanceof ODEStateVariable) {
-				initExpr = new Expression(((ODEStateVariable)stateVar).getInitialRateExpression());
-			} else if (stateVar instanceof SensStateVariable) {
-				initExpr = new Expression(((SensStateVariable)stateVar).getInitialRateExpression());
-			}		
-			
+			StateVariable stateVar = getStateVariable(i);
+			Expression initExpr = new Expression(stateVar.getInitialRateExpression());
 			initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable);
 			initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
 			sb.append("VAR " + stateVar.getVariable().getName() + " INIT " + initExpr.flatten().infix() + ";\n");
@@ -257,14 +245,8 @@ protected void writeEquations() throws MathException, ExpressionException {
 		}
 		sb.append("RHS DIFFERENTIAL " + getStateVariableCount() + " ALGEBRAIC 0\n");
 		for (int i = 0; i < getStateVariableCount(); i++) {
-			StateVariable stateVar = (StateVariable)getStateVariable(i);
-			Expression rateExpr = null;
-			if (stateVar instanceof ODEStateVariable) {
-				rateExpr = new Expression(((ODEStateVariable)stateVar).getRateExpression());
-			} else if (stateVar instanceof SensStateVariable) {
-				rateExpr = new Expression(((SensStateVariable)stateVar).getRateExpression());
-			}	
-			
+			StateVariable stateVar = getStateVariable(i);
+			Expression rateExpr = new Expression(stateVar.getRateExpression());
 			rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
 			
 			Vector<Discontinuity> v = rateExpr.getDiscontinuities();			
@@ -282,13 +264,7 @@ protected void writeEquations() throws MathException, ExpressionException {
 		}
 	}
 	
-	if (discontinuityNameMap.size() > 0) {
-		printWriter.println("DISCONTINUITIES " + discontinuityNameMap.size());
-		for (Discontinuity od : discontinuityNameMap.keySet()) {
-			printWriter.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
-		}
-	}
-	printWriter.print(sb);
+	return sb.toString();
 }
 
 

@@ -161,7 +161,7 @@ private MultiPurposeTextPanel getVCMLPane() {
  * Return the MathDescription property value.
  * @return cbit.vcell.math.MathDescription
  */
-public cbit.vcell.math.MathDescription getMathDescription() {
+public MathDescription getMathDescription() {
 	return ivjMathDescription;
 }
 
@@ -346,7 +346,13 @@ public List<String> getAutoCompletionWords() {
 	 autoCompletionWords.add(VCML.VolumeRegionVariable);
 	 autoCompletionWords.add(VCML.VolumeVariable);
 	 autoCompletionWords.add(VCML.Steady);
-	 
+	 autoCompletionWords.add(getTemplate_Event());
+	 autoCompletionWords.add(VCML.Delay);
+	 autoCompletionWords.add(VCML.Trigger);
+	 autoCompletionWords.add(VCML.Duration);
+	 autoCompletionWords.add(VCML.EventAssignment);
+	 autoCompletionWords.add(VCML.UseValuesFromTriggerTime);
+	 	 
 	 String functions[] = {
 	 		"abs()",
 	 		"acos()",
@@ -432,6 +438,17 @@ public String getTemplate_JumpProcess() {
 		+ "\t}\n";
 }
 
+public String getTemplate_Event() {	
+	return VCML.Event + " " + VCML.BeginBlock + "\n"
+		+ "\t" + VCML.Trigger + " 0.0;\n"
+		+ "\t" + VCML.Delay + " " +  VCML.BeginBlock + "\n"
+		+ "\t\t" + VCML.UseValuesFromTriggerTime + " true\n"
+		+ "\t\t" + VCML.Duration + " 0.0;\n"
+		+ "\t" + VCML.EndBlock + "\n"
+		+ "\t" + VCML.EventAssignment + " varname 0.0;\n" 
+		+ VCML.EndBlock + "\n";
+}
+
 public JMenu getEditMenu() {
 	return getVCMLPane().createEditMenu();
 }
@@ -485,6 +502,14 @@ public static List<String> getkeywords() {
 	 keywords.add(VCML.VolumeRegionVariable);
 	 keywords.add(VCML.VolumeVariable);
 	 keywords.add(VCML.Steady);
+	 
+	 keywords.add(VCML.Event);
+	 keywords.add(VCML.Delay);
+	 keywords.add(VCML.Trigger);
+	 keywords.add(VCML.Duration);
+	 keywords.add(VCML.EventAssignment);
+	 keywords.add(VCML.UseValuesFromTriggerTime);
+
 
 	 return keywords;
 }

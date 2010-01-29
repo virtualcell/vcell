@@ -140,4 +140,11 @@ public class VCML {
 	public final static String FastSystem				= "FastSystem";
 	public final static String FastIndependent			= "FastIndependent";
 	public final static String FastDependent			= "FastDependent";
+	
+	public final static String Event = "Event";
+	public final static String UseValuesFromTriggerTime = "UseValuesFromTriggerTime";
+	public final static String Trigger = "Trigger";
+	public final static String Delay = "Delay";
+	public final static String Duration = "Duration";
+	public final static String EventAssignment = "EventAssignment";
 }

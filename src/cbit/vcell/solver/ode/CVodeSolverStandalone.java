@@ -5,10 +5,12 @@ import java.io.PrintWriter;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.MathExecutable;
 /**
  * Insert the type's description here.
@@ -29,7 +31,12 @@ public CVodeSolverStandalone(SimulationJob simulationJob, java.io.File directory
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-protected void initialize() throws SolverException {	
+protected void initialize() throws SolverException {
+	MathDescription mathDescription = getSimulationJob().getSimulation().getMathDescription();
+	if (mathDescription.hasFastSystems()) {
+		throw new SolverException("CVode solver does not support models containing fast system (algebraic constraints). Please change the solver.");		
+	}	
+	
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	super.initialize();
 

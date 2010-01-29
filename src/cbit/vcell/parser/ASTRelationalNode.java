@@ -5,6 +5,8 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import java.util.Vector;
+
 import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
@@ -469,4 +471,11 @@ public SimpleNode getRootFindingExpression() throws ExpressionException {
 	
 	return addNode;
 }
+@Override
+public void getDiscontinuities(Vector<Discontinuity> v)	throws ExpressionException {
+	Discontinuity od = new Discontinuity(new Expression(infixString(SimpleNode.LANGUAGE_DEFAULT)), new Expression(((ASTRelationalNode)this).getRootFindingExpression()));			  
+	v.add(od);
+	super.getDiscontinuities(v);
+}
+
 }

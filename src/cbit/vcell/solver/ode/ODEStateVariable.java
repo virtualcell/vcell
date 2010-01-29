@@ -6,7 +6,6 @@ package cbit.vcell.solver.ode;
 ©*/
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OdeEquation;
-import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -16,15 +15,13 @@ import cbit.vcell.solver.SimulationSymbolTable;
  * @author: John Wagner
  */
 public class ODEStateVariable extends StateVariable {
-	VolVariable variable = null;
-	Expression optimizedRateExp = null;
-	Expression initialExp = null;
+	private Expression optimizedRateExp = null;
+	private Expression initialExp = null;
 /**
  * TimeSeriesData constructor comment.
  */
 public ODEStateVariable(OdeEquation ode, SimulationSymbolTable simSymbolTable) throws ExpressionException, MathException {
 	super(ode.getVariable());
-	this.variable = (VolVariable)ode.getVariable();
 	ode.bind(simSymbolTable);
 	optimizedRateExp = ode.getFlattenedRateExpression(simSymbolTable);
 	initialExp = ode.getInitialExpression();
