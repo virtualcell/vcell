@@ -281,7 +281,7 @@ private String writeEvents(HashMap<Discontinuity, String> discontinuityNameMap) 
   		if (delay != null) {
 	  		Expression durationExpression = delay.getDurationExpression();
 	  		durationExpression = MathUtilities.substituteFunctions(durationExpression, varsSymbolTable).flatten();
-	  		sb.append("DELAY " + delay.useValuesFromTriggerTime() + " " + durationExpression.infix() + "\n");
+	  		sb.append("DELAY " + delay.useValuesFromTriggerTime() + " " + durationExpression.infix() + ";\n");
   		}
   		sb.append("EVENTASSIGNMENTS " + event.getNumEventAssignments() + "\n");
   		Iterator<EventAssignment> iter2 = event.getEventAssignments();
@@ -292,7 +292,7 @@ private String writeEvents(HashMap<Discontinuity, String> discontinuityNameMap) 
   			Variable assignmentTarget = eventAssignment.getVariable();
   			for (int i = 0; i < fieldStateVariables.size(); i ++) {
   				if (assignmentTarget.getName().equals(fieldStateVariables.get(i).getVariable().getName())) {
-  					sb.append(i + " " + assignmentExpression.infix() + "\n");
+  					sb.append(i + " " + assignmentExpression.infix() + ";\n");
   					break;
   				}
   			}
