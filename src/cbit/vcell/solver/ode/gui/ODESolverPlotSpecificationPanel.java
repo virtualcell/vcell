@@ -1,20 +1,33 @@
 package cbit.vcell.solver.ode.gui;
 import java.awt.geom.Point2D;
-import java.util.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.util.*;
-import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.TextFieldAutoCompletion;
-import cbit.plot.*;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.ode.*;
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
 
 import org.vcell.util.BeanUtils;
 
+import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.TextFieldAutoCompletion;
+import cbit.plot.Plot2D;
+import cbit.plot.PlotData;
+import cbit.plot.SingleXPlot2D;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.model.ReservedSymbol;
@@ -24,6 +37,11 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.util.ColumnDescription;
 
 /**
  * Insert the type's description here.  What we want to do with this
@@ -58,8 +76,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private String[] plottableNames = new String[0];
 	private int fieldXIndex = -1;
 	private int[] fieldYIndices = new int[0];
-	private cbit.plot.SingleXPlot2D fieldSingleXPlot2D = null;
-	private cbit.plot.Plot2D fieldPlot2D = null;
+	private Plot2D fieldPlot2D = null;
 	private java.lang.String[] resultSetColumnNames = null;
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
 	private JButton ivjDeleteFunctionButton = null;
@@ -356,9 +373,7 @@ private void connEtoC4(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		if(getOdeSolverResultSet().isMultiTrialData())
-			this.refreshVisiblePlots(this.getPlot2D());
-		else this.refreshVisiblePlots(this.getSingleXPlot2D());
+		refreshVisiblePlots(getPlot2D());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -623,22 +638,10 @@ private void deleteFunction(int ySelection) {
  */
 private void enableLogSensitivity() throws ExpressionException {
 
-	boolean bEnabled = true;
-	
-	if (getSensitivityParameter() != null) {
-		getLogSensCheckbox().setEnabled(bEnabled);
-		getMaxLabel().setEnabled(bEnabled);		
-		getMinLabel().setEnabled(bEnabled);
-		getCurLabel().setEnabled(bEnabled);		
-		getSensitivityParameterSlider().setEnabled(bEnabled);
-		getJLabelSensitivityParameter().setEnabled(bEnabled);	
-	} else {
-		getLogSensCheckbox().setEnabled(!bEnabled);
-		getMaxLabel().setEnabled(!bEnabled);		
-		getMinLabel().setEnabled(!bEnabled);
-		getCurLabel().setEnabled(!bEnabled);		
-		getSensitivityParameterSlider().setEnabled(!bEnabled);
-		getJLabelSensitivityParameter().setEnabled(!bEnabled);
+	if (getSensitivityParameter() == null) {
+		getLogSensCheckbox().setVisible(false);
+		getSensitivityParameterPanel().setVisible(false);
+		getJLabelSensitivityParameter().setVisible(false);
 	}
 }
 
@@ -703,7 +706,6 @@ private javax.swing.JLabel getCurLabel() {
 			ivjCurLabel.setText("Value");
 			ivjCurLabel.setBackground(java.awt.Color.lightGray);
 			ivjCurLabel.setForeground(java.awt.Color.black);
-			ivjCurLabel.setEnabled(true);
 			ivjCurLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}
 			// user code end
@@ -1007,7 +1009,6 @@ private javax.swing.JCheckBox getLogSensCheckbox() {
 			ivjLogSensCheckbox = new javax.swing.JCheckBox();
 			ivjLogSensCheckbox.setName("LogSensCheckbox");
 			ivjLogSensCheckbox.setText("Log Sensitivity");
-			ivjLogSensCheckbox.setEnabled(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1030,7 +1031,6 @@ private javax.swing.JLabel getMaxLabel() {
 			ivjMaxLabel = new javax.swing.JLabel();
 			ivjMaxLabel.setName("MaxLabel");
 			ivjMaxLabel.setText("1");
-			ivjMaxLabel.setEnabled(true);
 			ivjMaxLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			ivjMaxLabel.setForeground(java.awt.Color.black);
 			// user code begin {1}
@@ -1056,7 +1056,6 @@ private javax.swing.JLabel getMinLabel() {
 			ivjMinLabel.setName("MinLabel");
 			ivjMinLabel.setText("0");
 			ivjMinLabel.setBackground(java.awt.Color.lightGray);
-			ivjMinLabel.setEnabled(true);
 			ivjMinLabel.setForeground(java.awt.Color.black);
 			// user code begin {1}
 			// user code end
@@ -1224,7 +1223,6 @@ private javax.swing.JSlider getSensitivityParameterSlider() {
 			ivjSensitivityParameterSlider.setValue(25);
 			ivjSensitivityParameterSlider.setPreferredSize(new java.awt.Dimension(200, 16));
 			ivjSensitivityParameterSlider.setMaximum(50);
-			ivjSensitivityParameterSlider.setEnabled(true);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1259,17 +1257,6 @@ private double[] getSensValues(ColumnDescription colDesc) throws ExpressionExcep
 		return null;
 	}
 }
-
-
-/**
- * Gets the singleXPlot2D property (cbit.plot.SingleXPlot2D) value.
- * @return The singleXPlot2D property value.
- * @see #setSingleXPlot2D
- */
-public cbit.plot.SingleXPlot2D getSingleXPlot2D() {
-	return fieldSingleXPlot2D;
-}
-
 
 /**
  * Gets the symbolTable property (cbit.vcell.parser.SymbolTable) value.
@@ -1565,9 +1552,12 @@ private void refreshVisiblePlots(Plot2D plot2D) {
 		for (int i=0;i<getYIndices().length;i++) {
 			visiblePlots[getYIndices()[i]] = true;
 		}
-		if((getOdeSolverResultSet()!= null) && getOdeSolverResultSet().isMultiTrialData())
+		if((getOdeSolverResultSet()!= null) && getOdeSolverResultSet().isMultiTrialData()) {
 			plot2D.setVisiblePlots(visiblePlots,true);
-		else plot2D.setVisiblePlots(visiblePlots,false);
+		}
+		else {
+			plot2D.setVisiblePlots(visiblePlots,false);
+		}
 	}
 }
 
@@ -1727,7 +1717,8 @@ private void regeneratePlot2D() throws ExpressionException {
 			}
 			SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
 			refreshVisiblePlots(plot2D);
-			setSingleXPlot2D(plot2D); //here fire "singleXPlot2D" event, ODEDataViewer's event handler listens to it.
+			//here fire "singleXPlot2D" event, ODEDataViewer's event handler listens to it.
+			setPlot2D(plot2D);
 		}
 	}// end of none MultitrialData
 	else // multitrial data
@@ -1786,7 +1777,7 @@ public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
 	ODESolverResultSet oldValue = fieldOdeSolverResultSet;
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	if (odeSolverResultSet==null){
-		setSingleXPlot2D(null);
+		setPlot2D(null);
 		return;
 	}
 	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
@@ -1860,19 +1851,6 @@ private void setPlottableNames(java.lang.String[] newPlottableNames) {
 private void setResultSetColumnNames(java.lang.String[] newResultSetColumnNames) {
 	resultSetColumnNames = newResultSetColumnNames;
 }
-
-
-/**
- * Sets the singleXPlot2D property (cbit.plot.SingleXPlot2D) value.
- * @param singleXPlot2D The new value for the property.
- * @see #getSingleXPlot2D
- */
-public void setSingleXPlot2D(SingleXPlot2D singleXPlot2D) {
-	SingleXPlot2D oldValue = fieldSingleXPlot2D;
-	fieldSingleXPlot2D = singleXPlot2D;
-	firePropertyChange("singleXPlot2D", oldValue, singleXPlot2D);
-}
-
 
 /**
  * Sets the symbolTable property (cbit.vcell.parser.SymbolTable) value.
@@ -2057,11 +2035,11 @@ private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws Expre
 	}
 }
 
-public cbit.plot.Plot2D getPlot2D() {
+public Plot2D getPlot2D() {
 	return fieldPlot2D;
 }
 
-public void setPlot2D(cbit.plot.Plot2D plot2D) {
+public void setPlot2D(Plot2D plot2D) {
 	//amended March 29, 2007. To fire event to ODEDataViewer.
 	Plot2D oldValue = this.fieldPlot2D;
 	this.fieldPlot2D = plot2D;

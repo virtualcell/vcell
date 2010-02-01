@@ -87,7 +87,7 @@ public VCSimulationIdentifier getVcSimulationIdentifier() {
 private void initialize(DataViewer dataViewer) {
 	// create frame
 	setFrame(new JInternalFrameEnhanced("SIMULATION: " + getSimulation().getName(), true, true, true, true));
-	getFrame().setContentPane(dataViewer);
+	getFrame().add(dataViewer);
 	getFrame().setSize(850, 650);
 	getSimulation().addPropertyChangeListener(pcl);
 }
