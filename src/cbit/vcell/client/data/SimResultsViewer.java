@@ -1,18 +1,25 @@
 package cbit.vcell.client.data;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Hashtable;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.gui.EmptyBorderBean;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.server.DataManager;
@@ -157,13 +164,16 @@ private void initialize() throws DataAccessException {
 	// if necessarry, create parameter choices panel and wire it up
 	if (getSimulation().getScanCount() > 1) {
 		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		EmptyBorderBean ebb = new EmptyBorderBean();
-		ebb.setInsets(new java.awt.Insets(4,2,4,2));
-		JLabel label = new JLabel("View data for parameter values: ");
-		label.setBorder(ebb);
-		panel.add(label);
+		panel.setLayout(new BorderLayout(5, 5));
+		panel.setBorder(BorderFactory.createEtchedBorder());
+		
+		JLabel label = new JLabel("<html><u><b>Choose Parameter Values</b></u></html>");
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		panel.add(label, BorderLayout.NORTH);
+		
 		String[] scanParams = getSimulation().getMathOverrides().getScannedConstantNames();
+		Arrays.sort(scanParams);
 		javax.swing.event.ListSelectionListener lsl = new javax.swing.event.ListSelectionListener() {
 			public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
@@ -171,6 +181,8 @@ private void initialize() throws DataAccessException {
 				}
 			}
 		};
+		JPanel tablePanel = new JPanel();
+		tablePanel.setLayout(new BoxLayout(tablePanel, BoxLayout.X_AXIS));
 		for (int i = 0; i < scanParams.length; i++){
 			Constant[] scanConstants = getSimulation().getMathOverrides().getConstantArraySpec(scanParams[i]).getConstants();
 			String[][] values = new String[scanConstants.length][1]; 
@@ -203,13 +215,25 @@ private void initialize() throws DataAccessException {
 			JScrollPane scr = new JScrollPane(table);
 			JPanel p = new JPanel();
 			scr.setPreferredSize(new java.awt.Dimension (100, Math.min(150, table.getPreferredSize().height + table.getTableHeader().getPreferredSize().height + 5)));
-			ebb = new EmptyBorderBean();
-			ebb.setInsets(new java.awt.Insets(4,2,4,2));
-			p.setBorder(ebb);
 			p.setLayout(new java.awt.BorderLayout());
 			p.add(scr, java.awt.BorderLayout.CENTER);
-			panel.add(p);
+			p.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+			tablePanel.add(p);
 		}
+		panel.add(tablePanel, BorderLayout.CENTER);
+				
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JButton button = new JButton("Time Plot with Multiple Parameter Value Sets");
+		buttonPanel.add(button);
+		panel.add(buttonPanel, BorderLayout.SOUTH);
+		
+		button.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				mainViewer.showTimePlotMultipleScans(dataManager);
+			}
+		});
+
 		setParamChoicesPanel(panel);
 	}
 
@@ -334,4 +358,5 @@ private void updateScanParamChoices(){
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 	}
 }
+
 }

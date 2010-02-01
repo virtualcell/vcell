@@ -80,6 +80,7 @@ import cbit.rmi.event.DataJobSender;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -116,7 +117,7 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
-import cbit.vcell.simdata.gui.PdeTimePlotPanel;
+import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
@@ -2367,7 +2368,7 @@ private void showTimePlot() {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
-				PdeTimePlotPanel pdeTimePlotPanel = new PdeTimePlotPanel(PDEDataViewer.this, getSimulation(), singlePointSSOnly, tsJobResultsNoStats);
+				PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(PDEDataViewer.this, getSimulation(), singlePointSSOnly, tsJobResultsNoStats);
 				final JInternalFrame frame = new JInternalFrame("Time Plot", true, true, true, true);
 				frame.add(pdeTimePlotPanel);
 				frame.setSize(900, 550);
@@ -2678,6 +2679,12 @@ public void addDataJobListener(DataJobListener listener) {
 
 public void removeDataJobListener(DataJobListener listener) {
 	dataJobListenerList.remove(listener);
+	
+}
+
+@Override
+public void showTimePlotMultipleScans(DataManager dataManager) {
+	// TODO Auto-generated method stub
 	
 }
 }

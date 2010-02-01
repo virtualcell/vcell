@@ -1,14 +1,21 @@
 package cbit.vcell.client.data;
-import javax.swing.*;
-import cbit.rmi.event.*;
+import javax.swing.JPanel;
+
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.export.ExportMonitorPanel;
 /**
  * Insert the type's description here.
  * Creation date: (6/14/2004 9:48:35 PM)
  * @author: Ion Moraru
  */
-public abstract class DataViewer extends JPanel implements ExportListener,cbit.rmi.event.DataJobListener {
+public abstract class DataViewer extends JPanel implements ExportListener, DataJobListener {
 	public static final String PROP_SIM_MODEL_INFO = "simulationModelInfo";
-	private cbit.vcell.client.DataViewerManager fieldDataViewerManager = null;
+	private DataViewerManager fieldDataViewerManager = null;
 	private SimulationModelInfo fieldSimulationModelInfo = null;
 
 	/**
@@ -29,7 +36,7 @@ public void dataJobMessage(DataJobEvent dje) {
  * Creation date: (6/15/2004 1:55:39 AM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void exportMessage(cbit.rmi.event.ExportEvent event) {
+public void exportMessage(ExportEvent event) {
 	getExportMonitorPanel().addExportEvent(event, event.getVCDataIdentifier().getID());
 }
 
@@ -39,7 +46,7 @@ public void exportMessage(cbit.rmi.event.ExportEvent event) {
  * @return The dataViewerManager property value.
  * @see #setDataViewerManager
  */
-public cbit.vcell.client.DataViewerManager getDataViewerManager() {
+public DataViewerManager getDataViewerManager() {
 	return fieldDataViewerManager;
 }
 
@@ -48,7 +55,7 @@ public cbit.vcell.client.DataViewerManager getDataViewerManager() {
  * Method generated to support the promotion of the exportMonitorPanel attribute.
  * @return cbit.vcell.export.ExportMonitorPanel
  */
-public abstract cbit.vcell.export.ExportMonitorPanel getExportMonitorPanel();
+public abstract ExportMonitorPanel getExportMonitorPanel();
 
 
 /**
@@ -67,8 +74,8 @@ public SimulationModelInfo getSimulationModelInfo() {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getDataViewerManager
  */
-public void setDataViewerManager(cbit.vcell.client.DataViewerManager dataViewerManager) throws java.beans.PropertyVetoException {
-	cbit.vcell.client.DataViewerManager oldValue = fieldDataViewerManager;
+public void setDataViewerManager(DataViewerManager dataViewerManager) throws java.beans.PropertyVetoException {
+	DataViewerManager oldValue = fieldDataViewerManager;
 	fieldDataViewerManager = dataViewerManager;
 	firePropertyChange("dataViewerManager", oldValue, dataViewerManager);
 }
@@ -84,4 +91,6 @@ public void setSimulationModelInfo(SimulationModelInfo simulationModelInfo) {
 	fieldSimulationModelInfo = simulationModelInfo;
 	firePropertyChange(PROP_SIM_MODEL_INFO, oldValue, simulationModelInfo);
 }
+
+public void showTimePlotMultipleScans(DataManager dataManager){};
 }

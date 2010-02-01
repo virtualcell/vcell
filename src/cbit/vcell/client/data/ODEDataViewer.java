@@ -3,9 +3,18 @@ import java.awt.AWTEventMulticaster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.vcell.util.document.VCDataIdentifier;
+import javax.swing.JOptionPane;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
+import org.vcell.util.gui.JInternalFrameEnhanced;
+
+import cbit.plot.Plot2D;
 import cbit.plot.PlotPane;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.server.DataManager;
 import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -65,8 +74,6 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	try {
 		//amended March 29,2007. to get singleXPlot2D or plot2D from SepcificationPanel to display in plotPanel
 		//if the data are time series, we use singleXPlot2D. if the data are histograms, we use plot2D.
-		if (arg1.getPropertyName().equals("singleXPlot2D")) 
-			getPlotPane1().setPlot2D(getODESolverPlotSpecificationPanel1().getSingleXPlot2D());
 		if (arg1.getPropertyName().equals("Plot2D")) 
 			getPlotPane1().setPlot2D(getODESolverPlotSpecificationPanel1().getPlot2D());
 	} catch (java.lang.Throwable ivjExc) {
@@ -335,5 +342,24 @@ public void iniHistogramDisplay()
 	{
 		getODESolverPlotSpecificationPanel1().getXAxisComboBox().setEnabled(true);
 	}
+}
+
+@Override
+public void showTimePlotMultipleScans(DataManager dataManager) {
+	int[] yIndices = getODESolverPlotSpecificationPanel1().getYIndices();
+	if (yIndices.length > 1) {
+		DialogUtils.showErrorDialog(this, "Please choose only one variable to do time plot with multiple parameter value sets!");
+		return;
+	}
+	Plot2D plot2d = getODESolverPlotSpecificationPanel1().getPlot2D();
+	String[] plotNames = plot2d.getPlotNames();
+	String varname = plotNames[yIndices[0]];
+	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(varname, getSimulation(), dataManager);
+	final JInternalFrameEnhanced frame = new JInternalFrameEnhanced("Time Plot with multiple parameter value sets for Variable [" + varname + "]", 
+			true, true, true, true);
+	frame.add(panel);
+	frame.setSize(600, 600);
+	BeanUtils.centerOnComponent(frame, this);
+	DocumentWindowManager.showFrame(frame, (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(this));	
 }
 }
