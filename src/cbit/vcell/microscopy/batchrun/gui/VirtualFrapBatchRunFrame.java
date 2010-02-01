@@ -11,10 +11,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -59,7 +61,7 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
  * @author Tracy LI
  * Created in Dec 2009.
  */
-public class VirtualFrapBatchRunFrame extends JFrame
+public class VirtualFrapBatchRunFrame extends JFrame 
 {
 	//the application has one local workspace and one FRAP workspace
 	private LocalWorkspace localWorkspace = null;
@@ -82,6 +84,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	private static final String CLOSE_ACTION_COMMAND = "Close";
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
+	private static final String VIEW_JOB_ACTION_COMMAND = "Job Status Panel";
 //	private static final String MAIN_WINDOW_ACTION_COMMAND = "Main Window";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
@@ -90,6 +93,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
+	private static final JCheckBoxMenuItem mViewJob = new JCheckBoxMenuItem(VIEW_JOB_ACTION_COMMAND);
 //	private static final JMenuItem mMainWin = new JMenuItem(MAIN_WINDOW_ACTION_COMMAND);
 
 	public static JMenuBar mb = null;
@@ -151,6 +155,17 @@ public class VirtualFrapBatchRunFrame extends JFrame
 						VirtualFrapBatchRunFrame.this.dispose();
 					}
 				}
+				else if(arg.equals(VIEW_JOB_ACTION_COMMAND))
+				{
+					if(mViewJob.isSelected())
+					{
+						getBatchRunDisplayPanel().showJobStatusPanel();
+					}
+					else
+					{
+						getBatchRunDisplayPanel().hideJobStatusPanel();
+					}
+				}
 				// Help menu
 				else if(arg.equals(HELPTOPICS_ACTION_COMMAND))
 				{
@@ -200,7 +215,15 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  	   			menuHandler.actionPerformed(new ActionEvent(mHelpTopics,0,HELPTOPICS_ACTION_COMMAND));
 		  	   			break;
 			  	   	case ToolBar.BUT_RUN:
-			  	   		System.out.println("Batch run command clicked.");
+			  	   		MessagePanel msgPanel = new MessagePanel("Start running c:\\VirtualMicroscopy\\test2.vfrap", false);
+			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
+			  	   		
+			  	   		msgPanel = new MessagePanel("Saving information", true);
+			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
+			  	   		int progCounter = 0;
+			  	   		msgPanel.setProgress(10);
+
+//			  	   		msgPanel.setProgressCompleted();
 		  	   			break;
 		  	   		default:
 		                break;
@@ -297,7 +320,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	  {
 		  if(displayPanel == null)
 		  {
-			  displayPanel = new BatchRunDisplayPanel();
+			  displayPanel = new BatchRunDisplayPanel(this);
 			  displayPanel.setBatchRunWorkspace(batchRunWorkspace);
 		  }
 		  return displayPanel;
@@ -329,13 +352,14 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    menuClose.addActionListener(menuHandler);
 	    fileMenu.add(menuClose);
 
-	    //Tools Menu
-//	    JMenu toolsMenu =new JMenu("Tools");
-//	    toolsMenu.setMnemonic('T');
-//	    mb.add(toolsMenu);
-//
-//	    mMainWin.addActionListener(menuHandler);
-//	    toolsMenu.add(mMainWin);
+	    //View Menu
+	    JMenu viewMenu =new JMenu("View");
+	    viewMenu.setMnemonic('V');
+	    mb.add(viewMenu);
+
+	    mViewJob.setSelected(true);
+	    mViewJob.addActionListener(menuHandler);
+	    viewMenu.add(mViewJob);
 	    
 	    //Help Menu
 	    JMenu helpMenu =new JMenu("Help");
@@ -353,6 +377,11 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    
 	    setJMenuBar(mb);
 	  } // end of setup menu
+	  
+	  public void setViewJobMenuSelected(boolean isSelected)
+	  {
+		  mViewJob.setSelected(isSelected);
+	  }
 	  
 	  /**
 	  * Before shuting down the running application, a good

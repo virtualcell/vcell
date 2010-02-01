@@ -324,7 +324,15 @@ public abstract class AnnotatedImageDataset {
 			propertyChangeSupport.firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE, oldDisplayedROI, currentlyDisplayedROI);
 		}
 	}
-
+	
+	//have to use this method, because the when switching between different frapStudies,
+	//the old and current displayedROI are the same(e.g study1@cellROI --> study2@cellROI --> study1@cellROI),it will not fire property change.
+	//however, we want to change the image when shift from one frapStudy to another.
+	public void setCurrentlyDisplayedROIForBatchRun(ROI argCurrentlyDisplayedROI)
+	{
+		this.currentlyDisplayedROI = argCurrentlyDisplayedROI;
+		propertyChangeSupport.firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITHOUT_SAVE, null, currentlyDisplayedROI);
+	}
 	
 	public void setImageDataset(ImageDataset newImgDataset)
 	{

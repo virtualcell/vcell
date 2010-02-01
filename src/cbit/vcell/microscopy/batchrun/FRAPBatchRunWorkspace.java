@@ -68,12 +68,15 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	public void clearWorkingSingleWorkspace()
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
-		getWorkingSingleWorkspace().setFrapStudy(newFrapStudy, true);
+		getWorkingSingleWorkspace().setFrapStudy(newFrapStudy, true, true);
+		String oldString = "Before clear all";
+		String newString = "After clear all";
+		firePropertyChange(PROPERTY_CHANGE_BATCHRUN_DISPLAY_IMG, oldString, newString);
 	}
 	
 	public void setWorkingFRAPStudy(FRAPStudy fStudy)
 	{
-		getWorkingSingleWorkspace().setFrapStudy(fStudy, true);
+		getWorkingSingleWorkspace().setFrapStudy(fStudy, true, true);
 	}
 	
 	public void addFrapStudy(FRAPStudy newFrapStudy)
@@ -89,11 +92,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	public void updateDisplayForTreeSelection(Object selection)
 	{
 		String oldString = null;
-		if(displaySelection == null)
-		{
-			oldString = "";
-		}
-		else if (displaySelection instanceof File)
+		if (displaySelection instanceof File)
 		{
 			oldString =  ((File)displaySelection).getAbsolutePath();
 		}

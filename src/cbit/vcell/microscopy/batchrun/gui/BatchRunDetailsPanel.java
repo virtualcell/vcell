@@ -288,7 +288,10 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
         else if(source == delAllButton)
         {
         	System.out.println("Delete all button pressed.");
+        	//clear tree selection
         	frapBatchRunViewTree.clear();
+        	//remove the data & displayed image
+        	getBatchRunWorkspace().clearWorkingSingleWorkspace();
         }
 	}
 	

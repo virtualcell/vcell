@@ -14,6 +14,7 @@ import java.net.URL;
  */
 public class JobStatusPanel extends JPanel implements ActionListener
 {
+	public static final String STATUSPANEL_PROPERTY_CHANGE = "STATUSPANEL_PROPERTY";
     public URL[] iconFiles = {getClass().getResource("/images/close.gif"),
     						  getClass().getResource("/images/clear.gif")};
     
@@ -22,18 +23,19 @@ public class JobStatusPanel extends JPanel implements ActionListener
     private ImageIcon[] icons = new ImageIcon[iconFiles.length];
     private JButton closeButton, clearButton;
 
-    private JTextArea statusText = null;
+    private JPanel statusPanel = null;
     private JScrollPane statusPane = null;
     private JToolBar toolbar = null;
+    private BatchRunDisplayPanel parent = null;
 
-    public JobStatusPanel()
+    public JobStatusPanel(BatchRunDisplayPanel arg_parent)
     {
         super();
-        setLayout(new BorderLayout());
+        parent = arg_parent;
         
+        setLayout(new BorderLayout());
         add(getToolBar(),BorderLayout.WEST);
         add(getStatusPane(),BorderLayout.CENTER);
-        showMessage("\n"+"Virtual FRAP Batch Run Status: NO_BatchRun_Existed.");
     } //constructor
     
     public JToolBar getToolBar()
@@ -67,24 +69,27 @@ public class JobStatusPanel extends JPanel implements ActionListener
 
     public JScrollPane getStatusPane()
     {
-    	if(statusPane ==  null)
+    	if(statusPanel ==  null)
     	{
-    		statusText=new JTextArea();
-            statusText.setEditable(false);
-            statusPane=new JScrollPane(statusText);
+    		statusPanel=new JPanel();
+    		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
+    		statusPanel.setBackground(Color.white);
+            statusPane=new JScrollPane(statusPanel);
     	}
     	return statusPane;
     }
     
-    public void showMessage(String info)
+    public void appendMessage(JPanel msgPanel)
     {
-        statusText.append(info);
-        statusText.setCaretPosition(statusText.getDocument().getLength());
+    	msgPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        statusPanel.add(msgPanel);
+        statusPanel.updateUI();
     }
 
     public void clearMessage()
     {
-        statusText.setText("");
+        statusPanel.removeAll();
+        statusPanel.updateUI();
     }
 
     public void actionPerformed(ActionEvent e)
@@ -92,7 +97,10 @@ public class JobStatusPanel extends JPanel implements ActionListener
         Object source = e.getSource();
   	    if (source == closeButton)
 	    {
-            //make status panel invisible
+  	    	Boolean wasVisible = new Boolean(true);
+  	    	Boolean isVisible = new Boolean(false);
+            parent.hideJobStatusPanel();
+            firePropertyChange(STATUSPANEL_PROPERTY_CHANGE, wasVisible, isVisible );
         }
         else if(source == clearButton)
         {
