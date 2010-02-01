@@ -22,6 +22,7 @@ public class FRAPSingleWorkspace extends FRAPWorkspace implements PropertyChange
 	//Properties that are used in VFRAP
 	public static final String PROPERTY_CHANGE_FRAPSTUDY_NEW = "FRAPSTUDY_NEW";
 	public static final String PROPERTY_CHANGE_FRAPSTUDY_UPDATE = "FRAPSTUDY_UPDATE";
+	public static final String PROPERTY_CHANGE_FRAPSTUDY_BATCHRUN = "FRAPSTUDY_BATCHRUN";
 	public static final String FRAPDATA_VERIFY_INFO_PROPERTY = "FRAPDATA_VERIFY_INFO_PROPERTY";
 	public static final String PROPERTY_CHANGE_EST_OFF_RATE = "EST_OFF_RATE";
 	public static final String PROPERTY_CHANGE_EST_ON_RATE = "EST_ON_RATE";
@@ -44,6 +45,11 @@ public class FRAPSingleWorkspace extends FRAPWorkspace implements PropertyChange
 	}
 	
 	public void setFrapStudy(FRAPStudy arg_frapStudy, boolean bNew) {
+		setFrapStudy(arg_frapStudy, bNew, false);
+	}
+
+	public void setFrapStudy(FRAPStudy arg_frapStudy, boolean bNew, boolean bFromBatchRun)
+	{
 		FRAPStudy oldFrapStudy = getWorkingFrapStudy();
 		if(oldFrapStudy != null)
 		{
@@ -54,16 +60,23 @@ public class FRAPSingleWorkspace extends FRAPWorkspace implements PropertyChange
 			arg_frapStudy.addPropertyChangeListener(this);
 		}
 		this.frapStudy = arg_frapStudy;
-		if(bNew)
+		if(bFromBatchRun)
 		{
-			firePropertyChange(PROPERTY_CHANGE_FRAPSTUDY_NEW, oldFrapStudy, arg_frapStudy);
+			firePropertyChange(PROPERTY_CHANGE_FRAPSTUDY_BATCHRUN, oldFrapStudy, arg_frapStudy);
 		}
 		else
 		{
-			firePropertyChange(PROPERTY_CHANGE_FRAPSTUDY_UPDATE, oldFrapStudy, arg_frapStudy);
+			if(bNew)
+			{
+				firePropertyChange(PROPERTY_CHANGE_FRAPSTUDY_NEW, oldFrapStudy, arg_frapStudy);
+			}
+			else
+			{
+				firePropertyChange(PROPERTY_CHANGE_FRAPSTUDY_UPDATE, oldFrapStudy, arg_frapStudy);
+			}
 		}
 	}
-
+	
 	public void updateImages(DataVerifyInfo dataVerifyInfo)
 	{
 		FRAPData fData = null;

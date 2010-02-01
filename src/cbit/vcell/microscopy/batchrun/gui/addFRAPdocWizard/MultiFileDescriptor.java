@@ -84,7 +84,7 @@ public class MultiFileDescriptor extends WizardPanelDescriptor {
     			{
 					FRAPStudy newFRAPStudy = null;
 
-//					newFRAPStudy = getFrapWorkspace().loadFRAPDataFromMultipleFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
+					newFRAPStudy = getFrapWorkspace().loadFRAPDataFromMultipleFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
 					isFileLoaded = true;
 					
 					//for all loaded files
@@ -99,7 +99,7 @@ public class MultiFileDescriptor extends WizardPanelDescriptor {
     			{
     				FRAPStudy newFRAPStudy = (FRAPStudy)hashTable.get(FRAPStudyPanel.NEW_FRAPSTUDY_KEY);
     				//setFrapStudy fires property change, so we have to put it in Swing thread.
-//    				getFrapWorkspace().setFrapStudy(newFRAPStudy, true);
+    				getFrapWorkspace().setWorkingFRAPStudy(newFRAPStudy);
     				
     				VirtualFrapLoader.mf.setMainFrameTitle("");
     				VirtualFrapMainFrame.updateProgress(0);

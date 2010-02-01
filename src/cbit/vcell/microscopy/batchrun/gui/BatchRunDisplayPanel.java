@@ -9,6 +9,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Hashtable;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -31,24 +32,28 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 {
 	public final static String DISPLAY_PARAM_ID = "DISPLAY_PARAM";
 	public final static String DISPLAY_IMG_ID = "DISPLAY_IMG";
+	private final static int DEFAULT_DIVIDER_LOCATION = Math.round(Toolkit.getDefaultToolkit().getScreenSize().height*1/2);
+	private final static int DIVIDER_MAX_LOCATION = Toolkit.getDefaultToolkit().getScreenSize().height;
 	private JSplitPane rightSplit = null;
 	private FRAPDataPanel frapDataPanel = null;
 	private JPanel topDisplayPanel = null;
 	private BatchRunResultsPanel resultsPanel = null;
 	private JobStatusPanel jobStatusPanel = null;
+	private VirtualFrapBatchRunFrame parentFrame = null;
 	//batch run workspace
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	
 	//constructor
-	public BatchRunDisplayPanel()
+	public BatchRunDisplayPanel(JFrame arg_parentFrame)
 	{
 		super();
 	    rightSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getTopDisplayPanel(), getJobStatusPanel());
 	    rightSplit.setDividerSize(2);
-	    rightSplit.setDividerLocation(Math.round(Toolkit.getDefaultToolkit().getScreenSize().height*1/2));
+	    rightSplit.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
 	    setLayout(new BorderLayout());
 	    add(rightSplit, BorderLayout.CENTER);
 	    setBorder(new EmptyBorder(0,0,0,0));
+	    parentFrame = (VirtualFrapBatchRunFrame)arg_parentFrame;
 	    //addMouseListener(th);
 	    setVisible(true);
 	}
@@ -132,11 +137,22 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 	{
 		if(jobStatusPanel == null)
 		{
-			jobStatusPanel = new JobStatusPanel();
+			jobStatusPanel = new JobStatusPanel(this);
+			jobStatusPanel.addPropertyChangeListener(this);
 		}
 		return jobStatusPanel;
 	}
 	
+	public void showJobStatusPanel()
+	{
+		rightSplit.setBottomComponent(getJobStatusPanel());
+		rightSplit.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
+	}
+	public void hideJobStatusPanel()
+	{
+//		rightSplit.setDividerLocation(DIVIDER_MAX_LOCATION);
+		rightSplit.setBottomComponent(null);
+	}
 	public FRAPBatchRunWorkspace getBatchRunWorkspace() {
 		return batchRunWorkspace;
 	}
@@ -163,6 +179,10 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 		{
 			((CardLayout)topDisplayPanel.getLayout()).show(topDisplayPanel, DISPLAY_PARAM_ID);
 		}
+		else if(evt.getPropertyName().equals(JobStatusPanel.STATUSPANEL_PROPERTY_CHANGE))
+		{
+			((VirtualFrapBatchRunFrame)parentFrame).setViewJobMenuSelected(false);
+		}
 	}
 	
 	public static void main(java.lang.String[] args) {
@@ -173,7 +193,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 		    	throw new RuntimeException(e.getMessage(),e);
 		    }
 			javax.swing.JFrame frame = new javax.swing.JFrame();
-			BatchRunDisplayPanel aPanel = new BatchRunDisplayPanel();
+			BatchRunDisplayPanel aPanel = new BatchRunDisplayPanel(frame);
 			frame.add(aPanel);
 			frame.pack();
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {

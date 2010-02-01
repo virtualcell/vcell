@@ -27,6 +27,7 @@ import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
+import cbit.vcell.microscopy.FRAPData.OriginalGlobalScaleInfo;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
@@ -77,16 +78,17 @@ public class BatchRunROIImgPanel extends JPanel implements PropertyChangeListene
 	
 	public void refreshUI()
 	{
-		
-		if(getBatchRunWorkspace().getWorkingFrapStudy() != null && getBatchRunWorkspace().getWorkingFrapStudy().getFrapData() != null)
+		FRAPStudy workingFrapStudy = getBatchRunWorkspace().getWorkingFrapStudy();
+		if(workingFrapStudy != null && workingFrapStudy.getFrapData() != null)
 		{
-			FRAPData fData = getBatchRunWorkspace().getWorkingFrapStudy().getFrapData();
+			FRAPData fData = workingFrapStudy.getFrapData();
+			OriginalGlobalScaleInfo originalGlobalScaleInfo = fData.getOriginalGlobalScaleInfo();
 			centerPanel.getOverlayEditorPanelJAI().setImages(
 					(fData==null?null:fData.getImageDataset()),true,
-					(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
-					(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+					(fData==null || originalGlobalScaleInfo == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:originalGlobalScaleInfo.originalScaleFactor),
+					(fData==null || originalGlobalScaleInfo == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:originalGlobalScaleInfo.originalOffsetFactor));
 			centerPanel.getOverlayEditorPanelJAI().setRoiSouceData(fData);
-			centerPanel.getOverlayEditorPanelJAI().setROI(getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+			centerPanel.getOverlayEditorPanelJAI().setROI(workingFrapStudy.getFrapData().getCurrentlyDisplayedROI());
 		}
 	}
 	

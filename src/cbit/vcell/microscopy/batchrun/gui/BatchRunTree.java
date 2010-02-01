@@ -30,8 +30,6 @@ public class BatchRunTree extends JTree {
     public BatchRunTree() 
     {
 		//set up tree
-		FRAP_BATCHRUN_DOC_NODE.add(new DefaultMutableTreeNode(new File("c:\\downloads\\file1")));
-		FRAP_BATCHRUN_DOC_NODE.add(new DefaultMutableTreeNode(new File("c:\\downloads\\file2")));
 		FRAP_BATCHRUN_RESULT_NODE.add(new DefaultMutableTreeNode(new String("Completed on Jan 25 2010, 10:15am")));
 	    FRAP_BATCHRUN_NODE.add(FRAP_BATCHRUN_DOC_NODE);
 	    FRAP_BATCHRUN_NODE.add(FRAP_BATCHRUN_RESULT_NODE);

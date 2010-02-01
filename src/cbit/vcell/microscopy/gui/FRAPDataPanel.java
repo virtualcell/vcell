@@ -81,7 +81,8 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 		}
 		else if (e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW) ||
-				e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE))
+				e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_UPDATE) ||
+				e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_BATCHRUN))
 		{
 			if(e.getNewValue() instanceof FRAPStudy)
 			{
@@ -99,7 +100,8 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					fData.addPropertyChangeListener(this);
 				}
 				
-				if(e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW))
+				if(e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_NEW)||
+				   e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_BATCHRUN))
 				{
 					overlayEditorPanel.setImages(
 						(fData==null?null:fData.getImageDataset()),true,
@@ -113,10 +115,18 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 							(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
 							(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
 				}
+
 				if(fData != null && fData.getROILength() > 0)
 				{
 					overlayEditorPanel.setRoiSouceData(fData);
-					fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+					if(e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_FRAPSTUDY_BATCHRUN))
+					{
+						fData.setCurrentlyDisplayedROIForBatchRun(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+					}
+					else
+					{
+						fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+					}
 				}
 			}
 		}

@@ -122,7 +122,7 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
     		    		
     		    		if(outputFile != null)
     		    		{
-    		    			VirtualFrapMainFrame.updateStatus("Saving file " + outputFile.getAbsolutePath()+" ...");
+//    		    			VirtualFrapMainFrame.updateStatus("Saving file " + outputFile.getAbsolutePath()+" ...");
     		    			hashTable.put(FRAPStudyPanel.SAVE_FILE_NAME_KEY, outputFile);
     		    		}
     				}
@@ -143,9 +143,9 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
     				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
-    				VirtualFrapMainFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
-    		        VirtualFrapLoader.mf.setMainFrameTitle(outFile.getName());
-    		        VirtualFrapMainFrame.updateProgress(0);
+//    				VirtualFrapMainFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
+//    		        VirtualFrapLoader.mf.setMainFrameTitle(outFile.getName());
+//    		        VirtualFrapMainFrame.updateProgress(0);
     			}
     		};
 
