@@ -262,6 +262,7 @@ private String writeEvents(HashMap<Discontinuity, String> discontinuityNameMap) 
 	sb.append("EVENTS " + mathDescription.getNumEvents() + "\n");
   	while (iter.hasNext()) {
   		Event event = iter.next();
+  		sb.append("EVENT " + event.getName() + "\n");
   		Expression triggerExpression = event.getTriggerExpression();
   		triggerExpression = MathUtilities.substituteFunctions(triggerExpression, varsSymbolTable).flatten();
   		

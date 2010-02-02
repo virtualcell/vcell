@@ -3235,6 +3235,7 @@ public org.jdom.Element getXML(TimeStep param) {
 
 public org.jdom.Element getXML(Event event) throws XmlParseException{
 	org.jdom.Element eventElement = new org.jdom.Element(XMLTags.EventTag);
+	eventElement.setAttribute(XMLTags.NameAttrTag, event.getName());
 
 	Element element = new org.jdom.Element(XMLTags.TriggerTag);
 	element.addContent(event.getTriggerExpression().infix());

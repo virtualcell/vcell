@@ -2706,7 +2706,8 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				if (variableList.size() == 0) {
 					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 				}
-				Event event = new Event(this, tokens);
+				token = tokens.nextToken();
+				Event event = new Event(token, this, tokens);
 				eventList.add(event);
 				continue;
 			}

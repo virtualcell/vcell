@@ -2187,6 +2187,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 
 private Event getEvent(MathDescription mathdesc, Element eventElement) throws XmlParseException  {
 
+	String name = eventElement.getAttributeValue(XMLTags.NameAttrTag);
 	Element element = eventElement.getChild(XMLTags.TriggerTag, vcNamespace);
 	Expression triggerExp = null;
 	try {
@@ -2225,7 +2226,7 @@ private Event getEvent(MathDescription mathdesc, Element eventElement) throws Xm
 		}
 	}
 	
-	Event event = new Event(triggerExp, delay, eventAssignmentList);
+	Event event = new Event(name, triggerExp, delay, eventAssignmentList);
 	return event;
 }
 

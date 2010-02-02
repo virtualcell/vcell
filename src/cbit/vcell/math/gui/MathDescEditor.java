@@ -439,7 +439,7 @@ public String getTemplate_JumpProcess() {
 }
 
 public String getTemplate_Event() {	
-	return VCML.Event + " " + VCML.BeginBlock + "\n"
+	return VCML.Event + " event0 " + VCML.BeginBlock + "\n"
 		+ "\t" + VCML.Trigger + " 0.0;\n"
 		+ "\t" + VCML.Delay + " " +  VCML.BeginBlock + "\n"
 		+ "\t\t" + VCML.UseValuesFromTriggerTime + " true\n"

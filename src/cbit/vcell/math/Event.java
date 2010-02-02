@@ -141,11 +141,13 @@ public class Event implements Matchable, Serializable {
 			durationExpression.bindExpression(mathDescription);
 		}		
 	}
+	private String name;
 	private Expression triggerExpression = null;
 	private Delay delay = null;
 	private ArrayList<EventAssignment> eventAssignmentList = new ArrayList<EventAssignment>();
 	
-	public Event(MathDescription mathdesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
+	public Event(String name, MathDescription mathdesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
+		this.name = name;
 		read(mathdesc, tokens);
 	}	
 	
@@ -179,8 +181,9 @@ public class Event implements Matchable, Serializable {
 
 		}		
 	}
-	public Event(Expression triggerExpression, Delay delay, ArrayList<EventAssignment> eventAssignmentList) {
+	public Event(String name, Expression triggerExpression, Delay delay, ArrayList<EventAssignment> eventAssignmentList) {
 		super();
+		this.name = name; 
 		this.triggerExpression = triggerExpression;
 		this.delay = delay;
 		this.eventAssignmentList = eventAssignmentList;
@@ -193,7 +196,7 @@ public class Event implements Matchable, Serializable {
 	
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(VCML.Event + " " + VCML.BeginBlock + "\n");
+		buffer.append(VCML.Event + " " + name + " " + VCML.BeginBlock + "\n");
 		buffer.append("\t" + VCML.Trigger + " " + triggerExpression.infix() + ";\n");
 		if (delay != null) {
 			buffer.append(delay.getVCML());
@@ -246,5 +249,9 @@ public class Event implements Matchable, Serializable {
 			eventAssignment.bind(mathDescription);
 		}
 		
+	}
+	
+	public String getName() {
+		return name;
 	}
 }
