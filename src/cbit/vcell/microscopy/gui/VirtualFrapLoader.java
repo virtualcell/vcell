@@ -96,7 +96,7 @@ public class VirtualFrapLoader {
 			}
 			File wd = null;
 			if (args.length == 0) {
-				wd = ResourceUtil.userHome;
+				wd = ResourceUtil.getUserHomeDir();
 			} else {
 				wd = new File(args[0]);
 			}

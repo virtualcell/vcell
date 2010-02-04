@@ -14,7 +14,6 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 
 import java.awt.*;
 import java.awt.event.*;

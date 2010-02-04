@@ -20,12 +20,12 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VersionFlag;
 
 import cbit.image.ImageException;

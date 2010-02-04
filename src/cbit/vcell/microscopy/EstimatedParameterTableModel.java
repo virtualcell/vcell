@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import javax.swing.JTable;
 
+import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ModelQuantity;
@@ -17,7 +18,6 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
@@ -71,7 +71,7 @@ public Class<?> getColumnClass(int column) {
 			return Double.class;
 		}
 		case COLUMN_EXPRESSION:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.gui.ScopedExpression.class;
 		}
 		case COLUMN_UNITS:{
 			return String.class;
@@ -144,7 +144,7 @@ public Object getValueAt(int row, int col) {
 			if(parameter != null && parameter.getExpression() != null)
 			{
 				try {
-					exp = new ScopedExpression(parameter.getExpression().infix());
+					exp = new ScopedExpression(parameter.getExpression(), null);
 					return exp;
 				} catch (ExpressionException e) {
 					// TODO Auto-generated catch block

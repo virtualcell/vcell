@@ -26,13 +26,13 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
-import org.vcell.util.TSJobResultsSpaceStats;
-import org.vcell.util.TimeSeriesJobSpec;
 
 import cbit.image.ImageException;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.TSJobResultsSpaceStats;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
