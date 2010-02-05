@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="jh_2_0_05.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/VCell"/>
 	<classpathentry kind="lib" path="jmf.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/VCellCore"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

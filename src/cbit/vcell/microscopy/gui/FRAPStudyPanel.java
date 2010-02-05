@@ -821,7 +821,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
         this.setMinimumSize(new Dimension(640, 480));
         FRAPDataPanel fDataPanel = getFRAPDataPanel();
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getLeftPanel(), fDataPanel);
-        split.setDividerLocation(356);
+        split.setDividerLocation(385);
         split.setDividerSize(2);
         this.add(split);
         iniConnection();

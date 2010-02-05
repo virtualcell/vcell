@@ -283,7 +283,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 				runAndSetBestParameters();
 			}
 		});
-		getOptimalButton.setText("Get Best Parameters");
+		getOptimalButton.setText("Estimate");
 		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 //		gridBagConstraints_13.gridwidth = 2;
 //		gridBagConstraints_13.ipadx = 10;
