@@ -36,7 +36,7 @@ public class ResourceUtil {
 
 	public static File getUserHomeDir()
 	{
-		if(userHome != null)
+		if(userHome == null)
 		{
 			userHome = new File(System.getProperty("user.home"));
 			if (!userHome.exists()) {
@@ -112,7 +112,7 @@ public class ResourceUtil {
 
 	public static File getVcellHome() 
 	{
-		if(vcellHome != null)
+		if(vcellHome == null)
 		{
 			vcellHome = new File(getUserHomeDir(), ".vcell");
 			if (!vcellHome.exists()) {
