@@ -64,15 +64,7 @@ public class WizardController implements ActionListener {
         //add post tasks
         totalTasks.addAll(descriptor.postCancelProcess());
         //dispatch tasks
-        AsynchClientTask[] taskArray = new AsynchClientTask[totalTasks.size()];
-        if(descriptor.isProgressPopupShown())
-        {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), descriptor.isTaskProgressKnown(), false, null, true);
-        }
-        else
-        {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray));
-        }
+        dispatchTasks(totalTasks, descriptor);
     }
 
     private void nextButtonPressed() {
@@ -104,16 +96,20 @@ public class WizardController implements ActionListener {
         //add post tasks
         totalTasks.addAll(descriptor.postNextProcess());
         //dispatch tasks
-        AsynchClientTask[] taskArray = new AsynchClientTask[totalTasks.size()];
+        dispatchTasks(totalTasks, descriptor);
+    }
+
+	private void dispatchTasks(ArrayList<AsynchClientTask> totalTasks, WizardPanelDescriptor descriptor) {
+		AsynchClientTask[] taskArray = new AsynchClientTask[totalTasks.size()];
         if(descriptor.isProgressPopupShown())
         {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), descriptor.isTaskProgressKnown());
+        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), descriptor.isTaskProgressKnown(), false, null, true);
         }
         else
         {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), false, false/*doesn't show popup, we don't need progress*/, false, null, false);
+        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray));
         }
-    }
+	}
 
     private void backButtonPressed() {
     	ArrayList<AsynchClientTask> totalTasks = new ArrayList<AsynchClientTask>();
@@ -142,15 +138,7 @@ public class WizardController implements ActionListener {
         //add post tasks
         totalTasks.addAll(descriptor.postBackProcess());
         //dispatch tasks
-        AsynchClientTask[] taskArray = new AsynchClientTask[totalTasks.size()];
-        if(descriptor.isProgressPopupShown())
-        {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), descriptor.isTaskProgressKnown());
-        }
-        else
-        {
-        	ClientTaskDispatcher.dispatch(wizard.getDialog(), new Hashtable<String, Object>(), totalTasks.toArray(taskArray), false, false/*doesn't show popup, we don't need progress*/, false, null, false);
-        }
+        dispatchTasks(totalTasks, descriptor);
     }
 
     
