@@ -1205,10 +1205,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					File outputFile = null;
 					String saveFileName = null;
 	    			int choice = VirtualFrapLoader.saveFileChooser.showSaveDialog(FRAPStudyPanel.this);
-	    			if (choice == JFileChooser.APPROVE_OPTION)
+	    			if (choice != JFileChooser.APPROVE_OPTION)
 	    			{
-	    				saveFileName = VirtualFrapLoader.saveFileChooser.getSelectedFile().getPath();
+	    				throw UserCancelException.CANCEL_FILE_SELECTION;
 	    			}
+	    			saveFileName = VirtualFrapLoader.saveFileChooser.getSelectedFile().getPath();
 		    		if(saveFileName != null)
 		    		{
 		    			
